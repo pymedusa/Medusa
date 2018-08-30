@@ -4287,3 +4287,11 @@
   release_group: 20-40
   source: Web
   type: episode
+
+? /Comedy 23/Funny.Show.S4E19.mkv
+: title: Funny Show
+  season: 4
+  episode: 19
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode

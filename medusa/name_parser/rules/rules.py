@@ -978,7 +978,39 @@ class RemoveYearAsSeason(Rule):
 class FixMultipleReleaseGroups(Rule):
     """Fix multiple release groups.
 
-    TODO: Document
+    Related bug report: https://github.com/guessit-io/guessit/issues/565
+
+    e.g.: Show.Name.S04E23.Parley.720p.HDTV.x264.DIMENSION.P00/SNLA0423.720p.HDTV.X264-DIMENSION
+
+    guessit -t episode "Show.Name.S04E23.Parley.720p.HDTV.x264.DIMENSION.P00/SNLA0423.720p.HDTV.X264-DIMENSION"
+
+    without the rule:
+        For: Show.Name.S04E23.Parley.720p.HDTV.x264.DIMENSION.P00/SNLA0423.720p.HDTV.X264-DIMENSION
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 4,
+            "episode": 23,
+            "episode_title": "Parley",
+            "screen_size": "720p",
+            "source": "HDTV",
+            "video_codec": "H.264",
+            "release_group": "DIMENSION.P00",
+            "type": "episode"
+        }
+
+    with the rule:
+        For: Show.Name.S04E23.Parley.720p.HDTV.x264.DIMENSION.P00/SNLA0423.720p.HDTV.X264-DIMENSION
+        GuessIt found: {
+            "title": "Show Name",
+            "season": 4,
+            "episode": 23,
+            "episode_title": "Parley",
+            "screen_size": "720p",
+            "source": "HDTV",
+            "video_codec": "H.264",
+            "release_group": "DIMENSION",
+            "type": "episode"
+        }
     """
 
     priority = POST_PROCESS
@@ -1006,6 +1038,68 @@ class FixMultipleReleaseGroups(Rule):
             # Only remove matches that are different from the first match
             to_remove = matches.named('release_group', predicate=lambda match: match.span != selected.span)
             return to_remove
+
+
+class FixParentFolderReplacingTitle(Rule):
+    """Fix folder name replacing title when it ends with digits.
+
+    e.g.: /Comedy 23/Funny.Show.S4E19.mkv
+
+    guessit -t episode "/Comedy 23/Funny.Show.S4E19.mkv"
+
+    without the rule:
+        For: /Comedy 23/Funny.Show.S4E19.mkv
+        GuessIt found: {
+            "title": "Comedy",
+            "episode_title": "Funny Show",
+            "season": 4,
+            "episode": 19,
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+
+    with the rule:
+        For: /Comedy 23/Funny.Show.S4E19.mkv
+        GuessIt found: {
+            "title": "Funny Show",
+            "season": 4,
+            "episode": 19,
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    ends_with_digit = re.compile(r'\W\d+$')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        fileparts = matches.markers.named('path')
+        parts_len = len(fileparts)
+        if parts_len < 2:
+            return
+
+        episode_title = matches.named('episode_title')
+        if episode_title:
+            second_part = fileparts[parts_len - 2].value
+            if self.ends_with_digit.search(second_part):
+                title = matches.named('title')
+                if title and second_part.startswith(title[0].value):
+                    episode_title[0].name = 'title'
+                    to_append = episode_title
+                    to_remove = title
+
+                    return to_remove, to_append
 
 
 class FixMultipleSources(Rule):
@@ -1398,6 +1492,7 @@ def rules():
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
+        FixParentFolderReplacingTitle,
         FixMultipleSources,
         FixMultipleReleaseGroups,
         AudioCodecStandardizer,
