@@ -19,7 +19,8 @@
 
         <div v-if="$route.name === 'snatchSelection'" id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
-                <%include file="/partials/seasonEpisode.mako"/>
+                Manual search for:<br>
+                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="snatchTitle">{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode"> Episode {{ episode }}</template>
             </span>
         </div>
         <template v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1">
@@ -202,7 +203,7 @@
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
                             % if app.USE_SUBTITLES:
-                            <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
+                            <tr><td v-if="config.subtitles.enabled" class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
                             % endif
                             <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
