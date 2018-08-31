@@ -184,7 +184,7 @@ class ConfigPostProcessing(Config):
         try:
             rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
             testing = RarFile(rar_path).read_files('*test.txt')
-            if testing[0][1] == 'This is only a test.':
+            if testing[0][1] == b'This is only a test.':
                 return 'supported'
             logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
             return 'not supported'
