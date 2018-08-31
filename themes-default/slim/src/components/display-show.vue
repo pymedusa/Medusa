@@ -176,11 +176,8 @@ export default {
 
         // Selects all visible episode checkboxes
         document.addEventListener('click', event => {
-            if (event.target && event.target.className.includes('clearAll')) {
-                [...document.getElementsByClassName('epCheck')].filter(isVisible).forEach(element => {
-                    element.checked = true;
-                });
-                [...document.getElementsByClassName('seasonCheck')].filter(isVisible).forEach(element => {
+            if (event.target && event.target.className.includes('seriesCheck')) {
+                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
                     element.checked = true;
                 });
             }
@@ -189,10 +186,7 @@ export default {
         // Clears all visible episode checkboxes and the season selectors
         document.addEventListener('click', event => {
             if (event.target && event.target.className.includes('clearAll')) {
-                [...document.getElementsByClassName('epCheck')].filter(isVisible).forEach(element => {
-                    element.checked = false;
-                });
-                [...document.getElementsByClassName('seasonCheck')].filter(isVisible).forEach(element => {
+                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
                     element.checked = false;
                 });
             }
@@ -286,17 +280,21 @@ export default {
         });
 
         // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
-        document.addEventListener('hide.bs.collapse', function() {
-            const reg = /collapseSeason-(\d+)/g;
-            const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Show Episodes');
-            $('#season-' + result[1] + '-cols').addClass('shadow');
-        });
-        document.addEventListener('show.bs.collapse', function() {
-            const reg = /collapseSeason-(\d+)/g;
-            const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Hide Episodes');
-            $('#season-' + result[1] + '-cols').removeClass('shadow');
+        document.querySelectorAll('.collapse.toggle').forEach(element => {
+            element.addEventListener('hide.bs.collapse', () => {
+                // on hide
+                const reg = /collapseSeason-(\d+)/g;
+                const result = reg.exec(this.id);
+                $('#showseason-' + result[1]).text('Show Episodes');
+                $('#season-' + result[1] + '-cols').addClass('shadow');
+            });
+            element.addEventListener('show.bs.collapse', () => {
+                // on show
+                const reg = /collapseSeason-(\d+)/g;
+                const result = reg.exec(this.id);
+                $('#showseason-' + result[1]).text('Hide Episodes');
+                $('#season-' + result[1] + '-cols').removeClass('shadow');
+            });
         });
 
         attachImdbTooltip(); // eslint-disable-line no-undef

@@ -12,6 +12,8 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12" :data-showname="show.title">
         <div>
+            ## @TODO: Remove extra attributes.
+            ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142
             <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
                 <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]" class="snatchTitle">{{ show.title }}</app-link>
             </h1>
@@ -23,34 +25,30 @@
                 <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="snatchTitle">{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode"> Episode {{ episode }}</template>
             </span>
         </div>
-        <template v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1">
-            <div id="show-specials-and-seasons" class="pull-right">
-                <span class="h2footer display-specials" v-if="show.seasons.find(({ season }) => season === 0)">
-                    Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ config.layout.show.specials ? 'Hide' : 'Show' }}</a>
-                </span>
+        <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
+            <span class="h2footer display-specials" v-if="show.seasons.find(({ season }) => season === 0)">
+                Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ config.layout.show.specials ? 'Hide' : 'Show' }}</a>
+            </span>
 
-                <div class="h2footer display-seasons clear">
-                    <span>
-                        <template v-if="show.seasons && show.seasons.length >= 13">
-                            <select @change="jumpToSeason($event)" id="seasonJump" class="form-control input-sm" style="position: relative">
-                                <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :value="'#season-' + season.season" :data-season="season.season">
-                                    Season {{ season.season === 0 ? 'Specials' : season.season }}
-                                </option>
-                            </select>
+            <div class="h2footer display-seasons clear">
+                <span>
+                    <select v-if="show.seasons.length >= 15" @change="jumpToSeason($event)" id="seasonJump" class="form-control input-sm" style="position: relative">
+                        <option value="jump">Jump to Season</option>
+                        <option v-for="season in show.seasons" :value="'#season-' + season.season" :data-season="season.season">
+                            Season {{ season.season === 0 ? 'Specials' : season.season }}
+                        </option>
+                    </select>
+                    <template v-else-if="show.seasons.length >= 1">
+                        Season:
+                        <template v-for="(season, $index) in reverse(show.seasons)">
+                            <app-link :href="'#season-' + season[0].season">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
+                            <slot> </slot>
+                            <span v-if="$index !== (show.seasons.length - 1)" class="separator">| </span>
                         </template>
-                        <template v-else-if="show.seasons && show.seasons.length >= 1">
-                            Season:
-                            <template v-for="(season, $index) in reverse(show.seasons)">
-                                <app-link :href="'#season-' + season[0].season">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
-                                <slot> </slot>
-                                <span v-if="$index !== (show.seasons.length - 1)" class="separator">| </span>
-                            </template>
-                        </template>
-                    </span>
-                </div>
+                    </template>
+                </span>
             </div>
-        </template>
+        </div>
     </div> <!-- end show title -->
 </div> <!-- end row showtitle-->
 
@@ -86,7 +84,7 @@
                     >
                         <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
                     </span>
-                    <template v-if="!show.rating.imdb">
+                    <template v-if="!show.id.imdb">
                         <span v-if="show.year && show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                     </template>
                     <template v-else>
@@ -115,8 +113,7 @@
                          <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                      </app-link>
                  % endif
-                    ##  @TODO: Is this meant to use show.title for title but show.id[show.indexer] for href?
-                    <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.title"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
+                    <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
@@ -136,7 +133,7 @@
             <div class="row">
                 <!-- Show Summary -->
                 <div id="summary" class="col-md-12">
-                    <div id="show-summary" :class="[{ summaryFanArt: config.fanArtBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
+                    <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                         <table class="summaryTable pull-left">
                             <tr v-if="show.plot">
                                 <td colspan="2" style="padding-bottom: 15px;">
@@ -206,7 +203,7 @@
                             <template v-if="config.subtitles.enabled">
                                 <tr><td class="showLegend">Subtitles: </td><td><img :src="'images/' + (show.config.subtitlesEnabled ? 'yes' : 'no') + '16.png'" :alt="show.config.subtitlesEnabled ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             </template>
-                            <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Season Folders: </td><td><img :src="'images/' + (show.config.seasonFolders || config.namingForceFolders ? 'yes' : 'no') + '16.png'" :alt="show.config.seasonFolders || config.namingForceFolders ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><img :src="'images/' + (show.config.paused ? 'yes' : 'no') + '16.png'" :alt="show.config.paused ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Air-by-Date: </td><td><img :src="'images/' + (show.config.airByDate ? 'yes' : 'no') + '16.png'" :alt="show.config.airByDate ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Sports: </td><td><img :src="'images/' + (show.config.sports ? 'yes' : 'no') + '16.png'" :alt="show.config.sports ? 'Y' : 'N'" width="16" height="16" /></td></tr>
