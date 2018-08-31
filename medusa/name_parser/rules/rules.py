@@ -1094,7 +1094,7 @@ class FixParentFolderReplacingTitle(Rule):
             second_part = fileparts[parts_len - 2].value
             if self.ends_with_digit.search(second_part):
                 title = matches.named('title')
-                if not title or title and second_part.startswith(title[0].value):
+                if not title or second_part.startswith(title[0].value):
                     episode_title[0].name = 'title'
                     to_append = episode_title
                     to_remove = title
