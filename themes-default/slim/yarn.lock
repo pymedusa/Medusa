@@ -9090,9 +9090,9 @@ vue-meta@1.5.3:
     lodash.isplainobject "^4.0.6"
     object-assign "^4.1.1"
 
-vue-native-websocket@2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.8.tgz#8d6bd3aeeb6b1e36960791c614f55cb24d32e123"
+vue-native-websocket@2.0.9:
+  version "2.0.9"
+  resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.9.tgz#2f94730fc0584b92aca6663a94e2bf05c7e93a00"
 
 vue-router@3.0.1:
   version "3.0.1"
