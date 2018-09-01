@@ -10,9 +10,11 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
 <div class="row">
+    ## @TODO: Remove data attributes
+    ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436
     <div id="showtitle" class="col-lg-12" :data-showname="show.title">
         <div>
-            ## @TODO: Remove extra attributes.
+            ## @TODO: Remove data attributes
             ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142
             <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
                 <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]" class="snatchTitle">{{ show.title }}</app-link>
@@ -32,10 +34,12 @@
 
             <div class="h2footer display-seasons clear">
                 <span>
-                    <select v-if="show.seasons.length >= 15" @change="jumpToSeason($event)" id="seasonJump" class="form-control input-sm" style="position: relative">
+                    <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                         <option value="jump">Jump to Season</option>
-                        <option v-for="season in show.seasons" :value="'#season-' + season.season" :data-season="season.season">
-                            Season {{ season.season === 0 ? 'Specials' : season.season }}
+                        <option v-for="season in show.seasons" :value="'#season-' + season[0].season" :data-season="season[0].season">
+                        <%text>
+                            {{ season[0].season === 0 ? 'Specials' : `Season ${season[0].season}` }}
+                        </%text>
                         </option>
                     </select>
                     <template v-else-if="show.seasons.length >= 1">
@@ -85,7 +89,7 @@
                         <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
                     </span>
                     <template v-if="!show.id.imdb">
-                        <span v-if="show.year && show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
+                        <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                     </template>
                     <template v-else>
                         <template v-if="show.country_codes && show.country_codes.length >= 1 ">
@@ -97,7 +101,7 @@
                         % endif
                             ${show.imdb_info.get('runtimes') or show.runtime} minutes
                         </span>
-                        <app-link :href="'http://www.imdb.com/title/' + show.id.imdb" :title="'http://www.imdb.com/title/' + show.id.imdb">
+                        <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                         </app-link>
                     </template>
@@ -119,11 +123,11 @@
                      <ul class="tags">
                          % if show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
+                                 <app-link href="https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % elif show.genre:
                              % for genre in show.genre.strip('|').split('|'):
-                                 <app-link href="http://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
+                                 <app-link href="https://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
                              % endfor
                          % endif
                      </ul>
@@ -200,9 +204,7 @@
                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-                            <template v-if="config.subtitles.enabled">
-                                <tr><td class="showLegend">Subtitles: </td><td><img :src="'images/' + (show.config.subtitlesEnabled ? 'yes' : 'no') + '16.png'" :alt="show.config.subtitlesEnabled ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            </template>
+                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><img :src="'images/' + (show.config.subtitlesEnabled ? 'yes' : 'no') + '16.png'" :alt="show.config.subtitlesEnabled ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Season Folders: </td><td><img :src="'images/' + (show.config.seasonFolders || config.namingForceFolders ? 'yes' : 'no') + '16.png'" :alt="show.config.seasonFolders || config.namingForceFolders ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><img :src="'images/' + (show.config.paused ? 'yes' : 'no') + '16.png'" :alt="show.config.paused ? 'Y' : 'N'" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Air-by-Date: </td><td><img :src="'images/' + (show.config.airByDate ? 'yes' : 'no') + '16.png'" :alt="show.config.airByDate ? 'Y' : 'N'" width="16" height="16" /></td></tr>

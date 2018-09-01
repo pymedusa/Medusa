@@ -13,6 +13,18 @@ export default {
         AppLink,
         PlotInfo
     },
+    metaInfo() {
+        if (!this.show || !this.show.title) {
+            return {
+                title: 'Medusa'
+            };
+        }
+        const { title } = this.show;
+        return {
+            title,
+            titleTemplate: '%s | Medusa'
+        };
+    },
     props: {
         /**
          * Show id
@@ -27,16 +39,9 @@ export default {
             type: String
         }
     },
-    metaInfo() {
-        if (!this.show || !this.show.title) {
-            return {
-                title: 'Medusa'
-            };
-        }
-        const { title } = this.show;
+    data() {
         return {
-            title,
-            titleTemplate: '%s | Medusa'
+            jumpToSeason: 'jump'
         };
     },
     computed: {
@@ -85,7 +90,6 @@ export default {
         } = this;
 
         this.$watch('show', () => {
-            console.debug('Reloading layout');
             this.$nextTick(() => this.reflowLayout());
         });
 
@@ -282,22 +286,20 @@ export default {
         // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
         document.querySelectorAll('.collapse.toggle').forEach(element => {
             element.addEventListener('hide.bs.collapse', () => {
-                // on hide
+                // On hide
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Show Episodes');
                 $('#season-' + result[1] + '-cols').addClass('shadow');
             });
             element.addEventListener('show.bs.collapse', () => {
-                // on show
+                // On show
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Hide Episodes');
                 $('#season-' + result[1] + '-cols').removeClass('shadow');
             });
         });
-
-        attachImdbTooltip(); // eslint-disable-line no-undef
 
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions();
@@ -319,13 +321,18 @@ export default {
     },
     methods: {
         /**
-         * Moves summary background and checkbox controls
+         * Attaches imdb tool tip,
+         * moves summary background and checkbox controls
          */
         reflowLayout() {
+            console.debug('Reflowing layout');
+
             this.$nextTick(() => {
                 this.moveSummaryBackground();
                 this.movecheckboxControlsBackground();
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the summary background position and size on page load and resize
@@ -518,24 +525,6 @@ export default {
                 }
             });
         },
-        jumpToSeason(event) {
-            const { id } = event.currentTarget;
-
-            // Don't jump until an option is selected
-            if (id && id !== 'jump') {
-                scrollTo(id, 600, {
-                    container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
-                });
-
-                // Update URL hash
-                location.hash = id;
-
-                // Reset jump
-                event.currentTarget.value = 'jump';
-            }
-        },
         toggleSpecials() {
             this.$store.dispatch('setConfig', {
                 layout: {
@@ -547,6 +536,26 @@ export default {
         },
         reverse(array) {
             return array.slice().reverse();
+        }
+    },
+    watch: {
+        jumpToSeason(season) {
+            // Don't jump until an option is selected
+            if (season !== 'jump') {
+                console.debug(`Jumping to ${season}`);
+
+                scrollTo(season, 100, {
+                    container: 'body',
+                    easing: 'ease-in',
+                    offset: -100
+                });
+
+                // Update URL hash
+                location.hash = season;
+
+                // Reset jump
+                this.jumpToSeason = 'jump';
+            }
         }
     }
 };
