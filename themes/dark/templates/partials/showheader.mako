@@ -121,13 +121,11 @@
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
-                         % if show.imdb_info.get('genres'):
+                         %if show.genre:
+                            <app-link v-for="genre in dedupeGenres(show.genres)" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv.'"><li>{{ genre }}</li></app-link>
+                         % elif show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
                                  <app-link href="https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
-                             % endfor
-                         % elif show.genre:
-                             % for genre in show.genre.strip('|').split('|'):
-                                 <app-link href="https://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
                              % endfor
                          % endif
                      </ul>

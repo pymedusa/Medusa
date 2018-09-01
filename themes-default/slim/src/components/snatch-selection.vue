@@ -78,6 +78,9 @@ export default {
         },
         reverse(array) {
             return array.slice().reverse();
+        },
+        dedupeGenres(genres) {
+            return [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))];
         }
     },
     mounted() {
