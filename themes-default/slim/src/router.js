@@ -3,6 +3,7 @@ import {
     AddRecommended,
     AddShows,
     Config,
+    IRC,
     Login,
     NotFound
 } from './components';
@@ -296,9 +297,9 @@ const ircRoute = {
     path: '/IRC',
     name: 'IRC',
     meta: {
-        title: 'IRC',
-        header: 'IRC'
-    }
+        title: 'IRC'
+    },
+    component: IRC
 };
 
 const notFoundRoute = {
