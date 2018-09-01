@@ -13,6 +13,7 @@ export { default as ConfigToggleSlider } from './config-toggle-slider.vue';
 export { default as DisplayShow } from './display-show.vue';
 export { default as FileBrowser } from './file-browser.vue';
 export { default as Home } from './home.vue';
+export { default as IRC } from './irc.vue';
 export { default as LanguageSelect } from './language-select.vue';
 export { default as Login } from './login.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
