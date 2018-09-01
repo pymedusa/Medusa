@@ -970,15 +970,13 @@ class RemoveYearAsSeason(Rule):
             return
 
         season = matches.named('season')
-        if season and season[0].initiator.value == text_type(year[0].value):
-            to_remove = season
+        if season and season[-1].initiator.value.endswith(text_type(year[0].value)):
+            to_remove = season[-1]
             return to_remove
 
 
 class FixMultipleReleaseGroups(Rule):
     """Fix multiple release groups.
-
-    Related bug report: https://github.com/guessit-io/guessit/issues/565
 
     e.g.: Show.Name.S04E23.Parley.720p.HDTV.x264.DIMENSION.P00/SNLA0423.720p.HDTV.X264-DIMENSION
 
@@ -1042,6 +1040,8 @@ class FixMultipleReleaseGroups(Rule):
 
 class FixParentFolderReplacingTitle(Rule):
     """Fix folder name replacing title when it ends with digits.
+
+    Related bug report: https://github.com/guessit-io/guessit/issues/565
 
     e.g.: /Comedy 23/Funny.Show.S4E19.mkv
 
