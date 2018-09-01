@@ -90,10 +90,18 @@ volume_naming2 = re.compile("[.]([0-9]{3})[.]rar$")
 volume_naming3 = re.compile("[.]part([0-9]+)[.]rar$")
 
 try:
-    unrar = ctypes.WinDLL(
-        os.path.join(os.path.split(__file__)[0], 'UnRARDLL', dll_name))
+    dll_filename = os.path.join(os.path.split(__file__)[0], 'UnRARDLL', dll_name)
+    if sys.version_info[:3] == (2, 7, 13):
+        # http://bugs.python.org/issue29082
+        dll_filename = str(dll_filename)
+    unrar = ctypes.WinDLL(dll_filename)
+
 except WindowsError:
-    unrar = ctypes.WinDLL(dll_name)
+    dll_filename = dll_name
+    if sys.version_info[:3] == (2, 7, 13):
+        # http://bugs.python.org/issue29082
+        dll_filename = str(dll_filename)
+    unrar = ctypes.WinDLL(dll_filename)
 
 class RAROpenArchiveDataEx(ctypes.Structure):
     def __init__(self, ArcName=None, ArcNameW=u'', OpenMode=RAR_OM_LIST):
