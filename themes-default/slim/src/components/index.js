@@ -18,6 +18,7 @@ export { default as Login } from './login.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
 export { default as NamePattern } from './name-pattern.vue';
 export { default as PlotInfo } from './plot-info.vue';
+export { default as QualityPill } from './quality-pill.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as ScrollButtons } from './scroll-buttons.vue';
 export { default as SelectList } from './select-list.vue';

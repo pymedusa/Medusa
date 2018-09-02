@@ -31,6 +31,7 @@ import {
     ManualPostProcess,
     NamePattern,
     PlotInfo,
+    QualityPill,
     RootDirs,
     ScrollButtons,
     SelectList,
@@ -87,6 +88,7 @@ if (window) {
     window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
+    window.components.push(QualityPill);
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
