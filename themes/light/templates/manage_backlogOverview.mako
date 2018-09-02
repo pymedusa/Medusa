@@ -229,7 +229,7 @@ window.app = new Vue({
                             <div class="col-md-6 left-30">
                                 <h3 style="display: inline;"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></h3>
                                  % if cur_show.quality in qualityPresets:
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;<quality-pill :quality="${cur_show.quality}"></quality-pill>
                                  % endif
                             </div>
                             <div class="col-md-6 pull-right right-30">
@@ -282,7 +282,7 @@ window.app = new Vue({
                         <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
                             % if old_quality != Quality.NA:
-                                ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                                ${statusStrings[old_status]} <quality-pill :quality="${old_quality}"></quality-pill>
                             % else:
                                 ${statusStrings[old_status]}
                             % endif

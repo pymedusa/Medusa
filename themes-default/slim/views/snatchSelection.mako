@@ -5,7 +5,6 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <script type="text/x-template" id="snatch-selection-template">
 <div>
     <input type="hidden" id="series-id" value="${show.indexerid}" />
@@ -50,7 +49,7 @@
                                         ${item['action_date']}
                                     </td>
                                     <td>
-                                    ${item['status_name']} ${renderQualityPill(item['quality'])}
+                                    ${item['status_name']} <quality-pill :quality="${item['quality']}"></quality-pill>
                                     </td>
                                     <td>
                                             % if item['provider_img_link']:
@@ -122,7 +121,7 @@
                                         <img src="${hItem["provider_img_link"]}" width="16" height="16" class="vMiddle curHelp" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                     </span>
                                 </td>
-                                <td class="triggerhighlight">${renderQualityPill(int(hItem["quality"]))}
+                                <td class="triggerhighlight"><quality-pill :quality="${int(hItem['quality'])}"></quality-pill>
                                 % if hItem["proper_tags"]:
                                     <img src="images/info32.png" width="16" height="16" class="vMmiddle" title="${hItem["proper_tags"]}"/>
                                 % endif

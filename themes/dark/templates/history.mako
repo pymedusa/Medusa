@@ -94,8 +94,6 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <input type="hidden" id="background-series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
 
 <div class="row">
@@ -194,7 +192,7 @@ window.app = new Vue({
                         % endif
                         </td>
                         <td align="center" class="triggerhighlight" quality="${hItem.quality}">
-                            ${renderQualityPill(hItem.quality)}
+                            <quality-pill :quality="${hItem.quality}"></quality-pill>
                         </td>
                     </tr>
                 % endfor
@@ -271,7 +269,7 @@ window.app = new Vue({
                             % endfor
                         </td>
                         <td align="center" class="triggerhighlight" quality="${hItem.index.quality}">
-                            <span>${renderQualityPill(hItem.index.quality)}</span>
+                            <span><quality-pill :quality="${hItem.index.quality}"></quality-pill></span>
                         </td>
                     </tr>
                 % endfor

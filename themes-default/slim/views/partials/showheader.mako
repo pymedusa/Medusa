@@ -163,7 +163,7 @@
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
-                                ${renderQualityPill(show.quality)}
+                                <quality-pill :quality="${show.quality}"></quality-pill>
                             % else:
                                 % if allowed_qualities:
                                     <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}

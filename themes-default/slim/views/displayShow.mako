@@ -10,7 +10,6 @@
 <%block name="scripts">
 <script type="text/x-template" id="display-show-template">
 <div v-show="show.indexer">
-    <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
     <input type="hidden" id="series-id" value="${show.series_id}" />
     <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
     <input type="hidden" id="series-slug" value="${show.slug}" />
@@ -262,7 +261,7 @@
                                 cur_quality = int(epResult['quality'])
                             %>
                             % if cur_quality != Quality.NA:
-                                <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
+                                <td class="col-status triggerhighlight">${statusStrings[cur_status]} <quality-pill :quality="${cur_quality}"></quality-pill></td>
                             % else:
                                 <td class="col-status triggerhighlight">${statusStrings[cur_status]}</td>
                             % endif

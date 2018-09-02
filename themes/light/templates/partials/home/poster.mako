@@ -9,7 +9,6 @@
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
 
 <div id="poster-container">
@@ -162,7 +161,7 @@
                                     % endif
                                     </td>
                                     <td class="show-table">
-                                        ${renderQualityPill(cur_show.quality, showTitle=True, overrideClass="show-quality")}
+                                        <quality-pill :quality="${cur_show.quality}" show-title override-class="show-quality"></quality-pill>
                                     </td>
                                 </tr>
                             </table>
