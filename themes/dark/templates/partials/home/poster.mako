@@ -161,7 +161,7 @@
                                     % endif
                                     </td>
                                     <td class="show-table">
-                                        <quality-pill :quality="${cur_show.quality}" show-title override-class="show-quality"></quality-pill>
+                                        <quality-pill :quality="${cur_show.quality}" show-title :override="{ class: 'show-quality' }"></quality-pill>
                                     </td>
                                 </tr>
                             </table>
