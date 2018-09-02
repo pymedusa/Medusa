@@ -48,6 +48,9 @@ export default {
         this.localChecked = this.checked;
     },
     watch: {
+        checked() {
+            this.localChecked = this.checked;
+        },
         localChecked() {
             this.$emit('update', this.localChecked);
         }
