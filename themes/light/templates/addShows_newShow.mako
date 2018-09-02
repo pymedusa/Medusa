@@ -499,7 +499,7 @@ window.app = new Vue({
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText">Adding show <b v-html="showName"></b> {{showPathPreposition}} <b v-html="showPath"></b></div>
             <br>
-            <form id="addShowForm">
+            <form id="addShowForm" @submit.prevent="">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div v-if="providedInfo.use" class="stepDiv">
