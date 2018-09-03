@@ -88,7 +88,7 @@ if (window) {
     window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
-    window.components.push(QualityPill);
+    window.components.push(QualityPill); // This component is also used in a hack/workaround in `./static/js/ajax-episode-search.js`
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
