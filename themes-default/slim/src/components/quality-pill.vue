@@ -6,11 +6,12 @@
 import { mapState } from 'vuex';
 
 /**
+ * An object representing a split quality.
+ *
  * @typedef {Object} Quality
  * @property {number[]} allowed - Allowed qualities
  * @property {number[]} preferred - Preferred qualities
  */
-
 export default {
     name: 'quality-pill',
     props: {
@@ -161,6 +162,7 @@ export default {
         /**
          * Split a combined quality to allowed and preferred qualities.
          * Converted Python method from `medusa.common.Quality.split_quality`.
+         *
          * @param {number} quality - The combined quality to split
          * @returns {Quality} - The split quality
          */
@@ -183,6 +185,7 @@ export default {
          * Check if all the items of `set1` are items of `set2`.
          * Assumption: Each array contains unique items only.
          * Source: https://stackoverflow.com/a/48211214/7597273
+         *
          * @param {(number[]|string[])} set1 - Array to be compared against `set2`.
          * @param {(number[]|string[])} set2 - Array to compare `set1` against.
          * @returns {boolean} - Whether or not `set1` is a subset of `set2`
