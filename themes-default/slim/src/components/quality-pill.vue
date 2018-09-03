@@ -98,13 +98,17 @@ export default {
             let cssClass;
             let text;
 
-            const setHDTV = [qualityValues.hdtv, qualityValues.rawhdtv, qualityValues.fullhdtv, qualityValues.uhd4ktv, qualityValues.uhd8ktv];
-            const setWEBDL = [qualityValues.hdwebdl, qualityValues.fullhdwebdl, qualityValues.uhd4kwebdl, qualityValues.uhd8kwebdl];
-            const setBluRay = [qualityValues.hdbluray, qualityValues.fullhdbluray, qualityValues.uhd4kbluray, qualityValues.uhd8kbluray];
-            const set720p = [qualityValues.hdtv, qualityValues.rawhdtv, qualityValues.hdwebdl, qualityValues.hdbluray];
-            const set1080p = [qualityValues.fullhdtv, qualityValues.fullhdwebdl, qualityValues.fullhdbluray];
-            const setUHD4K = [qualityValues.uhd4ktv, qualityValues.uhd4kwebdl, qualityValues.uhd4kbluray];
-            const setUHD8K = [qualityValues.uhd8ktv, qualityValues.uhd8kwebdl, qualityValues.uhd8kbluray];
+            const makeSet = (...keys) => {
+                return keys.map(key => qualityValues[key]);
+            };
+
+            const setHDTV = makeSet('hdtv', 'rawhdtv', 'fullhdtv', 'uhd4ktv', 'uhd8ktv');
+            const setWEBDL = makeSet('hdwebdl', 'fullhdwebdl', 'uhd4kwebdl', 'uhd8kwebdl');
+            const setBluRay = makeSet('hdbluray', 'fullhdbluray', 'uhd4kbluray', 'uhd8kbluray');
+            const set720p = makeSet('hdtv', 'rawhdtv', 'hdwebdl', 'hdbluray');
+            const set1080p = makeSet('fullhdtv', 'fullhdwebdl', 'fullhdbluray');
+            const setUHD4K = makeSet('uhd4ktv', 'uhd4kwebdl', 'uhd4kbluray');
+            const setUHD8K = makeSet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
 
             // Is quality a preset?
             if (Object.values(qualityPresets).includes(quality)) {
