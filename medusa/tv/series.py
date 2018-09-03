@@ -2024,11 +2024,12 @@ class Series(TV):
             data['config']['release']['whitelist'] = bw_list.whitelist
             try:
                 data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
-            except AnidbAdbaConnectionException:
+            except AnidbAdbaConnectionException as error:
                 data['config']['release']['allgroups'] = []
-                log.debug(
-                    'An anidb adba exception occurred when attempting to get the release groups for the show {show}',
-                    {'show': self.name}
+                log.warning(
+                    'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
+                    '\nError: {error}',
+                    {'show': self.name, 'error': error}
                 )
 
         data['config']['release']['ignoredWords'] = self.release_ignore_words
