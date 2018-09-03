@@ -463,18 +463,13 @@ class Series(TV):
 
     @property
     def imdb_akas(self):
-        """Return genres akas dict."""
+        """Return akas dict."""
         akas = {}
         for x in [v for v in (self.imdb_info.get('akas') or '').split('|') if v]:
             if '::' in x:
                 val, key = x.split('::')
                 akas[key] = val
         return akas
-
-    @property
-    def imdb_countries(self):
-        """Return country codes."""
-        return [v for v in (self.imdb_info.get('country_codes') or '').split('|') if v]
 
     @property
     def imdb_plot(self):
@@ -508,6 +503,11 @@ class Series(TV):
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
             if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
         )
+
+    @property
+    def country_codes(self):
+        """Return country codes."""
+        return [v for v in (self.imdb_info.get('country_codes') or '').split('|') if v]
 
     @property
     def countries(self):
@@ -1912,10 +1912,10 @@ class Series(TV):
         self.reset_dirty()
 
     def __str__(self):
-        """Represent a string.
+        """String representation.
 
         :return:
-        :rtype: str
+        :rtype: text_type
         """
         to_return = ''
         to_return += 'indexerid: ' + str(self.series_id) + '\n'
@@ -1938,32 +1938,8 @@ class Series(TV):
         to_return += 'anime: ' + str(self.is_anime) + '\n'
         return to_return
 
-    def __unicode__(self):
-        """Unicode representation.
-
-        :return:
-        :rtype: unicode
-        """
-        to_return = u''
-        to_return += u'indexerid: {0}\n'.format(self.series_id)
-        to_return += u'indexer: {0}\n'.format(self.indexer)
-        to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
-        if self.network:
-            to_return += u'network: {0}\n'.format(self.network)
-        if self.airs:
-            to_return += u'airs: {0}\n'.format(self.airs)
-        to_return += u'status: {0}\n'.format(self.status)
-        to_return += u'start_year: {0}\n'.format(self.start_year)
-        if self.genre:
-            to_return += u'genre: {0}\n'.format(self.genre)
-        to_return += u'classification: {0}\n'.format(self.classification)
-        to_return += u'runtime: {0}\n'.format(self.runtime)
-        to_return += u'quality: {0}\n'.format(self.quality)
-        to_return += u'scene: {0}\n'.format(self.is_scene)
-        to_return += u'sports: {0}\n'.format(self.is_sports)
-        to_return += u'anime: {0}\n'.format(self.is_anime)
-        return to_return
+    # Python 2 compatibility
+    __unicode__ = __str__
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
@@ -1974,6 +1950,13 @@ class Series(TV):
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
         data['id']['slug'] = self.identifier.slug
+
+        # Add externals to `data['id']`
+        for indexer_mapping, show_id in iteritems(self.externals):
+            indexer_id = indexer_mapping.replace('_id', '')
+            if indexer_id not in data['id']:
+                data['id'][indexer_id] = show_id
+
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
@@ -1984,23 +1967,26 @@ class Series(TV):
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['akas'] = self.imdb_akas
         data['year'] = {}
-        data['year']['start'] = self.imdb_year or self.start_year
+        data['year']['start'] = self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
-        data['runtime'] = self.imdb_runtime or self.runtime
-        data['genres'] = self.genres
-        data['rating'] = {}
-        if self.imdb_rating and self.imdb_votes:
-            data['rating']['imdb'] = {}
-            data['rating']['imdb']['rating'] = self.imdb_rating
-            data['rating']['imdb']['votes'] = self.imdb_votes
-
+        data['runtime'] = self.runtime
         data['classification'] = self.imdb_certificates
         data['cache'] = {}
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
-        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
-        data['plot'] = self.plot or self.imdb_plot
+        data['countryCodes'] = self.country_codes  # e.g. ['it', 'fr']
+        data['plot'] = self.plot
+        data['genres'] = self.genres
+
+        data['imdbInfo'] = {}
+        data['imdbInfo']['year'] = {}
+        data['imdbInfo']['year']['start'] = self.imdb_year or None
+        data['imdbInfo']['runtime'] = self.imdb_runtime or None
+        data['imdbInfo']['plot'] = self.imdb_plot or None
+        data['imdbInfo']['rating'] = self.imdb_rating or None
+        data['imdbInfo']['votes'] = self.imdb_votes or None
+
         data['config'] = {}
         data['config']['location'] = self.raw_location
         data['config']['qualities'] = {}
@@ -2037,8 +2023,12 @@ class Series(TV):
 
         if detailed:
             episodes = self.get_all_episodes()
-            data['seasons'] = [list(v) for _, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+            data['seasons'] = {
+                season: list(episodes)
+                for season, episodes
+                in groupby([ep.to_json() for ep in episodes],
+                           lambda item: item['season'])
+            }
             data['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:

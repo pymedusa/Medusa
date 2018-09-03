@@ -953,24 +953,25 @@ definitions:
         items:
           type: string
         example: [Drama, Romance]
-      rating:
+      imdbInfo:
         type: object
         properties:
-          imdb:
-            type: object
-            properties:
-              stars:
-                type: string
-                description: "IMDB's star rating from 0 to 10"
-              votes:
-                type: integer
-                format: int32
-                minimum: 1
-                description: "Total number of votes"
+          runtime:
+            type: integer
+            minimum: 1
+            format: int32
+            description: Episodes runtime in minutes
+          stars:
+            type: string
+            description: "IMDB's star rating from 0 to 10"
+          votes:
+            type: integer
+            format: int32
+            minimum: 1
+            description: "Total number of votes"
         example:
-          imdb:
-            stars: '8.3'
-            votes: 558507
+          stars: '8.3'
+          votes: 558507
       classification:
         type: string
         enum: ['', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
@@ -989,7 +990,7 @@ definitions:
         type: array
         items:
           type: string
-          description: Country codes
+          description: Country names
       config:
         type: object
         description: Series configuration and preferences

@@ -1,7 +1,7 @@
 const state = {
     show: {
         airs: null,
-        akas: null,
+        akas: {},
         cache: null,
         classification: null,
         config: {
@@ -19,11 +19,14 @@ const state = {
             sports: null,
             subtitlesEnabled: null
         },
-        countries: null,
-        country_codes: null, // eslint-disable-line camelcase
-        genres: null,
+        countries: [],
+        countryCodes: [],
+        genres: [],
         id: {
             tvdb: null,
+            tmdb: null,
+            tvmaze: null,
+            imdb: null,
             slug: null
         },
         indexer: null,
@@ -31,18 +34,24 @@ const state = {
         network: null,
         nextAirDate: null,
         plot: null,
-        rating: {
-            imdb: {
-                rating: null,
-                votes: null
-            }
+        imdbInfo: {
+            year: {
+                start: null
+            },
+            runtime: null,
+            plot: null,
+            rating: null,
+            votes: null
         },
         runtime: null,
         showType: null,
         status: null,
         title: null,
         type: null,
-        year: null
+        year: {
+            start: null,
+            end: null
+        }
     }
 };
 

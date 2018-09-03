@@ -2,11 +2,14 @@
     "shows": [
         {
             "status": "Ended",
-            "rating": {
-                "imdb": {
-                    "rating": "9.3",
-                    "votes": 9942
-                }
+            "imdbInfo": {
+                "year": {
+                    "start": null
+                },
+                "runtime": null,
+                "plot": null,
+                "rating": "9.3",
+                "votes": 9942
             },
             "genres": [
                 "Documentary"
@@ -60,7 +63,7 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [
+            "countryCodes": [
                 "gb"
             ],
             "runtime": 60,
@@ -73,7 +76,6 @@
         },
         {
             "status": "Ended",
-            "rating": {},
             "genres": [
                 "Comedy",
                 "Family"
@@ -125,7 +127,16 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [],
+            "imdbInfo": {
+                "year": {
+                    "start": null
+                },
+                "runtime": null,
+                "plot": null,
+                "rating": null,
+                "votes": null
+            },
+            "countryCodes": [],
             "runtime": 25,
             "type": "Scripted",
             "id": {
@@ -136,11 +147,14 @@
         },
         {
             "status": "Ended",
-            "rating": {
-                "imdb": {
-                    "rating": "8.5",
-                    "votes": 44981
-                }
+            "imdbInfo": {
+                "year": {
+                    "start": null
+                },
+                "runtime": null,
+                "plot": null,
+                "rating": "8.5",
+                "votes": 44981
             },
             "genres": [
                 "Comedy"
@@ -194,7 +208,7 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [
+            "countryCodes": [
                 "gb"
             ],
             "runtime": 25,
