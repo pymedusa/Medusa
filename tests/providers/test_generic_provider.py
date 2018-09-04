@@ -127,13 +127,13 @@ sut = GenericProvider('FakeProvider')
         'timezone': 'US/Eastern',
         'fromtimestamp': True
     },
-    {  # p22: hd-space test human date like yesterdat at 12:00:00
+    {  # p22: hd-space test human date like 'yesterday at 12:00:00'
         'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
         'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
         'human_time': False,
         'calculate_delta': True
     },
-    {  # p22: hd-space test human date like today at 12:00:00
+    {  # p23: hd-space test human date like 'today at 12:00:00'
         'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
         'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
         'human_time': False,
