@@ -21,6 +21,7 @@
 - Fixed episode lookup with conflicting show IDs ([#4933](https://github.com/pymedusa/Medusa/pull/4933))
 - Fixed error getting season scene exceptions on show page [#4964](https://github.com/pymedusa/Medusa/pull/4964)
 - Fixed testing email notification with TLS ([#4972](https://github.com/pymedusa/Medusa/pull/4972))
+- Fixed provider hd-space parsing pubdate like 'yesterday at 12:00:00' ([#5111](https://github.com/pymedusa/Medusa/pull/5111))
 
 -----
 
