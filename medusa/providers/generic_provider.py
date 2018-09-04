@@ -577,12 +577,12 @@ class GenericProvider(object):
                     if seconds is None:
                         log.warning('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
                         raise ValueError('Failed parsing human time: {0} {1}'.format(matched_time, matched_granularity))
+
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             if fromtimestamp:
                 dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
             else:
-                from tzlocal import get_localzone
                 day_offset = 0
                 if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
                     # Extract a time
@@ -590,9 +590,9 @@ class GenericProvider(object):
                     if time:
                         if 'yesterday' in pubdate:
                             day_offset = 1
-                        pubdate = time.group('time')
+                        pubdate = time.group('time').strip()
 
-                dt = parser.parse(pubdate.strip(), dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
 
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
