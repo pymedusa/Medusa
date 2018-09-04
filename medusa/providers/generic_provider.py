@@ -575,7 +575,7 @@ class GenericProvider(object):
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                     if seconds is None:
-                        log.exception('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
+                        log.warning('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
                         raise ValueError('Failed parsing human time: {0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
@@ -585,7 +585,7 @@ class GenericProvider(object):
                 from tzlocal import get_localzone
                 day_offset = 0
                 if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
-                    # Strip yesterday including any other words
+                    # Extract a time
                     time = re.search(r'(?P<time>[0-9:]+)', pubdate)
                     if time:
                         if 'yesterday' in pubdate:
