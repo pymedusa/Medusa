@@ -16,7 +16,7 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-test('renders', t => {
+test('renders with `enable-anime-options` disabled', t => {
     const { localVue, store } = t.context;
     const wrapper = mount(AddShowOptions, {
         localVue,
@@ -24,7 +24,27 @@ test('renders', t => {
         stubs: [
             'quality-chooser',
             'toggle-button'
-        ]
+        ],
+        propsData: {
+            enableAnimeOptions: false
+        }
+    });
+
+    t.snapshot(wrapper.html());
+});
+
+test('renders with `enable-anime-options` enabled', t => {
+    const { localVue, store } = t.context;
+    const wrapper = mount(AddShowOptions, {
+        localVue,
+        store,
+        stubs: [
+            'quality-chooser',
+            'toggle-button'
+        ],
+        propsData: {
+            enableAnimeOptions: true
+        }
     });
 
     t.snapshot(wrapper.html());

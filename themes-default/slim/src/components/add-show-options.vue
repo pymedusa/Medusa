@@ -48,7 +48,7 @@
                 :explanations="['Group episodes by season folders?']" @update="selectedSeasonFoldersEnabled = $event">
             </config-toggle-slider>
 
-            <config-toggle-slider label="Anime" id="anime" :checked="defaultConfig.anime"
+            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime" :checked="defaultConfig.anime"
                 :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
@@ -93,6 +93,7 @@ export default {
     components: {
         AnidbReleaseGroupUi,
         ConfigToggleSlider
+        // @TODO: Add `QualityChooser`
     },
     props: {
         showName: {
@@ -263,6 +264,7 @@ export default {
          */
         saveDefaultsDisabled() {
             const {
+                enableAnimeOptions,
                 defaultConfig,
                 namingForceFolders,
 
@@ -281,7 +283,7 @@ export default {
                 combinedQualities === defaultConfig.quality,
                 selectedSeasonFoldersEnabled === (defaultConfig.seasonFolders || namingForceFolders),
                 selectedSubtitleEnabled === defaultConfig.subtitles,
-                selectedAnimeEnabled === defaultConfig.anime,
+                !enableAnimeOptions || selectedAnimeEnabled === defaultConfig.anime,
                 selectedSceneEnabled === defaultConfig.scene
             ].every(Boolean);
         }
