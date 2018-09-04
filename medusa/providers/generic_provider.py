@@ -585,7 +585,7 @@ class GenericProvider(object):
                 from tzlocal import get_localzone
                 day_offset = 0
                 if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
-                    # Strip yesterday including any other words
+                    # Extract a time
                     time = re.search(r'(?P<time>[0-9:]+)', pubdate)
                     if time:
                         if 'yesterday' in pubdate:
