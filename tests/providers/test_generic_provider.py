@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 from datetime import date, datetime, timedelta
 
 from dateutil import tz
-from tzlocal import get_localzone
 
 from medusa.providers.generic_provider import GenericProvider
 
