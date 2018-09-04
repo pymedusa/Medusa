@@ -130,14 +130,12 @@ sut = GenericProvider('FakeProvider')
     {  # p22: hd-space test human date like yesterdat at 12:00:00
         'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
         'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
-        'human_time': False,
-        'calculate_delta': True
+        'human_time': False
     },
     {  # p22: hd-space test human date like today at 12:00:00
         'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
         'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
-        'human_time': False,
-        'calculate_delta': True
+        'human_time': False
     },
 ])
 def test_parse_pubdate(p):
@@ -149,7 +147,6 @@ def test_parse_pubdate(p):
     df = p.get('dayfirst', False)
     yf = p.get('yearfirst', False)
     ft = p.get('fromtimestamp', False)
-    calculate_delta = p.get('calculate_delta', False)
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone,
