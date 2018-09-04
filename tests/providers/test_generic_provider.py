@@ -2,9 +2,10 @@
 """Provider test code for Generic Provider."""
 from __future__ import unicode_literals
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from dateutil import tz
+from tzlocal import get_localzone
 
 from medusa.providers.generic_provider import GenericProvider
 
@@ -127,6 +128,18 @@ sut = GenericProvider('FakeProvider')
         'timezone': 'US/Eastern',
         'fromtimestamp': True
     },
+    {  # p22: hd-space test human date like yesterdat at 12:00:00
+        'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
+        'human_time': False,
+        'calculate_delta': True
+    },
+    {  # p22: hd-space test human date like today at 12:00:00
+        'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
+        'human_time': False,
+        'calculate_delta': True
+    },
 ])
 def test_parse_pubdate(p):
     # Given
@@ -137,6 +150,7 @@ def test_parse_pubdate(p):
     df = p.get('dayfirst', False)
     yf = p.get('yearfirst', False)
     ft = p.get('fromtimestamp', False)
+    calculate_delta = p.get('calculate_delta', False)
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone,
