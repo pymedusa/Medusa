@@ -156,12 +156,12 @@ class HDSpaceProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_td = row.find_all('td', class_='lista', attrs={'align': 'center'})[3]
-                    pubdate_human_offset = pubdate_td.find('b').get_text()
-                    time_search = re.search('([0-9:]+)', pubdate_td.get_text())
+                    pubdate_human_offset = pubdate_td.find('b')
                     if pubdate_human_offset:
-                        pubdate_raw = pubdate_human_offset + ' at ' + time_search.group(1)
+                        time_search = re.search('([0-9:]+)', pubdate_td.get_text())
+                        pubdate_raw = pubdate_human_offset.get_text() + ' at ' + time_search.group(1)
                     else:
-                        pubdate_raw = time_search.group(1)
+                        pubdate_raw = pubdate_td.get_text()
 
                     pubdate = self.parse_pubdate(pubdate_raw)
 
