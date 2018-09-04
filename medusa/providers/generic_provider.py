@@ -587,13 +587,10 @@ class GenericProvider(object):
                 if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
                     # Strip yesterday including any other words
                     time = re.search(r'(?P<time>[0-9:]+)', pubdate)
-                    print('use pubdate: ' + pubdate)
-                    print('regex time: %r' % time)
                     if time:
                         if 'yesterday' in pubdate:
                             day_offset = 1
                         pubdate = time.group('time')
-                        print('use pubdate: ' + pubdate)
 
                 dt = parser.parse(pubdate.strip(), dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
 
