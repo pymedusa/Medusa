@@ -575,7 +575,7 @@ class GenericProvider(object):
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
                     if seconds is None:
-                        log.exception('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
+                        log.warning('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
                         raise ValueError('Failed parsing human time: {0} {1}'.format(matched_time, matched_granularity))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
