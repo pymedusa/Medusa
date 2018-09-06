@@ -24,7 +24,10 @@
         <div v-if="$route.name === 'snatchSelection'" id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
                 Manual search for:<br>
-                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}" class="snatchTitle">{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode"> Episode {{ episode }}</template>
+                <app-link
+                    href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}"
+                    class="snatchTitle"
+                    >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && !$route.query.manual_search_type"> Episode {{ episode }}</template>
             </span>
         </div>
         <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
