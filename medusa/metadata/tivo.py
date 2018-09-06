@@ -62,16 +62,16 @@ class TIVOMetadata(generic.GenericMetadata):
         self._ep_nfo_extension = 'txt'
 
         # web-ui metadata template
-        self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_show_metadata = '<i>not supported</i>'
         self.eg_episode_metadata = 'Season##\\.meta\\<i>filename</i>.ext.txt'
-        self.eg_fanart = '<i>not supported</i>'
-        self.eg_poster = '<i>not supported</i>'
-        self.eg_banner = '<i>not supported</i>'
-        self.eg_episode_thumbnails = '<i>not supported</i>'
-        self.eg_season_posters = '<i>not supported</i>'
-        self.eg_season_banners = '<i>not supported</i>'
-        self.eg_season_all_poster = '<i>not supported</i>'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
+        # self.eg_poster = '<i>not supported</i>'
+        # self.eg_banner = '<i>not supported</i>'
+        # self.eg_episode_thumbnails = '<i>not supported</i>'
+        # self.eg_season_posters = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):

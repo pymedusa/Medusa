@@ -235,8 +235,7 @@ class GenericProvider(object):
             itervalues(OrderedDict(
                 (item[pk], item)
                 for item in items
-                )
-            )
+            ))
         )
 
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
@@ -247,21 +246,22 @@ class GenericProvider(object):
 
         results = {}
         items_list = []
+        season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
 
         for episode in episodes:
             if not manual_search:
-                cache_result = self.cache.search_cache(episode, forced_search=forced_search,
-                                                       down_cur_quality=download_current_quality)
-                if cache_result:
-                    if episode.episode not in results:
-                        results[episode.episode] = cache_result
-                    else:
-                        results[episode.episode].extend(cache_result)
-
+                cache_results = self.cache.find_needed_episodes(
+                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
+                )
+                if cache_results:
+                    for episode_no in cache_results:
+                        if episode_no not in results:
+                            results[episode_no] = cache_results[episode_no]
+                        else:
+                            results[episode_no] += cache_results[episode_no]
                     continue
 
             search_strings = []
-            season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
@@ -273,12 +273,10 @@ class GenericProvider(object):
                     search_string, ep_obj=episode, manual_search=manual_search
                 )
 
-            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            # In season search, we can't loop in episodes lists as we
+            # only need one episode to get the season string
             if search_mode == 'sponly':
                 break
-
-        if len(results) == len(episodes):
-            return results
 
         # Remove duplicate items
         unique_items = self.remove_duplicate_mappings(items_list)
@@ -302,8 +300,6 @@ class GenericProvider(object):
 
         # unpack all of the quality lists into a single sorted list
         items_list = list(sorted_items)
-
-        cl = []
 
         # Move through each item and parse it into a quality
         search_results = []
@@ -369,7 +365,7 @@ class GenericProvider(object):
                         if search_result.parsed_result.season_number is None:
                             log.debug(
                                 "The result {0} doesn't seem to have a valid season that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -378,7 +374,7 @@ class GenericProvider(object):
                         if not search_result.parsed_result.episode_numbers:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -391,7 +387,7 @@ class GenericProvider(object):
                                 search_result.parsed_result.episode_numbers]:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it", search_result.name
+                                'snatch, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -408,7 +404,7 @@ class GenericProvider(object):
                     if not search_result.parsed_result.is_air_by_date:
                         log.debug(
                             "This is supposed to be a date search but the result {0} didn't parse as one, "
-                            "skipping it", search_result.name
+                            'skipping it', search_result.name
                         )
                         search_result.result_wanted = False
                         continue
@@ -433,7 +429,7 @@ class GenericProvider(object):
                         elif len(sql_results) != 1:
                             log.warning(
                                 "Tried to look up the date for the episode {0} but the database didn't return proper "
-                                "results, skipping it", search_result.name
+                                'results, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -443,6 +439,7 @@ class GenericProvider(object):
                             search_result.actual_season = int(sql_results[0][b'season'])
                             search_result.actual_episodes = [int(sql_results[0][b'episode'])]
 
+        cl = []
         # Iterate again over the search results, and see if there is anything we want.
         for search_result in search_results:
 
@@ -458,15 +455,15 @@ class GenericProvider(object):
 
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
-            episode_object = search_result.create_episode_object()
+            search_result.create_episode_object()
             # result = self.get_result(episode_object, search_result)
             search_result.finish_search_result(self)
 
-            if not episode_object:
+            if not search_result.actual_episodes:
                 episode_number = SEASON_RESULT
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
-            elif len(episode_object) == 1:
-                episode_number = episode_object[0].episode
+            elif len(search_result.actual_episodes) == 1:
+                episode_number = search_result.actual_episode
                 log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
@@ -520,10 +517,6 @@ class GenericProvider(object):
             return ''
 
         return re.sub(r'[^\w\d_]', '_', str(name).strip().lower())
-
-    def search_rss(self, episodes):
-        """Find cached needed episodes."""
-        return self.cache.find_needed_episodes(episodes)
 
     def seed_ratio(self):
         """Return ratio."""
@@ -581,12 +574,25 @@ class GenericProvider(object):
                         matched_time = int(round(float(matched_time.strip())))
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
+                    if seconds is None:
+                        log.warning('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
+                        raise ValueError('Failed parsing human time: {0} {1}'.format(matched_time, matched_granularity))
+
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             if fromtimestamp:
                 dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
             else:
-                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+                day_offset = 0
+                if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
+                    # Extract a time
+                    time = re.search(r'(?P<time>[0-9:]+)', pubdate)
+                    if time:
+                        if 'yesterday' in pubdate:
+                            day_offset = 1
+                        pubdate = time.group('time').strip()
+
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
 
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
@@ -806,7 +812,7 @@ class GenericProvider(object):
             return {
                 'result': False,
                 'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
-                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           'and make sure you have copied the following cookies: {required_cookies!r}'
                            .format(provider_url=self.name, required_cookies=self.required_cookies)
             }
 

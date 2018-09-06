@@ -78,13 +78,13 @@ def _ssl_configuration():
 
 def _configure_mimetypes():
     # Fix mimetypes on misconfigured systems
-    mimetypes.add_type("text/css", ".css")
-    mimetypes.add_type("application/sfont", ".otf")
-    mimetypes.add_type("application/sfont", ".ttf")
-    mimetypes.add_type("application/javascript", ".js")
-    mimetypes.add_type("application/font-woff", ".woff")
+    mimetypes.add_type('text/css', '.css')
+    mimetypes.add_type('application/sfont', '.otf')
+    mimetypes.add_type('application/sfont', '.ttf')
+    mimetypes.add_type('application/javascript', '.js')
+    mimetypes.add_type('application/font-woff', '.woff')
     # Not sure about this one, but we also have halflings in .woff so I think it wont matter
-    # mimetypes.add_type("application/font-woff2", ".woff2")
+    # mimetypes.add_type('application/font-woff2', '.woff2')
 
 
 def _handle_old_tornado():

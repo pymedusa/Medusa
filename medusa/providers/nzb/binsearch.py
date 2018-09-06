@@ -42,7 +42,7 @@ class BinSearchProvider(NZBProvider):
         self.url = 'https://www.binsearch.info'
         self.urls = {
             'search': urljoin(self.url, 'index.php'),
-            'rss': urljoin(self.url, 'browse.php')
+            'rss': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
@@ -86,8 +86,9 @@ class BinSearchProvider(NZBProvider):
                             'max': 50,
                         }
                         search_url = self.urls['rss']
+
                     response = self.session.get(search_url, params=search_params)
-                    if not response:
+                    if not response or not response.text:
                         log.debug('No data returned from provider')
                         continue
 
@@ -139,10 +140,11 @@ class BinSearchProvider(NZBProvider):
                     title = self.clean_title(col['subject'].text, mode)
 
                 except AttributeError:
-                    log.debug('Parsing rows, that may not always have usefull info. Skipping to next.')
+                    log.debug('Parsing rows, that may not always have useful info. Skipping to next.')
                     continue
                 if not all([title, nzb_id]):
                     continue
+
                 # Obtain the size from the 'description'
                 size_field = BinSearchProvider.size_regex.search(col['subject'].text)
                 if size_field:
@@ -192,7 +194,7 @@ class BinSearchProvider(NZBProvider):
             for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb', '.part'):
                 # Strip extensions that aren't part of the file name
                 if title.endswith(extension):
-                    title = title[:len(title)-len(extension)]
+                    title = title[:len(title) - len(extension)]
             return title
         except AttributeError:
             return None
@@ -227,7 +229,7 @@ class BinSearchProvider(NZBProvider):
 
         data = {
             data.split('=')[1]: 'on',
-            'action': 'nzb'
+            'action': 'nzb',
         }
 
         if download_file(url, filename, method='POST', data=data, session=self.session,
@@ -255,7 +257,7 @@ class BinSearchProvider(NZBProvider):
 
         data = {
             data.split('=')[1]: 'on',
-            'action': 'nzb'
+            'action': 'nzb',
         }
 
         log.info('Downloading {result} from {provider} at {url} and data {data}',
@@ -263,15 +265,18 @@ class BinSearchProvider(NZBProvider):
 
         verify = False if self.public else None
 
-        result = self.session.post(url, data=data, headers=self.session.headers,
-                                   verify=verify, hooks={}, allow_redirects=True).content
-
-        # Validate that the result has the content of a valid nzb.
-        if not BinSearchProvider.nzb_check_segment.search(result):
-            log.info('Result returned from BinSearch was not a valid nzb')
+        response = self.session.post(url, data=data, headers=self.session.headers,
+                                     verify=verify, hooks={}, allow_redirects=True)
+        if not response or not response.content:
+            log.warning('Failed to download the NZB from BinSearch')
             return None
 
-        return result
+        # Validate that the result has the content of a valid nzb.
+        if not BinSearchProvider.nzb_check_segment.search(response.content):
+            log.warning('Result returned from BinSearch was not a valid NZB')
+            return None
+
+        return response.content
 
     def _get_size(self, item):
         """

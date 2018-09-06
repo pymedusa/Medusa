@@ -4,7 +4,7 @@ MEDUSA.manage.init = function() {
         const series = indexerId + '-' + seriesId;
 
         row += ' <tr class="' + $('#row_class').val() + ' show-' + series + '">';
-        row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
+        row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-s' + season + 'e' + episode + '"' + (checked ? ' checked' : '') + '></td>';
         row += '  <td>' + season + 'x' + episode + '</td>';
         row += '  <td class="tableright" style="width: 100%">' + name + '</td>';
         row += ' </tr>';

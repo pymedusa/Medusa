@@ -19,16 +19,15 @@ jobs:
       install:
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH"'
-        - yarn install --ignore-scripts
         - >-
           cd $TRAVIS_BUILD_DIR/themes-default/slim &&
           yarn install --ignore-scripts &&
           cd $TRAVIS_BUILD_DIR
       script:
         - ./.github/build-themes-check.sh
-        - yarn test-css
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
         - yarn xo
+        - yarn lint-css
         - yarn test
         - yarn coverage
     # backend tests start here
@@ -38,16 +37,22 @@ jobs:
       install:
         - pip install --upgrade pip
         - pip install --upgrade tox
-        # install everything needed for `yarn test-api`
+      script:
+        - tox -v --recreate
+    # dredd tests start here
+    - name: 'Dredd tests'
+      python:
+        - 2.7.10
+      install:
+        - pip install --upgrade pip
         - pip install dredd_hooks
         - pip install 'PyYAML<4'
         - pip install six
-        - nvm install v10.1.0
+        - nvm install v10.7.0
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
       script:
         - yarn test-api
-        - tox -v --recreate
       after_failure:
         - cat ./dredd/data/Logs/application.log
 notifications:

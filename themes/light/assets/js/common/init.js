@@ -1,14 +1,4 @@
 MEDUSA.common.init = function() {
-    // Import underscore.string using it's mixin export.
-    _.mixin(s.exports());
-
-    // Reset the layout for the activated tab (when using ui tabs)
-    $('#showTabs').tabs({
-        activate() {
-            $('.show-grid').isotope('layout');
-        }
-    });
-
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');

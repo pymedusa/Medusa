@@ -1,15 +1,12 @@
 <script type="text/x-template" id="sub-menu-template">
-<%text>
 <div id="sub-menu-wrapper">
     <div id="sub-menu-container" class="row shadow">
         <div id="sub-menu" class="submenu-default hidden-print col-md-12">
             <template v-for="menuItem in subMenu">
-                <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
-                        v-if="!menuItem.confirm">
+                <app-link v-if="!menuItem.confirm" :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5">
                     <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
                 </app-link>
-                <app-link :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5"
-                        v-else @click.native.prevent="confirmDialog($event, menuItem.class)">
+                <app-link v-else :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5" @click.native.prevent="confirmDialog($event, menuItem.class)">
                     <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
                 </app-link>
             </template>
@@ -21,13 +18,12 @@
     <!-- This fixes some padding issues on screens larger than 1281px -->
     <div class="btn-group"></div>
 </div>
-</%text>
 </script>
 <%!
     import json
 %>
 <script>
-const SubmenuComponent = {
+const SubMenuComponent = {
     name: 'sub-menu',
     template: '#sub-menu-template',
     data() {
@@ -107,7 +103,8 @@ const SubmenuComponent = {
         }
     }
 };
-Vue.component(SubmenuComponent.name, SubmenuComponent);
+
+window.components.push(SubMenuComponent);
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */

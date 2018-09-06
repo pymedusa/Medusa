@@ -4,13 +4,10 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Backup/Restore'
-    },
     data() {
         return {
-            header: 'Backup/Restore',
             backup: {
                 disabled: false,
                 status: '',
@@ -62,7 +59,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form name="configForm" method="post" action="config/backuprestore">
@@ -72,7 +69,7 @@ window.app = new Vue({
                     <li><app-link href="#restore">Restore</app-link></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Backup</h3>
                         <p><b>Backup your main database file and config.</b></p>
                     </div>
@@ -89,7 +86,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="restore" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Restore</h3>
                         <p><b>Restore your main database file and config.</b></p>
                     </div>

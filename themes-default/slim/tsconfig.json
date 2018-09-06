@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "noImplicitAny": true
+    },
+    "include": [
+        "./static/js/*.js"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

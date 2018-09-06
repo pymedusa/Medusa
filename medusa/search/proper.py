@@ -227,10 +227,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b"SELECT quality, release_name "
-                                             b"FROM tv_episodes WHERE indexer = ? "
-                                             b"AND showid = ? AND season = ? "
-                                             b"AND episode = ? AND status = ?",
+            sql_results = main_db_con.select(b'SELECT quality, release_name '
+                                             b'FROM tv_episodes WHERE indexer = ? '
+                                             b'AND showid = ? AND season = ? '
+                                             b'AND episode = ? AND status = ?',
                                              [best_result.indexer,
                                               best_result.series.indexerid,
                                               best_result.actual_season,

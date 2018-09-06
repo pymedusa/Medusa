@@ -71,16 +71,16 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         self.poster_name = u'folder.jpg'
 
         # web-ui metadata template
-        self.eg_show_metadata = u'series.xml'
-        self.eg_episode_metadata = u'Season##\\metadata\\<i>filename</i>.xml'
-        self.eg_fanart = u'backdrop.jpg'
-        self.eg_poster = u'folder.jpg'
-        self.eg_banner = u'banner.jpg'
-        self.eg_episode_thumbnails = u'Season##\\metadata\\<i>filename</i>.jpg'
-        self.eg_season_posters = u'Season##\\folder.jpg'
-        self.eg_season_banners = u'Season##\\banner.jpg'
-        self.eg_season_all_poster = u'<i>not supported</i>'
-        self.eg_season_all_banner = u'<i>not supported</i>'
+        self.eg_show_metadata = 'series.xml'
+        self.eg_episode_metadata = 'Season##\\metadata\\<i>filename</i>.xml'
+        self.eg_fanart = 'backdrop.jpg'
+        self.eg_poster = 'folder.jpg'
+        self.eg_banner = 'banner.jpg'
+        self.eg_episode_thumbnails = 'Season##\\metadata\\<i>filename</i>.jpg'
+        self.eg_season_posters = 'Season##\\folder.jpg'
+        self.eg_season_banners = 'Season##\\banner.jpg'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):

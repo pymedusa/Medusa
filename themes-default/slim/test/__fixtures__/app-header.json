@@ -32,7 +32,7 @@
         "enabled": true,
         "method": "qbittorrent"
       },
-      "donationsUrl": "https:\/\/github.com\/pymedusa\/Medusa\/wiki\/Donations",
+      "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
       "recentShows": [
         {
           "showId": 253463,

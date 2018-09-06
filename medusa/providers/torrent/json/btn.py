@@ -31,6 +31,29 @@ log.logger.addHandler(logging.NullHandler())
 # https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
 # https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
 
+def normalize_protocol_error(error):
+    """
+    Convert ProtocolError exception to a comparable code and message tuple.
+
+    :param error: Exception instance
+    :return: Tuple containing (code, message)
+    """
+    try:
+        # error.args = ('api.broadcasthe.net', 524, 'Timeout', )
+        code = error.args[1]
+        message = error.args[2]
+    except IndexError:
+        # error.args = ((-32001, 'Invalid API Key', ), )
+        try:
+            code, message = error.args[0]
+        except ValueError:
+            # error.args = ('reason', )
+            code = None
+            message = error.args[0]
+
+    return code, message
+
+
 class BTNProvider(TorrentProvider):
     """BTN Torrent provider."""
 
@@ -124,7 +147,7 @@ class BTNProvider(TorrentProvider):
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
                 log.debug("Discarding torrent because it doesn't meet the"
-                          " minimum seeders: {0}. Seeders: {1}",
+                          ' minimum seeders: {0}. Seeders: {1}',
                           title, seeders)
                 continue
 
@@ -252,17 +275,17 @@ class BTNProvider(TorrentProvider):
             )
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            message = error.args[0]
-            if message == (-32001, 'Invalid API Key'):
+            code, message = normalize_protocol_error(error)
+            if (code, message) == (-32001, 'Invalid API Key'):
                 log.warning('Incorrect authentication credentials.')
-            elif message == (-32002, 'Call Limit Exceeded'):
+            elif (code, message) == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of 150 calls per hour.')
-            elif isinstance(message, tuple) and message[1] in (500, 524, ):
+            elif code in (500, 524):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
-                            {'code': message[1], 'text': message[2]})
+                            {'code': code, 'text': message})
             else:
                 log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
-                          {'msg': message})
+                          {'msg': error.args})
 
         except (socket.error, ValueError) as error:
             log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})

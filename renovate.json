@@ -11,11 +11,33 @@
     "ext/**",
     "lib/**"
   ],
-  "ignoreDeps": [
-    "guessit"
-  ],
-  "packageRules": [{
-    "packageNames": ["tornado"],
-    "allowedVersions": "<6"
-  }]
+  "js": {
+    "labels": ["Update dep (JS)"],
+    "packageRules": [
+      {
+        "packageNames": ["bootstrap"],
+        "allowedVersions": "<4"
+      },
+      {
+        "packageNames": [
+          "vue",
+          "vue-template-compiler",
+          "@vue/test-utils"
+        ],
+        "groupName": "vue-base"
+      }
+    ]
+  },
+  "python": {
+    "labels": ["Update dep (Py)"],
+    "ignoreDeps": [
+      "guessit"
+    ],
+    "packageRules": [
+      {
+        "packageNames": ["tornado"],
+        "allowedVersions": "<6"
+      }
+    ]
+  }
 }

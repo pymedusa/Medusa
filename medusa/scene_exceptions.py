@@ -8,6 +8,7 @@ import logging
 import threading
 import time
 from collections import defaultdict
+from os.path import join
 
 import adba
 
@@ -140,6 +141,10 @@ def get_scene_exceptions_by_name(show_name):
     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
     # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
     # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
+    if show_name is None:
+        logger.debug('Scene exception lookup failed because no show name was provided')
+        return [(None, None, None)]
+
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     scene_exceptions = cache_db_con.select(
@@ -406,7 +411,8 @@ def _get_anidb_exceptions(force):
                         None,
                         name=show.name,
                         tvdbid=show.indexerid,
-                        autoCorrectName=True
+                        autoCorrectName=True,
+                        cache_path=join(app.CACHE_DIR, 'adba')
                     )
                 except ValueError as error:
                     logger.debug(

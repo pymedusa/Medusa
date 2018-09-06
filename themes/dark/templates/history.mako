@@ -16,87 +16,81 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'History'
-        },
-        store,
-        data() {
-            return {
-                header: 'History',
-                limit: '${limit}'
-            };
-        },
-        computed: Object.assign({
-            layout: {
-                get() {
-                    const { config } = this;
-                    return config.layout.history;
-                },
-                set(layout) {
-                    const { $store } = this;
-                    const page = 'history';
-                    $store.dispatch('setLayout', { page, layout });
-                }
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+            limit: '${limit}'
+        };
+    },
+    computed: {
+        layout: {
+            get() {
+                const { config } = this;
+                return config.layout.history;
+            },
+            set(layout) {
+                const { $store } = this;
+                const page = 'history';
+                $store.dispatch('setLayout', { page, layout });
             }
-        }),
-        mounted() {
-            const unwatch = this.$watch('layout', () => {
-                unwatch();
-                const { layout, config } = this;
+        }
+    },
+    mounted() {
+        const unwatch = this.$watch('layout', () => {
+            unwatch();
+            const { layout, config } = this;
 
-                $('#historyTable:has(tbody tr)').tablesorter({
-                    widgets: ['saveSort', 'zebra', 'filter'],
-                    sortList: [[0, 1]],
-                    textExtraction: (function() {
-                        if (layout === 'detailed') {
-                            return {
-                                // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
-                                0: node => $(node).find('time').attr('datetime'),
-                                1: node => $(node).find('a').text(),
-                                4: node => $(node).attr('quality')
-                            };
-                        }
-                        // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
-                        const compactExtract = {
+            $('#historyTable:has(tbody tr)').tablesorter({
+                widgets: ['saveSort', 'zebra', 'filter'],
+                sortList: [[0, 1]],
+                textExtraction: (function() {
+                    if (layout === 'detailed') {
+                        return {
+                            // 0: Time, 1: Episode, 2: Action, 3: Provider, 4: Quality
                             0: node => $(node).find('time').attr('datetime'),
                             1: node => $(node).find('a').text(),
-                            2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                            3: node => $(node).text()
+                            4: node => $(node).attr('quality')
                         };
-                        if (config.subtitles.enabled) {
-                            // 4: Subtitled, 5: Quality
-                            compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
-                            compactExtract[5] = node => $(node).attr('quality')
-                        } else {
-                            // 4: Quality
-                            compactExtract[4] = node => $(node).attr('quality')
-                        }
-                        return compactExtract;
-                    })(),
-                    headers: (function() {
-                        if (layout === 'detailed') {
-                            return {
-                                0: { sorter: 'realISODate' }
-                            };
-                        }
+                    }
+                    // 0: Time, 1: Episode, 2: Snatched, 3: Downloaded
+                    const compactExtract = {
+                        0: node => $(node).find('time').attr('datetime'),
+                        1: node => $(node).find('a').text(),
+                        2: node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        3: node => $(node).text()
+                    };
+                    if (config.subtitles.enabled) {
+                        // 4: Subtitled, 5: Quality
+                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        compactExtract[5] = node => $(node).attr('quality')
+                    } else {
+                        // 4: Quality
+                        compactExtract[4] = node => $(node).attr('quality')
+                    }
+                    return compactExtract;
+                })(),
+                headers: (function() {
+                    if (layout === 'detailed') {
                         return {
-                            0: { sorter: 'realISODate' },
-                            2: { sorter: 'text' }
+                            0: { sorter: 'realISODate' }
                         };
-                    })()
-                });
+                    }
+                    return {
+                        0: { sorter: 'realISODate' },
+                        2: { sorter: 'text' }
+                    };
+                })()
             });
+        });
 
-            $('#history_limit').on('change', function() {
-                window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
-            });
-        }
-    });
-};
+        $('#history_limit').on('change', function() {
+            window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
+        });
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -106,7 +100,7 @@ const startVue = () => {
 
 <div class="row">
     <div class="col-md-6">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div> <!-- layout title -->
     <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">

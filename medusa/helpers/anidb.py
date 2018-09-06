@@ -2,6 +2,7 @@
 
 
 import logging
+from os.path import join
 
 import adba
 from adba.aniDBerrors import AniDBCommandTimeoutError
@@ -28,11 +29,8 @@ def set_up_anidb_connection():
         return False
 
     if not app.ADBA_CONNECTION:
-        def anidb_logger(msg):
-            return log.debug(u'anidb: {0}', msg)
-
         try:
-            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
+            app.ADBA_CONNECTION = adba.Connection(keepAlive=True)
         except Exception as error:
             log.warning(u'anidb exception msg: {0!r}', error)
             return False
@@ -51,7 +49,7 @@ def set_up_anidb_connection():
 
 def create_key_encode_utf_8(namespace, fn, **kw):
     def generate_key(*args, **kw):
-        return namespace + "|" + args[0].encode('utf-8')
+        return namespace + '|' + args[0].encode('utf-8')
     return generate_key
 
 
@@ -61,7 +59,7 @@ def get_release_groups_for_anime(series_name):
     groups = []
     if set_up_anidb_connection():
         try:
-            anime = adba.Anime(app.ADBA_CONNECTION, name=series_name)
+            anime = adba.Anime(app.ADBA_CONNECTION, name=series_name, cache_path=join(app.CACHE_DIR, 'adba'))
             groups = anime.get_groups()
         except Exception as error:
             log.warning(u'Unable to retrieve Fansub Groups from AniDB. Error: {error}', {'error': error.message})
