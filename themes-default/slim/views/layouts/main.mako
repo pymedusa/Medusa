@@ -10,12 +10,6 @@
         <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- These values come from css/dark.css and css/light.css -->
-        % if app.THEME_NAME == "dark":
-        <meta name="theme-color" content="#333333">
-        % elif app.THEME_NAME == "light":
-        <meta name="theme-color" content="#333333">
-        % endif
         <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
