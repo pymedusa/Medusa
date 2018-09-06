@@ -607,7 +607,6 @@ class Logger(object):
         """
         import medusa
         from medusa.helper.common import dateTimeFormat
-        from adba import StartLogging
         self.loggers.extend(get_loggers(medusa))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
