@@ -1,6 +1,8 @@
 ## Unreleased
 
-#### New Features
+-----
+
+## 0.2.9 (2018-09-06)
 
 #### Improvements
 - Converted Post-Processing Config to a Vue SFC ([#4259](https://github.com/pymedusa/Medusa/pull/4259) + [#4946](https://github.com/pymedusa/Medusa/pull/4946))
