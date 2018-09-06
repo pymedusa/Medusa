@@ -25,7 +25,7 @@
             <span class="h2footer display-specials">
                 Manual search for:<br>
                 <app-link
-                    href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.series_id}"
+                    :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                     class="snatchTitle"
                     >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && !$route.query.manual_search_type"> Episode {{ episode }}</template>
             </span>

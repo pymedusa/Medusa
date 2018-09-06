@@ -455,8 +455,10 @@ export default {
             }
 
             apiRoute.get('home/getSeasonSceneExceptions', {
-                indexername: indexer,
-                seriesid: id
+                params: {
+                    indexername: indexer,
+                    seriesid: id
+                }
             }).then(response => {
                 this.setSeasonSceneExceptions(response.data);
             }).catch(error => {
