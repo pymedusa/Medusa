@@ -3,6 +3,8 @@ import {
     AddRecommended,
     AddShows,
     Config,
+    ConfigPostProcessing,
+    IRC,
     Login,
     NotFound
 } from './components';
@@ -100,7 +102,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Post Processing',
         header: 'Post Processing'
-    }
+    },
+    component: ConfigPostProcessing
 }, {
     path: '/config/providers',
     name: 'configSearchProviders',
@@ -296,9 +299,9 @@ const ircRoute = {
     path: '/IRC',
     name: 'IRC',
     meta: {
-        title: 'IRC',
-        header: 'IRC'
-    }
+        title: 'IRC'
+    },
+    component: IRC
 };
 
 const notFoundRoute = {
