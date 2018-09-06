@@ -27,6 +27,7 @@ import os
 import pkgutil
 import re
 import sys
+import adba
 from builtins import object
 from builtins import range
 from collections import OrderedDict
@@ -606,11 +607,13 @@ class Logger(object):
         """
         import medusa
         from medusa.helper.common import dateTimeFormat
+        from adba import StartLogging
         self.loggers.extend(get_loggers(medusa))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
         self.loggers.extend(get_loggers(knowit))
+        self.loggers.extend(get_loggers(adba))
 
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger
