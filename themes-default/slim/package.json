@@ -46,6 +46,7 @@
     "copy-webpack-plugin": "4.5.2",
     "cross-env": "5.2.0",
     "css-loader": "1.0.0",
+    "date-fns": "1.29.0",
     "eslint": "5.5.0",
     "eslint-config-xo": "0.25.0",
     "eslint-plugin-vue": "5.0.0-beta.3",
@@ -125,8 +126,7 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex",
-      "dateFns"
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
