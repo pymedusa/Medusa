@@ -64,6 +64,8 @@ export default {
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
+
+                attachImdbTooltip(); // eslint-disable-line no-undef
             });
         },
         /**
@@ -84,15 +86,14 @@ export default {
         }
     },
     mounted() {
-        window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            this.reflowLayout();
+        this.$watch('show', () => {
+            this.$nextTick(() => this.reflowLayout());
         });
 
-        attachImdbTooltip(); // eslint-disable-line no-undef
-
-        window.addEventListener('resize', () => {
-            this.reflowLayout();
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
         });
 
         const updateSpinner = function(message, showSpinner) {
@@ -139,12 +140,6 @@ export default {
             });
         });
 
-        $.fn.generateStars = function() {
-            return this.each((index, element) => {
-                $(element).html($('<span/>').width($(element).text() * 12));
-            });
-        };
-
         function initTableSorter(table) {
             // Nasty hack to re-initialize tablesorter after refresh
             $(table).tablesorter({
@@ -185,8 +180,6 @@ export default {
                 }
             });
         }
-
-        $('.imdbstars').generateStars();
 
         function checkCacheUpdates(repeat) {
             let pollInterval = 5000;
