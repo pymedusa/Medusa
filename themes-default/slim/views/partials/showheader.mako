@@ -92,9 +92,7 @@
                         <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                     </template>
                     <template v-else>
-                        <template v-if="show.country_codes && show.country_codes.length >= 1 ">
-                            <img v-for="country in show.country_codes" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
-                        </template>
+                        <img v-for="country in show.country_codes" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
                         <span>
                         % if show.imdb_info.get('year'):
                             (${show.imdb_info['year']}) -
@@ -122,7 +120,7 @@
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
                          %if show.genre:
-                            <app-link v-for="genre in dedupeGenres(show.genres)" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv.'"><li>{{ genre }}</li></app-link>
+                            <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv.'"><li>{{ genre }}</li></app-link>
                          % elif show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
                                  <app-link href="https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>

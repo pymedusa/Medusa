@@ -447,17 +447,17 @@ export default {
         // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions() {
-            const indexerName = document.querySelector('#indexer-name').value;
-            const seriesId = document.querySelector('#series-id').value;
-            if (!indexerName || !seriesId) {
+            const { indexer, id } = this;
+
+            if (!indexer || !id) {
                 console.warn('Unable to get season scene exceptions: Unknown series identifier');
                 return;
             }
-            const params = {
-                indexername: indexerName,
-                seriesid: seriesId
-            };
-            apiRoute.get('home/getSeasonSceneExceptions', { params }).then(response => {
+
+            apiRoute.get('home/getSeasonSceneExceptions', {
+                indexername: indexer,
+                seriesid: id
+            }).then(response => {
                 this.setSeasonSceneExceptions(response.data);
             }).catch(error => {
                 console.error('Error getting season scene exceptions', error);
@@ -535,10 +535,10 @@ export default {
             });
         },
         reverse(array) {
-            return array.slice().reverse();
+            return array ? array.slice().reverse() : [];
         },
         dedupeGenres(genres) {
-            return [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))];
+            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
         }
     },
     watch: {
