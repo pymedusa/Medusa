@@ -46,7 +46,8 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            indexerConfig: state => state.config.indexers.config.indexers
         }),
         ...mapGetters([
             'getShowById'
@@ -77,6 +78,17 @@ export default {
             }
 
             return show;
+        },
+        showIndexerUrl() {
+            const { show, indexerConfig } = this;
+
+            if (!show.indexer || !indexerConfig) {
+                return undefined;
+            }
+
+            const id = show.id[show.indexer];
+            const indexerUrl = indexerConfig[show.indexer].showUrl;
+            return `${indexerUrl}${id}`;
         }
     },
     mounted() {

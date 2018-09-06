@@ -109,9 +109,8 @@
                     <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </app-link>
-                    ## @TODO: What is this?
-                    <app-link href="${indexerApi(show.indexer).config['show_url']}${show.indexerid}" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-                        <img alt="${indexerApi(show.indexer).name | h}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                    <app-link v-if="showIndexerUrl" :href="showIndexerUrl" :title="showIndexerUrl">
+                        <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
                     </app-link>
                  % if xem_numbering or xem_absolute_numbering:
                      <app-link href="http://thexem.de/search?q=${show.name | h}" title="http://thexem.de/search?q-${show.name | h}">
