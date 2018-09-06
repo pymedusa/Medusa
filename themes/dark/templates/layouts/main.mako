@@ -10,6 +10,7 @@
         <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="theme-color" content="#333333">
         <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
