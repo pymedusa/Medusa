@@ -77,10 +77,10 @@ export default {
             $('#summaryBackground').show();
         },
         reverse(array) {
-            return array.slice().reverse();
+            return array ? array.slice().reverse() : [];
         },
         dedupeGenres(genres) {
-            return [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))];
+            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
         }
     },
     mounted() {

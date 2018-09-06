@@ -158,7 +158,7 @@
                                 <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
                                 <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
                                 <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
-                                <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
+                                <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
                             % if showLoc[1]:
                                 <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
                             % else:
