@@ -108,7 +108,7 @@ class AniDBLink(threading.Thread):
                     try:
                         tmp = data
                         resp = None
-                        if tmp[:2] == '\x00\x00':
+                        if tmp[:2] == b'\x00\x00':
                             tmp = zlib.decompressobj().decompress(tmp[2:])
                             logger.debug("UnZip | %r", tmp)
                         resp = ResponseResolver(tmp)
