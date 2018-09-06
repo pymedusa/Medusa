@@ -25,22 +25,11 @@
           "@vue/test-utils"
         ],
         "groupName": "vue-base"
-      },
-      {
-        "packagePatterns": [
-          "^@babel/",
-          "^babel-",
-          "-babel$"
-        ],
-        "groupName": "babel"
       }
     ]
   },
   "python": {
     "labels": ["Update dep (Py)"],
-    "ignoreDeps": [
-      "guessit"
-    ],
     "packageRules": [
       {
         "packageNames": ["tornado"],

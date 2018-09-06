@@ -198,8 +198,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -290,8 +292,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -354,3 +358,7 @@ export default {
     }
 };
 </script>
+
+<style>
+/* placeholder */
+</style>

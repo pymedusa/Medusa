@@ -1,7 +1,7 @@
 ## ext
  Status  |  Package  |  Version / Commit  | Usage | Notes
 :------: | :-------: | :----------------: | :---- | :----
-:: | `adba` | pymedusa/[119b9d3](https://github.com/pymedusa/adba/tree/119b9d30a30feb97bcea5e1dc742c82340300091) | **`medusa`** | -
+:: | `adba` | pymedusa/[70bc381](https://github.com/pymedusa/adba/tree/70bc381a75e20e1813c848c1edb7c6f16987397e) | **`medusa`** | -
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | -
 :: | `attrs` | [18.1.0](https://pypi.org/project/attrs/18.1.0/) | `imdbpie` | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
@@ -26,7 +26,7 @@
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
 :: | `PyGithub` | [1.40](https://pypi.org/project/PyGithub/1.40/) | **`medusa`** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
-:: | `guessit` | [2.1.4](https://pypi.org/project/guessit/2.1.4/) | **`medusa`**, `subliminal` | -
+:: | `guessit` | [3.0.0](https://pypi.org/project/guessit/3.0.0/) | **`medusa`**, `subliminal` | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 :: | `httplib2` | [0.11.3](https://pypi.org/project/httplib2/0.11.3/) | `oauth2` | -
 :: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | -
@@ -55,7 +55,7 @@
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 :: | `stevedore` | [1.29.0](https://pypi.org/project/stevedore/1.29.0/) | `subliminal` | -
-:: | `subliminal` | [879c0c8](https://github.com/Diaoul/subliminal/tree/879c0c8d18618e32ad466bb63bd939edb268bc60) | **`medusa`** | -
+:: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | -
 :: | `tornado` | [5.1](https://pypi.org/project/tornado/5.1/) | **`medusa`**, `tornroutes` | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -

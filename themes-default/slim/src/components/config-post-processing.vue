@@ -1,191 +1,4 @@
-<%inherit file="/layouts/main.mako"/>
-<%block name="scripts">
-<script>
-window.app = {};
-window.app = new Vue({
-    store,
-    router,
-    el: '#vue-wrap',
-    data() {
-        return {
-            configLoaded: false,
-            presets: [
-                { pattern: '%SN - %Sx%0E - %EN', example: 'Show Name - 2x03 - Ep Name' },
-                { pattern: '%S.N.S%0SE%0E.%E.N', example: 'Show.Name.S02E03.Ep.Name' },
-                { pattern: '%Sx%0E - %EN', example: '2x03 - Ep Name' },
-                { pattern: 'S%0SE%0E - %EN', example: 'S02E03 - Ep Name' },
-                { pattern: 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG', example: 'Season 02/Show.Name.S02E03.720p.HDTV-RLSGROUP' }
-            ],
-            processMethods: [
-                { value: 'copy', text: 'Copy' },
-                { value: 'move', text: 'Move' },
-                { value: 'hardlink', text: 'Hard Link' },
-                { value: 'symlink', text: 'Symbolic Link' }
-            ],
-            timezoneOptions: [
-                { value: 'local', text: 'Local' },
-                { value: 'network', text: 'Network' }
-            ],
-            postProcessing: {
-                naming: {
-                    pattern: null,
-                    multiEp: null,
-                    enableCustomNamingSports: null,
-                    enableCustomNamingAirByDate: null,
-                    patternSports: null,
-                    patternAirByDate: null,
-                    enableCustomNamingAnime: null,
-                    patternAnime: null,
-                    animeMultiEp: null,
-                    animeNamingType: null,
-                    stripYear: null
-                },
-                showDownloadDir: null,
-                processAutomatically: null,
-                processMethod: null,
-                deleteRarContent: null,
-                unpack: null,
-                noDelete: null,
-                reflinkAvailable: null,
-                postponeIfSyncFiles: null,
-                autoPostprocessorFrequency: 10,
-                airdateEpisodes: null,
-                moveAssociatedFiles: null,
-                allowedExtensions: [],
-                addShowsWithoutDir: null,
-                createMissingShowDirs: null,
-                renameEpisodes: null,
-                postponeIfNoSubs: null,
-                nfoRename: null,
-                syncFiles: [],
-                fileTimestampTimezone: 'local',
-                extraScripts: [],
-                extraScriptsUrl: null,
-                multiEpStrings: {}
-            },
-            metadataProviders: {},
-            metadataProviderSelected: null
-        };
-    },
-    methods: {
-        saveNaming(values) {
-            if (!this.configLoaded) {
-                return;
-            }
-            this.postProcessing.naming.pattern = values.pattern;
-            this.postProcessing.naming.multiEp = values.multiEpStyle;
-        },
-        saveNamingSports(values) {
-            if (!this.configLoaded) {
-                return;
-            }
-            this.postProcessing.naming.patternSports = values.pattern;
-            this.postProcessing.naming.enableCustomNamingSports = values.enabled;
-        },
-        saveNamingAbd(values) {
-            if (!this.configLoaded) {
-                return;
-            }
-            this.postProcessing.naming.patternAirByDate = values.pattern;
-            this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
-        },
-        saveNamingAnime(values) {
-            if (!this.configLoaded) {
-                return;
-            }
-            this.postProcessing.naming.patternAnime = values.pattern;
-            this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
-            this.postProcessing.naming.animeNamingType = values.animeNamingType;
-            this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
-        },
-        save() {
-            const { $store, postProcessing, metadataProviders } = this;
-            // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.configLoaded) {
-                return;
-            }
-            // Disable the save button until we're done.
-            this.saving = true;
-
-            // Clone the config into a new object
-            const config = Object.assign({}, {
-                postProcessing,
-                metadata: {
-                    metadataProviders
-                }
-            });
-
-            // Use destructuring to remove the unwanted keys.
-            const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
-            // Assign the object with the keys removed to our copied object.
-            config.postProcessing = rest;
-
-            const section = 'main';
-
-            $store.dispatch('setConfig', { section, config }).then(() => {
-                this.$snotify.success(
-                    'Saved Post-Processing config',
-                    'Saved',
-                    { timeout: 5000 }
-                );
-            }).catch(() => {
-                this.$snotify.error(
-                    'Error while trying to save Post-Processing config',
-                    'Error'
-                );
-            });
-        }
-    },
-    computed: {
-        config() {
-            return this.$store.state.config;
-        },
-        metadata() {
-            return this.$store.state.metadata;
-        },
-        multiEpStringsSelect() {
-            if (!this.postProcessing.multiEpStrings) {
-                return [];
-            }
-            return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
-                value: Number(k),
-                text: this.postProcessing.multiEpStrings[k]
-            }));
-        }
-    },
-    mounted() {
-        /**
-         * Get the first enabled metadata provider based on enabled features.
-         * @param {Object} providers - The metadata providers object.
-         * @return {String} - The id of the first enabled provider.
-         */
-        const getFirstEnabledMetadataProvider = providers => {
-            const firstEnabledProvider = Object.values(providers).find(provider => {
-                return provider.showMetadata || provider.episodeMetadata;
-            });
-            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
-        };
-
-        // This is used to wait for the config to be loaded by the store.
-        this.$once('loaded', () => {
-            const { config, metadata } = this;
-
-            this.configLoaded = true;
-
-            // Map the state values to local data.
-            this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
-
-            this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
-            this.metadataProviderSelected = getFirstEnabledMetadataProvider(this.metadataProviders);
-        });
-    }
-});
-</script>
-</%block>
-<%block name="content">
-<vue-snotify></vue-snotify>
-<div id="content960">
-    <h1 class="header">{{ $route.meta.header }}</h1>
+<template>
     <div id="config">
         <div id="config-content">
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
@@ -289,10 +102,9 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync></toggle-button>
-                                            <span>Wait to process a file until subtitles are present</span>
-                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span>
-                                            <span>&nbsp;</span>
-                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span>
+                                            <span>Wait to process a file until subtitles are present</span><br>
+                                            <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
+                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
                                             <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                         </div>
                                     </div>
@@ -313,7 +125,7 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postProcessing.createMissingShowDirs" sync></toggle-button>
-                                            <span >Create missing show directories when they get deleted</span>
+                                            <span>Create missing show directories when they get deleted</span>
                                         </div>
                                     </div>
 
@@ -343,7 +155,8 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="postProcessing.allowedExtensions = $event"></select-list>
-                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing. Leaving it empty means all associated files will be deleted</span>
+                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
+                                            <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
                                     </div>
 
@@ -353,7 +166,7 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postProcessing.nfoRename" sync></toggle-button>
-                                            <span >Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
+                                            <span>Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
                                         </div>
                                     </div>
 
@@ -363,7 +176,7 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync></toggle-button>
-                                            <span >Set last modified filedate to the date that the episode aired?</span>
+                                            <span>Set last modified filedate to the date that the episode aired?</span>
                                         </div>
                                     </div>
 
@@ -375,18 +188,18 @@ window.app = new Vue({
                                             <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
                                                 <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
                                             </select>
-                                            <span >What timezone should be used to change File Date?</span>
+                                            <span>What timezone should be used to change File Date?</span>
                                         </div>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="unpack" class="col-sm-2 control-label">
                                             <span>Unpack</span>
-                                            <span >Unpack any TV releases in your <i>TV Download Dir</i>?</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postProcessing.unpack" sync></toggle-button>
-                                            <span ><b>NOTE:</b> Only working with RAR archive</span>
+                                            <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
+                                            <span><b>NOTE:</b> Only working with RAR archive</span>
                                         </div>
                                     </div>
 
@@ -406,8 +219,8 @@ window.app = new Vue({
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postProcessing.noDelete" sync></toggle-button>
+                                            <span>Leave empty folders when Post Processing?</span><br>
                                             <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
-                                            <span>Leave empty folders when Post Processing?</span>
                                         </div>
                                     </div>
 
@@ -543,6 +356,222 @@ window.app = new Vue({
             </form>
         </div><!--/config-content//-->
     </div><!--/config//-->
-    <div class="clearfix"></div>
-</div><!-- #content960 //-->
-</%block>
+</template>
+<script>
+import { mapState } from 'vuex';
+import AppLink from './app-link.vue';
+import FileBrowser from './file-browser.vue';
+import NamePattern from './name-pattern.vue';
+import SelectList from './select-list.vue';
+
+export default {
+    name: 'config-post-processing',
+    components: {
+        AppLink,
+        FileBrowser,
+        NamePattern,
+        SelectList
+    },
+    data() {
+        return {
+            presets: [
+                { pattern: '%SN - %Sx%0E - %EN', example: 'Show Name - 2x03 - Ep Name' },
+                { pattern: '%S.N.S%0SE%0E.%E.N', example: 'Show.Name.S02E03.Ep.Name' },
+                { pattern: '%Sx%0E - %EN', example: '2x03 - Ep Name' },
+                { pattern: 'S%0SE%0E - %EN', example: 'S02E03 - Ep Name' },
+                { pattern: 'Season %0S/%S.N.S%0SE%0E.%Q.N-%RG', example: 'Season 02/Show.Name.S02E03.720p.HDTV-RLSGROUP' }
+            ],
+            processMethods: [
+                { value: 'copy', text: 'Copy' },
+                { value: 'move', text: 'Move' },
+                { value: 'hardlink', text: 'Hard Link' },
+                { value: 'symlink', text: 'Symbolic Link' }
+            ],
+            timezoneOptions: [
+                { value: 'local', text: 'Local' },
+                { value: 'network', text: 'Network' }
+            ],
+            postProcessing: {
+                naming: {
+                    pattern: null,
+                    multiEp: null,
+                    enableCustomNamingSports: null,
+                    enableCustomNamingAirByDate: null,
+                    patternSports: null,
+                    patternAirByDate: null,
+                    enableCustomNamingAnime: null,
+                    patternAnime: null,
+                    animeMultiEp: null,
+                    animeNamingType: null,
+                    stripYear: null
+                },
+                showDownloadDir: null,
+                processAutomatically: null,
+                processMethod: null,
+                deleteRarContent: null,
+                unpack: null,
+                noDelete: null,
+                reflinkAvailable: null,
+                postponeIfSyncFiles: null,
+                autoPostprocessorFrequency: 10,
+                airdateEpisodes: null,
+                moveAssociatedFiles: null,
+                allowedExtensions: [],
+                addShowsWithoutDir: null,
+                createMissingShowDirs: null,
+                renameEpisodes: null,
+                postponeIfNoSubs: null,
+                nfoRename: null,
+                syncFiles: [],
+                fileTimestampTimezone: 'local',
+                extraScripts: [],
+                extraScriptsUrl: null,
+                multiEpStrings: {}
+            },
+            metadataProviders: {},
+            metadataProviderSelected: null
+        };
+    },
+    methods: {
+        saveNaming(values) {
+            if (!this.configLoaded) {
+                return;
+            }
+            this.postProcessing.naming.pattern = values.pattern;
+            this.postProcessing.naming.multiEp = values.multiEpStyle;
+        },
+        saveNamingSports(values) {
+            if (!this.configLoaded) {
+                return;
+            }
+            this.postProcessing.naming.patternSports = values.pattern;
+            this.postProcessing.naming.enableCustomNamingSports = values.enabled;
+        },
+        saveNamingAbd(values) {
+            if (!this.configLoaded) {
+                return;
+            }
+            this.postProcessing.naming.patternAirByDate = values.pattern;
+            this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
+        },
+        saveNamingAnime(values) {
+            if (!this.configLoaded) {
+                return;
+            }
+            this.postProcessing.naming.patternAnime = values.pattern;
+            this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
+            this.postProcessing.naming.animeNamingType = values.animeNamingType;
+            this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
+        },
+        save() {
+            const { $store, postProcessing, metadataProviders } = this;
+            // We want to wait until the page has been fully loaded, before starting to save stuff.
+            if (!this.configLoaded) {
+                return;
+            }
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            // Clone the config into a new object
+            const config = Object.assign({}, {
+                postProcessing,
+                metadata: {
+                    metadataProviders
+                }
+            });
+
+            // @FIXME: Fix invalid value - possibly caused by the use of NonEmptyDict on the backend.
+            if (config.postProcessing.showDownloadDir === null) {
+                config.postProcessing.showDownloadDir = '';
+            }
+
+            // Use destructuring to remove the unwanted keys.
+            const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
+            // Assign the object with the keys removed to our copied object.
+            config.postProcessing = rest;
+
+            const section = 'main';
+
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Saved Post-Processing config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(() => {
+                this.$snotify.error(
+                    'Error while trying to save Post-Processing config',
+                    'Error'
+                );
+            });
+        },
+        /**
+         * Get the first enabled metadata provider based on enabled features.
+         * @param {Object} providers - The metadata providers object.
+         * @return {String} - The id of the first enabled provider.
+         */
+        getFirstEnabledMetadataProvider() {
+            const { metadataProviders } = this;
+            const firstEnabledProvider = Object.values(metadataProviders).find(provider => {
+                return provider.showMetadata || provider.episodeMetadata;
+            });
+            return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
+        }
+    },
+    computed: {
+        ...mapState([
+            'config',
+            'metadata'
+        ]),
+        configLoaded() {
+            return this.postProcessing.processAutomatically !== null;
+        },
+        multiEpStringsSelect() {
+            if (!this.postProcessing.multiEpStrings) {
+                return [];
+            }
+            return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
+                value: Number(k),
+                text: this.postProcessing.multiEpStrings[k]
+            }));
+        }
+    },
+    created() {
+        const { config, metadata, getFirstEnabledMetadataProvider } = this;
+        // Map the state values to local data.
+        this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
+        this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
+        this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+    },
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#config-components').tabs();
+        });
+    },
+    watch: {
+        'config.postProcessing': {
+            handler(newValue) {
+                // Map the state values to local data.
+                this.postProcessing = Object.assign({}, this.postProcessing, newValue);
+            },
+            deep: true,
+            immediate: false
+        },
+        'metadata.metadataProviders': {
+            handler(newValue) {
+                const { getFirstEnabledMetadataProvider } = this;
+
+                // Map the state values to local data.
+                this.metadataProviders = Object.assign({}, this.metadataProviders, newValue);
+                this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+            },
+            deep: true,
+            immediate: false
+        }
+    }
+};
+</script>
+<style>
+/* placeholder */
+</style>

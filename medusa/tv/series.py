@@ -53,6 +53,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
+    AnidbAdbaConnectionException,
     CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
@@ -464,7 +465,7 @@ class Series(TV):
     def imdb_akas(self):
         """Return genres akas dict."""
         akas = {}
-        for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
+        for x in [v for v in (self.imdb_info.get('akas') or '').split('|') if v]:
             if '::' in x:
                 val, key = x.split('::')
                 akas[key] = val
@@ -473,17 +474,17 @@ class Series(TV):
     @property
     def imdb_countries(self):
         """Return country codes."""
-        return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
+        return [v for v in (self.imdb_info.get('country_codes') or '').split('|') if v]
 
     @property
     def imdb_plot(self):
         """Return series plot."""
-        return self.imdb_info.get('plot', '')
+        return self.imdb_info.get('plot') or ''
 
     @property
     def imdb_genres(self):
         """Return series genres."""
-        return self.imdb_info.get('genres', '')
+        return self.imdb_info.get('genres') or ''
 
     @property
     def imdb_votes(self):
@@ -511,7 +512,7 @@ class Series(TV):
     @property
     def countries(self):
         """Return countries."""
-        return [v for v in self.imdb_info.get('countries', '').split('|') if v]
+        return [v for v in (self.imdb_info.get('countries') or '').split('|') if v]
 
     @property
     def genres(self):
@@ -1545,8 +1546,8 @@ class Series(TV):
                 self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
 
         # Make sure these always have a value
-        self.imdb_info['countries'] = self.imdb_info.get('countries', '')
-        self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
+        self.imdb_info['countries'] = self.imdb_info.get('countries') or ''
+        self.imdb_info['country_codes'] = self.imdb_info.get('country_codes') or ''
 
         try:
             imdb_info = imdb_api.get_title(self.imdb_id)
@@ -2021,7 +2022,16 @@ class Series(TV):
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
-            data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+            try:
+                data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+            except AnidbAdbaConnectionException as error:
+                data['config']['release']['allgroups'] = []
+                log.warning(
+                    'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
+                    '\nError: {error}',
+                    {'show': self.name, 'error': error}
+                )
+
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
 
