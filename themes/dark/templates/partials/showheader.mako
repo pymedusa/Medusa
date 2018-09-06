@@ -31,7 +31,7 @@
             </span>
         </div>
         <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
-            <span class="h2footer display-specials" v-if="show.seasons.find(({ season }) => season === 0)">
+            <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
                 Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ config.layout.show.specials ? 'Hide' : 'Show' }}</a>
             </span>
 
