@@ -1,5 +1,13 @@
 ## Unreleased
 
+#### New Features
+
+#### Improvements
+- Updated `guessit` to version 3.0.0 ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+
+#### Fixes
+- Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+
 -----
 
 ## 0.2.9 (2018-09-06)
