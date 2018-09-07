@@ -12,8 +12,7 @@ from builtins import object
 from builtins import str
 from hashlib import sha1
 
-from bencode import bdecode, bencode
-from bencode.BTL import BTFailure
+from bencode import BencodeDecodeError, bdecode, bencode
 
 from medusa import app, db
 from medusa.helper.common import http_code_description
@@ -211,10 +210,11 @@ class GenericClient(object):
         else:
 
             try:
-                torrent_bdecode = bdecode(result.content)
+                # `bencode.bdecode` is monkeypatched in `medusa.init`
+                torrent_bdecode = bdecode(result.content, allow_extra_data=True)
                 info = torrent_bdecode['info']
                 result.hash = sha1(bencode(info)).hexdigest()
-            except (BTFailure, KeyError):
+            except (BencodeDecodeError, KeyError):
                 log.warning(
                     'Unable to bdecode torrent. Invalid torrent: {name}. '
                     'Deleting cached result if exists', {'name': result.name}
