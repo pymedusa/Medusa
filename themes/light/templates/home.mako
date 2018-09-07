@@ -90,7 +90,7 @@
                 <!-- Nav tabs -->
                 <ul>
                 % for cur_show_list in show_lists:
-                    <li><app-link href="home/#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
+                    <li><app-link href="#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
                 % endfor
                 </ul>
                 <!-- Tab panes -->

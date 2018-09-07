@@ -185,19 +185,19 @@ def load_externals_from_db(indexer=None, indexer_id=None):
     externals = {}
 
     main_db_con = db.DBConnection()
-    sql = (b'SELECT indexer, indexer_id, mindexer, mindexer_id '
-           b'FROM indexer_mapping '
-           b'WHERE (indexer = ? AND indexer_id = ?) '
-           b'OR (mindexer = ? AND mindexer_id = ?)')
+    sql = ('SELECT indexer, indexer_id, mindexer, mindexer_id '
+           'FROM indexer_mapping '
+           'WHERE (indexer = ? AND indexer_id = ?) '
+           'OR (mindexer = ? AND mindexer_id = ?)')
 
     results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
 
     for result in results:
         try:
-            if result[b'indexer'] == indexer:
-                externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+            if result['indexer'] == indexer:
+                externals[mappings[result['mindexer']]] = result['mindexer_id']
             else:
-                externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+                externals[mappings[result['indexer']]] = result['indexer_id']
         except KeyError as e:
             log.error(u'Indexer not supported in current mappings: {id}', {'id': e.message})
 

@@ -935,7 +935,7 @@ class ConfigMigrator(object):
 
         # see if any of their shows used season folders
         main_db_con = db.DBConnection()
-        season_folder_shows = main_db_con.select(b'SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
+        season_folder_shows = main_db_con.select('SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
 
         # if any shows had season folders on then prepend season folder to the pattern
         if season_folder_shows:
@@ -964,7 +964,7 @@ class ConfigMigrator(object):
             log.info(u"No shows were using season folders before so I'm disabling flattening on all shows")
 
             # don't flatten any shows at all
-            main_db_con.action(b'UPDATE tv_shows SET flatten_folders = 0')
+            main_db_con.action('UPDATE tv_shows SET flatten_folders = 0')
 
         app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
 

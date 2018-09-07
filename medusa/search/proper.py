@@ -96,18 +96,18 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         if not app.POSTPONE_IF_NO_SUBS:
             # Get the recently aired (last 2 days) shows from DB
             recently_aired = main_db_con.select(
-                b'SELECT indexer, showid, season, episode, status, airdate'
-                b' FROM tv_episodes'
-                b' WHERE airdate >= ?'
-                b' AND status = ?',
+                'SELECT indexer, showid, season, episode, status, airdate'
+                ' FROM tv_episodes'
+                ' WHERE airdate >= ?'
+                ' AND status = ?',
                 [search_date.toordinal(), DOWNLOADED]
             )
         else:
             # Get recently subtitled episodes (last 2 days) from DB
             # Episode status becomes downloaded only after found subtitles
             last_subtitled = search_date.strftime(History.date_format)
-            recently_aired = main_db_con.select(b'SELECT indexer_id AS indexer, showid, season, episode FROM history '
-                                                b'WHERE date >= ? AND action = ?', [last_subtitled, SUBTITLED])
+            recently_aired = main_db_con.select('SELECT indexer_id AS indexer, showid, season, episode FROM history '
+                                                'WHERE date >= ? AND action = ?', [last_subtitled, SUBTITLED])
 
         if not recently_aired:
             log.info('No recently aired new episodes, nothing to search for')
@@ -227,10 +227,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # check if we have the episode as DOWNLOADED
             main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(b'SELECT quality, release_name '
-                                             b'FROM tv_episodes WHERE indexer = ? '
-                                             b'AND showid = ? AND season = ? '
-                                             b'AND episode = ? AND status = ?',
+            sql_results = main_db_con.select('SELECT quality, release_name '
+                                             'FROM tv_episodes WHERE indexer = ? '
+                                             'AND showid = ? AND season = ? '
+                                             'AND episode = ? AND status = ?',
                                              [best_result.indexer,
                                               best_result.series.indexerid,
                                               best_result.actual_season,
@@ -243,7 +243,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
-            old_quality = int(sql_results[0][b'quality'])
+            old_quality = int(sql_results[0]['quality'])
             if old_quality != best_result.quality:
                 log.info('Ignoring proper because quality is different: {name}', {'name': best_result.name})
                 if cur_proper.name not in processed_propers_names:
@@ -251,7 +251,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same codec
-            release_name = sql_results[0][b'release_name']
+            release_name = sql_results[0]['release_name']
             if release_name:
                 release_name_guess = NameParser()._parse_string(release_name)
                 current_codec = release_name_guess.video_codec
@@ -281,14 +281,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if best_result.series.is_anime:
                 main_db_con = db.DBConnection()
                 sql_results = main_db_con.select(
-                    b'SELECT release_group, version '
-                    b'FROM tv_episodes WHERE indexer = ? AND showid = ? '
-                    b'AND season = ? AND episode = ?',
+                    'SELECT release_group, version '
+                    'FROM tv_episodes WHERE indexer = ? AND showid = ? '
+                    'AND season = ? AND episode = ?',
                     [best_result.indexer, best_result.series.indexerid, best_result.actual_season,
                      best_result.actual_episodes[0]])
 
-                old_version = int(sql_results[0][b'version'])
-                old_release_group = (sql_results[0][b'release_group'])
+                old_version = int(sql_results[0]['version'])
+                old_release_group = (sql_results[0]['release_group'])
 
                 if -1 < old_version < best_result.version:
                     log.info('Found new anime version {new} to replace existing version {old}: {name}',
@@ -335,13 +335,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             main_db_con = db.DBConnection()
             history_results = main_db_con.select(
-                b'SELECT resource, proper_tags FROM history '
-                b'WHERE showid = ? '
-                b'AND season = ? '
-                b'AND episode IN ({episodes}) '
-                b'AND quality = ? '
-                b'AND date >= ? '
-                b'AND action IN (?, ?, ?, ?)'.format(
+                'SELECT resource, proper_tags FROM history '
+                'WHERE showid = ? '
+                'AND season = ? '
+                'AND episode IN ({episodes}) '
+                'AND quality = ? '
+                'AND date >= ? '
+                'AND action IN (?, ?, ?, ?)'.format(
                     episodes=','.join(
                         text_type(ep) for ep in candidate.actual_episodes
                     ),
@@ -356,7 +356,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             for result in history_results:
 
-                proper_tags = result[b'proper_tags']
+                proper_tags = result['proper_tags']
                 if proper_tags and len(proper_tags.split('|')) >= proper_tags_len:
                     log.debug(
                         'Current release has the same or more proper tags,'
@@ -368,8 +368,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 # make sure that none of the existing history downloads are the same proper we're
                 # trying to downloadif the result exists in history already we need to skip it
                 if proper_name == self._canonical_name(
-                    result[b'resource'], clear_extension=True
-                ) or proper_name_ext == self._canonical_name(result[b'resource']):
+                    result['resource'], clear_extension=True
+                ) or proper_name_ext == self._canonical_name(result['resource']):
                     log.debug(
                         'This proper {result!r} is already in history, skipping it',
                         {'result': candidate.name},
@@ -399,22 +399,22 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         log.debug('Setting the last Proper search in the DB to {when}', {'when': when})
 
         main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
+        sql_results = main_db_con.select('SELECT last_proper_search FROM info')
 
         if not sql_results:
-            main_db_con.action(b'INSERT INTO info (last_backlog, last_indexer, last_proper_search) VALUES (?,?,?)',
+            main_db_con.action('INSERT INTO info (last_backlog, last_indexer, last_proper_search) VALUES (?,?,?)',
                                [0, 0, str(when)])
         else:
-            main_db_con.action(b'UPDATE info SET last_proper_search={0}'.format(when))
+            main_db_con.action('UPDATE info SET last_proper_search={0}'.format(when))
 
     @staticmethod
     def _get_last_proper_search():
         """Find last propersearch from DB."""
         main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
+        sql_results = main_db_con.select('SELECT last_proper_search FROM info')
 
         try:
-            last_proper_search = datetime.date.fromordinal(int(sql_results[0][b'last_proper_search']))
+            last_proper_search = datetime.date.fromordinal(int(sql_results[0]['last_proper_search']))
         except Exception:
             return datetime.date.fromordinal(1)
 

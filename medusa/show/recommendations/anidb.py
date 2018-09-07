@@ -88,7 +88,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(show, storage_key=b'anidb_{0}'.format(show.aid))
+                recommended_show = self._create_recommended_show(show, storage_key='anidb_{0}'.format(show.aid))
                 if recommended_show:
                     result.append(recommended_show)
             except MissingTvdbMapping:

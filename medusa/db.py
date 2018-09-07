@@ -39,7 +39,7 @@ db_locks = {}
 
 
 class DBConnection(object):
-    def __init__(self, filename=None, suffix=None, row_type=None):
+    def __init__(self, filename=None, suffix=None, row_type='dict'):
 
         self.filename = filename or app.APPLICATION_DB
         self.suffix = suffix
@@ -160,7 +160,7 @@ class DBConnection(object):
             return None
 
         if result:
-            return int(result[0][b'db_version'])
+            return int(result[0]['db_version'])
         else:
             return None
 
@@ -179,7 +179,7 @@ class DBConnection(object):
             return None
 
         if result:
-            return int(result[0][b'db_minor_version'])
+            return int(result[0]['db_minor_version'])
         else:
             return None
 
@@ -368,7 +368,7 @@ class DBConnection(object):
         sql_results = self.select('PRAGMA table_info(`%s`)' % tableName)
         columns = {}
         for column in sql_results:
-            columns[column[b'name']] = {'type': column[b'type']}
+            columns[column['name']] = {'type': column['type']}
         return columns
 
     @staticmethod

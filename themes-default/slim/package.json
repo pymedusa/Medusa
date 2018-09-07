@@ -37,21 +37,22 @@
     "@vue/test-utils": "1.0.0-beta.24",
     "ava": "1.0.0-beta.8",
     "axios": "0.18.0",
-    "babel-loader": "8.0.1",
+    "babel-loader": "8.0.2",
     "babel-plugin-istanbul": "5.0.1",
     "bootstrap": "3.3.7",
     "browser-env": "3.2.5",
     "clean-webpack-plugin": "0.1.19",
-    "codecov": "3.0.4",
+    "codecov": "3.1.0",
     "copy-webpack-plugin": "4.5.2",
     "cross-env": "5.2.0",
     "css-loader": "1.0.0",
+    "date-fns": "1.29.0",
     "eslint": "5.5.0",
-    "eslint-config-xo": "0.24.2",
+    "eslint-config-xo": "0.25.0",
     "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.81",
+    "esm": "3.0.82",
     "file-loader": "2.0.0",
-    "filemanager-webpack-plugin": "2.0.4",
+    "filemanager-webpack-plugin": "2.0.5",
     "glob": "7.1.3",
     "gulp": "3.9.1",
     "gulp-changed": "3.2.0",
@@ -78,9 +79,9 @@
     "vue-template-compiler": "2.5.17",
     "vue-truncate-collapsed": "2.1.0",
     "vuex": "3.0.1",
-    "webpack": "4.17.1",
+    "webpack": "4.17.2",
     "webpack-cli": "3.1.0",
-    "xo": "0.22.0"
+    "xo": "0.23.0"
   },
   "xo": {
     "space": 4,
@@ -97,12 +98,10 @@
       ],
       "space-before-function-paren": [
         "error",
-        "never"
-      ],
-      "unicorn/catch-error-name": [
-        "error",
         {
-          "name": "error"
+          "anonymous": "never",
+          "named": "never",
+          "asyncArrow": "always"
         }
       ],
       "valid-jsdoc": [
@@ -127,8 +126,7 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex",
-      "dateFns"
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
