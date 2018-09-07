@@ -152,8 +152,12 @@ export default {
                 .get('home/fetch_releasegroups', { params, timeout: 30000 })
                 .then(response => response.data)
                 .catch(error => {
+                    this.$snotify.warning(
+                        `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`,
+                        'Error'
+                    );
                     console.warn(error);
-                    return '';
+                    return null;
                 });
         },
         update() {
@@ -216,14 +220,6 @@ export default {
                     'Your "add show" defaults have been set to your current selections.',
                     'Saved Defaults'
                 );
-                /* @TODO: Merge the notifications
-                window.displayNotification(
-                    'info',
-                    'Saved Defaults',
-                    'Your "add show" defaults have been set to your current selections.',
-                    'show-defaults-saved'
-                );
-                */
             }).catch(error => {
                 this.$snotify.error(
                     'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
