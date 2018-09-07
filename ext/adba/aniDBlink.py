@@ -124,18 +124,18 @@ class AniDBLink(threading.Thread):
                 cmd = self._cmd_dequeue(resp)
                 resp = resp.resolve(cmd)
                 resp.parse()
-                if resp.rescode in ('200', '201'):
-                    self.session = resp.attrs['sesskey']
-                if resp.rescode in ('209',):
+                if resp.rescode in (b'200', b'201'):
+                    self.session = resp.attrs[b'sesskey']
+                if resp.rescode in (b'209',):
                     logger.error("sorry encryption is not supported")
                     raise AniDBError()
                     # self.crypt=aes(md5(resp.req.apipassword+resp.attrs['salt']).digest())
-                if resp.rescode in ('203', '403', '500', '501', '503', '506'):
+                if resp.rescode in (b'203', b'403', b'500', b'501', b'503', b'506'):
                     self.session = None
                     self.crypt = None
-                if resp.rescode in ('504', '555'):
+                if resp.rescode in (b'504', b'555'):
                     self.banned = True
-                    logger.critical(("AniDB API informs that user or client is banned:", resp.resstr))
+                    logger.critical((b"AniDB API informs that user or client is banned:", resp.resstr))
                 resp.handle()
                 if not cmd or not cmd.mode:
                     self._resp_queue(resp)
@@ -206,27 +206,27 @@ class AniDBLink(threading.Thread):
 
     def _send(self, command):
         if self.banned:
-            logger.debug("NetIO | BANNED")
-            raise AniDBError("Not sending, banned")
+            logger.debug(b"NetIO | BANNED")
+            raise AniDBError(b"Not sending, banned")
         self._do_delay()
         self.lastpacket = time()
         command.started = time()
         data = command.raw_data()
 
-        self.sock.sendto(bytes(data, "ASCII"), self.target)
-        if command.command == 'AUTH':
-            logger.debug("NetIO > sensitive data is not logged!")
+        self.sock.sendto(bytes(data, b"ASCII"), self.target)
+        if command.command == b'AUTH':
+            logger.debug(b"NetIO > sensitive data is not logged!")
 
     def new_tag(self):
         if not len(self.tags):
-            maxtag = "T000"
+            maxtag = b"T000"
         else:
             maxtag = max(self.tags)
-        newtag = "T%03d" % (int(maxtag[1:]) + 1)
+        newtag = b"T%03d" % (int(maxtag[1:]) + 1)
         return newtag
 
     def request(self, command):
-        if not (self.session and command.session) and command.command not in ('AUTH', 'PING', 'ENCRYPT'):
+        if not (self.session and command.session) and command.command not in (b'AUTH', b'PING', b'ENCRYPT'):
             raise AniDBMustAuthError("You must be authed to execute commands besides AUTH and PING")
         command.started = time()
         self._cmd_queue(command)
