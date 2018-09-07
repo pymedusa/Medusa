@@ -68,6 +68,7 @@
                         <th data-sorter="false" class="col-metadata">TBN</th>
                         <th data-sorter="false" class="col-ep">Episode</th>
                         <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.anime }]">Absolute</th>
+                        <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene)]}>Scene</th>
                         <th data-sorter="false" ${("class=\"col-ep columnSelector-false\"", "class=\"col-ep\"")[bool(scene_anime)]}>Scene Absolute</th>
                         <th data-sorter="false" class="col-name">Name</th>
                         <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
