@@ -7,7 +7,6 @@
 :: | `native` | - | `pymediainfo` | **Not a package**
 :: | `pkg_resources` | ????? | `babelfish`, `click`(?), `enzyme`, `guessit`, `stevedore`, `pint`, ... | **Not a package**<br>Part of `setuptools`
 :: | `pymediainfo` | [2.2.1](https://pypi.org/project/pymediainfo/2.2.1/) | `knowit` | **Modified**: Version number fixed
-:warning: | `python-twitter` | [420f234](https://github.com/bear/python-twitter/tree/420f23488970e01d179390b55d0f8bc036eb81b4) | **`medusa`** | Module (renamed): `pythontwitter`<br>Unnecessarily modified, needs update
 :: | `pytimeparse` | [1.1.5](https://pypi.org/project/pytimeparse/1.1.5/) | **`medusa`** | **Modified**: [#1792](https://github.com/pymedusa/Medusa/pull/1792)
 :: | `pytvmaze` | [2.0.7](https://pypi.org/project/pytvmaze/2.0.7/) | **`medusa`** | **Modified**: [#1706](https://github.com/pymedusa/Medusa/pull/1706)
 :: | `rtorrent-python` | [0.2.9](https://pypi.org/project/rtorrent-python/0.2.9/) | **`medusa`** | Module: `rtorrent`<br>**Modified**: [commit log](https://github.com/pymedusa/Medusa/commits/master/lib/rtorrent)
