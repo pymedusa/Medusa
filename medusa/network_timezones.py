@@ -74,9 +74,10 @@ def update_network_dict():
     cache_db_con = db.DBConnection('cache.db')
     sql_result = cache_db_con.select('SELECT network_name, timezone FROM network_timezones;')
 
-    network_list = {}
-    for row in sql_result:
-        network_list[row['network_name']] = row['timezone']
+    network_list = {
+        row['network_name']: row['timezone']
+        for row in sql_result
+    }
 
     queries = []
     for network, timezone in iteritems(remote_networks):
@@ -112,9 +113,10 @@ def load_network_dict():
             update_network_dict()
             sql_result = cache_db_con.select('SELECT network_name, timezone FROM network_timezones;')
 
-        d = {}
-        for row in sql_result:
-            d[row['network_name']] = row['timezone']
+        d = {
+            row['network_name']: row['timezone']
+            for row in sql_result
+        }
 
     except Exception:
         d = {}

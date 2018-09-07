@@ -297,7 +297,7 @@ class PostProcessor(object):
                 # Escaping is done by wrapping any of "*?[" between square brackets.
                 # Modified from: https://hg.python.org/cpython/file/tip/Lib/glob.py#l161
                 if isinstance(new_pattern, bytes):
-                    new_pattern = re.compile('([*?[])').sub(br'[\1]', new_pattern)
+                    new_pattern = re.compile(b'([*?[])').sub(br'[\1]', new_pattern)
                 else:
                     new_pattern = re.compile('([*?[])').sub(r'[\1]', new_pattern)
 
