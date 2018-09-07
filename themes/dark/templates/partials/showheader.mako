@@ -168,7 +168,7 @@
                                     <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
                                     <i>Allowed:</i>
                                     <template v-for="(curQuality, $index) in ${allowed_as_json}">
-                                        <template v-if="$index > 0">&nbsp;&comma;</template>
+                                        <template v-if="$index > 0">&comma;</template>
                                         <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
                                     </template>
                                     ${'<br>' if preferred_qualities else ''}
@@ -177,7 +177,7 @@
                                     <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
                                     <i>Preferred:</i>
                                     <template v-for="(curQuality, $index) in ${preferred_as_json}">
-                                        <template v-if="$index > 0">&nbsp;&comma;</template>
+                                        <template v-if="$index > 0">&comma;</template>
                                         <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
                                     </template>
                                 % endif
