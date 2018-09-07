@@ -1,5 +1,10 @@
 ## Unreleased
 
+#### Fixes
+
+- Fixed adba lib trowing exceptions getting release groups for some anime shows ([#5125](https://github.com/pymedusa/Medusa/pull/5125))
+
+
 -----
 
 ## 0.2.9 (2018-09-06)
