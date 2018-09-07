@@ -39,7 +39,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
-        self.fix_tv_episodes_watched_field
+        self.fix_tv_episodes_watched_field()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
