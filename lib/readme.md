@@ -18,4 +18,4 @@
 :: | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 :: | `traktor` | - | **`medusa`** | **Custom**
 :: | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | **Modified**: [Upstream PR](https://github.com/pymedusa/tvdbv2/pull/2)
-:: | `py-unrar2` | [0.99.6](https://pypi.org/project/py-unrar2/0.99.6/) | **`medusa`** | Module: `unrar2`<br>**Modified**: [#1881](https://github.com/pymedusa/Medusa/pull/1881)
+:: | `pyUnRAR2` | [commit](https://github.com/kyegupov/py-unrar2/tree/186a4c1feb9ef3d96a2331f8fb3ebf88036e15e5) | **`medusa`** | Module: `unrar2`<br>**Modified**: [#5096](https://github.com/pymedusa/Medusa/pull/5096)<br>`test.rar` is not part of the package<br>The `UnRARDLL` folder isn't installed through `pip`
