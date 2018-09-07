@@ -223,7 +223,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
 
     def fix_tv_episodes_watched_field(self):
-        """A mistake was made when we added this field. Migration didn't went verry well."""
+        """A mistake was made when we added this field. Migration didn't went very well."""
         self.connection.action("UPDATE tv_episodes SET watched = 0 WHERE watched is null;")
 
 
