@@ -97,7 +97,10 @@ A full list can be found [here](https://github.com/pymedusa/Medusa/wiki/Medusa-S
 | Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
-[news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/tree/master/news)
+[news.md has moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/blob/master/news/news.md)
+
+[The changelog can be found here](https://github.com/pymedusa/Medusa/blob/develop/CHANGELOG.md)  
+[The changelog for versions prior to v0.2.7 can be found here](https://github.com/pymedusa/medusa.github.io/blob/master/news/CHANGES.md)
 
 #### External dependencies
 This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright (c) 2002-2016 [MediaArea.net SARL](mailto:Info@MediaArea.net)

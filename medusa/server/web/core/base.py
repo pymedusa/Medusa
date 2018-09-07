@@ -83,7 +83,6 @@ class PageTemplate(MakoTemplate):
             'sbHttpsPort': app.WEB_PORT,
             'sbHttpsEnabled': app.ENABLE_HTTPS,
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
-            'sbThemeName': app.THEME_NAME,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,

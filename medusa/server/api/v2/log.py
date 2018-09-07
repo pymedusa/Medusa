@@ -23,7 +23,7 @@ class LogHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', )
 
-    def get(self):
+    def http_get(self):
         """Query logs."""
         log_level = self.get_argument('level', 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
@@ -42,7 +42,7 @@ class LogHandler(BaseRequestHandler):
 
         return self._paginate(data_generator=data_generator)
 
-    def post(self):
+    def http_post(self):
         """Create a log line.
 
         By definition this method is NOT idempotent.
@@ -60,4 +60,4 @@ class LogHandler(BaseRequestHandler):
         kwargs = data.get('kwargs', {})
         level = LOGGING_LEVELS[data['level']]
         log.log(level, message, exc_info=False, *args, **kwargs)
-        self._created()
+        return self._created()

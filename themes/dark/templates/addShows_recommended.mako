@@ -41,8 +41,8 @@ window.app = new Vue({
                     <div class="field-pair">
                         <label class="clearfix" for="configure_show_options">
                             <ul>
-                                <li><app-link href="addShows/${realpage + '/'}#tabs-1">Manage Directories</app-link></li>
-                                <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
+                                <li><app-link href="#tabs-1">Manage Directories</app-link></li>
+                                <li><app-link href="#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
                                 <root-dirs @update="rootDirs = $event"></root-dirs>

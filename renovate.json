@@ -30,9 +30,6 @@
   },
   "python": {
     "labels": ["Update dep (Py)"],
-    "ignoreDeps": [
-      "guessit"
-    ],
     "packageRules": [
       {
         "packageNames": ["tornado"],
