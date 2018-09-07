@@ -45,6 +45,7 @@ recommended_series_cache = make_region()
 # Some of the show titles that are used as keys, contain unicode encoded characters. We need to encode them to
 # bytestrings to be able to use them as keys in dogpile.
 anidb_cache = make_region()
+episodes = make_region()
 
 
 def configure(cache_dir):
@@ -78,6 +79,12 @@ def configure(cache_dir):
                           expiration_time=timedelta(days=3),
                           arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
                                      'lock_factory': MutexLock})
+
+    # epsisode parsing (knowit / guessit) cache
+    episodes.configure('dogpile.cache.dbm',
+                       expiration_time=timedelta(days=365),
+                       arguments={'filename': os.path.join(cache_dir, 'episodes.dbm'),
+                                  'lock_factory': MutexLock})
 
 
 def fallback():

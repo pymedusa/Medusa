@@ -12,22 +12,22 @@
 ? +AudioFixed
 ? +Audio Fix
 ? +Audio Fixed
-: other: AudioFix
+: other: Audio Fixed
 
 ? +SyncFix
 ? +SyncFixed
 ? +Sync Fix
 ? +Sync Fixed
-: other: SyncFix
+: other: Sync Fixed
 
 ? +DualAudio
 ? +Dual Audio
-: other: DualAudio
+: other: Dual Audio
 
 ? +ws
 ? +WideScreen
 ? +Wide Screen
-: other: WideScreen
+: other: Widescreen
 
 # Fix and Real must be surround by others properties to be matched.
 ? DVD.Real.XViD
@@ -58,18 +58,20 @@
   proper_count: 1
 
 ? XViD.Fansub
-: other: Fansub
+: other: Fan Subtitled
 
 ? XViD.Fastsub
-: other: Fastsub
+: other: Fast Subtitled
 
 ? +Season Complete
 ? -Complete
 : other: Complete
 
 ? R5
+: other: Region 5
+
 ? RC
-: other: R5
+: other: Region C
 
 ? PreAir
 ? Pre Air
@@ -90,28 +92,23 @@
 ? FHD
 ? FullHD
 ? Full HD
-: other: FullHD
+: other: Full HD
 
 ? UHD
 ? Ultra
 ? UltraHD
 ? Ultra HD
-: other: UltraHD
+: other: Ultra HD
 
 ? mHD # ??
-: other: mHD
-
 ? HDLight
-: other: HDLight
+: other: Micro HD
 
 ? HQ
-: other: HQ
-
-? ddc
-: other: DDC
+: other: High Quality
 
 ? hr
-: other: HR
+: other: High Resolution
 
 ? PAL
 : other: PAL
@@ -122,15 +119,14 @@
 ? NTSC
 : other: NTSC
 
-? CC
-: other: CC
+? LDTV
+: other: Low Definition
 
 ? LD
-? LDTV
-: other: LD
+: other: Line Dubbed
 
 ? MD
-: other: MD
+: other: Mic Dubbed
 
 ? -The complete movie
 : other: Complete
@@ -139,16 +135,38 @@
 : title: The complete movie
 
 ? +AC3-HQ
-: audio_profile: HQ
+: audio_profile: High Quality
 
 ? Other-HQ
-: other: HQ
+: other: High Quality
 
 ? reenc
 ? re-enc
 ? re-encoded
 ? reencoded
-: other: ReEncoded
+: other: Reencoded
 
 ? CONVERT XViD
 : other: Converted
+
+? +HDRIP  # it's a Rip from non specified HD source
+: other: [HD, Rip]
+
+? SDR
+: other: Standard Dynamic Range
+
+? HDR
+? HDR10
+? -HDR100
+: other: HDR10
+
+? BT2020
+? BT.2020
+? -BT.20200
+? -BT.2021
+: other: BT.2020
+
+? Upscaled
+? Upscale
+: other: Upscaled
+
