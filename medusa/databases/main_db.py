@@ -39,6 +39,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
+        self.fix_tv_episodes_watched_field
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -220,6 +221,10 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
+
+    def fix_tv_episodes_watched_field(self):
+        """A mistake was made when we added this field. Migration didn't went verry well."""
+        self.connection.action("UPDATE tv_episodes SET watched = 0 WHERE watched is null;")
 
 
 # ======================
