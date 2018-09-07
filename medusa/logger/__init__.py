@@ -27,7 +27,6 @@ import os
 import pkgutil
 import re
 import sys
-import adba
 from builtins import object
 from builtins import range
 from collections import OrderedDict
@@ -41,6 +40,7 @@ from logging import (
 )
 from logging.handlers import RotatingFileHandler
 
+import adba
 import knowit
 
 from medusa import app
