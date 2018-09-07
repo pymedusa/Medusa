@@ -191,7 +191,7 @@ class ClearProviderTables(AddIndexerIds):
             " 'db_version', 'scene_exceptions', 'last_update');")
 
         for provider in providers:
-            self.connection.action("DELETE FROM '{name}';".format(name=provider[b'name']))
+            self.connection.action("DELETE FROM '{name}';".format(name=provider['name']))
 
     def inc_major_version(self):
         major_version, minor_version = self.connection.version

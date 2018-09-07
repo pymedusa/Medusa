@@ -965,14 +965,14 @@ class SubtitlesFinder(object):
 
         logger.info(u'Checking for missed subtitles')
 
-        database = db.DBConnection()
+        main_db_con = db.DBConnection()
         # Shows with air date <= 30 days, have a limit of 100 results
         # Shows with air date > 30 days, have a limit of 200 results
         sql_args = [{'age_comparison': '<=', 'limit': 100}, {'age_comparison': '>', 'limit': 200}]
         sql_like_languages = '%' + ','.join(sorted(wanted_languages())) + '%' if app.SUBTITLES_MULTI else '%und%'
         sql_results = []
         for args in sql_args:
-            sql_results += database.select(
+            sql_results += main_db_con.select(
                 'SELECT '
                 's.show_name, '
                 'e.indexer,'
@@ -1014,31 +1014,31 @@ class SubtitlesFinder(object):
             # give the CPU a break
             time.sleep(cpu_presets[app.CPU_PRESET])
 
-            ep_num = episode_num(ep_to_sub[b'season'], ep_to_sub[b'episode']) or \
-                episode_num(ep_to_sub[b'season'], ep_to_sub[b'episode'], numbering='absolute')
-            subtitle_path = _encode(ep_to_sub[b'location'], fallback='utf-8')
+            ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
+                episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
+            subtitle_path = _encode(ep_to_sub['location'], fallback='utf-8')
             if not os.path.isfile(subtitle_path):
                 logger.debug('Episode file does not exist, cannot download subtitles for %s %s',
-                             ep_to_sub[b'show_name'], ep_num)
+                             ep_to_sub['show_name'], ep_num)
                 continue
 
-            if app.SUBTITLES_STOP_AT_FIRST and ep_to_sub[b'subtitles']:
-                logger.debug('Episode already has one subtitle, skipping %s %s', ep_to_sub[b'show_name'], ep_num)
+            if app.SUBTITLES_STOP_AT_FIRST and ep_to_sub['subtitles']:
+                logger.debug('Episode already has one subtitle, skipping %s %s', ep_to_sub['show_name'], ep_num)
                 continue
 
-            if not needs_subtitles(ep_to_sub[b'subtitles']):
+            if not needs_subtitles(ep_to_sub['subtitles']):
                 logger.debug('Episode already has all needed subtitles, skipping %s %s',
-                             ep_to_sub[b'show_name'], ep_num)
+                             ep_to_sub['show_name'], ep_num)
                 continue
 
             try:
-                lastsearched = datetime.datetime.strptime(ep_to_sub[b'lastsearch'], dateTimeFormat)
+                lastsearched = datetime.datetime.strptime(ep_to_sub['lastsearch'], dateTimeFormat)
             except ValueError:
                 lastsearched = datetime.datetime.min
 
             if not force:
                 now = datetime.datetime.now()
-                days = int(ep_to_sub[b'age'])
+                days = int(ep_to_sub['age'])
                 delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
                 delay = lastsearched + delay_time - now
 
@@ -1047,19 +1047,19 @@ class SubtitlesFinder(object):
                 # Will always try an episode regardless of age for 3 times
                 # The time resolution is minute
                 # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
-                if delay.total_seconds() > 60 and int(ep_to_sub[b'searchcount']) > 2:
+                if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
                     logger.debug('Subtitle search for %s %s delayed for %s',
-                                 ep_to_sub[b'show_name'], ep_num, dhm(delay))
+                                 ep_to_sub['show_name'], ep_num, dhm(delay))
                     continue
 
-            show_object = Show.find_by_id(app.showList, ep_to_sub[b'indexer'], ep_to_sub[b'showid'])
+            show_object = Show.find_by_id(app.showList, ep_to_sub['indexer'], ep_to_sub['showid'])
             if not show_object:
-                logger.debug('Show with ID %s not found in the database', ep_to_sub[b'showid'])
+                logger.debug('Show with ID %s not found in the database', ep_to_sub['showid'])
                 continue
 
-            episode_object = show_object.get_episode(ep_to_sub[b'season'], ep_to_sub[b'episode'])
+            episode_object = show_object.get_episode(ep_to_sub['season'], ep_to_sub['episode'])
             if isinstance(episode_object, str):
-                logger.debug('%s %s not found in the database', ep_to_sub[b'show_name'], ep_num)
+                logger.debug('%s %s not found in the database', ep_to_sub['show_name'], ep_num)
                 continue
 
             episode_object.download_subtitles()

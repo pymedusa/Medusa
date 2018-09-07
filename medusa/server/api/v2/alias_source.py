@@ -16,7 +16,7 @@ def find_alias_sources(predicate=None):
     mapping = {'local': 'custom_exceptions'}
     for identifier in ('local', 'xem', 'anidb'):
         if not predicate or predicate(identifier):
-            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0][b'last_refreshed']
+            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0]['last_refreshed']
             data.append({'id': identifier, 'lastRefresh': last_refresh})
 
     return data

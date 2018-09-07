@@ -59,7 +59,7 @@ class MainSanityCheck(db.DBSanityCheck):
         sql_results = self.connection.select(query)
         if sql_results:
             for sql_result in sql_results:
-                proper_release = sql_result[b'resource']
+                proper_release = sql_result['resource']
                 log.debug(u'Found old propers without proper tags: {0}',
                           proper_release)
                 parse_result = NameParser()._parse_string(proper_release)
@@ -80,10 +80,10 @@ class MainSanityCheck(db.DBSanityCheck):
             for sql_result in sql_results:
                 log.warning(u'Found deleted episode id {0} from show ID {1}'
                             u' with subtitle data. Erasing reference...',
-                            sql_result[b'episode_id'], sql_result[b'showid'])
+                            sql_result['episode_id'], sql_result['showid'])
                 self.connection.action("UPDATE tv_episodes SET subtitles = '', "
                                        "subtitles_searchcount = 0, subtitles_lastsearch = '' "
-                                       'WHERE episode_id = %i' % (sql_result[b'episode_id'])
+                                       'WHERE episode_id = %i' % (sql_result['episode_id'])
                                        )
 
     def fix_duplicate_episodes(self):
@@ -96,17 +96,17 @@ class MainSanityCheck(db.DBSanityCheck):
 
             log.debug('Duplicate episode detected! showid: {0!s}'
                       ' season: {1!s} episode: {2!s} count: {3!s}',
-                      cur_duplicate[b'showid'], cur_duplicate[b'season'],
-                      cur_duplicate[b'episode'], cur_duplicate[b'count'])
+                      cur_duplicate['showid'], cur_duplicate['season'],
+                      cur_duplicate['episode'], cur_duplicate['count'])
             cur_dupe_results = self.connection.select(
                 'SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?',
-                [cur_duplicate[b'indexer'], cur_duplicate[b'showid'], cur_duplicate[b'season'], cur_duplicate[b'episode'],
-                 int(cur_duplicate[b'count']) - 1]
+                [cur_duplicate['indexer'], cur_duplicate['showid'], cur_duplicate['season'], cur_duplicate['episode'],
+                 int(cur_duplicate['count']) - 1]
             )
 
             for cur_dupe_id in cur_dupe_results:
-                log.info('Deleting duplicate episode with episode_id: {0!s}', cur_dupe_id[b'episode_id'])
-                self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_dupe_id[b'episode_id']])
+                log.info('Deleting duplicate episode with episode_id: {0!s}', cur_dupe_id['episode_id'])
+                self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_dupe_id['episode_id']])
 
     def fix_orphan_episodes(self):
 
@@ -117,11 +117,11 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_orphan in sql_results:
             log.debug(u'Orphan episode detected! episode_id: {0!s}'
-                      u' showid: {1!s}', cur_orphan[b'episode_id'],
-                      cur_orphan[b'showid'])
+                      u' showid: {1!s}', cur_orphan['episode_id'],
+                      cur_orphan['showid'])
             log.info(u'Deleting orphan episode with episode_id: {0!s}',
-                     cur_orphan[b'episode_id'])
-            self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_orphan[b'episode_id']])
+                     cur_orphan['episode_id'])
+            self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_orphan['episode_id']])
 
     def fix_missing_table_indexes(self):
         if not self.connection.select("PRAGMA index_info('idx_tv_episodes_showid_airdate')"):
@@ -154,9 +154,9 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_unaired in sql_results:
             log.info(u'Fixing unaired episode status for episode_id: {0!s}',
-                     cur_unaired[b'episode_id'])
+                     cur_unaired['episode_id'])
             self.connection.action('UPDATE tv_episodes SET status = ? WHERE episode_id = ?',
-                                   [common.UNAIRED, cur_unaired[b'episode_id']])
+                                   [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
         for old_status, new_status in iteritems(STATUS_MAP):
@@ -167,12 +167,12 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_ep in sql_results:
             log.debug(u'MALFORMED episode status detected! episode_id: {0!s}'
-                      u' showid: {1!s}', cur_ep[b'episode_id'],
-                      cur_ep[b'showid'])
+                      u' showid: {1!s}', cur_ep['episode_id'],
+                      cur_ep['showid'])
             log.info(u'Fixing malformed episode status with'
-                     u' episode_id: {0!s}', cur_ep[b'episode_id'])
+                     u' episode_id: {0!s}', cur_ep['episode_id'])
             self.connection.action('UPDATE tv_episodes SET status = ? WHERE episode_id = ?',
-                                   [common.UNSET, cur_ep[b'episode_id']])
+                                   [common.UNSET, cur_ep['episode_id']])
 
     def fix_invalid_airdates(self):
 
@@ -182,12 +182,12 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for bad_airdate in sql_results:
             log.debug(u'Bad episode airdate detected! episode_id: {0!s}'
-                      u' showid: {1!s}', bad_airdate[b'episode_id'],
-                      bad_airdate[b'showid'])
+                      u' showid: {1!s}', bad_airdate['episode_id'],
+                      bad_airdate['showid'])
             log.info(u'Fixing bad episode airdate for episode_id: {0!s}',
-                     bad_airdate[b'episode_id'])
+                     bad_airdate['episode_id'])
             self.connection.action("UPDATE tv_episodes SET airdate = '1' WHERE episode_id = ?",
-                                   [bad_airdate[b'episode_id']])
+                                   [bad_airdate['episode_id']])
 
     def fix_subtitles_codes(self):
 
@@ -203,20 +203,20 @@ class MainSanityCheck(db.DBSanityCheck):
             langs = []
 
             log.debug(u'Checking subtitle codes for episode_id: {0!s},'
-                      u' codes: {1!s}', sql_result[b'episode_id'],
-                      sql_result[b'subtitles'])
+                      u' codes: {1!s}', sql_result['episode_id'],
+                      sql_result['subtitles'])
 
-            for subcode in sql_result[b'subtitles'].split(','):
+            for subcode in sql_result['subtitles'].split(','):
                 if not len(subcode) == 3 or subcode not in subtitles.subtitle_code_filter():
                     log.debug(u'Fixing subtitle codes for episode_id: {0!s},'
                               u' invalid code: {1!s}',
-                              sql_result[b'episode_id'], subcode)
+                              sql_result['episode_id'], subcode)
                     continue
 
                 langs.append(subcode)
 
             self.connection.action('UPDATE tv_episodes SET subtitles = ?, subtitles_lastsearch = ? WHERE episode_id = ?;',
-                                   [','.join(langs), datetime.datetime.now().strftime(dateTimeFormat), sql_result[b'episode_id']])
+                                   [','.join(langs), datetime.datetime.now().strftime(dateTimeFormat), sql_result['episode_id']])
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
@@ -335,7 +335,7 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
 
 class AddMinorVersion(AlterTVShowsFieldTypes):
     def test(self):
-        return self.checkDBVersion() >= 43 and self.hasColumn(b'db_version', b'db_minor_version')
+        return self.checkDBVersion() >= 43 and self.hasColumn('db_version', 'db_minor_version')
 
     def incDBVersion(self):
         warnings.warn('Deprecated: Use inc_major_version or inc_minor_version instead', DeprecationWarning)
@@ -359,7 +359,7 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         utils.backup_database(self.connection.path, self.checkDBVersion())
 
         log.info(u'Add minor version numbers to database')
-        self.addColumn(b'db_version', b'db_minor_version')
+        self.addColumn('db_version', 'db_minor_version')
 
         self.inc_major_version()
         self.inc_minor_version()
@@ -643,11 +643,11 @@ class AddIndexerIds(AddIndexerInteger):
 
                 # check for double
                 for series in all_series:
-                    if series[b'indexer_id'] not in series_dict:
-                        series_dict[series[b'indexer_id']] = series[b'indexer']
+                    if series['indexer_id'] not in series_dict:
+                        series_dict[series['indexer_id']] = series['indexer']
                     else:
                         log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
-                                    series[b'indexer_id'], series[b'indexer'])
+                                    series['indexer_id'], series['indexer'])
 
         # Check if it's required for the main.db tables.
         for migration_config in (('blacklist', 'show_id', 'indexer_id'),
@@ -737,7 +737,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         log.info(u'Splitting the composite status into status and quality')
         sql_results = self.connection.select('SELECT status from tv_episodes GROUP BY status;')
         for episode in sql_results:
-            composite_status = episode[b'status']
+            composite_status = episode['status']
             status, quality = utils.split_composite_status(composite_status)
             self.connection.action('UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?;',
                                    [status, quality, composite_status])
@@ -746,7 +746,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         log.info(u'Removing the quality from the action field, as this is a composite status')
         sql_results = self.connection.select('SELECT action FROM history GROUP BY action;')
         for item in sql_results:
-            composite_action = item[b'action']
+            composite_action = item['action']
             status, quality = utils.split_composite_status(composite_action)
             self.connection.action('UPDATE history SET action = ? WHERE action = ?;',
                                    [status, composite_action])
@@ -782,7 +782,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         log.info('Shift qualities in tv_shows one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM tv_shows GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
 
             # UNKNOWN quality value is 65536 (1 << 16) instead of 32768 (1 << 15) after the shift
@@ -807,7 +807,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         sql_results = self.connection.select('SELECT quality FROM tv_episodes WHERE quality != 0 GROUP BY quality'
                                              ' ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
 
             if quality == 32768:  # Old UNKNOWN quality (1 << 15)
@@ -829,7 +829,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         log.info('Shift qualities in history one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
 
             if quality == 32768:  # Old UNKNOWN quality (1 << 15)
                 new_quality = common.Quality.UNKNOWN
