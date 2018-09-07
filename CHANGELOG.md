@@ -8,6 +8,7 @@
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+- Fixed UI bugs in home page (when using "split home in tabs") and status page ([#5126](https://github.com/pymedusa/Medusa/pull/5126) + [#5127](https://github.com/pymedusa/Medusa/pull/5127))
 
 -----
 
