@@ -42,7 +42,7 @@ const state = {
         status: null,
         title: null,
         type: null,
-        year: null
+        year: {}
     }
 };
 
