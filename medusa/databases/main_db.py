@@ -39,7 +39,6 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
-        self.fix_tv_episodes_watched_field()
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -221,10 +220,6 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
-
-    def fix_tv_episodes_watched_field(self):
-        """A mistake was made when we added this field. Migration didn't go very well."""
-        self.connection.action('UPDATE tv_episodes SET watched = 0 WHERE watched IS NULL;')
 
 
 # ======================
@@ -869,7 +864,7 @@ class AddEpisodeWatchedField(ShiftQualities):
             'subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, '
             'is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, '
             'scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT, '
-            'manually_searched NUMERIC, watched NUMERIC DEFAULT 0);'
+            'manually_searched NUMERIC, watched NUMERIC);'
         )
 
         # Re-insert old values, setting the new column 'watched' to the default value 0.
