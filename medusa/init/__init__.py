@@ -58,6 +58,19 @@ def _configure_syspath():
         _ext_lib_location()
     ]
 
+    if sys.version_info[0] == 2:
+        # Add Python 2-only vendored libraries
+        paths_to_insert.extend([
+            # path_to_lib2,
+            # path_to_ext2
+        ])
+    elif sys.version_info[0] == 3:
+        # Add Python 3-only vendored libraries
+        paths_to_insert.extend([
+            # path_to_lib3,
+            # path_to_ext3
+        ])
+
     # Insert paths into `sys.path` and handle `.pth` files
     # Inspired by: https://bugs.python.org/issue7744
     for dirpath in paths_to_insert:
