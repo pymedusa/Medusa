@@ -8,6 +8,7 @@ import datetime
 import mimetypes
 import os
 import shutil
+import site
 import sys
 
 
@@ -46,8 +47,20 @@ def _ext_lib_location():
 
 
 def _configure_syspath():
-    sys.path.insert(1, _lib_location())
-    sys.path.insert(1, _ext_lib_location())
+    # Note: Paths are inserted in reverse order (LIFO)
+    paths_to_insert = [
+        _lib_location(),
+        _ext_lib_location()
+    ]
+
+    # Handle `.pth` files: https://bugs.python.org/issue7744
+    for dirpath in paths_to_insert:
+        # Clear `sys.path`
+        sys.path, remainder = sys.path[:1], sys.path[1:]
+        # Add directory as a site-packages directory and handle `.pth` files
+        site.addsitedir(dirpath)
+        # Restore rest of `sys.path`
+        sys.path.extend(remainder)
 
 
 def _register_utf8_codec():
