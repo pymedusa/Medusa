@@ -55,7 +55,6 @@ export default {
     },
     data() {
         return {
-            lock: false,
             editItems: [],
             newItem: '',
             indexCounter: 0,
@@ -66,17 +65,13 @@ export default {
     created() {
         /**
          * ListItems property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
+         * that are sometimes not available when rendering.
+         * @TODO: This is not ideal! Maybe we can remove this in the future.
          */
         const unwatchProp = this.$watch('listItems', () => {
             unwatchProp();
 
-            this.lock = true;
             this.editItems = this.sanitize(this.listItems);
-            this.$nextTick(() => {
-                this.lock = false;
-            });
             this.csv = this.editItems.map(x => x.value).join(', ');
         });
     },
@@ -115,6 +110,12 @@ export default {
 
             return values.map((value, index) => {
                 if (typeof (value) === 'string') {
+                    // Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
+                    if (value.startsWith('{') && value.endsWith('}')) {
+                        // Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
+                        value = value.match(/u?'value': u?'(.+)'/)[1].replace(`\\'`, `'`);
+                    }
+
                     return {
                         id: index,
                         value
@@ -138,7 +139,7 @@ export default {
                     }
                 }));
             } else {
-                this.csv = this.editItems.map(x => x.value).join(', ');
+                this.csv = this.editItems.map(item => item.value).join(', ');
             }
         },
         /**
@@ -154,9 +155,7 @@ export default {
     watch: {
         editItems: {
             handler() {
-                if (!this.lock) {
-                    this.$emit('change', this.editItems);
-                }
+                this.$emit('change', this.editItems);
             },
             deep: true
         },
