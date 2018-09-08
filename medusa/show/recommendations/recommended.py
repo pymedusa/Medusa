@@ -265,7 +265,7 @@ def get_all_recommended_series_from_cache(indexers):
             continue
 
         for index_item in index:
-            key = b'{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
+            key = '{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
             series = recommended_series_cache.get(binary_type(key))
             if series:
                 all_series.append(series)

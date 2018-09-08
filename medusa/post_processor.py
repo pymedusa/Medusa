@@ -621,8 +621,8 @@ class PostProcessor(object):
                 [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
-                season = int(sql_result[0][b'season'])
-                episodes = [int(sql_result[0][b'episode'])]
+                season = int(sql_result[0]['season'])
+                episodes = [int(sql_result[0]['episode'])]
             else:
                 # Found no result, trying with season 0
                 sql_result = main_db_con.select(
@@ -634,8 +634,8 @@ class PostProcessor(object):
                     [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
-                    season = int(sql_result[0][b'season'])
-                    episodes = [int(sql_result[0][b'episode'])]
+                    season = int(sql_result[0]['season'])
+                    episodes = [int(sql_result[0]['episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
                              (episodes[0], series_obj.indexerid), logger.DEBUG)
@@ -647,14 +647,14 @@ class PostProcessor(object):
         elif season is None and series_obj:
             main_db_con = db.DBConnection()
             numseasons_result = main_db_con.select(
-                'SELECT COUNT(DISTINCT season) '
+                'SELECT COUNT(DISTINCT season) as count '
                 'FROM tv_episodes '
                 'WHERE showid = ? '
                 'AND indexer = ? '
                 'AND season != 0',
                 [series_obj.series_id, series_obj.indexer])
 
-            if int(numseasons_result[0][0]) == 1:
+            if int(numseasons_result[0]['count']) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
                          u'to have only 1 season, setting season number to 1...', logger.DEBUG)
                 season = 1
@@ -822,9 +822,9 @@ class PostProcessor(object):
                  season, episode] + snatched_statuses
             )
 
-            if tv_episodes_result and tv_episodes_result[0][b'quality'] == quality:
+            if tv_episodes_result and tv_episodes_result[0]['quality'] == quality:
                 # Check if the snatch is a manual snatch
-                if tv_episodes_result[0][b'manually_searched'] == 1:
+                if tv_episodes_result[0]['manually_searched'] == 1:
                     self.manually_searched = True
 
                 # Second: get the quality of the last snatched epsiode
@@ -842,12 +842,12 @@ class PostProcessor(object):
                      season, episode] + snatched_statuses
                 )
 
-                if history_result and history_result[0][b'quality'] == quality:
+                if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
                     # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0][b'info_hash'] or None
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -864,7 +864,7 @@ class PostProcessor(object):
                     )
 
                     if download_result:
-                        download_name = os.path.basename(download_result[0][b'resource'])
+                        download_name = os.path.basename(download_result[0]['resource'])
                         # If the file name we are processing differs from the file
                         # that was previously processed, we want this file
                         if self.file_name != download_name:
@@ -1098,15 +1098,15 @@ class PostProcessor(object):
             if int(ep_obj.season) > 0:
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
-                    'SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?',
+                    'SELECT MAX(season) as max FROM tv_episodes WHERE showid = ? and indexer = ?',
                     [series_obj.series_id, series_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
-                # the indexer season (max_season[0][0]), skip the file
-                if int(ep_obj.season) > int(max_season[0][0]):
+                # the indexer season (max_season[0]['max']), skip the file
+                if int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
-                             (ep_obj.season, max_season[0][0]))
+                             (ep_obj.season, max_season[0]['max']))
                     return False
 
         # if the file is priority then we're going to replace it even if it exists

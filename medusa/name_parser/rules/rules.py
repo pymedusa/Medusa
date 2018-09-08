@@ -53,7 +53,7 @@ class BlacklistedReleaseGroup(Rule):
 
     priority = POST_PROCESS
     consequence = RemoveMatch
-    blacklist = (b'private', b'req', b'no.rar', b'season')
+    blacklist = ('private', 'req', 'no.rar', 'season')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -325,8 +325,8 @@ class CreateAliasWithAlternativeTitles(Rule):
             for alternative_title in alternative_titles:
                 holes = matches.holes(start=previous.end, end=alternative_title.start)
                 # if the separator is a dash, add an extra space before and after
-                separators = [b' ' + h.value + b' ' if h.value == b'-' else h.value for h in holes]
-                separator = b' '.join(separators) if separators else b' '
+                separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
+                separator = ' '.join(separators) if separators else ' '
                 alias.value += separator + alternative_title.value
 
                 previous = alternative_title
@@ -409,7 +409,7 @@ class CreateAliasWithCountryOrYear(Rule):
             if next_match:
                 alias = copy.copy(title)
                 alias.name = 'alias'
-                alias.value = alias.value + b' ' + re.sub(r'\W*', b'', after_title.raw)
+                alias.value = alias.value + ' ' + re.sub(r'\W*', '', after_title.raw)
                 alias.end = after_title.end
                 alias.raw_end = after_title.raw_end
                 return [alias]
@@ -1527,12 +1527,12 @@ class ReleaseGroupPostProcessor(Rule):
         for release_group in release_groups:
             value = release_group.value
             for regex in self.regexes:
-                value = regex.sub(b' ', value).strip()
+                value = regex.sub(' ', value).strip()
                 if not value:
                     break
 
             if value and matches.tagged('scene') and not matches.next(release_group):
-                value = value.split(b'-')[0]
+                value = value.split('-')[0]
 
             if release_group.value != value:
                 to_remove.append(release_group)

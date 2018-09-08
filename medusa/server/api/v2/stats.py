@@ -45,7 +45,7 @@ class StatsHandler(BaseRequestHandler):
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
-            b"""
+            """
             SELECT indexer AS indexerId, showid AS seriesId,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -108,8 +108,8 @@ class StatsHandler(BaseRequestHandler):
         stats_data['maxDownloadCount'] = 1000
         for cur_result in sql_result:
             stats_data['seriesStat'].append(dict(cur_result))
-            if cur_result[b'epTotal'] > stats_data['maxDownloadCount']:
-                stats_data['maxDownloadCount'] = cur_result[b'epTotal']
+            if cur_result['epTotal'] > stats_data['maxDownloadCount']:
+                stats_data['maxDownloadCount'] = cur_result['epTotal']
 
         stats_data['maxDownloadCount'] *= 100
 
