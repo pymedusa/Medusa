@@ -7,7 +7,6 @@
 :: | `native` | - | `pymediainfo` | **Not a package**
 :: | `pkg_resources` | ????? | `babelfish`, `click`(?), `enzyme`, `guessit`, `stevedore`, `pint`, ... | **Not a package**<br>Part of `setuptools`
 :: | `pymediainfo` | [2.2.1](https://pypi.org/project/pymediainfo/2.2.1/) | `knowit` | **Modified**: Version number fixed
-:warning: | `python-twitter` | [420f234](https://github.com/bear/python-twitter/tree/420f23488970e01d179390b55d0f8bc036eb81b4) | **`medusa`** | Module (renamed): `pythontwitter`<br>Unnecessarily modified, needs update
 :: | `pytimeparse` | [1.1.5](https://pypi.org/project/pytimeparse/1.1.5/) | **`medusa`** | **Modified**: [#1792](https://github.com/pymedusa/Medusa/pull/1792)
 :: | `pytvmaze` | [2.0.7](https://pypi.org/project/pytvmaze/2.0.7/) | **`medusa`** | **Modified**: [#1706](https://github.com/pymedusa/Medusa/pull/1706)
 :: | `rtorrent-python` | [0.2.9](https://pypi.org/project/rtorrent-python/0.2.9/) | **`medusa`** | Module: `rtorrent`<br>**Modified**: [commit log](https://github.com/pymedusa/Medusa/commits/master/lib/rtorrent)
@@ -18,4 +17,4 @@
 :: | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 :: | `traktor` | - | **`medusa`** | **Custom**
 :: | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | **Modified**: [Upstream PR](https://github.com/pymedusa/tvdbv2/pull/2)
-:: | `py-unrar2` | [0.99.6](https://pypi.org/project/py-unrar2/0.99.6/) | **`medusa`** | Module: `unrar2`<br>**Modified**: [#1881](https://github.com/pymedusa/Medusa/pull/1881)
+:: | `pyUnRAR2` | [commit](https://github.com/kyegupov/py-unrar2/tree/186a4c1feb9ef3d96a2331f8fb3ebf88036e15e5) | **`medusa`** | Module: `unrar2`<br>**Modified**: [#5096](https://github.com/pymedusa/Medusa/pull/5096)<br>`test.rar` is not part of the package<br>The `UnRARDLL` folder isn't installed through `pip`

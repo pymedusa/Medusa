@@ -60,9 +60,9 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         main_db_con = DBConnection()
         episodes_from_db = main_db_con.select(
-            b'SELECT indexer, showid, airdate, season, episode '
-            b'FROM tv_episodes '
-            b'WHERE status = ? AND (airdate <= ? and airdate > 1)',
+            'SELECT indexer, showid, airdate, season, episode '
+            'FROM tv_episodes '
+            'WHERE status = ? AND (airdate <= ? and airdate > 1)',
             [common.UNAIRED, cur_date]
         )
 
@@ -70,8 +70,8 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         series_obj = None
 
         for db_episode in episodes_from_db:
-            indexer_id = db_episode[b'indexer']
-            series_id = db_episode[b'showid']
+            indexer_id = db_episode['indexer']
+            series_id = db_episode['showid']
             try:
                 if not series_obj or series_id != series_obj.indexerid:
                     series_obj = Show.find_by_id(app.showList, indexer_id, series_id)
@@ -87,14 +87,14 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
             if series_obj.airs and series_obj.network:
                 # This is how you assure it is always converted to local time
-                show_air_time = parse_date_time(db_episode[b'airdate'], series_obj.airs, series_obj.network)
+                show_air_time = parse_date_time(db_episode['airdate'], series_obj.airs, series_obj.network)
                 end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(series_obj.runtime, 60))
 
                 # filter out any episodes that haven't finished airing yet,
                 if end_time > cur_time:
                     continue
 
-            cur_ep = series_obj.get_episode(db_episode[b'season'], db_episode[b'episode'])
+            cur_ep = series_obj.get_episode(db_episode['season'], db_episode['episode'])
             with cur_ep.lock:
                 cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(

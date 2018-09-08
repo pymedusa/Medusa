@@ -5,12 +5,14 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 const pkg = require('./package.json');
 
 const { cssThemes } = pkg.config;
 
 /**
  * Helper function to queue actions for each theme.
+ *
  * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
  * @returns {Object[]} - The actions for each theme.
  */
@@ -19,6 +21,7 @@ const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
 /**
  * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
  * To be used in-conjunction-with `perTheme`.
+ *
  * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
  * @param {string} [search] - Glob-like string to match files. (default: `**`)
  * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
@@ -32,6 +35,7 @@ const copyAssets = (type, search = '**') => {
 
 /**
  * Make a `package.json` for a theme.
+ *
  * @param {string} themeName - Theme name
  * @param {string} currentContent - Current package.json contents
  * @returns {string} - New content
@@ -45,7 +49,14 @@ const makeThemeMetadata = (themeName, currentContent) => {
     }, undefined, 2);
 };
 
-const webpackConfig = mode => ({
+/**
+ * Generate the Webpack configuration object.
+ *
+ * @param {*} env - The environment data, as passed from the `--env` command line argument.
+ * @param {*} mode - The mode, as passed from the `--mode` command line argument.
+ * @returns {Object} Webpack configuration object.
+ */
+const webpackConfig = (env, mode) => ({
     devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
         // Exports all window. objects for mako files
@@ -222,4 +233,11 @@ const webpackConfig = mode => ({
     ]
 });
 
-module.exports = (_env, argv) => webpackConfig(argv.mode);
+/**
+ * See: https://webpack.js.org/configuration/configuration-types/#exporting-a-function
+ *
+ * @param {*} env - An environment. See the environment options CLI documentation for syntax examples.
+ * @param {*} argv - An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
+ * @returns {Object} - Webpack configuration object.
+ */
+module.exports = (env = {}, argv = {}) => webpackConfig(env, argv.mode || process.env.NODE_ENV);

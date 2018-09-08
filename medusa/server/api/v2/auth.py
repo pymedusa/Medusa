@@ -34,7 +34,7 @@ class AuthHandler(BaseRequestHandler):
         """Prepare."""
         pass
 
-    def post(self, *args, **kwargs):
+    def http_post(self, *args, **kwargs):
         """Request JWT."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
@@ -56,7 +56,7 @@ class AuthHandler(BaseRequestHandler):
         if username != submitted_username or password != submitted_password:
             return self._failed_login(error='Invalid credentials')
 
-        self._login(submitted_exp)
+        return self._login(submitted_exp)
 
     def _login(self, exp=86400):
         self.set_header('Content-Type', 'application/json')
@@ -65,7 +65,7 @@ class AuthHandler(BaseRequestHandler):
 
         log.info('{user} logged into the API v2', {'user': app.WEB_USERNAME})
         time_now = int(time.time())
-        self._ok(data={
+        return self._ok(data={
             'token': jwt.encode({
                 'iss': 'Medusa ' + text_type(app.APP_VERSION),
                 'iat': time_now,
@@ -78,8 +78,8 @@ class AuthHandler(BaseRequestHandler):
         })
 
     def _failed_login(self, error=None):
-        self._unauthorized(error=error)
         log.warning('{user} attempted a failed login to the API v2 from IP: {ip}', {
             'user': app.WEB_USERNAME,
             'ip': self.request.remote_ip
         })
+        return self._unauthorized(error=error)

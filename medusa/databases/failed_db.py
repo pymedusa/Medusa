@@ -91,8 +91,8 @@ class AddIndexerIds(HistoryStatus):
         series_dict = {}
         # check for double
         for series in all_series:
-            if series[b'indexer_id'] not in series_dict:
-                series_dict[series[b'indexer_id']] = series[b'indexer']
+            if series['indexer_id'] not in series_dict:
+                series_dict[series['indexer_id']] = series['indexer']
 
         query = 'SELECT showid FROM history WHERE indexer_id IS NULL'
         results = self.connection.select(query)
@@ -151,9 +151,9 @@ class UpdateHistoryTableQuality(AddIndexerIds):
 
         sql_results = self.connection.select('SELECT status FROM history GROUP BY status;')
         for result in sql_results:
-            status, quality = utils.split_composite_status(result[b'status'])
+            status, quality = utils.split_composite_status(result['status'])
             self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?;',
-                                   [status, quality, result[b'status']])
+                                   [status, quality, result['status']])
 
     def inc_major_version(self):
         major_version, minor_version = self.connection.version
@@ -187,7 +187,7 @@ class ShiftQualities(UpdateHistoryTableQuality):
         log.info('Shift qualities in history one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
             self.connection.action(
                 'UPDATE history SET quality = ? WHERE quality = ?;',

@@ -221,8 +221,8 @@ class GenericClient(object):
                 )
                 cache_db_con = db.DBConnection('cache.db')
                 cache_db_con.action(
-                    b'DELETE FROM [{provider}] '
-                    b'WHERE name = ? '.format(provider=result.provider.get_id()),
+                    'DELETE FROM [{provider}] '
+                    'WHERE name = ? '.format(provider=result.provider.get_id()),
                     [result.name]
                 )
             except Exception:
