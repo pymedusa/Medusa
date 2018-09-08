@@ -77,7 +77,8 @@ const actions = {
      * Get shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {ShowParameteres[]} - Shows to get. If not provided, gets the first 1000 shows.
+     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 1000 shows.
+     * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
         const { commit, dispatch } = context;
