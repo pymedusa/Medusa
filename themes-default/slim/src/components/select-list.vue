@@ -113,7 +113,7 @@ export default {
                     // Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
                     if (value.startsWith('{') && value.endsWith('}')) {
                         // Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
-                        value = value.match(/u?'value': u?'(.+)'/)[1].replace(`\\'`, `'`);
+                        value = value.match(/u?'value': u?'(.+)'/)[1].replace(`\\'`, `'`); // eslint-disable-line quotes
                     }
 
                     return {

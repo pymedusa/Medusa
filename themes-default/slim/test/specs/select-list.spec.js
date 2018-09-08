@@ -66,8 +66,8 @@ test.failing('renders with Python dict values (v0.2.9 bug)', t => {
         store,
         propsData: {
             listItems: [
-                `{u'id': 0, u'value': u'!sync'}`,
-                `{u'id': 1, u'value': u'lftp-pget-status'}`
+                `{u'id': 0, u'value': u'!sync'}`, // eslint-disable-line quotes
+                `{u'id': 1, u'value': u'lftp-pget-status'}` // eslint-disable-line quotes
             ]
         }
     });
