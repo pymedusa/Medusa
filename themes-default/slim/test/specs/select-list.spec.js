@@ -20,10 +20,70 @@ test('renders', t => {
     const { localVue, store } = t.context;
     const wrapper = mount(SelectList, {
         localVue,
+        store,
         propsData: {
             listItems: []
-        },
-        store
+        }
+    });
+
+    t.snapshot(wrapper.html());
+});
+
+test.failing('renders with values', t => {
+    const { localVue, store } = t.context;
+
+    const listItems = [
+        'abc',
+        'bcd',
+        'test'
+    ];
+
+    const wrapper = mount(SelectList, {
+        localVue,
+        store,
+        propsData: {
+            listItems
+        }
+    });
+
+    const expectedItems = listItems;
+    const inputWrapperArray = wrapper.findAll('li input[type="text"]');
+
+    t.is(inputWrapperArray.length, expectedItems.length);
+
+    inputWrapperArray.wrappers.forEach((inputWrapper, index) => {
+        const { element } = inputWrapper;
+        t.is(element.value, expectedItems[index]);
+    });
+
+    t.snapshot(wrapper.html());
+});
+
+test.failing('renders with Python dict values (v0.2.9 bug)', t => {
+    const { localVue, store } = t.context;
+    const wrapper = mount(SelectList, {
+        localVue,
+        store,
+        propsData: {
+            listItems: [
+                `{u'id': 0, u'value': u'!sync'}`,
+                `{u'id': 1, u'value': u'lftp-pget-status'}`
+            ]
+        }
+    });
+
+    const expectedItems = [
+        '!sync',
+        'lftp-pget-status'
+    ];
+
+    const inputWrapperArray = wrapper.findAll('li input[type="text"]');
+
+    t.is(inputWrapperArray.length, expectedItems.length);
+
+    inputWrapperArray.wrappers.forEach((inputWrapper, index) => {
+        const { element } = inputWrapper;
+        t.is(element.value, expectedItems[index]);
     });
 
     t.snapshot(wrapper.html());
