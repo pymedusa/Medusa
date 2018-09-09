@@ -20,7 +20,6 @@ from medusa import (
     history,
     name_cache,
     notifiers,
-    nzb_splitter,
     ui,
 )
 from medusa.clients import torrent
@@ -49,7 +48,6 @@ from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
 
 from six import iteritems, itervalues
@@ -761,16 +759,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                       if result in (SEASON_RESULT, MULTI_EP_RESULT))
         candidates = list(itertools.chain(*candidates))
         if candidates:
-            multi_candidates, single_candidates = collect_multi_candidates(
-                candidates, series_obj, episodes, down_cur_quality)
-
-            multi_results += multi_candidates
-
-            for number, candidate in single_candidates:
-                if number in found_results[cur_provider.name]:
-                    found_results[cur_provider.name][number].append(candidate)
-                else:
-                    found_results[cur_provider.name][number] = [candidate]
+            multi_results += collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
 
         # Collect candidates for single-episode results
         single_results = collect_single_candidates(found_results[cur_provider.name],
@@ -819,11 +808,10 @@ def collect_single_candidates(candidates, results):
 def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality):
     """Collect mutli-episode and season result candidates."""
     multi_candidates = []
-    single_candidates = []
 
     wanted_candidates = filter_results(candidates)
     if not wanted_candidates:
-        return multi_candidates, single_candidates
+        return multi_candidates
 
     for candidate in wanted_candidates:
         wanted_episodes = (
@@ -846,22 +834,7 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
                       candidate.name)
             continue
 
-        else:
-            # Some NZB providers (e.g. Jackett) can also download torrents,
-            # but torrents cannot be split like NZBs
-            if (candidate.provider.provider_type == GenericProvider.NZB and
-                    not candidate.url.endswith(GenericProvider.TORRENT)):
-                log.debug(u'Breaking apart the NZB and adding the individual ones to our results')
-
-                individual_results = nzb_splitter.split_result(candidate)
-                for cur_result in individual_results:
-                    if len(cur_result.episodes) == 1:
-                        ep_number = cur_result.episodes[0].episode
-                        single_candidates.append((ep_number, cur_result))
-                    elif len(cur_result.episodes) > 1:
-                        multi_candidates.append(cur_result)
-
-    return multi_candidates, single_candidates
+    return multi_candidates
 
 
 def combine_results(multi_results, single_results):
