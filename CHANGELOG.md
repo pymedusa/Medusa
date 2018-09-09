@@ -9,6 +9,10 @@
 - Fixed error due to `null` values in the episodes database table ([#5132](https://github.com/pymedusa/Medusa/pull/5132))
 - Fixed extraneous calls to AniDB when navigating to any show's page ([#5166](https://github.com/pymedusa/Medusa/pull/5166))
 - Fixed being unable to start Medusa due to an import error ([#5145](https://github.com/pymedusa/Medusa/pull/5145))
+- Fixed UI bugs on:
+  - Home page (when using "split home in tabs") ([#5126](https://github.com/pymedusa/Medusa/pull/5126))
+  - Status page ([#5127](https://github.com/pymedusa/Medusa/pull/5127))
+  - Preview Rename page ([#5169](https://github.com/pymedusa/Medusa/pull/5169))
 
 
 -----
