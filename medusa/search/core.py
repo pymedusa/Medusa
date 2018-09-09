@@ -731,7 +731,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 log.debug(u'Fallback episode search initiated')
                 search_mode = u'eponly'
             else:
-                log.debug(u'Fallback season pack search initiate')
+                log.debug(u'Fallback season pack search initiated')
                 search_mode = u'sponly'
 
         # skip to next provider if we have no results to process
@@ -820,7 +820,7 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
         )
 
         if all(wanted_episodes):
-            log.info(u'All episodes in this season are needed, adding {0} {1}',
+            log.info(u'All episodes of this season are needed with this quality, adding {0} {1}',
                      candidate.provider.provider_type,
                      candidate.name)
 
@@ -829,7 +829,13 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
                 multi_candidates.append(candidate)
 
         elif not any(wanted_episodes):
-            log.debug(u'No episodes in this season are needed at this quality, ignoring {0} {1}',
+            log.debug(u'No episodes of this season are needed with this quality, ignoring {0} {1}',
+                      candidate.provider.provider_type,
+                      candidate.name)
+            continue
+
+        else:
+            log.debug(u'Only some episodes of this season are needed with this quality, ignoring {0} {1}',
                       candidate.provider.provider_type,
                       candidate.name)
             continue
