@@ -2,10 +2,7 @@
 
 ############################ Copyrights and license ############################
 #                                                                              #
-# Copyright 2017 Jannis Gebauer <ja.geb@me.com>                                #
-# Copyright 2017 Simon <spam@esemi.ru>                                         #
-# Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
-# Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
+# Copyright 2018 Steve Kowalik <steven@wedontsleep.org>                        #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.readthedocs.io/                                              #
@@ -26,55 +23,49 @@
 ################################################################################
 
 import github.GithubObject
-import github.PaginatedList
-
-import github.Gist
-import github.Repository
-import github.NamedUser
-import github.Plan
-import github.Organization
-import github.UserKey
-import github.Issue
-import github.Event
-import github.Authorization
-import github.Notification
-
-import Consts
-
-INTEGRATION_PREVIEW_HEADERS = {"Accept": Consts.mediaTypeIntegrationPreview}
 
 
-class Installation(github.GithubObject.NonCompletableGithubObject):
+class RequiredStatusChecks(github.GithubObject.CompletableGithubObject):
     """
-    This class represents Installations. The reference can be found here https://developer.github.com/v3/apps/installations/
+    This class represents Required Status Checks. The reference can be found here https://developer.github.com/v3/repos/branches/#get-required-status-checks-of-protected-branch
     """
 
     def __repr__(self):
-        return self.get__repr__({"id": self._id.value})
+        return self.get__repr__({"strict": self._strict.value, "url": self._url.value})
 
     @property
-    def id(self):
-        return self._id
-
-    def get_repos(self):
+    def strict(self):
         """
-        :calls: `GET /installation/repositories <https://developer.github.com/v3/integrations/installations/#list-repositories>`_
-        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Repository.Repository`
+        :type: bool
         """
-        url_parameters = dict()
+        self._completeIfNotSet(self._strict)
+        return self._strict.value
 
-        return github.PaginatedList.PaginatedList(
-            contentClass=github.Repository.Repository,
-            requester=self._requester,
-            firstUrl="/installation/repositories",
-            firstParams=url_parameters,
-            headers=INTEGRATION_PREVIEW_HEADERS,
-            list_item='repositories'
-        )
+    @property
+    def contexts(self):
+        """
+        :type: list of string
+        """
+        self._completeIfNotSet(self._contexts)
+        return self._contexts.value
+
+    @property
+    def url(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._url)
+        return self._url.value
 
     def _initAttributes(self):
-        self._id = github.GithubObject.NotSet
+        self._strict = github.GithubObject.NotSet
+        self._contexts = github.GithubObject.NotSet
+        self._url = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
-        if "id" in attributes:  # pragma no branch
-            self._id = self._makeIntAttribute(attributes["id"])
+        if "strict" in attributes:  # pragma no branch
+            self._strict = self._makeBoolAttribute(attributes["strict"])
+        if "contexts" in attributes:  # pragma no branch
+            self._contexts = self._makeListOfStringsAttribute(attributes["contexts"])
+        if "url" in attributes:  # pragma no branch
+            self._url = self._makeStringAttribute(attributes["url"])
