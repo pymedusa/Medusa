@@ -15,6 +15,7 @@
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
 # Copyright 2017 Jannis Gebauer <ja.geb@me.com>                                #
 # Copyright 2018 Gilad Shefer <gshefer@redhat.com>                             #
+# Copyright 2018 Joel Koglin <JoelKoglin@gmail.com>                            #
 # Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
@@ -35,6 +36,11 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.             #
 #                                                                              #
 ################################################################################
+
+try:
+    from urllib.parse import parse_qs
+except ImportError:
+    from urlparse import parse_qs
 
 import github.GithubObject
 
@@ -100,6 +106,11 @@ class PaginatedList(PaginatedListBase):
         for repo in user.get_repos():
             print(repo.name)
 
+    If you want to know the total number of items in the list::
+
+        print(user.get_repos().totalCount)
+        print(len(user.get_repos()))
+
     You can also index them or take slices::
 
         second_repo = user.get_repos()[1]
@@ -110,7 +121,7 @@ class PaginatedList(PaginatedListBase):
         for repo in user.get_repos().reversed:
             print(repo.name)
 
-    And if you really need it, you can explicitely access a specific page::
+    And if you really need it, you can explicitly access a specific page::
 
         some_repos = user.get_repos().get_page(0)
         some_other_repos = user.get_repos().get_page(3)
@@ -134,8 +145,21 @@ class PaginatedList(PaginatedListBase):
     @property
     def totalCount(self):
         if not self.__totalCount:
-            self._grow()
-
+            params = {} if self.__nextParams is None else self.__nextParams.copy()
+            # set per_page = 1 so the totalCount is just the number of pages
+            params.update({"per_page": 1})
+            headers, data = self.__requester.requestJsonAndCheck(
+                "GET",
+                self.__firstUrl,
+                parameters=params,
+                headers=self.__headers
+            )
+            if 'link' not in headers:
+                self.__totalCount = len(data)
+            else:
+                links = self.__parseLinkHeader(headers)
+                lastUrl = links.get("last")
+                self.__totalCount = int(parse_qs(lastUrl)['page'][0])
         return self.__totalCount
 
     def _getLastPageUrl(self):

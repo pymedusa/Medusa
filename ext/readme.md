@@ -24,7 +24,7 @@
 :warning: | `funcsigs` | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `mock`(?) | -
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, `python-twitter`, ????? | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.40](https://pypi.org/project/PyGithub/1.40/) | **`medusa`** | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43](https://pypi.org/project/PyGithub/1.43/) | **`medusa`** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 :: | `guessit` | [3.0.0](https://pypi.org/project/guessit/3.0.0/) | **`medusa`**, `subliminal` | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
