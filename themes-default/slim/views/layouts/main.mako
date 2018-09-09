@@ -95,7 +95,6 @@
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
