@@ -15,7 +15,7 @@ window.app = {};
 window.app = new Vue({
     store,
     router,
-    el: '#vue-wrap'
+    el: '#vue-wrap',
     mounted() {
         $('.seriesCheck').on('click', function() {
             const serCheck = this;
