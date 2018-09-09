@@ -16,7 +16,7 @@
   - Home page (when using "split home in tabs") ([#5126](https://github.com/pymedusa/Medusa/pull/5126))
   - Status page ([#5127](https://github.com/pymedusa/Medusa/pull/5127))
   - Preview Rename page ([#5169](https://github.com/pymedusa/Medusa/pull/5169))
-  - Fixed bug in TorrentLeech provider when fetching multiple pages of results ([#5172](https://github.com/pymedusa/Medusa/pull/5172))
+- Fixed bug in TorrentLeech provider when fetching multiple pages of results ([#5172](https://github.com/pymedusa/Medusa/pull/5172))
 
 
 -----
