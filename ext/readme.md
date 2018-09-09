@@ -13,7 +13,7 @@
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
-:: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.5.0](https://pypi.org/project/configparser/3.5.0/) | `adba` | -
+:: | <code><b>configparser</b>.py</code><br>`configparser.pth`<br>`backports.configparser` | [3.5.0](https://pypi.org/project/configparser/3.5.0/) | `adba` | `configparser.pth` was renamed from `configparser-3.5.0-py2.7-nspkg.pth`
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2`, `vcrpy`(?) | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `validators` | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | -
