@@ -41,6 +41,7 @@ from logging import (
 from logging.handlers import RotatingFileHandler
 
 import adba
+
 import knowit
 
 from medusa import app
