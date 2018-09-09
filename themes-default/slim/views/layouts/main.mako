@@ -107,7 +107,6 @@
 
         <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
