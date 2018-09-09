@@ -1965,8 +1965,13 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True):
-        """Return JSON representation."""
+    def to_json(self, detailed=True, fetch=False):
+        """
+        Return JSON representation.
+
+        :param detailed: Append seasons & episodes data as well
+        :param fetch: Fetch and append external data (for example AniDB release groups)
+        """
         bw_list = self.release_groups or BlackAndWhiteList(self)
 
         data = {}
@@ -2018,22 +2023,27 @@ class Series(TV):
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = list(self.aliases)
         data['config']['release'] = {}
-        # These are for now considered anime-only options, as they query anidb for available release groups.
+        data['config']['release']['ignoredWords'] = self.release_ignore_words
+        data['config']['release']['requiredWords'] = self.release_required_words
+
+        # These are for now considered anime-only options
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
-            try:
-                data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
-            except AnidbAdbaConnectionException as error:
-                data['config']['release']['allgroups'] = []
-                log.warning(
-                    'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
-                    '\nError: {error}',
-                    {'show': self.name, 'error': error}
-                )
 
-        data['config']['release']['ignoredWords'] = self.release_ignore_words
-        data['config']['release']['requiredWords'] = self.release_required_words
+        # Fetch data from external sources
+        if fetch:
+            # These are for now considered anime-only options, as they query anidb for available release groups.
+            if self.is_anime:
+                try:
+                    data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
+                except AnidbAdbaConnectionException as error:
+                    data['config']['release']['allgroups'] = []
+                    log.warning(
+                        'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
+                        '\nError: {error}',
+                        {'show': self.name, 'error': error}
+                    )
 
         if detailed:
             episodes = self.get_all_episodes()
