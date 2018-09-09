@@ -18,7 +18,9 @@ window.app = new Vue({
 
             $('.editCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     editArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
@@ -46,37 +48,49 @@ window.app = new Vue({
 
             $('.updateCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     updateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
             $('.refreshCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     refreshArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
             $('.renameCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     renameArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
             $('.subtitleCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     subtitleArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
             $('.removeCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     removeArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
             $('.imageCheck').each((index, element) => {
                 if (element.checked === true) {
+                    <%text>
                     imageUpdateArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                    </%text>
                 }
             });
 
@@ -101,7 +115,9 @@ window.app = new Vue({
                     confirm() {
                         $('.deleteCheck').each((index, element) => {
                             if (element.checked === true) {
+                                <%text>
                                 deleteArr.push(`${$(element).attr('data-indexer-name')}${$(element).attr('data-series-id')}`);
+                                </%text>
                             }
                         });
                         if (totalCount === 0) {
