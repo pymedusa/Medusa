@@ -7,8 +7,8 @@ import AppLink from './app-link.vue';
 import PlotInfo from './plot-info.vue';
 
 export default {
-    name: 'displayShow',
-    template: '#display-show-template',
+    name: 'show',
+    template: '#show-template',
     components: {
         AppLink,
         PlotInfo

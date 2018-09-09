@@ -220,7 +220,11 @@
 
 <div id="row-show-episodes-controls" class="row">
     <div id="col-show-episodes-controls" class="col-md-12">
+<<<<<<< HEAD
         <div v-if="$route.name === 'displayShow'" class="row key"> <!-- Checkbox filter controls -->
+=======
+        <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
+>>>>>>> d6d9afb2b... displayShow -> Show
             <div class="col-lg-12" id="checkboxControls">
                 <div id="key-padding" class="pull-left top-5">
                     <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>

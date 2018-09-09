@@ -8,7 +8,7 @@
     from medusa.helper.common import pretty_file_size
 %>
 <%block name="scripts">
-<script type="text/x-template" id="display-show-template">
+<script type="text/x-template" id="show-template">
 <div v-show="show.indexer">
     <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
     <input type="hidden" id="series-id" value="${show.series_id}" />
@@ -385,8 +385,8 @@ window.app = new Vue({
     router,
     data() {
         return {
-            // This loads display-show.vue
-            pageComponent: 'displayShow'
+            // This loads show.vue
+            pageComponent: 'show'
         }
     },
     created() {

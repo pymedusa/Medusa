@@ -24,7 +24,6 @@ import {
     AppLink,
     Asset,
     Backstretch,
-    DisplayShow,
     FileBrowser,
     Home,
     LanguageSelect,
@@ -34,6 +33,7 @@ import {
     RootDirs,
     ScrollButtons,
     SelectList,
+    Show,
     ShowSelector,
     SnatchSelection,
     Status
@@ -80,7 +80,6 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
-    window.components.push(DisplayShow);
     window.components.push(FileBrowser);
     window.components.push(Home);
     window.components.push(LanguageSelect);
@@ -90,6 +89,7 @@ if (window) {
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
+    window.components.push(Show);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
     window.components.push(Status);
