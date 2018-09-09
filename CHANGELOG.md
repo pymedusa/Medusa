@@ -13,7 +13,7 @@
 - Fixed error due to `null` values in the episodes database table ([#5132](https://github.com/pymedusa/Medusa/pull/5132))
 - Fixed extraneous calls to AniDB when navigating to any show's page ([#5166](https://github.com/pymedusa/Medusa/pull/5166))
 - Fixed being unable to start Medusa due to an import error ([#5145](https://github.com/pymedusa/Medusa/pull/5145))
-
+- Fixed rare exception caused by season searches with Binsearch provider ([#5175](https://github.com/pymedusa/Medusa/pull/5175))
 
 -----
 
