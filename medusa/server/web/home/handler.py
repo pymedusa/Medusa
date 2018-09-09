@@ -253,7 +253,7 @@ class Home(WebRoot):
         self.set_header('Access-Control-Allow-Headers', 'x-requested-with')
 
         return json.dumps({
-            pid: app.PID if app.started else ''
+            'pid': app.PID if app.started else ''
         })
 
     @staticmethod
