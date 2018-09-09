@@ -24,5 +24,6 @@ export { default as SelectList } from './select-list.vue';
 export { default as Show } from './show.vue';
 export { default as ShowSelector } from './show-selector.vue';
 export { default as SnatchSelection } from './snatch-selection.vue';
+export { default as StateSwitch } from './state-switch.vue';
 export { default as Status } from './status.vue';
 export { NotFound } from './http';

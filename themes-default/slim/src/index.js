@@ -36,6 +36,7 @@ import {
     Show,
     ShowSelector,
     SnatchSelection,
+    StateSwitch,
     Status
 } from './components';
 
@@ -92,6 +93,7 @@ if (window) {
     window.components.push(Show);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
+    window.components.push(StateSwitch);
     window.components.push(Status);
 }
 const UTIL = {
