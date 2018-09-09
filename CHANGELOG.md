@@ -5,11 +5,15 @@
 #### Improvements
 - Updated `guessit` to version 3.0.0 ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
 - Updated the API v2 endpoint to handle concurrent requests ([#4970](https://github.com/pymedusa/Medusa/pull/4970))
+- Converted some of the show header to Vue ([#5087](https://github.com/pymedusa/Medusa/pull/5087))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
 - Fixed UI bugs in home page (when using "split home in tabs") and status page ([#5126](https://github.com/pymedusa/Medusa/pull/5126) + [#5127](https://github.com/pymedusa/Medusa/pull/5127))
+- Fixed error due to `null` values in the episodes database table ([#5132](https://github.com/pymedusa/Medusa/pull/5132))
+- Fixed extraneous calls to AniDB when navigating to any show's page ([#5166](https://github.com/pymedusa/Medusa/pull/5166))
 - Fixed being unable to start Medusa due to an import error ([#5145](https://github.com/pymedusa/Medusa/pull/5145))
+
 
 -----
 

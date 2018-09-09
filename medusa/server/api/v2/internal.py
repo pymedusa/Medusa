@@ -52,8 +52,7 @@ class InternalHandler(BaseRequestHandler):
                       {'func': resource_function_name, 'resource': resource})
             return self._bad_request('{key} is a invalid resource'.format(key=resource))
 
-        data = resource_function()
-        return self._ok(data=data)
+        return resource_function()
 
     # existingSeries
     def resource_existing_series(self):
