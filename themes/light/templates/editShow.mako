@@ -62,7 +62,8 @@ window.app = new Vue({
     created() {
         const { $store, seriesSlug } = this;
 
-        const params = { detailed: false }; // Don't get episodes
+        // Don't get episodes, but do get external information for AniDB release groups
+        const params = { detailed: false, fetch: true };
         api.get('series/' + seriesSlug, { params }).then(response => {
             this.series = Object.assign({}, this.series, response.data);
             this.seriesLoaded = true;
