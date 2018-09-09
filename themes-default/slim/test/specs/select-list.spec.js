@@ -58,33 +58,3 @@ test.failing('renders with values', t => {
 
     t.snapshot(wrapper.html());
 });
-
-test.failing('renders with Python dict values (v0.2.9 bug)', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(SelectList, {
-        localVue,
-        store,
-        propsData: {
-            listItems: [
-                `{u'id': 0, u'value': u'!sync'}`, // eslint-disable-line quotes
-                `{u'id': 1, u'value': u'lftp-pget-status'}` // eslint-disable-line quotes
-            ]
-        }
-    });
-
-    const expectedItems = [
-        '!sync',
-        'lftp-pget-status'
-    ];
-
-    const inputWrapperArray = wrapper.findAll('li input[type="text"]');
-
-    t.is(inputWrapperArray.length, expectedItems.length);
-
-    inputWrapperArray.wrappers.forEach((inputWrapper, index) => {
-        const { element } = inputWrapper;
-        t.is(element.value, expectedItems[index]);
-    });
-
-    t.snapshot(wrapper.html());
-});

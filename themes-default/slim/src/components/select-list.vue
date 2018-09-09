@@ -63,6 +63,14 @@ export default {
         };
     },
     created() {
+        /*
+        These are needed in order to test the component,
+        but they break the component in the application:
+
+        this.editItems = this.sanitize(this.listItems);
+        this.csv = this.editItems.map(item => item.value).join(', ');
+        */
+
         /**
          * ListItems property might receive values originating from the API,
          * that are sometimes not available when rendering.
@@ -72,7 +80,7 @@ export default {
             unwatchProp();
 
             this.editItems = this.sanitize(this.listItems);
-            this.csv = this.editItems.map(x => x.value).join(', ');
+            this.csv = this.editItems.map(item => item.value).join(', ');
         });
     },
     methods: {
@@ -110,12 +118,6 @@ export default {
 
             return values.map((value, index) => {
                 if (typeof (value) === 'string') {
-                    // Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
-                    if (value.startsWith('{') && value.endsWith('}')) {
-                        // Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
-                        value = value.match(/u?'value': u?'(.+)'/)[1].replace(`\\'`, `'`); // eslint-disable-line quotes
-                    }
-
                     return {
                         id: index,
                         value
