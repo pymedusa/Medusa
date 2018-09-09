@@ -135,7 +135,7 @@ class AniDBLink(threading.Thread):
                     self.crypt = None
                 if resp.rescode in (b'504', b'555'):
                     self.banned = True
-                    logger.critical((b"AniDB API informs that user or client is banned:", resp.resstr))
+                    logger.critical(("AniDB API informs that user or client is banned:", resp.resstr))
                 resp.handle()
                 if not cmd or not cmd.mode:
                     self._resp_queue(resp)
@@ -206,7 +206,7 @@ class AniDBLink(threading.Thread):
 
     def _send(self, command):
         if self.banned:
-            logger.debug(b"NetIO | BANNED")
+            logger.debug("NetIO | BANNED")
             raise AniDBError(b"Not sending, banned")
         self._do_delay()
         self.lastpacket = time()
@@ -215,7 +215,7 @@ class AniDBLink(threading.Thread):
 
         self.sock.sendto(bytes(data, b"ASCII"), self.target)
         if command.command == b'AUTH':
-            logger.debug(b"NetIO > sensitive data is not logged!")
+            logger.debug("NetIO > sensitive data is not logged!")
 
     def new_tag(self):
         if not len(self.tags):
