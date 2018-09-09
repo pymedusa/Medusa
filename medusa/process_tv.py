@@ -512,14 +512,14 @@ class ProcessResult(object):
                 'AND season = ? '
                 'AND episode = ? '
                 'AND status IN (?, ?, ?) ',
-                [history_result[0][b'indexer_id'],
-                 history_result[0][b'showid'],
-                 history_result[0][b'season'],
-                 history_result[0][b'episode']
+                [history_result[0]['indexer_id'],
+                 history_result[0]['showid'],
+                 history_result[0]['season'],
+                 history_result[0]['episode']
                  ] + snatched_statuses
             )
 
-            if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
+            if not tv_episodes_result or tv_episodes_result[0]['manually_searched'] == 0:
                 self.log("You're trying to post-process an automatically searched file that has"
                          ' already been processed, skipping: {0}'.format(video_file), logger.DEBUG)
                 return True
@@ -642,7 +642,7 @@ class ProcessResult(object):
                     main_db_con = db.DBConnection()
                     sql_results = main_db_con.select('SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1',
                                                      [parse_result.series.indexer, parse_result.series.indexerid])
-                    return bool(sql_results[0][b'subtitles']) if sql_results else False
+                    return bool(sql_results[0]['subtitles']) if sql_results else False
 
                 logger.log('Empty indexer ID for: {name}'.format(name=name), logger.WARNING)
             except (InvalidNameException, InvalidShowException):

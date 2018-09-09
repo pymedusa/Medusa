@@ -264,6 +264,8 @@
 </template>
 
 <script>
+import formatDate from 'date-fns/format';
+
 export default {
     name: 'name-pattern',
     props: {
@@ -341,7 +343,7 @@ export default {
     },
     methods: {
         getDateFormat(format) {
-            return dateFns.format(new Date(), format);
+            return formatDate(new Date(), format);
         },
         testNaming(pattern, selectedMultiEpStyle, animeType) {
             console.debug(`Test pattern ${pattern} for ${(selectedMultiEpStyle) ? 'multi' : 'single ep'}`);

@@ -10,6 +10,7 @@ import logging
 import operator
 import traceback
 from builtins import object
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 
 from babelfish.language import Language
@@ -21,12 +22,16 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from six import itervalues, string_types, text_type, viewitems
 
+from tornado.gen import coroutine
 from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
+from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
 
 class BaseRequestHandler(RequestHandler):
@@ -74,6 +79,75 @@ class BaseRequestHandler(RequestHandler):
         else:
             return self._unauthorized('Invalid token.')
 
+    def async_call(self, name, *args, **kwargs):
+        """Call the actual HTTP method, if available."""
+        try:
+            method = getattr(self, 'http_' + name)
+        except AttributeError:
+            raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
+
+        def blocking_call():
+            try:
+                return method(*args, **kwargs)
+            except Exception as error:
+                self._handle_request_exception(error)
+
+        return IOLoop.current().run_in_executor(executor, blocking_call)
+
+    @coroutine
+    def head(self, *args, **kwargs):
+        """HEAD HTTP method."""
+        content = self.async_call('head', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
+    @coroutine
+    def get(self, *args, **kwargs):
+        """GET HTTP method."""
+        content = self.async_call('get', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
+    @coroutine
+    def post(self, *args, **kwargs):
+        """POST HTTP method."""
+        content = self.async_call('post', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
+    @coroutine
+    def delete(self, *args, **kwargs):
+        """DELETE HTTP method."""
+        content = self.async_call('delete', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
+    @coroutine
+    def patch(self, *args, **kwargs):
+        """PATCH HTTP method."""
+        content = self.async_call('patch', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
+    @coroutine
+    def put(self, *args, **kwargs):
+        """PUT HTTP method."""
+        content = self.async_call('put', *args, **kwargs)
+        if content is not None:
+            content = yield content
+        if not self._finished:
+            self.finish(content)
+
     def write_error(self, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
         if app.DEVELOPER and 'exc_info' in kwargs:
@@ -83,10 +157,11 @@ class BaseRequestHandler(RequestHandler):
                 self.write(line)
             self.finish()
         else:
-            self._internal_server_error()
+            response = self._internal_server_error()
+            self.finish(response)
 
     def options(self, *args, **kwargs):
-        """Options."""
+        """OPTIONS HTTP method."""
         self._no_content()
 
     def set_default_headers(self):
@@ -105,7 +180,7 @@ class BaseRequestHandler(RequestHandler):
             allowed_methods += self.allowed_methods
         self.set_header('Access-Control-Allow-Methods', ', '.join(allowed_methods))
 
-    def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
+    def api_response(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
         """End the api request writing error or data to http response."""
         content_type = content_type or 'application/json; charset=UTF-8'
         if headers is not None:
@@ -114,21 +189,23 @@ class BaseRequestHandler(RequestHandler):
         if error is not None and status is not None:
             self.set_status(status)
             self.set_header('content-type', content_type)
-            self.finish({
+            return {
                 'error': error
-            })
+            }
         else:
             self.set_status(status or 200)
             if data is not None:
                 self.set_header('content-type', content_type)
-                self.finish(json.JSONEncoder(default=json_default_encoder).encode(data))
+                return json.JSONEncoder(default=json_default_encoder).encode(data)
             elif stream:
                 # This is mainly for assets
                 self.set_header('content-type', content_type)
-                self.finish(stream)
+                return stream
             elif kwargs and 'chunk' in kwargs:
                 self.set_header('content-type', content_type)
-                self.finish(kwargs)
+                return kwargs
+
+        return None
 
     @classmethod
     def _create_base_url(cls, prefix_url, resource_name, *args):
@@ -165,14 +242,15 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _handle_request_exception(self, e):
-        if isinstance(e, HTTPError):
-            self.api_finish(e.code, e.message)
+    def _handle_request_exception(self, error):
+        if isinstance(error, HTTPError):
+            response = self.api_response(error.code, error.message)
+            self.finish(response)
         else:
-            super(BaseRequestHandler, self)._handle_request_exception(e)
+            super(BaseRequestHandler, self)._handle_request_exception(error)
 
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
-        self.api_finish(200, data=data, headers=headers, stream=stream, content_type=content_type)
+        return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
     def _created(self, data=None, identifier=None):
         if identifier is not None:
@@ -181,37 +259,37 @@ class BaseRequestHandler(RequestHandler):
                 location += '/'
 
             self.set_header('Location', '{0}{1}'.format(location, identifier))
-        self.api_finish(201, data=data)
+        return self.api_response(201, data=data)
 
     def _accepted(self):
-        self.api_finish(202)
+        return self.api_response(202)
 
     def _no_content(self):
-        self.api_finish(204)
+        return self.api_response(204)
 
     def _multi_status(self, data=None, headers=None):
-        self.api_finish(207, data=data, headers=headers)
+        return self.api_response(207, data=data, headers=headers)
 
     def _bad_request(self, error):
-        self.api_finish(400, error=error)
+        return self.api_response(400, error=error)
 
     def _unauthorized(self, error):
-        self.api_finish(401, error=error)
+        return self.api_response(401, error=error)
 
     def _not_found(self, error='Resource not found'):
-        self.api_finish(404, error=error)
+        return self.api_response(404, error=error)
 
     def _method_not_allowed(self, error):
-        self.api_finish(405, error=error)
+        return self.api_response(405, error=error)
 
     def _conflict(self, error):
-        self.api_finish(409, error=error)
+        return self.api_response(409, error=error)
 
     def _internal_server_error(self, error='Internal Server Error'):
-        self.api_finish(500, error=error)
+        return self.api_response(500, error=error)
 
     def _not_implemented(self):
-        self.api_finish(501)
+        return self.api_response(501)
 
     @classmethod
     def _raise_bad_request_error(cls, error):
@@ -351,9 +429,9 @@ class BaseRequestHandler(RequestHandler):
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
 
-    def get(self, *args, **kwargs):
+    def http_get(self, *args, **kwargs):
         """Get."""
-        self.api_finish(status=404)
+        return self.api_response(status=404)
 
     @classmethod
     def create_app_handler(cls, base):

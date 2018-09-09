@@ -1,4 +1,6 @@
 <script>
+import { isVisible } from 'is-visible';
+import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api, apiRoute } from '../api';
 import AppLink from './app-link.vue';
@@ -23,18 +25,38 @@ export default {
             titleTemplate: '%s | Medusa'
         };
     },
+    props: {
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
+        },
+        /**
+         * Show indexer
+         */
+        showIndexer: {
+            type: String
+        }
+    },
+    data() {
+        return {
+            jumpToSeason: 'jump'
+        };
+    },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            indexerConfig: state => state.config.indexers.config.indexers
         }),
         ...mapGetters([
             'getShowById'
         ]),
         indexer() {
-            return this.$route.query.indexername;
+            return this.showIndexer || this.$route.query.indexername;
         },
         id() {
-            return this.$route.query.seriesid;
+            return this.showId || this.$route.query.seriesid;
         },
         show() {
             const { indexer, id, getShowById, shows, $store } = this;
@@ -49,7 +71,24 @@ export default {
                 return defaults.show;
             }
 
+            // Not detailed
+            if (!show.seasons) {
+                $store.dispatch('getShow', { id, indexer, detailed: true });
+                return getShowById({ indexer, id });
+            }
+
             return show;
+        },
+        showIndexerUrl() {
+            const { show, indexerConfig } = this;
+
+            if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
+                return undefined;
+            }
+
+            const id = show.id[show.indexer];
+            const indexerUrl = indexerConfig[show.indexer].showUrl;
+            return `${indexerUrl}${id}`;
         }
     },
     mounted() {
@@ -62,13 +101,17 @@ export default {
             showHideRows
         } = this;
 
-        $(window).on('resize', () => {
-            this.reflowLayout();
+        this.$watch('show', () => {
+            this.$nextTick(() => this.reflowLayout());
+        });
+
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
         });
 
         window.addEventListener('load', () => {
-            this.reflowLayout();
-
             $.ajaxEpSearch({
                 colorRow: true
             });
@@ -76,17 +119,6 @@ export default {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
             $.ajaxEpSubtitlesSearch();
             $.ajaxEpRedownloadSubtitle();
-        });
-
-        $(document.body).on('change', '#seasonJump', event => {
-            const id = $('#seasonJump option:selected').val();
-            if (id && id !== 'jump') {
-                const season = $('#seasonJump option:selected').data('season');
-                $('html,body').animate({ scrollTop: $('[name="' + id.substring(1) + '"]').offset().top - 100 }, 'slow');
-                $('#collapseSeason-' + season).collapse('show');
-                location.hash = id;
-            }
-            $(event.currentTarget).val('jump');
         });
 
         $(document.body).on('click', '#changeStatus', () => {
@@ -158,24 +190,22 @@ export default {
             });
         });
 
-        // Selects all visible episode checkboxes.
-        $(document.body).on('click', '.seriesCheck', () => {
-            $('.epCheck:visible').each((index, element) => {
-                element.checked = true;
-            });
-            $('.seasonCheck:visible').each((index, element) => {
-                element.checked = true;
-            });
+        // Selects all visible episode checkboxes
+        document.addEventListener('click', event => {
+            if (event.target && event.target.className.includes('seriesCheck')) {
+                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
+                    element.checked = true;
+                });
+            }
         });
 
         // Clears all visible episode checkboxes and the season selectors
-        $(document.body).on('click', '.clearAll', () => {
-            $('.epCheck:visible').each((index, element) => {
-                element.checked = false;
-            });
-            $('.seasonCheck:visible').each((index, element) => {
-                element.checked = false;
-            });
+        document.addEventListener('click', event => {
+            if (event.target && event.target.className.includes('clearAll')) {
+                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
+                    element.checked = false;
+                });
+            }
         });
 
         // Show/hide different types of rows when the checkboxes are changed
@@ -265,26 +295,23 @@ export default {
             $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
         });
 
-        // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
-        // Season to Show Episodes or Hide Episodes.
-        $('.collapse.toggle').on('hide.bs.collapse', function() {
-            const reg = /collapseSeason-(\d+)/g;
-            const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Show Episodes');
-            $('#season-' + result[1] + '-cols').addClass('shadow');
+        // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
+        document.querySelectorAll('.collapse.toggle').forEach(element => {
+            element.addEventListener('hide.bs.collapse', () => {
+                // On hide
+                const reg = /collapseSeason-(\d+)/g;
+                const result = reg.exec(this.id);
+                $('#showseason-' + result[1]).text('Show Episodes');
+                $('#season-' + result[1] + '-cols').addClass('shadow');
+            });
+            element.addEventListener('show.bs.collapse', () => {
+                // On show
+                const reg = /collapseSeason-(\d+)/g;
+                const result = reg.exec(this.id);
+                $('#showseason-' + result[1]).text('Hide Episodes');
+                $('#season-' + result[1] + '-cols').removeClass('shadow');
+            });
         });
-        $('.collapse.toggle').on('show.bs.collapse', function() {
-            const reg = /collapseSeason-(\d+)/g;
-            const result = reg.exec(this.id);
-            $('#showseason-' + result[1]).text('Hide Episodes');
-            $('#season-' + result[1] + '-cols').removeClass('shadow');
-        });
-
-        // Generate IMDB stars
-        $('.imdbstars').each((index, element) => {
-            $(element).html($('<span/>').width($(element).text() * 12));
-        });
-        attachImdbTooltip(); // eslint-disable-line no-undef
 
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions();
@@ -306,13 +333,18 @@ export default {
     },
     methods: {
         /**
-         * Moves summary background and checkbox controls
+         * Attaches imdb tool tip,
+         * moves summary background and checkbox controls
          */
         reflowLayout() {
+            console.debug('Reflowing layout');
+
             this.$nextTick(() => {
                 this.moveSummaryBackground();
                 this.movecheckboxControlsBackground();
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the summary background position and size on page load and resize
@@ -427,17 +459,19 @@ export default {
         // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions() {
-            const indexerName = document.querySelector('#indexer-name').value;
-            const seriesId = document.querySelector('#series-id').value;
-            if (!indexerName || !seriesId) {
+            const { indexer, id } = this;
+
+            if (!indexer || !id) {
                 console.warn('Unable to get season scene exceptions: Unknown series identifier');
                 return;
             }
-            const params = {
-                indexername: indexerName,
-                seriesid: seriesId
-            };
-            apiRoute.get('home/getSeasonSceneExceptions', { params }).then(response => {
+
+            apiRoute.get('home/getSeasonSceneExceptions', {
+                params: {
+                    indexername: indexer,
+                    seriesid: id
+                }
+            }).then(response => {
                 this.setSeasonSceneExceptions(response.data);
             }).catch(error => {
                 console.error('Error getting season scene exceptions', error);
@@ -504,6 +538,41 @@ export default {
                     $('#' + seasonNo + '-cols').show();
                 }
             });
+        },
+        toggleSpecials() {
+            this.$store.dispatch('setConfig', {
+                layout: {
+                    show: {
+                        specials: !this.config.layout.show.specials
+                    }
+                }
+            });
+        },
+        reverse(array) {
+            return array ? array.slice().reverse() : [];
+        },
+        dedupeGenres(genres) {
+            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
+        }
+    },
+    watch: {
+        jumpToSeason(season) {
+            // Don't jump until an option is selected
+            if (season !== 'jump') {
+                console.debug(`Jumping to ${season}`);
+
+                scrollTo(season, 100, {
+                    container: 'body',
+                    easing: 'ease-in',
+                    offset: -100
+                });
+
+                // Update URL hash
+                location.hash = season;
+
+                // Reset jump
+                this.jumpToSeason = 'jump';
+            }
         }
     }
 };
