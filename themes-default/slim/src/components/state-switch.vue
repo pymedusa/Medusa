@@ -39,7 +39,7 @@ export default {
         },
         alt() {
             const { realState: state } = this;
-            return this.realState.charAt(0).toUpperCase() + this.realState.substr(1);
+            return state.charAt(0).toUpperCase() + state.substr(1);
         },
         realState() {
             const { state } = this;
