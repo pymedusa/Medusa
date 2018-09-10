@@ -96,6 +96,7 @@ if (window) {
     window.components.push(SnatchSelection);
     window.components.push(Status);
 }
+
 const UTIL = {
     exec(controller, action) {
         const ns = MEDUSA;
@@ -140,15 +141,6 @@ const UTIL = {
         window.dispatchEvent(new Event('medusa-loaded'));
     }
 };
-
-$.fn.extend({
-    addRemoveWarningClass(_) {
-        if (_) {
-            return $(this).removeClass('warning');
-        }
-        return $(this).addClass('warning');
-    }
-});
 
 const { pathname } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
