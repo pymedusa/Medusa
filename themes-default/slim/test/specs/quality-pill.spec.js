@@ -43,6 +43,26 @@ test('renders quality pills correctly', t => {
         showTitle: true
     });
 
+    pillTestCase(t, 'Unknown, allowed', {
+        quality: 1
+    });
+
+    pillTestCase(t, 'SDTV, allowed', {
+        quality: 2
+    });
+
+    pillTestCase(t, 'SD DVD, allowed', {
+        quality: 4
+    });
+
+    pillTestCase(t, 'RawHD, allowed', {
+        quality: 16
+    });
+
+    pillTestCase(t, 'SD (TV+DVD), allowed', {
+        quality: 2 | 4
+    });
+
     pillTestCase(t, '1080p WEB-DL, allowed', {
         quality: 128
     });
