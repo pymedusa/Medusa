@@ -18,7 +18,7 @@ export default {
         quality: {
             type: Number,
             required: true,
-            validator: value => value >= 0
+            validator: value => (value >>> 0) >= 0 // Unsigned int
         },
         showTitle: {
             type: Boolean,
