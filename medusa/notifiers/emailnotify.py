@@ -51,12 +51,12 @@ class Notifier(object):
         """
         msg = MIMEText('This is a test message from Medusa. If you\'re reading this, the test succeeded.')
         if app.EMAIL_SUBJECT:
-            msg[b'Subject'] = '[TEST] ' + app.EMAIL_SUBJECT
+            msg['Subject'] = '[TEST] ' + app.EMAIL_SUBJECT
         else:
-            msg[b'Subject'] = 'Medusa: Test Message'
-        msg[b'From'] = smtp_from
-        msg[b'To'] = to
-        msg[b'Date'] = formatdate(localtime=True)
+            msg['Subject'] = 'Medusa: Test Message'
+        msg['From'] = smtp_from
+        msg['To'] = to
+        msg['Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
     def notify_snatch(self, ep_name, is_proper, title='Snatched:'):
@@ -97,12 +97,12 @@ class Notifier(object):
                         msg = MIMEText('Episode Snatched')
 
                 if app.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[SN] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '[SN] ' + app.EMAIL_SUBJECT
                 else:
-                    msg[b'Subject'] = 'Snatched: ' + ep_name
-                msg[b'From'] = app.EMAIL_FROM
-                msg[b'To'] = ','.join(to)
-                msg[b'Date'] = formatdate(localtime=True)
+                    msg['Subject'] = 'Snatched: ' + ep_name
+                msg['From'] = app.EMAIL_FROM
+                msg['To'] = ','.join(to)
+                msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Snatch notification sent to {recipient} for {episode}',
@@ -148,12 +148,12 @@ class Notifier(object):
                         msg = MIMEText('Episode Downloaded')
 
                 if app.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[DL] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '[DL] ' + app.EMAIL_SUBJECT
                 else:
-                    msg[b'Subject'] = 'Downloaded: ' + ep_name
-                msg[b'From'] = app.EMAIL_FROM
-                msg[b'To'] = ','.join(to)
-                msg[b'Date'] = formatdate(localtime=True)
+                    msg['Subject'] = 'Downloaded: ' + ep_name
+                msg['From'] = app.EMAIL_FROM
+                msg['To'] = ','.join(to)
+                msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
@@ -200,11 +200,11 @@ class Notifier(object):
                         msg = MIMEText('Episode Subtitle Downloaded')
 
                 if app.EMAIL_SUBJECT:
-                    msg[b'Subject'] = '[ST] ' + app.EMAIL_SUBJECT
+                    msg['Subject'] = '[ST] ' + app.EMAIL_SUBJECT
                 else:
-                    msg[b'Subject'] = lang + ' Subtitle Downloaded: ' + ep_name
-                msg[b'From'] = app.EMAIL_FROM
-                msg[b'To'] = ','.join(to)
+                    msg['Subject'] = lang + ' Subtitle Downloaded: ' + ep_name
+                msg['From'] = app.EMAIL_FROM
+                msg['To'] = ','.join(to)
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Download notification sent to {recipient} for {episode}',
@@ -240,10 +240,10 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Medusa updated')
 
-                msg[b'Subject'] = 'Updated: {0}'.format(new_version)
-                msg[b'From'] = app.EMAIL_FROM
-                msg[b'To'] = ','.join(to)
-                msg[b'Date'] = formatdate(localtime=True)
+                msg['Subject'] = 'Updated: {0}'.format(new_version)
+                msg['From'] = app.EMAIL_FROM
+                msg['To'] = ','.join(to)
+                msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Update notification sent to {recipient}',
@@ -279,10 +279,10 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Medusa Remote Login')
 
-                msg[b'Subject'] = 'New Login from IP: {0}'.format(ipaddress)
-                msg[b'From'] = app.EMAIL_FROM
-                msg[b'To'] = ','.join(to)
-                msg[b'Date'] = formatdate(localtime=True)
+                msg['Subject'] = 'New Login from IP: {0}'.format(ipaddress)
+                msg['From'] = app.EMAIL_FROM
+                msg['To'] = ','.join(to)
+                msg['Date'] = formatdate(localtime=True)
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Login notification sent to {recipient}', {'recipient': to})
@@ -310,7 +310,7 @@ class Notifier(object):
                 [show]
             )
             for row in sql_results:
-                notify_list = row[b'notify_list']
+                notify_list = row['notify_list']
                 if not notify_list:
                     continue
 

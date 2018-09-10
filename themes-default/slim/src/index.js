@@ -19,6 +19,7 @@ import router from './router';
 import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import {
+    AddShowOptions,
     AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
@@ -76,6 +77,7 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(AddShowOptions);
     window.components.push(AnidbReleaseGroupUi);
     window.components.push(AppHeader);
     window.components.push(AppLink);

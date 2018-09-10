@@ -45,12 +45,20 @@
 # Copyright 2017 Simon <spam@esemi.ru>                                         #
 # Copyright 2018 Andrew Smith <espadav8@gmail.com>                             #
 # Copyright 2018 Brian Torres-Gil <btorres-gil@paloaltonetworks.com>           #
+# Copyright 2018 Hayden Fuss <wifu1234@gmail.com>                              #
 # Copyright 2018 Ilya Konstantinov <ilya.konstantinov@gmail.com>               #
+# Copyright 2018 Jacopo Notarstefano <jacopo.notarstefano@gmail.com>           #
 # Copyright 2018 John Hui <j-hui@users.noreply.github.com>                     #
+# Copyright 2018 Mateusz Loskot <mateusz@loskot.net>                           #
 # Copyright 2018 Michael Behrisch <oss@behrisch.de>                            #
+# Copyright 2018 Nicholas Buse <NicholasBuse@users.noreply.github.com>         #
 # Copyright 2018 Raihaan <31362124+res0nance@users.noreply.github.com>         #
 # Copyright 2018 Shinichi TAMURA <shnch.tmr@gmail.com>                         #
+# Copyright 2018 Steve Kowalik <steven@wedontsleep.org>                        #
 # Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
+# Copyright 2018 Will Yardley <wyardley@users.noreply.github.com>              #
+# Copyright 2018 per1234 <accounts@perglass.com>                               #
+# Copyright 2018 sechastain <sechastain@gmail.com>                             #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -115,6 +123,8 @@ import github.StatsParticipation
 import github.StatsPunchCard
 import github.Stargazer
 
+import Consts
+
 atLeastPython3 = sys.hexversion >= 0x03000000
 
 
@@ -125,6 +135,30 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
     def __repr__(self):
         return self.get__repr__({"full_name": self._full_name.value})
+
+    @property
+    def allow_merge_commit(self):
+        """
+        :type: bool
+        """
+        self._completeIfNotSet(self._allow_merge_commit)
+        return self._allow_merge_commit.value
+
+    @property
+    def allow_rebase_merge(self):
+        """
+        :type: bool
+        """
+        self._completeIfNotSet(self._allow_rebase_merge)
+        return self._allow_rebase_merge.value
+
+    @property
+    def allow_squash_merge(self):
+        """
+        :type: bool
+        """
+        self._completeIfNotSet(self._allow_squash_merge)
+        return self._allow_squash_merge.value
 
     @property
     def archived(self):
@@ -349,6 +383,14 @@ class Repository(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._has_issues)
         return self._has_issues.value
+
+    @property
+    def has_projects(self):
+        """
+        :type: bool
+        """
+        self._completeIfNotSet(self._has_projects)
+        return self._has_projects.value
 
     @property
     def has_wiki(self):
@@ -671,6 +713,14 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return self._teams_url.value
 
     @property
+    def topics(self):
+        """
+        :type: list of strings
+        """
+        self._completeIfNotSet(self._topics)
+        return self._topics.value
+
+    @property
     def trees_url(self):
         """
         :type: string
@@ -731,13 +781,27 @@ class Repository(github.GithubObject.CompletableGithubObject):
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
             self.url + "/collaborators/" + collaborator,
-            headers={'Accept': 'application/vnd.github.swamp-thing-preview+json'},
             input=put_parameters
         )
         # return an invitation object if there's data returned by the API. If data is empty
         # there's a pending invitation for the given user.
         return github.Invitation.Invitation(self._requester, headers, data, completed=True) if \
             data is not None else None
+
+    def get_collaborator_permission(self, collaborator):
+        """
+        :calls: `GET /repos/:owner/:repo/collaborators/:username/permission <http://developer.github.com/v3/repos/collaborators>`_
+        :param collaborator: string or :class:`github.NamedUser.NamedUser`
+        :rtype: string
+        """
+        assert isinstance(collaborator, github.NamedUser.NamedUser) or isinstance(collaborator, (str, unicode)), collaborator
+        if isinstance(collaborator, github.NamedUser.NamedUser):
+            collaborator = collaborator._identity
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            self.url + "/collaborators/" + collaborator + "/permission",
+        )
+        return data["permission"]
 
     def compare(self, base, head):
         """
@@ -1030,7 +1094,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             "POST",
             self.url + "/labels",
             input=post_parameters,
-            headers={'Accept': 'application/vnd.github.symmetra-preview+json'}
+            headers={'Accept': Consts.mediaTypeLabelDescriptionSearchPreview}
         )
         return github.Label.Label(self._requester, headers, data, completed=True)
 
@@ -1132,7 +1196,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         if vcs_password is not github.GithubObject.NotSet:
             put_parameters["vcs_password"] = vcs_password
 
-        import_header = {"Accept": "application/vnd.github.barred-rock-preview"}
+        import_header = {"Accept": Consts.mediaTypeImportPreview}
 
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
@@ -1153,7 +1217,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self.url
         )
 
-    def edit(self, name=None, description=github.GithubObject.NotSet, homepage=github.GithubObject.NotSet, private=github.GithubObject.NotSet, has_issues=github.GithubObject.NotSet, has_wiki=github.GithubObject.NotSet, has_downloads=github.GithubObject.NotSet, default_branch=github.GithubObject.NotSet):
+    def edit(self, name=None, description=github.GithubObject.NotSet, homepage=github.GithubObject.NotSet, private=github.GithubObject.NotSet, has_issues=github.GithubObject.NotSet, has_projects=github.GithubObject.NotSet, has_wiki=github.GithubObject.NotSet, has_downloads=github.GithubObject.NotSet, default_branch=github.GithubObject.NotSet, allow_squash_merge=github.GithubObject.NotSet, allow_merge_commit=github.GithubObject.NotSet, allow_rebase_merge=github.GithubObject.NotSet, archived=github.GithubObject.NotSet):
         """
         :calls: `PATCH /repos/:owner/:repo <http://developer.github.com/v3/repos>`_
         :param name: string
@@ -1161,9 +1225,14 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :param homepage: string
         :param private: bool
         :param has_issues: bool
+        :param has_projects: bool
         :param has_wiki: bool
         :param has_downloads: bool
         :param default_branch: string
+        :param allow_squash_merge: bool
+        :param allow_merge_commit: bool
+        :param allow_rebase_merge: bool
+        :param archived: bool. Unarchiving repositories is currently not supported through API (https://developer.github.com/v3/repos/#edit)
         :rtype: None
         """
         if name is None:
@@ -1173,9 +1242,14 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert homepage is github.GithubObject.NotSet or isinstance(homepage, (str, unicode)), homepage
         assert private is github.GithubObject.NotSet or isinstance(private, bool), private
         assert has_issues is github.GithubObject.NotSet or isinstance(has_issues, bool), has_issues
+        assert has_projects is github.GithubObject.NotSet or isinstance(has_projects, bool), has_projects
         assert has_wiki is github.GithubObject.NotSet or isinstance(has_wiki, bool), has_wiki
         assert has_downloads is github.GithubObject.NotSet or isinstance(has_downloads, bool), has_downloads
         assert default_branch is github.GithubObject.NotSet or isinstance(default_branch, (str, unicode)), default_branch
+        assert allow_squash_merge is github.GithubObject.NotSet or (isinstance(allow_squash_merge, bool) and allow_squash_merge is True), allow_squash_merge
+        assert allow_merge_commit is github.GithubObject.NotSet or (isinstance(allow_merge_commit, bool) and allow_merge_commit is True), allow_merge_commit
+        assert allow_rebase_merge is github.GithubObject.NotSet or (isinstance(allow_rebase_merge, bool) and allow_rebase_merge is True), allow_rebase_merge
+        assert archived is github.GithubObject.NotSet or (isinstance(archived, bool) and archived is True), archived
         post_parameters = {
             "name": name,
         }
@@ -1187,12 +1261,22 @@ class Repository(github.GithubObject.CompletableGithubObject):
             post_parameters["private"] = private
         if has_issues is not github.GithubObject.NotSet:
             post_parameters["has_issues"] = has_issues
+        if has_projects is not github.GithubObject.NotSet:
+            post_parameters["has_projects"] = has_projects
         if has_wiki is not github.GithubObject.NotSet:
             post_parameters["has_wiki"] = has_wiki
         if has_downloads is not github.GithubObject.NotSet:
             post_parameters["has_downloads"] = has_downloads
         if default_branch is not github.GithubObject.NotSet:
             post_parameters["default_branch"] = default_branch
+        if allow_squash_merge is not github.GithubObject.NotSet:
+            post_parameters["allow_squash_merge"] = allow_squash_merge
+        if allow_merge_commit is not github.GithubObject.NotSet:
+            post_parameters["allow_merge_commit"] = allow_merge_commit
+        if allow_rebase_merge is not github.GithubObject.NotSet:
+            post_parameters["allow_rebase_merge"] = allow_rebase_merge
+        if archived is not github.GithubObject.NotSet:
+            post_parameters["archived"] = archived
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
             self.url,
@@ -1233,19 +1317,6 @@ class Repository(github.GithubObject.CompletableGithubObject):
     def get_branch(self, branch):
         """
         :calls: `GET /repos/:owner/:repo/branches/:branch <http://developer.github.com/v3/repos>`_
-        :param branch: string
-        :rtype: :class:`github.Branch.Branch`
-        """
-        assert isinstance(branch, (str, unicode)), branch
-        headers, data = self._requester.requestJsonAndCheck(
-            "GET",
-            self.url + "/branches/" + branch
-        )
-        return github.Branch.Branch(self._requester, headers, data, completed=True)
-
-    def get_protected_branch(self, branch):
-        """
-        :calls: `GET /repos/:owner/:repo/branches/:branch <https://developer.github.com/v3/repos/#response-10>`_
         :param branch: string
         :rtype: :class:`github.Branch.Branch`
         """
@@ -1869,7 +1940,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert isinstance(id, (int, long)), id
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
-            self.url + "/issues/events/" + str(id)
+            self.url + "/issues/events/" + str(id),
+            headers={'Accept': Consts.mediaTypeLockReasonPreview}
         )
         return github.IssueEvent.IssueEvent(self._requester, headers, data, completed=True)
 
@@ -1882,7 +1954,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             github.IssueEvent.IssueEvent,
             self._requester,
             self.url + "/issues/events",
-            None
+            None,
+            headers={'Accept': Consts.mediaTypeLockReasonPreview}
         )
 
     def get_key(self, id):
@@ -2108,10 +2181,10 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
     def get_source_import(self):
         """
-        :calls: `GET /repos/:owner/:repo/import https://developer.github.com/v3/migration/source_imports/#get-import-progress`_
+        :calls: `GET /repos/:owner/:repo/import <https://developer.github.com/v3/migration/source_imports/#get-import-progress>`_
         :rtype: :class:`github.SourceImport.SourceImport`
         """
-        import_header = {"Accept": "application/vnd.github.barred-rock-preview"}
+        import_header = {"Accept": Consts.mediaTypeImportPreview}
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
             self.url + "/import",
@@ -2144,7 +2217,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._requester,
             self.url + "/stargazers",
             None,
-            headers={'Accept': 'application/vnd.github.v3.star+json'}
+            headers={'Accept': Consts.mediaTypeStarringPreview}
         )
 
     def get_stats_contributors(self):
@@ -2283,7 +2356,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
     def get_latest_release(self):
         """
-        :calls: `GET /repos/:owner/:repo/releases/latest https://developer.github.com/v3/repos/releases/#get-the-latest-release
+        :calls: `GET /repos/:owner/:repo/releases/latest <https://developer.github.com/v3/repos/releases/#get-the-latest-release>`_
         :rtype: :class:`github.GitRelease.GitRelease`
         """
         headers, data = self._requester.requestJsonAndCheck(
@@ -2303,6 +2376,18 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self.url + "/teams",
             None
         )
+
+    def get_topics(self):
+        """
+        :calls: `GET /repos/:owner/:repo/topics <https://developer.github.com/v3/repos/#list-all-topics-for-a-repository>`_
+        :rtype: list of strings
+        """
+        headers, data = self._requester.requestJsonAndCheck(
+            "GET",
+            self.url + "/topics",
+            headers={'Accept': Consts.mediaTypeTopicsPreview}
+        )
+        return data['names']
 
     def get_watchers(self):
         """
@@ -2395,34 +2480,19 @@ class Repository(github.GithubObject.CompletableGithubObject):
         else:
             return github.Commit.Commit(self._requester, headers, data, completed=True)
 
-    def protect_branch(self, branch, enabled, enforcement_level=github.GithubObject.NotSet, contexts=github.GithubObject.NotSet):
+    def replace_topics(self, topics):
         """
-        :calls: `PATCH /repos/:owner/:repo/branches/:branch <https://developer.github.com/v3/repos/#enabling-and-disabling-branch-protection>`_
-        :param branch: string
-        :param enabled: boolean
-        :param enforcement_level: string
-        :param contexts: list of strings
+        :calls: `PUT /repos/:owner/:repo/topics <http://developer.github.com/v3/repos>`_
+        :param topics: list of strings
         :rtype: None
         """
-
-        assert isinstance(branch, (str, unicode))
-        assert isinstance(enabled, bool)
-        assert enforcement_level is github.GithubObject.NotSet or isinstance(enforcement_level, (str, unicode)), enforcement_level
-        assert contexts is github.GithubObject.NotSet or all(isinstance(element, (str, unicode)) or isinstance(element, (str, unicode)) for element in contexts), contexts
-
         post_parameters = {
-            "protection": {}
+            'names': topics
         }
-        if enabled is not github.GithubObject.NotSet:
-            post_parameters["protection"]["enabled"] = enabled
-        if enforcement_level is not github.GithubObject.NotSet:
-            post_parameters["protection"]["required_status_checks"] = {}
-            post_parameters["protection"]["required_status_checks"]["enforcement_level"] = enforcement_level
-        if contexts is not github.GithubObject.NotSet:
-            post_parameters["protection"]["required_status_checks"]["contexts"] = contexts
         headers, data = self._requester.requestJsonAndCheck(
-            "PATCH",
-            self.url + "/branches/" + branch,
+            "PUT",
+            self.url + "/topics",
+            headers={'Accept': Consts.mediaTypeTopicsPreview},
             input=post_parameters
         )
 
@@ -2496,6 +2566,9 @@ class Repository(github.GithubObject.CompletableGithubObject):
         return github.GitReleaseAsset.GitReleaseAsset(self._requester, resp_headers, data, completed=True)
 
     def _initAttributes(self):
+        self._allow_merge_commit = github.GithubObject.NotSet
+        self._allow_rebase_merge = github.GithubObject.NotSet
+        self._allow_squash_merge = github.GithubObject.NotSet
         self._archived = github.GithubObject.NotSet
         self._archive_url = github.GithubObject.NotSet
         self._assignees_url = github.GithubObject.NotSet
@@ -2524,6 +2597,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         self._git_url = github.GithubObject.NotSet
         self._has_downloads = github.GithubObject.NotSet
         self._has_issues = github.GithubObject.NotSet
+        self._has_projects = github.GithubObject.NotSet
         self._has_wiki = github.GithubObject.NotSet
         self._homepage = github.GithubObject.NotSet
         self._hooks_url = github.GithubObject.NotSet
@@ -2564,6 +2638,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         self._svn_url = github.GithubObject.NotSet
         self._tags_url = github.GithubObject.NotSet
         self._teams_url = github.GithubObject.NotSet
+        self._topics = github.GithubObject.NotSet
         self._trees_url = github.GithubObject.NotSet
         self._updated_at = github.GithubObject.NotSet
         self._url = github.GithubObject.NotSet
@@ -2571,6 +2646,12 @@ class Repository(github.GithubObject.CompletableGithubObject):
         self._watchers_count = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
+        if "allow_merge_commit" in attributes:  # pragma no branch
+            self._allow_merge_commit = self._makeBoolAttribute(attributes["allow_merge_commit"])
+        if "allow_rebase_merge" in attributes:  # pragma no branch
+            self._allow_rebase_merge = self._makeBoolAttribute(attributes["allow_rebase_merge"])
+        if "allow_squash_merge" in attributes:  # pragma no branch
+            self._allow_squash_merge = self._makeBoolAttribute(attributes["allow_squash_merge"])
         if "archived" in attributes:  # pragma no branch
             self._archived = self._makeBoolAttribute(attributes["archived"])
         if "archive_url" in attributes:  # pragma no branch
@@ -2627,6 +2708,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._has_downloads = self._makeBoolAttribute(attributes["has_downloads"])
         if "has_issues" in attributes:  # pragma no branch
             self._has_issues = self._makeBoolAttribute(attributes["has_issues"])
+        if "has_projects" in attributes:  # pragma no branch
+            self._has_projects = self._makeBoolAttribute(attributes["has_projects"])
         if "has_wiki" in attributes:  # pragma no branch
             self._has_wiki = self._makeBoolAttribute(attributes["has_wiki"])
         if "homepage" in attributes:  # pragma no branch
@@ -2709,6 +2792,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._teams_url = self._makeStringAttribute(attributes["teams_url"])
         if "trees_url" in attributes:  # pragma no branch
             self._trees_url = self._makeStringAttribute(attributes["trees_url"])
+        if "topics" in attributes: # pragma no branch
+            self._topics = self._makeListOfStringsAttribute(attributes["topics"])
         if "updated_at" in attributes:  # pragma no branch
             self._updated_at = self._makeDatetimeAttribute(attributes["updated_at"])
         if "url" in attributes:  # pragma no branch

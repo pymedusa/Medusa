@@ -48,7 +48,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.2.9'
+VERSION = '0.2.10'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -259,6 +259,22 @@ class Quality(object):
                 preferred_qualities.append(cur_qual)
 
         return sorted(allowed_qualities), sorted(preferred_qualities)
+
+    @staticmethod
+    def is_valid_combined_quality(quality):
+        """
+        Check quality value to make sure it is a valid combined quality.
+
+        :param quality: Quality to check
+        :type quality: int
+        :return: True if valid, False if not
+        """
+        for cur_qual in Quality.qualityStrings:
+            if cur_qual & quality:
+                quality -= cur_qual
+            if cur_qual << 16 & quality:
+                quality -= cur_qual << 16
+        return quality == 0
 
     @staticmethod
     def name_quality(name, anime=False, extend=True):

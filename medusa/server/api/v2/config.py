@@ -17,6 +17,7 @@ from medusa import (
     logger,
     ws,
 )
+from medusa.common import IGNORED, Quality, SKIPPED, WANTED
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
@@ -49,6 +50,11 @@ def layout_schedule_post_processor(v):
 def theme_name_setter(object, name, value):
     """Hot-swap theme."""
     config.change_theme(value)
+
+
+def season_folders_validator(value):
+    """Validate default season folders setting."""
+    return not (app.NAMING_FORCE_FOLDERS and value is False)
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -116,6 +122,15 @@ class ConfigHandler(BaseRequestHandler):
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+
+        'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES, converter=bool),
+        'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator, converter=bool),
+        'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
+        'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
@@ -296,6 +311,15 @@ class DataGenerator(object):
         section_data['subtitles'] = NonEmptyDict()
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+
+        section_data['showDefaults'] = {}
+        section_data['showDefaults']['status'] = app.STATUS_DEFAULT
+        section_data['showDefaults']['statusAfter'] = app.STATUS_DEFAULT_AFTER
+        section_data['showDefaults']['quality'] = app.QUALITY_DEFAULT
+        section_data['showDefaults']['subtitles'] = bool(app.SUBTITLES_DEFAULT)
+        section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
+        section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
+        section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
         section_data['news'] = NonEmptyDict()
         section_data['news']['lastRead'] = app.NEWS_LAST_READ

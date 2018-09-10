@@ -52,8 +52,7 @@ class InternalHandler(BaseRequestHandler):
                       {'func': resource_function_name, 'resource': resource})
             return self._bad_request('{key} is a invalid resource'.format(key=resource))
 
-        data = resource_function()
-        return self._ok(data=data)
+        return resource_function()
 
     # existingSeries
     def resource_existing_series(self):
@@ -81,13 +80,13 @@ class InternalHandler(BaseRequestHandler):
         # Get a unique list of shows
         main_db_con = db.DBConnection()
         dir_results = main_db_con.select(
-            b'SELECT location '
-            b'FROM tv_shows'
+            'SELECT location '
+            'FROM tv_shows'
         )
         root_dirs_tuple = tuple(root_dirs)
         dir_results = [
-            series[b'location'] for series in dir_results
-            if series[b'location'].startswith(root_dirs_tuple)
+            series['location'] for series in dir_results
+            if series['location'].startswith(root_dirs_tuple)
         ]
 
         for root_dir in root_dirs:

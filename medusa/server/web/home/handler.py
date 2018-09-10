@@ -178,7 +178,7 @@ class Home(WebRoot):
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
-            b"""
+            """
             SELECT showid, indexer,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -239,9 +239,9 @@ class Home(WebRoot):
         show_stat = {}
         max_download_count = 1000
         for cur_result in sql_result:
-            show_stat[(cur_result[b'indexer'], cur_result[b'showid'])] = cur_result
-            if cur_result[b'ep_total'] > max_download_count:
-                max_download_count = cur_result[b'ep_total']
+            show_stat[(cur_result['indexer'], cur_result['showid'])] = cur_result
+            if cur_result['ep_total'] > max_download_count:
+                max_download_count = cur_result['ep_total']
 
         max_download_count *= 100
 
@@ -576,9 +576,9 @@ class Home(WebRoot):
     def loadShowNotifyLists():
         main_db_con = db.DBConnection()
         rows = main_db_con.select(
-            b'SELECT show_id, show_name, notify_list '
-            b'FROM tv_shows '
-            b'ORDER BY show_name ASC'
+            'SELECT show_id, show_name, notify_list '
+            'FROM tv_shows '
+            'ORDER BY show_name ASC'
         )
 
         data = {}
@@ -588,16 +588,16 @@ class Home(WebRoot):
                 'emails': '',
                 'prowlAPIs': '',
             }
-            if r[b'notify_list']:
+            if r['notify_list']:
                 # First, handle legacy format (emails only)
-                if not r[b'notify_list'][0] == '{':
-                    notify_list['emails'] = r[b'notify_list']
+                if not r['notify_list'][0] == '{':
+                    notify_list['emails'] = r['notify_list']
                 else:
-                    notify_list = dict(ast.literal_eval(r[b'notify_list']))
+                    notify_list = dict(ast.literal_eval(r['notify_list']))
 
-            data[r[b'show_id']] = {
-                'id': r[b'show_id'],
-                'name': r[b'show_name'],
+            data[r['show_id']] = {
+                'id': r['show_id'],
+                'name': r['show_name'],
                 'list': notify_list['emails'],
                 'prowl_notify_list': notify_list['prowlAPIs']
             }
@@ -612,25 +612,25 @@ class Home(WebRoot):
 
         # Get current data
         sql_results = main_db_con.select(
-            b'SELECT notify_list '
-            b'FROM tv_shows '
-            b'WHERE show_id = ?',
+            'SELECT notify_list '
+            'FROM tv_shows '
+            'WHERE show_id = ?',
             [show]
         )
         for subs in sql_results:
-            if subs[b'notify_list']:
+            if subs['notify_list']:
                 # First, handle legacy format (emails only)
-                if not subs[b'notify_list'][0] == '{':
-                    entries['emails'] = subs[b'notify_list']
+                if not subs['notify_list'][0] == '{':
+                    entries['emails'] = subs['notify_list']
                 else:
-                    entries = dict(ast.literal_eval(subs[b'notify_list']))
+                    entries = dict(ast.literal_eval(subs['notify_list']))
 
         if emails is not None:
             entries['emails'] = emails
             if not main_db_con.action(
-                    b'UPDATE tv_shows '
-                    b'SET notify_list = ? '
-                    b'WHERE show_id = ?',
+                    'UPDATE tv_shows '
+                    'SET notify_list = ? '
+                    'WHERE show_id = ?',
                     [str(entries), show]
             ):
                 return 'ERROR'
@@ -638,9 +638,9 @@ class Home(WebRoot):
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
             if not main_db_con.action(
-                    b'UPDATE tv_shows '
-                    b'SET notify_list = ? '
-                    b'WHERE show_id = ?',
+                    'UPDATE tv_shows '
+                    'SET notify_list = ? '
+                    'WHERE show_id = ?',
                     [str(entries), show]
             ):
                 return 'ERROR'
@@ -828,20 +828,20 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection()
         season_results = main_db_con.select(
-            b'SELECT DISTINCT season '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            b'ORDER BY season DESC',
+            'SELECT DISTINCT season '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
+            'ORDER BY season DESC',
             [series_obj.indexer, series_obj.series_id]
         )
 
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
         sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season >= ? '
-            b'ORDER BY season DESC, episode DESC',
+            'SELECT * '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND season >= ? '
+            'ORDER BY season DESC, episode DESC',
             [series_obj.indexer, series_obj.series_id, min_season]
         )
 
@@ -943,9 +943,9 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
+            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
             if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
         bwl = None
@@ -1001,9 +1001,9 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection('cache.db')
             cached_result = main_db_con.action(
-                b'SELECT * '
-                b'FROM \'{provider}\' '
-                b'WHERE rowid = ?'.format(provider=provider),
+                'SELECT * '
+                'FROM \'{provider}\' '
+                'WHERE rowid = ?'.format(provider=provider),
                 [rowid],
                 fetchone=True
             )
@@ -1012,35 +1012,35 @@ class Home(WebRoot):
             logger.log(error_message)
             return self._genericMessage('Error', error_message)
 
-        if not cached_result or not all([cached_result[b'url'],
-                                         cached_result[b'quality'],
-                                         cached_result[b'name'],
-                                         cached_result[b'indexer'],
-                                         cached_result[b'indexerid'],
-                                         cached_result[b'season'] is not None,
+        if not cached_result or not all([cached_result['url'],
+                                         cached_result['quality'],
+                                         cached_result['name'],
+                                         cached_result['indexer'],
+                                         cached_result['indexerid'],
+                                         cached_result['season'] is not None,
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
         try:
-            series_obj = Show.find_by_id(app.showList, cached_result[b'indexer'], cached_result[b'indexerid'])
+            series_obj = Show.find_by_id(app.showList, cached_result['indexer'], cached_result['indexerid'])
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(cached_result[b'indexerid']))
+            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(cached_result['indexerid']))
 
         if not series_obj:
             return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, '
-                                                 'did you remove the show?'.format(cached_result[b'indexerid']))
+                                                 'did you remove the show?'.format(cached_result['indexerid']))
 
         # Create a list of episode object(s)
         # Multi-episode: |1|2|
         # Single-episode: |1|
         # Season pack: || so we need to get all episodes from season and create all ep objects
         ep_objs = []
-        result_episodes = cached_result[b'episodes'].strip('|')
+        result_episodes = cached_result['episodes'].strip('|')
         if result_episodes:
             for episode in result_episodes.split('|'):
-                ep_objs.append(series_obj.get_episode(int(cached_result[b'season']), int(episode)))
+                ep_objs.append(series_obj.get_episode(int(cached_result['season']), int(episode)))
         else:
-            ep_objs.extend(series_obj.get_all_episodes([int(cached_result[b'season'])]))
+            ep_objs.extend(series_obj.get_all_episodes([int(cached_result['season'])]))
 
         # Create the queue item
         snatch_queue_item = ManualSnatchQueueItem(series_obj, ep_objs, provider, cached_result)
@@ -1101,9 +1101,9 @@ class Home(WebRoot):
 
         for provider, last_update in iteritems(last_prov_updates):
             table_exists = main_db_con.select(
-                b'SELECT name '
-                b'FROM sqlite_master '
-                b'WHERE type=\'table\' AND name=?',
+                'SELECT name '
+                'FROM sqlite_master '
+                'WHERE type=\'table\' AND name=?',
                 [provider]
             )
             if not table_exists:
@@ -1111,9 +1111,9 @@ class Home(WebRoot):
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             # FIXME: This will need to be adjusted when indexer field is added to the providers.
             needs_update = main_db_con.select(
-                b'SELECT * '
-                b'FROM \'{provider}\' '
-                b'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
+                'SELECT * '
+                'FROM \'{provider}\' '
+                'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
                 ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
             )
 
@@ -1254,18 +1254,18 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, quality, provider, resource, size '
-                b'FROM history '
-                b'WHERE indexer_id = ? '
-                b'AND showid = ? '
-                b'AND season = ? '
-                b'AND episode = ? '
-                b'AND action in (?, ?, ?, ?, ?) '
-                b'ORDER BY date DESC',
+                'SELECT date, action, quality, provider, resource, size '
+                'FROM history '
+                'WHERE indexer_id = ? '
+                'AND showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND action in (?, ?, ?, ?, ?) '
+                'ORDER BY date DESC',
                 [indexer_id, series_id, season, episode,
                  DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
-            episode_history = [dict(row) for row in episode_status_result]
+            episode_history = episode_status_result
             for i in episode_history:
                 i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
@@ -1315,20 +1315,20 @@ class Home(WebRoot):
         # There is some logic for this in the partials/showheader.mako page.
         main_db_con = db.DBConnection()
         season_results = main_db_con.select(
-            b'SELECT DISTINCT season '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            b'ORDER BY season DESC',
+            'SELECT DISTINCT season '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
+            'ORDER BY season DESC',
             [series_obj.indexer, series_obj.series_id]
         )
 
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
         sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season >= ? '
-            b'ORDER BY season DESC, episode DESC',
+            'SELECT * '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND season >= ? '
+            'ORDER BY season DESC, episode DESC',
             [series_obj.indexer, series_obj.series_id, min_season]
         )
 
@@ -1346,11 +1346,11 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
-                                                 manually_searched=cur_result[b'manually_searched'])
+            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'],
+                                                 manually_searched=cur_result['manually_searched'])
             if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'],
-                                                     episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_cats['s{season}e{episode}'.format(season=cur_result['season'],
+                                                     episode=cur_result['episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
 
         return t.render(
@@ -1693,17 +1693,17 @@ class Home(WebRoot):
             for cur_provider in providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
-                    b'SELECT name '
-                    b'FROM sqlite_master '
-                    b'WHERE type=\'table\' AND name=?',
+                    'SELECT name '
+                    'FROM sqlite_master '
+                    'WHERE type=\'table\' AND name=?',
                     [cur_provider.get_id()]
                 )
                 if not table_exists:
                     continue
                 try:
                     main_db_con.action(
-                        b'DELETE FROM \'{provider}\' '
-                        b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        'DELETE FROM \'{provider}\' '
+                        'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
                         [series_obj.series_id]
                     )
                 except Exception:
@@ -2089,26 +2089,26 @@ class Home(WebRoot):
             # this is probably the worst possible way to deal with double eps
             # but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
-                b'SELECT location '
-                b'FROM tv_episodes '
-                b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
+                'SELECT location '
+                'FROM tv_episodes '
+                'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
                 [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
                 continue
             related_eps_result = main_db_con.select(
-                b'SELECT season, episode '
-                b'FROM tv_episodes '
-                b'WHERE location = ? AND episode != ?',
-                [ep_result[0][b'location'], episode_no]
+                'SELECT season, episode '
+                'FROM tv_episodes '
+                'WHERE location = ? AND episode != ?',
+                [ep_result[0]['location'], episode_no]
             )
 
             root_ep_obj = series_obj.get_episode(season_no, episode_no)
             root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:
-                related_ep_obj = series_obj.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
+                related_ep_obj = series_obj.get_episode(cur_related_ep['season'], cur_related_ep['episode'])
                 if related_ep_obj not in root_ep_obj.related_episodes:
                     root_ep_obj.related_episodes.append(related_ep_obj)
 
