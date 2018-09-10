@@ -16,62 +16,43 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-test('1080p WEB-DL', t => {
+test('renders', t => {
     const { localVue, store } = t.context;
-    const wrapper = mount(QualityPill, {
+
+    t.snapshot(mount(QualityPill, {
         localVue,
         store,
         propsData: {
             quality: 128
         }
-    });
+    }).html(), '1080p WEB-DL');
 
-    t.snapshot(wrapper.html());
-});
-
-test('HD = all 720p and all 1080p, allowed', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(QualityPill, {
+    t.snapshot(mount(QualityPill, {
         localVue,
         store,
         propsData: {
             quality: 8 | 32 | 64 | 128 | 256 | 512
         }
-    });
+    }).html(), 'HD = all 720p and all 1080p, allowed');
 
-    t.snapshot(wrapper.html());
-});
-
-test('WEB-DL 720p + 4K UHD WEB-DL, allowed', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(QualityPill, {
+    t.snapshot(mount(QualityPill, {
         localVue,
         store,
         propsData: {
             quality: 128 | 2048
         }
-    });
+    }).html(), 'WEB-DL 720p + 4K UHD WEB-DL, allowed');
 
-    t.snapshot(wrapper.html());
-});
-
-test('720p WEB-DL allowed + 1080p WEB-DL preferred + show title', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(QualityPill, {
+    t.snapshot(mount(QualityPill, {
         localVue,
         store,
         propsData: {
             quality: 64 | (128 << 16),
             showTitle: true
         }
-    });
+    }).html(), '720p WEB-DL allowed + 1080p WEB-DL preferred + show title');
 
-    t.snapshot(wrapper.html());
-});
-
-test('Custom "Proper" pill', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(QualityPill, {
+    t.snapshot(mount(QualityPill, {
         localVue,
         store,
         propsData: {
@@ -81,7 +62,5 @@ test('Custom "Proper" pill', t => {
                 text: 'Proper'
             }
         }
-    });
-
-    t.snapshot(wrapper.html());
+    }).html(), 'Custom "Proper" pill');
 });
