@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
+import { api } from '../api';
 import AppLink from './app-link.vue';
 
 export default {
@@ -125,7 +126,7 @@ export default {
             });
         });
 
-        const imgLazyLoad = new LazyLoad({
+        const imgLazyLoad = new LazyLoad({ // eslint-disable-line no-undef
             // Example of options object -> see options section
             threshold: 500
         });

@@ -134,6 +134,15 @@
       "static/js/*.min.js",
       "static/js/vender.js"
     ],
+    "overrides": [
+      {
+        "files": "src/**/*.vue",
+        "globals": [
+          "$",
+          "MEDUSA"
+        ]
+      }
+    ],
     "esnext": true
   },
   "stylelint": {
