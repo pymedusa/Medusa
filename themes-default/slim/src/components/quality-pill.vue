@@ -1,5 +1,5 @@
 <template>
-    <span :title="title" :class="pill.class">{{ pill.text }}</span>
+    <span :class="override.class || ['quality', pill.class]" :title="title">{{ override.text || pill.text }}</span>
 </template>
 
 <script>
@@ -74,7 +74,28 @@ export default {
 
             return title;
         },
-        pill() { // eslint-disable-line complexity
+        setHDTV() {
+            return this.makeQualitySet('hdtv', 'rawhdtv', 'fullhdtv', 'uhd4ktv', 'uhd8ktv');
+        },
+        setWEBDL() {
+            return this.makeQualitySet('hdwebdl', 'fullhdwebdl', 'uhd4kwebdl', 'uhd8kwebdl');
+        },
+        setBluRay() {
+            return this.makeQualitySet('hdbluray', 'fullhdbluray', 'uhd4kbluray', 'uhd8kbluray');
+        },
+        set720p() {
+            return this.makeQualitySet('hdtv', 'rawhdtv', 'hdwebdl', 'hdbluray');
+        },
+        set1080p() {
+            return this.makeQualitySet('fullhdtv', 'fullhdwebdl', 'fullhdbluray');
+        },
+        setUHD4K() {
+            return this.makeQualitySet('uhd4ktv', 'uhd4kwebdl', 'uhd4kbluray');
+        },
+        setUHD8K() {
+            return this.makeQualitySet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
+        },
+        pill() {
             let { quality } = this;
 
             // If allowed and preferred qualities are the same, show pill as allowed quality
@@ -93,73 +114,65 @@ export default {
                 qualityPresets,
                 qualityPresetStrings,
                 qualityValues,
-                qualityValueStrings
+                qualityValueStrings,
+                setHDTV,
+                setWEBDL,
+                setBluRay,
+                set720p,
+                set1080p,
+                setUHD4K,
+                setUHD8K
             } = this;
-            let cssClass;
-            let text;
 
-            const makeSet = (...keys) => {
-                return keys.map(key => qualityValues[key]);
+            // This are the fallback values, if none of the checks below match
+            const result = {
+                class: 'Custom',
+                text: 'Custom'
             };
-
-            const setHDTV = makeSet('hdtv', 'rawhdtv', 'fullhdtv', 'uhd4ktv', 'uhd8ktv');
-            const setWEBDL = makeSet('hdwebdl', 'fullhdwebdl', 'uhd4kwebdl', 'uhd8kwebdl');
-            const setBluRay = makeSet('hdbluray', 'fullhdbluray', 'uhd4kbluray', 'uhd8kbluray');
-            const set720p = makeSet('hdtv', 'rawhdtv', 'hdwebdl', 'hdbluray');
-            const set1080p = makeSet('fullhdtv', 'fullhdwebdl', 'fullhdbluray');
-            const setUHD4K = makeSet('uhd4ktv', 'uhd4kwebdl', 'uhd4kbluray');
-            const setUHD8K = makeSet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
 
             // Is quality a preset?
             if (Object.values(qualityPresets).includes(quality)) {
-                cssClass = qualityPresetStrings[quality];
-                text = qualityPresetStrings[quality];
+                result.class = qualityPresetStrings[quality];
+                result.text = qualityPresetStrings[quality];
             // Is quality an 'anySet'? (any HDTV, any WEB-DL, any BluRay)
             } else if (Object.values(qualityAnySets).includes(quality)) {
-                cssClass = qualityCssClassStrings[quality];
-                text = qualityAnySetStrings[quality];
+                result.class = qualityCssClassStrings[quality];
+                result.text = qualityAnySetStrings[quality];
             // Is quality a specific quality? (720p HDTV, 1080p WEB-DL, etc.)
             } else if (Object.values(qualityValues).includes(quality)) {
-                cssClass = qualityCssClassStrings[quality];
-                text = qualityValueStrings[quality];
+                result.class = qualityCssClassStrings[quality];
+                result.text = qualityValueStrings[quality];
             // Check if all sources are HDTV
             } else if (isSubsetOf(qualities.allowed, setHDTV) && isSubsetOf(qualities.preferred, setHDTV)) {
-                cssClass = qualityCssClassStrings[qualityAnySets.anyhdtv];
-                text = 'HDTV';
+                result.class = qualityCssClassStrings[qualityAnySets.anyhdtv];
+                result.text = 'HDTV';
             // Check if all sources are WEB-DL
             } else if (isSubsetOf(qualities.allowed, setWEBDL) && isSubsetOf(qualities.preferred, setWEBDL)) {
-                cssClass = qualityCssClassStrings[qualityAnySets.anywebdl];
-                text = 'WEB-DL';
+                result.class = qualityCssClassStrings[qualityAnySets.anywebdl];
+                result.text = 'WEB-DL';
             // Check if all sources are BluRay
             } else if (isSubsetOf(qualities.allowed, setBluRay) && isSubsetOf(qualities.preferred, setBluRay)) {
-                cssClass = qualityCssClassStrings[qualityAnySets.anybluray];
-                text = 'BluRay';
+                result.class = qualityCssClassStrings[qualityAnySets.anybluray];
+                result.text = 'BluRay';
             // Check if all resolutions are 720p
             } else if (isSubsetOf(qualities.allowed, set720p) && isSubsetOf(qualities.preferred, set720p)) {
-                cssClass = qualityCssClassStrings[qualityValues.hdbluray];
-                text = '720p';
+                result.class = qualityCssClassStrings[qualityValues.hdbluray];
+                result.text = '720p';
             // Check if all resolutions are 1080p
             } else if (isSubsetOf(qualities.allowed, set1080p) && isSubsetOf(qualities.preferred, set1080p)) {
-                cssClass = qualityCssClassStrings[qualityValues.fullhdbluray];
-                text = '1080p';
+                result.class = qualityCssClassStrings[qualityValues.fullhdbluray];
+                result.text = '1080p';
             // Check if all resolutions are 4K UHD
             } else if (isSubsetOf(qualities.allowed, setUHD4K) && isSubsetOf(qualities.preferred, setUHD4K)) {
-                cssClass = qualityCssClassStrings[qualityValues.hdbluray];
-                text = '4K-UHD';
+                result.class = qualityCssClassStrings[qualityValues.hdbluray];
+                result.text = '4K-UHD';
             // Check if all resolutions are 8K UHD
             } else if (isSubsetOf(qualities.allowed, setUHD8K) && isSubsetOf(qualities.preferred, setUHD8K)) {
-                cssClass = qualityCssClassStrings[qualityValues.hdbluray];
-                text = '8K-UHD';
-            } else {
-                cssClass = 'Custom';
-                text = 'Custom';
+                result.class = qualityCssClassStrings[qualityValues.hdbluray];
+                result.text = '8K-UHD';
             }
 
-            const { override } = this;
-            return {
-                class: override.class || ['quality', cssClass],
-                text: override.text || text
-            };
+            return result;
         }
     },
     methods: {
@@ -184,6 +197,9 @@ export default {
                 }
                 return result;
             }, { allowed: [], preferred: [] });
+        },
+        makeQualitySet(...keys) {
+            return keys.map(key => this.qualityValues[key]);
         },
         /**
          * Check if all the items of `set1` are items of `set2`.
