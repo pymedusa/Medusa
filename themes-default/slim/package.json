@@ -136,7 +136,7 @@
     ],
     "overrides": [
       {
-        "files": "src/**/*.vue",
+        "files": "src/**",
         "globals": [
           "$",
           "MEDUSA"

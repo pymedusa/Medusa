@@ -1,3 +1,4 @@
+import { api } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
 
 const state = {
