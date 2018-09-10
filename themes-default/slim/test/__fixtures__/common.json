@@ -192,6 +192,140 @@
             }
           }
         }
+      },
+      "namingForceFolders": false,
+      "showDefaults": {
+        "status": 5,
+        "statusAfter": 7,
+        "seasonFolders": false,
+        "scene": false,
+        "anime": false,
+        "quality": 328,
+        "subtitles": false
+      }
+    },
+    "statuses": {
+      "values": {
+        "ignored": 7,
+        "archived": 6,
+        "skipped": 5,
+        "snatchedBest": 12,
+        "wanted": 3,
+        "failed": 11,
+        "subtitled": 10,
+        "downloaded": 4,
+        "snatchedProper": 9,
+        "snatched": 2,
+        "unaired": 1,
+        "unset": -1
+      },
+      "strings": {
+        "1": "Unaired",
+        "2": "Snatched",
+        "3": "Wanted",
+        "4": "Downloaded",
+        "5": "Skipped",
+        "6": "Archived",
+        "7": "Ignored",
+        "9": "Snatched (Proper)",
+        "10": "Subtitled",
+        "11": "Failed",
+        "12": "Snatched (Best)",
+        "-1": "Unset"
+      }
+    },
+    "qualities": {
+      "values": {
+        "fullhdbluray": 512,
+        "rawhdtv": 16,
+        "uhd8kbluray": 32768,
+        "na": 0,
+        "hdwebdl": 64,
+        "uhd4ktv": 1024,
+        "sddvd": 4,
+        "uhd8kwebdl": 16384,
+        "uhd4kwebdl": 2048,
+        "hdtv": 8,
+        "uhd4kbluray": 4096,
+        "hdbluray": 256,
+        "unknown": 1,
+        "fullhdtv": 32,
+        "sdtv": 2,
+        "fullhdwebdl": 128,
+        "uhd8ktv": 8192
+      },
+      "anySets": {
+        "anywebdl": 192,
+        "anybluray": 768,
+        "anyhdtv": 40
+      },
+      "presets": {
+        "uhd": 64512,
+        "hd1080p": 672,
+        "uhd4k": 7168,
+        "hd720p": 328,
+        "uhd8k": 57344,
+        "any": 65518,
+        "hd": 1000,
+        "sd": 6
+      },
+      "strings": {
+        "cssClass": {
+          "0": "na",
+          "1": "Unknown",
+          "2": "SDTV",
+          "4": "SDDVD",
+          "8": "HD720p",
+          "16": "RawHD",
+          "32": "HD1080p",
+          "40": "any-hd",
+          "64": "HD720p",
+          "128": "HD1080p",
+          "192": "any-hd",
+          "256": "HD720p",
+          "512": "HD1080p",
+          "768": "any-hd",
+          "1024": "UHD-4K",
+          "2048": "UHD-4K",
+          "4096": "UHD-4K",
+          "8192": "UHD-8K",
+          "16384": "UHD-8K",
+          "32768": "UHD-8K"
+        },
+        "presets": {
+          "6": "SD",
+          "328": "HD720p",
+          "672": "HD1080p",
+          "1000": "HD",
+          "7168": "UHD-4K",
+          "57344": "UHD-8K",
+          "64512": "UHD",
+          "65518": "Any"
+        },
+        "values": {
+          "0": "N/A",
+          "1": "Unknown",
+          "2": "SDTV",
+          "4": "SD DVD",
+          "8": "720p HDTV",
+          "16": "RawHD",
+          "32": "1080p HDTV",
+          "64": "720p WEB-DL",
+          "128": "1080p WEB-DL",
+          "256": "720p BluRay",
+          "512": "1080p BluRay",
+          "1024": "4K UHD TV",
+          "2048": "4K UHD WEB-DL",
+          "4096": "4K UHD BluRay",
+          "8192": "8K UHD TV",
+          "16384": "8K UHD WEB-DL",
+          "32768": "8K UHD BluRay"
+        },
+        "anySets": {
+          "40": "HDTV",
+          "192": "WEB-DL",
+          "768": "BluRay"
+        }
       }
     },
     "metadata": {
