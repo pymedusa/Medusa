@@ -16,51 +16,101 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-test('renders', t => {
+/**
+ * Generate a simple test case
+ *
+ * @param {*} t - AVA test
+ * @param {string} message - Test message
+ * @param {object} propsData - Props to pass to the component.
+ */
+const pillTestCase = (t, message, propsData) => {
     const { localVue, store } = t.context;
 
     t.snapshot(mount(QualityPill, {
         localVue,
         store,
-        propsData: {
-            quality: 128
-        }
-    }).html(), '1080p WEB-DL');
+        propsData
+    }).html(), message);
+};
 
-    t.snapshot(mount(QualityPill, {
-        localVue,
-        store,
-        propsData: {
-            quality: 8 | 32 | 64 | 128 | 256 | 512
-        }
-    }).html(), 'HD = all 720p and all 1080p, allowed');
+test('renders quality pills correctly', t => {
+    pillTestCase(t, 'No qualities', {
+        quality: 0
+    });
 
-    t.snapshot(mount(QualityPill, {
-        localVue,
-        store,
-        propsData: {
-            quality: 128 | 2048
-        }
-    }).html(), 'WEB-DL 720p + 4K UHD WEB-DL, allowed');
+    pillTestCase(t, 'No qualities, with show-title', {
+        quality: 0,
+        showTitle: true
+    });
 
-    t.snapshot(mount(QualityPill, {
-        localVue,
-        store,
-        propsData: {
-            quality: 64 | (128 << 16),
-            showTitle: true
-        }
-    }).html(), '720p WEB-DL allowed + 1080p WEB-DL preferred + show title');
+    pillTestCase(t, '1080p WEB-DL, allowed', {
+        quality: 128
+    });
 
-    t.snapshot(mount(QualityPill, {
-        localVue,
-        store,
-        propsData: {
-            quality: 0,
-            override: {
-                class: 'quality Proper',
-                text: 'Proper'
-            }
+    pillTestCase(t, 'All 720p and all 1080p, allowed', {
+        quality: 8 | 32 | 64 | 128 | 256 | 512
+    });
+
+    pillTestCase(t, 'WEB-DL 720p + 4K UHD WEB-DL, allowed', {
+        quality: 128 | 2048
+    });
+
+    pillTestCase(t, '720p WEB-DL allowed + 1080p WEB-DL preferred, with show title', {
+        quality: 64 | (128 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Custom pill using overrides', {
+        quality: 0,
+        override: {
+            class: 'quality Proper',
+            text: 'Proper',
+            title: 'Show.Name.S03E15.720p.Proper.HDTV.x264-Group.mkv'
         }
-    }).html(), 'Custom "Proper" pill');
+    });
+
+    pillTestCase(t, 'Quality set: Any HDTV, with show title', {
+        quality: 40,
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of HDTV source, with show title', {
+        quality: (8 | 32) | (1024 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of WEB-DL source, with show title', {
+        quality: (64 | 128) | (2048 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of BluRay source, with show title', {
+        quality: (256 | 512) | ((4096 | 32768) << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of 720p resolution, with show title', {
+        quality: (8 | 64) | (256 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of 1080p resolution, with show title', {
+        quality: (32 | 128) | (512 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of 4K UHD resolution, with show title', {
+        quality: (1024 | 2048) | (4096 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Both quality lists are of 8K UHD resolution, with show title', {
+        quality: (8192 | 16384) | (32768 << 16),
+        showTitle: true
+    });
+
+    pillTestCase(t, 'Custom quality lists, with show title', {
+        quality: (2 | 8 | 64 | 256 | 512) | ((2048 | 4096) << 16),
+        showTitle: true
+    });
 });
