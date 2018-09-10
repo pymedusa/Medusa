@@ -8,7 +8,7 @@ const apiKey = document.body.getAttribute('api-key');
  */
 const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: webRoot + '/',
-    timeout: 10000,
+    timeout: 30000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -20,7 +20,7 @@ const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
  */
 const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: webRoot + '/api/v1/' + apiKey + '/',
-    timeout: 10000,
+    timeout: 30000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -32,7 +32,7 @@ const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
  */
 const api = axios.create({ // eslint-disable-line no-unused-vars
     baseURL: webRoot + '/api/v2/',
-    timeout: 10000,
+    timeout: 30000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
