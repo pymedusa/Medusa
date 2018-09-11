@@ -91,7 +91,7 @@
                                             <span>Sync File Extensions</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postProcessing.syncFiles" @change="postProcessing.syncFiles = $event"></select-list>
+                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postProcessing.syncFiles" @change="onChangeSyncFiles"></select-list>
                                             <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
                                         </div>
                                     </div>
@@ -154,7 +154,7 @@
                                             <span>Keep associated file extensions</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="postProcessing.allowedExtensions = $event"></select-list>
+                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="onChangeAllowedExtensions"></select-list>
                                             <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
                                             <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
@@ -229,7 +229,7 @@
                                             <span>Extra Scripts</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postProcessing.extraScripts" @change="postProcessing.extraScripts = $event"></select-list>
+                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postProcessing.extraScripts" @change="onChangeExtraScripts"></select-list>
                                             <span>See <app-link :href="postProcessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                         </div>
                                     </div>
@@ -433,6 +433,15 @@ export default {
         };
     },
     methods: {
+        onChangeSyncFiles(items) {
+            this.postProcessing.syncFiles = items.map(item => item.value);
+        },
+        onChangeAllowedExtensions(items) {
+            this.postProcessing.allowedExtensions = items.map(item => item.value);
+        },
+        onChangeExtraScripts(items) {
+            this.postProcessing.extraScripts = items.map(item => item.value);
+        },
         saveNaming(values) {
             if (!this.configLoaded) {
                 return;

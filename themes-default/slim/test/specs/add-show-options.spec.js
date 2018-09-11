@@ -2,7 +2,7 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { SelectList } from '../../src/components';
+import { AddShowOptions } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
 test.beforeEach(t => {
@@ -16,44 +16,35 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-test('renders', t => {
+test('renders with `enable-anime-options` disabled', t => {
     const { localVue, store } = t.context;
-    const wrapper = mount(SelectList, {
+    const wrapper = mount(AddShowOptions, {
         localVue,
         store,
+        stubs: [
+            'quality-chooser',
+            'toggle-button'
+        ],
         propsData: {
-            listItems: []
+            enableAnimeOptions: false
         }
     });
 
     t.snapshot(wrapper.html());
 });
 
-test.failing('renders with values', t => {
+test('renders with `enable-anime-options` enabled', t => {
     const { localVue, store } = t.context;
-
-    const listItems = [
-        'abc',
-        'bcd',
-        'test'
-    ];
-
-    const wrapper = mount(SelectList, {
+    const wrapper = mount(AddShowOptions, {
         localVue,
         store,
+        stubs: [
+            'quality-chooser',
+            'toggle-button'
+        ],
         propsData: {
-            listItems
+            enableAnimeOptions: true
         }
-    });
-
-    const expectedItems = listItems;
-    const inputWrapperArray = wrapper.findAll('li input[type="text"]');
-
-    t.is(inputWrapperArray.length, expectedItems.length);
-
-    inputWrapperArray.wrappers.forEach((inputWrapper, index) => {
-        const { element } = inputWrapper;
-        t.is(element.value, expectedItems[index]);
     });
 
     t.snapshot(wrapper.html());

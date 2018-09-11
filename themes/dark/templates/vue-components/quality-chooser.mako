@@ -100,9 +100,6 @@ const QualityChooserComponent = {
             qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
-            lock: false,
-            unwatchProp: null,
-
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -181,21 +178,6 @@ const QualityChooserComponent = {
             return html;
         }
     },
-    created() {
-        /**
-         * overallQuality property might receive values originating from the API,
-         * that are sometimes not avaiable when rendering.
-         * @TODO: Maybe we can remove this in the future.
-         */
-        this.unwatchProp = this.$watch('overallQuality', (newValue, oldValue) => {
-            this.unwatchProp();
-
-            this.lock = true;
-            this.selectedQualityPreset = this.keep === 'keep' ? 'keep' : (this.qualityPresets.includes(newValue) ? newValue : 0),
-            this.setQualityFromPreset(this.selectedQualityPreset, newValue);
-            this.$nextTick(() => this.lock = false);
-        });
-    },
     mounted() {
         this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
     },
@@ -235,18 +217,19 @@ const QualityChooserComponent = {
         }
     },
     watch: {
+        overallQuality(newValue) {
+            const { qualityPresets, keep, setQualityFromPreset } = this;
+            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (qualityPresets.includes(newValue) ? newValue : 0),
+            setQualityFromPreset(this.selectedQualityPreset, newValue);
+        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
         allowedQualities(newQuality, oldQuality) {
-            if (!this.lock) {
-                this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
-            }
+            this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
         },
         preferredQualities(newQuality, oldQuality) {
-            if (!this.lock) {
-                this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
-            }
+            this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
         }
     }
 };

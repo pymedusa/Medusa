@@ -12,7 +12,7 @@ contextlib2==0.5.5 ; python_version < '3.5'
 dirtyjson==1.0.7
 dogpile.cache==0.6.7
 git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
-git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
+git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
 future==0.16.0
 futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
 gntp==1.0.3
@@ -26,7 +26,7 @@ Mako==1.0.7
 markdown2==2.3.5
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
-PyGithub==1.40
+PyGithub==1.43.1
 PyJWT==1.6.4
 python-dateutil==2.7.3
 python-twitter==3.4.2

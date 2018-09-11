@@ -3,7 +3,6 @@
 :------: | :-------: | :----------------: | :---- | :----
 :: | `bencode` | [1.0](https://pypi.org/project/bencode/1.0/) | **`medusa`** | **Modified**: Package structure, exception commented out
 :: | `certgen.py` | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | **Not a package**
-:: | `fake-useragent` | [0.0.8](https://pypi.org/project/fake-useragent/0.0.8/) | **`medusa`** | Module: `fake_useragent`<br>Note: `ua.json` should be moved elsewhere
 :: | `native` | - | `pymediainfo` | **Not a package**
 :: | `pkg_resources` | ????? | `babelfish`, `click`(?), `enzyme`, `guessit`, `stevedore`, `pint`, ... | **Not a package**<br>Part of `setuptools`
 :: | `pymediainfo` | [2.2.1](https://pypi.org/project/pymediainfo/2.2.1/) | `knowit` | **Modified**: Version number fixed

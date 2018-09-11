@@ -28,8 +28,6 @@ from builtins import object
 from builtins import str
 from functools import reduce
 
-from fake_useragent import UserAgent, settings as ua_settings
-
 import knowit
 
 from medusa.recompiled import tags
@@ -40,22 +38,11 @@ from six import PY3, viewitems
 if PY3:
     long = int
 
-# If some provider has an issue with functionality of Medusa, other than user
-# agents, it's best to come talk to us rather than block.  It is no different
-# than us going to a provider if we have questions or issues.
-# Be a team player here. This is disabled, and was only added for testing,
-# it has no config.ini or web ui setting.
-# To enable, set SPOOF_USER_AGENT = True
-SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.2.9'
+VERSION = '0.2.10'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-ua_settings.DB = os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib/fake_useragent/ua.json'))
-UA_POOL = UserAgent()
-if SPOOF_USER_AGENT:
-    USER_AGENT = UA_POOL.random
 
 cpu_presets = {
     'HIGH': 5,
@@ -259,6 +246,22 @@ class Quality(object):
                 preferred_qualities.append(cur_qual)
 
         return sorted(allowed_qualities), sorted(preferred_qualities)
+
+    @staticmethod
+    def is_valid_combined_quality(quality):
+        """
+        Check quality value to make sure it is a valid combined quality.
+
+        :param quality: Quality to check
+        :type quality: int
+        :return: True if valid, False if not
+        """
+        for cur_qual in Quality.qualityStrings:
+            if cur_qual & quality:
+                quality -= cur_qual
+            if cur_qual << 16 & quality:
+                quality -= cur_qual << 16
+        return quality == 0
 
     @staticmethod
     def name_quality(name, anime=False, extend=True):
