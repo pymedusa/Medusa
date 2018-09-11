@@ -1,38 +1,3 @@
-function generateBlackWhiteList() { // eslint-disable-line no-unused-vars
-    let realvalues = [];
-
-    $('#white option').each((i, selected) => {
-        realvalues[i] = $(selected).val();
-    });
-    $('#whitelist').val(realvalues.join(','));
-
-    realvalues = [];
-    $('#black option').each((i, selected) => {
-        realvalues[i] = $(selected).val();
-    });
-    $('#blacklist').val(realvalues.join(','));
-}
-
-function updateBlackWhiteList(showName) { // eslint-disable-line no-unused-vars
-    $('#pool').children().remove();
-
-    $('#blackwhitelist').show();
-    if (showName) {
-        $.getJSON('home/fetch_releasegroups', {
-            series_name: showName // eslint-disable-line camelcase
-        }, data => {
-            if (data.result === 'success') {
-                $.each(data.groups, (i, group) => {
-                    const option = $('<option>');
-                    option.prop('value', group.name);
-                    option.html(group.name + ' | ' + group.rating + ' | ' + group.range);
-                    option.appendTo('#pool');
-                });
-            }
-        });
-    }
-}
-
 $(document).ready(() => {
     $('#removeW').on('click', () => {
         !$('#white option:selected').remove().appendTo('#pool'); // eslint-disable-line no-unused-expressions
