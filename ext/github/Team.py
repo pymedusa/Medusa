@@ -14,7 +14,13 @@
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
 # Copyright 2016 mattjmorrison <mattjmorrison@mattjmorrison.com>               #
 # Copyright 2018 Isuru Fernando <isuruf@gmail.com>                             #
+# Copyright 2018 Jacopo Notarstefano <jacopo.notarstefano@gmail.com>           #
 # Copyright 2018 James D'Amato <james.j.damato@gmail.com>                      #
+# Copyright 2018 Maarten Fonville <mfonville@users.noreply.github.com>         #
+# Copyright 2018 Manu Hortet <manuhortet@gmail.com>                            #
+# Copyright 2018 Michał Górny <mgorny@gentoo.org>                            #
+# Copyright 2018 Steve Kowalik <steven@wedontsleep.org>                        #
+# Copyright 2018 Tim Boring <tboring@hearst.com>                               #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -226,20 +232,24 @@ class Team(github.GithubObject.CompletableGithubObject):
             self.url
         )
 
-    def edit(self, name, permission=github.GithubObject.NotSet, privacy=github.GithubObject.NotSet):
+    def edit(self, name, description=github.GithubObject.NotSet, permission=github.GithubObject.NotSet, privacy=github.GithubObject.NotSet):
         """
         :calls: `PATCH /teams/:id <http://developer.github.com/v3/orgs/teams>`_
         :param name: string
+        :param description: string
         :param permission: string
         :param privacy: string
         :rtype: None
         """
         assert isinstance(name, (str, unicode)), name
+        assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
         assert permission is github.GithubObject.NotSet or isinstance(permission, (str, unicode)), permission
         assert privacy is github.GithubObject.NotSet or isinstance(privacy, (str, unicode)), privacy
         post_parameters = {
             "name": name,
         }
+        if description is not github.GithubObject.NotSet:
+            post_parameters["description"] = description
         if permission is not github.GithubObject.NotSet:
             post_parameters["permission"] = permission
         if privacy is not github.GithubObject.NotSet:
