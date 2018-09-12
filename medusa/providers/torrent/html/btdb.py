@@ -34,6 +34,9 @@ class BTDBProvider(TorrentProvider):
             'search': urljoin(self.url, '/q/{query}/{page}?sort=popular'),
         }
 
+        # Miscellaneous Options
+        self.max_pages = 3
+
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
@@ -57,15 +60,22 @@ class BTDBProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                for page in range(1, 4):
+                for page in range(1, self.max_pages + 1):
                     search_url = self.urls['search'].format(query=search_string, page=page)
 
                     response = self.session.get(search_url)
                     if not response or not response.text:
                         log.debug('No data returned from provider')
-                        continue
+                        break
 
-                    results += self.parse(response.text, mode)
+                    page_results = self.parse(response.text, mode)
+                    results += page_results
+                    if len(page_results) < 10:
+                        break
+
+                # We don't have the real seeds but we can sort results by popularity and
+                # normalize seeds numbers so results can be sort in manual search
+                results = self.calc_seeds(results)
 
         return results
 
@@ -98,14 +108,13 @@ class BTDBProvider(TorrentProvider):
 
                     spans = row.find('div').find_all('span')
 
+                    seeders = leechers = 0
+
                     torrent_size = spans[0].get_text()
                     size = convert_size(torrent_size, default=-1)
 
                     torrent_pubdate = spans[2].get_text()
                     pubdate = self.parse_pubdate(torrent_pubdate)
-
-                    torrent_popularity = spans[3].get_text()
-                    seeders = leechers = int(torrent_popularity)
 
                     item = {
                         'title': title,
@@ -125,6 +134,14 @@ class BTDBProvider(TorrentProvider):
                     log.exception('Failed parsing provider.')
 
         return items
+
+    def calc_seeds(self, results):
+        """Normalize seeds numbers so results can be sort in manual search."""
+        seeds = len(results)
+        for result in results:
+            result['seeders'] = seeds
+            seeds -= 1
+        return results
 
 
 provider = BTDBProvider()
