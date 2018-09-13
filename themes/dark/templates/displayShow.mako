@@ -102,21 +102,21 @@
                 </tbody>
                 <tbody class="tablesorter-no-sort">
                     <tr id="season-${epResult['season']}-cols" class="seasoncols">
-                        <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult['season']}" /></th>
-                        <th class="col-metadata">NFO</th>
-                        <th class="col-metadata">TBN</th>
-                        <th class="col-ep">Episode</th>
-                        <th class="col-ep">Absolute</th>
-                        <th class="col-ep">Scene</th>
-                        <th class="col-ep">Scene Absolute</th>
-                        <th class="col-name hidden-xs">Name</th>
-                        <th class="col-name hidden-xs">File Name</th>
-                        <th class="col-ep">Size</th>
-                        <th class="col-airdate">Airdate</th>
-                        <th class="col-ep">Download</th>
-                        <th class="col-ep">Subtitles</th>
-                        <th class="col-status">Status</th>
-                        <th class="col-search">Search</th>
+                        <th data-column="0" class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult['season']}" /></th>
+                        <th data-column="1" class="col-metadata">NFO</th>
+                        <th data-column="2" class="col-metadata">TBN</th>
+                        <th data-column="3" class="col-ep">Episode</th>
+                        <th data-column="4" class="col-ep">Absolute</th>
+                        <th data-column="5" class="col-ep">Scene</th>
+                        <th data-column="6" class="col-ep">Scene Absolute</th>
+                        <th data-column="7" class="col-name hidden-xs">Name</th>
+                        <th data-column="8" class="col-name hidden-xs">File Name</th>
+                        <th data-column="9" class="col-ep">Size</th>
+                        <th data-column="10" class="col-airdate">Airdate</th>
+                        <th data-column="11" class="col-ep">Download</th>
+                        <th data-column="12" class="col-ep">Subtitles</th>
+                        <th data-column="13" class="col-status">Status</th>
+                        <th data-column="14" class="col-search">Search</th>
                     </tr>
                         % else:
                     <tr id="season-${epResult['season']}-footer" class="seasoncols border-bottom shadow">
@@ -146,21 +146,21 @@
                 </tbody>
                 <tbody class="tablesorter-no-sort">
                     <tr id="season-${epResult['season']}-cols" class="seasoncols ${'' if app.DISPLAY_ALL_SEASONS else 'shadow'}">
-                        <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult['season']}" /></th>
-                        <th class="col-metadata">NFO</th>
-                        <th class="col-metadata">TBN</th>
-                        <th class="col-ep">Episode</th>
-                        <th class="col-ep">Absolute</th>
-                        <th class="col-ep">Scene</th>
-                        <th class="col-ep">Scene Absolute</th>
-                        <th class="col-name hidden-xs">Name</th>
-                        <th class="col-name hidden-xs">File Name</th>
-                        <th class="col-ep">Size</th>
-                        <th class="col-airdate">Airdate</th>
-                        <th class="col-ep">Download</th>
-                        <th class="col-ep">Subtitles</th>
-                        <th class="col-status">Status</th>
-                        <th class="col-search">Search</th>
+                        <th data-column="0" class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult['season']}" /></th>
+                        <th data-column="1" class="col-metadata">NFO</th>
+                        <th data-column="2" class="col-metadata">TBN</th>
+                        <th data-column="3" class="col-ep">Episode</th>
+                        <th data-column="4" class="col-ep">Absolute</th>
+                        <th data-column="5" class="col-ep">Scene</th>
+                        <th data-column="6" class="col-ep">Scene Absolute</th>
+                        <th data-column="7" class="col-name hidden-xs">Name</th>
+                        <th data-column="8" class="col-name hidden-xs">File Name</th>
+                        <th data-column="9" class="col-ep">Size</th>
+                        <th data-column="10" class="col-airdate">Airdate</th>
+                        <th data-column="11" class="col-ep">Download</th>
+                        <th data-column="12" class="col-ep">Subtitles</th>
+                        <th data-column="13" class="col-status">Status</th>
+                        <th data-column="14" class="col-search">Search</th>
                     </tr>
                         % endif
                 </tbody>
