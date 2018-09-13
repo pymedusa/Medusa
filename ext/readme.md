@@ -7,6 +7,7 @@
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
 :: | `beautifulsoup4` | [4.6.3](https://pypi.org/project/beautifulsoup4/4.6.3/) | **`medusa`**, `subliminal` | Module: `bs4`
+:: | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`medusa`** | Module: `bencode`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 :: | `certifi` | [2018.8.24](https://pypi.org/project/certifi/2018.8.24/) | **`medusa`**, `traktor`, `requests` | -
@@ -60,4 +61,4 @@
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
-:: | `PyYAML` | [3.12](https://pypi.org/project/PyYAML/3.12/) | `knowit` | Module: `yaml`
+:: | `PyYAML` | [3.13](https://pypi.org/project/PyYAML/3.13/) | `knowit` | Module: `yaml`
