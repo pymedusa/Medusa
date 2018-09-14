@@ -1,1 +1,0 @@
-MEDUSA.manage.index = function() {};
