@@ -164,12 +164,12 @@ export default {
                 result.text = '1080p';
             // Check if all resolutions are 4K UHD
             } else if (isSubsetOf(qualities.allowed, setUHD4K) && isSubsetOf(qualities.preferred, setUHD4K)) {
-                result.class = qualityCssClassStrings[qualityValues.hdbluray];
-                result.text = '4K-UHD';
+                result.class = qualityCssClassStrings[qualityValues.uhd4kbluray];
+                result.text = 'UHD-4K';
             // Check if all resolutions are 8K UHD
             } else if (isSubsetOf(qualities.allowed, setUHD8K) && isSubsetOf(qualities.preferred, setUHD8K)) {
-                result.class = qualityCssClassStrings[qualityValues.hdbluray];
-                result.text = '8K-UHD';
+                result.class = qualityCssClassStrings[qualityValues.uhd8kbluray];
+                result.text = 'UHD-8K';
             }
 
             return result;
