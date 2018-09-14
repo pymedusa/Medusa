@@ -89,18 +89,21 @@ const webpackConfig = (env, mode) => ({
         },
         splitChunks: {
             chunks: 'all',
-            name: 'vendors',
             cacheGroups: {
-                styles: {
-                    test: /\.css$/,
-                    priority: 10
+                runtime: {
+                    name: 'medusa-runtime',
+                    test: /[\\/]src[\\/]/,
+                    minChunks: 2,
+                    priority: 0,
+                    reuseExistingChunk: true
                 },
-                // These are the default cacheGroups!
                 vendors: {
-                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    test: /[\\/](vendor|node_modules)[\\/]/,
                     priority: -10
                 },
                 default: {
+                    name: 'vendors',
                     minChunks: 2,
                     priority: -20,
                     reuseExistingChunk: true
