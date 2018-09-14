@@ -2,6 +2,7 @@
 # git+https://github.com/pymedusa/adba.git@119b9d30a30feb97bcea5e1dc742c82340300091#egg=adba
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.6.3
+bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2018.8.24
 chardet==3.0.4
