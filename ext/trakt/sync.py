@@ -95,6 +95,61 @@ def remove_from_watchlist(media):
     yield 'sync/watchlist/remove', media.to_json()
 
 
+@get
+def get_collection(media_type='shows', extended=False):
+    """Get a list of all :class:`TVShow`'s or :class:`Movie`'s in a users collection.
+    A collected item indicates availability to watch digitally or
+    on physical media.
+    """
+    valids = ('movies', 'shows')
+    if media_type not in valids:
+        raise ValueError('search_type must be one of {}'.format(valids))
+    data = yield 'sync/collection/{media_type}{extended}'.format(
+        media_type=media_type, extended=('', '?extended=metadata')[extended]
+    )
+    to_ret = []
+    for item in data:
+        to_ret = []
+        if media_type == 'movies':
+            extract_ids(item)
+            to_ret.append(Movie(**item))
+        else:  # media_type == 'shows'
+            data = item.get('ids', {})
+            extract_ids(data)
+            data['year'] = item['year']
+            to_ret.append(TVShow(item['title'], **data))
+    yield to_ret
+
+
+@get
+def get_watched(media_type='shows', extended=False):
+    """Get a list of all :class:`TVShow`'s or :class:`Movie`'s a user has watched
+    sorted by most plays.
+    If media_type is set to shows and you enable extended. `?extended=noseasons` is
+    added to the URL, it won't return season or episode info.
+    """
+    valids = ('movies', 'shows')
+    if media_type not in valids:
+        raise ValueError('search_type must be one of {}'.format(valids))
+    data = yield 'sync/watched/{media_type}{extended}'.format(
+        media_type=media_type, extended=('', '?extended=noseasons')[extended and media_type == 'shows']
+    )
+    to_ret = []
+    for item in data:
+        to_ret = []
+        if media_type == 'movies':
+            from trakt.movies import Movie
+            extract_ids(item)
+            to_ret.append(Movie(**item))
+        else:  # media_type == 'shows'
+            from trakt.tv import TVShow
+            data = item.get('ids', {})
+            extract_ids(data)
+            data['year'] = item['year']
+            to_ret.append(TVShow(item['title'], **data))
+    yield to_ret
+
+
 @post
 def add_to_collection(media):
     """Add a :class:`Movie`, :class:`TVShow`, or :class:`TVEpisode` to your

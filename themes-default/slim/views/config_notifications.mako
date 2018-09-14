@@ -1550,12 +1550,12 @@ const startVue = () => {
                                         <span class="component-desc">username of your Trakt account.</span>
                                     </p>
                                 </div>
-                                <input type="hidden" id="trakt_pin_url" value="${app.TRAKT_PIN_URL}">
+                                <!-- <input type="hidden" id="trakt_pin_url" value="${app.TRAKT_PIN_URL}"> -->
                                 <div class="field-pair">
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
-                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} />
-                                        <input type="button" class="btn" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
+                                        <!-- <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} /> -->
+                                        <input type="button" class="btn" value="Request oath device authentication" id="request-trakt-device-code" />
                                         <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
                                     </label>
                                     <p>

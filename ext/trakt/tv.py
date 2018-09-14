@@ -12,7 +12,7 @@ from trakt.people import Person
 
 __author__ = 'Jon Nappi'
 __all__ = ['dismiss_recommendation', 'get_recommended_shows', 'genres',
-           'popular_shows', 'trending_shows', 'updated_shows', 'TVShow',
+           'popular_shows', 'trending_shows', 'updated_shows', 'collected_shows', 'watched_shows', 'played_shows', 'anticipated_shows', 'TVShow',
            'TVEpisode', 'TVSeason', 'Translation']
 
 
@@ -60,6 +60,42 @@ def popular_shows():
 
 
 @get
+def watched_shows():
+    data = yield 'shows/watched'
+    shows = []
+    for show in data:
+        data = show.get('ids', {})
+        extract_ids(data)
+        data['year'] = show['year']
+        shows.append(TVShow(show['title'], **data))
+    yield shows
+
+
+@get
+def played_shows():
+    data = yield 'shows/played'
+    shows = []
+    for show in data:
+        data = show.get('ids', {})
+        extract_ids(data)
+        data['year'] = show['year']
+        shows.append(TVShow(show['title'], **data))
+    yield shows
+
+
+@get
+def anticipated_shows():
+    data = yield 'shows/anticipated'
+    shows = []
+    for show in data:
+        data = show.get('ids', {})
+        extract_ids(data)
+        data['year'] = show['year']
+        shows.append(TVShow(show['title'], **data))
+    yield shows
+
+
+@get
 def trending_shows():
     """All :class:`TVShow`'s being watched right now"""
     data = yield 'shows/trending'
@@ -71,6 +107,18 @@ def trending_shows():
         show_data['watchers'] = show.get('watchers')
         to_ret.append(TVShow(**show_data))
     yield to_ret
+
+
+@get
+def collected_shows():
+    data = yield 'shows/collected'
+    shows = []
+    for show in data:
+        data = show.get('ids', {})
+        extract_ids(data)
+        data['year'] = show['year']
+        shows.append(TVShow(show['title'], **data))
+    yield shows
 
 
 @get

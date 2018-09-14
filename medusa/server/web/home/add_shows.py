@@ -19,7 +19,7 @@ from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 from medusa.show.recommendations.anidb import AnidbPopular
 from medusa.show.recommendations.imdb import ImdbPopular
-from medusa.show.recommendations.trakt import TraktPopular
+from medusa.show.recommendations.trakt_recommendations import TraktPopular
 from medusa.show.show import Show
 
 from requests import RequestException
@@ -27,7 +27,8 @@ from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems, itervalues
 from tornroutes import route
-from traktor import TraktApi
+
+#from traktor import TraktApi
 
 
 @route('/addShows(/?.*)')

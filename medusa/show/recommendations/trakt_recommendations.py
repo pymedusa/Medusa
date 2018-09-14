@@ -20,7 +20,8 @@ from medusa.show.recommendations.recommended import (
 
 from six import binary_type, text_type
 
-from traktor import (TokenExpiredException, TraktApi, TraktException)
+import trakt
+from trakt import tv
 
 from tvdbapiv2.exceptions import ApiException
 
@@ -44,6 +45,7 @@ class TraktPopular(object):
         self.recommender = "Trakt Popular"
         self.default_img_src = 'trakt-default.png'
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
+        trakt.CONFIG_PATH = os.path.join(app.CACHE_DIR, '.pytrakt.json')
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series, storage_key=None):
@@ -94,20 +96,20 @@ class TraktPopular(object):
 
         return rec_show
 
-    @staticmethod
-    def fetch_and_refresh_token(trakt_api, path):
-        """Fetch shows from trakt and store the refresh token when needed."""
-        try:
-            library_shows = trakt_api.request(path) or []
-            if trakt_api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = trakt_api.access_token
-                app.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
-                app.instance.save_config()
-        except TokenExpiredException:
-            app.TRAKT_ACCESS_TOKEN = ''
-            raise
-
-        return library_shows
+    # @staticmethod
+    # def fetch_and_refresh_token(trakt_api, path):
+    #     """Fetch shows from trakt and store the refresh token when needed."""
+    #     try:
+    #         library_shows = trakt_api.request(path) or []
+    #         if trakt_api.access_token_refreshed:
+    #             app.TRAKT_ACCESS_TOKEN = trakt_api.access_token
+    #             app.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
+    #             app.instance.save_config()
+    #     except TokenExpiredException:
+    #         app.TRAKT_ACCESS_TOKEN = ''
+    #         raise
+    #
+    #     return library_shows
 
     def fetch_popular_shows(self, page_url=None, trakt_list=None):
         """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
@@ -117,29 +119,31 @@ class TraktPopular(object):
         :return: A list of RecommendedShow objects, an empty list of none returned
         :throw: ``Exception`` if an Exception is thrown not handled by the libtrats exceptions
         """
-        trending_shows = []
+        my_trending_shows = []
         removed_from_medusa = []
 
         # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
+        # trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+        #                   'trakt_api_key': app.TRAKT_API_KEY,
+        #                   'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+        #                   'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
-        trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
+        # import trakt.core as core
 
         try:
             not_liked_show = ''
             if app.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
-                    self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
+
+                # Shows from the users library
+                library_shows = trakt.sync.get_watched('shows', extended=True) + \
+                    trakt.sync.get_collection('shows', extended=True)
 
                 medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
                 removed_from_medusa = [lshow['show']['ids']['tvdb'] for lshow in library_shows if lshow['show']['ids']['tvdb'] not in medusa_shows]
 
                 if app.TRAKT_BLACKLIST_NAME is not None and app.TRAKT_BLACKLIST_NAME:
-                    not_liked_show = trakt_api.request('users/' + app.TRAKT_USERNAME + '/lists/' +
-                                                       app.TRAKT_BLACKLIST_NAME + '/items') or []
+                    trakt_user = trakt.users.User(app.TRAKT_USERNAME)
+                    not_liked_show = trakt_user.get_list(app.TRAKT_BLACKLIST_NAME) or []
                 else:
                     log.debug('Trakt blacklist name is empty')
 
@@ -148,12 +152,23 @@ class TraktPopular(object):
             else:
                 limit_show = '?'
 
-            series = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
+            # series = self.fetch_and_refresh_token(trakt_api, page_url + limit_show + 'extended=full,images') or []
+            map_to_trakt_api_method = {
+                'shows/trending': trakt.tv.trending_shows,
+                'shows/popular': trakt.tv.popular_shows,
+                'shows/anticipated': trakt.tv.anticipated_shows,
+                'shows/collected': trakt.tv.collected_shows,
+                'shows/watched': trakt.tv.watched_shows,
+                'shows/played': trakt.tv.played_shows,
+                'recommendations/shows': trakt.tv.get_recommended_shows
+            }
+
+            shows = map_to_trakt_api_method.get(page_url)()
 
             # Let's trigger a cache cleanup.
             missing_posters.clean()
 
-            for show in series:
+            for show in shows:
                 try:
                     if 'show' not in show:
                         show['show'] = show
@@ -163,7 +178,7 @@ class TraktPopular(object):
                                                            for s in not_liked_show if s['type'] == 'show'):
                             continue
                     else:
-                        trending_shows.append(self._create_recommended_show(
+                        my_trending_shows.append(self._create_recommended_show(
                             show, storage_key=b'trakt_{0}'.format(show['show']['ids']['trakt'])
                         ))
 
@@ -171,14 +186,15 @@ class TraktPopular(object):
                     continue
 
             # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
+            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in my_trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
-        except TraktException as error:
+        # TODO: Replace with normal exception
+        except Exception as error:
             log.warning('Could not connect to Trakt service: {0}', error)
             raise
 
-        return blacklist, trending_shows, removed_from_medusa
+        return blacklist, my_trending_shows, removed_from_medusa
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""
