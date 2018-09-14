@@ -31,7 +31,7 @@ class BTDBProvider(TorrentProvider):
         # URLs
         self.url = 'https://btdb.to'
         self.urls = {
-            'rss': urljoin(self.url, '/q/x264/?sort=time'),
+            'daily': urljoin(self.url, '/q/x264/?sort=time'),
             'search': urljoin(self.url, '/q/{query}/{page}?sort=popular'),
         }
 
@@ -63,28 +63,28 @@ class BTDBProvider(TorrentProvider):
 
                     for page in range(1, self.max_pages + 1):
                         search_url = self.urls['search'].format(query=search_string, page=page)
-    
+
                         response = self.session.get(search_url)
                         if not response or not response.text:
                             log.debug('No data returned from provider')
                             break
-    
+
                         page_results = self.parse(response.text, mode)
                         results += page_results
                         if len(page_results) < 10:
                             break
-    
-                    # We don't have the real seeds but we can sort results by popularity and
-                    # normalize seeds numbers so results can be sort in manual search
-                    results = self.calc_seeds(results)
 
                 else:
-                    response = self.session.get(self.urls['rss'])
+                    response = self.session.get(self.urls['daily'])
                     if not response or not response.text:
                         log.debug('No data returned from provider')
                         continue
 
                     results += self.parse(response.text, mode)
+
+                # We don't have the real seeds but we can sort results by popularity and
+                # normalize seeds numbers so results can be sort in manual search
+                results = self.calc_seeds(results)
 
         return results
 
