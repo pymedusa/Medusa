@@ -203,7 +203,7 @@
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
                             <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :state="show.config.subtitlesEnabled"></state-switch></td></tr>
-                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :state="show.config.seasonFolders || config.namingForceFolders"></state-switch>></td></tr>
+                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :state="show.config.seasonFolders || config.namingForceFolders"></state-switch></td></tr>
                             <tr><td class="showLegend">Paused: </td><td><state-switch :state="show.config.paused"></state-switch></td></tr>
                             <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :state="show.config.airByDate"></state-switch></td></tr>
                             <tr><td class="showLegend">Sports: </td><td><state-switch :state="show.config.sports"></state-switch></td></tr>
