@@ -68,7 +68,6 @@ if (window) {
         common: {},
         config: {},
         home: {},
-        manage: {},
         addShows: {}
     };
     window.webRoot = webRoot;
