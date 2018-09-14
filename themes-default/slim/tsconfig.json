@@ -5,7 +5,7 @@
     },
     "include": [
         "./static/js/*.js",
-        "./src/**/*.{vue|js}"
+        "./src/**/*.{vue,js}"
     ],
     "exclude": [
         "node_modules"
