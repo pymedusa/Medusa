@@ -97,9 +97,9 @@ class Notifier(object):
         if show is not None:
             for value in show:
                 for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs[b'notify_list']:
-                        if subs[b'notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs[b'notify_list']))
+                    if subs['notify_list']:
+                        if subs['notify_list'][0] == '{':               # legacy format handling
+                            entries = dict(ast.literal_eval(subs['notify_list']))
                             for api in entries['prowlAPIs'].split(','):
                                 if api.strip():
                                     apis.append(api)

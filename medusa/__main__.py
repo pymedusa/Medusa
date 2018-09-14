@@ -95,6 +95,34 @@ from six import text_type
 logger = logging.getLogger(__name__)
 
 
+def fix_incorrect_list_values(data):
+    """
+    @TODO: Remove this in a future version.
+
+    Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
+    See: https://github.com/pymedusa/Medusa/issues/5155
+
+    Example: `"{u'id': 0, u'value': u'!sync'}"` to `"!sync"`
+    """
+    import ast
+
+    result = []
+    for item in data:
+        if not item:
+            continue
+        if not (item.startswith('{') and item.endswith('}')):
+            # Simple value, don't do anything to it
+            result.append(item)
+            continue
+        try:
+            # Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
+            result.append(ast.literal_eval(item)['value'])
+        except (SyntaxError, KeyError):
+            pass
+
+    return result
+
+
 class Application(object):
     """Main application module."""
 
@@ -326,6 +354,10 @@ class Application(object):
             if self.console_logging:
                 sys.stdout.write('Restore: restoring DB and config.ini %s!\n' % ('FAILED', 'SUCCESSFUL')[success])
 
+        # Initialize all available themes
+        app.AVAILABLE_THEMES = read_themes()
+        app.DATA_ROOT = os.path.join(app.PROG_DIR, 'themes')
+
         # Load the config and publish it to the application package
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
@@ -371,7 +403,7 @@ class Application(object):
         self.web_options = {
             'port': int(self.start_port),
             'host': self.web_host,
-            'data_root': os.path.join(app.PROG_DIR, 'themes'),
+            'data_root': app.DATA_ROOT,
             'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
@@ -386,9 +418,6 @@ class Application(object):
         # start web server
         self.web_server = AppWebServer(self.web_options)
         self.web_server.start()
-
-        # Initialize all available themes
-        app.AVAILABLE_THEMES = read_themes()
 
         # Fire up all our threads
         self.start_threads()
@@ -422,7 +451,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'NMA', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -508,7 +537,8 @@ class Application(object):
             app.FANART_BACKGROUND = bool(check_setting_int(app.CFG, 'GUI', 'fanart_background', 1))
             app.FANART_BACKGROUND_OPACITY = check_setting_float(app.CFG, 'GUI', 'fanart_background_opacity', 0.4)
 
-            app.THEME_NAME = check_setting_str(app.CFG, 'GUI', 'theme_name', 'dark')
+            app.THEME_NAME = check_setting_str(app.CFG, 'GUI', 'theme_name', 'dark',
+                                               valid_values=[t.name for t in app.AVAILABLE_THEMES])
 
             app.SOCKET_TIMEOUT = check_setting_int(app.CFG, 'General', 'socket_timeout', 30)
             socket.setdefaulttimeout(app.SOCKET_TIMEOUT)
@@ -567,7 +597,8 @@ class Application(object):
             app.VERSION_NOTIFY = bool(check_setting_int(app.CFG, 'General', 'version_notify', 1))
             app.AUTO_UPDATE = bool(check_setting_int(app.CFG, 'General', 'auto_update', 0))
             app.NOTIFY_ON_UPDATE = bool(check_setting_int(app.CFG, 'General', 'notify_on_update', 1))
-            app.FLATTEN_FOLDERS_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'flatten_folders_default', 0))
+            # TODO: Remove negation, change item name to season_folders_default and default to 1
+            app.SEASON_FOLDERS_DEFAULT = not bool(check_setting_int(app.CFG, 'General', 'flatten_folders_default', 0))
             app.INDEXER_DEFAULT = check_setting_int(app.CFG, 'General', 'indexer_default', 0)
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
@@ -601,7 +632,11 @@ class Application(object):
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
             app.ALLOW_HIGH_PRIORITY = bool(check_setting_int(app.CFG, 'General', 'allow_high_priority', 1))
             app.SKIP_REMOVED_FILES = bool(check_setting_int(app.CFG, 'General', 'skip_removed_files', 0))
+
             app.ALLOWED_EXTENSIONS = check_setting_list(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
+            # @TODO: Remove this in a future version.
+            app.ALLOWED_EXTENSIONS = fix_incorrect_list_values(app.ALLOWED_EXTENSIONS)
+
             app.USENET_RETENTION = check_setting_int(app.CFG, 'General', 'usenet_retention', 500)
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
@@ -643,7 +678,11 @@ class Application(object):
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
+
             app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
+            # @TODO: Remove this in a future version.
+            app.SYNC_FILES = fix_incorrect_list_values(app.SYNC_FILES)
+
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
@@ -840,13 +879,6 @@ class Application(object):
             app.PYTIVO_SHARE_NAME = check_setting_str(app.CFG, 'pyTivo', 'pytivo_share_name', '')
             app.PYTIVO_TIVO_NAME = check_setting_str(app.CFG, 'pyTivo', 'pytivo_tivo_name', '')
 
-            app.USE_NMA = bool(check_setting_int(app.CFG, 'NMA', 'use_nma', 0))
-            app.NMA_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsnatch', 0))
-            app.NMA_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_ondownload', 0))
-            app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsubtitledownload', 0))
-            app.NMA_API = check_setting_list(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
-            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', '0')
-
             app.USE_PUSHALOT = bool(check_setting_int(app.CFG, 'Pushalot', 'use_pushalot', 0))
             app.PUSHALOT_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Pushalot', 'pushalot_notify_onsnatch', 0))
             app.PUSHALOT_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Pushalot', 'pushalot_notify_ondownload', 0))
@@ -923,6 +955,8 @@ class Application(object):
             app.NO_RESTART = bool(check_setting_int(app.CFG, 'General', 'no_restart', 0))
 
             app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'General', 'extra_scripts')]
+            # @TODO: Remove this in a future version.
+            app.EXTRA_SCRIPTS = fix_incorrect_list_values(app.EXTRA_SCRIPTS)
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
@@ -1483,7 +1517,8 @@ class Application(object):
         new_config['General']['quality_default'] = int(app.QUALITY_DEFAULT)
         new_config['General']['status_default'] = int(app.STATUS_DEFAULT)
         new_config['General']['status_default_after'] = int(app.STATUS_DEFAULT_AFTER)
-        new_config['General']['flatten_folders_default'] = int(app.FLATTEN_FOLDERS_DEFAULT)
+        # TODO: Rename to season_folders_default
+        new_config['General']['flatten_folders_default'] = int(not app.SEASON_FOLDERS_DEFAULT)
         new_config['General']['indexer_default'] = int(app.INDEXER_DEFAULT)
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
         new_config['General']['tvdb_dvd_order_ep_ignore'] = int(app.TVDB_DVD_ORDER_EP_IGNORE)
@@ -1583,9 +1618,9 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'name', 'url', 'cat_ids', 'api_key', 'username',
-                    'search_mode', 'search_fallback', 'enable_daily',
-                    'enable_backlog', 'enable_manualsearch',
+                    'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
+                    'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
+                    'search_delay',
                 ],
                 'encrypted': [
                     'password',
@@ -1818,14 +1853,6 @@ class Application(object):
         new_config['pyTivo']['pytivo_host'] = app.PYTIVO_HOST
         new_config['pyTivo']['pytivo_share_name'] = app.PYTIVO_SHARE_NAME
         new_config['pyTivo']['pytivo_tivo_name'] = app.PYTIVO_TIVO_NAME
-
-        new_config['NMA'] = {}
-        new_config['NMA']['use_nma'] = int(app.USE_NMA)
-        new_config['NMA']['nma_notify_onsnatch'] = int(app.NMA_NOTIFY_ONSNATCH)
-        new_config['NMA']['nma_notify_ondownload'] = int(app.NMA_NOTIFY_ONDOWNLOAD)
-        new_config['NMA']['nma_notify_onsubtitledownload'] = int(app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD)
-        new_config['NMA']['nma_api'] = app.NMA_API
-        new_config['NMA']['nma_priority'] = app.NMA_PRIORITY
 
         new_config['Pushalot'] = {}
         new_config['Pushalot']['use_pushalot'] = int(app.USE_PUSHALOT)
@@ -2103,12 +2130,12 @@ class Application(object):
         app.showList = []
         for sql_show in sql_results:
             try:
-                cur_show = Series(sql_show[b'indexer'], sql_show[b'indexer_id'])
+                cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:
                 exception_handler.handle(error, 'There was an error creating the show in {location}',
-                                         location=sql_show[b'location'])
+                                         location=sql_show['location'])
 
     @staticmethod
     def restore_db(src_dir, dst_dir):

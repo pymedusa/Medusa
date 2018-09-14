@@ -25,9 +25,12 @@ expected_groups = [
 
     # The.Good.Wife.Season.6.480p.HDTV.H264-20-40.WEB-DL
     '20-40',
+
+    # Scene release group confused with episode.
+    'E7',
 ]
 
-allowed_languages = {
+allowed_languages = [
     'de',
     'en',
     'es',
@@ -46,12 +49,12 @@ allowed_languages = {
     'uk',
     'mul',  # multi language
     'und',  # undetermined
-}
+]
 
-allowed_countries = {
+allowed_countries = [
     'us',
     'gb',
-}
+]
 
 series_re = re.compile(r'^(?P<series>.*?)(?: \(?(?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\)?)?$')
 

@@ -1,6 +1,7 @@
 # coding=utf-8
 """Request handler for logs."""
 from __future__ import unicode_literals
+
 import json
 import logging
 
@@ -8,8 +9,8 @@ from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 
-
 log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class LogHandler(BaseRequestHandler):
@@ -22,7 +23,7 @@ class LogHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', )
 
-    def get(self):
+    def http_get(self):
         """Query logs."""
         log_level = self.get_argument('level', 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
@@ -41,7 +42,7 @@ class LogHandler(BaseRequestHandler):
 
         return self._paginate(data_generator=data_generator)
 
-    def post(self):
+    def http_post(self):
         """Create a log line.
 
         By definition this method is NOT idempotent.
@@ -59,4 +60,4 @@ class LogHandler(BaseRequestHandler):
         kwargs = data.get('kwargs', {})
         level = LOGGING_LEVELS[data['level']]
         log.log(level, message, exc_info=False, *args, **kwargs)
-        self._created()
+        return self._created()

@@ -23,7 +23,7 @@ class PyTest(TestCommand):
     def run_tests(self):
         import pytest
 
-        errno = pytest.main(self.pytest_args)
+        errno = pytest.main(self.pytest_args.split(' '))
         sys.exit(errno)
 
 
@@ -35,21 +35,22 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['tornado==5.0.1', 'six', 'profilehooks', 'contextlib2', 'gi', ],
+    install_requires=['tornado==5.1', 'six', 'profilehooks', 'contextlib2', ],
     cmdclass={'test': PyTest},
     tests_require=[
-        'dredd_hooks',
-        'flake8',
-        'flake8-docstrings',
-        'flake8-import-order',
-        'pep8-naming',
+        'flake8>=3.5.0',
+        'flake8-docstrings>=1.3.0',
+        'flake8-import-order>=0.18',
+        'flake8-quotes>=1.0.0',
+        'pep8-naming>=0.7.0',
         'pycodestyle==2.3.1',
-        'pytest',
-        'pytest-cov',
-        'pytest-flake8==0.9.1',
-        'pytest-tornado5',
-        'PyYAML',
-        'mock',
+        'pytest>=3.8.0',
+        'pytest-cov>=2.6.0',
+        'pytest-flake8>=1.0.2',
+        'pytest-tornado5>=1.0.0',
+        'PyYAML>=3.13,<4',
+        'vcrpy>=1.13.0',
+        'mock>=2.0.0',
     ],
     extras_require={
         'system-stats': ['psutil'],

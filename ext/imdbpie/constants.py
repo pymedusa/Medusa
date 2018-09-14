@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-import hashlib
-
 HOST = 'api.imdbws.com'
 BASE_URI = 'https://{0}'.format(HOST)
 SEARCH_BASE_URI = 'https://v2.sg.media-imdb.com'

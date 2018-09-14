@@ -18,7 +18,10 @@ Copyright 2015 SmartBear Software
     Ref: https://github.com/swagger-api/swagger-codegen
 """
 
+from __future__ import absolute_import, unicode_literals
+
 from pprint import pformat
+
 from six import iteritems
 
 
@@ -37,7 +40,7 @@ class Token(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'token': 'unicode'
+            'token': 'text_type'
         }
 
         self.attribute_map = {
@@ -53,7 +56,7 @@ class Token(object):
 
 
         :return: The token of this Token.
-        :rtype: unicode
+        :rtype: text_type
         """
         return self._token
 
@@ -64,7 +67,7 @@ class Token(object):
 
 
         :param token: The token of this Token.
-        :type: unicode
+        :type: text_type
         """
         self._token = token
 
@@ -111,4 +114,3 @@ class Token(object):
         Returns true if both objects are not equal
         """
         return not self == other
-

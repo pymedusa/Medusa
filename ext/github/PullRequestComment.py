@@ -12,6 +12,8 @@
 # Copyright 2016 Jannis Gebauer <ja.geb@me.com>                                #
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
 # Copyright 2017 Nicolas Agustín Torres <nicolastrres@gmail.com>              #
+# Copyright 2018 Jess Morgan <979404+JessMorgan@users.noreply.github.com>      #
+# Copyright 2018 per1234 <accounts@perglass.com>                               #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -33,9 +35,9 @@
 ################################################################################
 
 import github.GithubObject
-
 import github.NamedUser
 
+import Consts
 
 class PullRequestComment(github.GithubObject.CompletableGithubObject):
     """
@@ -84,6 +86,14 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._id)
         return self._id.value
+
+    @property
+    def in_reply_to_id(self):
+        """
+        :type: integer
+        """
+        self._completeIfNotSet(self._in_reply_to_id)
+        return self._in_reply_to_id.value
 
     @property
     def original_commit_id(self):
@@ -187,7 +197,7 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
     def get_reactions(self):
         """
         :calls: `GET /repos/:owner/:repo/pulls/comments/:number/reactions
-                <https://developer.github.com/v3/reactions/#list-reactions-for-a-pull-request-review-comment>`
+                <https://developer.github.com/v3/reactions/#list-reactions-for-a-pull-request-review-comment>`_
         :return: :class: :class:`github.PaginatedList.PaginatedList` of :class:`github.Reaction.Reaction`
         """
         return github.PaginatedList.PaginatedList(
@@ -195,7 +205,7 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
             self._requester,
             self.url + "/reactions",
             None,
-            headers={'Accept': 'application/vnd.github.squirrel-girl-preview'}
+            headers={'Accept': Consts.mediaTypeReactionsPreview}
         )
 
     def create_reaction(self, reaction_type):
@@ -216,7 +226,7 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
             "POST",
             self.url + "/reactions",
             input=post_parameters,
-            headers={'Accept': 'application/vnd.github.squirrel-girl-preview'}
+            headers={'Accept': Consts.mediaTypeReactionsPreview}
         )
         return github.Reaction.Reaction(self._requester, headers, data, completed=True)
 
@@ -226,6 +236,7 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
         self._created_at = github.GithubObject.NotSet
         self._diff_hunk = github.GithubObject.NotSet
         self._id = github.GithubObject.NotSet
+        self._in_reply_to_id = github.GithubObject.NotSet
         self._original_commit_id = github.GithubObject.NotSet
         self._original_position = github.GithubObject.NotSet
         self._path = github.GithubObject.NotSet
@@ -247,6 +258,8 @@ class PullRequestComment(github.GithubObject.CompletableGithubObject):
             self._diff_hunk = self._makeStringAttribute(attributes["diff_hunk"])
         if "id" in attributes:  # pragma no branch
             self._id = self._makeIntAttribute(attributes["id"])
+        if "in_reply_to_id" in attributes:  # pragma no branch
+            self._in_reply_to_id = self._makeIntAttribute(attributes["in_reply_to_id"])
         if "original_commit_id" in attributes:  # pragma no branch
             self._original_commit_id = self._makeStringAttribute(attributes["original_commit_id"])
         if "original_position" in attributes:  # pragma no branch

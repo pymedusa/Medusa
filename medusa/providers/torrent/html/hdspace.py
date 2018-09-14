@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -149,14 +148,21 @@ class HDSpaceProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row.find_all('td', class_='lista', attrs={'align': 'center'})[3].get_text()
+                    pubdate_td = row.find_all('td', class_='lista', attrs={'align': 'center'})[3]
+                    pubdate_human_offset = pubdate_td.find('b')
+                    if pubdate_human_offset:
+                        time_search = re.search('([0-9:]+)', pubdate_td.get_text())
+                        pubdate_raw = pubdate_human_offset.get_text() + ' at ' + time_search.group(1)
+                    else:
+                        pubdate_raw = pubdate_td.get_text()
+
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
@@ -172,8 +178,7 @@ class HDSpaceProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

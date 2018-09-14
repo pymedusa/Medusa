@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import logging
 import time
-from builtins import object
 from collections import OrderedDict
 
 import guessit
@@ -62,7 +61,7 @@ class NameParser(object):
         airdate = result.air_date.toordinal()
         main_db_con = db.DBConnection()
         sql_result = main_db_con.select(
-            b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+            'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
             [result.series.indexer, result.series.series_id, airdate])
 
         return sql_result
@@ -88,14 +87,14 @@ class NameParser(object):
         episode_numbers = []
 
         if episode_by_air_date:
-            season_number = int(episode_by_air_date[0][0])
-            episode_numbers = [int(episode_by_air_date[0][1])]
+            season_number = int(episode_by_air_date[0]['season'])
+            episode_numbers = [int(episode_by_air_date[0]['episode'])]
 
             # Use the next query item if we have multiple results
             # and the current one is a special episode (season 0)
             if season_number == 0 and len(episode_by_air_date) > 1:
-                season_number = int(episode_by_air_date[1][0])
-                episode_numbers = [int(episode_by_air_date[1][1])]
+                season_number = int(episode_by_air_date[1]['season'])
+                episode_numbers = [int(episode_by_air_date[1]['episode'])]
 
             log.debug(
                 'Database info for series {name}: Season: {season} Episode(s): {episodes}', {
@@ -186,7 +185,8 @@ class NameParser(object):
         # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
-        scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
+        scene_season = scene_exceptions.get_scene_exceptions_by_name(
+            result.series_name or result.series.name)[0][1]
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:
@@ -198,7 +198,8 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None and
+                                              scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
@@ -206,7 +207,7 @@ class NameParser(object):
                 # Translate the absolute episode number, back to the indexers season and episode.
                 (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
 
-                if result.season_number is None and scene_season > 0:
+                if result.season_number is None and scene_season is not None and scene_season > 0:
                     log.debug(
                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
                         'season number in the title, '
@@ -501,6 +502,9 @@ class ParseResult(object):
                                              quality=common.Quality.qualityStrings[self.quality],
                                              total_time=self.total_time))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
+
+    # Python 2 compatibility
+    __unicode__ = __str__
 
     def get_quality(self, guess, extend=False):
         """Return video quality from guess or name.

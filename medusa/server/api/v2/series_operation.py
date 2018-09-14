@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.series import Series, SeriesIdentifier
+
 from tornado.escape import json_decode
 
 
@@ -22,7 +23,7 @@ class SeriesOperationHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def post(self, series_slug):
+    def http_post(self, series_slug):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234

@@ -187,16 +187,6 @@ inc_top.mako
     clear: both;
 }
 
-#sub-menu {
-    font-size: 12px;
-    padding-top: 2px;
-}
-
-#sub-menu > a {
-    float: right;
-    margin-left: 4px;
-}
-
 .upgrade-notification {
     text-align: center;
     margin-top: 20px;
@@ -407,24 +397,6 @@ inc_bottom.mako
 }
 
 /* =======================================================================
-inc_rootDirs.mako
-========================================================================== */
-.rootdir-selectbox,
-.rootdir-selectbox #rootDirs,
-.rootdir-controls {
-    width: 100%;
-    max-width: 430px;
-}
-
-.rootdir-selectbox {
-    padding: 0 0 5px;
-}
-
-.rootdir-controls {
-    text-align: center;
-}
-
-/* =======================================================================
 history.mako
 ========================================================================== */
 .layout-controls {
@@ -471,6 +443,7 @@ home.mako
 
 .ui-progressbar .ui-progressbar-value {
     box-sizing: content-box !important;
+    height: 20px;
 }
 
 .progressbarText {
@@ -676,10 +649,6 @@ div.xem {
     border-bottom: 1px solid rgb(17, 17, 17);
     border-left: 0;
     border-right: 0;
-}
-
-.ui-progressbar .ui-progressbar-value {
-    height: 20px;
 }
 
 .ui-progressbar .progress-20 {
@@ -915,7 +884,7 @@ home_newShow.mako
     font-size: 13px;
 }
 
-#newShowPortal {
+.newShowPortal {
     max-width: 960px;
     padding: 10px 0;
     margin-right: auto;
@@ -930,8 +899,70 @@ home_newShow.mako
     border: 1px solid rgb(223, 222, 222);
 }
 
-#searchResults input[type="radio"] {
-    vertical-align: -2px;
+div.search-results {
+    height: 100%;
+}
+
+div.search-results > div.no-results {
+    margin-top: 15px;
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(223, 222, 222);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(223, 222, 222);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(205, 233, 255);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results td.search-result {
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.search-results th.premiere,
+table.search-results td.premiere {
+    text-align: center;
+    max-width: 90px;
+}
+
+table.search-results th.network,
+table.search-results td.network {
+    max-width: 200px;
+}
+
+table.search-results th.indexer,
+table.search-results td.indexer {
+    text-align: center;
+    max-width: 100px;
+}
+
+table.search-results td.indexer img {
+    vertical-align: -3px;
+}
+
+table.search-results input[type="radio"] {
+    margin: 4px 0 0;
 }
 
 /* =======================================================================
@@ -985,11 +1016,6 @@ home_recommendedShows.mako
     top: -2px;
 }
 
-.recommended-container {
-    left: -4px;
-    position: relative;
-}
-
 div.recommended-image {
     background-color: #dfdacf;
 }
@@ -1025,6 +1051,8 @@ div.recommended-image {
 }
 
 .recommended-container {
+    left: -4px;
+    position: relative;
     margin: 12px;
     width: 188px;
     background-color: rgb(223, 218, 207);
@@ -1119,13 +1147,6 @@ div#col-show-summary {
     margin-bottom: 15px;
 }
 
-#showSelector {
-    height: 31px;
-    display: table-cell;
-    left: 20px;
-    margin-bottom: 5px;
-}
-
 .show-info-container {
     overflow: hidden;
     display: table-cell;
@@ -1145,39 +1166,9 @@ div#col-show-summary {
     float: left;
 }
 
-@media (min-width: 1281px) {
-    #sub-menu-container {
-        position: fixed;
-        width: 100%;
-        top: 51px;
-    }
-}
-
-@media (max-width: 1281px) {
-    #sub-menu-container {
-        position: relative;
-        margin-top: -24px;
-    }
-}
-
 @media (max-width: 767px) and (min-width: 341px) {
-    .select-show-group {
-        width: 100%;
-    }
-
-    .show-selector {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 305px;
-    }
-
-    .showSelector {
-        width: 100%;
-    }
-
-    .container-navShow {
         display: none;
     }
 
@@ -1187,25 +1178,12 @@ div#col-show-summary {
 }
 
 @media (max-width: 340px) {
-    .select-show-group {
-        width: 100%;
-    }
-
     .container-navShow {
         margin-left: 265px;
     }
 }
 
 @media (max-width: 767px) {
-    #showSelector {
-        float: left;
-        width: 100%;
-    }
-
-    .select-show {
-        width: 100%;
-    }
-
     .pull-xs-left {
         float: left;
     }
@@ -1224,6 +1202,7 @@ div#col-show-summary {
 
     .tvshowImg {
         margin-bottom: 10px;
+        float: none;
     }
 
     .show-poster-container {
@@ -1237,10 +1216,6 @@ div#col-show-summary {
         display: block;
         margin: 0 auto;
         max-width: 280px !important;
-    }
-
-    .tvshowImg {
-        float: none;
     }
 
     .col-md-12 > .horizontal-scroll {
@@ -1352,9 +1327,6 @@ h1.title a {
 
 #showinfo {
     cursor: default;
-}
-
-#showinfo {
     display: inline-block;
     position: relative;
     top: -3px;
@@ -1529,21 +1501,6 @@ span.wanted b,
 span.snatched b {
     color: rgb(0, 0, 0);
     font-weight: 800;
-}
-
-.plotInfo {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-}
-
-.plotInfoNone {
-    cursor: help;
-    float: right;
-    position: relative;
-    top: 2px;
-    opacity: 0.4;
 }
 
 .displayShowTable {
@@ -1770,11 +1727,24 @@ td.col-group {
     margin-left: auto;
 }
 
+@media (min-width: 768px) {
+    .form-group > div.content {
+        margin-top: 7px;
+        margin-bottom: 0;
+        text-align: left;
+    }
+}
+
+.form-group label.control-label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
 div.season-scene-exception {
     display: inline;
 }
 
-#showBanner {
+.show-banner {
     float: right;
     height: 50px;
     border: 1px solid rgb(136, 136, 136);
@@ -1788,12 +1758,6 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
-}
-
-select#select-show {
-    display: inline-block;
-    height: 25px;
-    padding: 1px;
 }
 
 button.selectColumns {
@@ -2012,14 +1976,19 @@ config*.mako
 }
 
 .component-item {
+    padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(102, 102, 102);
-    min-height: 200px;
+    min-height: 100px;
+}
+
+.component-group-desc-legacy {
+    margin-top: 5px;
+    float: left;
+    width: 250px;
 }
 
 .component-group-desc {
     margin-top: 5px;
-    float: left;
-    width: 250px;
 }
 
 .component-group-desc h3 {
@@ -2063,16 +2032,12 @@ config*.mako
     font-size: 12px;
     font-weight: normal;
     display: block;
-    width: 475px;
+    max-width: 475px;
     margin-left: 182px;
 }
 
 #config label.space-right {
     margin-right: 10px;
-}
-
-#config .metadataDiv {
-    display: none;
 }
 
 .component-group-save {
@@ -2428,95 +2393,91 @@ div.metadataDiv .disabled {
 }
 
 .icon-notifiers-plex {
-    background-position: -35px 0;
+    background-position: -32px 0;
 }
 
 .icon-notifiers-plexth {
-    background-position: -69px 0;
+    background-position: -64px 0;
 }
 
 .icon-notifiers-emby {
-    background-position: -104px 0;
+    background-position: -96px 0;
 }
 
 .icon-notifiers-nmj {
-    background-position: -136px 0;
+    background-position: -128px 0;
 }
 
 .icon-notifiers-syno1 {
-    background-position: -168px 0;
+    background-position: -160px 0;
 }
 
 .icon-notifiers-syno2 {
-    background-position: -202px 0;
+    background-position: -192px 0;
 }
 
 .icon-notifiers-pytivo {
-    background-position: -237px 0;
+    background-position: -224px 0;
 }
 
 .icon-notifiers-growl {
-    background-position: -272px 0;
+    background-position: -256px 0;
 }
 
 .icon-notifiers-prowl {
-    background-position: -308px 0;
+    background-position: -288px 0;
 }
 
 .icon-notifiers-libnotify {
-    background-position: -345px 0;
+    background-position: -320px 0;
 }
 
 .icon-notifiers-pushover {
-    background-position: -377px 0;
+    background-position: -352px 0;
 }
 
 .icon-notifiers-boxcar2 {
-    background-position: -414px 0;
-}
-
-.icon-notifiers-nma {
-    background-position: -450px 0;
+    background-position: -384px 0;
 }
 
 .icon-notifiers-pushalot {
-    background-position: -486px 0;
+    background-position: -416px 0;
 }
 
 .icon-notifiers-pushbullet {
-    background-position: -519px 0;
+    background-position: -448px 0;
 }
 
 .icon-notifiers-freemobile {
-    background-position: -551px 0;
+    background-position: -480px 0;
 }
 
 .icon-notifiers-telegram {
-    background-position: -587px 0;
+    background-position: -512px 0;
 }
 
 .icon-notifiers-twitter {
-    background-position: -624px 0;
+    background-position: -544px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -660px 0;
+    background-position: -576px 0;
 }
 
 .icon-notifiers-email {
-    background-position: -695px 0;
+    background-position: -608px 0;
 }
 
 .icon-notifiers-anime {
-    background-position: -733px 0;
+    background-position: -640px 0;
 }
 
 .icon-notifiers-look {
-    background-position: -769px 0;
+    background-position: -672px 0;
 }
 
 .icon-notifiers-slack {
-    background-position: -804px 0;
+    background-position: -704px 0;
 }
 
 div#config-components h3 > a {
@@ -2822,8 +2783,9 @@ html * {
 }
 
 input[type="checkbox"] {
-    margin: 2px 0 0;
+    margin: 2px 5px 0;
     line-height: normal;
+    transform: scale(1.2, 1.2);
 }
 
 input[type="radio"] {
@@ -3000,6 +2962,11 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.form-control-inline-max {
+    display: inline;
+    width: 100%;
+}
+
 .input-sm-smallfont {
     font-size: 11px;
 }
@@ -3009,11 +2976,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-radius: 1px;
     line-height: 1.5;
     height: auto;
-}
-
-#sub-menu-container {
-    z-index: 550;
-    min-height: 41px;
 }
 
 .shadow {
@@ -3026,7 +2988,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-color: rgb(62, 63, 58);
 }
 
-.btn {
+.btn-medusa {
     display: inline-block;
     *display: inline;
     padding: 4px 10px;
@@ -3063,25 +3025,20 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn:hover,
-.btn:active,
-.btn.active,
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa:hover,
+.btn-medusa:active,
+.btn-medusa.active,
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     background-color: rgb(230, 230, 230);
     *background-color: rgb(217, 217, 217);
 }
 
-.btn:active,
-.btn.active {
-    background-color: rgb(204, 204, 204) \9;
-}
-
-.btn:first-child {
+.btn-medusa:first-child {
     *margin-left: 0;
 }
 
-.btn:hover {
+.btn-medusa:hover {
     color: rgb(51, 51, 51);
     text-decoration: none;
     background-color: rgb(230, 230, 230);
@@ -3094,14 +3051,14 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     transition: background-position 0.1s linear;
 }
 
-.btn:focus {
+.btn-medusa:focus {
     outline: thin dotted rgb(51, 51, 51);
     outline: 5px auto -webkit-focus-ring-color;
     outline-offset: -2px;
 }
 
-.btn.active,
-.btn:active {
+.btn-medusa.active,
+.btn-medusa:active {
     background-color: rgb(230, 230, 230);
     background-color: rgb(217, 217, 217) \9;
     background-image: none;
@@ -3109,8 +3066,8 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     cursor: default;
     background-color: rgb(230, 230, 230);
     background-image: none;
@@ -3388,7 +3345,8 @@ pre {
 input sizing (for config pages)
 ========================================================================== */
 
-#config select {
+/* Don't style root-dirs select */
+#config select:not([size]) {
     width: auto;
     display: inline;
 }
@@ -3432,6 +3390,46 @@ input sizing (for config pages)
     margin-top: -4px;
 }
 
+/* Added max-width, as setting width is really not optimal on smaller viewports */
+.max-input75 {
+    max-width: 75px;
+    margin-top: -4px;
+}
+
+.max-input100 {
+    max-width: 100px;
+    margin-top: -4px;
+}
+
+.max-input150 {
+    max-width: 150px;
+    margin-top: -4px;
+}
+
+.max-input200 {
+    max-width: 200px;
+    margin-top: -4px;
+}
+
+.max-input250 {
+    max-width: 250px;
+    margin-top: -4px;
+}
+
+.max-input300 {
+    max-width: 300px;
+    margin-top: -4px;
+}
+
+.max-input350 {
+    max-width: 350px;
+    margin-top: -4px;
+}
+
+select.input-sm {
+    font-size: 0.9em;
+}
+
 /* =======================================================================
 formWizard.css
 ========================================================================== */
@@ -3458,7 +3456,7 @@ div.stepsguide {
 div.stepsguide .step {
     float: left;
     width: 33%;
-    font: bold 24px Arial;
+    font: bold 24px Arial, sans-serif;
 }
 
 div.stepsguide .step p {
@@ -3924,6 +3922,46 @@ pnotify.css
 }
 
 /* =======================================================================
+Fix the file browser
+========================================================================== */
+.ui-button {
+    display: inline-block;
+    *display: inline;
+    padding: 4px 10px;
+    margin-bottom: 0;
+    *margin-left: 0.3em;
+    font-size: 12px;
+    line-height: 16px;
+    *line-height: 20px;
+    color: rgb(51, 51, 51);
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: rgb(245, 245, 245);
+    *background-color: rgb(230, 230, 230);
+    background-image: -ms-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
+    background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-repeat: repeat-x;
+    border: 1px solid rgb(204, 204, 204);
+    *border: 0;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    border-color: rgb(230, 230, 230) rgb(230, 230, 230) rgb(191, 191, 191);
+    border-bottom-color: rgb(179, 179, 179);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 1px;
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+    *zoom: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =======================================================================
 login.css
 ========================================================================== */
 
@@ -4332,70 +4370,13 @@ CSS helper classes
     cursor: default;
 }
 
-/* =======================================================================
- Scroll to top
-========================================================================== */
-.scroll-wrapper {
-    position: fixed;
-    opacity: 0;
-    visibility: hidden;
-    overflow: hidden;
-    text-align: center;
-    font-size: 20px;
-    z-index: 99999999;
-    background-color: #777;
-    color: #eee;
-    width: 50px;
-    height: 48px;
-    line-height: 48px;
-    right: 30px;
-    bottom: 30px;
-    padding-top: 2px;
-    border-radius: 10px;
-    -webkit-transition: all 0.5s ease-in-out;
-    -moz-transition: all 0.5s ease-in-out;
-    -ms-transition: all 0.5s ease-in-out;
-    -o-transition: all 0.5s ease-in-out;
-    transition: all 0.5s ease-in-out;
-}
-
-.scroll-top-wrapper:hover {
-    background-color: #888;
-}
-
-.scroll-top-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-top-wrapper i.fa {
-    line-height: inherit;
-}
-
 /* CSS for Nav dropdown hover
 .dropdown:hover .dropdown-menu {
     display: block;
 }
 */
 
-/* =======================================================================
- overflow buttons for scrolling left and right.
- For horizontal scrolling, without breaking the ui.
-========================================================================== */
-
-.scroll-wrapper.show {
-    visibility: visible;
-    cursor: pointer;
-    opacity: 1;
-}
-
-.scroll-wrapper.left {
-    position: fixed;
-    right: 150px;
-}
-
-.scroll-wrapper.right {
-    position: fixed;
-    right: 90px;
+/* These classes should be natively available in bootstrap 4 */
+.d-block {
+    display: block;
 }

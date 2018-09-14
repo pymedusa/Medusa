@@ -5,7 +5,10 @@ from __future__ import unicode_literals
 
 from builtins import str
 from collections import Iterable
+from datetime import datetime
 from distutils.util import strtobool
+
+from dateutil import tz
 
 from six import string_types
 
@@ -61,3 +64,18 @@ def truth_to_bool(value):
     :return: boolean value, either True or False
     """
     return bool(strtobool(str(value))) if value else False
+
+
+def to_timestamp(dt):
+    """Return POSIX timestamp corresponding to the datetime instance.
+
+    :param dt: datetime (possibly aware)
+    :return: seconds since epoch as float
+    """
+    epoch = datetime(1970, 1, 1, tzinfo=tz.gettz('UTC'))
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+        dt_utc = dt.replace(tzinfo=tz.gettz('UTC'))
+    else:
+        dt_utc = dt.astimezone(tz.gettz('UTC'))
+
+    return (dt_utc - epoch).total_seconds()

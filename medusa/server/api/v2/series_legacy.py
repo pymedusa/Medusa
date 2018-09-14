@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from builtins import map
+
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.tv.series import Series, SeriesIdentifier
@@ -22,7 +23,7 @@ class SeriesLegacyHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, series_slug, identifier):
+    def http_get(self, series_slug, identifier):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234

@@ -1,15 +1,15 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        data() {
-            return {};
-        }
-    });
-};
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {};
+    }
+});
 </script>
 </%block>
 <%block name="content">

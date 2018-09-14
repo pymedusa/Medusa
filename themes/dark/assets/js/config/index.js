@@ -10,10 +10,10 @@ MEDUSA.config.index = function() {
                 name: $(this).val()
             }
         }).then(response => {
-            log.info(response);
+            console.info(response);
             window.location.reload();
-        }).catch(err => {
-            log.error(err);
+        }).catch(error => {
+            console.error(error);
         });
     });
 

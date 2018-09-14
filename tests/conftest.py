@@ -12,16 +12,18 @@ from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
 from medusa import app, cache
-from medusa.common import DOWNLOADED, Quality
+from medusa.common import DOWNLOADED, Quality, SD
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
+from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
+from six import iteritems
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
@@ -70,7 +72,7 @@ sequence_number = 1
 
 
 def _patch_object(monkeypatch, target, **kwargs):
-    for field, value in kwargs.items():
+    for field, value in iteritems(kwargs):
         target.__dict__[field] = value
         monkeypatch.setattr(type(target), field, lambda this: this.field, raising=False)
     return target
@@ -91,6 +93,16 @@ def app_config(monkeypatch):
 
 
 @pytest.fixture
+def search_provider():
+    def create(name='AwesomeProvider', **kwargs):
+        provider = GenericProvider(name=name)
+        for attr, value in iteritems(kwargs):
+            setattr(provider, attr, value)
+        return provider
+    return create
+
+
+@pytest.fixture
 def tvshow(create_tvshow):
     return create_tvshow(indexer=INDEXER_TVDBV2, indexerid=12, name='Show Name', imdbid='tt0000000')
 
@@ -98,7 +110,7 @@ def tvshow(create_tvshow):
 @pytest.fixture
 def tvepisode(tvshow, create_tvepisode):
     return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
-                            name='Episode Title', status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
+                            name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
                             release_group='SuperGroup')
 
 
@@ -127,12 +139,12 @@ def create_sub(monkeypatch):
 
 
 @pytest.fixture
-def create_tvshow(monkeypatch):
-    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
+def create_tvshow(monkeypatch, app_config):
+    def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=SD, season_folders=1,
                enabled_subtitles=0, **kwargs):
         monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
         target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
-                        flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
+                        season_folders=season_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
@@ -149,10 +161,27 @@ def create_tvepisode(monkeypatch):
 
 
 @pytest.fixture
+def create_search_result(monkeypatch):
+    def create(provider, series, episodes, **kwargs):
+        target = provider.get_result(episodes=episodes)
+        target.provider = provider
+        target.series = series
+        return _patch_object(monkeypatch, target, **kwargs)
+
+    return create
+
+
+@pytest.fixture
 def create_file(tmpdir):
-    def create(filename, lines=None, **kwargs):
+    def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
-        f.write_binary('\n'.join(lines or []))
+        content = '\n'.join(lines or [])
+        f.write_binary(content)
+        if size:
+            tmp_size = f.size()
+            if tmp_size < size:
+                add_size = '\0' * (size - tmp_size)
+                f.write_binary(content + add_size)
         return str(f)
 
     return create
@@ -243,7 +272,7 @@ def github_user(monkeypatch):
 
     def create_gist(public, files):
         _patch_object(monkeypatch, target, public=public,
-                      files={name: fc._identity['content'] for name, fc in files.items()})
+                      files={name: fc._identity['content'] for name, fc in iteritems(files)})
         return target
 
     monkeypatch.setattr(target, 'create_gist', create_gist)
@@ -270,12 +299,16 @@ def github_repo():
 @pytest.fixture
 def create_github_issue(monkeypatch):
     def create(title, body=None, locked=False, number=1, **kwargs):
-        target = Issue(Mock(), Mock(), dict(), True)
         raw_data = {
+            'title': title,
+            'body': body,
+            'number': number,
             'locked': locked
         }
-        _patch_object(monkeypatch, target, number=number, title=title, body=body, raw_data=raw_data)
-        return target
+        raw_data.update(kwargs)
+        # Set url to a unique value, because that's how issues are compared
+        raw_data['url'] = str(hash(tuple(raw_data.values())))
+        return Issue(Mock(), Mock(), raw_data, True)
 
     return create
 

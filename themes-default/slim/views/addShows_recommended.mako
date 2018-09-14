@@ -1,31 +1,26 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    from medusa import app
-%>
 <%block name="scripts">
 % if enable_anime_options:
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        data() {
-            return {};
-        }
-    });
-};
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+            rootDirs: []
+        };
+    }
+});
 </script>
 </%block>
 <%block name="content">
 <div class="row">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div>
 </div>
 
@@ -46,11 +41,11 @@ const startVue = () => {
                     <div class="field-pair">
                         <label class="clearfix" for="configure_show_options">
                             <ul>
-                                <li><app-link href="addShows/${realpage + '/'}#tabs-1">Manage Directories</app-link></li>
-                                <li><app-link href="addShows/${realpage + '/'}#tabs-2">Customize Options</app-link></li>
+                                <li><app-link href="#tabs-1">Manage Directories</app-link></li>
+                                <li><app-link href="#tabs-2">Customize Options</app-link></li>
                             </ul>
                             <div id="tabs-1" class="existingtabs">
-                                <%include file="/inc_rootDirs.mako"/>
+                                <root-dirs @update="rootDirs = $event"></root-dirs>
                                 <br/>
                             </div>
                             <div id="tabs-2" class="existingtabs">
@@ -145,17 +140,17 @@ const startVue = () => {
 
                             <div class="recommendedShowTitleIcons">
                                 % if cur_show.show_in_list:
-                                    <button class="btn btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">In List</app-link></button>
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">In List</app-link></button>
                                 % else:
-                                    <button class="btn btn-xs" data-isanime="1" data-indexer="${cur_show.mapped_indexer_name}"
+                                    <button class="btn-medusa btn-xs" data-isanime="1" data-indexer="${cur_show.mapped_indexer_name}"
                                     data-indexer-id="${cur_show.mapped_series_id}" data-show-name="${cur_show.title | u}"
                                     data-add-show>Add</button>
                                 % endif
                                 % if cur_show.mapped_series_id in removed_from_medusa:
-                                    <button class="btn btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">Watched</app-link></button>
+                                    <button class="btn-medusa btn-xs"><app-link href="home/displayShow?indexername=${cur_show.mapped_indexer_name}&seriesid=${cur_show.mapped_series_id}">Watched</app-link></button>
                                 % endif
                                 % if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa):
-                                    <button data-indexer-id="${cur_show.mapped_series_id}" class="btn btn-xs" data-blacklist-show>Blacklist</button>
+                                    <button data-indexer-id="${cur_show.mapped_series_id}" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
                                 % endif
                             </div>
                         </div>

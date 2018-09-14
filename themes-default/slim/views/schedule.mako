@@ -7,26 +7,40 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Schedule'
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    computed: Object.assign(Vuex.mapState(['shows']), {
+        header() {
+            return this.$route.meta.header;
         },
-        data() {
-            return {
-                header: 'Schedule'
-            };
-        },
-        mounted() {
-            if ($.isMeta({ layout: 'schedule' }, ['list'])) {
+        layout: {
+            get() {
+                const { config } = this;
+                return config.layout.schedule;
+            },
+            set(layout) {
+                const { $store } = this;
+                const page = 'schedule';
+                $store.dispatch('setLayout', { page, layout });
+            }
+        }
+    }),
+    mounted() {
+        const { $store, $route } = this;
+        // $store.dispatch('getShows');
+
+        this.$once('loaded', () => {
+            const { config, layout } = this;
+            if (layout === 'list') {
                 const sortCodes = {
                     date: 0,
                     show: 2,
                     network: 5
                 };
-                const sort = MEDUSA.config.comingEpsSort;
+                const sort = config.comingEpsSort;
                 const sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
                 $('#showListTable:has(tbody tr)').tablesorter({
@@ -58,7 +72,7 @@ const startVue = () => {
                 $.ajaxEpSearch();
             }
 
-            if ($.isMeta({ layout: 'schedule' }, ['banner', 'poster'])) {
+            if (['banner', 'poster'].includes(layout)) {
                 $.ajaxEpSearch({
                     size: 16,
                     loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
@@ -81,22 +95,9 @@ const startVue = () => {
                 // call this function to copy the column selection code into the popover
                 $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
             });
-
-            $('.show-option select[name="layout"]').on('change', function() {
-                api.patch('config/main', {
-                    layout: {
-                        schedule: $(this).val()
-                    }
-                }).then(response => {
-                    log.info(response);
-                    window.location.reload();
-                }).catch(err => {
-                    log.info(err);
-                });
-            });
-        }
-    });
-};
+        });
+    }
+});
 </script>
 </%block>
 
@@ -113,14 +114,14 @@ const startVue = () => {
 <div class="row">
     <div class="col-md-12">
         <div class="key pull-left">
-        % if layout != 'calendar':
-            <b>Key:</b>
-            <span class="listing-key listing-overdue">Missed</span>
-            <span class="listing-key listing-current">Today</span>
-            <span class="listing-key listing-default">Soon</span>
-            <span class="listing-key listing-toofar">Later</span>
-        % endif
-            <app-link class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <template v-if="layout !== 'calendar'">
+                <b>Key:</b>
+                <span class="listing-key listing-overdue">Missed</span>
+                <span class="listing-key listing-current">Today</span>
+                <span class="listing-key listing-default">Soon</span>
+                <span class="listing-key listing-toofar">Later</span>
+            </template>
+            <app-link class="btn-medusa btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
             <i class="icon-calendar icon-white"></i>Subscribe</app-link>
         </div>
 
@@ -135,29 +136,27 @@ const startVue = () => {
             </div>
             <div class="show-option">
                 <span>Layout:
-                    <select name="layout" class="form-control form-control-inline input-sm">
-                        <option value="poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
-                        <option value="calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
-                        <option value="banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
-                        <option value="list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
+                    <select v-model="layout" name="layout" class="form-control form-control-inline input-sm">
+                        <option value="poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''}>Poster</option>
+                        <option value="calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''}>Calendar</option>
+                        <option value="banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''}>Banner</option>
+                        <option value="list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''}>List</option>
                     </select>
                 </span>
             </div>
-            % if layout == 'list':
-            <div class="show-option">
-                <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+            <div v-if="layout === 'list'" class="show-option">
+                <button id="popover" type="button" class="btn-medusa btn-inline">Select Columns <b class="caret"></b></button>
             </div>
-            % elif layout != 'calendar':  # Calendar sorting is always by date
-            <div class="show-option">
+            <!-- Calendar sorting is always by date -->
+            <div v-else-if="layout !== 'calendar'" class="show-option">
                 <span>Sort By:
-                    <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="schedule/setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-                        <option value="schedule/setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-                        <option value="schedule/setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                    <select name="sort" class="form-control form-control-inline input-sm" onchange="location = 'schedule/setScheduleSort/?sort=' + this.options[this.selectedIndex].value;">
+                        <option value="date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''}>Date</option>
+                        <option value="network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''}>Network</option>
+                        <option value="show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''}>Show</option>
                     </select>
                 </span>
             </div>
-            % endif
         </div>
     </div>
 </div>

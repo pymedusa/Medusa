@@ -8,10 +8,9 @@ import posixpath
 import re
 from builtins import object
 
-from imdbpie import imdbpie
-
 from medusa import helpers
 from medusa.cache import recommended_series_cache
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
@@ -27,8 +26,6 @@ from six import binary_type
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-imdb_api = imdbpie.Imdb()
-
 
 class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
@@ -37,6 +34,7 @@ class ImdbPopular(object):
         """Initialize class."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = MedusaSession()
+        self.imdb_api = Imdb(session=self.session)
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
 
@@ -68,7 +66,7 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        imdb_result = imdb_api.get_popular_shows()
+        imdb_result = self.imdb_api.get_popular_shows()
 
         for imdb_show in imdb_result['ranks']:
             series = {}
@@ -78,7 +76,7 @@ class ImdbPopular(object):
                 show_details = cached_get_imdb_series_details(imdb_id)
                 if show_details:
                     try:
-                        series['year'] = imdb_show['year']
+                        series['year'] = imdb_show.get('year')
                         series['name'] = imdb_show['title']
                         series['image_url_large'] = imdb_show['image']['url']
                         series['image_path'] = posixpath.join('images', 'imdb_popular',
@@ -89,7 +87,7 @@ class ImdbPopular(object):
                         series['outline'] = show_details['plot'].get('outline', {}).get('text')
                         series['rating'] = show_details['ratings'].get('rating', 0)
                     except Exception as error:
-                        log.warning('Could not parse show {imdb_id} with error: {error}',
+                        log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue
@@ -100,7 +98,7 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                recommended_show = self._create_recommended_show(series, storage_key=b'imdb_{0}'.format(series['imdb_tt']))
+                recommended_show = self._create_recommended_show(series, storage_key='imdb_{0}'.format(series['imdb_tt']))
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:

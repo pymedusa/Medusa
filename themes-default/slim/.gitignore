@@ -1,0 +1,5 @@
+# Code coverage
+.nyc_output
+coverage
+coverage.lcov
+dist

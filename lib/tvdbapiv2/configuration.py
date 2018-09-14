@@ -18,14 +18,15 @@ Copyright 2015 SmartBear Software
    ref: https://github.com/swagger-api/swagger-codegen
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
+
+import logging
+import sys
 
 from requests.packages.urllib3.util import make_headers
-from six.moves.http_client import HTTPConnection
-import sys
-import logging
 
 from six import iteritems
+from six.moves.http_client import HTTPConnection
 
 
 def singleton(cls, *args, **kw):

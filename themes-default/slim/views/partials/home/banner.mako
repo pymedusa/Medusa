@@ -1,12 +1,11 @@
 <%!
     from medusa import app
-    import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.helpers import remove_article
     from medusa.indexers.indexer_api import indexerApi
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
-    import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
@@ -62,7 +61,7 @@
                         % if cur_loading_show.show is None:
                         <span title="">Loading... (${cur_loading_show.show_name})</span>
                         % else:
-                        <app-link href="displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</app-link>
+                        <app-link href="home/displayShow?indexername=${cur_loading_show.series.indexer_name}&seriesid=${cur_loading_show.series.series_id}">${cur_loading_show.show.name}</app-link>
                         % endif
                         </td>
                         <td></td>
@@ -74,7 +73,12 @@
                 </tbody>
             % endif
             <tbody>
-            <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+            <%
+                def titler(x):
+                   return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
+                my_show_list.sort(key=lambda x: titler(x.name).lower())
+            %>
             % for cur_show in my_show_list:
             <%
                 cur_airs_next = ''
@@ -142,13 +146,15 @@
                         <span style="display: none;">${cur_show.name}</span>
                         <div class="imgbanner banner">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">
-                                <asset default="images/banner.png" series-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
+                                <asset default="images/banner.png" show-slug="${cur_show.slug}" type="banner" class="banner" alt="${cur_show.slug}" title="${cur_show.name | h}"></asset>
                             </app-link>
                         </div>
                     </td>
                     <td align="center">
                     % if cur_show.network:
-                        <span title="${cur_show.network}" class="hidden-print"><img id="network" class="show-network-image" width="54" height="27" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                        <span title="${cur_show.network}" class="hidden-print">
+                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                        </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:
                         <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>

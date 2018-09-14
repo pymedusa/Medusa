@@ -101,11 +101,11 @@ class PlexFallback(object):
         if fallback_config['api_base_url'] == app.FALLBACK_PLEX_API_URL:
             if (fallback_config['plex_fallback_time'] +
                     datetime.timedelta(hours=fallback_config['fallback_plex_timeout']) < datetime.datetime.now()):
-                logger.debug("Disabling Plex fallback as fallback timeout was reached")
+                logger.debug('Disabling Plex fallback as fallback timeout was reached')
                 session.api_client.host = 'https://api.thetvdb.com'
                 session.auth = TVDBAuth(api_key=app.TVDB_API_KEY)
             else:
-                logger.debug("Keeping Plex fallback enabled as fallback timeout not reached")
+                logger.debug('Keeping Plex fallback enabled as fallback timeout not reached')
 
         try:
             # Run api request
@@ -129,7 +129,7 @@ class PlexFallback(object):
 
         # Send notification back to user.
         if fallback_config['fallback_plex_notifications']:
-            logger.warning("Enabling Plex fallback as TheTvdb.com API is having some connectivity issues")
+            logger.warning('Enabling Plex fallback as TheTvdb.com API is having some connectivity issues')
             fallback_notification()
 
         # Run api request

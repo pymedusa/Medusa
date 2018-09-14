@@ -10,14 +10,14 @@ $(document).ready(() => {
         });
 
         const data = {
-            defaultStatus: $('#statusSelect').val(),
+            default_status: $('#statusSelect').val(), // eslint-disable-line camelcase
             allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
             preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
-            defaultFlattenFolders: !$('#season_folders').prop('checked'), // Flatten folders is the contrary of season folders!
+            default_season_folders: $('#season_folders').prop('checked'), // eslint-disable-line camelcase
             subtitles: $('#subtitles').prop('checked'),
             anime: $('#anime').prop('checked'),
             scene: $('#scene').prop('checked'),
-            defaultStatusAfter: $('#statusSelectAfter').val()
+            default_status_after: $('#statusSelectAfter').val() // eslint-disable-line camelcase
         };
 
         // @TODO: Move this to API
@@ -33,11 +33,5 @@ $(document).ready(() => {
 
     $(document.body).on('change', '#statusSelect, select[name="quality_preset"], #season_folders, select[name="allowed_qualities"], select[name="preferred_qualities"], #subtitles, #scene, #anime, #statusSelectAfter', () => {
         $('#saveDefaultsButton').prop('disabled', false);
-    });
-
-    $(document.body).on('change', 'select[name="quality_preset"]', () => {
-        // Fix issue #181 - force re-render to correct the height of the outer div
-        $('span.prev').click();
-        $('span.next').click();
     });
 });

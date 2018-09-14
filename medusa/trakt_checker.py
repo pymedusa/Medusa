@@ -10,7 +10,7 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, ui
-from medusa.common import Quality, SKIPPED, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
 from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
@@ -120,8 +120,8 @@ class TraktChecker(object):
             log.info('No shows found in your Trakt library. Nothing to sync')
             return
         trakt_show = [x for x in trakt_library if
-                      get_trakt_indexer(indexer)
-                      and int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
+                      get_trakt_indexer(indexer) and
+                      int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
 
         return trakt_show if trakt_show else None
 
@@ -223,38 +223,37 @@ class TraktChecker(object):
 
             params = []
             main_db_con = db.DBConnection()
-            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
-            sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
-                            b'e.season, e.episode, e.status ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
-                            b's.indexer_id = e.showid and e.location = "" ' \
-                            b'AND e.status in ({0})'.format(','.join(selection_status))
+            statuses = [DOWNLOADED, ARCHIVED]
+            sql_selection = 'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
+                            'e.season, e.episode, e.status ' \
+                            'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
+                            's.indexer_id = e.showid and e.location = "" ' \
+                            'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
             if filter_show:
-                sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
+                sql_selection += ' AND s.indexer_id = ? AND e.indexer = ?'
                 params = [filter_show.series_id, filter_show.indexer]
 
-            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED + params)
-            episodes = [dict(e) for e in sql_result]
+            sql_result = main_db_con.select(sql_selection, statuses + params)
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
-                    if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
-                                        season=cur_episode[b'season'], episode=cur_episode[b'episode'],
+                    if self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['indexer_id'],
+                                        season=cur_episode['season'], episode=cur_episode['episode'],
                                         list_type='Collection'):
                         log.info("Removing episode '{show}' {ep} from Trakt collection", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['indexer_id'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
@@ -274,35 +273,34 @@ class TraktChecker(object):
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
-            sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
-                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(selection_status))
+            statuses = [DOWNLOADED, ARCHIVED]
+            sql_selection = 'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
+                            "AND e.status in ({0}) AND e.location <> ''".format(','.join(['?'] * len(statuses)))
 
-            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED)
-            episodes = [dict(e) for e in sql_result]
+            sql_result = main_db_con.select(sql_selection, statuses)
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
-                                            season=cur_episode[b'season'], episode=cur_episode[b'episode'],
+                    if not self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['indexer_id'],
+                                            season=cur_episode['season'], episode=cur_episode['episode'],
                                             list_type='Collection'):
                         log.info("Adding episode '{show}' {ep} to Trakt collection", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['indexer_id'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
@@ -337,35 +335,34 @@ class TraktChecker(object):
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            status = Quality.DOWNLOADED + Quality.ARCHIVED
-            selection_status = [b'?' for _ in status]
-            sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer ' \
-                            b'AND s.indexer_id = e.showid AND e.status in ({0})'.format(b','.join(selection_status))
-            sql_result = main_db_con.select(sql_selection, status)
-            episodes = [dict(i) for i in sql_result]
+            statuses = [DOWNLOADED, ARCHIVED]
+            sql_selection = 'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer ' \
+                            'AND s.indexer_id = e.showid AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
-            if episodes:
+            sql_result = main_db_con.select(sql_selection, statuses)
+
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
 
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
-                                        season=cur_episode[b'season'], episode=cur_episode[b'episode']):
+                    if self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['showid'],
+                                        season=cur_episode['season'], episode=cur_episode['episode']):
                         log.info("Removing episode '{show}' {ep} from Trakt watchlist", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['showid'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
@@ -382,33 +379,32 @@ class TraktChecker(object):
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
-            status = Quality.SNATCHED + Quality.SNATCHED_BEST + Quality.SNATCHED_PROPER + [WANTED]
-            selection_status = [b'?' for _ in status]
-            sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
-                            b'AND e.status in ({0})'.format(b','.join(selection_status))
-            sql_result = main_db_con.select(sql_selection, status)
-            episodes = [dict(i) for i in sql_result]
+            statuses = [SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED]
+            sql_selection = 'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
+                            'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
-            if episodes:
+            sql_result = main_db_con.select(sql_selection, statuses)
+
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
-                                            season=cur_episode[b'season'], episode=cur_episode[b'episode']):
+                    if not self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['showid'],
+                                            season=cur_episode['season'], episode=cur_episode['episode']):
                         log.info("Adding episode '{show}' {ep} to Trakt watchlist", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'], title,
-                                           cur_episode[b'startyear'], cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['showid'], cur_episode['indexer'], title,
+                                           cur_episode['startyear'], cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
@@ -489,6 +485,7 @@ class TraktChecker(object):
                     show_name = trakt_show['title']
 
                 show = None
+                indexer = None
                 for i in indexerConfig:
                     trakt_indexer = get_trakt_indexer(i)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
@@ -516,8 +513,7 @@ class TraktChecker(object):
                 else:
                     self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
-                if int(app.TRAKT_METHOD_ADD) == 1:
-                    # FIXME: Referenced before assigment
+                if int(app.TRAKT_METHOD_ADD) == 1 and indexer:
                     new_show = Show.find_by_id(app.showList, indexer, indexer_id)
 
                     if new_show:
@@ -593,9 +589,10 @@ class TraktChecker(object):
                 app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
                                                         default_status=status,
                                                         quality=int(app.QUALITY_DEFAULT),
-                                                        flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
+                                                        season_folders=int(app.SEASON_FOLDERS_DEFAULT),
                                                         paused=app.TRAKT_START_PAUSED,
-                                                        default_status_after=status, root_dir=location)
+                                                        default_status_after=status,
+                                                        root_dir=location)
                 tries = 0
                 while tries < 3:
                     if Show.find_by_id(app.showList, indexer, indexer_id):

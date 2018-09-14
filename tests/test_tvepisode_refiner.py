@@ -13,7 +13,7 @@ def data(create_tvshow, create_tvepisode):
     show_year = 2012
     tvshow = create_tvshow(indexerid=12, name='{0} ({1})'.format(show_name, show_year), imdb_id='tt0000000')
     tvepisode = create_tvepisode(series=tvshow, indexer=34, season=3, episode=4, name='Episode Title',
-                                 file_size=1122334455, status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
+                                 file_size=1122334455, status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
                                  release_group='SuperGroup')
     return {
         'tvshow': tvshow,
@@ -29,7 +29,7 @@ def data(create_tvshow, create_tvepisode):
             'episode': tvepisode.episode,
             'title': tvepisode.name,
             'resolution': '1080p',
-            'format': 'BluRay',
+            'source': 'Blu-ray',
             'release_group': tvepisode.release_group,
             'size': tvepisode.file_size,
             'tvdb_id': tvepisode.tvdb_id,
@@ -42,7 +42,7 @@ def data(create_tvshow, create_tvepisode):
             'title': None,
             'year': None,
             'resolution': None,
-            'format': None,
+            'source': None,
             'release_group': None,
             'size': None,
             'series_tvdb_id': None,
@@ -60,7 +60,7 @@ def _to_properties(video):
         'title': video.title,
         'year': video.year,
         'resolution': video.resolution,
-        'format': video.format,
+        'source': video.source,
         'size': video.size,
         'release_group': video.release_group,
         'series_tvdb_id': video.series_tvdb_id,
@@ -114,11 +114,11 @@ def test_refine__with_tvepisode_not_overwriting_resolution_format_and_release_gr
     # Given
     video = data['video']
     video.resolution = '720p'
-    video.format = 'HDTV'
+    video.source = 'HDTV'
     video.release_group = 'AnotherGroup'
     tvepisode = data['tvepisode']
     expected = dict(data['tvshow_properties'], **data['tvepisode_properties'])
-    expected = dict(expected, resolution=video.resolution, format=video.format, release_group=video.release_group,
+    expected = dict(expected, resolution=video.resolution, source=video.source, release_group=video.release_group,
                     season=video.season, episode=video.episode)
 
     # When

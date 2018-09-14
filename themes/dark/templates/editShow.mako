@@ -1,51 +1,193 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import adba
-    from medusa import app, common
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import statusStrings
-    from medusa.helper import exceptions
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import mappings
-    from medusa import scene_exceptions
-%>
-<%block name="metas">
-<meta data-var="show.is_anime" data-content="${show.is_anime}">
-</%block>
 <%block name="scripts">
-    <script type="text/javascript" src="js/edit-show.js"></script>
-% if show.is_anime:
-    <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
-% endif
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        data() {
-            return {};
-        },
-        mounted() {
-            $('#location').fileBrowser({
-                title: 'Select Show Location'
-            });
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    metaInfo() {
+        const { title } = this.series;
+        if (!title) {
+            return {
+                title: 'Medusa'
+            };
         }
-    });
-};
+        return {
+            title,
+            titleTemplate: 'Editing %s | Medusa'
+        };
+    },
+    data() {
+        return {
+            seriesSlug: document.querySelector('#series-slug').value,
+            seriesId: document.querySelector('#series-id').value,
+            indexerName: document.querySelector('#indexer-name').value,
+            series: {
+                config: {
+                    aliases: [],
+                    dvdOrder: false,
+                    defaultEpisodeStatus: '',
+                    seasonFolders: true,
+                    anime: false,
+                    scene: false,
+                    sports: false,
+                    paused: false,
+                    location: '',
+                    airByDate: false,
+                    subtitlesEnabled: false,
+                    release: {
+                        requiredWords: [],
+                        ignoredWords: [],
+                        blacklist: [],
+                        whitelist: [],
+                        allgroups: []
+                    },
+                    qualities: {
+                        preferred: [],
+                        allowed: []
+                    }
+                },
+                language: 'en'
+            },
+            defaultEpisodeStatusOptions: [
+                {text: 'Wanted', value: 'Wanted'},
+                {text: 'Skipped', value: 'Skipped'},
+                {text: 'Ignored', value: 'Ignored'}
+            ],
+            seriesLoaded: false,
+            saving: false
+        }
+    },
+    created() {
+        const { $store, seriesSlug } = this;
+
+        // Don't get episodes, but do get external information for AniDB release groups
+        const params = { detailed: false, fetch: true };
+        api.get('series/' + seriesSlug, { params }).then(response => {
+            this.series = Object.assign({}, this.series, response.data);
+            this.seriesLoaded = true;
+        }).catch(error => {
+            const msg = 'Could not get series info for: ' + seriesSlug;
+            this.$snotify.error(msg, 'Error');
+            console.debug(msg, error);
+        });
+    },
+    methods: {
+        saveSeries(subject) {
+            // We want to wait until the page has been fully loaded, before starting to save stuff.
+            if (!this.seriesLoaded) {
+                return;
+            }
+
+            if (!['series', 'all'].includes(subject)) {
+                return;
+            }
+
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            const data = {
+                config: {
+                    aliases: this.series.config.aliases,
+                    defaultEpisodeStatus: this.series.config.defaultEpisodeStatus,
+                    dvdOrder: this.series.config.dvdOrder,
+                    seasonFolders: this.series.config.seasonFolders,
+                    anime: this.series.config.anime,
+                    scene: this.series.config.scene,
+                    sports: this.series.config.sports,
+                    paused: this.series.config.paused,
+                    location: this.series.config.location,
+                    airByDate: this.series.config.airByDate,
+                    subtitlesEnabled: this.series.config.subtitlesEnabled,
+                    release: {
+                        requiredWords: this.series.config.release.requiredWords,
+                        ignoredWords: this.series.config.release.ignoredWords
+                    },
+                    qualities: {
+                        preferred: this.series.config.qualities.preferred,
+                        allowed: this.series.config.qualities.allowed
+                    }
+                },
+                language: this.series.language
+            };
+
+            if (data.config.anime) {
+                data.config.release.blacklist = this.series.config.release.blacklist;
+                data.config.release.whitelist = this.series.config.release.whitelist;
+            }
+
+            api.patch('series/' + this.seriesSlug, data).then(response => {
+                this.$snotify.success(
+                    'You may need to "Re-scan files" or "Force Full Update".',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "' + this.series.title + '": ' + error.message || 'Unknown',
+                    'Error'
+                );
+            }).finally(() => {
+                // Re-enable the save button.
+                this.saving = false;
+            });
+        },
+        onChangeIgnoredWords(items) {
+            this.series.config.release.ignoredWords = items.map(item => item.value);
+        },
+        onChangeRequiredWords(items) {
+            this.series.config.release.requiredWords = items.map(item => item.value);
+        },
+        onChangeAliases(items) {
+            this.series.config.aliases = items.map(item => item.value);
+        },
+        onChangeReleaseGroupsAnime(items) {
+            this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
+            this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+            this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
+        },
+        updateLanguage(value) {
+            this.series.language = value;
+        }
+    },
+    computed: {
+        availableLanguages() {
+            if (this.config.indexers.config.main.validLanguages) {
+                return this.config.indexers.config.main.validLanguages.join(',');
+            }
+        },
+        combinedQualities() {
+            const reducer = (accumulator, currentValue) => accumulator | currentValue;
+            const allowed = this.series.config.qualities.allowed.reduce(reducer, 0);
+            const preferred = this.series.config.qualities.preferred.reduce(reducer, 0);
+
+            return (allowed | preferred << 16) >>> 0;  // Unsigned int
+        },
+        saveButton() {
+            return this.saving === false ? 'Save Changes' : 'Saving...';
+        },
+        displayShowUrl() {
+            // @TODO: Change the URL generation to use `this.series`. Currently not possible because
+            // the values are not available at the time of app-link component creation.
+            return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
+        }
+    }
+});
 </script>
 </%block>
 <%block name="content">
+<vue-snotify></vue-snotify>
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
-<div id="config" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
-    <div id="config-content">
-        <form action="home/editShow" method="post">
+<h1 class="header">
+    Edit Show
+    <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
+</h1>
+<div id="config-content">
+    <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <form @submit.prevent="saveSeries('all')" class="form-horizontal">
         <div id="config-components">
             <ul>
                 <li><app-link href="#core-component-group1">Main</app-link></li>
@@ -56,61 +198,53 @@ const startVue = () => {
                 <div class="component-group">
                     <h3>Main Settings</h3>
                     <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            <label for="location">
-                                <span class="component-title">Show Location</span>
-                                <span class="component-desc">
-                                    <input type="hidden" name="indexername" id="form-indexername" value="${show.indexer_name}" />
-                                    <input type="hidden" name="seriesid" id="form-seriesid" value="${show.series_id}" />
-                                    <input type="text" name="location" id="location" value="${show._location}" class="form-control form-control-inline input-sm input350"/>
-                                </span>
-                            </label>
+                        <div class="form-group">
+                            <label for="location" class="col-sm-2 control-label">Show Location</label>
+                            <div class="col-sm-10 content">
+                                <file-browser name="location" title="Select Show Location" :initial-dir="series.config.location" @update="series.config.location = $event"></file-browser>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="qualityPreset">
-                                <span class="component-title">Preferred Quality</span>
-                                <span class="component-desc">
-                                    <quality-chooser/>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="qualityPreset" class="col-sm-2 control-label">Quality</label>
+                            <div class="col-sm-10 content">
+                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="defaultEpStatusSelect">
-                                <span class="component-title">Default Episode Status</span>
-                                <span class="component-desc">
-                                    <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
-                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == show.default_ep_status else ''}>${statusStrings[cur_status]}</option>
-                                        % endfor
-                                    </select>
-                                    <div class="clear-left"><p>This will set the status for future episodes.</p></div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
+                            <div class="col-sm-10 content">
+                                <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
+                                    v-model="series.config.defaultEpisodeStatus">
+                                    <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
+                                </select>
+                                <div class="clear-left"><p>This will set the status for future episodes.</p></div>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="indexerLangSelect">
-                                <span class="component-title">Info Language</span>
-                                <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
-                                    <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="indexerLangSelect" class="col-sm-2 control-label">Info Language</label>
+                            <div class="col-sm-10 content">
+                                <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm"></language-select>
+                                <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="subtitles">
-                                <span class="component-title">Subtitles</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="subtitles" name="subtitles" ${'checked="checked"' if show.subtitles == 1 and app.USE_SUBTITLES is True else ''} ${'' if app.USE_SUBTITLES else 'disabled="disabled"'}/> search for subtitles
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="subtitles" class="col-sm-2 control-label">Subtitles</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="subtitles" name="subtitles" v-model="series.config.subtitlesEnabled" sync></toggle-button>
+                                <span>search for subtitles</span>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="paused">
-                                <span class="component-title">Paused</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="paused" name="paused" ${'checked="checked"' if show.paused == 1 else ''} /> pause this show (Medusa will not download episodes)
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="paused" class="col-sm-2 control-label">Paused</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="paused" name="paused" v-model="series.config.paused" sync></toggle-button>
+                                <span>pause this show (Medusa will not download episodes)</span>
+                            </div>
                         </div>
                     </fieldset>
                 </div>
@@ -119,59 +253,63 @@ const startVue = () => {
                 <div class="component-group">
                     <h3>Format Settings</h3>
                     <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            <label for="airbydate">
-                                <span class="component-title">Air by date</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="airbydate" name="air_by_date" ${'checked="checked"' if show.air_by_date == 1 else ''} /> check if the show is released as Show.03.02.2010 rather than Show.S02E03.<br>
-                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="airbydate" class="col-sm-2 control-label">Air by date</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="airbydate" name="air_by_date" v-model="series.config.airByDate" sync></toggle-button>
+                                <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
+                                <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="anime">
-                                <span class="component-title">Anime</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="anime" name="anime" ${'checked="checked"' if show.is_anime == 1 else ''}> check if the show is Anime and episodes are released as Show.265 rather than Show.S02E03<br>
-                                    % if show.is_anime:
-                                        <%include file="/inc_blackwhitelist.mako"/>
-                                    % endif
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="anime" class="col-sm-2 control-label">Anime</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="anime" name="anime" v-model="series.config.anime" sync></toggle-button>
+                                <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="sports">
-                                <span class="component-title">Sports</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="sports" name="sports" ${'checked="checked"' if show.sports == 1 else ''}/> check if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<br>
-                                    <span style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</span>
-                                </span>
-                            </label>
+
+                        <div v-if="series.config.anime" class="form-group">
+                            <label for="anidbReleaseGroup" class="col-sm-2 control-label">Release Groups</label>
+                            <div class="col-sm-10 content">
+                                <anidb-release-group-ui class="max-width" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="season_folders">
-                                <span class="component-title">Season folders</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="season_folders" name="flatten_folders" ${'checked="checked"' if show.flatten_folders == 0 or app.NAMING_FORCE_FOLDERS else ''} ${'disabled="disabled"' if app.NAMING_FORCE_FOLDERS else ''}/> group episodes by season folder (uncheck to store in a single folder)
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="sports" class="col-sm-2 control-label">Sports</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="sports" name="sports" v-model="series.config.sports" sync></toggle-button>
+                                <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<span>
+                                <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="scene">
-                                <span class="component-title">Scene Numbering</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="scene" name="scene" ${'checked="checked"' if show.scene == 1 else ''} /> search by scene numbering (uncheck to search by indexer numbering)
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="season_folders" class="col-sm-2 control-label">Season folders</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="season_folders" name="season_folders" v-model="series.config.seasonFolders" sync></toggle-button>
+                                <span>group episodes by season folder (disable to store in a single folder)</span>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="dvdorder">
-                                <span class="component-title">DVD Order</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvd_order" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
-                                    <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="scene" class="col-sm-2 control-label">Scene Numbering</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="scene" name="scene" v-model="series.config.scene" sync></toggle-button>
+                                <span>search by scene numbering (disable to search by indexer numbering)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dvdorder" class="col-sm-2 control-label">DVD Order</label>
+                            <div class="col-sm-10 content">
+                                <toggle-button :width="45" :height="22" id="dvdorder" name="dvdorder" v-model="series.config.dvdOrder" sync></toggle-button>
+                                <span>use the DVD order instead of the air order</span>
+                                <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
+                            </div>
                         </div>
                     </fieldset>
                 </div>
@@ -180,53 +318,43 @@ const startVue = () => {
                 <div class="component-group">
                     <h3>Advanced Settings</h3>
                     <fieldset class="component-group-list">
-                        <div class="field-pair">
-                            <label for="rls_ignore_words">
-                                <span class="component-title">Ignored Words</span>
-                                <span class="component-desc">
-                                    <input type="text" id="rls_ignore_words" name="rls_ignore_words" id="rls_ignore_words" value="${show.rls_ignore_words}" class="form-control form-control-inline input-sm input350"/><br>
-                                    <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
-                                        <p>Search results with one or more words from this list will be ignored.</p>
-                                    </div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="rls_ignore_words" class="col-sm-2 control-label">Ignored words</label>
+                            <div class="col-sm-10 content">
+                                <select-list :list-items="series.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
+                                <div class="clear-left">
+                                    <p>Search results with one or more words from this list will be ignored.</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="rls_require_words">
-                                <span class="component-title">Required Words</span>
-                                <span class="component-desc">
-                                    <input type="text" id="rls_require_words" name="rls_require_words" id="rls_require_words" value="${show.rls_require_words}" class="form-control form-control-inline input-sm input350"/><br>
-                                    <div class="clear-left">
-                                        <p>comma-separated <i>e.g. "word1,word2,word3"</i></p>
-                                        <p>Search results with no words from this list will be ignored.</p>
-                                    </div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="rls_require_words" class="col-sm-2 control-label">Required words</label>
+                            <div class="col-sm-10 content">
+                                <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
+                                <div class="clear-left">
+                                    <p>Search results with no words from this list will be ignored.</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="field-pair">
-                            <label for="SceneName">
-                                <span class="component-title">Scene Exception</span>
-                                <span class="component-desc">
-                                    <input type="text" id="SceneName" class="form-control form-control-inline input-sm input200"/><input class="btn btn-inline" type="button" value="Add" id="addSceneName" /><br><br>
-                                    <div class="pull-left">
-                                        <select id="exceptions_list" name="exceptions_list" multiple="multiple" style="min-width:200px;height:99px;">
-                                        % for cur_exception in show.exceptions:
-                                            <option value="${cur_exception}">${cur_exception}</option>
-                                        % endfor
-                                        </select>
-                                        <div><input id="removeSceneName" value="Remove" class="btn float-left" type="button" style="margin-top: 10px;"/></div>
-                                    </div>
-                                    <div class="clear-left"><p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p></div>
-                                </span>
-                            </label>
+
+                        <div class="form-group">
+                            <label for="SceneName" class="col-sm-2 control-label">Scene Exception</label>
+                            <div class="col-sm-10 content">
+                                <select-list :list-items="series.config.aliases" @change="onChangeAliases"></select-list>
+                                <div class="clear-left">
+                                    <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
+                                </div>
+                            </div>
                         </div>
+
                     </fieldset>
                 </div>
             </div>
         </div>
         <br>
-        <input id="submit" type="submit" value="Save Changes" class="btn pull-left config_submitter button">
+        <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !seriesLoaded">
         </form>
     </div>
 </div>

@@ -1,10 +1,12 @@
 # coding=utf-8
 """Request handler for alias source."""
 from __future__ import unicode_literals
+
 from datetime import datetime
 
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
 from medusa.server.api.v2.base import BaseRequestHandler
+
 from tornado.escape import json_decode
 
 
@@ -14,7 +16,7 @@ def find_alias_sources(predicate=None):
     mapping = {'local': 'custom_exceptions'}
     for identifier in ('local', 'xem', 'anidb'):
         if not predicate or predicate(identifier):
-            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0][b'last_refreshed']
+            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0]['last_refreshed']
             data.append({'id': identifier, 'lastRefresh': last_refresh})
 
     return data
@@ -32,7 +34,7 @@ class AliasSourceHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, identifier, path_param=None):
+    def http_get(self, identifier, path_param=None):
         """Query alias source information.
 
         :param identifier: source name
@@ -69,7 +71,7 @@ class AliasSourceOperationHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def post(self, identifier):
+    def http_post(self, identifier):
         """Refresh all scene exception types."""
         types = {
             'local': 'custom_exceptions',

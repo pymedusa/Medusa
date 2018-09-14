@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import json
 import os
 import re
 import time
@@ -17,16 +16,12 @@ from mako.template import Template as MakoTemplate
 
 from medusa import (
     app,
-    classes,
     db,
     exception_handler,
     helpers,
     logger,
-    ui,
 )
 from medusa.server.api.v1.core import function_mapper
-
-from past.builtins import cmp
 
 from requests.compat import urljoin
 
@@ -88,23 +83,16 @@ class PageTemplate(MakoTemplate):
             'sbHttpsPort': app.WEB_PORT,
             'sbHttpsEnabled': app.ENABLE_HTTPS,
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
-            'sbThemeName': app.THEME_NAME,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,
-            'numErrors': len(classes.ErrorViewer.errors),
-            'numWarnings': len(classes.WarningViewer.errors),
             'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'topmenu': 'FixME',
             'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
-            'newsBadge': '',
-            'toolsBadge': '',
-            'toolsBadgeClass': '',
             'base_url': base_url + app.WEB_ROOT + '/',
             'realpage': '',
             'full_url': base_url + rh.request.uri
@@ -120,21 +108,6 @@ class PageTemplate(MakoTemplate):
             self.arguments['sbHttpsPort'] = rh.request.headers['X-Forwarded-Port']
         if 'X-Forwarded-Proto' in rh.request.headers:
             self.arguments['sbHttpsEnabled'] = True if rh.request.headers['X-Forwarded-Proto'] == 'https' else False
-
-        error_count = len(classes.ErrorViewer.errors)
-        warning_count = len(classes.WarningViewer.errors)
-
-        if app.NEWS_UNREAD:
-            self.arguments['newsBadge'] = ' <span class="badge">{news}</span>'.format(news=app.NEWS_UNREAD)
-
-        num_combined = error_count + warning_count + app.NEWS_UNREAD
-        if num_combined:
-            if error_count:
-                self.arguments['toolsBadgeClass'] = ' btn-danger'
-            elif warning_count:
-                self.arguments['toolsBadgeClass'] = ' btn-warning'
-            self.arguments['toolsBadge'] = ' <span class="badge{type}">{number}</span>'.format(
-                type=self.arguments['toolsBadgeClass'], number=num_combined)
 
     def render(self, *args, **kwargs):
         """Render the Page template."""
@@ -247,7 +220,7 @@ class WebHandler(BaseHandler):
     def get(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -263,7 +236,7 @@ class WebHandler(BaseHandler):
     def post(self, route, *args, **kwargs):
         try:
             # route -> method obj
-            route = route.strip('/').replace('.', '_') or 'index'
+            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
             results = yield self.async_call(method)
@@ -298,6 +271,24 @@ class WebRoot(WebHandler):
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
+    def not_found(self, *args, **kwargs):
+        """
+        Fallback 404 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
+    def server_error(self, *args, **kwargs):
+        """
+        Fallback 500 route.
+
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+
     def robots_txt(self):
         """Keep web crawlers out."""
         self.set_header('Content-Type', 'text/plain')
@@ -307,24 +298,24 @@ class WebRoot(WebHandler):
         def titler(x):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        main_db_con = db.DBConnection(row_type='dict')
-        shows = sorted(app.showList, lambda x, y: cmp(titler(x.name), titler(y.name)))
+        main_db_con = db.DBConnection()
+        shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
         results = main_db_con.select(
-            b'SELECT episode, season, indexer, showid '
-            b'FROM tv_episodes '
-            b'ORDER BY season ASC, episode ASC'
+            'SELECT episode, season, indexer, showid '
+            'FROM tv_episodes '
+            'ORDER BY season ASC, episode ASC'
         )
 
         for result in results:
-            if result[b'showid'] not in episodes:
-                episodes[result[b'showid']] = {}
+            if result['showid'] not in episodes:
+                episodes[result['showid']] = {}
 
-            if result[b'season'] not in episodes[result[b'showid']]:
-                episodes[result[b'showid']][result[b'season']] = []
+            if result['season'] not in episodes[result['showid']]:
+                episodes[result['showid']][result['season']] = []
 
-            episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
+            episodes[result['showid']][result['season']].append(result['episode'])
 
         if len(app.API_KEY) == 32:
             apikey = app.API_KEY
@@ -349,35 +340,6 @@ class WebRoot(WebHandler):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
-
-
-@route('/ui(/?.*)')
-class UI(WebRoot):
-    def __init__(self, *args, **kwargs):
-        super(UI, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def add_message():
-        ui.notifications.message('Test 1', 'This is test number 1')
-        ui.notifications.error('Test 2', 'This is test number 2')
-
-        return 'ok'
-
-    def get_messages(self):
-        self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header('Content-Type', 'application/json')
-        messages = {}
-        cur_notification_num = 1
-        for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
-            messages['notification-{number}'.format(number=cur_notification_num)] = {
-                'title': '{0}'.format(cur_notification.title),
-                'message': '{0}'.format(cur_notification.message),
-                'type': '{0}'.format(cur_notification.notification_type),
-                'hash': '{0}'.format(hash(cur_notification)),
-            }
-            cur_notification_num += 1
-
-        return json.dumps(messages)
 
 
 class AuthenticatedStaticFileHandler(StaticFileHandler):

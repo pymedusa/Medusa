@@ -31,6 +31,8 @@ from builtins import object
 from builtins import str
 from logging import DEBUG, WARNING
 
+from github import GithubException
+
 from medusa import app, db, helpers, notifiers, ui
 from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter
@@ -373,7 +375,7 @@ class UpdateManager(object):
 
     @staticmethod
     def get_update_url():
-        return app.WEB_ROOT + "/home/update/?pid=" + str(app.PID)
+        return app.WEB_ROOT + '/home/update/?pid=' + str(app.PID)
 
 
 class GitUpdateManager(UpdateManager):
@@ -403,9 +405,9 @@ class GitUpdateManager(UpdateManager):
 
     def get_newest_version(self):
         if self._newest_commit_hash:
-            self._cur_version = self._run_git(self._git_path, "describe --tags --abbrev=0 " + self._newest_commit_hash)[0]
+            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 ' + self._newest_commit_hash)[0]
         else:
-            self._cur_version = self._run_git(self._git_path, "describe --tags --abbrev=0 " + self._cur_commit_hash)[0]
+            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 ' + self._cur_commit_hash)[0]
         return self._cur_version
 
     def get_num_commits_behind(self):
@@ -545,7 +547,7 @@ class GitUpdateManager(UpdateManager):
             if branch:
                 app.BRANCH = branch
                 return branch
-        return ""
+        return ''
 
     def _check_github_for_update(self):
         """
@@ -560,7 +562,7 @@ class GitUpdateManager(UpdateManager):
         self.update_remote_origin()
 
         # get all new info from github
-        output, _, exit_status = self._run_git(self._git_path, 'fetch %s' % app.GIT_REMOTE)
+        output, _, exit_status = self._run_git(self._git_path, 'fetch --prune %s' % app.GIT_REMOTE)
         if not exit_status == 0:
             log.warning(u"Unable to contact github, can't check for update")
             return
@@ -586,8 +588,8 @@ class GitUpdateManager(UpdateManager):
         if exit_status == 0 and output:
 
             try:
-                self._num_commits_behind = int(output.count("<"))
-                self._num_commits_ahead = int(output.count(">"))
+                self._num_commits_behind = int(output.count('<'))
+                self._num_commits_ahead = int(output.count('>'))
 
             except Exception:
                 log.debug(u"git didn't return numbers for behind and ahead, not using it")
@@ -610,14 +612,14 @@ class GitUpdateManager(UpdateManager):
                 url = base_url + '/commits/'
 
             newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a> '
-            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
+            newest_text += " (you're " + str(self._num_commits_behind) + ' commit'
             if self._num_commits_behind > 1:
                 newest_text += 's'
             newest_text += ' behind'
             if self._num_commits_ahead > 0:
                 newest_text += ' and {ahead} commit{s} ahead'.format(ahead=self._num_commits_ahead,
                                                                      s='s' if self._num_commits_ahead > 1 else '')
-            newest_text += ')' + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+            newest_text += ') &mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
 
         elif self._num_commits_ahead > 0:
             newest_text = u'Local branch is ahead of {0}. Automatic update not possible'.format(self.branch)
@@ -685,7 +687,7 @@ class GitUpdateManager(UpdateManager):
             # Notify update successful
             if app.NOTIFY_ON_UPDATE:
                 try:
-                    notifiers.notify_git_update(app.CUR_COMMIT_HASH or "")
+                    notifiers.notify_git_update(app.CUR_COMMIT_HASH or '')
                 except Exception:
                     log.debug(u'Unable to send update notification. Continuing the update process')
             return True
@@ -767,7 +769,7 @@ class SourceUpdateManager(UpdateManager):
 
     @staticmethod
     def _find_installed_branch():
-        return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else "master"
+        return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else 'master'
 
     def get_cur_commit_hash(self):
         return self._cur_commit_hash
@@ -777,11 +779,11 @@ class SourceUpdateManager(UpdateManager):
 
     @staticmethod
     def get_cur_version():
-        return ""
+        return ''
 
     @staticmethod
     def get_newest_version():
-        return ""
+        return ''
 
     def get_num_commits_behind(self):
         return self._num_commits_behind
@@ -834,10 +836,10 @@ class SourceUpdateManager(UpdateManager):
                 self._num_commits_behind = branch_compared.behind_by
                 self._num_commits_ahead = branch_compared.ahead_by
             except Exception:  # UnknownObjectException
-                self._newest_commit_hash = ""
+                self._newest_commit_hash = ''
                 self._num_commits_behind = 0
                 self._num_commits_ahead = 0
-                self._cur_commit_hash = ""
+                self._cur_commit_hash = ''
 
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
@@ -866,8 +868,8 @@ class SourceUpdateManager(UpdateManager):
             log.debug(u"Unknown current version number, don't know if we should update or not")
 
             newest_text = "Unknown current version number: If you've never used the application " \
-                          "upgrade system before then current version is not set."
-            newest_text += "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+                          'upgrade system before then current version is not set. ' \
+                          '&mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
 
         elif self._num_commits_behind > 0:
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
@@ -877,10 +879,10 @@ class SourceUpdateManager(UpdateManager):
                 url = base_url + '/commits/'
 
             newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a>'
-            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
+            newest_text += " (you're " + str(self._num_commits_behind) + ' commit'
             if self._num_commits_behind > 1:
-                newest_text += "s"
-            newest_text += " behind)" + "&mdash; <a href=\"" + self.get_update_url() + "\">Update Now</a>"
+                newest_text += 's'
+            newest_text += ' behind) &mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
         else:
             return
 
@@ -971,12 +973,16 @@ class SourceUpdateManager(UpdateManager):
 
         # Notify update successful
         try:
-            notifiers.notify_git_update(app.CUR_COMMIT_HASH or "")
+            notifiers.notify_git_update(app.CUR_COMMIT_HASH or '')
         except Exception:
             log.debug(u'Unable to send update notification. Continuing the update process')
         return True
 
     @staticmethod
     def list_remote_branches():
-        gh = get_github_repo(app.GIT_ORG, app.GIT_REPO)
-        return [x.name for x in gh.get_branches() if x]
+        try:
+            gh = get_github_repo(app.GIT_ORG, app.GIT_REPO)
+            return [x.name for x in gh.get_branches() if x]
+        except GithubException as error:
+            log.warning(u"Unable to contact github, can't check for update: {0!r}", error)
+            return []

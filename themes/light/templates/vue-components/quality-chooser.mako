@@ -16,7 +16,7 @@
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model="preferredQualities" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm">
+                    <select v-model="preferredQualities" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm" :disabled="allowedQualities.length === 0">
                         <option v-for="quality in preferredQualityList" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
@@ -44,7 +44,7 @@
                     <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
-                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn btn-inline">{{archiveButton.text}}</button>
+                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn-medusa btn-inline">{{archiveButton.text}}</button>
                 <h5>{{archivedStatus}}</h5>
             </div>
         </div>
@@ -53,7 +53,6 @@
 <%!
     import json
     from medusa import app
-    from medusa.numdict import NumDict
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
@@ -66,7 +65,7 @@ overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualiti
 
 def convert(obj):
     ## This converts the keys to strings as keys can't be ints
-    if isinstance(obj, (NumDict, dict)):
+    if isinstance(obj, dict):
         new_obj = {}
         for key in obj:
             new_obj[str(key)] = obj[key]
@@ -75,7 +74,8 @@ def convert(obj):
     return json.dumps(obj)
 %>
 <script>
-Vue.component('quality-chooser', {
+const QualityChooserComponent = {
+    name: 'quality-chooser',
     template: '#quality-chooser-template',
     props: {
         overallQuality: {
@@ -128,11 +128,11 @@ Vue.component('quality-chooser', {
         },
         allowedQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE});
+                .filter(val => val > ${Quality.NA});
         },
         preferredQualityList() {
             return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NONE} && val < ${Quality.UNKNOWN});
+                .filter(val => val > ${Quality.NA});
         }
     },
     asyncComputed: {
@@ -207,16 +207,21 @@ Vue.component('quality-chooser', {
             // If preset is custom set to last preset
             if (parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset))) preset = oldPreset;
 
-            // Convert values to int, and filter selected/prefrred qualities
+            // Convert values to unsigned int, and filter selected/prefrred qualities
             this.allowedQualities = Object.keys(this.qualityStrings)
                 .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & quality) > 0);
+                .filter(quality => ( (preset & quality) >>> 0 ) > 0);
             this.preferredQualities = Object.keys(this.qualityStrings)
                 .map(quality => parseInt(quality, 10))
-                .filter(quality => (preset & (quality << 16)) > 0);
+                .filter(quality => ( (preset & (quality << 16)) >>> 0 ) > 0);
         }
     },
     watch: {
+        overallQuality(newValue) {
+            const { qualityPresets, keep, setQualityFromPreset } = this;
+            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (qualityPresets.includes(newValue) ? newValue : 0),
+            setQualityFromPreset(this.selectedQualityPreset, newValue);
+        },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
@@ -227,5 +232,7 @@ Vue.component('quality-chooser', {
             this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
         }
     }
-});
+};
+
+window.components.push(QualityChooserComponent);
 </script>

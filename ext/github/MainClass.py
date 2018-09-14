@@ -21,6 +21,10 @@
 # Copyright 2017 Colin Hoglund <colinhoglund@users.noreply.github.com>         #
 # Copyright 2017 Jannis Gebauer <ja.geb@me.com>                                #
 # Copyright 2018 Agor Maxime <maxime.agor23@gmail.com>                         #
+# Copyright 2018 Joshua Hoblitt <josh@hoblitt.com>                             #
+# Copyright 2018 Maarten Fonville <mfonville@users.noreply.github.com>         #
+# Copyright 2018 Mike Miller <github@mikeage.net>                              #
+# Copyright 2018 Svend Sorensen <svend@svends.net>                             #
 # Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
@@ -58,6 +62,7 @@ import github.PaginatedList
 import Repository
 import Installation
 import Legacy
+import License
 import github.GithubObject
 import HookDescription
 import GitignoreTemplate
@@ -68,10 +73,16 @@ import InstallationAuthorization
 import GithubException
 import Invitation
 
+import Consts
+
 atLeastPython3 = sys.hexversion >= 0x03000000
 
 DEFAULT_BASE_URL = "https://api.github.com"
-DEFAULT_TIMEOUT = 10
+DEFAULT_STATUS_URL = "https://status.github.com"
+# As of 2018-05-17, Github imposes a 10s limit for completion of API requests.
+# Thus, the timeout should be slightly > 10s to account for network/front-end
+# latency.
+DEFAULT_TIMEOUT = 15
 DEFAULT_PER_PAGE = 30
 
 
@@ -80,7 +91,7 @@ class Github(object):
     This is the main class you instantiate to access the Github API v3. Optional parameters allow different authentication methods.
     """
 
-    def __init__(self, login_or_token=None, password=None, base_url=DEFAULT_BASE_URL, timeout=DEFAULT_TIMEOUT, client_id=None, client_secret=None, user_agent='PyGithub/Python', per_page=DEFAULT_PER_PAGE, api_preview=False):
+    def __init__(self, login_or_token=None, password=None, base_url=DEFAULT_BASE_URL, timeout=DEFAULT_TIMEOUT, client_id=None, client_secret=None, user_agent='PyGithub/Python', per_page=DEFAULT_PER_PAGE, api_preview=False, verify=True):
         """
         :param login_or_token: string
         :param password: string
@@ -90,6 +101,7 @@ class Github(object):
         :param client_secret: string
         :param user_agent: string
         :param per_page: int
+        :param verify: boolean or string
         """
 
         assert login_or_token is None or isinstance(login_or_token, (str, unicode)), login_or_token
@@ -100,7 +112,7 @@ class Github(object):
         assert client_secret is None or isinstance(client_secret, (str, unicode)), client_secret
         assert user_agent is None or isinstance(user_agent, (str, unicode)), user_agent
         assert isinstance(api_preview, (bool))
-        self.__requester = Requester(login_or_token, password, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview)
+        self.__requester = Requester(login_or_token, password, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview, verify)
 
     def __get_FIX_REPO_GET_GIT_REF(self):
         """
@@ -132,6 +144,7 @@ class Github(object):
     def rate_limiting(self):
         """
         First value is requests remaining, second value is request limit.
+
         :type: (int, int)
         """
         remaining, limit = self.__requester.rate_limiting
@@ -143,6 +156,7 @@ class Github(object):
     def rate_limiting_resettime(self):
         """
         Unix timestamp indicating when rate limiting will reset.
+
         :type: int
         """
         if self.__requester.rate_limiting_resettime == 0:
@@ -151,16 +165,16 @@ class Github(object):
 
     def get_rate_limit(self):
         """
-        Don't forget you can access the rate limit returned in headers of last Github API v3 response, by :attr:`github.MainClass.Github.rate_limiting` and :attr:`github.MainClass.Github.rate_limiting_resettime`.
+        Rate limit status for different resources (core/search/graphql).
 
         :calls: `GET /rate_limit <http://developer.github.com/v3/rate_limit>`_
         :rtype: :class:`github.RateLimit.RateLimit`
         """
-        headers, attributes = self.__requester.requestJsonAndCheck(
+        headers, data = self.__requester.requestJsonAndCheck(
             'GET',
             '/rate_limit'
         )
-        return RateLimit.RateLimit(self.__requester, headers, attributes, True)
+        return RateLimit.RateLimit(self.__requester, headers, data["resources"], True)
 
     @property
     def oauth_scopes(self):
@@ -168,6 +182,35 @@ class Github(object):
         :type: list of string
         """
         return self.__requester.oauth_scopes
+
+    def get_license(self, key=github.GithubObject.NotSet):
+        """
+        :calls: `GET /license/:license <https://developer.github.com/v3/licenses/#get-an-individual-license>`_
+        :param key: string
+        :rtype: :class:`github.License.License`
+        """
+
+        assert isinstance(key, (str, unicode)), key
+        headers, data = self.__requester.requestJsonAndCheck(
+            "GET",
+            "/licenses/" + key
+        )
+        return github.License.License(self.__requester, headers, data, completed=True)
+
+    def get_licenses(self):
+        """
+        :calls: `GET /licenses <https://developer.github.com/v3/licenses/#list-all-licenses>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.License.License`
+        """
+
+        url_parameters = dict()
+
+        return github.PaginatedList.PaginatedList(
+            github.License.License,
+            self.__requester,
+            "/licenses",
+            url_parameters
+        )
 
     def get_user(self, login=github.GithubObject.NotSet):
         """
@@ -215,7 +258,24 @@ class Github(object):
         )
         return github.Organization.Organization(self.__requester, headers, data, completed=True)
 
-    def get_repo(self, full_name_or_id, lazy=True):
+    def get_organizations(self, since=github.GithubObject.NotSet):
+        """
+        :calls: `GET /organizations <http://developer.github.com/v3/orgs#list-all-organizations>`_
+        :param since: integer
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Organization.Organization`
+        """
+        assert since is github.GithubObject.NotSet or isinstance(since, (int, long)), since
+        url_parameters = dict()
+        if since is not github.GithubObject.NotSet:
+            url_parameters["since"] = since
+        return github.PaginatedList.PaginatedList(
+            github.NamedUser.NamedUser,
+            self.__requester,
+            "/organizations",
+            url_parameters
+        )
+
+    def get_repo(self, full_name_or_id, lazy=False):
         """
         :calls: `GET /repos/:owner/:repo <http://developer.github.com/v3/repos>`_ or `GET /repositories/:id <http://developer.github.com/v3/repos>`_
         :rtype: :class:`github.Repository.Repository`
@@ -247,6 +307,19 @@ class Github(object):
             "/repositories",
             url_parameters
         )
+
+    def get_project(self, id):
+        """
+        :calls: `GET /projects/:project_id <https://developer.github.com/v3/projects/#get-a-project>`_
+        :rtype: :class:`github.Project.Project`
+        :param id: integer
+        """
+        headers, data = self.__requester.requestJsonAndCheck(
+            "GET",
+            "/projects/%d" % (id),
+            headers={"Accept": Consts.mediaTypeProjectsPreview}
+        )
+        return github.Project.Project(self.__requester, headers, data, completed=True)
 
     def get_gist(self, id):
         """
@@ -448,7 +521,37 @@ class Github(object):
             "/search/commits",
             url_parameters,
             headers={
-                "Accept": "application/vnd.github.cloak-preview"
+                "Accept": Consts.mediaTypeCommitSearchPreview
+            }
+        )
+
+    def search_topics(self, query, **qualifiers):
+        """
+        :calls: `GET /search/topics <http://developer.github.com/v3/search>`_
+        :param query: string
+        :param qualifiers: keyword dict query qualifiers
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Repository.Repository`
+        """
+        assert isinstance(query, (str, unicode)), query
+        url_parameters = dict()
+
+        query_chunks = []
+        if query:  # pragma no branch (Should be covered)
+            query_chunks.append(query)
+
+        for qualifier, value in qualifiers.items():
+            query_chunks.append("%s:%s" % (qualifier, value))
+
+        url_parameters["q"] = ' '.join(query_chunks)
+        assert url_parameters["q"], "need at least one qualifier"
+
+        return github.PaginatedList.PaginatedList(
+            github.Repository.Repository,
+            self.__requester,
+            "/search/topics",
+            url_parameters,
+            headers={
+                "Accept": Consts.mediaTypeTopicsPreview
             }
         )
 
@@ -574,8 +677,7 @@ class Github(object):
         """
         headers, attributes = self.__requester.requestJsonAndCheck(
             "GET",
-            "/api/status.json",
-            cnx="status"
+            DEFAULT_STATUS_URL + "/api/status.json"
         )
         return Status.Status(self.__requester, headers, attributes, completed=True)
 
@@ -588,8 +690,7 @@ class Github(object):
         """
         headers, attributes = self.__requester.requestJsonAndCheck(
             "GET",
-            "/api/last-message.json",
-            cnx="status"
+            DEFAULT_STATUS_URL + "/api/last-message.json"
         )
         return StatusMessage.StatusMessage(self.__requester, headers, attributes, completed=True)
 
@@ -602,8 +703,7 @@ class Github(object):
         """
         headers, data = self.__requester.requestJsonAndCheck(
             "GET",
-            "/api/messages.json",
-            cnx="status"
+            DEFAULT_STATUS_URL + "/api/messages.json"
         )
         return [StatusMessage.StatusMessage(self.__requester, headers, attributes, completed=True) for attributes in data]
 
@@ -668,7 +768,7 @@ class GithubIntegration(object):
             url="/installations/{}/access_tokens".format(installation_id),
             headers={
                 "Authorization": "Bearer {}".format(self.create_jwt()),
-                "Accept": "application/vnd.github.machine-man-preview+json",
+                "Accept": Consts.mediaTypeIntegrationPreview,
                 "User-Agent": "PyGithub/Python"
             },
             body=body

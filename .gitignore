@@ -66,16 +66,11 @@ Thumbs.db
 *~
 *.torrent
 
-# Unrar Executable   #
-######################
-lib/unrar2/UnRAR.exe
-
 # Grunt/Gulp/Node build related #
 ######################
 **/bower_components
 **/node_modules
 .build/dist
-.build/package.json
 **/package-lock.json
 
 # Unit test/Coverage #

@@ -16,7 +16,12 @@
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
 # Copyright 2017 Balázs Rostás <rostas.balazs@gmail.com>                     #
 # Copyright 2018 Anton Nguyen <afnguyen85@gmail.com>                           #
+# Copyright 2018 Jacopo Notarstefano <jacopo.notarstefano@gmail.com>           #
+# Copyright 2018 Jasper van Wanrooy <jasper@vanwanrooy.net>                    #
+# Copyright 2018 Raihaan <31362124+res0nance@users.noreply.github.com>         #
+# Copyright 2018 Tim Boring <tboring@hearst.com>                               #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
+# Copyright 2018 Steve Kowalik <steven@wedontsleep.org>                        #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.readthedocs.io/                                              #
@@ -37,6 +42,7 @@
 ################################################################################
 
 import datetime
+import json
 
 import github.GithubObject
 import github.PaginatedList
@@ -45,8 +51,10 @@ import github.Plan
 import github.Team
 import github.Event
 import github.Repository
+import github.Project
 import github.NamedUser
 
+import Consts
 
 class Organization(github.GithubObject.CompletableGithubObject):
     """
@@ -54,7 +62,7 @@ class Organization(github.GithubObject.CompletableGithubObject):
     """
 
     def __repr__(self):
-        return self.get__repr__({"id": self._id.value, "name": self._name.value})
+        return self.get__repr__({"login": self._login.value})
 
     @property
     def avatar_url(self):
@@ -103,6 +111,14 @@ class Organization(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._created_at)
         return self._created_at.value
+
+    @property
+    def description(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._description)
+        return self._description.value
 
     @property
     def disk_usage(self):
@@ -288,6 +304,23 @@ class Organization(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._url)
         return self._url.value
 
+    def add_to_members(self, member, role=github.GithubObject.NotSet):
+        """
+        :calls: `PUT /orgs/:org/memberships/:user <https://developer.github.com/v3/orgs/members/#add-or-update-organization-membership>`_
+        :param member: :class:`github.NamedUser.NamedUser`
+        :param role: string
+        :rtype: None
+        """
+        assert isinstance(role, (str, unicode)), role
+        assert isinstance(member, github.NamedUser.NamedUser), member
+        url_parameters = {
+            "role": role,
+        }
+        headers, data = self._requester.requestJsonAndCheck(
+            "PUT",
+            self.url + "/memberships/" + member._identity, parameters=url_parameters
+        )
+
     def add_to_public_members(self, public_member):
         """
         :calls: `PUT /orgs/:org/public_members/:user <http://developer.github.com/v3/orgs/members>`_
@@ -424,17 +457,19 @@ class Organization(github.GithubObject.CompletableGithubObject):
         )
         return github.Repository.Repository(self._requester, headers, data, completed=True)
 
-    def create_team(self, name, repo_names=github.GithubObject.NotSet, permission=github.GithubObject.NotSet):
+    def create_team(self, name, repo_names=github.GithubObject.NotSet, permission=github.GithubObject.NotSet, privacy=github.GithubObject.NotSet):
         """
         :calls: `POST /orgs/:org/teams <http://developer.github.com/v3/orgs/teams>`_
         :param name: string
         :param repo_names: list of :class:`github.Repository.Repository`
         :param permission: string
+        :param privacy: string
         :rtype: :class:`github.Team.Team`
         """
         assert isinstance(name, (str, unicode)), name
         assert repo_names is github.GithubObject.NotSet or all(isinstance(element, github.Repository.Repository) for element in repo_names), repo_names
         assert permission is github.GithubObject.NotSet or isinstance(permission, (str, unicode)), permission
+        assert privacy is github.GithubObject.NotSet or isinstance(privacy, (str, unicode)), privacy
         post_parameters = {
             "name": name,
         }
@@ -442,6 +477,8 @@ class Organization(github.GithubObject.CompletableGithubObject):
             post_parameters["repo_names"] = [element._identity for element in repo_names]
         if permission is not github.GithubObject.NotSet:
             post_parameters["permission"] = permission
+        if privacy is not github.GithubObject.NotSet:
+            post_parameters['privacy'] = privacy
         headers, data = self._requester.requestJsonAndCheck(
             "POST",
             self.url + "/teams",
@@ -461,12 +498,13 @@ class Organization(github.GithubObject.CompletableGithubObject):
             self.url + "/hooks/" + str(id)
         )
 
-    def edit(self, billing_email=github.GithubObject.NotSet, blog=github.GithubObject.NotSet, company=github.GithubObject.NotSet, email=github.GithubObject.NotSet, location=github.GithubObject.NotSet, name=github.GithubObject.NotSet):
+    def edit(self, billing_email=github.GithubObject.NotSet, blog=github.GithubObject.NotSet, company=github.GithubObject.NotSet, description=github.GithubObject.NotSet, email=github.GithubObject.NotSet, location=github.GithubObject.NotSet, name=github.GithubObject.NotSet):
         """
         :calls: `PATCH /orgs/:org <http://developer.github.com/v3/orgs>`_
         :param billing_email: string
         :param blog: string
         :param company: string
+        :param description: string
         :param email: string
         :param location: string
         :param name: string
@@ -475,6 +513,7 @@ class Organization(github.GithubObject.CompletableGithubObject):
         assert billing_email is github.GithubObject.NotSet or isinstance(billing_email, (str, unicode)), billing_email
         assert blog is github.GithubObject.NotSet or isinstance(blog, (str, unicode)), blog
         assert company is github.GithubObject.NotSet or isinstance(company, (str, unicode)), company
+        assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
         assert email is github.GithubObject.NotSet or isinstance(email, (str, unicode)), email
         assert location is github.GithubObject.NotSet or isinstance(location, (str, unicode)), location
         assert name is github.GithubObject.NotSet or isinstance(name, (str, unicode)), name
@@ -485,6 +524,8 @@ class Organization(github.GithubObject.CompletableGithubObject):
             post_parameters["blog"] = blog
         if company is not github.GithubObject.NotSet:
             post_parameters["company"] = company
+        if description is not github.GithubObject.NotSet:
+            post_parameters["description"] = description
         if email is not github.GithubObject.NotSet:
             post_parameters["email"] = email
         if location is not github.GithubObject.NotSet:
@@ -628,6 +669,25 @@ class Organization(github.GithubObject.CompletableGithubObject):
             url_parameters
         )
 
+    def get_projects(self, state=github.GithubObject.NotSet):
+        """
+        :calls: `GET /orgs/:org/projects <https://developer.github.com/v3/projects/#list-organization-projects>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Project.Project`
+        :param state: string
+        """
+        
+        url_parameters = dict()
+        if state is not github.GithubObject.NotSet:
+            url_parameters["state"] = state
+            
+        return github.PaginatedList.PaginatedList(
+            github.Project.Project,
+            self._requester,
+            self.url + "/projects",
+            url_parameters,
+            {"Accept": Consts.mediaTypeProjectsPreview}
+        )
+        
     def get_public_members(self):
         """
         :calls: `GET /orgs/:org/public_members <http://developer.github.com/v3/orgs/members>`_
@@ -638,6 +698,49 @@ class Organization(github.GithubObject.CompletableGithubObject):
             self._requester,
             self.url + "/public_members",
             None
+        )
+
+    def get_outside_collaborators(self, filter_=github.GithubObject.NotSet):
+        """
+        :calls: `GET /orgs/:org/outside_collaborators <http://developer.github.com/v3/orgs/outside_collaborators>`_
+        :param filter_: string
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.NamedUser.NamedUser`
+        """
+        assert (filter_ is github.GithubObject.NotSet or
+                isinstance(filter_, (str, unicode))), filter_
+
+        url_parameters = {}
+        if filter_ is not github.GithubObject.NotSet:
+            url_parameters["filter"] = filter_
+        return github.PaginatedList.PaginatedList(
+            github.NamedUser.NamedUser,
+            self._requester,
+            self.url + "/outside_collaborators",
+            url_parameters
+        )
+
+    def remove_outside_collaborator(self, collaborator):
+        """
+        :calls: `DELETE /orgs/:org/outside_collaborators/:username <https://developer.github.com/v3/orgs/outside_collaborators>`_
+        :param collaborator: :class:`github.NamedUser.NamedUser`
+        :rtype: None
+        """
+        assert isinstance(collaborator, github.NamedUser.NamedUser), collaborator
+        headers, data = self._requester.requestJsonAndCheck(
+            "DELETE",
+            self.url + "/outside_collaborators/" + collaborator._identity
+        )
+
+    def convert_to_outside_collaborator(self, member):
+        """
+        :calls: `PUT /orgs/:org/outside_collaborators/:username <https://developer.github.com/v3/orgs/outside_collaborators>`_
+        :param member: :class:`github.NamedUser.NamedUser`
+        :rtype: None
+        """
+        assert isinstance(member, github.NamedUser.NamedUser), member
+        headers, data = self._requester.requestJsonAndCheck(
+            "PUT",
+            self.url + "/outside_collaborators/" + member._identity
         )
 
     def get_repo(self, name):
@@ -695,6 +798,37 @@ class Organization(github.GithubObject.CompletableGithubObject):
             None
         )
 
+    def invite_user(self, user=github.GithubObject.NotSet, email=github.GithubObject.NotSet, role=github.GithubObject.NotSet, teams=github.GithubObject.NotSet):
+        """
+        :calls: `POST /orgs/:org/invitations <http://developer.github.com/v3/orgs/members>`_
+        :param user: :class:`github.NamedUser.NamedUser`
+        :param email: string
+        :param role: string
+        :param teams: array of :class:`github.Team.Team`
+        :rtype: None
+        """
+        assert user is github.GithubObject.NotSet or isinstance(user, github.NamedUser.NamedUser), user
+        assert email is github.GithubObject.NotSet or isinstance(email, (str, unicode)), email
+        assert (email is github.GithubObject.NotSet) ^ (user is github.GithubObject.NotSet), "specify only one of email or user"
+        parameters = {}
+        if user is not github.GithubObject.NotSet:
+            parameters["invitee_id"] = user.id
+        elif email is not github.GithubObject.NotSet:
+            parameters["email"] = email
+        if role is not github.GithubObject.NotSet:
+            assert isinstance(role, (str, unicode)), role
+            assert role in ['admin', 'direct_member', 'billing_manager']
+            parameters["role"] = role
+        if teams is not github.GithubObject.NotSet:
+            assert all(isinstance(team, github.Team.Team) for team in teams)
+            parameters["team_ids"] = [t.id for t in teams]
+        headers, data = self._requester.requestJsonAndCheck(
+            "POST",
+            self.url + "/invitations",
+            headers={'Accept': Consts.mediaTypeOrganizationInvitationPreview},
+            input=parameters
+        )
+
     def has_in_members(self, member):
         """
         :calls: `GET /orgs/:org/members/:user <http://developer.github.com/v3/orgs/members>`_
@@ -725,6 +859,18 @@ class Organization(github.GithubObject.CompletableGithubObject):
             self.url + "/public_members/" + public_member._identity
         )
         return status == 204
+
+    def remove_from_membership(self, member):
+        """
+        :calls: `DELETE /orgs/:org/memberships/:user <https://developer.github.com/v3/orgs/members/#remove-organization-membership>`_
+        :param member: :class:`github.NamedUser.NamedUser`
+        :rtype: None
+        """
+        assert isinstance(member, github.NamedUser.NamedUser), member
+        headers, data = self._requester.requestJsonAndCheck(
+            "DELETE",
+            self.url + "/memberships/" + member._identity
+        )
 
     def remove_from_members(self, member):
         """
@@ -757,6 +903,7 @@ class Organization(github.GithubObject.CompletableGithubObject):
         self._collaborators = github.GithubObject.NotSet
         self._company = github.GithubObject.NotSet
         self._created_at = github.GithubObject.NotSet
+        self._description = github.GithubObject.NotSet
         self._disk_usage = github.GithubObject.NotSet
         self._email = github.GithubObject.NotSet
         self._events_url = github.GithubObject.NotSet
@@ -794,6 +941,8 @@ class Organization(github.GithubObject.CompletableGithubObject):
             self._company = self._makeStringAttribute(attributes["company"])
         if "created_at" in attributes:  # pragma no branch
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
+        if "description" in attributes:  # pragma no branch
+            self._description = self._makeStringAttribute(attributes["description"])
         if "disk_usage" in attributes:  # pragma no branch
             self._disk_usage = self._makeIntAttribute(attributes["disk_usage"])
         if "email" in attributes:  # pragma no branch

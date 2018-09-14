@@ -1,4 +1,13 @@
 MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
+    $.fn.extend({
+        addRemoveWarningClass(_) {
+            if (_) {
+                return $(this).removeClass('warning');
+            }
+            return $(this).addClass('warning');
+        }
+    });
+
     $('#testGrowl').on('click', function() {
         const growl = {};
         growl.host = $.trim($('#growl_host').val());
@@ -472,7 +481,7 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         host = host.length > 0 ? host : null;
         let port = $('#email_port').val();
         port = port.length > 0 ? port : null;
-        const tls = $('#email_tls').attr('checked') === undefined ? 0 : 1;
+        const tls = $('#email_tls').is(':checked') ? 1 : 0;
         let from = $('#email_from').val();
         from = from.length > 0 ? from : 'root@localhost';
         const user = $('#email_user').val().trim();
@@ -507,27 +516,6 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
                 });
             }
         }
-    });
-
-    $('#testNMA').on('click', function() {
-        const nma = {};
-        nma.api = $.trim($('#nma_api').val());
-        nma.priority = $('#nma_priority').val();
-        if (!nma.api) {
-            $('#testNMA-result').html('Please fill out the necessary fields above.');
-            $('#nma_api').addClass('warning');
-            return;
-        }
-        $('#nma_api').removeClass('warning');
-        $(this).prop('disabled', true);
-        $('#testNMA-result').html(MEDUSA.config.loading);
-        $.get('home/testNMA', {
-            nma_api: nma.api, // eslint-disable-line camelcase
-            nma_priority: nma.priority // eslint-disable-line camelcase
-        }).done(data => {
-            $('#testNMA-result').html(data);
-            $('#testNMA').prop('disabled', false);
-        });
     });
 
     $('#testPushalot').on('click', function() {

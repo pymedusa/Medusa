@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -34,7 +33,7 @@ class SceneTimeProvider(TorrentProvider):
         self.url = 'https://www.scenetime.com'
         self.urls = {
             'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'browse_API.php'),
+            'search': urljoin(self.url, 'browse.php'),
             'download': urljoin(self.url, 'download.php/{0}/{1}'),
         }
 
@@ -52,7 +51,7 @@ class SceneTimeProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)  # only poll SceneTime every 20 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -69,7 +68,6 @@ class SceneTimeProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'sec': 'jax',
             'cata': 'yes',
             'c2': 1,  # TV/XviD
             'c43': 1,  # TV/Packs
@@ -79,6 +77,9 @@ class SceneTimeProvider(TorrentProvider):
             'c79': 1,  # Sports
             'c100': 1,  # TV/Non-English
             'c83': 1,  # TV/Web-Rip
+            'c8': 1,  # TV-Mobile
+            'c18': 1,  # TV/Anime
+            'c19': 1,  # TV-X265
             'search': '',
         }
 
@@ -91,8 +92,7 @@ class SceneTimeProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
                     search_params['search'] = search_string
-
-                response = self.session.post(self.urls['search'], data=search_params)
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -113,7 +113,7 @@ class SceneTimeProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html.find_all('tr')
+            torrent_rows = html.find('div', id='torrenttable').find_all('tr')
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -132,9 +132,9 @@ class SceneTimeProvider(TorrentProvider):
                     continue
 
                 try:
-                    link = cells[labels.index('Name')].find('a')
-                    torrent_id = link['href'].replace('details.php?id=', '').split('&')[0]
-                    title = link.get_text(strip=True)
+                    link = cells[labels.index('Name')]
+                    torrent_id = link.find('a')['href'].replace('details.php?id=', '').split('&')[0]
+                    title = link.find('a').get_text(strip=True)
                     download_url = self.urls['download'].format(
                         torrent_id,
                         '{0}.torrent'.format(title.replace(' ', '.'))
@@ -149,7 +149,7 @@ class SceneTimeProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -157,13 +157,17 @@ class SceneTimeProvider(TorrentProvider):
                     torrent_size = re.sub(r'(\d+\.?\d*)', r'\1 ', torrent_size)
                     size = convert_size(torrent_size) or -1
 
+                    # Get the last item from the "span" list to avoid parsing "NEW!" as a pub date.
+                    pubdate_raw = link.find_all('span')[-1]['title']
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -171,8 +175,7 @@ class SceneTimeProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

@@ -13,7 +13,8 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
-from six import text_type
+
+from six import text_type as str
 
 try:
     import xml.etree.cElementTree as etree
@@ -66,16 +67,16 @@ class WDTVMetadata(generic.GenericMetadata):
         self.poster_name = 'folder.jpg'
 
         # web-ui metadata template
-        self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_show_metadata = '<i>not supported</i>'
         self.eg_episode_metadata = 'Season##\\<i>filename</i>.xml'
-        self.eg_fanart = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
         self.eg_poster = 'folder.jpg'
-        self.eg_banner = '<i>not supported</i>'
+        # self.eg_banner = '<i>not supported</i>'
         self.eg_episode_thumbnails = 'Season##\\<i>filename</i>.metathumb'
         self.eg_season_posters = 'Season##\\folder.jpg'
-        self.eg_season_banners = '<i>not supported</i>'
-        self.eg_season_all_poster = '<i>not supported</i>'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
@@ -191,7 +192,7 @@ class WDTVMetadata(generic.GenericMetadata):
                 return None
 
             if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):
-                my_ep['firstaired'] = text_type(datetime.date.fromordinal(1))
+                my_ep['firstaired'] = str(datetime.date.fromordinal(1))
 
             if not (getattr(my_ep, 'episodename', None) and getattr(my_ep, 'firstaired', None)):
                 return None
@@ -203,7 +204,7 @@ class WDTVMetadata(generic.GenericMetadata):
 
             # TODO: get right EpisodeID
             episode_id = etree.SubElement(episode, 'id')
-            episode_id.text = text_type(ep_to_write.indexerid)
+            episode_id.text = str(ep_to_write.indexerid)
 
             title = etree.SubElement(episode, 'title')
             title.text = ep_obj.pretty_name()
@@ -217,19 +218,19 @@ class WDTVMetadata(generic.GenericMetadata):
                 episode_name.text = ep_to_write.name
 
             season_number = etree.SubElement(episode, 'season_number')
-            season_number.text = text_type(ep_to_write.season)
+            season_number.text = str(ep_to_write.season)
 
             episode_num = etree.SubElement(episode, 'episode_number')
-            episode_num.text = text_type(ep_to_write.episode)
+            episode_num.text = str(ep_to_write.episode)
 
             first_aired = etree.SubElement(episode, 'firstaired')
 
             if ep_to_write.airdate != datetime.date.fromordinal(1):
-                first_aired.text = text_type(ep_to_write.airdate)
+                first_aired.text = str(ep_to_write.airdate)
 
             if getattr(my_show, 'firstaired', None):
                 try:
-                    year_text = text_type(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
+                    year_text = str(datetime.datetime.strptime(my_show['firstaired'], dateFormat).year)
                     if year_text:
                         year = etree.SubElement(episode, 'year')
                         year.text = year_text
@@ -238,7 +239,7 @@ class WDTVMetadata(generic.GenericMetadata):
 
             if ep_to_write.season != 0 and getattr(my_show, 'runtime', None):
                 runtime = etree.SubElement(episode, 'runtime')
-                runtime.text = my_show['runtime']
+                runtime.text = str(my_show['runtime'])
 
             if getattr(my_show, 'genre', None):
                 genre = etree.SubElement(episode, 'genre')

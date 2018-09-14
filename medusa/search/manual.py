@@ -36,9 +36,8 @@ SEARCH_STATUS_SEARCHING = 'searching'
 
 def get_quality_class(ep_obj):
     """Find the quality class for the episode."""
-    _, ep_quality = Quality.split_composite_status(ep_obj.status)
-    if ep_quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_quality]
+    if ep_obj.quality in Quality.cssClassStrings:
+        quality_class = Quality.cssClassStrings[ep_obj.quality]
     else:
         quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
 
@@ -103,9 +102,10 @@ def get_episodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
-            'quality': get_quality_class(ep),
+            'quality_name': Quality.qualityStrings[ep.quality],
+            'quality_style': get_quality_class(ep),
             'overview': Overview.overviewStrings[series_obj.get_overview(
-                ep.status,
+                ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
         })
@@ -192,7 +192,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
     provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
-    sql_total = []
+    cached_results_total = []
     combined_sql_q = []
     combined_sql_params = []
 
@@ -201,13 +201,18 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
 
         # Let's check if this provider table already exists
         table_exists = main_db_con.select(
-            b"SELECT name "
-            b"FROM sqlite_master "
-            b"WHERE type='table'"
-            b" AND name=?",
+            'SELECT name '
+            'FROM sqlite_master '
+            "WHERE type='table'"
+            ' AND name=?',
             [cur_provider.get_id()]
         )
-        columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
+
+        columns = []
+        if table_exists:
+            table_columns = main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))
+            columns = [table_column['name'] for table_column in table_columns]
+
         minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
         minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
@@ -217,13 +222,13 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
             common_sql = (
-                b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
-                b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
-                b" ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
-                b" url, proper_tags, quality, release_group, version,"
-                b" seeders, leechers, size, time, pubdate, date_added "
-                b"FROM '{provider_id}' "
-                b"WHERE indexer = ? AND indexerid = ? AND quality > 0 ".format(
+                "SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
+                " ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
+                " ? 'provider_minleech', name, season, episodes, indexer, indexerid,"
+                ' url, proper_tags, quality, release_group, version,'
+                ' seeders, leechers, size, time, pubdate, date_added '
+                "FROM '{provider_id}' "
+                'WHERE indexer = ? AND indexerid = ? AND quality > 0 '.format(
                     provider_id=cur_provider.get_id()
                 )
             )
@@ -237,8 +242,8 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
                     # If it's an episode search, pass season and episode.
-                    common_sql += " AND season = ? AND episodes LIKE ? "
-                    add_params += [season, "%|{0}|%".format(episode)]
+                    common_sql += ' AND season = ? AND episodes LIKE ? '
+                    add_params += [season, '%|{0}|%'.format(episode)]
 
             else:
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
@@ -247,7 +252,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                         ['?' for _ in series_obj.get_all_episodes(season)]
                     ))
 
-                    common_sql += " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(
+                    common_sql += ' AND season = ? AND (episodes LIKE ? OR {list_of_episodes})'.format(
                         list_of_episodes=list_of_episodes
                     )
                     add_params += [season, '||']  # When the episodes field is empty.
@@ -258,23 +263,22 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             combined_sql_params += add_params
 
             # Get the last updated cache items timestamp
-            last_update = main_db_con.select(b"SELECT max(time) AS lastupdate "
-                                             b"FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
-            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0][b'lastupdate'] if last_update[0][b'lastupdate'] else 0
+            last_update = main_db_con.select('SELECT max(time) AS lastupdate '
+                                             "FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
+            provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
 
     # Check if we have the combined sql strings
     if combined_sql_q:
-        sql_prepend = b"SELECT * FROM ("
-        sql_append = b") ORDER BY CASE quality WHEN '{quality_unknown}' THEN -1 ELSE CAST(quality AS DECIMAL) END DESC, " \
-                     b" proper_tags DESC, seeders DESC".format(quality_unknown=Quality.UNKNOWN)
+        sql_prepend = 'SELECT * FROM ('
+        sql_append = ') ORDER BY quality DESC, proper_tags DESC, seeders DESC'
 
         # Add all results
-        sql_total += main_db_con.select(b'{0} {1} {2}'.
-                                        format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
-                                        combined_sql_params)
+        cached_results_total += main_db_con.select('{0} {1} {2}'.
+                                                   format(sql_prepend, ' UNION ALL '.join(combined_sql_q), sql_append),
+                                                   combined_sql_params)
 
     # Always start a search when no items found in cache
-    if not sql_total or int(perform_search):
+    if not cached_results_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
         ep_obj = series_obj.get_episode(season, episode)
         if isinstance(ep_obj, str):
@@ -289,8 +293,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[app.CPU_PRESET])
     else:
-        cached_results = [dict(row) for row in sql_total]
-        for i in cached_results:
+        for i in cached_results_total:
             threading.currentThread().name = '{thread} :: [{provider}]'.format(
                 thread=original_thread_name, provider=i['provider'])
 
@@ -304,7 +307,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['seeders'] = i['seeders'] if i['seeders'] >= 0 else '-'
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
             i['pubdate'] = parser.parse(i['pubdate']).astimezone(app_timezone) if i['pubdate'] else ''
-            i['date_added'] = datetime.fromtimestamp(float(i['date_added'])) if i['date_added'] else ''
+            i['date_added'] = datetime.fromtimestamp(float(i['date_added']), tz=app_timezone) if i['date_added'] else ''
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'
@@ -328,7 +331,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 i['name_highlight'] = ''
             i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
             i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
-        provider_results['found_items'] = cached_results
+        provider_results['found_items'] = cached_results_total
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

@@ -75,6 +75,7 @@ paths:
           description: Filter series based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/fetch'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -133,9 +134,12 @@ paths:
           description: Response with only the updated fields
           schema:
             $ref: '#/definitions/Series'
+          x-request:
+            body:
+              {"tvdb": 301824, "paused": true}
         400:
           $ref: '#/responses/error'
-          description: Invalid id
+          description: Conflicting series identifier
           x-request:
             body:
               id:
@@ -209,7 +213,7 @@ paths:
           x-request:
             path-params:
               id: tvdb999999999
-  /series/{seriesid}/episode:
+  /series/{seriesid}/episodes:
     get:
       summary: Return episodes from a given series
       description: |
@@ -247,7 +251,24 @@ paths:
           x-request:
             path-params:
               seriesid: tvdb999999999
-  /series/{seriesid}/episode/{id}:
+    patch:
+      summary: Partial update episodes
+      description: Partial update episodes
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - name: season
+          in: query
+          required: false
+          description: The episode season
+          type: integer
+          format: int32
+      responses:
+        207:
+          description: Response with the status of the single patches
+          x-request:
+            body: {"s01e02": {"status": 2, "quality": 4}, "s01e03": {"status": 4, "quality": 64}}
+  /series/{seriesid}/episodes/{id}:
     get:
       summary: Return a specific episode from a given series
       description: Retrieve a specific episode from a given series
@@ -274,7 +295,36 @@ paths:
           x-request:
             path-params:
               id: e999
-  /series/{seriesid}/episode/{id}/{field}:
+    patch:
+      summary: Update a specific episode from a given series
+      description: Update a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+      responses:
+        200:
+          description: Response with only the updated fields
+          x-request:
+            body: {"status": 2, "quality": 4}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid episode id
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: abc
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: e999
+  /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
       description: Retrieve a specific field from a given episode
@@ -305,7 +355,7 @@ paths:
           x-request:
             path-params:
               id: "2050-12-31"
-  /series/{seriesid}/episode/{id}/metadata:
+  /series/{seriesid}/episodes/{id}/metadata:
     get:
       summary: Return the video metadata from a specific episode
       description: Retrieve the video metadata from a specific episode
@@ -683,24 +733,11 @@ paths:
     get:
       summary: Return configurations for Medusa
       description: Retrieve configurations
-      parameters:
-        - $ref: '#/parameters/page'
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/sort'
       responses:
         200:
-          $ref: '#/responses/pagination'
-          description: A paged array of config objects
+          description: The configuration information
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Config'
-        400:
-          $ref: '#/responses/error'
-          description: Invalid pagination parameters
-          x-request:
-            query-params:
-              page: 0
+            $ref: '#/definitions/Config'
   /config/{id}:
     get:
       summary: Return information about a given configuration
@@ -906,6 +943,7 @@ definitions:
         type: string
         format: date-time
         description: Next episode air date
+        x-nullable: true
       runtime:
         type: integer
         minimum: 1
@@ -936,7 +974,7 @@ definitions:
             votes: 558507
       classification:
         type: string
-        enum: ['TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
+        enum: ['', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
         description: TV Parental Guidelines
       cache:
         type: object
@@ -968,11 +1006,13 @@ definitions:
               allowed:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
               prefered:
                 type: array
                 items:
-                  type: string
+                  type: integer
+                  format: int32
           paused:
             type: boolean
             description: Whether series is paused
@@ -985,9 +1025,9 @@ definitions:
           dvdOrder:
             type: boolean
             description: Whether episode numbering follows DVD order instead of air date
-          flattenFolders:
+          seasonFolders:
             type: boolean
-            description: Whether episodes are stored in a flatten folder structure
+            description: Whether episodes are stored in a season folder structure
           scene:
             type: boolean
           defaultEpisodeStatus:
@@ -1078,6 +1118,7 @@ definitions:
       airDate:
         type: string
         format: date-time
+        x-nullable: true
       title:
         type: string
         description: Episode title
@@ -1209,129 +1250,236 @@ definitions:
   Config:
     type: object
     properties:
-      wikiUrl:
-        type: string
-      themeName:
-        type: string
-      namingForceFolders:
-        type: boolean
-      databaseVersion:
+      main:
         type: object
         properties:
-          major:
-            type: integer
-          minor:
-            type: integer
-      layout:
-        type: object
-        properties:
-          show:
+          wikiUrl:
+            type: string
+          donationsUrl:
+            type: string
+          themeName:
+            type: string
+          namingForceFolders:
+            type: boolean
+          databaseVersion:
             type: object
             properties:
-              specials:
+              major:
+                type: integer
+              minor:
+                type: integer
+          layout:
+            type: object
+            properties:
+              show:
+                type: object
+                properties:
+                  specials:
+                    type: boolean
+                  allSeasons:
+                    type: boolean
+              home:
+                type: string
+              history:
+                type: string
+              schedule:
+                type: string
+          trimZero:
+            type: boolean
+          configFile:
+            type: string
+          animeSplitHome:
+            type: boolean
+          sortArticle:
+            type: boolean
+          sourceUrl:
+            type: string
+          fanartBackgroundOpacity:
+            type: number
+          emby:
+            type: object
+            properties:
+              enabled:
                 type: boolean
-              allSeasons:
+          logDir:
+            type: string
+          posterSortby:
+            type: string
+          subtitles:
+            type: object
+            properties:
+              enabled:
                 type: boolean
-          home:
-            type: string
-          history:
-            type: string
-          schedule:
-            type: string
-      trimZero:
-        type: boolean
-      configFile:
-        type: string
-      animeSplitHome:
-        type: boolean
-      sortArticle:
-        type: boolean
-      sourceUrl:
-        type: string
-      fanartBackgroundOpacity:
-        type: number
-      emby:
-        type: object
-        properties:
-          enabled:
+          fuzzyDating:
             type: boolean
-      logDir:
-        type: string
-      posterSortby:
-        type: string
-      subtitles:
-        type: object
-        properties:
-          enabled:
-            type: boolean
-      fuzzyDating:
-        type: boolean
-      timePreset:
-        type: string
-      kodi:
-        type: object
-        properties:
-          enabled:
-            type: boolean
-      dbFilename:
-        type: string
-      pythonVersion:
-        type: string
-      downloadUrl:
-        type: string
-      nzb:
-        type: object
-        properties:
-          username:
+          timePreset:
             type: string
-          host:
+          kodi:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          dbPath:
             type: string
-          password:
+          pythonVersion:
             type: string
-          enabled:
-            type: boolean
-          priority:
-            type: integer
-      release:
-        type: string
-      posterSortDir:
-        type: string
-      locale:
-        type: string
-      webRoot:
-        type: string
-      torrents:
-        type: object
-        properties:
-          username:
+          downloadUrl:
             type: string
-          seedTime:
-            type: integer
-          rpcurl:
+          nzb:
+            type: object
+            properties:
+              username:
+                type: string
+              host:
+                type: string
+              enabled:
+                type: boolean
+              priority:
+                type: integer
+          release:
             type: string
-          authType:
+          posterSortDir:
             type: string
-          paused:
-            type: boolean
-          host:
+          locale:
             type: string
-          path:
+          webRoot:
             type: string
-          password:
-            type: string
-          verifySSL:
-            type: boolean
-          highBandwidth:
-            type: boolean
-          enabled:
-            type: boolean
-          label:
-            type: string
-          labelAnime:
-            type: string
-          method:
-            type: string
-            enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+          torrents:
+            type: object
+            properties:
+              username:
+                type: string
+              seedTime:
+                type: integer
+              rpcurl:
+                type: string
+              authType:
+                type: string
+              paused:
+                type: boolean
+              host:
+                type: string
+              path:
+                type: string
+              verifySSL:
+                type: boolean
+              highBandwidth:
+                type: boolean
+              enabled:
+                type: boolean
+              label:
+                type: string
+              labelAnime:
+                type: string
+              method:
+                type: string
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+          news:
+            type: object
+            properties:
+              unread:
+                description: Number of unread news
+                type: integer
+          logs:
+            type: object
+            properties:
+              loggingLevels:
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 40
+                  warning:
+                    type: integer
+                    example: 30
+                  info:
+                    type: integer
+                    example: 20
+                  debug:
+                    type: integer
+                    example: 10
+                  db:
+                    type: integer
+                    example: 5
+              numErrors:
+                description: Number of logged errors
+                type: integer
+              numWarnings:
+                description: Number of logged warnings
+                type: integer
+          postProcessing:
+            type: object
+            properties:
+              naming:
+                type: object
+                properties:
+                  stripYear:
+                    type: boolean
+                  pattern:
+                    type: string
+                  multiEp:
+                    type: integer
+                  patternAirByDate:
+                    type: string
+                  patternSports:
+                    type: string
+                  patternAnime:
+                    type: string
+                  enableCustomNamingAirByDate:
+                    type: boolean
+                  enableCustomNamingSports:
+                    type: boolean
+                  enableCustomNamingAnime:
+                    type: boolean
+                  animeMultiEp:
+                    type: integer
+                  animeNamingType:
+                    type: integer
+              showDownloadDir:
+                type: string
+              processAutomatically:
+                type: boolean
+              postponeIfSyncFiles:
+                type: boolean
+              postponeIfNoSubs:
+                type: boolean
+              renameEpisodes:
+                type: boolean
+              createMissingShowDirs:
+                type: boolean
+              addShowsWithoutDir:
+                type: boolean
+              moveAssociatedFiles:
+                type: boolean
+              nfoRename:
+                type: boolean
+              airdateEpisodes:
+                type: boolean
+              unpack:
+                type: boolean
+              deleteRarContent:
+                type: boolean
+              noDelete:
+                type: boolean
+              processMethod:
+                type: string
+              reflinkAvailable:
+                type: boolean
+              autoPostprocessorFrequency:
+                type: integer
+              syncFiles:
+                type: array
+              fileTimestampTimezone:
+                type: string
+              allowedExtensions:
+                type: array
+              extraScripts:
+                type: array
+              extraScriptsUrl:
+                type: string
+              multiEpStrings:
+                type: object
+
   Log:
     type: object
     properties:
@@ -1389,10 +1537,12 @@ definitions:
         type: string
       season:
         type: integer
-        minimum: 0
+        minimum: 1
+        x-nullable: true
       type:
         type: string
-        enum: [local]
+        enum: [null, local]
+        x-nullable: true
     example:
       series: tvdb301824
       name: TheBig
@@ -1680,6 +1830,12 @@ parameters:
     required: false
     description: Whether response should contain detailed information
     type: boolean
+  fetch:
+    name: fetch
+    in: query
+    required: false
+    description: Whether response should fetch external information
+    type: boolean
   page:
     name: page
     in: query
@@ -1758,6 +1914,9 @@ parameters:
     type: string
     enum:
       - main
+      - statuses
+      - qualities
+      - metadata
   log-level:
     name: level
     in: query

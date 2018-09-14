@@ -6,10 +6,14 @@ from __future__ import unicode_literals
 
 import logging
 import re
+
+import dirtyjson as djson
+
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -94,9 +98,9 @@ class TorrentDayProvider(TorrentProvider):
                     continue
 
                 try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
+                    jdata = djson.loads(response.content)
+                except ValueError as error:
+                    log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
 
                 results += self.parse(jdata, mode)
@@ -133,10 +137,11 @@ class TorrentDayProvider(TorrentProvider):
                 leechers = int(row['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < self.minseed or leechers < self.minleech:
+                if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}", title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 torrent_size = row['size']

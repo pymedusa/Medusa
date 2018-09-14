@@ -241,8 +241,36 @@ home_newShow.mako
     padding: 8px;
     overflow: hidden;
     font-size: 14px;
-    background-color: rgb(61, 61, 61);
-    border: 1px solid rgb(17, 17, 17);
+    background-color: rgb(95, 95, 95);
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(125, 125, 125);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(125, 125, 125);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(95, 95, 95);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(95, 95, 95);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(72, 84, 93);
 }
 
 /* =======================================================================
@@ -364,7 +392,7 @@ td.col-checkbox {
     text-align: center;
 }
 
-#showBanner {
+.show-banner {
     border: 1px solid rgba(220, 220, 220, 0.43);
 }
 
@@ -436,13 +464,16 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(85, 85, 85);
-    min-height: 200px;
 }
 
 .component-group-desc p {
     width: 90%;
     margin: 10px 0;
     color: rgb(221, 221, 221);
+}
+
+.component-item {
+    border-bottom: 1px dotted rgb(85, 85, 85);
 }
 
 #provider_order_list li,
@@ -563,7 +594,7 @@ body {
 
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(35, 35, 35);
+    background-color: rgb(51, 51, 51);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
     /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
@@ -575,11 +606,6 @@ body {
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
     border-color: rgb(62, 63, 58);
-}
-
-.navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(35, 35, 35);
 }
 
 .navbar-default .navbar-nav > li > a:hover,
@@ -648,7 +674,7 @@ body {
     border-color: rgb(62, 63, 58);
 }
 
-.btn {
+.btn-medusa {
     color: rgb(255, 255, 255);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-color: rgb(97, 97, 97);
@@ -669,22 +695,16 @@ body {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn:hover,
-.btn:active,
-.btn.active,
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa:hover,
+.btn-medusa:active,
+.btn-medusa.active,
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
-.btn:active,
-.btn.active {
-    background-color: rgb(30, 30, 30);
-    color: rgb(255, 255, 255);
-}
-
-.btn:hover {
+.btn-medusa:hover {
     text-decoration: none;
     background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
@@ -696,15 +716,15 @@ body {
     transition: background-position 0s linear;
 }
 
-.btn:focus {
+.btn-medusa:focus {
     outline: thin dotted rgb(51, 51, 51);
     outline: 5px auto -webkit-focus-ring-color;
     outline-offset: -2px;
     color: rgb(255, 255, 255);
 }
 
-.btn.active,
-.btn:active {
+.btn-medusa.active,
+.btn-medusa:active {
     background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
@@ -712,8 +732,8 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.btn.disabled,
-.btn[disabled] {
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
     cursor: default;
     background-color: rgb(97, 97, 97);
     color: rgb(255, 255, 255);
@@ -944,23 +964,19 @@ bootstrap modal
 ========================================================================== */
 
 .modal-content {
-    background-color: rgb(61, 61, 61);
+    background: rgb(34, 34, 34);
+    border-radius: 0;
 }
 
 .modal-body {
-    background-color: rgb(61, 61, 61);
+    background: rgb(34, 34, 34);
 }
 
 .modal-header {
     padding: 9px 15px;
-    border-bottom: 1px solid rgb(238, 238, 238);
+    border-bottom: none;
+    border-radius: 0;
     background-color: rgb(55, 55, 55);
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
 }
 
 /* =======================================================================
@@ -990,31 +1006,14 @@ new #confirmBox
     border-radius: 0;
 }
 
-.modal-content {
-    border-radius: 0;
-}
-
-.modal-header {
-    border-bottom: none;
-    border-radius: 0;
-}
-
-.modal-body,
-.modal-content {
-    background: rgb(34, 34, 34);
-}
-
 .modal-footer {
     border-top: none;
+    text-align: center;
 }
 
 .confirmation-modal {
     background: -moz-linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)) repeat-x rgba(0, 0, 0, 0.5);
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))) repeat-x rgba(0, 0, 0, 0.5);
-}
-
-.modal-footer {
-    text-align: center;
 }
 
 .modal-footer button {
@@ -1057,9 +1056,4 @@ new #confirmBox
 
 .modal-footer button.cancel:hover {
     background-color: rgb(161, 51, 49);
-}
-
-/* Christmas edition */
-.navbar-default {
-    background-color: rgb(51, 51, 51) !important;
 }

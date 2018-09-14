@@ -19,7 +19,7 @@ class SeriesAssetHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, series_slug, identifier, *args, **kwargs):
+    def http_get(self, series_slug, identifier, *args, **kwargs):
         """Get an asset."""
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
@@ -30,8 +30,12 @@ class SeriesAssetHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         asset_type = identifier or 'banner'
-        asset = series.get_asset(asset_type)
+        asset = series.get_asset(asset_type, fallback=False)
         if not asset:
             return self._not_found('Asset not found')
 
-        self._ok(stream=asset.media, content_type=asset.media_type)
+        media = asset.media
+        if not media:
+            return self._not_found('{kind} not found'.format(kind=asset_type.capitalize()))
+
+        return self._ok(stream=media, content_type=asset.media_type)

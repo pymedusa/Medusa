@@ -1,13 +1,18 @@
 # coding=utf-8
 """Request handler for statistics."""
 from __future__ import unicode_literals
+
 from datetime import date
 
 from medusa import db
 from medusa.common import (
+    ARCHIVED,
+    DOWNLOADED,
     FAILED,
-    Quality,
     SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
     UNAIRED,
     WANTED
 )
@@ -26,7 +31,7 @@ class StatsHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, identifier, path_param=None):
+    def http_get(self, identifier, path_param=None):
         """Query statistics.
 
         :param identifier:
@@ -35,12 +40,12 @@ class StatsHandler(BaseRequestHandler):
         """
         main_db_con = db.DBConnection()
 
-        snatched = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-        downloaded = Quality.DOWNLOADED + Quality.ARCHIVED
+        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+        downloaded = [DOWNLOADED, ARCHIVED]
 
         # FIXME: This inner join is not multi indexer friendly.
         sql_result = main_db_con.select(
-            b"""
+            """
             SELECT indexer AS indexerId, showid AS seriesId,
               (SELECT COUNT(*) FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -103,8 +108,8 @@ class StatsHandler(BaseRequestHandler):
         stats_data['maxDownloadCount'] = 1000
         for cur_result in sql_result:
             stats_data['seriesStat'].append(dict(cur_result))
-            if cur_result[b'epTotal'] > stats_data['maxDownloadCount']:
-                stats_data['maxDownloadCount'] = cur_result[b'epTotal']
+            if cur_result['epTotal'] > stats_data['maxDownloadCount']:
+                stats_data['maxDownloadCount'] = cur_result['epTotal']
 
         stats_data['maxDownloadCount'] *= 100
 

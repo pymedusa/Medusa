@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 import logging
-from builtins import object
 
 from dateutil import parser
 
@@ -34,7 +33,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class SearchResult(object):
-    """Represents a search result from an indexer."""
+    """Represents a search result from a provider."""
 
     def __init__(self, episodes=None, provider=None):
         # list of Episode objects that this result is associated with
@@ -186,6 +185,17 @@ class SearchResult(object):
 
         return my_string
 
+    # Python 2 compatibility
+    __unicode__ = __str__
+
+    def __repr__(self):
+        if not self.provider:
+            result = '{0}'.format(self.name)
+        else:
+            result = '{0} from {1}'.format(self.name, self.provider.name)
+
+        return '<{0}: {1}>'.format(type(self).__name__, result)
+
     def file_name(self):
         return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
@@ -201,13 +211,19 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.actual_episodes and self.series:
-            self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        if self.actual_season and self.series:
+            if self.actual_episodes:
+                self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+            else:
+                self.episodes = self.series.get_all_episodes(self.actual_season)
         return self.episodes
 
     def finish_search_result(self, provider):
         self.size = provider._get_size(self.item)
         self.pubdate = provider._get_pubdate(self.item)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 class NZBSearchResult(SearchResult):
@@ -247,7 +263,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     def select_series(self, all_series):
-        from medusa.helper.common import dateTimeFormat
+        from medusa.helper.common import dateFormat
 
         search_results = []
         series_names = []
@@ -270,7 +286,7 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
-                                cur_show['firstaired'] = default_date.strftime(dateTimeFormat)
+                                cur_show['firstaired'] = default_date.strftime(dateFormat)
 
                             if cur_show not in search_results:
                                 search_results += [cur_show]

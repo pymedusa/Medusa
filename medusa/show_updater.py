@@ -200,7 +200,7 @@ class ShowUpdater(object):
             else:
                 logger.info(u'Show update skipped, show: {show} is paused.', show=show[1].name)
 
-        ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
+        ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator('Daily Update', pi_list))
 
         # Only refresh updated shows that have been updated using the season updates.
         # The full refreshed shows, are updated from the queueItem.
@@ -250,7 +250,7 @@ class UpdateCache(db.DBConnection):
             'WHERE provider = ?',
             [indexer]
         )
-        return last_update_indexer[0][b'time'] if last_update_indexer else None
+        return last_update_indexer[0]['time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):
         """Set the last update timestamp from the lastUpdate table.

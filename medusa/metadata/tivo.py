@@ -62,16 +62,16 @@ class TIVOMetadata(generic.GenericMetadata):
         self._ep_nfo_extension = 'txt'
 
         # web-ui metadata template
-        self.eg_show_metadata = '<i>not supported</i>'
+        # self.eg_show_metadata = '<i>not supported</i>'
         self.eg_episode_metadata = 'Season##\\.meta\\<i>filename</i>.ext.txt'
-        self.eg_fanart = '<i>not supported</i>'
-        self.eg_poster = '<i>not supported</i>'
-        self.eg_banner = '<i>not supported</i>'
-        self.eg_episode_thumbnails = '<i>not supported</i>'
-        self.eg_season_posters = '<i>not supported</i>'
-        self.eg_season_banners = '<i>not supported</i>'
-        self.eg_season_all_poster = '<i>not supported</i>'
-        self.eg_season_all_banner = '<i>not supported</i>'
+        # self.eg_fanart = '<i>not supported</i>'
+        # self.eg_poster = '<i>not supported</i>'
+        # self.eg_banner = '<i>not supported</i>'
+        # self.eg_episode_thumbnails = '<i>not supported</i>'
+        # self.eg_season_posters = '<i>not supported</i>'
+        # self.eg_season_banners = '<i>not supported</i>'
+        # self.eg_season_all_poster = '<i>not supported</i>'
+        # self.eg_season_all_banner = '<i>not supported</i>'
 
     # Override with empty methods for unsupported features
     def retrieveShowMetadata(self, folder):
@@ -293,6 +293,10 @@ class TIVOMetadata(generic.GenericMetadata):
 
         nfo_file_path = self.get_episode_file_path(ep_obj)
         nfo_file_dir = os.path.dirname(nfo_file_path)
+
+        if not (nfo_file_path and nfo_file_dir):
+            log.debug(u'Unable to write episode nfo file because episode location is missing.')
+            return False
 
         try:
             if not os.path.isdir(nfo_file_dir):

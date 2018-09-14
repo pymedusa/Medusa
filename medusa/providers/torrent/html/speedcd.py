@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -43,7 +42,7 @@ class SpeedCDProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.freeleech = False
@@ -110,9 +109,6 @@ class SpeedCDProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -130,26 +126,29 @@ class SpeedCDProvider(TorrentProvider):
                 cells = row('td')
 
                 try:
-                    title = cells[1].find('a', class_='torrent').get_text()
+                    title = cells[1].find('a').get_text()
                     download_url = urljoin(self.url,
                                            cells[2].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[5].get_text(strip=True))
-                    leechers = try_int(cells[6].get_text(strip=True))
+                    seeders = try_int(cells[6].get_text(strip=True))
+                    leechers = try_int(cells[7].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     torrent_size = cells[4].get_text()
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = cells[1].find('span', class_='elapsedDate').get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,
@@ -157,7 +156,7 @@ class SpeedCDProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -165,8 +164,7 @@ class SpeedCDProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

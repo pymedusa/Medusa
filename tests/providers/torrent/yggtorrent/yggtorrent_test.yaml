@@ -1,0 +1,69 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - leechers: 3
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=271559
+      pubdate: 2018-06-28 11:09:43+00:00
+      seeders: 1
+      size: 2115271393
+      title: Germinal (1962) VF DVDRip h264 AAC
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=271548
+      pubdate: 2018-06-28 10:52:20+00:00
+      seeders: 1
+      size: 1793148846
+      title: "Enqu\xEAtes criminelles - Affaire Benaym, la veuve et le jardinier Affaire Roman HDTV 720p AC-3 Fr du 27 juin 2018 MKV Diablo"
+    - leechers: 1
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=271542
+      pubdate: 2018-06-28 10:31:52+00:00
+      seeders: 4
+      size: 1342177280
+      title: "La L\xE9gende Du Nil (de L'eau Dans Le D\xE9sert).2014.FRENCH.HDTV.x264.mkv"
+    - leechers: 6
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=271534
+      pubdate: 2018-06-28 10:17:20+00:00
+      seeders: 12
+      size: 4874787880
+      title: The.100.S05E08.FASTSUB.VOSTFR.1080p.AMZN.WEB-DL.DD+5.1.H.264-GOLD
+
+backlog:
+  search_strings:
+    Episode: ['Lethal Weapon S02E05']
+  results:
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=210187
+      pubdate: 2018-03-15 12:18:31+00:00
+      seeders: 17
+      size: 320507740
+      title: Lethal.Weapon.S02E05.FRENCH.HDTV.x264-COLL3CTiF
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=210188
+      pubdate: 2018-03-15 12:18:33+00:00
+      seeders: 30
+      size: 959939870
+      title: Lethal.Weapon.S02E05.FRENCH.720p.HDTV.x264-COLL3CTiF
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=210393
+      pubdate: 2018-03-15 17:27:03+00:00
+      seeders: 21
+      size: 2534030704
+      title: Lethal.Weapon.S02E05.FRENCH.1080p.AMZN.WEB-DL.H264-FRATERNiTY
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=121656
+      pubdate: 2017-11-08 22:15:23+00:00
+      seeders: 5
+      size: 977734205
+      title: Lethal.Weapon.S02E05.SUBFRENCH.720p.WEB-DL.x264-FDS
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=122889
+      pubdate: 2017-11-10 17:32:41+00:00
+      seeders: 2
+      size: 1793148846
+      title: Lethal.Weapon.S02E05.SUBFRENCH.1080p.WEB-DL.H264-Yn1D.mkv
+    - leechers: 0
+      link: https://ww1.yggtorrent.is/engine/download_torrent?id=121510
+      pubdate: 2017-11-08 19:44:57+00:00
+      seeders: 12
+      size: 338868305
+      title: Lethal.Weapon.S02E05.SUBFRENCH.WEB-DL.x264-ARK01

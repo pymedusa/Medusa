@@ -2,10 +2,10 @@
     import cgi
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
-<%def name="renderQualityPill(quality, showTitle=False, overrideClass=None)"><%
+<%def name="renderQualityPill(quality, showTitle=False, overrideClass=None, customTitle='')"><%
     # Build a string of quality names to use as title attribute
+    allowed_qualities, preferred_qualities = Quality.split_quality(quality)
     if showTitle:
-        allowed_qualities, preferred_qualities = Quality.split_quality(quality)
         title = 'Allowed Quality:\n'
         if allowed_qualities:
             for curQual in allowed_qualities:
@@ -21,6 +21,10 @@
         title = ' title="' + cgi.escape(title.rstrip(), True) + '"'
     else:
         title = ""
+
+    if customTitle:
+        title = ' title="' + cgi.escape(str(customTitle).rstrip(), True) + '"'
+
     sum_allowed_qualities = quality & 0xFFFF
     sum_preferred_qualities = quality >> 16
     set_hdtv = {Quality.HDTV, Quality.RAWHDTV, Quality.FULLHDTV}

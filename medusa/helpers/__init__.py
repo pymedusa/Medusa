@@ -31,8 +31,6 @@ from builtins import str
 from builtins import zip
 from itertools import cycle
 
-import adba
-
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
@@ -42,13 +40,12 @@ from contextlib2 import suppress
 
 import guessit
 
-from imdbpie import imdbpie
-
 from medusa import app, db
-from medusa.common import USER_AGENT
+from medusa.common import DOWNLOADED, USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
 from medusa.helpers.utils import generate
+from medusa.imdb import Imdb
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -57,7 +54,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type, viewitems
+from six import string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -71,10 +68,10 @@ except ImportError:
 
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
-    i = "\n" + level * "  "
+    i = '\n' + level * '  '
     if elem:
         if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
+            elem.text = i + '  '
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
         for elem in elem:
@@ -107,7 +104,7 @@ def is_media_file(filename):
         if filename.startswith('._'):
             return False
 
-        sep_file = filename.rpartition(".")
+        sep_file = filename.rpartition('.')
 
         if re.search('extras?$', sep_file[0], re.I):
             return False
@@ -348,7 +345,7 @@ def hardlink_file(src_file, dest_file):
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create hardlink of {source} at {destination}.'
@@ -401,7 +398,7 @@ def move_and_symlink_file(src_file, dest_file):
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as msg:
-        if hasattr(msg, 'errno') and msg.errno == 17:
+        if msg.errno == errno.EEXIST:
             # File exists. Don't fallback to copy
             log.warning(
                 u'Failed to create symlink of {source} at {destination}.'
@@ -435,8 +432,8 @@ def reflink_file(src_file, dest_file):
         if reflink is None:
             raise NotImplementedError()
         reflink.reflink(src_file, dest_file)
-    except reflink.ReflinkImpossibleError as msg:
-        if msg.args[0] == 'EOPNOTSUPP':
+    except (reflink.ReflinkImpossibleError, IOError) as msg:
+        if msg.args and msg.args[0] == 'EOPNOTSUPP':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
@@ -445,7 +442,7 @@ def reflink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
-        elif msg.args[0] == 'EXDEV':
+        elif msg.args and msg.args[0] == 'EXDEV':
             log.warning(
                 u'Failed to create reference link of {source} at {destination}.'
                 u' Error: Can not reflink between two devices. Copying instead', {
@@ -473,16 +470,6 @@ def reflink_file(src_file, dest_file):
             }
         )
         copy_file(src_file, dest_file)
-    except IOError as msg:
-        log.warning(
-            u'Failed to create reflink of {source} at {destination}.'
-            u' Error: {error!r}. Copying instead', {
-                'source': src_file,
-                'destination': dest_file,
-                'error': msg,
-            }
-        )
-        copy_file(src_file, dest_file)
 
 
 def make_dirs(path):
@@ -501,7 +488,7 @@ def make_dirs(path):
                           {'path': path})
                 os.makedirs(path)
             except (OSError, IOError) as msg:
-                log.error(u"Failed creating {path} : {error!r}",
+                log.error(u'Failed creating {path} : {error!r}',
                           {'path': path, 'error': msg})
                 return False
 
@@ -772,11 +759,11 @@ def get_absolute_number_from_season_and_episode(series_obj, season, episode):
 
     if season and episode:
         main_db_con = db.DBConnection()
-        sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
+        sql = 'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
         sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
 
         if len(sql_results) == 1:
-            absolute_number = int(sql_results[0][b'absolute_number'])
+            absolute_number = int(sql_results[0]['absolute_number'])
             log.debug(
                 u'Found absolute number {absolute} for show {show} {ep}', {
                     'absolute': absolute_number,
@@ -902,7 +889,7 @@ def backup_versioned_file(old_file, version):
             log.debug(u'Trying to back up {old} to new',
                       {'old': old_file, 'new': new_file})
             shutil.copy(old_file, new_file)
-            log.debug(u"Backup done")
+            log.debug(u'Backup done')
             break
         except OSError as error:
             log.warning(u'Error while trying to back up {old} to {new}:'
@@ -920,71 +907,10 @@ def backup_versioned_file(old_file, version):
     return True
 
 
-def restore_versioned_file(backup_file, version):
-    """Restore a file version to original state.
-
-    For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
-    sickbeard.db.v41. passed with version tuple(41,2), will translate back to sickbeard.db.
-
-    :param backup_file: File to restore
-    :param version: Version of file to restore
-    :return: True on success, False on failure
-    """
-    num_tries = 0
-
-    with suppress(TypeError):
-        version = '.'.join([str(i) for i in version]) if not isinstance(version, str) else version
-
-    new_file, _ = backup_file[0:backup_file.find(u'v{version}'.format(version=version))]
-    restore_file = backup_file
-
-    if not os.path.isfile(new_file):
-        log.debug(u"Not restoring, {file} doesn't exist", {'file': new_file})
-        return False
-
-    try:
-        log.debug(u'Trying to backup {file} to {file}.r{version} before '
-                  u'restoring backup', {'file': new_file, 'version': version})
-
-        shutil.move(new_file, new_file + '.' + 'r' + str(version))
-    except OSError as error:
-        log.warning(u'Error while trying to backup DB file {name} before'
-                    u' proceeding with restore: {error!r}',
-                    {'name': restore_file, 'error': error})
-        return False
-
-    while not os.path.isfile(new_file):
-        if not os.path.isfile(restore_file):
-            log.debug(u'Not restoring, {file} does not exist',
-                      {'file': restore_file})
-            break
-
-        try:
-            log.debug(u'Trying to restore file {old} to {new}',
-                      {'old': restore_file, 'new': new_file})
-            shutil.copy(restore_file, new_file)
-            log.debug(u"Restore done")
-            break
-        except OSError as error:
-            log.warning(u'Error while trying to restore file {name}.'
-                        u' Error: {msg!r}',
-                        {'name': restore_file, 'msg': error})
-            num_tries += 1
-            time.sleep(1)
-            log.debug(u'Trying again. Attempt #: {0}', num_tries)
-
-        if num_tries >= 10:
-            log.warning(u'Unable to restore file {old} to {new}',
-                        {'old': restore_file, 'new': new_file})
-            return False
-
-    return True
-
-
 def get_lan_ip():
     """Return IP of system."""
     try:
-        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][0]
+        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith('127.')][0]
     except Exception:
         return socket.gethostname()
 
@@ -1006,12 +932,6 @@ def check_url(url):
     except Exception:
         return None
 
-
-def anon_url(*url):
-    """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    # normalize to byte
-    url = [u.encode('utf-8') if isinstance(u, text_type) else binary_type(u) for u in url]
-    return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
 
 # Encryption
 # ==========
@@ -1171,39 +1091,6 @@ def validate_show(show, season=None, episode=None):
     except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
         log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
         pass
-
-
-def set_up_anidb_connection():
-    """Connect to anidb."""
-    if not app.USE_ANIDB:
-        log.debug(u'Usage of anidb disabled. Skipping')
-        return False
-
-    if not app.ANIDB_USERNAME and not app.ANIDB_PASSWORD:
-        log.debug(u'anidb username and/or password are not set.'
-                  u' Aborting anidb lookup.')
-        return False
-
-    if not app.ADBA_CONNECTION:
-        def anidb_logger(msg):
-            return log.debug(u'anidb: {0}', msg)
-
-        try:
-            app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
-        except Exception as error:
-            log.warning(u'anidb exception msg: {0!r}', error)
-            return False
-
-    try:
-        if not app.ADBA_CONNECTION.authed():
-            app.ADBA_CONNECTION.auth(app.ANIDB_USERNAME, app.ANIDB_PASSWORD)
-        else:
-            return True
-    except Exception as error:
-        log.warning(u'anidb exception msg: {0!r}', error)
-        return False
-
-    return app.ADBA_CONNECTION.authed()
 
 
 def backup_config_zip(file_list, archive, arcname=None):
@@ -1372,7 +1259,7 @@ def download_file(url, filename, session, method='GET', data=None, headers=None,
 
 
 def handle_requests_exception(requests_exception):
-    default = "Request failed: {0}"
+    default = 'Request failed: {0}'
     try:
         raise requests_exception
     except requests.exceptions.SSLError as error:
@@ -1535,7 +1422,7 @@ def is_file_locked(check_file, write_lock_check=False):
         return True
 
     if write_lock_check:
-        lock_file = check_file + ".lckchk"
+        lock_file = check_file + '.lckchk'
         if os.path.exists(lock_file):
             os.remove(lock_file)
         try:
@@ -1574,34 +1461,34 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
+        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         if tvdb_id:
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
+        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.iter("Series"):
-                tvdb_id = show.findtext("seriesid")
+            for show in tree.iter('Series'):
+                tvdb_id = show.findtext('seriesid')
 
         return tvdb_id
 
     elif indexer == 'TVMAZE':
-        url = "http://api.tvmaze.com/shows/%s" % indexer_id
+        url = 'http://api.tvmaze.com/shows/%s' % indexer_id
         data = session.get_json(url)
         if data is None:
             return tvdb_id
@@ -1703,10 +1590,10 @@ def is_ip_private(ip):
     :return:
     :rtype: bool
     """
-    priv_lo = re.compile(r"^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_24 = re.compile(r"^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-    priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
-    priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
+    priv_lo = re.compile(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_24 = re.compile(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
+    priv_20 = re.compile(r'^192\.168\.\d{1,3}.\d{1,3}$')
+    priv_16 = re.compile(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$')
     return bool(priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip))
 
 
@@ -1806,9 +1693,9 @@ def is_already_processed_media(full_filename):
     """Check if resource was already processed."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT action FROM history '
-                                        "WHERE action LIKE '%04' "
+                                        'WHERE action = ? '
                                         'AND resource LIKE ?',
-                                        ['%' + full_filename])
+                                        [DOWNLOADED, '%' + full_filename])
     return bool(history_result)
 
 
@@ -1831,15 +1718,15 @@ def is_info_hash_processed(info_hash):
                                         'd.season = s.season AND '
                                         'd.episode = s.episode AND '
                                         'd.quality = s.quality '
-                                        'WHERE d.action LIKE "%04"',
-                                        [info_hash])
+                                        'WHERE d.action = ?',
+                                        [info_hash, DOWNLOADED])
     return bool(history_result)
 
 
 def title_to_imdb(title, start_year, imdb_api=None):
     """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
-        imdb_api = imdbpie.Imdb()
+        imdb_api = Imdb()
 
     titles = imdb_api.search_for_title(title)
 

@@ -39,6 +39,8 @@ from requests.compat import urlsplit
 from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 
+from tornado.web import StaticFileHandler
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -337,7 +339,7 @@ def change_GIT_PATH():
     """
     app.version_check_scheduler = None
     app.version_check_scheduler = scheduler.Scheduler(
-        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
+        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName='CHECKVERSION', silent=False)
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
     app.version_check_scheduler.forceRun()
@@ -471,6 +473,42 @@ def change_remove_from_client(new_state):
         app.torrent_checker_scheduler.enable = False
         app.torrent_checker_scheduler.silent = True
         log.info(u'Stopping TORRENTCHECKER thread')
+
+
+def change_theme(theme_name):
+    """
+    Hot-swap theme.
+
+    :param theme_name: New theme name
+    """
+    if theme_name == app.THEME_NAME:
+        return False
+
+    old_theme_name = app.THEME_NAME
+    old_data_root = os.path.join(app.DATA_ROOT, old_theme_name)
+
+    app.THEME_NAME = theme_name
+    app.THEME_DATA_ROOT = os.path.join(app.DATA_ROOT, theme_name)
+
+    static_file_handlers = app.instance.web_server.app.static_file_handlers
+
+    log.info('Switching theme from "{old}" to "{new}"', {'old': old_theme_name, 'new': theme_name})
+
+    for rule in static_file_handlers.target.rules:
+        if old_data_root not in rule.target_kwargs['path']:
+            # Skip other static file handlers
+            continue
+
+        old_path = rule.target_kwargs['path']
+        new_path = old_path.replace(old_data_root, app.THEME_DATA_ROOT)
+        rule.target_kwargs['path'] = new_path
+
+        log.debug('Changed {old} to {new}', {'old': old_path, 'new': new_path})
+
+    # Reset cache
+    StaticFileHandler.reset()
+
+    return True
 
 
 def CheckSection(CFG, sec):
@@ -897,7 +935,7 @@ class ConfigMigrator(object):
 
         # see if any of their shows used season folders
         main_db_con = db.DBConnection()
-        season_folder_shows = main_db_con.select(b'SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
+        season_folder_shows = main_db_con.select('SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
 
         # if any shows had season folders on then prepend season folder to the pattern
         if season_folder_shows:
@@ -926,7 +964,7 @@ class ConfigMigrator(object):
             log.info(u"No shows were using season folders before so I'm disabling flattening on all shows")
 
             # don't flatten any shows at all
-            main_db_con.action(b'UPDATE tv_shows SET flatten_folders = 0')
+            main_db_con.action('UPDATE tv_shows SET flatten_folders = 0')
 
         app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
 
@@ -1252,7 +1290,6 @@ class ConfigMigrator(object):
         app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_client_host'])
         app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
         app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
-        app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA']['nma_api'])
         app.EMAIL_LIST = convert_csv_string_to_list(self.config_obj['Email']['email_list'])
 
         try:

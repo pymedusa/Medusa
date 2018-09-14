@@ -25,7 +25,7 @@ log.logger.addHandler(logging.NullHandler())
 class YggtorrentProvider(TorrentProvider):
     """Yggtorrent Torrent provider."""
 
-    torrent_id = re.compile(r'\/(\d+)-')
+    torrent_id_pattern = re.compile(r'\/(\d+)-')
 
     def __init__(self):
         """Initialize the class."""
@@ -36,8 +36,9 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://yggtorrent.is'
+        self.url = 'https://www.yggtorrent.is'
         self.urls = {
+            'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
             'download': urljoin(self.url, 'engine/download_torrent?id={0}')
@@ -45,24 +46,6 @@ class YggtorrentProvider(TorrentProvider):
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
-
-        # Miscellaneous Options
-        self.translation = {
-            'à l\'instant': 'just now',
-            'seconde': 'second',
-            'secondes': 'seconds',
-            'minute': 'minute',
-            'minutes': 'minutes',
-            'heure': 'hour',
-            'heures': 'hours',
-            'jour': 'day',
-            'jours': 'days',
-            'mois': 'month',
-            'an': 'year',
-            'année': 'year',
-            'ans': 'years',
-            'années': 'years'
-        }
 
         # Torrent Stats
         self.minseed = None
@@ -119,6 +102,9 @@ class YggtorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -143,7 +129,7 @@ class YggtorrentProvider(TorrentProvider):
                     if not (title and download_url):
                         continue
 
-                    torrent_id = YggtorrentProvider.torrent_id.search(download_url)
+                    torrent_id = self.torrent_id_pattern.search(download_url)
                     download_url = self.urls['download'].format(torrent_id.group(1))
 
                     seeders = try_int(cells[7].get_text(strip=True), 0)
@@ -153,26 +139,15 @@ class YggtorrentProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
                     torrent_size = cells[5].get_text()
-                    size = convert_size(torrent_size, sep='', default=-1)
+                    size = convert_size(torrent_size, sep='', units=units, default=-1)
 
-                    pubdate = None
-                    pubdate_match = re.search(r'-(\d+)\s(\w+)', cells[4].get_text('-', strip=True))
-                    if pubdate_match:
-                        translated = self.translation.get(pubdate_match.group(2))
-                        if not translated:
-                            log.exception('No translation mapping available for value: {0}',
-                                          pubdate_match.group(2))
-                        else:
-                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
-                            pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
-                    else:
-                        log.warning('Could not translate publishing date with value: {0}',
-                                    cells[4].get_text('-', strip=True))
+                    pubdate_raw = cells[4].find('div', class_='hidden').get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
 
                     item = {
                         'title': title,
@@ -199,18 +174,22 @@ class YggtorrentProvider(TorrentProvider):
             'pass': self.password
         }
 
-        login_resp = self.session.post(self.urls['login'], data=login_params)
-        if not login_resp:
-            log.warning('Invalid username or password. Check your settings')
-            return False
+        if not self._is_authenticated():
+            login_url = self.get_redirect_url(self.urls['login'])
+            login_resp = self.session.post(login_url, data=login_params)
+            if not login_resp:
+                log.warning('Invalid username or password. Check your settings')
+                return False
 
-        response = self.session.get(self.url)
+            if not self._is_authenticated():
+                log.warning('Unable to connect or login to provider')
+                return False
+
+        return True
+
+    def _is_authenticated(self):
+        response = self.session.get(self.urls['auth'])
         if not response:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if 'Bienvenue' not in response.text:
-            log.warning('Unable to login to provider')
             return False
 
         return True

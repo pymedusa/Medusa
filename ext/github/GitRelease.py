@@ -8,9 +8,13 @@
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
 # Copyright 2017 Chris McBride <thehighlander@users.noreply.github.com>        #
 # Copyright 2017 Simon <spam@esemi.ru>                                         #
+# Copyright 2018 Daniel Kesler <kesler.daniel@gmail.com>                       #
+# Copyright 2018 Kuba <jakub.glapa@adspired.com>                               #
+# Copyright 2018 Maarten Fonville <mfonville@users.noreply.github.com>         #
 # Copyright 2018 Shinichi TAMURA <shnch.tmr@gmail.com>                         #
 # Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
 # Copyright 2018 edquist <edquist@users.noreply.github.com>                    #
+# Copyright 2018 nurupo <nurupo.contributions@gmail.com>                       #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -78,6 +82,14 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         return self._tag_name.value
 
     @property
+    def target_commitish(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._target_commitish)
+        return self._target_commitish.value
+
+    @property
     def draft(self):
         """
         :type: bool
@@ -141,25 +153,62 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         self._completeIfNotSet(self._html_url)
         return self._html_url.value
 
+    @property
+    def tarball_url(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._tarball_url)
+        return self._tarball_url.value
+
+    @property
+    def zipball_url(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._zipball_url)
+        return self._zipball_url.value
+
     def delete_release(self):
+        """
+        :calls: `DELETE /repos/:owner/:repo/releases/:release_id <https://developer.github.com/v3/repos/releases/#delete-a-release>`_
+        :rtype: None
+        """
         headers, data = self._requester.requestJsonAndCheck(
             "DELETE",
             self.url
         )
-        return True
 
-    def update_release(self, name, message, draft=False, prerelease=False):
+    def update_release(self, name, message, draft=False, prerelease=False,
+                       tag_name=github.GithubObject.NotSet,
+                       target_commitish=github.GithubObject.NotSet):
+        """
+        :calls: `PATCH /repos/:owner/:repo/releases/:release_id <https://developer.github.com/v3/repos/releases/#edit-a-release>`_
+        :rtype: :class:`github.GitRelease.GitRelease`
+        """
+        assert tag_name is github.GithubObject.NotSet              \
+            or isinstance(tag_name, (str, unicode)),               \
+            'tag_name must be a str/unicode object'
+        assert target_commitish is github.GithubObject.NotSet      \
+            or isinstance(target_commitish, (str, unicode)),       \
+            'target_commitish must be a str/unicode object'
         assert isinstance(name, (str, unicode)), name
         assert isinstance(message, (str, unicode)), message
         assert isinstance(draft, bool), draft
         assert isinstance(prerelease, bool), prerelease
+        if tag_name is github.GithubObject.NotSet:
+            tag_name = self.tag_name
         post_parameters = {
-            "tag_name": self.tag_name,
+            "tag_name": tag_name,
             "name": name,
             "body": message,
             "draft": draft,
             "prerelease": prerelease,
         }
+        # Do not set target_commitish to self.target_commitish when ommited, just don't send it
+        # alltogether in that case, in order to match the Github API behaviour. Only send it when set.
+        if target_commitish is not github.GithubObject.NotSet:
+            post_parameters['target_commitish'] = target_commitish
         headers, data = self._requester.requestJsonAndCheck(
             "PATCH",
             self.url,
@@ -168,6 +217,10 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         return github.GitRelease.GitRelease(self._requester, headers, data, completed=True)
 
     def upload_asset(self, path, label="", content_type=""):
+        """
+        :calls: `POST https://<upload_url>/repos/:owner/:repo/releases/:release_id/assets?name=foo.zip <https://developer.github.com/v3/repos/releases/#upload-a-release-asset>`_
+        :rtype: :class:`github.GitReleaseAsset.GitReleaseAsset`
+        """
         assert isinstance(path, (str, unicode)), path
         assert isinstance(label, (str, unicode)), label
 
@@ -188,6 +241,10 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         return github.GitReleaseAsset.GitReleaseAsset(self._requester, resp_headers, data, completed=True)
 
     def get_assets(self):
+        """
+        :calls: `GET /repos/:owner/:repo/releases/:release_id/assets <https://developer.github.com/v3/repos/releases/#list-assets-for-a-release>`_
+        :rtype: :class:`github.PaginatedList.PaginatedList`
+        """
         return github.PaginatedList.PaginatedList(
             github.GitReleaseAsset.GitReleaseAsset,
             self._requester,
@@ -200,6 +257,7 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         self._body = github.GithubObject.NotSet
         self._title = github.GithubObject.NotSet
         self._tag_name = github.GithubObject.NotSet
+        self._target_commitish = github.GithubObject.NotSet
         self._draft = github.GithubObject.NotSet
         self._prerelease = github.GithubObject.NotSet
         self._author = github.GithubObject.NotSet
@@ -208,6 +266,8 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
         self._html_url = github.GithubObject.NotSet
         self._created_at = github.GithubObject.NotSet
         self._published_at = github.GithubObject.NotSet
+        self._tarball_url = github.GithubObject.NotSet
+        self._zipball_url = github.GithubObject.NotSet
 
     def _useAttributes(self, attributes):
         if "id" in attributes:
@@ -218,6 +278,8 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
             self._title = self._makeStringAttribute(attributes["name"])
         if "tag_name" in attributes:
             self._tag_name = self._makeStringAttribute(attributes["tag_name"])
+        if "target_commitish" in attributes:
+            self._target_commitish = self._makeStringAttribute(attributes["target_commitish"])
         if "draft" in attributes:
             self._draft = self._makeBoolAttribute(attributes["draft"])
         if "prerelease" in attributes:
@@ -234,3 +296,7 @@ class GitRelease(github.GithubObject.CompletableGithubObject):
             self._created_at = self._makeDatetimeAttribute(attributes["created_at"])
         if "published_at" in attributes:
             self._published_at = self._makeDatetimeAttribute(attributes["published_at"])
+        if "tarball_url" in attributes:
+            self._tarball_url = self._makeStringAttribute(attributes["tarball_url"])
+        if "zipball_url" in attributes:
+            self._zipball_url = self._makeStringAttribute(attributes["zipball_url"])

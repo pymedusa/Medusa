@@ -36,7 +36,7 @@ class NorbitsProvider(TorrentProvider):
         self.url = 'https://norbits.net'
         self.urls = {
             'search': urljoin(self.url, 'api2.php?action=torrents'),
-            'download': urljoin(self.url, 'download.php?'),
+            'download': urljoin(self.url, 'download.php'),
         }
 
         # Proper Strings
@@ -111,7 +111,7 @@ class NorbitsProvider(TorrentProvider):
         for row in torrent_rows:
             try:
                 title = row.pop('name', '')
-                download_url = '{0}{1}'.format(
+                download_url = '{0}?{1}'.format(
                     self.urls['download'],
                     urlencode({'id': row.pop('id', ''), 'passkey': self.passkey}))
 
@@ -125,7 +125,7 @@ class NorbitsProvider(TorrentProvider):
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
+                                  ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 

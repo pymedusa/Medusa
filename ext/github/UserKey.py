@@ -10,6 +10,7 @@
 # Copyright 2014 Vincent Jacques <vincent@vincent-jacques.net>                 #
 # Copyright 2016 Jannis Gebauer <ja.geb@me.com>                                #
 # Copyright 2016 Peter Buckley <dx-pbuckley@users.noreply.github.com>          #
+# Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -90,27 +91,6 @@ class UserKey(github.GithubObject.CompletableGithubObject):
             "DELETE",
             self.url
         )
-
-    def edit(self, title=github.GithubObject.NotSet, key=github.GithubObject.NotSet):
-        """
-        :calls: `PATCH /user/keys/:id <http://developer.github.com/v3/users/keys>`_
-        :param title: string
-        :param key: string
-        :rtype: None
-        """
-        assert title is github.GithubObject.NotSet or isinstance(title, (str, unicode)), title
-        assert key is github.GithubObject.NotSet or isinstance(key, (str, unicode)), key
-        post_parameters = dict()
-        if title is not github.GithubObject.NotSet:
-            post_parameters["title"] = title
-        if key is not github.GithubObject.NotSet:
-            post_parameters["key"] = key
-        headers, data = self._requester.requestJsonAndCheck(
-            "PATCH",
-            self.url,
-            input=post_parameters
-        )
-        self._useAttributes(data)
 
     def _initAttributes(self):
         self._id = github.GithubObject.NotSet

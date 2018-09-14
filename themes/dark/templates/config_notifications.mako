@@ -9,24 +9,16 @@
 %>
 <%block name="scripts">
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Notifications'
-        },
-        data() {
-            return {
-                header: 'Notifications'
-            };
-        }
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap'
     });
-};
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/notifications/saveNotifications" method="post">
@@ -37,7 +29,7 @@ const startVue = () => {
                     <li><app-link href="#social">Social</app-link></li>
                 </ul>
                 <div id="home-theater-nas">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-kodi" title="KODI"></span>
                         <h3><app-link href="http://kodi.tv">KODI</app-link></h3>
                         <p>A free and open source cross-platform media center and home entertainment system software with a 10-foot user interface designed for the living-room TV.</p>
@@ -48,7 +40,7 @@ const startVue = () => {
                                 <label class="clearfix" for="use_kodi">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_kodi" id="use_kodi" ${'checked="checked"' if app.USE_KODI else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_kodi" id="use_kodi" :checked="config.kodi.enabled"/>
                                         <p>Send KODI commands?<p>
                                     </span>
                                 </label>
@@ -58,7 +50,7 @@ const startVue = () => {
                                     <label for="kodi_always_on">
                                         <span class="component-title">Always on</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_always_on" id="kodi_always_on" ${'checked="checked"' if app.KODI_ALWAYS_ON else ''}/>
+                                            <input type="checkbox" name="kodi_always_on" id="kodi_always_on" :checked="config.kodi.alwaysOn"/>
                                             <p>log errors when unreachable?</p>
                                         </span>
                                     </label>
@@ -67,7 +59,7 @@ const startVue = () => {
                                     <label for="kodi_notify_onsnatch">
                                         <span class="component-title">Notify on snatch</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_onsnatch" id="kodi_notify_onsnatch" ${'checked="checked"' if app.KODI_NOTIFY_ONSNATCH else ''}/>
+                                            <input type="checkbox" name="kodi_notify_onsnatch" id="kodi_notify_onsnatch" :checked="config.kodi.notify.snatch"/>
                                             <p>send a notification when a download starts?</p>
                                         </span>
                                     </label>
@@ -76,7 +68,7 @@ const startVue = () => {
                                     <label for="kodi_notify_ondownload">
                                         <span class="component-title">Notify on download</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_ondownload" id="kodi_notify_ondownload" ${'checked="checked"' if app.KODI_NOTIFY_ONDOWNLOAD else ''}/>
+                                            <input type="checkbox" name="kodi_notify_ondownload" id="kodi_notify_ondownload" :checked="config.kodi.notify.download"/>
                                             <p>send a notification when a download finishes?</p>
                                         </span>
                                     </label>
@@ -85,7 +77,7 @@ const startVue = () => {
                                     <label for="kodi_notify_onsubtitledownload">
                                         <span class="component-title">Notify on subtitle download</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_notify_onsubtitledownload" id="kodi_notify_onsubtitledownload" ${'checked="checked"' if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
+                                            <input type="checkbox" name="kodi_notify_onsubtitledownload" id="kodi_notify_onsubtitledownload" :checked="config.kodi.notify.subtitleDownload"/>
                                             <p>send a notification when subtitles are downloaded?</p>
                                         </span>
                                     </label>
@@ -94,7 +86,7 @@ const startVue = () => {
                                     <label for="kodi_update_library">
                                         <span class="component-title">Update library</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_library" id="kodi_update_library" ${'checked="checked"' if app.KODI_UPDATE_LIBRARY else ''}/>
+                                            <input type="checkbox" name="kodi_update_library" id="kodi_update_library" :checked="config.kodi.update.library"/>
                                             <p>update KODI library when a download finishes?</p>
                                         </span>
                                     </label>
@@ -103,7 +95,7 @@ const startVue = () => {
                                     <label for="kodi_update_full">
                                         <span class="component-title">Full library update</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_full" id="kodi_update_full" ${'checked="checked"' if app.KODI_UPDATE_FULL else ''}/>
+                                            <input type="checkbox" name="kodi_update_full" id="kodi_update_full" :checked="config.kodi.update.full"/>
                                             <p>perform a full library update if update per-show fails?</p>
                                         </span>
                                     </label>
@@ -112,7 +104,7 @@ const startVue = () => {
                                     <label for="kodi_clean_library">
                                         <span class="component-title">Clean library</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" ${'checked="checked"' if app.KODI_CLEAN_LIBRARY else ''}/>
+                                            <input type="checkbox" name="kodi_clean_library" id="kodi_clean_library" :checked="config.kodi.cleanLibrary"/>
                                             <p>clean KODI library when replaces a already downloaded episode?</p>
                                         </span>
                                     </label>
@@ -121,7 +113,7 @@ const startVue = () => {
                                     <label for="kodi_update_onlyfirst">
                                         <span class="component-title">Only update first host</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" ${'checked="checked"' if app.KODI_UPDATE_ONLYFIRST else ''}/>
+                                            <input type="checkbox" name="kodi_update_onlyfirst" id="kodi_update_onlyfirst" :checked="config.kodi.update.onlyFirst"/>
                                             <p>only send library updates/clean to the first active host?</p>
                                         </span>
                                     </label>
@@ -143,8 +135,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label for="kodi_username">
                                         <span class="component-title">Username</span>
-                                        <input type="text" name="kodi_username" id="kodi_username" value="${app.KODI_USERNAME}" class="form-control input-sm input250"
-                                               autocomplete="no" />
+                                        <input type="text" name="kodi_username" id="kodi_username" value="${app.KODI_USERNAME}" class="form-control input-sm input250" autocomplete="no" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -162,12 +153,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testKODI-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test KODI" id="testKODI" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_kodi //-->
                         </fieldset>
                     </div><!-- /kodi component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-plex" title="Plex Media Server"></span>
                             <h3><app-link href="https://plex.tv">Plex Media Server</app-link></h3>
                             <p>Experience your media on a visually stunning, easy to use interface on your Mac connected to your TV. Your media library has never looked this good!</p>
@@ -179,7 +170,7 @@ const startVue = () => {
                                 <label for="use_plex_server">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_plex_server" id="use_plex_server" ${'checked="checked"' if app.USE_PLEX_SERVER else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_plex_server" id="use_plex_server" :checked="config.plex.server.enabled"/>
                                         <p>Send Plex Media Server library updates?</p>
                                     </span>
                                 </label>
@@ -253,8 +244,8 @@ const startVue = () => {
                                         </div>
                                         <div class="field-pair">
                                             <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
-                                            <input class="btn" type="button" value="Test Plex Media Server" id="testPMS" />
-                                            <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                            <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
+                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                             <div class="clear-left">&nbsp;</div>
                                         </div>
                                     </div>
@@ -262,7 +253,7 @@ const startVue = () => {
                             </div><!-- /content_use_plex_server -->
                         </fieldset>
                     </div><!-- /plex media server component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-plexth" title="Plex Home Theater"></span>
                         <h3><app-link href="https://plex.tv">Plex Home Theater</app-link></h3>
                     </div>
@@ -272,7 +263,7 @@ const startVue = () => {
                                 <label for="use_plex_client">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_plex_client" id="use_plex_client" ${'checked="checked"' if app.USE_PLEX_CLIENT else ''}/>
+                                        <input type="checkbox" class="enabler" name="use_plex_client" id="use_plex_client" :checked="config.plex.client.enabled"/>
                                         <p>Send Plex Home Theater notifications?</p>
                                     </span>
                                 </label>
@@ -339,14 +330,14 @@ const startVue = () => {
                                 </div>
                                 <div class="field-pair">
                                     <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
-                                    <input class="btn" type="button" value="Test Plex Home Theater" id="testPHT" />
-                                    <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                    <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                     <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                 </div>
                             </div><!-- /content_use_plex_client -->
                         </fieldset>
                     </div><!-- /Plex Home Theater component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-emby" title="Emby"></span>
                         <h3><app-link href="http://emby.media">Emby</app-link></h3>
                         <p>A home media server built using other popular open source technologies.</p>
@@ -357,7 +348,7 @@ const startVue = () => {
                                 <label for="use_emby">
                                     <span class="component-title">Enable</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" ${'checked="checked"' if app.USE_EMBY else ''} />
+                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" :checked="config.emby.enabled"/>
                                         <p>Send update commands to Emby?<p>
                                     </span>
                                 </label>
@@ -380,12 +371,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testEMBY-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test Emby" id="testEMBY" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_emby //-->
                         </fieldset>
                     </div><!-- /emby component-group //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
@@ -415,7 +406,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Get settings</span>
-                                        <input class="btn btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -443,12 +434,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testNMJ-result">Click below to test.</div>
-                                <input class="btn" type="button" value="Test NMJ" id="testNMJ" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_nmj //-->
                         </fieldset>
                     </div><!-- /nmj component-group //-->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
                         <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
                         <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
@@ -509,7 +500,7 @@ const startVue = () => {
                                 <div class="field-pair">
                                     <label for="settingsNMJv2">
                                         <span class="component-title">Find database</span>
-                                        <input type="button" class="btn btn-inline" value="Find Database" id="settingsNMJv2" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -527,12 +518,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                             <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
-                            <input class="btn" type="button" value="Test NMJv2" id="testNMJv2" />
-                            <input type="submit" class="config_submitter btn" value="Save Changes" />
+                            <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
+                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_nmjv2 //-->
                         </fieldset>
                     </div><!-- /nmjv2 component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-syno1" title="Synology"></span>
                             <h3><app-link href="http://synology.com/">Synology</app-link></h3>
                             <p>The Synology DiskStation NAS.</p>
@@ -554,11 +545,11 @@ const startVue = () => {
                                 </label>
                             </div>
                             <div id="content_use_synoindex">
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_synoindex //-->
                         </fieldset>
                     </div><!-- /synoindex component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
                             <h3><app-link href="http://synology.com/">Synology Notifier</app-link></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
@@ -606,11 +597,11 @@ const startVue = () => {
                                         </span>
                                     </label>
                                 </div>
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                </div>
                         </fieldset>
                     </div><!-- /synology notifier component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
                             <h3><app-link href="http://pytivo.sourceforge.net/wiki/index.php/PyTivo">pyTivo</app-link></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
@@ -661,13 +652,13 @@ const startVue = () => {
                                         <span class="component-desc">(Messages &amp; Settings > Account &amp; System Information > System Information > DVR name)</span>
                                     </label>
                                 </div>
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_pytivo //-->
                         </fieldset>
                     </div><!-- /component-group //-->
                 </div><!-- #home-theater-nas //-->
                 <div id="devices">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-growl" title="Growl"></span>
                         <h3><app-link href="http://growl.info/">Growl</app-link></h3>
                         <p>A cross-platform unobtrusive global notification system.</p>
@@ -736,12 +727,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
-                                <input  class="btn" type="button" value="Register Growl" id="testGrowl" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_growl //-->
                         </fieldset>
                     </div><!-- /growl component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
                             <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
                             <p>A Growl client for iOS.</p>
@@ -824,7 +815,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="prowl_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="prowl_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -844,12 +835,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Prowl" id="testProwl" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_prowl //-->
                         </fieldset>
                     </div><!-- /prowl component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
                             <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>
                             <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <app-link href="apt:python-notify">python-notify</app-link>).</p>
@@ -894,12 +885,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Libnotify" id="testLibnotify" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_libnotify //-->
                         </fieldset>
                     </div><!-- /libnotify component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
                             <h3><app-link href="https://pushover.net/">Pushover</app-link></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
@@ -1009,12 +1000,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushover-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Pushover" id="testPushover" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_pushover //-->
                         </fieldset>
                     </div><!-- /pushover component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
                             <h3><app-link href="https://new.boxcar.io/">Boxcar 2</app-link></h3>
                             <p>Read your messages where and when you want them!</p>
@@ -1069,88 +1060,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Boxcar" id="testBoxcar2" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_boxcar2 //-->
                         </fieldset>
                     </div><!-- /boxcar2 component-group //-->
-                        <div class="component-group-desc">
-                            <span class="icon-notifiers-nma" title="NMA"></span>
-                            <h3><app-link href="http://www.notifymyandroid.com">Notify My Android</app-link></h3>
-                            <p>Notify My Android is a Prowl-like Android App and API that offers an easy way to send notifications from your application directly to your Android device.</p>
-                        </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_nma">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_nma" id="use_nma" ${'checked="checked"' if app.USE_NMA else ''}/>
-                                        <p>Send NMA notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_nma">
-                                <div class="field-pair">
-                                    <label for="nma_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="nma_notify_onsnatch" id="nma_notify_onsnatch" ${'checked="checked"' if app.NMA_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nma_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="nma_notify_ondownload" id="nma_notify_ondownload" ${'checked="checked"' if app.NMA_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nma_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="nma_notify_onsubtitledownload" id="nma_notify_onsubtitledownload" ${'checked="checked"' if app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nma_api">
-                                           <span class="component-title">NMA API key:</span>
-                                        <input type="text" name="nma_api" id="nma_api" value="${','.join(app.NMA_API)}" class="form-control input-sm input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">(multiple keys must be separated by commas, up to a maximum of 5)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nma_priority">
-                                        <span class="component-title">NMA priority:</span>
-                                           <select id="nma_priority" name="nma_priority" class="form-control input-sm">
-                                            <option value="-2" ${'selected="selected"' if app.NMA_PRIORITY == '-2' else ''}>Very Low</option>
-                                            <option value="-1" ${'selected="selected"' if app.NMA_PRIORITY == '-1' else ''}>Moderate</option>
-                                            <option value="0" ${'selected="selected"' if app.NMA_PRIORITY == '0' else ''}>Normal</option>
-                                            <option value="1" ${'selected="selected"' if app.NMA_PRIORITY == '1' else ''}>High</option>
-                                            <option value="2" ${'selected="selected"' if app.NMA_PRIORITY == '2' else ''}>Emergency</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">priority of NMA messages from Medusa.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testNMA-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test NMA" id="testNMA" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
-                            </div><!-- /content_use_nma //-->
-                        </fieldset>
-                    </div><!-- /nma component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushalot" title="Pushalot"></span>
                             <h3><app-link href="https://pushalot.com">Pushalot</app-link></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
@@ -1205,12 +1120,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushalot-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushalot" id="testPushalot" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushalot //-->
                         </fieldset>
                     </div><!-- /pushalot component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
                             <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
                             <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
@@ -1269,7 +1184,7 @@ const startVue = () => {
                                         <span class="component-title">Pushbullet devices</span>
                                         <select name="pushbullet_device_list" id="pushbullet_device_list" class="form-control input-sm"></select>
                                         <input type="hidden" id="pushbullet_device" value="${app.PUSHBULLET_DEVICE}">
-                                        <input type="button" class="btn btn-inline" value="Update device list" id="getPushbulletDevices" />
+                                        <input type="button" class="btn-medusa btn-inline" value="Update device list" id="getPushbulletDevices" />
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1277,12 +1192,12 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testPushbullet-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Pushbullet" id="testPushbullet" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_pushbullet //-->
                         </fieldset>
                     </div><!-- /pushbullet component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                             <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                             <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
@@ -1347,13 +1262,13 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test SMS" id="testFreeMobile" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_freemobile //-->
                         </fieldset>
                     </div><!-- /freemobile component-group //-->
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-telegram" title="Telegram"></span>
                         <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
                         <p>Telegram is a cloud-based instant messaging service.</p>
@@ -1418,14 +1333,14 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Telegram" id="testTelegram" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_telegram //-->
                         </fieldset>
                     </div><!-- /telegram component-group //-->
                 </div><!-- #devices //-->
                 <div id="social">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>
                         <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
                         <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
@@ -1497,7 +1412,7 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
-                                        <input class="btn" type="button" value="Request Authorization" id="twitterStep1" />
+                                        <input class="btn-medusa" type="button" value="Request Authorization" id="twitterStep1" />
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1507,7 +1422,7 @@ const startVue = () => {
                                     <label>
                                         <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
                                         <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
-                                        <input class="btn btn-inline" type="button" value="Verify Key" id="twitterStep2" />
+                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitterStep2" />
                                     </label>
                                 </div>
                                 <!--
@@ -1518,16 +1433,16 @@ const startVue = () => {
                                 </div>
                                 //-->
                                 <div class="testNotification" id="testTwitter-result">Click below to test.</div>
-                                <input  class="btn" type="button" value="Test Twitter" id="testTwitter" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_twitter //-->
                         </fieldset>
                     </div><!-- twitter .component-group //-->
-                        <div class="component-group-desc">
+                        <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
                             <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
-                        </div><!-- .component-group-desc //-->
+                        </div><!-- .component-group-desc-legacy //-->
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1550,13 +1465,14 @@ const startVue = () => {
                                         <span class="component-desc">username of your Trakt account.</span>
                                     </p>
                                 </div>
-                                <input type="hidden" id="trakt_pin_url" value="${app.TRAKT_PIN_URL}">
+                                <!-- <input type="hidden" id="trakt_pin_url" value="${app.TRAKT_PIN_URL}"> -->
                                 <div class="field-pair">
                                     <label for="trakt_pin">
                                         <span class="component-title">Trakt PIN</span>
-                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} />
-                                        <input type="button" class="btn" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
-                                        <input type="button" class="btn hide" value="Authorize Medusa" id="authTrakt" />
+                                        <!--  <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} /> -->
+                                        <input type="button" class="btn-medusa" value="Request oath device authentication" id="request-trakt-device-code" />
+                                        <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
+                                        
                                     </label>
                                     <p>
                                         <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
@@ -1687,18 +1603,18 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testTrakt-result">Click below to test.</div>
-                                <input type="button" class="btn" value="Test Trakt" id="testTrakt" />
-                                <input type="button" class="btn" value="Force Sync" id="forceSync" />
-                                <input type="submit" class="btn config_submitter" value="Save Changes" />
+                                <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
+                                <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
-                        </fieldset><!-- .component-group-desc //-->
+                        </fieldset><!-- .component-group-desc-legacy //-->
                     </div><!-- trakt .component-group //-->
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-email" title="Email"></span>
                         <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
                         <p>Allows configuration of email notifications on a per show basis.</p>
-                    </div><!-- .component-group-desc //-->
+                    </div><!-- .component-group-desc-legacy //-->
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -1846,20 +1762,20 @@ const startVue = () => {
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input id="email_show_save" class="btn" type="button" value="Save for this show" />
+                                        <input id="email_show_save" class="btn-medusa" type="button" value="Save for this show" />
                                     </label>
                                 </div><!-- .field-pair //-->
                                 <div class="testNotification" id="testEmail-result">
                                     Click below to test.
                                 </div><!-- #testEmail-result //-->
-                                <input class="btn" type="button" value="Test Email" id="testEmail" />
-                                <input class="btn" type="submit" class="config_submitter" value="Save Changes" />
+                                <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
+                                <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
                             </div><!-- #content_use_email //-->
                         </fieldset><!-- .component-group-list //-->
                     </div><!-- email .component-group //-->
 
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-slack" title="Slack"></span>
                         <h3><app-link href="https://slack.com">Slack</app-link></h3>
                         <p>Slack is a messaging app for teams.</p>
@@ -1915,14 +1831,14 @@ const startVue = () => {
                                     </label>
                                 </div>
                                 <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
-                                <input  class="btn" type="button" value="Test Slack" id="testSlack" />
-                                <input type="submit" class="config_submitter btn" value="Save Changes" />
+                                <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
+                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                             </div><!-- /content_use_slack //-->
                         </fieldset>
                     </div><!-- /slack component-group //-->
 
                 </div><!-- #social //-->
-                <br><input type="submit" class="config_submitter btn" value="Save Changes" /><br>
+                <br><input type="submit" class="config_submitter btn-medusa" value="Save Changes" /><br>
             </div><!-- #config-components //-->
         </form><!-- #configForm //-->
     </div><!-- #config-content //-->

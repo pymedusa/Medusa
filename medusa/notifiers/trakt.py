@@ -138,7 +138,7 @@ class Notifier(object):
                 else:
                     log.warning(
                         "There's a coding problem contact developer. It's needed to be provided at"
-                        " least one of the two: data_show or show_obj",
+                        ' least one of the two: data_show or show_obj',
                     )
                     return False
 

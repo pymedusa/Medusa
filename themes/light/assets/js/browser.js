@@ -108,7 +108,7 @@
 
         fileBrowserDialog.dialog('option', 'buttons', [{
             text: 'Ok',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 // Store the browsed path to the associated text field
                 callback(currentBrowserPath, options);
@@ -116,7 +116,7 @@
             }
         }, {
             text: 'Cancel',
-            class: 'btn',
+            class: 'btn-medusa',
             click() {
                 $(this).dialog('close');
             }
@@ -125,7 +125,7 @@
         // Set up the browser and launch the dialog
         let initialDir = '';
         if (options.initialDir) {
-            initialDir = options.initialDir;
+            initialDir = options.initialDir; // eslint-disable-line prefer-destructuring
         }
 
         browse(initialDir, options.url, options.includeFiles);
@@ -185,8 +185,8 @@
         // If the text field is empty and we're given a key then populate it with the last browsed value from localStorage
         try {
             ls = Boolean(localStorage.getItem);
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
         }
         if (ls && options.key) {
             path = localStorage['fileBrowser-' + options.key];
@@ -208,14 +208,12 @@
         options.field.addClass('fileBrowserField');
         if (options.showBrowseButton) {
             // Append the browse button and give it a click behaviour
-            options.field.after(
-                $('<input type="button" value="Browse&hellip;" class="btn btn-inline fileBrowser">').on('click', function() {
-                    const initialDir = options.field.val() || (options.key && path) || '';
-                    const optionsWithInitialDir = $.extend({}, options, { initialDir });
-                    $(this).nFileBrowser(callback, optionsWithInitialDir);
-                    return false;
-                })
-            );
+            options.field.after($('<input type="button" value="Browse&hellip;" class="btn-medusa btn-inline fileBrowser">').on('click', function() {
+                const initialDir = options.field.val() || (options.key && path) || '';
+                const optionsWithInitialDir = $.extend({}, options, { initialDir });
+                $(this).nFileBrowser(callback, optionsWithInitialDir);
+                return false;
+            }));
         }
         return options.field;
     };

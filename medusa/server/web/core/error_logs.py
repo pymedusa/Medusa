@@ -16,6 +16,7 @@ from medusa.server.web.core.base import PageTemplate, WebRoot
 from medusa.version_checker import CheckVersion
 
 from six import text_type
+
 from tornroutes import route
 
 log = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ class ErrorLogs(WebRoot):
             level = logging.ERROR
 
         t = PageTemplate(rh=self, filename='errorlogs.mako')
-        return t.render(topmenu='system', submenu=self._create_menu(level), logLevel=level,
+        return t.render(submenu=self._create_menu(level), logLevel=level,
                         controller='errorlogs', action='index')
 
     @staticmethod
@@ -145,7 +146,7 @@ class ErrorLogs(WebRoot):
                                                                                   search_query=log_search))]
 
         if not text_view:
-            return t.render(topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+            return t.render(log_lines='\n'.join([html_escape(line) for line in data]),
                             min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
                             controller='errorlogs', action='viewlogs')
         else:

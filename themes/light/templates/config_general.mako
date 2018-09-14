@@ -1,6 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import datetime
+    import json
     import locale
     from medusa import app, config, metadata
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
@@ -12,24 +13,16 @@
 %>
 <%block name="scripts">
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - General'
-        },
-        data() {
-            return {
-                header: 'General Configuration'
-            };
-        }
-    });
-};
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap'
+});
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <% indexer = 0 %>
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
@@ -44,7 +37,7 @@ const startVue = () => {
                     <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
                 </ul>
                 <div id="misc">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Misc</h3>
                         <p>Startup options. Indexer options. Log and show file locations.</p>
                         <p><b>Some options may require a manual restart to take effect.</b></p>
@@ -119,15 +112,16 @@ const startVue = () => {
                                 <label>
                                     <span class="component-title">Show root directories</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <%include file="/inc_rootDirs.mako"/>
+                                        <p>where the files of shows are located<br>
+                                        <b>These changes are automatically saved!</b></p>
+                                        <root-dirs></root-dirs>
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Indexer</h3>
                         <p>Options for controlling the show indexers.</p>
                     </div>
@@ -206,7 +200,7 @@ const startVue = () => {
                         </fieldset>
                     </div>
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Updates</h3>
                         <p>Options for software updates.</p>
                     </div>
@@ -250,12 +244,12 @@ const startVue = () => {
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
                 </div><!-- /component-group1 //-->
                 <div id="interface">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
@@ -401,10 +395,10 @@ const startVue = () => {
                             <span class="component-desc">URL where the shows can be downloaded.</span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
@@ -416,7 +410,7 @@ const startVue = () => {
                                 <span class="component-title">API key</span>
                                 <span class="component-desc">
                                     <input type="text" name="api_key" id="api_key" value="${app.API_KEY}" class="form-control input-sm input300" readonly="readonly"/>
-                                    <input class="btn btn-inline" type="button" id="generate_new_apikey" value="Generate">
+                                    <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate">
                                     <div class="clear-left">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
                                         <p>you can try all the features of the API <app-link href="apibuilder/">here</app-link></p>
@@ -529,12 +523,12 @@ const startVue = () => {
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 </div>
                 <div id="advanced-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Advanced Settings</h3>
                     </div>
                 <div class="component-group">
@@ -678,10 +672,10 @@ const startVue = () => {
                             </label>
                         </div>
 
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Logging</h3>
                     </div>
                 <div class="component-group">
@@ -732,10 +726,10 @@ const startVue = () => {
                                 </span>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>GitHub</h3>
                         <p>Options for github related features.</p>
                     </div>
@@ -759,9 +753,9 @@ const startVue = () => {
                                     % endif
                                     </select>
                                     % if not gh_branch:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch" disabled>
                                     % else:
-                                       <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                       <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
                                     % endif
                                     % if not gh_branch:
                                        <div class="clear-left" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></div>
@@ -815,9 +809,9 @@ const startVue = () => {
                                     <span class="component-desc">
                                         <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
                                          % if not app.GIT_TOKEN:
-                                            <input class="btn btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                            <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
                                          % else:
-                                            <input class="btn btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                            <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
                                          % endif
                                         <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
                                     </span>
@@ -867,20 +861,20 @@ const startVue = () => {
                                             % endfor
                                         % endif
                                     </select>
-                                    <input class="btn btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
+                                    <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
                                 </span>
                                 <div class="clear-left">
                                     <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
                                 </div>
                             </label>
                         </div>
-                        <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
                 </div><!-- /component-group3 //-->
                 <br>
                 <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
-                <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components -->
         </form>
     </div>

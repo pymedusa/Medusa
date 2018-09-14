@@ -3,62 +3,57 @@
 from __future__ import unicode_literals
 
 import datetime
+import functools
 import os
+
+from tests.providers.conftest import providers
+
 import vcr
 
+# Set this to True to record cassettes
+record_cassettes = False
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+record_mode = 'all' if record_cassettes else 'none'
 
 
-def test_search_daily(providers, limit=3):
-
+def search(search_type, provider):
+    """Generate test for provider search of a specific type."""
     # Given
-    for provider in providers:
+    test_case = provider.data[search_type]
+    expected = test_case['results']
+    limit = len(expected)
 
-        # When
-        html = os.path.join(__location__, provider.type, provider.name,
-                            provider.name + '_daily.yaml')
+    # When
+    cassette_filename = '{0}_{1}.yaml'.format(provider.name, search_type)
+    cassette_path = os.path.join(__location__, provider.type, provider.name,
+                                 cassette_filename)
+    with vcr.use_cassette(cassette_path, record_mode=record_mode):
+        actual = provider.klass.search(test_case['search_strings'])
 
-        with vcr.use_cassette(html):
-            actual = provider.klass.search(provider.data['daily']['search_strings'])
+    for i, result in enumerate(actual):
+        # Only compare up to the info hash if we have magnets
+        if expected[i]['link'].startswith('magnet:'):
+            result['link'] = result['link'][:60]
+        # Only verify that we got a datetime object for now
+        pubdate = expected[i]['pubdate']
+        if pubdate and isinstance(pubdate, datetime.datetime):
+            result['pubdate'] = pubdate
 
-        for i, result in enumerate(actual):
-            # Only compare up to the info hash if we have magnets
-            if provider.data['daily']['results'][i]['link'].startswith('magnet:'):
-                result['link'] = result['link'][:60]
-            # Only verify that we got a datetime object for now
-            pubdate = provider.data['daily']['results'][i]['pubdate']
-            if pubdate and isinstance(pubdate, datetime.datetime):
-                result['pubdate'] = pubdate
+        # Then
+        assert result == expected[i]
 
-            assert result == provider.data['daily']['results'][i]
-
-            if i + 1 == limit:
-                break
+        if i + 1 == limit:
+            break
 
 
-def test_search_backlog(providers, limit=2):
+def generate_test_cases():
+    for provider in providers():
+        for search_type in ('daily', 'backlog'):
+            test_name = 'test_{0}_{1}_search'.format(provider.name, search_type)
+            generated_test = functools.partial(search, search_type, provider)
+            globals()[test_name] = generated_test
+            del generated_test
 
-        # Given
-        for provider in providers:
 
-            # When
-            html = os.path.join(__location__, provider.type, provider.name,
-                                provider.name + '_backlog.yaml')
-
-            with vcr.use_cassette(html):
-                actual = provider.klass.search(provider.data['backlog']['search_strings'])
-
-            for i, result in enumerate(actual):
-                # Only compare up to the info hash if we have magnets
-                if provider.data['backlog']['results'][i]['link'].startswith('magnet:'):
-                    result['link'] = result['link'][:60]
-                # Only verify that we got a datetime object for now
-                pubdate = provider.data['backlog']['results'][i]['pubdate']
-                if pubdate and isinstance(pubdate, datetime.datetime):
-                    result['pubdate'] = pubdate
-
-                assert result == provider.data['backlog']['results'][i]
-
-                if i + 1 == limit:
-                    break
+generate_test_cases()

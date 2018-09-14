@@ -3,7 +3,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
     let selectedEpisode;
     const searchTypesList = ['.epSubtitlesSearch', '.epSubtitlesSearchPP', '.epRedownloadSubtitle', '.epSearch', '.epRetry', '.epManualSearch'];
     const subtitlesResultModal = $('#manualSubtitleSearchModal');
-    const subtitlesMulti = MEDUSA.config.subtitlesMulti;
+    const { subtitlesMulti } = MEDUSA.config;
     const loadingSpinner = 'images/loading32' + MEDUSA.config.themeSpinner + '.gif';
 
     function disableAllSearches() {
@@ -109,7 +109,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
             });
         });
 
-        $('#askmanualSubtitleSearchModal .btn').on('click', function() {
+        $('#askmanualSubtitleSearchModal .btn-medusa').on('click', function() {
             if ($(this).text().toLowerCase() === 'manual') {
                 // Call manual search
                 searchSubtitles();
@@ -243,7 +243,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
             $('#confirmSubtitleReDownloadModal').modal('show');
         });
 
-        $('#confirmSubtitleReDownloadModal .btn.btn-success').on('click', () => {
+        $('#confirmSubtitleReDownloadModal .btn-medusa.btn-success').on('click', () => {
             redownloadSubtitles();
         });
 

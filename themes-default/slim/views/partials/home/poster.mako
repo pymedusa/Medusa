@@ -1,11 +1,13 @@
 <%!
-    from medusa import app
     import calendar
+    import re
+
+    from medusa import app
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.helpers import remove_article
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
-    import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
@@ -42,7 +44,12 @@
                 </div>
             % endif
         % endfor
-        <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+        <%
+            def titler(x):
+                return (remove_article(x), x)[not x or app.SORT_ARTICLE]
+
+            my_show_list.sort(key=lambda x: titler(x.name).lower())
+        %>
         % for cur_show in my_show_list:
         <%
             cur_airs_next = ''
@@ -99,7 +106,9 @@
                         <img src="images/poster-back-dark.png"/>
                     </div>
                     <div class="poster-overlay">
-                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" series="${cur_show.slug}" asset="posterThumb"/></app-link>
+                        <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">
+                            <asset default="images/poster.png" show-slug="${cur_show.slug}" :lazy="false" type="posterThumb" cls="show-image" :link="false"></asset>
+                        </app-link>
                     </div>
                 </div>
                 <div class="show-poster-footer row">
@@ -145,7 +154,9 @@
                                     </td>
                                     <td class="show-table">
                                     % if cur_show.network:
-                                        <span title="${cur_show.network}"><img class="show-network-image" src="images/network/nonetwork.png" lazy="on" series="${cur_show.slug}" asset="network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                                        <span title="${cur_show.network}">
+                                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" :lazy="false" type="network" cls="show-network-image" :link="false" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                                        </span>
                                     % else:
                                         <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                     % endif

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -149,7 +148,7 @@ class ABNormalProvider(TorrentProvider):
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
-                                      " minimum seeders: {0}. Seeders: {1}",
+                                      ' minimum seeders: {0}. Seeders: {1}',
                                       title, seeders)
                         continue
 
@@ -171,8 +170,7 @@ class ABNormalProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -191,7 +189,7 @@ class ABNormalProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if not re.search('torrents.php', response.text):
+        if "Votre nom d'utilisateur ou mot de passe est incorrect." in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 

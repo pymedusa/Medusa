@@ -1,39 +1,65 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import datetime
-    import locale
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
-    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
-    from medusa import config
-    from medusa import metadata
-    from medusa.metadata.generic import GenericMetadata
-%>
 <%block name="scripts">
 <script>
-let app;
-const startVue = () => {
-    app = new Vue({
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Config - Backup/Restore'
+window.app = {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+            backup: {
+                disabled: false,
+                status: '',
+                dir: ''
+            },
+            restore: {
+                disabled: false,
+                status: '',
+                file: ''
+            }
+        };
+    },
+    beforeMount() {
+        $('#config-components').tabs();
+    },
+    methods: {
+        runBackup() {
+            const { backup } = this;
+
+            if (!backup.dir) return;
+
+            backup.disabled = true;
+            backup.status = MEDUSA.config.loading;
+
+            $.get('config/backuprestore/backup', {
+                backupDir: backup.dir
+            }).done(data => {
+                backup.status = data;
+                backup.disabled = false;
+            });
         },
-        data() {
-            return {
-                header: 'Backup/Restore'
-            };
+        runRestore() {
+            const { restore } = this;
+
+            if (!restore.file) return;
+
+            restore.disabled = true;
+            restore.status = MEDUSA.config.loading;
+
+            $.get('config/backuprestore/restore', {
+                backupFile: restore.file
+            }).done(data => {
+                restore.status = data;
+                restore.disabled = false;
+            });
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
-<% indexer = 0 %>
-% if app.INDEXER_DEFAULT:
-    <% indexer = app.INDEXER_DEFAULT %>
-% endif
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form name="configForm" method="post" action="config/backuprestore">
@@ -43,7 +69,7 @@ const startVue = () => {
                     <li><app-link href="#restore">Restore</app-link></li>
                 </ul>
                 <div id="backup" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Backup</h3>
                         <p><b>Backup your main database file and config.</b></p>
                     </div>
@@ -51,15 +77,16 @@ const startVue = () => {
                         <div class="field-pair">
                             Select the folder you wish to save your backup file to:
                             <br><br>
-                            <input type="text" name="backupDir" id="backupDir" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Backup" id="Backup" />
+                            <file-browser name="backupDir" title="Select backup folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
+                            <br>
+                            <input @click="runBackup" :disabled="backup.disabled" class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>
                         </div>
-                        <div class="Backup" id="Backup-result"></div>
+                        <div v-html="backup.status" class="Backup" id="Backup-result"></div>
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="restore" class="component-group clearfix">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Restore</h3>
                         <p><b>Restore your main database file and config.</b></p>
                     </div>
@@ -67,11 +94,12 @@ const startVue = () => {
                         <div class="field-pair">
                             Select the backup file you wish to restore:
                             <br><br>
-                            <input type="text" name="backupFile" id="backupFile" class="form-control input-sm input350"/>
-                            <input class="btn btn-inline" type="button" value="Restore" id="Restore" />
+                            <file-browser name="backupFile" title="Select backup file to restore" local-storage-key="backupFile" include-files @update="restore.file = $event"></file-browser>
+                            <br>
+                            <input @click="runRestore" :disabled="restore.disabled" class="btn-medusa btn-inline" type="button" value="Restore" id="Restore" />
                             <br>
                         </div>
-                        <div class="Restore" id="Restore-result"></div>
+                        <div v-html="restore.status" class="Restore" id="Restore-result"></div>
                     </fieldset>
                 </div><!-- /component-group2 //-->
             </div><!-- /config-components -->
