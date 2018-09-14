@@ -1,1 +1,0 @@
-MEDUSA.manage.init = function() {};
