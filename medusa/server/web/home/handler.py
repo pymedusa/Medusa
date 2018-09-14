@@ -248,7 +248,7 @@ class Home(WebRoot):
         return show_stat, max_download_count
 
     def is_alive(self, *args, **kwargs):
-        self.set_header('Content-Type', 'text/javascript')
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'x-requested-with')
 
