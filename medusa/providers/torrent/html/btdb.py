@@ -31,6 +31,7 @@ class BTDBProvider(TorrentProvider):
         # URLs
         self.url = 'https://btdb.to'
         self.urls = {
+            'rss': urljoin(self.url, '/q/x264/?sort=time'),
             'search': urljoin(self.url, '/q/{query}/{page}?sort=popular'),
         }
 
@@ -60,22 +61,30 @@ class BTDBProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                for page in range(1, self.max_pages + 1):
-                    search_url = self.urls['search'].format(query=search_string, page=page)
+                    for page in range(1, self.max_pages + 1):
+                        search_url = self.urls['search'].format(query=search_string, page=page)
+    
+                        response = self.session.get(search_url)
+                        if not response or not response.text:
+                            log.debug('No data returned from provider')
+                            break
+    
+                        page_results = self.parse(response.text, mode)
+                        results += page_results
+                        if len(page_results) < 10:
+                            break
+    
+                    # We don't have the real seeds but we can sort results by popularity and
+                    # normalize seeds numbers so results can be sort in manual search
+                    results = self.calc_seeds(results)
 
-                    response = self.session.get(search_url)
+                else:
+                    response = self.session.get(self.urls['rss'])
                     if not response or not response.text:
                         log.debug('No data returned from provider')
-                        break
+                        continue
 
-                    page_results = self.parse(response.text, mode)
-                    results += page_results
-                    if len(page_results) < 10:
-                        break
-
-                # We don't have the real seeds but we can sort results by popularity and
-                # normalize seeds numbers so results can be sort in manual search
-                results = self.calc_seeds(results)
+                    results += self.parse(response.text, mode)
 
         return results
 
@@ -98,7 +107,8 @@ class BTDBProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            for row in table_body.find_all('li', class_='search-ret-item'):
+            torrent_rows = table_body.find_all('li', class_='search-ret-item')
+            for row in torrent_rows:
                 try:
 
                     title = row.find('h2').find('a').get('title')
