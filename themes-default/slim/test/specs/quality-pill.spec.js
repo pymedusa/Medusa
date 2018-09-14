@@ -1,8 +1,9 @@
 import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue } from '@vue/test-utils';
 import { QualityPill } from '../../src/components';
+import { generatePropTest } from '../helpers/generators';
 import fixtures from '../__fixtures__/common';
 
 test.beforeEach(t => {
@@ -16,22 +17,7 @@ test.beforeEach(t => {
     t.context.store = new Store({ state });
 });
 
-/**
- * Generate a simple test case
- *
- * @param {*} t - AVA test
- * @param {string} message - Test message
- * @param {object} propsData - Props to pass to the component.
- */
-const pillTestCase = (t, message, propsData) => {
-    const { localVue, store } = t.context;
-
-    t.snapshot(mount(QualityPill, {
-        localVue,
-        store,
-        propsData
-    }).html(), message);
-};
+const pillTestCase = generatePropTest(QualityPill);
 
 test('renders quality pills correctly', t => {
     pillTestCase(t, 'No qualities', {
