@@ -30,10 +30,10 @@ window.app = new Vue({
                     name: $(this).val()
                 }
             }).then(response => {
-                log.info(response);
+                console.info(response);
                 window.location.reload();
             }).catch(error => {
-                log.error(error);
+                console.error(error);
             });
         });
 
