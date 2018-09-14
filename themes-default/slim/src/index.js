@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import 'bootstrap'; // eslint-disable-line import/no-unassigned-import
 import 'bootstrap/dist/css/bootstrap.min.css'; // eslint-disable-line import/no-unassigned-import
-import './css/open-sans.css'; // eslint-disable-line import/no-unassigned-import
+import '../vendor/css/open-sans.css'; // eslint-disable-line import/no-unassigned-import
 
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -19,6 +19,7 @@ import router from './router';
 import { isDevelopment } from './utils';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import {
+    AddShowOptions,
     AnidbReleaseGroupUi,
     AppHeader,
     AppLink,
@@ -76,6 +77,7 @@ if (window) {
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
+    window.components.push(AddShowOptions);
     window.components.push(AnidbReleaseGroupUi);
     window.components.push(AppHeader);
     window.components.push(AppLink);
@@ -96,6 +98,7 @@ if (window) {
     window.components.push(StateSwitch);
     window.components.push(Status);
 }
+
 const UTIL = {
     exec(controller, action) {
         const ns = MEDUSA;
@@ -106,30 +109,9 @@ const UTIL = {
         }
     },
     init() {
-        if (typeof startVue === 'function') { // eslint-disable-line no-undef
-            startVue(); // eslint-disable-line no-undef
-        } else {
-            $('[v-cloak]').removeAttr('v-cloak');
-        }
+        $('[v-cloak]').removeAttr('v-cloak');
 
         const { body } = document;
-        $('[asset]').each(function() {
-            const asset = $(this).attr('asset');
-            const show = $(this).attr('series');
-            const path = apiRoot + 'series/' + show + '/asset/' + asset + '?api_key=' + apiKey;
-            if (this.tagName.toLowerCase() === 'img') {
-                const defaultPath = $(this).attr('src');
-                if ($(this).attr('lazy') === 'on') {
-                    $(this).attr('data-original', path);
-                } else {
-                    $(this).attr('src', path);
-                }
-                $(this).attr('onerror', 'this.src = "' + defaultPath + '"; return false;');
-            }
-            if (this.tagName.toLowerCase() === 'a') {
-                $(this).attr('href', path);
-            }
-        });
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
@@ -141,15 +123,6 @@ const UTIL = {
     }
 };
 
-$.fn.extend({
-    addRemoveWarningClass(_) {
-        if (_) {
-            return $(this).removeClass('warning');
-        }
-        return $(this).addClass('warning');
-    }
-});
-
 const { pathname } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
@@ -157,9 +130,7 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
-        if (navigator.userAgent.indexOf('PhantomJS') === -1) {
-            $(document).ready(UTIL.init);
-        }
+        $(document).ready(UTIL.init);
 
         MEDUSA.config.indexers.indexerIdToName = indexerId => {
             if (!indexerId) {

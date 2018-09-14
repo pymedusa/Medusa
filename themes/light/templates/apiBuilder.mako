@@ -136,9 +136,12 @@
         var commands = ${sorted([binary_type(_) for _ in commands])};
         var episodes = ${episodes};
         </script>
-        ## This contains all the Webpack-imported modules
+
+        ## These contain all the Webpack-imported modules
         <script src="js/vendors.js?${sbPID}"></script>
+        <script src="js/medusa-runtime.js?${sbPID}"></script>
         <script src="js/index.js?${sbPID}"></script>
+
         <script src="js/vender.min.js?${sbPID}"></script>
         <script src="js/apibuilder.js?${sbPID}"></script>
     </body>
