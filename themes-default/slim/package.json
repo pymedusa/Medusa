@@ -117,7 +117,6 @@
       "PNotify",
       "LazyLoad",
       "_",
-      "log",
       "$",
       "MEDUSA",
       "api",
@@ -134,6 +133,15 @@
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js"
+    ],
+    "overrides": [
+      {
+        "files": "src/**",
+        "globals": [
+          "$",
+          "MEDUSA"
+        ]
+      }
     ],
     "esnext": true
   },
