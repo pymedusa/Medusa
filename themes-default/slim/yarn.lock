@@ -5366,6 +5366,10 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
+just-flip-object@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/just-flip-object/-/just-flip-object-1.1.0.tgz#b2a81068e5e1c914e75c75ceb7e98eccc4dce46c"
+
 kind-of@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-1.1.0.tgz#140a3d2d41a36d2efcfa9377b62c24f8495a5c44"

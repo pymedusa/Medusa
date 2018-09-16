@@ -1,4 +1,5 @@
 <script>
+import flip from 'just-flip-object';
 import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
@@ -47,7 +48,8 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers
+            indexerConfig: state => state.config.indexers.config.indexers,
+            statusStrings: state => flip(state.statuses.strings)
         }),
         ...mapGetters([
             'getShowById'
@@ -89,6 +91,31 @@ export default {
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
             return `${indexerUrl}${id}`;
+        },
+        statuses() {
+            const { statuses, config } = this.$store.state;
+            const { strings } = statuses;
+            const allowed = [
+                'Wanted',
+                'Skipped',
+                'Ignored',
+                'Downloaded',
+                'Archived'
+            ];
+            if (config.failedDownloads.enabled) {
+                allowed.push('Failed');
+            }
+
+            const filteredStatuses = flip(Object.values(strings)
+                .filter(key => allowed.includes(key))
+                .reduce((obj, key) => {
+                    obj[key] = flip(strings)[key];
+                    return obj;
+                }, {}));
+
+            return Object.values(filteredStatuses)
+                // Sort array to be same as allowed array
+                .sort((a, b) => allowed.indexOf(a) > allowed.indexOf(b));
         }
     },
     mounted() {

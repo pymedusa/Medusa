@@ -860,6 +860,17 @@ eval("var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!\n * jQ
 
 /***/ }),
 
+/***/ "./node_modules/just-flip-object/index.js":
+/*!************************************************!*\
+  !*** ./node_modules/just-flip-object/index.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+eval("module.exports = flip;\n/*\n  // flip the key and value\n  flip({a: 'x', b: 'y', c: 'z'}); // {x: 'a', y: 'b', z: 'c'}\n  flip({a: 1, b: 2, c: 3}); // {'1': 'a', '2': 'b', '3': 'c'}\n  flip({a: false, b: true}); // {false: 'a', true: 'b'}\n*/\n\nfunction flip(obj) {\n  var result = {};\n  var keys = Object.keys(obj);\n  var len = keys.length;\n\n  for (var i = 0; i < len; i++) {\n    var key = keys[i];\n    result[obj[key]] = key;\n  }\n\n  return result;\n}\n\n//# sourceURL=webpack:///./node_modules/just-flip-object/index.js?");
+
+/***/ }),
+
 /***/ "./node_modules/lodash/_Symbol.js":
 /*!****************************************!*\
   !*** ./node_modules/lodash/_Symbol.js ***!

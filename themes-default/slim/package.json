@@ -60,6 +60,7 @@
     "imagemin-pngquant": "6.0.0",
     "is-visible": "2.2.0",
     "jquery": "3.3.1",
+    "just-flip-object": "1.1.0",
     "lodash": "4.17.11",
     "mini-css-extract-plugin": "0.4.2",
     "nyc": "13.0.1",

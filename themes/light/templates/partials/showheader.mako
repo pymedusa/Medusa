@@ -235,13 +235,7 @@
                 <div class="pull-lg-right top-5">
                     <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                         <option selected value="">Change status to:</option>
-                        <% statuses = [WANTED, SKIPPED, IGNORED, DOWNLOADED, ARCHIVED] %>
-                        % if app.USE_FAILED_DOWNLOADS:
-                            <% statuses.append(FAILED) %>
-                        % endif
-                        % for cur_status in statuses:
-                            <option value="${cur_status}">${statusStrings[cur_status]}</option>
-                        % endfor
+                        <option v-for="status in statuses" :value="statusStrings[status]">{{ status }}</option>
                     </select>
                     <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                         <option selected value="">Change quality to:</option>
