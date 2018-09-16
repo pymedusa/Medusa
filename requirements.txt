@@ -38,6 +38,6 @@ requests-oauthlib==1.0.0
 six==1.11.0
 stevedore==1.29.0
 git+https://github.com/pymedusa/subliminal.git@78687f45d23b1bc47fae0a5493be0198dc1fd5b5#egg=subliminal
-tornado==5.1
+tornado==5.1.1
 tornroutes==0.5.1
 validators==0.12.2
