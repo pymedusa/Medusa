@@ -8,6 +8,7 @@ import datetime
 import mimetypes
 import os
 import shutil
+import site
 import sys
 
 
@@ -26,6 +27,7 @@ def initialize():
     _use_shutil_custom()
     _urllib3_disable_warnings()
     _strptime_workaround()
+    _monkey_patch_bdecode()
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
@@ -46,8 +48,39 @@ def _ext_lib_location():
 
 
 def _configure_syspath():
-    sys.path.insert(1, _lib_location())
-    sys.path.insert(1, _ext_lib_location())
+    """Add the vendored libraries into `sys.path`."""
+    # Note: These paths will be inserted into `sys.path` in reverse order (LIFO)
+    # So the last path on this list will be inserted as the first path on `sys.path`
+    # right after the current working dir.
+    # For example: [ cwd, pathN, ..., path1, path0, <rest_of_sys.path> ]
+
+    paths_to_insert = [
+        _lib_location(),
+        _ext_lib_location()
+    ]
+
+    if sys.version_info[0] == 2:
+        # Add Python 2-only vendored libraries
+        paths_to_insert.extend([
+            # path_to_lib2,
+            # path_to_ext2
+        ])
+    elif sys.version_info[0] == 3:
+        # Add Python 3-only vendored libraries
+        paths_to_insert.extend([
+            # path_to_lib3,
+            # path_to_ext3
+        ])
+
+    # Insert paths into `sys.path` and handle `.pth` files
+    # Inspired by: https://bugs.python.org/issue7744
+    for dirpath in paths_to_insert:
+        # Clear `sys.path`
+        sys.path, remainder = sys.path[:1], sys.path[1:]
+        # Add directory as a site-packages directory and handle `.pth` files
+        site.addsitedir(dirpath)
+        # Restore rest of `sys.path`
+        sys.path.extend(remainder)
 
 
 def _register_utf8_codec():
@@ -119,6 +152,28 @@ def _urllib3_disable_warnings():
 def _strptime_workaround():
     # http://bugs.python.org/issue7980#msg221094
     datetime.datetime.strptime('20110101', '%Y%m%d')
+
+
+def _monkey_patch_bdecode():
+    """
+    Monkeypatch `bencode.bdecode` to add an option to allow extra data.
+
+    This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
+    """
+    import bencode
+
+    def _patched_bdecode(value, allow_extra_data=False):
+        try:
+            result, length = bencode.decode_func[value[0:1]](value, 0)
+        except (IndexError, KeyError, TypeError, ValueError):
+            raise bencode.BencodeDecodeError('not a valid bencoded string')
+
+        if length != len(value) and not allow_extra_data:
+            raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+
+        return result
+
+    bencode.bdecode = _patched_bdecode
 
 
 def _configure_guessit():

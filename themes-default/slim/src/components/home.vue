@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
+import { api } from '../api';
 import AppLink from './app-link.vue';
 
 export default {
@@ -118,14 +119,14 @@ export default {
             api.patch('config/main', {
                 selectedRootIndex: parseInt($(this).val(), 10)
             }).then(response => {
-                log.info(response);
+                console.info(response);
                 window.location.reload();
             }).catch(error => {
-                log.info(error);
+                console.info(error);
             });
         });
 
-        const imgLazyLoad = new LazyLoad({
+        const imgLazyLoad = new LazyLoad({ // eslint-disable-line no-undef
             // Example of options object -> see options section
             threshold: 500
         });
@@ -433,9 +434,9 @@ export default {
                             }
                         }
                     }).then(response => {
-                        log.info(response);
+                        console.info(response);
                     }).catch(error => {
-                        log.error(error);
+                        console.error(error);
                     });
                 }
             });
@@ -445,3 +446,7 @@ export default {
     }
 };
 </script>
+
+<style>
+/* placeholder */
+</style>

@@ -212,15 +212,17 @@
                     % endif
                 </tr>
                 % endif
+                % for cur_index, cur_dir in enumerate(rootDir):
                 <tr>
-                    <td rowspan=${len(rootDir)}>Media Root Directories</td>
-                    % for cur_dir in rootDir:
-                        <td>${cur_dir}</td>
-                        % if rootDir[cur_dir] is not False:
-                            <td align="middle">${rootDir[cur_dir]}</td>
-                        % else:
-                            <td align="middle"><i>Missing</i></td>
-                        % endif
+                    % if cur_index == 0:
+                    <td rowspan="${len(rootDir)}">Media Root Directories</td>
+                    % endif
+                    <td>${cur_dir}</td>
+                    % if rootDir[cur_dir] is not False:
+                        <td align="middle">${rootDir[cur_dir]}</td>
+                    % else:
+                        <td align="middle"><i>Missing</i></td>
+                    % endif
                 </tr>
                 % endfor
             </tbody>

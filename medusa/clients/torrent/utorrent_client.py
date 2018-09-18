@@ -14,6 +14,7 @@ from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
+from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -73,10 +74,17 @@ class UTorrentAPI(GenericClient):
         return super(UTorrentAPI, self)._request(method=method, params=ordered_params, data=data, files=files)
 
     def _get_auth(self):
-        self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
+        try:
+            self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
+        except RequestException as error:
+            log.warning('Unable to authenticate with uTorrent client: {0!r}', error)
+            return None
+
         if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
             return self.auth
+
+        return None
 
     def _add_torrent_uri(self, result):
         """Send an 'add-url' download request to uTorrent when search provider is using a magnet link."""

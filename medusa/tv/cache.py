@@ -49,40 +49,40 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasTable(provider_id):
                 log.debug('Creating cache table for provider {0}', provider_id)
                 self.action(
-                    b'CREATE TABLE [{name}]'
-                    b'   (name TEXT,'
-                    b'    season NUMERIC,'
-                    b'    episodes TEXT,'
-                    b'    indexer NUMERIC,'
-                    b'    indexerid NUMERIC,'
-                    b'    url TEXT,'
-                    b'    time NUMERIC,'
-                    b'    quality NUMERIC,'
-                    b'    release_group TEXT,'
-                    b'    date_added NUMERIC)'.format(name=provider_id))
+                    'CREATE TABLE [{name}]'
+                    '   (name TEXT,'
+                    '    season NUMERIC,'
+                    '    episodes TEXT,'
+                    '    indexer NUMERIC,'
+                    '    indexerid NUMERIC,'
+                    '    url TEXT,'
+                    '    time NUMERIC,'
+                    '    quality NUMERIC,'
+                    '    release_group TEXT,'
+                    '    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
-                    b'SELECT url, COUNT(url) AS count '
-                    b'FROM [{name}] '
-                    b'GROUP BY url '
-                    b'HAVING count > 1'.format(name=provider_id)
+                    'SELECT url, COUNT(url) AS count '
+                    'FROM [{name}] '
+                    'GROUP BY url '
+                    'HAVING count > 1'.format(name=provider_id)
                 )
                 for duplicate in sql_results:
                     self.action(
-                        b'DELETE FROM [{name}] '
-                        b'WHERE url = ?'.format(name=provider_id),
-                        [duplicate[b'url']]
+                        'DELETE FROM [{name}] '
+                        'WHERE url = ?'.format(name=provider_id),
+                        [duplicate['url']]
                     )
 
             # remove wrong old index
-            self.action(b'DROP INDEX IF EXISTS idx_url')
+            self.action('DROP INDEX IF EXISTS idx_url')
 
             # add unique index if one does not exist to prevent further dupes
             log.debug('Creating UNIQUE URL index for {0}', provider_id)
             self.action(
-                b'CREATE UNIQUE INDEX '
-                b'IF NOT EXISTS idx_url_{name} '
-                b'ON [{name}] (url)'.format(name=provider_id)
+                'CREATE UNIQUE INDEX '
+                'IF NOT EXISTS idx_url_{name} '
+                'ON [{name}] (url)'.format(name=provider_id)
             )
 
             # add release_group column to table if missing
@@ -111,9 +111,9 @@ class CacheDBConnection(db.DBConnection):
         try:
             if not self.hasTable('last_update'):
                 self.action(
-                    b'CREATE TABLE last_update'
-                    b'   (provider TEXT, '
-                    b'    time NUMERIC)'
+                    'CREATE TABLE last_update'
+                    '   (provider TEXT, '
+                    '    time NUMERIC)'
                 )
         except Exception as error:
             log.debug('Error while searching {provider_id}, skipping: {error!r}',
@@ -162,8 +162,8 @@ class Cache(object):
                      {'x': days, 'provider': self.provider_id})
             cache_db_con = self._get_db()
             cache_db_con.action(
-                b'DELETE FROM [{provider}] '
-                b'WHERE time < ? '.format(provider=self.provider_id),
+                'DELETE FROM [{provider}] '
+                'WHERE time < ? '.format(provider=self.provider_id),
                 [retention_period]
             )
 
@@ -319,33 +319,33 @@ class Cache(object):
     @property
     def updated(self):
         """Timestamp of last update."""
-        return self._get_time(b'last_update')
+        return self._get_time('last_update')
 
     @updated.setter
     def updated(self, value):
-        self._set_time(b'last_update', value)
+        self._set_time('last_update', value)
 
     @property
     def searched(self):
         """Timestamp of last search."""
-        return self._get_time(b'lastSearch')
+        return self._get_time('lastSearch')
 
     @searched.setter
     def searched(self, value):
-        self._set_time(b'lastSearch', value)
+        self._set_time('lastSearch', value)
 
     def _get_time(self, table):
         """Get last provider update."""
         cache_db_con = self._get_db()
         sql_results = cache_db_con.select(
-            b'SELECT time '
-            b'FROM {name} '
-            b'WHERE provider = ?'.format(name=table),
+            'SELECT time '
+            'FROM {name} '
+            'WHERE provider = ?'.format(name=table),
             [self.provider_id]
         )
 
         if sql_results:
-            last_time = int(sql_results[0][b'time'])
+            last_time = int(sql_results[0]['time'])
             if last_time > int(time()):
                 last_time = 0
         else:
@@ -358,8 +358,8 @@ class Cache(object):
         cache_db_con = self._get_db()
         cache_db_con.upsert(
             table,
-            {b'time': int(value or 0)},
-            {b'provider': self.provider_id}
+            {'time': int(value or 0)},
+            {'provider': self.provider_id}
         )
 
     def should_update(self):
@@ -419,11 +419,11 @@ class Cache(object):
             if not self.item_in_cache(url):
                 log.debug('Added item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
                 return [
-                    b'INSERT INTO [{name}] '
-                    b'   (name, season, episodes, indexerid, url, time, quality, '
-                    b'    release_group, version, seeders, leechers, size, pubdate, '
-                    b'    proper_tags, date_added, indexer ) '
-                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                    'INSERT INTO [{name}] '
+                    '   (name, season, episodes, indexerid, url, time, quality, '
+                    '    release_group, version, seeders, leechers, size, pubdate, '
+                    '    proper_tags, date_added, indexer ) '
+                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
                     [name, season, episode_text, parse_result.series.series_id, url,
@@ -433,11 +433,11 @@ class Cache(object):
             else:
                 log.debug('Updating item: {0} to cache: {1}', name, self.provider_id)
                 return [
-                    b'UPDATE [{name}] '
-                    b'SET name=?, season=?, episodes=?, indexer=?, indexerid=?, '
-                    b'    time=?, quality=?, release_group=?, version=?, '
-                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
-                    b'WHERE url=?'.format(
+                    'UPDATE [{name}] '
+                    'SET name=?, season=?, episodes=?, indexer=?, indexerid=?, '
+                    '    time=?, quality=?, release_group=?, version=?, '
+                    '    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
+                    'WHERE url=?'.format(
                         name=self.provider_id
                     ),
                     [name, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
@@ -449,10 +449,10 @@ class Cache(object):
         """Check if the url is already available for the specific provider."""
         cache_db_con = self._get_db()
         return cache_db_con.select(
-            b'SELECT COUNT(url) '
-            b'FROM [{provider}] '
-            b'WHERE url=?'.format(provider=self.provider_id), [url]
-        )[0][0]
+            'SELECT COUNT(url) as count '
+            'FROM [{provider}] '
+            'WHERE url=?'.format(provider=self.provider_id), [url]
+        )[0]['count']
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):
@@ -463,26 +463,26 @@ class Cache(object):
         cache_db_con = self._get_db()
         if not episode:
             sql_results = cache_db_con.select(
-                b'SELECT * FROM [{name}]'.format(name=self.provider_id))
+                'SELECT * FROM [{name}]'.format(name=self.provider_id))
         elif not isinstance(episode, list):
             sql_results = cache_db_con.select(
-                b'SELECT * FROM [{name}] '
-                b'WHERE indexer = ? AND'
-                b'      indexerid = ? AND'
-                b'      season = ? AND'
-                b'      episodes LIKE ?'.format(name=self.provider_id),
+                'SELECT * FROM [{name}] '
+                'WHERE indexer = ? AND'
+                '      indexerid = ? AND'
+                '      season = ? AND'
+                '      episodes LIKE ?'.format(name=self.provider_id),
                 [episode.series.indexer, episode.series.series_id, episode.season,
                  '%|{0}|%'.format(episode.episode)]
             )
         else:
             for ep_obj in episode:
                 results.append([
-                    b'SELECT * FROM [{name}] '
-                    b'WHERE indexer = ? AND '
-                    b'      indexerid = ? AND'
-                    b'      season = ? AND'
-                    b'      episodes LIKE ? AND '
-                    b'      quality IN ({qualities})'.format(
+                    'SELECT * FROM [{name}] '
+                    'WHERE indexer = ? AND '
+                    '      indexerid = ? AND'
+                    '      season = ? AND'
+                    '      episodes LIKE ? AND '
+                    '      quality IN ({qualities})'.format(
                         name=self.provider_id,
                         qualities=','.join((str(x)
                                             for x in ep_obj.wanted_quality))
@@ -508,19 +508,19 @@ class Cache(object):
 
         # for each cache entry
         for cur_result in sql_results:
-            if cur_result[b'indexer'] is None:
+            if cur_result['indexer'] is None:
                 log.debug('Ignoring result: {0}, missing indexer. This is probably a result added'
-                          ' prior to medusa version 0.2.0', cur_result[b'name'])
+                          ' prior to medusa version 0.2.0', cur_result['name'])
                 continue
 
             search_result = self.provider.get_result()
 
             # ignored/required words, and non-tv junk
-            if not naming.filter_bad_releases(cur_result[b'name']):
+            if not naming.filter_bad_releases(cur_result['name']):
                 continue
 
             # get the show, or ignore if it's not one of our shows
-            series_obj = Show.find_by_id(app.showList, int(cur_result[b'indexer']), int(cur_result[b'indexerid']))
+            series_obj = Show.find_by_id(app.showList, int(cur_result['indexer']), int(cur_result['indexerid']))
             if not series_obj:
                 continue
 
@@ -530,15 +530,15 @@ class Cache(object):
                 continue
 
             # build a result object
-            search_result.quality = int(cur_result[b'quality'])
-            search_result.release_group = cur_result[b'release_group']
-            search_result.version = cur_result[b'version']
-            search_result.name = cur_result[b'name']
-            search_result.url = cur_result[b'url']
-            search_result.season = int(cur_result[b'season'])
+            search_result.quality = int(cur_result['quality'])
+            search_result.release_group = cur_result['release_group']
+            search_result.version = cur_result['version']
+            search_result.name = cur_result['name']
+            search_result.url = cur_result['url']
+            search_result.season = int(cur_result['season'])
             search_result.actual_season = search_result.season
 
-            sql_episodes = cur_result[b'episodes'].strip('|')
+            sql_episodes = cur_result['episodes'].strip('|')
             # TODO: Add support for season results
             # Season result
             if not sql_episodes:
@@ -559,7 +559,7 @@ class Cache(object):
                 # if the show says we want that episode then add it to the list
                 if not series_obj.want_episode(search_result.season, cur_ep, search_result.quality,
                                                forced_search, down_cur_quality):
-                    log.debug('Ignoring {0} because one or more episodes are unwanted', cur_result[b'name'])
+                    log.debug('Ignoring {0} because one or more episodes are unwanted', cur_result['name'])
                     all_wanted = False
                     break
 
@@ -580,11 +580,11 @@ class Cache(object):
 
             # Map the remaining attributes
             search_result.series = series_obj
-            search_result.seeders = cur_result[b'seeders']
-            search_result.leechers = cur_result[b'leechers']
-            search_result.size = cur_result[b'size']
-            search_result.pubdate = cur_result[b'pubdate']
-            search_result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
+            search_result.seeders = cur_result['seeders']
+            search_result.leechers = cur_result['leechers']
+            search_result.size = cur_result['size']
+            search_result.pubdate = cur_result['pubdate']
+            search_result.proper_tags = cur_result['proper_tags'].split('|') if cur_result['proper_tags'] else ''
             search_result.content = None
 
             # FIXME: Should be changed to search_result.search_type

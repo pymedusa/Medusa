@@ -22,7 +22,8 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            indexerConfig: state => state.config.indexers.config.indexers
         }),
         ...mapGetters([
             'getShowById'
@@ -53,6 +54,17 @@ export default {
             }
 
             return show;
+        },
+        showIndexerUrl() {
+            const { show, indexerConfig } = this;
+
+            if (!show.indexer || !indexerConfig) {
+                return undefined;
+            }
+
+            const id = show.id[show.indexer];
+            const indexerUrl = indexerConfig[show.indexer].showUrl;
+            return `${indexerUrl}${id}`;
         }
     },
     created() {
@@ -64,6 +76,8 @@ export default {
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
+
+                attachImdbTooltip(); // eslint-disable-line no-undef
             });
         },
         /**
@@ -75,18 +89,23 @@ export default {
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
+        },
+        reverse(array) {
+            return array ? array.slice().reverse() : [];
+        },
+        dedupeGenres(genres) {
+            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
         }
     },
     mounted() {
-        window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            this.reflowLayout();
+        this.$watch('show', () => {
+            this.$nextTick(() => this.reflowLayout());
         });
 
-        attachImdbTooltip(); // eslint-disable-line no-undef
-
-        window.addEventListener('resize', () => {
-            this.reflowLayout();
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
         });
 
         const updateSpinner = function(message, showSpinner) {
@@ -133,12 +152,6 @@ export default {
             });
         });
 
-        $.fn.generateStars = function() {
-            return this.each((index, element) => {
-                $(element).html($('<span/>').width($(element).text() * 12));
-            });
-        };
-
         function initTableSorter(table) {
             // Nasty hack to re-initialize tablesorter after refresh
             $(table).tablesorter({
@@ -180,8 +193,6 @@ export default {
             });
         }
 
-        $('.imdbstars').generateStars();
-
         function checkCacheUpdates(repeat) {
             let pollInterval = 5000;
             repeat = repeat || true;
@@ -198,8 +209,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -290,8 +303,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -354,3 +369,7 @@ export default {
     }
 };
 </script>
+
+<style>
+/* placeholder */
+</style>
