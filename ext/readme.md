@@ -17,6 +17,7 @@
 :: | <code><b>configparser</b>.py</code><br>`configparser.pth`<br>`backports.configparser` | [3.5.0](https://pypi.org/project/configparser/3.5.0/) | `adba` | v | v | `configparser.pth` was renamed from `configparser-3.5.0-py2.7-nspkg.pth`
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | v | v | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `validators` | v | v | -
+:: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | v | v | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | v | v | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | v | v | -
 :: | `dogpile.cache` | [0.6.7](https://pypi.org/project/dogpile.cache/0.6.7/) | **`medusa`**, `subliminal` | v | v | -
@@ -24,7 +25,7 @@
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | v | v | Requires `sgmllib3k` on Python 3
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, `python-twitter`, ????? | v | v | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | v | v | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.43.1](https://pypi.org/project/PyGithub/1.43.1/) | **`medusa`** | v | v | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43.2](https://pypi.org/project/PyGithub/1.43.2/) | **`medusa`** | v | v | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | v | v | -
 :: | `guessit` | [3.0.0](https://pypi.org/project/guessit/3.0.0/) | **`medusa`**, `subliminal` | v | v | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | v | v | -
@@ -61,4 +62,5 @@
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | v | v | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | v | v | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | v | v | -
+:: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | v | v | -
 :: | `PyYAML` | [3.13](https://pypi.org/project/PyYAML/3.13/) | `knowit` | v | v | Module: `yaml`

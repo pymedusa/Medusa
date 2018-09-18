@@ -27,7 +27,7 @@ Mako==1.0.7
 markdown2==2.3.5
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
-PyGithub==1.43.1
+PyGithub==1.43.2
 PyJWT==1.6.4
 python-dateutil==2.7.3
 python-twitter==3.4.2
