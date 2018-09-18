@@ -3,7 +3,8 @@ import { ADD_CONFIG } from '../mutation-types';
 const state = {
     emby: {
         enabled: null,
-        host: null
+        host: null,
+        apiKey: null
     },
     kodi: {
         enabled: null,
@@ -40,12 +41,25 @@ const state = {
             https: null,
             username: null,
             password: null,
+            token: null,
             notify: {
                 download: null,
                 subtitleDownload: null,
                 snatch: null
             }
         }
+    },
+    nmj: {
+        enabled: null,
+        host: null,
+        database: null,
+        mount: null
+    },
+    nmjv2: {
+        enabled: null,
+        host: null,
+        dbloc: null,
+        database: null
     }
 };
 

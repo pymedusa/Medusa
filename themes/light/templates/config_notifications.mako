@@ -20,7 +20,8 @@ window.app = new Vue({
             notifiers: {
                 emby: {
                     enabled: null,
-                    host: null
+                    host: null,
+                    apiKey: null
                 },
                 kodi: {
                     enabled: null,
@@ -57,12 +58,25 @@ window.app = new Vue({
                         https: null,
                         username: null,
                         password: null,
+                        token: null,
                         notify: {
                             download: null,
                             subtitleDownload: null,
                             snatch: null
                         }
                     }
+                },
+                nmj: {
+                    enabled: null,
+                    host: null,
+                    database: null,
+                    mount: null
+                },
+                nmjv2: {
+                    enabled: null,
+                    host: null,
+                    dbloc: null,
+                    database: null
                 }
             }
         };
@@ -761,7 +775,6 @@ window.app = new Vue({
             const { config, stateNotifiers } = this;
 
             // Map the state values to local data.
-            debugger;
             this.notifiers = Object.assign({}, this.notifiers, stateNotifiers);
             this.configLoaded = true;
         });
@@ -867,7 +880,7 @@ window.app = new Vue({
                                                 <span>Plex Media Server Auth Token</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                    <input type="text" name="plex_server_token" id="plex_server_token" value="${app.PLEX_SERVER_TOKEN}" class="form-control input-sm input250"/>
+                                                <input type="text" name="plex_server_token" id="plex_server_token" v-model="notifiers.plex.server.token" @change="save()" @update="notifiers.plex.server.token = $event"/>
                                                 <!-- Can't use the config-textbox component, because of the complex descriptions -->
                                                 <p>Auth Token used by plex</p>
                                                 <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
@@ -946,199 +959,144 @@ window.app = new Vue({
                         </div>
                     </div>
 
-
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-emby" title="Emby"></span>
-                        <h3><app-link href="http://emby.media">Emby</app-link></h3>
-                        <p>A home media server built using other popular open source technologies.</p>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_emby">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_emby" id="use_emby" :checked="notifiers.emby.enabled"/>
-                                        <p>Send update commands to Emby?<p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_emby">
-                                <div class="field-pair">
-                                    <label for="emby_host">
-                                        <span class="component-title">Emby IP:Port</span>
-                                        <input type="text" name="emby_host" id="emby_host" value="${app.EMBY_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">host running Emby (eg. 192.168.1.100:8096)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="emby_apikey">
-                                        <span class="component-title">Emby API Key</span>
-                                        <input type="text" name="emby_apikey" id="emby_apikey" value="${app.EMBY_APIKEY}" class="form-control input-sm input250"/>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testEMBY-result">Click below to test.</div>
-                                <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_emby //-->
-                        </fieldset>
-                    </div><!-- /emby component-group //-->
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
-                        <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
-                        <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_nmj">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_nmj" id="use_nmj" ${'checked="checked"' if app.USE_NMJ else ''}/>
-                                        <p>Send update commands to NMJ?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_nmj">
-                                <div class="field-pair">
-                                    <label for="nmj_host">
-                                        <span class="component-title">Popcorn IP address</span>
-                                        <input type="text" name="nmj_host" id="nmj_host" value="${app.NMJ_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">IP address of Popcorn 200-series (eg. 192.168.1.100)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Get settings</span>
-                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">the Popcorn Hour device must be powered on and NMJ running.</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nmj_database">
-                                        <span class="component-title">NMJ database</span>
-                                        <input type="text" name="nmj_database" id="nmj_database" value="${app.NMJ_DATABASE}" class="form-control input-sm input250" ${'' if app.NMJ_DATABASE else ' readonly="readonly"'}  />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">automatically filled via the 'Get Settings' button.</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nmj_mount">
-                                        <span class="component-title">NMJ mount url</span>
-                                        <input type="text" name="nmj_mount" id="nmj_mount" value="${app.NMJ_MOUNT}" class="form-control input-sm input250" ${'' if app.NMJ_MOUNT else ' readonly="readonly"'}  />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">automatically filled via the 'Get Settings' button.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testNMJ-result">Click below to test.</div>
-                                <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_nmj //-->
-                        </fieldset>
-                    </div><!-- /nmj component-group //-->
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
-                        <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
-                        <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_nmjv2">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_nmjv2" id="use_nmjv2" ${'checked="checked"' if app.USE_NMJv2 else ''}/>
-                                        <p>Send update commands to NMJv2?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_nmjv2">
-                                <div class="field-pair">
-                                    <label for="nmjv2_host">
-                                        <span class="component-title">Popcorn IP address</span>
-                                        <input type="text" name="nmjv2_host" id="nmjv2_host" value="${app.NMJv2_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">IP address of Popcorn 300/400-series (eg. 192.168.1.100)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <span class="component-title">Database location</span>
-                                    <span class="component-desc">
-                                        <label for="NMJV2_DBLOC_A" class="space-right">
-                                            <input type="radio" NAME="nmjv2_dbloc" VALUE="local" id="NMJV2_DBLOC_A" ${'checked="checked"' if app.NMJv2_DBLOC == 'local' else ''}/>PCH Local Media
-                                        </label>
-                                        <label for="NMJV2_DBLOC_B">
-                                            <input type="radio" NAME="nmjv2_dbloc" VALUE="network" id="NMJV2_DBLOC_B" ${'checked="checked"' if app.NMJv2_DBLOC == 'network' else ''}/>PCH Network Media
-                                        </label>
-                                    </span>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="NMJv2db_instance">
-                                        <span class="component-title">Database instance</span>
-                                        <span class="component-desc">
-                                        <select id="NMJv2db_instance" class="form-control input-sm">
-                                            <option value="0">#1 </option>
-                                            <option value="1">#2 </option>
-                                            <option value="2">#3 </option>
-                                            <option value="3">#4 </option>
-                                            <option value="4">#5 </option>
-                                            <option value="5">#6 </option>
-                                            <option value="6">#7 </option>
-                                        </select>
-                                        </span>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">adjust this value if the wrong database is selected.</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="settingsNMJv2">
-                                        <span class="component-title">Find database</span>
-                                        <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">the Popcorn Hour device must be powered on.</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="nmjv2_database">
-                                        <span class="component-title">NMJv2 database</span>
-                                        <input type="text" name="nmjv2_database" id="nmjv2_database" value="${app.NMJv2_DATABASE}" class="form-control input-sm input250" ${'' if app.NMJv2_DATABASE else ' readonly="readonly"'}  />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">automatically filled via the 'Find Database' buttons.</span>
-                                    </label>
-                                </div>
-                            <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
-                            <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
-                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_nmjv2 //-->
-                        </fieldset>
-                    </div><!-- /nmjv2 component-group //-->
-                        <div class="component-group-desc-legacy">
-                            <span class="icon-notifiers-syno1" title="Synology"></span>
-                            <h3><app-link href="http://synology.com/">Synology</app-link></h3>
-                            <p>The Synology DiskStation NAS.</p>
-                            <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-emby" title="Emby"></span>
+                            <h3><app-link href="http://emby.media">Emby</app-link></h3>
+                            <p>A home media server built using other popular open source technologies.</p>
                         </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for emby -->
+                                <config-toggle-slider :checked="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()"  @update="notifiers.emby.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.emby.enabled" id="content_use_emby">
+                                    <config-textbox :value="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()"  @update="notifiers.emby.host = $event"></config-textbox>
+                                    <config-toggle-slider :checked="notifiers.emby.apiKey" label="HTTPS" id="plex_server_https" @change="save()"  @update="notifiers.emby.apiKey = $event"></config-toggle-slider>
+                                
+                                    <div class="testNotification" id="testEMBY-result">Click below to test.</div>
+                                    <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox"></span>
+                            <h3><app-link href="http://www.popcornhour.com/">NMJ</app-link></h3>
+                            <p>The Networked Media Jukebox, or NMJ, is the official media jukebox interface made available for the Popcorn Hour 200-series.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for nmj -->
+                                <config-toggle-slider :checked="notifiers.nmj.enabled" label="Enable" id="use_nmj" :explanations="['Send update commands to NMJ?']" @change="save()"  @update="notifiers.nmj.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.nmj.enabled" id="content-use-nmj">
+                                    <config-textbox :value="notifiers.nmj.host" label="Popcorn IP address" id="nmj_host" :explanations="['IP address of Popcorn 200-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmj.host = $event"></config-textbox>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="get_nmj_settings" class="col-sm-2 control-label">
+                                                <span>Get settings</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />            
+                                                <span>the Popcorn Hour device must be powered on and NMJ running.</span>                    
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <config-textbox :value="notifiers.nmj.database" label="NMJ database" id="nmj_database" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.database = $event"></config-textbox>
+
+                                    <config-textbox :value="notifiers.nmj.mount" label="NMJ mount" id="nmj_mount" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.mount = $event"></config-textbox>
+                                
+                                    <div class="testNotification" id="testNMJ-result">Click below to test.</div>
+                                    <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />        
+
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-nmj" title="Networked Media Jukebox v2"></span>
+                            <h3><app-link href="http://www.popcornhour.com/">NMJv2</app-link></h3>
+                            <p>The Networked Media Jukebox, or NMJv2, is the official media jukebox interface made available for the Popcorn Hour 300 & 400-series.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for njm (popcorn) client -->
+                                <config-toggle-slider :checked="notifiers.nmjv2.enabled" label="Enable" id="use_nmjv2" :explanations="['Send popcorn hour (nmjv2) notifications?']" @change="save()"  @update="notifiers.nmjv2.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.nmjv2.enabled" id="content-use-nmjv2">
+
+                                    <config-textbox :value="notifiers.nmjv2.host" label="Popcorn IP address" id="nmjv2_host" :explanations="['IP address of Popcorn 300/400-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmjv2.host = $event"></config-textbox>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="nmjv2_database_location" class="col-sm-2 control-label">
+                                                <span>Database location</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <label for="NMJV2_DBLOC_A" class="space-right">
+                                                    <input type="radio" NAME="nmjv2_dbloc" VALUE="local" id="NMJV2_DBLOC_A" v-model="notifiers.nmjv2.dbloc" value="local"/>
+                                                    PCH Local Media
+                                                </label>
+                                                <label for="NMJV2_DBLOC_B">
+                                                    <input type="radio" NAME="nmjv2_dbloc" VALUE="network" id="NMJV2_DBLOC_B" v-model="notifiers.nmjv2.dbloc" value="network"/>
+                                                    PCH Network Media
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="nmjv2_database_instance" class="col-sm-2 control-label">
+                                                <span>Database instance</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select id="NMJv2db_instance" class="form-control input-sm">
+                                                    <option value="0">#1 </option>
+                                                    <option value="1">#2 </option>
+                                                    <option value="2">#3 </option>
+                                                    <option value="3">#4 </option>
+                                                    <option value="4">#5 </option>
+                                                    <option value="5">#6 </option>
+                                                    <option value="6">#7 </option>
+                                                </select>
+                                                <span class="component-desc">adjust this value if the wrong database is selected.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="get_nmjv2_find_database" class="col-sm-2 control-label">
+                                                <span>Find database</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
+                                                <span class="component-desc">the Popcorn Hour device must be powered on.</span>
+                                            </div>
+                                        </div>
+                                    </div>  
+
+                                    <config-textbox :value="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()"  @update="notifiers.nmjv2.database = $event"></config-textbox>
+                                    <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
+                                    <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+    
+                    <div class="component-group-desc-legacy">
+                        <span class="icon-notifiers-syno1" title="Synology"></span>
+                        <h3><app-link href="http://synology.com/">Synology</app-link></h3>
+                        <p>The Synology DiskStation NAS.</p>
+                        <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">

@@ -559,5 +559,18 @@ class DataGenerator(object):
         section_data['emby'] = NonEmptyDict()
         section_data['emby']['enabled'] = bool(app.USE_EMBY)
         section_data['emby']['host'] = app.EMBY_HOST
+        section_data['emby']['apiKey'] = app.EMBY_APIKEY
+
+        section_data['nmj'] = NonEmptyDict()
+        section_data['nmj']['enabled'] = bool(app.USE_NMJ)
+        section_data['nmj']['host'] = app.NMJ_HOST
+        section_data['nmj']['database'] = app.NMJ_DATABASE
+        section_data['nmj']['mount'] = app.NMJ_MOUNT
+
+        section_data['nmjv2'] = NonEmptyDict()
+        section_data['nmjv2']['enabled'] = bool(app.USE_NMJv2)
+        section_data['nmjv2']['host'] = app.NMJv2_HOST
+        section_data['nmjv2']['dbloc'] = app.NMJv2_DBLOC
+        section_data['nmjv2']['database'] = app.NMJv2_DATABASE
 
         return section_data
