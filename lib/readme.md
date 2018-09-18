@@ -1,8 +1,8 @@
 ## lib
  Status  |  Package  |  Version / Commit  | Usage | py2 | py3 | Notes
-:------: | :-------: | :----------------: | :---- | :-- | :-- | :----
+:------: | :-------: | :----------------: | :---- | :--: | :--: | :----
 :: | `certgen.py` | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | v | x | **Not a package**
-:: | `native` | - | `pymediainfo` | **Not a package**
+:: | `native` | - | `pymediainfo` | - | - | **Not a package**
 :: | `pkg_resources` | ????? | `babelfish`, `enzyme`, `guessit`, `stevedore`, `pint`, ... | v | x | **Not a package**<br>Part of `setuptools`
 :: | `pymediainfo` | [2.2.1](https://pypi.org/project/pymediainfo/2.2.1/) | `knowit` | v | x | **Modified**: Version number fixed
 :: | `pytimeparse` | [1.1.5](https://pypi.org/project/pytimeparse/1.1.5/) | **`medusa`** | v | x | **Modified**: [#1792](https://github.com/pymedusa/Medusa/pull/1792)
