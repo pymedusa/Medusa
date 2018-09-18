@@ -1,4 +1,13 @@
 MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
+    $.fn.extend({
+        addRemoveWarningClass(_) {
+            if (_) {
+                return $(this).removeClass('warning');
+            }
+            return $(this).addClass('warning');
+        }
+    });
+
     $('#testGrowl').on('click', function() {
         const growl = {};
         growl.host = $.trim($('#growl_host').val());
