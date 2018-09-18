@@ -56,7 +56,7 @@
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | v | v | -
 :: | `stevedore` | [1.29.0](https://pypi.org/project/stevedore/1.29.0/) | `subliminal` | v | v | -
 :: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | v | v | -
-:: | `tornado` | [5.1](https://pypi.org/project/tornado/5.1/) | **`medusa`**, `tornroutes` | v | v | -
+:: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | v | v | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | v | v | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | v | v | -
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | v | v | -
