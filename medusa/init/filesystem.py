@@ -18,23 +18,23 @@ import rarfile
 from six import binary_type, text_type, viewitems
 
 
+INVALID_ENCODINGS = (None, 'ansi_x3.4-1968', 'us-ascii', 'ascii', 'charmap', 'cp65001')
+
 fs_encoding = sys.getfilesystemencoding()
 
 
 def encode(value):
     """Encode to bytes."""
-    return value.encode('utf-8' if os.name != 'nt' else fs_encoding)
+    return value.encode('utf-8' if fs_encoding in INVALID_ENCODINGS else fs_encoding)
 
 
 def decode(value):
     """Decode to unicode."""
-    # on windows the returned info from fs operations needs to be decoded using fs encoding
-    return text_type(value, 'utf-8' if os.name != 'nt' else fs_encoding)
+    return text_type(value, 'utf-8' if fs_encoding in INVALID_ENCODINGS else fs_encoding)
 
 
 def _handle_input(arg):
     """Encode argument to utf-8 or fs encoding."""
-    # on windows the input params for fs operations needs to be encoded using fs encoding
     return encode(arg) if isinstance(arg, text_type) else arg
 
 
@@ -143,7 +143,7 @@ def initialize():
     if os.name != 'nt':
         affected_functions[os].extend(['chmod', 'chown', 'link', 'statvfs', 'symlink'])
 
-    if not fs_encoding or fs_encoding.lower() not in ('utf-8', 'mbcs'):
+    if fs_encoding in INVALID_ENCODINGS:
         handle_input = _handle_input
     else:
         handle_input = None
