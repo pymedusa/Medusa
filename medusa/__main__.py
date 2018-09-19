@@ -77,7 +77,7 @@ from medusa.config import (
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.init.filesystem import INVALID_ENCODINGS
+from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -216,7 +216,7 @@ class Application(object):
         app.MY_ARGS = args
 
         app.SYS_ENCODING = sys.getfilesystemencoding()
-        if app.SYS_ENCODING in INVALID_ENCODINGS:
+        if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning('Your system is using an invalid encoding: {enc}. Please change your encoding '
                            'as soon as possible or you could encounter unexpected issues.', enc=app.SYS_ENCODING)
             app.SYS_ENCODING = 'utf-8'
