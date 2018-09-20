@@ -207,7 +207,7 @@ class AniDBLink(threading.Thread):
     def _send(self, command):
         if self.banned:
             logger.debug("NetIO | BANNED")
-            raise AniDBError(b"Not sending, banned")
+            raise AniDBError("Not sending, banned")
         self._do_delay()
         self.lastpacket = time()
         command.started = time()
