@@ -13,6 +13,7 @@ from medusa.notifiers import (
     emby,
     freemobile,
     growl,
+    join,
     kodi,
     libnotify,
     nmj,
@@ -54,6 +55,7 @@ pushover_notifier = pushover.Notifier()
 boxcar2_notifier = boxcar2.Notifier()
 pushalot_notifier = pushalot.Notifier()
 pushbullet_notifier = pushbullet.Notifier()
+join_notifier = join.Notifier()
 freemobile_notifier = freemobile.Notifier()
 telegram_notifier = telegram.Notifier()
 # social
@@ -79,6 +81,7 @@ notifiers = [
     boxcar2_notifier,
     pushalot_notifier,
     pushbullet_notifier,
+    join_notifier,
     twitter_notifier,
     trakt_notifier,
     email_notifier,
@@ -110,7 +113,7 @@ def notify_snatch(ep_name, is_proper):
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
 
-def notify_git_update(new_version=''):
+def notify_git_update(new_version=""):
     for n in notifiers:
         if app.NOTIFY_ON_UPDATE:
             try:

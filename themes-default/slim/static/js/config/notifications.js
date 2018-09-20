@@ -595,6 +595,28 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     // We have to call this function on dom ready to create the devices select
     getPushbulletDevices();
 
+    $('#testJoin').on('click', function() {
+        const join = {};
+        join.api = $.trim($('#join_api').val());
+        join.device = $.trim($('#join_device').val());
+        if (!join.api || !join.device) {
+            $('#testJoin-result').html('Please fill out the necessary fields above.');
+            $('#join_api').addRemoveWarningClass(join.api);
+            $('#join_device').addRemoveWarningClass(join.device);
+            return;
+        }
+        $('#join_api,#join_device').removeClass('warning');
+        $(this).prop('disabled', true);
+        $('#testJoin-result').html(MEDUSA.config.loading);
+        $.get('home/testJoin', {
+            api: join.api,
+            device: join.device
+        }).done(data => {
+            $('#testJoin-result').html(data);
+            $('#testJoin').prop('disabled', false);
+        });
+    });
+
     $('#email_show').on('change', () => {
         const key = parseInt($('#email_show').val(), 10);
         $.getJSON('home/loadShowNotifyLists', notifyData => {
