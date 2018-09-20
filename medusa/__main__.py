@@ -892,7 +892,7 @@ class Application(object):
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
 
-	    app.USE_JOIN = bool(check_setting_int(app.CFG, 'Pushbullet', 'use_join', 0))
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Pushbullet', 'use_join', 0))
             app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
             app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
             app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
