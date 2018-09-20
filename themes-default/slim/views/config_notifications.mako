@@ -1555,6 +1555,8 @@ window.app = new Vue({
                                 <input type="button" class="btn-medusa" value="Test Join" id="testJoin" />
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </div><!-- /content_use_join //-->
+                        </fieldset>
+                    </div><!-- /join component-group //-->
                         <div class="component-group-desc-legacy">
                                 <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                                 <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
