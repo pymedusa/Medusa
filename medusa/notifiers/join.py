@@ -50,7 +50,7 @@ class Notifier(object):
             )
 
     def notify_subtitle_download(self, ep_name, lang):
-        if app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD:
+        if app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendJoin(
                 join_api=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
@@ -84,7 +84,7 @@ class Notifier(object):
 
         join_api = join_api or app.JOIN_API
         join_device = join_device or app.JOIN_DEVICE
-	icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+	    icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
 
         log.debug('Join title: {0!r}', event)
         log.debug('Join message: {0!r}', message)
