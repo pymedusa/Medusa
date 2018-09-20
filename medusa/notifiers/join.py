@@ -4,14 +4,14 @@ from __future__ import unicode_literals
 
 import logging
 import re
-from builtins import object
-
 import urllib
-import requests
+from builtins import object
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
+
+import requests
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
