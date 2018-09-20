@@ -6,12 +6,12 @@ import logging
 import re
 from builtins import object
 
+import urllib
+import requests
+
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-
-import requests
-import urllib
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -27,7 +27,7 @@ class Notifier(object):
         log.debug('Sending a test Join notification.')
         return self._sendJoin(
             join_api=join_api,
-	    join_device=join_device,
+            join_device=join_device,
             event='Test',
             message='Testing Join settings from Medusa',
             force=True
@@ -84,18 +84,18 @@ class Notifier(object):
 
         join_api = join_api or app.JOIN_API
         join_device = join_device or app.JOIN_DEVICE
-	icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+        icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
 
         log.debug('Join title: {0!r}', event)
         log.debug('Join message: {0!r}', message)
         log.debug('Join api: {0!r}', join_api)
         log.debug('Join devices: {0!r}', join_device)
 
-	post_data = {'title': event, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
-	urllib.quote_plus=urllib.quote
-	params = urllib.urlencode(post_data)
+        post_data = {'title': event, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
+        urllib.quote_plus = urllib.quote
+        params = urllib.urlencode(post_data)
 
-	r = requests.get(self.url, params=params)
+        r = requests.get(self.url, params=params)
 
         try:
             response = r.json()
