@@ -17,8 +17,6 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <form name="massUpdateForm" method="post" action="manage/massUpdate">
     <div class="row">
         <div class="col-md-12">
@@ -105,7 +103,7 @@ window.app = new Vue({
                 <tr>
                     <td class="triggerhighlight" align="center" title="Edit"><input type="checkbox" class="editCheck" data-indexer-name="${cur_show.indexer_name}" data-series-id="${cur_show.series_id}" id="edit-${cur_show.series_id}" /></td>
                     <td class="tvShow triggerhighlight"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.indexerid}">${cur_show.name}</app-link></td>
-                    <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+                    <td class="triggerhighlight" align="center"><quality-pill :quality="${cur_show.quality}" show-title></quality-pill></td>
                     <td class="triggerhighlight" align="center" title="Sports"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Scene"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
                     <td class="triggerhighlight" align="center" title="Anime"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>

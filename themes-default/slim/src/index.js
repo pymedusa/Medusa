@@ -1,7 +1,10 @@
+/* eslint-disable import/no-unassigned-import */
 import $ from 'jquery';
-import 'bootstrap'; // eslint-disable-line import/no-unassigned-import
-import 'bootstrap/dist/css/bootstrap.min.css'; // eslint-disable-line import/no-unassigned-import
-import './css/open-sans.css'; // eslint-disable-line import/no-unassigned-import
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../vendor/js/tablesorter';
+import '../vendor/css/open-sans.css';
+/* eslint-enable import/no-unassigned-import */
 
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -32,6 +35,7 @@ import {
     ManualPostProcess,
     NamePattern,
     PlotInfo,
+    QualityPill,
     RootDirs,
     ScrollButtons,
     SelectList,
@@ -89,6 +93,7 @@ if (window) {
     window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
+    window.components.push(QualityPill); // This component is also used in a hack/workaround in `./static/js/ajax-episode-search.js`
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
@@ -96,6 +101,7 @@ if (window) {
     window.components.push(SnatchSelection);
     window.components.push(Status);
 }
+
 const UTIL = {
     exec(controller, action) {
         const ns = MEDUSA;
@@ -106,30 +112,9 @@ const UTIL = {
         }
     },
     init() {
-        if (typeof startVue === 'function') { // eslint-disable-line no-undef
-            startVue(); // eslint-disable-line no-undef
-        } else {
-            $('[v-cloak]').removeAttr('v-cloak');
-        }
+        $('[v-cloak]').removeAttr('v-cloak');
 
         const { body } = document;
-        $('[asset]').each(function() {
-            const asset = $(this).attr('asset');
-            const show = $(this).attr('series');
-            const path = apiRoot + 'series/' + show + '/asset/' + asset + '?api_key=' + apiKey;
-            if (this.tagName.toLowerCase() === 'img') {
-                const defaultPath = $(this).attr('src');
-                if ($(this).attr('lazy') === 'on') {
-                    $(this).attr('data-original', path);
-                } else {
-                    $(this).attr('src', path);
-                }
-                $(this).attr('onerror', 'this.src = "' + defaultPath + '"; return false;');
-            }
-            if (this.tagName.toLowerCase() === 'a') {
-                $(this).attr('href', path);
-            }
-        });
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
@@ -141,15 +126,6 @@ const UTIL = {
     }
 };
 
-$.fn.extend({
-    addRemoveWarningClass(_) {
-        if (_) {
-            return $(this).removeClass('warning');
-        }
-        return $(this).addClass('warning');
-    }
-});
-
 const { pathname } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
@@ -157,9 +133,7 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
-        if (navigator.userAgent.indexOf('PhantomJS') === -1) {
-            $(document).ready(UTIL.init);
-        }
+        $(document).ready(UTIL.init);
 
         MEDUSA.config.indexers.indexerIdToName = indexerId => {
             if (!indexerId) {

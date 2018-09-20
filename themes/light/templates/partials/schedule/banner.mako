@@ -6,7 +6,6 @@
     from medusa.indexers.utils import indexer_id_to_name
     from medusa import sbdatetime
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <!-- start banner view //-->
 <%
     cur_segment = None
@@ -133,7 +132,7 @@
                 </div>
                 <div class="clearfix">
                     <span class="title">Quality:</span>
-                    ${renderQualityPill(cur_result['quality'], showTitle=True)}
+                    <quality-pill :quality="${cur_result['quality']}" show-title></quality-pill>
                 </div>
             ##</td>
         ##</tr>
