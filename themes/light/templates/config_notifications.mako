@@ -1488,6 +1488,76 @@ window.app = new Vue({
 
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-join" title="Join"></span>
+                            <h3><app-link href="https://joaoapps.com/join/">Join</app-link></h3>
+                            <p>Join is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
+                        </div>
+                    <div class="component-group">
+                        <fieldset class="component-group-list">
+                            <div class="field-pair">
+                                <label for="use_join">
+                                    <span class="component-title">Enable</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" class="enabler" name="use_join" id="use_join" ${'checked="checked"' if app.USE_JOIN else ''}/>
+                                        <p>Send Join notifications?</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="content_use_join">
+                                <div class="field-pair">
+                                    <label for="join_notify_onsnatch">
+                                        <span class="component-title">Notify on snatch</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="join_notify_onsnatch" id="join_notify_onsnatch" ${'checked="checked"' if app.JOIN_NOTIFY_ONSNATCH else ''}/>
+                                            <p>send a notification when a download starts?</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label for="join_notify_ondownload">
+                                        <span class="component-title">Notify on download</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="join_notify_ondownload" id="join_notify_ondownload" ${'checked="checked"' if app.JOIN_NOTIFY_ONDOWNLOAD else ''}/>
+                                            <p>send a notification when a download finishes?</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label for="join_notify_onsubtitledownload">
+                                        <span class="component-title">Notify on subtitle download</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="join_notify_onsubtitledownload" id="join_notify_onsubtitledownload" ${'checked="checked"' if app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
+                                            <p>send a notification when subtitles are downloaded?</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label for="join_api">
+                                        <span class="component-title">Join API key</span>
+                                        <input type="text" name="join_api" id="join_api" value="${app.JOIN_API}" class="form-control input-sm input350"/>
+                                    </label>
+                                    <label>
+                                        <span class="component-title">&nbsp;</span>
+                                        <span class="component-desc">API key of your Join account</span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
+                                    <label for="join_device">
+                                        <span class="component-title">Join device(s)</span>
+                                        <input type="text" name="join_device" id="join_device" value="${app.JOIN_DEVICE}" class="form-control input-sm input350"/>
+                                    </label>
+                                    <label>
+                                        <span class="component-title">&nbsp;</span>
+                                        <span class="component-desc">Enter DeviceID of the device(s) you wish to send notifications to, comma separated if using multiple.</span>
+                                    </label>
+                                </div>
+                                <div class="testNotification" id="testJoin-result">Click below to test.</div>
+                                <input type="button" class="btn-medusa" value="Test Join" id="testJoin" />
+                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                            </div><!-- /content_use_join //-->
+                        </fieldset>
+                    </div><!-- /join component-group //-->
+                        <div class="component-group-desc-legacy">
                                 <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                                 <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                                 <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
