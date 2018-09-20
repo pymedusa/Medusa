@@ -84,7 +84,7 @@ class Notifier(object):
 
         join_api = join_api or app.JOIN_API
         join_device = join_device or app.JOIN_DEVICE
-	    icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
+	icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
 
         log.debug('Join title: {0!r}', event)
         log.debug('Join message: {0!r}', message)
