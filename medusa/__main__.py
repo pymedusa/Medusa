@@ -1867,7 +1867,6 @@ class Application(object):
         new_config['Join']['join_api'] = app.JOIN_API
         new_config['Join']['join_device'] = app.JOIN_DEVICE
 
-
         new_config['Email'] = {}
         new_config['Email']['use_email'] = int(app.USE_EMAIL)
         new_config['Email']['email_notify_onsnatch'] = int(app.EMAIL_NOTIFY_ONSNATCH)
