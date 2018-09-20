@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import urllib
 from builtins import object
 
@@ -25,7 +24,7 @@ class Notifier(object):
 
     def test_notify(self, join_api, join_device):
         log.debug('Sending a test Join notification.')
-        return self._sendJoin(
+        return self._sendjoin(
             join_api=join_api,
             join_device=join_device,
             event='Test',
@@ -35,7 +34,7 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if app.JOIN_NOTIFY_ONSNATCH:
-            self._sendJoin(
+            self._sendjoin(
                 join_api=None,
                 event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
                 message=ep_name
@@ -43,7 +42,7 @@ class Notifier(object):
 
     def notify_download(self, ep_name):
         if app.JOIN_NOTIFY_ONDOWNLOAD:
-            self._sendJoin(
+            self._sendjoin(
                 join_api=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ' : ' + ep_name,
                 message=ep_name
@@ -51,27 +50,27 @@ class Notifier(object):
 
     def notify_subtitle_download(self, ep_name, lang):
         if app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._sendJoin(
+            self._sendjoin(
                 join_api=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
                 message=ep_name + ': ' + lang
             )
 
     def notify_git_update(self, new_version='??'):
-        self._sendJoin(
+        self._sendjoin(
             join_api=None,
             event=common.notifyStrings[common.NOTIFY_GIT_UPDATE],
             message=common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT] + new_version,
         )
 
     def notify_login(self, ipaddress=''):
-        self._sendJoin(
+        self._sendjoin(
             join_api=None,
             event=common.notifyStrings[common.NOTIFY_LOGIN],
             message=common.notifyStrings[common.NOTIFY_LOGIN_TEXT].format(ipaddress)
         )
 
-    def _sendJoin(self, join_api=None, join_device=None, event=None, message=None, force=False):
+    def _sendjoin(self, join_api=None, join_device=None, event=None, message=None, force=False):
         push_result = {'success': False, 'error': ''}
 
         if not (app.USE_JOIN or force):
