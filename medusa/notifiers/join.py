@@ -2,10 +2,7 @@
 # Author: Kevin Ould email: ouldsmobile1@gmail.com
 # Thanks to the contributors of the other notifier providers
 # for inspiration and a base to start from
-"""Adds Join Notifications. 
-
-"""
-
+"""Adds Join Notifications. """
 from __future__ import unicode_literals
 
 import logging
@@ -23,16 +20,9 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-
-    """Notifier class for Join. 
-
-    """
-
+    """Notifier class for Join. """
     def __init__(self):
-        """Init method.
-
-        """
-
+        """Init method."""
         self.session = MedusaSession()
         self.url = 'https://joinjoaomgcd.appspot.com/_ah/api/messaging/v1/sendPush?'
 
