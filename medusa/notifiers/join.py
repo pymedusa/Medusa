@@ -1,7 +1,5 @@
 # coding=utf-8
 # Author: Kevin Ould email: ouldsmobile1@gmail.com
-# Thanks to the contributors of the other notifier providers
-# for inspiration and a base to start from
 """Adds Join Notifications."""
 from __future__ import unicode_literals
 
