@@ -1422,7 +1422,7 @@ class Series(TV):
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
             self.notify_list = dict(ast.literal_eval(sql_results[0]['notify_list'] or '{}'))
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
-            self.quality = int(sql_results[0]['quality'] or UNSET)
+            self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
             self.paused = int(sql_results[0]['paused'] or 0)
             self._location = sql_results[0]['location']  # skip location validation
@@ -2209,7 +2209,7 @@ class Series(TV):
             )
             return False
 
-        cur_status, cur_quality = int(sql_results[0]['status']), int(sql_results[0]['quality'])
+        cur_status, cur_quality = int(sql_results[0]['status'] or UNSET), int(sql_results[0]['quality'] or Quality.NA)
         ep_status_text = statusStrings[cur_status]
         manually_searched = sql_results[0]['manually_searched']
 
