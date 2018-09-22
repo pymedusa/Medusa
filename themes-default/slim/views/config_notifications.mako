@@ -77,6 +77,21 @@ window.app = new Vue({
                     host: null,
                     dbloc: null,
                     database: null
+                },
+                synologyIndex: {
+                    enabled: null
+                },
+                synology: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null
+                },
+                pyTivo: {
+                    enabled: null,
+                    host: null,
+                    name: null,
+                    shareName: null
                 }
             }
         };
@@ -1065,7 +1080,7 @@ window.app = new Vue({
                                                     <option value="5">#6 </option>
                                                     <option value="6">#7 </option>
                                                 </select>
-                                                <span class="component-desc">adjust this value if the wrong database is selected.</span>
+                                                <span>adjust this value if the wrong database is selected.</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1077,7 +1092,7 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
-                                                <span class="component-desc">the Popcorn Hour device must be powered on.</span>
+                                                <span>the Popcorn Hour device must be powered on.</span>
                                             </div>
                                         </div>
                                     </div>  
@@ -1090,141 +1105,71 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-    
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-syno1" title="Synology"></span>
-                        <h3><app-link href="http://synology.com/">Synology</app-link></h3>
-                        <p>The Synology DiskStation NAS.</p>
-                        <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-syno1" title="Synology"></span>
+                            <h3><app-link href="http://synology.com/">Synology</app-link></h3>
+                            <p>The Synology DiskStation NAS.</p>
+                            <p>Synology Indexer is the daemon running on the Synology NAS to build its media database.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for synology indexer -->
+                                <config-toggle-slider :checked="notifiers.synologyIndex.enabled" label="HTTPS" id="use_synoindex" :explanations="['Note: requires Medusa to be running on your Synology NAS.']" @change="save()"  @update="notifiers.synologyIndex.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.synologyIndex.enabled" id="content_use_synoindex">
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                </div>
+                            </fieldset>
+                        </div>
                     </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_synoindex">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_synoindex" id="use_synoindex" ${'checked="checked"' if app.USE_SYNOINDEX else ''}/>
-                                        <p>Send Synology notifications?</p>
-                                    </span>
-                                </label>
-                                <label>
-                                    <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>Note:</b> requires Medusa to be running on your Synology NAS.</span>
-                                </label>
-                            </div>
-                            <div id="content_use_synoindex">
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_synoindex //-->
-                        </fieldset>
-                    </div><!-- /synoindex component-group //-->
-                        <div class="component-group-desc-legacy">
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-syno2" title="Synology Indexer"></span>
                             <h3><app-link href="http://synology.com/">Synology Notifier</app-link></h3>
                             <p>Synology Notifier is the notification system of Synology DSM</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_synologynotifier">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_synologynotifier" id="use_synologynotifier" ${'checked="checked"' if app.USE_SYNOLOGYNOTIFIER else ''}/>
-                                        <p>Send notifications to the Synology Notifier?</p>
-                                    </span>
-                                </label>
-                                <label>
-                                    <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>Note:</b> requires Medusa to be running on your Synology DSM.</span>
-                                </label>
-                               </div>
-                            <div id="content_use_synologynotifier">
-                                <div class="field-pair">
-                                    <label for="synologynotifier_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="synologynotifier_notify_onsnatch" id="synologynotifier_notify_onsnatch" ${'checked="checked"' if app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for synology notifier -->
+                                <config-toggle-slider :checked="notifiers.synology.enabled" label="Enable" id="use_synologynotifier" 
+                                    :explanations="['Send notifications to the Synology Notifier?', 'Note: requires Medusa to be running on your Synology DSM.']" 
+                                    @change="save()"  @update="notifiers.synology.enabled = $event">
+                                </config-toggle-slider>
+                                <div v-show="notifiers.synology.enabled" id="content-use-synology-notifier">
+                                    <config-toggle-slider :checked="notifiers.synology.notifyOnSnatch" label="Notify on snatch" id="_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.synology.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.synology.notifyOnDownload" label="Notify on download" id="synology_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.synology.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.synology.notifyOnSubtitleDownload" label="Notify on subtitle download" id="synology_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.synology.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="synologynotifier_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="synologynotifier_notify_ondownload" id="synologynotifier_notify_ondownload" ${'checked="checked"' if app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="synologynotifier_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="synologynotifier_notify_onsubtitledownload" id="synologynotifier_notify_onsubtitledownload" ${'checked="checked"' if app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                               </div>
-                        </fieldset>
-                    </div><!-- /synology notifier component-group //-->
-                        <div class="component-group-desc-legacy">
+                            </fieldset>
+                        </div>
+                    </div>
+
+    
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
                             <h3><app-link href="http://pytivo.sourceforge.net/wiki/index.php/PyTivo">pyTivo</app-link></h3>
                             <p>pyTivo is both an HMO and GoBack server. This notifier will load the completed downloads to your Tivo.</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_pytivo">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_pytivo" id="use_pytivo" ${'checked="checked"' if app.USE_PYTIVO else ''}/>
-                                        <p>Send notifications to pyTivo?</p>
-                                    </span>
-                                </label>
-                                <label>
-                                    <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>Note:</b> requires the downloaded files to be accessible by pyTivo.</span>
-                                </label>
-                            </div>
-                            <div id="content_use_pytivo">
-                                <div class="field-pair">
-                                    <label for="pytivo_host">
-                                        <span class="component-title">pyTivo IP:Port</span>
-                                        <input type="text" name="pytivo_host" id="pytivo_host" value="${app.PYTIVO_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">host running pyTivo (eg. 192.168.1.1:9032)</span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for pyTivo client -->
+                                <config-toggle-slider :checked="notifiers.pyTivo.enabled" label="Enable" id="use_pytivo" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifiers.pyTivo.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.pyTivo.enabled" id="content-use-pytivo"> <!-- show based on notifiers.pyTivo.enabled -->
+                                    <config-textbox :value="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()"  @update="notifiers.pyTivo.host = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()"  @update="notifiers.pyTivo.shareName = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.pyTivo.name" label="Tivo name" id="pytivo_tivo_name" :explanations="['value used in pyTivo Web Configuration to name the share.']" @change="save()"  @update="notifiers.pyTivo.name = $event"></config-textbox>
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="pytivo_share_name">
-                                        <span class="component-title">pyTivo share name</span>
-                                        <input type="text" name="pytivo_share_name" id="pytivo_share_name" value="${app.PYTIVO_SHARE_NAME}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">value used in pyTivo Web Configuration to name the share.</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pytivo_tivo_name">
-                                        <span class="component-title">Tivo name</span>
-                                        <input type="text" name="pytivo_tivo_name" id="pytivo_tivo_name" value="${app.PYTIVO_TIVO_NAME}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">(Messages &amp; Settings > Account &amp; System Information > System Information > DVR name)</span>
-                                    </label>
-                                </div>
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_pytivo //-->
-                        </fieldset>
-                    </div><!-- /component-group //-->
+                            </fieldset>
+                        </div>
+                    </div>
                 </div><!-- #home-theater-nas //-->
+                
+                
                 <div id="devices">
                     <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-growl" title="Growl"></span>

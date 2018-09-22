@@ -60,6 +60,21 @@ const state = {
         host: null,
         dbloc: null,
         database: null
+    },
+    synologyIndex: {
+        enabled: null
+    },
+    synology: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null
+    },
+    pyTivo: {
+        enabled: null,
+        host: null,
+        name: null,
+        shareName: null
     }
 };
 
