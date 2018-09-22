@@ -573,4 +573,19 @@ class DataGenerator(object):
         section_data['nmjv2']['dbloc'] = app.NMJv2_DBLOC
         section_data['nmjv2']['database'] = app.NMJv2_DATABASE
 
+        section_data['synologyIndex'] = NonEmptyDict()
+        section_data['synologyIndex']['enabled'] = bool(app.USE_SYNOINDEX)
+
+        section_data['synology'] = NonEmptyDict()
+        section_data['synology']['enabled'] = bool(app.USE_SYNOLOGYNOTIFIER)
+        section_data['synology']['notifyOnSnatch'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH)
+        section_data['synology']['notifyOnDownload'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD)
+        section_data['synology']['notifyOnSubtitleDownload'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['pyTivo'] = NonEmptyDict()
+        section_data['pyTivo']['enabled'] = bool(app.USE_PYTIVO)
+        section_data['pyTivo']['host'] = app.PYTIVO_HOST
+        section_data['pyTivo']['name'] = app.PYTIVO_TIVO_NAME
+        section_data['pyTivo']['shareName'] = app.PYTIVO_SHARE_NAME
+
         return section_data
