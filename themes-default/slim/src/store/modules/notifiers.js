@@ -75,6 +75,14 @@ const state = {
         host: null,
         name: null,
         shareName: null
+    },
+    growl: {
+        enabled: null,
+        host: null,
+        password: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null
     }
 };
 

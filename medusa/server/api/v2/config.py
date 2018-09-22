@@ -588,4 +588,12 @@ class DataGenerator(object):
         section_data['pyTivo']['name'] = app.PYTIVO_TIVO_NAME
         section_data['pyTivo']['shareName'] = app.PYTIVO_SHARE_NAME
 
+        section_data['growl'] = NonEmptyDict()
+        section_data['growl']['enabled'] = bool(app.USE_GROWL)
+        section_data['growl']['host'] = app.GROWL_HOST
+        section_data['growl']['password'] = app.GROWL_PASSWORD
+        section_data['growl']['notifyOnSnatch'] = bool(app.GROWL_NOTIFY_ONSNATCH)
+        section_data['growl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
+        section_data['growl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
+
         return section_data

@@ -92,6 +92,14 @@ window.app = new Vue({
                     host: null,
                     name: null,
                     shareName: null
+                },
+                growl: {
+                    enabled: null,
+                    host: null,
+                    password: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null
                 }
             }
         };
@@ -809,8 +817,8 @@ window.app = new Vue({
                     <li><app-link href="#devices">Devices</app-link></li>
                     <li><app-link href="#social">Social</app-link></li>
                 </ul>
-                <div id="home-theater-nas">
-                    
+                
+                <div id="home-theater-nas">    
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-kodi" title="KODI"></span>
@@ -1171,80 +1179,39 @@ window.app = new Vue({
                 
                 
                 <div id="devices">
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-growl" title="Growl"></span>
-                        <h3><app-link href="http://growl.info/">Growl</app-link></h3>
-                        <p>A cross-platform unobtrusive global notification system.</p>
+                    
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-growl" title="Growl"></span>
+                            <h3><app-link href="http://growl.info/">Growl</app-link></h3>
+                            <p>A cross-platform unobtrusive global notification system.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for growl client -->
+                                <config-toggle-slider :checked="notifiers.growl.enabled" label="Enable" id="use_growl_client" :explanations="['Send growl Home Theater notifications?']" @change="save()"  @update="notifiers.growl.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.growl.enabled" id="content-use-growl-client"> <!-- show based on notifiers.growl.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.growl.notifyOnSnatch" label="Notify on snatch" id="growl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.growl.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.growl.notifyOnDownload" label="Notify on download" id="growl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.growl.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.growl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.growl.host" label="Growl IP:Port" id="growl_username" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()"  @update="notifiers.growl.host = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()"  @update="notifiers.growl.password = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
+                                    <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                </div>
+                            </fieldset>
+                        </div>
                     </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_growl">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_growl" id="use_growl" ${'checked="checked"' if app.USE_GROWL else ''}/>
-                                        <p>Send Growl notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_growl">
-                                <div class="field-pair">
-                                    <label for="growl_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="growl_notify_onsnatch" id="growl_notify_onsnatch" ${'checked="checked"' if app.GROWL_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="growl_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="growl_notify_ondownload" id="growl_notify_ondownload" ${'checked="checked"' if app.GROWL_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="growl_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="growl_notify_onsubtitledownload" id="growl_notify_onsubtitledownload" ${'checked="checked"' if app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="growl_host">
-                                        <span class="component-title">Growl IP:Port</span>
-                                        <input type="text" name="growl_host" id="growl_host" value="${app.GROWL_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">host running Growl (eg. 192.168.1.100:23053)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="growl_password">
-                                        <span class="component-title">Password</span>
-                                        <input type="password" name="growl_password" id="growl_password" value="${app.GROWL_PASSWORD}" class="form-control input-sm input250" autocomplete="no"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">may leave blank if Medusa is on the same host.</span>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">otherwise Growl <b>requires</b> a password to be used.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
-                                <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_growl //-->
-                        </fieldset>
-                    </div><!-- /growl component-group //-->
+                
+                    
+                    
+                    
+                    
+                    
+                    
                         <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
                             <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
