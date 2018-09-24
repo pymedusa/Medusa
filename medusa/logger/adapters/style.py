@@ -7,10 +7,6 @@ from __future__ import unicode_literals
 import collections
 import functools
 import logging
-import traceback
-from builtins import map
-from builtins import object
-from builtins import str
 
 from six import text_type, viewitems
 
@@ -61,7 +57,7 @@ class BraceMessage(object):
         sep = ', '
         kw_repr = '{key}={value!r}'
         name = self.__class__.__name__
-        args = sep.join(map(text_type, self.args))
+        args = sep.join(list(map(text_type, self.args)))
         kwargs = sep.join(kw_repr.format(key=k, value=v)
                           for k, v in viewitems(self.kwargs))
         return '{cls}({args})'.format(
@@ -71,7 +67,7 @@ class BraceMessage(object):
 
     def format(self, *args, **kwargs):
         """Format a BraceMessage string."""
-        return str(self).format(*args, **kwargs)
+        return text_type(self).format(*args, **kwargs)
 
 
 class BraceAdapter(logging.LoggerAdapter):
