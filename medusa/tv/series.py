@@ -1990,6 +1990,7 @@ class Series(TV):
         data['id'][self.indexer_name] = self.series_id
         data['id']['imdb'] = text_type(self.imdb_id)
         data['id']['slug'] = self.identifier.slug
+        data['id']['trakt'] = self.externals.get('trakt_id')
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
