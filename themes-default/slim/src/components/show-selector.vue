@@ -2,7 +2,8 @@
     <span v-if="shows.length === 0">Loading...</span>
     <div v-else class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
-            <select v-model="selectedShowSlug" class="select-show form-control input-sm-custom">
+            <select v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
+                <option v-if="placeholder" :value="placeholder" disabled selected hidden>{{placeholder}}</option>
                 <template v-if="whichList === -1">
                     <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
                         <option v-for="show in curShowList.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
@@ -21,11 +22,21 @@ import { mapState } from 'vuex';
 export default {
     name: 'show-selector',
     props: {
-        showSlug: String
+        showSlug: String,
+        followSelection: {
+            type: Boolean,
+            default: false
+        },
+        placeholder: String,
+        selectClass: {
+            type: String,
+            default: 'select-show form-control input-sm-custom'
+        }
     },
     data() {
+        const selectedShowList = this.showSlug || this.placeholder
         return {
-            selectedShowSlug: this.showSlug,
+            selectedShowSlug: selectedShowList,
             lock: false
         };
     },
@@ -89,6 +100,11 @@ export default {
                 this.lock = false;
                 return;
             }
+
+            if (!this.followSelection) {
+                return;
+            }
+
             const { shows } = this;
             const selectedShow = shows.find(show => show.id.slug === newSlug);
             if (!selectedShow) {

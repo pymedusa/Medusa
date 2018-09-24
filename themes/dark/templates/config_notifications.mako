@@ -17,6 +17,15 @@ window.app = new Vue({
     data() {
         return {
             configLoaded: false,
+            prowlSelectedShow: null,
+            prowlSelectedShowApiKeys: null,
+            prowlPriorityOptions: [
+                { text: 'Very Low', value: -2 },
+                { text: 'Moderate', value: -1 },
+                { text: 'Normal', value: 0 },
+                { text: 'High', value: 1 },
+                { text: 'Emergency', value: 2 }
+            ],
             notifiers: {
                 emby: {
                     enabled: null,
@@ -100,6 +109,15 @@ window.app = new Vue({
                     notifyOnSnatch: null,
                     notifyOnDownload: null,
                     notifyOnSubtitleDownload: null
+                },
+                prowl: {
+                    enabled: null,
+                    api: [],
+                    messageTitle: null,
+                    piority: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null
                 }
             }
         };
@@ -109,17 +127,22 @@ window.app = new Vue({
             return this.$store.state.notifiers;
         }
     },
+    created() {
+        const { $store } = this;
+        // Needed for the show-selector component
+        $store.dispatch('getShows');
+    },
     mounted() {
         $('#testGrowl').on('click', function() {
             const growl = {};
-            growl.host = $.trim($('#growl_host').val());
-            growl.password = $.trim($('#growl_password').val());
+            growl.host = $.trim($('#growl_host').find('input').val());
+            growl.password = $.trim($('#growl_password').find('input').val());
             if (!growl.host) {
                 $('#testGrowl-result').html('Please fill out the necessary fields above.');
-                $('#growl_host').addClass('warning');
+                $('#growl_host').find('input').addClass('warning');
                 return;
             }
-            $('#growl_host').removeClass('warning');
+            $('#growl_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testGrowl-result').html(MEDUSA.config.loading);
             $.get('home/testGrowl', {
@@ -133,14 +156,14 @@ window.app = new Vue({
 
         $('#testProwl').on('click', function() {
             const prowl = {};
-            prowl.api = $.trim($('#prowl_api').val());
-            prowl.priority = $('#prowl_priority').val();
+            prowl.api = $.trim($('#prowl_api').find('input').val());
+            prowl.priority = $('#prowl_priority').find('input').val();
             if (!prowl.api) {
                 $('#testProwl-result').html('Please fill out the necessary fields above.');
-                $('#prowl_api').addClass('warning');
+                $('#prowl_api').find('input').addClass('warning');
                 return;
             }
-            $('#prowl_api').removeClass('warning');
+            $('#prowl_api').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testProwl-result').html(MEDUSA.config.loading);
             $.get('home/testProwl', {
@@ -154,15 +177,15 @@ window.app = new Vue({
 
         $('#testKODI').on('click', function() {
             const kodi = {};
-            kodi.host = $.trim($('#kodi_host').val());
-            kodi.username = $.trim($('#kodi_username').val());
-            kodi.password = $.trim($('#kodi_password').val());
+            kodi.host = $.trim($('#kodi_host').find('input').val());
+            kodi.username = $.trim($('#kodi_username').find('input').val());
+            kodi.password = $.trim($('#kodi_password').find('input').val());
             if (!kodi.host) {
                 $('#testKODI-result').html('Please fill out the necessary fields above.');
                 $('#kodi_host').addClass('warning');
                 return;
             }
-            $('#kodi_host').removeClass('warning');
+            $('#kodi_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testKODI-result').html(MEDUSA.config.loading);
             $.get('home/testKODI', {
@@ -178,15 +201,15 @@ window.app = new Vue({
         $('#testPHT').on('click', function() {
             const plex = {};
             plex.client = {};
-            plex.client.host = $.trim($('#plex_client_host').val());
-            plex.client.username = $.trim($('#plex_client_username').val());
-            plex.client.password = $.trim($('#plex_client_password').val());
+            plex.client.host = $.trim($('#plex_client_host').find('input').val());
+            plex.client.username = $.trim($('#plex_client_username').find('input').val());
+            plex.client.password = $.trim($('#plex_client_password').find('input').val());
             if (!plex.client.host) {
                 $('#testPHT-result').html('Please fill out the necessary fields above.');
-                $('#plex_client_host').addClass('warning');
+                $('#plex_client_host').find('input').addClass('warning');
                 return;
             }
-            $('#plex_client_host').removeClass('warning');
+            $('#plex_client_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testPHT-result').html(MEDUSA.config.loading);
             $.get('home/testPHT', {
@@ -202,16 +225,16 @@ window.app = new Vue({
         $('#testPMS').on('click', function() {
             const plex = {};
             plex.server = {};
-            plex.server.host = $.trim($('#plex_server_host').val());
-            plex.server.username = $.trim($('#plex_server_username').val());
-            plex.server.password = $.trim($('#plex_server_password').val());
-            plex.server.token = $.trim($('#plex_server_token').val());
+            plex.server.host = $.trim($('#plex_server_host').find('input').val());
+            plex.server.username = $.trim($('#plex_server_username').find('input').val());
+            plex.server.password = $.trim($('#plex_server_password').find('input').val());
+            plex.server.token = $.trim($('#plex_server_token').find('input').val());
             if (!plex.server.host) {
                 $('#testPMS-result').html('Please fill out the necessary fields above.');
-                $('#plex_server_host').addClass('warning');
+                $('#plex_server_host').find('input').addClass('warning');
                 return;
             }
-            $('#plex_server_host').removeClass('warning');
+            $('#plex_server_host').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testPMS-result').html(MEDUSA.config.loading);
             $.get('home/testPMS', {
@@ -227,15 +250,15 @@ window.app = new Vue({
 
         $('#testEMBY').on('click', function() {
             const emby = {};
-            emby.host = $('#emby_host').val();
-            emby.apikey = $('#emby_apikey').val();
+            emby.host = $('#emby_host').find('input').val();
+            emby.apikey = $('#emby_apikey').find('input').val();
             if (!emby.host || !emby.apikey) {
                 $('#testEMBY-result').html('Please fill out the necessary fields above.');
-                $('#emby_host').addRemoveWarningClass(emby.host);
-                $('#emby_apikey').addRemoveWarningClass(emby.apikey);
+                $('#emby_host').find('input').addRemoveWarningClass(emby.host);
+                $('#emby_apikey').find('input').addRemoveWarningClass(emby.apikey);
                 return;
             }
-            $('#emby_host,#emby_apikey').removeClass('warning');
+            $('#emby_host,#emby_apikey').children('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testEMBY-result').html(MEDUSA.config.loading);
             $.get('home/testEMBY', {
@@ -249,13 +272,13 @@ window.app = new Vue({
 
         $('#testBoxcar2').on('click', function() {
             const boxcar2 = {};
-            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').val());
+            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').find('input').val());
             if (!boxcar2.accesstoken) {
                 $('#testBoxcar2-result').html('Please fill out the necessary fields above.');
-                $('#boxcar2_accesstoken').addClass('warning');
+                $('#boxcar2_accesstoken').find('input').addClass('warning');
                 return;
             }
-            $('#boxcar2_accesstoken').removeClass('warning');
+            $('#boxcar2_accesstoken').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testBoxcar2-result').html(MEDUSA.config.loading);
             $.get('home/testBoxcar2', {
@@ -268,15 +291,15 @@ window.app = new Vue({
 
         $('#testPushover').on('click', function() {
             const pushover = {};
-            pushover.userkey = $('#pushover_userkey').val();
-            pushover.apikey = $('#pushover_apikey').val();
+            pushover.userkey = $('#pushover_userkey').find('input').val();
+            pushover.apikey = $('#pushover_apikey').find('input').val();
             if (!pushover.userkey || !pushover.apikey) {
                 $('#testPushover-result').html('Please fill out the necessary fields above.');
-                $('#pushover_userkey').addRemoveWarningClass(pushover.userkey);
-                $('#pushover_apikey').addRemoveWarningClass(pushover.apikey);
+                $('#pushover_userkey').find('input').addRemoveWarningClass(pushover.userkey);
+                $('#pushover_apikey').find('input').addRemoveWarningClass(pushover.apikey);
                 return;
             }
-            $('#pushover_userkey,#pushover_apikey').removeClass('warning');
+            $('#pushover_userkey,#pushover_apikey').children('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testPushover-result').html(MEDUSA.config.loading);
             $.get('home/testPushover', {
@@ -327,9 +350,9 @@ window.app = new Vue({
 
         $('#settingsNMJ').on('click', () => {
             const nmj = {};
-            if ($('#nmj_host').val()) {
+            if ($('#nmj_host').find('input').val()) {
                 $('#testNMJ-result').html(MEDUSA.config.loading);
-                nmj.host = $('#nmj_host').val();
+                nmj.host = $('#nmj_host').find('input').val();
 
                 $.get('home/settingsNMJ', {
                     host: nmj.host
@@ -802,6 +825,30 @@ window.app = new Vue({
             this.configLoaded = true;
         });
 
+    },
+    methods: {
+        onChangeProwlApi(items) {
+            this.notifiers.prowl.api = items.map(item => item.value);
+        },
+        saveProwlPerShowNotifyList(item) {
+            const { prowlSelectedShow, prowlSelectedShowApiKeys, prowlUpdateApiKeys } = this;
+            
+            let form = new FormData();
+            form.set('show', prowlSelectedShow)
+            form.set('prowlAPIs', prowlSelectedShowApiKeys)
+
+            apiRoute.post('home/saveShowNotifyList', form).then(() => {
+                // Reload the per show notify lists to reflect changes
+                prowlUpdateApiKeys(prowlSelectedShow);
+            });
+        },
+        async prowlUpdateApiKeys(selectedShow) {
+            this.prowlSelectedShow = selectedShow; 
+            const response = await apiRoute('home/loadShowNotifyLists')
+            if (response.data._size > 0) {
+                this.prowlSelectedShowApiKeys = selectedShow ? response.data[selectedShow].prowl_notify_list : '';
+            }
+        }
     }
 });
 </script>
@@ -1206,120 +1253,90 @@ window.app = new Vue({
                         </div>
                     </div>
                 
-                    
-                    
-                    
-                    
-                    
-                    
-                        <div class="component-group-desc-legacy">
-                            <span class="icon-notifiers-prowl" title="Prowl"></span>
-                            <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
-                            <p>A Growl client for iOS.</p>
-                        </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_prowl">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_prowl" id="use_prowl" ${'checked="checked"' if app.USE_PROWL else ''}/>
-                                        <p>Send Prowl notifications?</p>
-                                    </span>
-                                </label>
+                    <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-prowl" title="Prowl"></span>
+                                <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
+                                <p>A Growl client for iOS.</p>
                             </div>
-                            <div id="content_use_prowl">
-                                <div class="field-pair">
-                                    <label for="prowl_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="prowl_notify_onsnatch" id="prowl_notify_onsnatch" ${'checked="checked"' if app.PROWL_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="prowl_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="prowl_notify_ondownload" id="prowl_notify_ondownload" ${'checked="checked"' if app.PROWL_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="prowl_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="prowl_notify_onsubtitledownload" id="prowl_notify_onsubtitledownload" ${'checked="checked"' if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                     <label for="prowl_message_title">
-                                         <span class="component-title">Prowl Message Title:</span>
-                                         <input type="text" name="prowl_message_title" id="prowl_message_title" value="${app.PROWL_MESSAGE_TITLE}" class="form-control input-sm input250"/>
-                                     </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="prowl_api">
-                                        <span class="component-title">Global Prowl API key(s):</span>
-                                        <input type="text" name="prowl_api" id="prowl_api" value="${','.join(app.PROWL_API)}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Prowl API(s) listed here, separated by commas if applicable, will<br> receive notifications for <b>all</b> shows.
-                                                                     Your Prowl API key is available at:
-                                                                     <app-link href="https://www.prowlapp.com/api_settings.php">
-                                                                     https://www.prowlapp.com/api_settings.php</app-link><br>
-                                                                     (This field may be blank except when testing.)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="prowl_show">
-                                        <span class="component-title">Show notification list</span>
-                                        <select name="prowl_show" id="prowl_show" class="form-control input-sm">
-                                            <option value="-1">-- Select a Show --</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <input type="text" name="prowl_show_list" id="prowl_show_list" class="form-control input-sm input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Configure per-show notifications here by entering Prowl API key(s), separated by commas,
-                                                                     after selecting a show in the drop-down box.   Be sure to activate the 'Save for this show'
-                                                                     button below after each entry.</span>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <input id="prowl_show_save" class="btn-medusa" type="button" value="Save for this show" />
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="prowl_priority">
-                                        <span class="component-title">Prowl priority:</span>
-                                        <select id="prowl_priority" name="prowl_priority" class="form-control input-sm">
-                                            <option value="-2" ${'selected="selected"' if app.PROWL_PRIORITY == '-2' else ''}>Very Low</option>
-                                            <option value="-1" ${'selected="selected"' if app.PROWL_PRIORITY == '-1' else ''}>Moderate</option>
-                                            <option value="0" ${'selected="selected"' if app.PROWL_PRIORITY == '0' else ''}>Normal</option>
-                                            <option value="1" ${'selected="selected"' if app.PROWL_PRIORITY == '1' else ''}>High</option>
-                                            <option value="2" ${'selected="selected"' if app.PROWL_PRIORITY == '2' else ''}>Emergency</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">priority of Prowl messages from Medusa.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_prowl //-->
-                        </fieldset>
-                    </div><!-- /prowl component-group //-->
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for prowl client -->
+                                    <config-toggle-slider :checked="notifiers.prowl.enabled" label="Enable" id="use_prowl" :explanations="['Send Prowl notifications?']" @change="save()"  @update="notifiers.prowl.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.prowl.enabled" id="content-use-prowl"> <!-- show based on notifiers.plex.server.enabled -->
+                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnSnatch" label="Notify on snatch" id="prowl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.prowl.notifyOnSnatch = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.prowl.notifyOnDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.prowl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                        <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="kodi_host" class="col-sm-2 control-label">
+                                                    <span>Api</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
+                                                    <span>Prowl API(s) listed here, separated by commas if applicable, will receive notifications for <b>all</b> shows.
+                                                        Your Prowl API key is available at:
+                                                        <app-link href="https://www.prowlapp.com/api_settings.php">
+                                                        https://www.prowlapp.com/api_settings.php</app-link><br>
+                                                        (This field may be blank except when testing.)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="kodi_host" class="col-sm-2 control-label">
+                                                    <span>Show notification list</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <config-textbox :value="prowlSelectedShowApiKeys" placeholder="Separate your api keys with a comma" label="" id="prowl-show-list" :explanations="['Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box. Be sure to activate the \'Save for this show\' button below after each entry.']" @change="saveProwlPerShowNotifyList($event)" @update="prowlSelectedShowApiKeys = $event">
+                                        </config-textbox>
+                                        
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="prowl-show-save-button" class="col-sm-2 control-label">
+                                                    <span></span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="saveProwlPerShowNotifyList"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="kodi_host" class="col-sm-2 control-label">
+                                                    <span>Prowl priority:</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
+                                                        <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
+                                                                {{ option.text }}
+                                                        </option>
+                                                    </select>
+                                                    <span>priority of Prowl messages from Medusa.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="testNotification" id="testProwl-result">Click below to test.</div>
+                                        <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    
+                        
                         <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
                             <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>

@@ -83,6 +83,15 @@ const state = {
         notifyOnSnatch: null,
         notifyOnDownload: null,
         notifyOnSubtitleDownload: null
+    },
+    prowl: {
+        enabled: null,
+        api: null,
+        messageTitle: null,
+        piority: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null
     }
 };
 

@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input :type="type" v-bind="{id, name: id}" v-model="localValue" :class="inputClass"/>
+                    <input :type="type" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" :placeholder="placeholder"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>
@@ -44,6 +44,10 @@ export default {
         inputClass: {
             type: String,
             default: 'form-control input-sm max-input350'
+        },
+        placeholder: {
+            type: String,
+            default: ''
         }
 
     },
@@ -58,6 +62,9 @@ export default {
     watch: {
         localValue() {
             this.$emit('update', this.localValue);
+        },
+        value() {
+            this.localValue = this.value;
         }
     }
 };

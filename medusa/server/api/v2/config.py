@@ -596,4 +596,13 @@ class DataGenerator(object):
         section_data['growl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
         section_data['growl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
 
+        section_data['prowl'] = NonEmptyDict()
+        section_data['prowl']['enabled'] = bool(app.USE_PROWL)
+        section_data['prowl']['api'] = app.PROWL_API
+        section_data['prowl']['messageTitle'] = app.PROWL_MESSAGE_TITLE
+        section_data['prowl']['priority'] = int(app.PROWL_PRIORITY)
+        section_data['prowl']['notifyOnSnatch'] = bool(app.PROWL_NOTIFY_ONSNATCH)
+        section_data['prowl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
+        section_data['prowl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
+
         return section_data

@@ -3,6 +3,7 @@
 """Series classes."""
 from __future__ import unicode_literals
 
+import ast
 import copy
 import datetime
 import glob
@@ -196,6 +197,7 @@ class Series(TV):
         """
         super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
                                                           'external', 'imdb_info'})
+        self.show_id = None
         self.name = ''
         self.imdb_id = ''
         self.network = ''
@@ -211,6 +213,7 @@ class Series(TV):
         self.paused = 0
         self.air_by_date = 0
         self.subtitles = enabled_subtitles or int(app.SUBTITLES_DEFAULT)
+        self.notify_list = {}
         self.dvd_order = 0
         self.lang = lang
         self.last_update_indexer = 1
@@ -1383,6 +1386,7 @@ class Series(TV):
                      {'id': self.series_id})
             return
         else:
+            self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
 
             if not self.name:
@@ -1410,6 +1414,7 @@ class Series(TV):
             self.sports = int(sql_results[0]['sports'] or 0)
             self.scene = int(sql_results[0]['scene'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
+            self.notify_list = dict(ast.literal_eval(sql_results[0]['notify_list'] or '{}'))
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
             self.quality = int(sql_results[0]['quality'] or UNSET)
             self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
