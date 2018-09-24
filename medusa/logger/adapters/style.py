@@ -37,23 +37,22 @@ class BraceMessage(object):
                 kwargs = self.args[0]
 
         try:
-            return self.msg.format(*args, **kwargs)
-        except IndexError:
             try:
-                return self.msg.format(**kwargs)
+                return self.msg.format(*args, **kwargs)
+            except IndexError:
+                try:
+                    return self.msg.format(**kwargs)
+                except KeyError:
+                    return self.msg
             except KeyError:
-                return self.msg
-        except KeyError as error:
-            try:
-                return self.msg.format(*args)
-            except KeyError:
-                raise error
+                try:
+                    return self.msg.format(*args)
+                except KeyError:
+                    raise Exception(self.msg)
         except Exception:
-            log.error(
+            log.exception(
                 'BraceMessage string formatting failed. '
-                'Using representation instead.\n{0!r}'.format(
-                    ''.join(traceback.format_stack()),
-                )
+                'Using representation instead.'
             )
             return repr(self)
 
