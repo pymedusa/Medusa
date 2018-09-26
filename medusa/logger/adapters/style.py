@@ -7,10 +7,6 @@ from __future__ import unicode_literals
 import collections
 import functools
 import logging
-import traceback
-from builtins import map
-from builtins import object
-from builtins import str
 
 from six import text_type, viewitems
 
@@ -37,23 +33,22 @@ class BraceMessage(object):
                 kwargs = self.args[0]
 
         try:
-            return self.msg.format(*args, **kwargs)
-        except IndexError:
             try:
-                return self.msg.format(**kwargs)
+                return self.msg.format(*args, **kwargs)
+            except IndexError:
+                try:
+                    return self.msg.format(**kwargs)
+                except KeyError:
+                    return self.msg
             except KeyError:
-                return self.msg
-        except KeyError as error:
-            try:
-                return self.msg.format(*args)
-            except KeyError:
-                raise error
+                try:
+                    return self.msg.format(*args)
+                except KeyError:
+                    raise Exception(self.msg)
         except Exception:
-            log.error(
+            log.exception(
                 'BraceMessage string formatting failed. '
-                'Using representation instead.\n{0!r}'.format(
-                    ''.join(traceback.format_stack()),
-                )
+                'Using representation instead.'
             )
             return repr(self)
 
@@ -62,7 +57,7 @@ class BraceMessage(object):
         sep = ', '
         kw_repr = '{key}={value!r}'
         name = self.__class__.__name__
-        args = sep.join(map(text_type, self.args))
+        args = sep.join(list(map(text_type, self.args)))
         kwargs = sep.join(kw_repr.format(key=k, value=v)
                           for k, v in viewitems(self.kwargs))
         return '{cls}({args})'.format(
@@ -72,7 +67,7 @@ class BraceMessage(object):
 
     def format(self, *args, **kwargs):
         """Format a BraceMessage string."""
-        return str(self).format(*args, **kwargs)
+        return text_type(self).format(*args, **kwargs)
 
 
 class BraceAdapter(logging.LoggerAdapter):
