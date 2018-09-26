@@ -246,11 +246,11 @@ class sbdatetime(datetime.datetime):
                         except Exception:
                             sbdatetime.has_locale = False
                     if t_preset is not None:
-                        strd += ', ' + dt.strftime(t_preset)
+                        strd += b', ' + dt.strftime(t_preset)
                     elif show_seconds:
-                        strd += ', ' + dt.strftime(app.TIME_PRESET_W_SECONDS)
+                        strd += b', ' + dt.strftime(app.TIME_PRESET_W_SECONDS)
                     else:
-                        strd += ', ' + dt.strftime(app.TIME_PRESET)
+                        strd += b', ' + dt.strftime(app.TIME_PRESET)
             else:
                 if d_preset is not None:
                     strd = self.strftime(d_preset)
@@ -266,11 +266,11 @@ class sbdatetime(datetime.datetime):
                     except Exception:
                         sbdatetime.has_locale = False
                 if t_preset is not None:
-                    strd += ', ' + self.strftime(t_preset)
+                    strd += b', ' + self.strftime(t_preset)
                 elif show_seconds:
-                    strd += ', ' + self.strftime(app.TIME_PRESET_W_SECONDS)
+                    strd += b', ' + self.strftime(app.TIME_PRESET_W_SECONDS)
                 else:
-                    strd += ', ' + self.strftime(app.TIME_PRESET)
+                    strd += b', ' + self.strftime(app.TIME_PRESET)
         finally:
             try:
                 if sbdatetime.has_locale:
