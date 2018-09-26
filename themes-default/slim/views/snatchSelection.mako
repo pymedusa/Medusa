@@ -140,10 +140,10 @@
                                 </td>
                                 <% user_preset = app.DATE_PRESET + ' ' + app.TIME_PRESET %>
                                 <td class="col-date triggerhighlight" data-datetime="${hItem['pubdate'].isoformat('T') if hItem['pubdate'] else datetime.min}">
-                                    ${hItem['pubdate'].strftime(user_preset) if hItem['pubdate'] else 'N/A'}
+                                    ${hItem['pubdate'].strftime(user_preset).decode(app.SYS_ENCODING) if hItem['pubdate'] else 'N/A'}
                                 </td>
                                 <td class="col-date triggerhighlight" data-datetime="${hItem['date_added'].isoformat('T') if hItem['date_added'] else datetime.min}">
-                                    ${hItem['date_added'].strftime(user_preset) if hItem['date_added'] else 'N/A'}
+                                    ${hItem['date_added'].strftime(user_preset).decode(app.SYS_ENCODING) if hItem['date_added'] else 'N/A'}
                                 </td>
                                 <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                             </tr>
