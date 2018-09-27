@@ -96,7 +96,7 @@ export default {
                     toggled: false, memberOf: list
                 }, release);
 
-                if (this.allReleaseGroups.filter((item) => item.name === itemAsObject.name && item.memberOf === list).length === 0) {
+                if (this.allReleaseGroups.filter(group => group.name === itemAsObject.name && group.memberOf === list).length === 0) {
                     this.allReleaseGroups.push(itemAsObject);
                     this.index += 1; // Increment the counter for our next item.
                 }
