@@ -94,7 +94,8 @@ export default {
                 const itemAsObject = Object.assign({
                     id: this.index,
                     toggled: false, memberOf: list
-                }, release);
+                }, Object.assign({}, release));
+
                 this.allReleaseGroups.push(itemAsObject);
                 this.index += 1; // Increment the counter for our next item.
             }
