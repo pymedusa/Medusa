@@ -15,8 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
-from random import shuffle
 
+from six import binary_type, text_type
+from random import shuffle
 
 class AniDBMaper:
     blacklist = ('unused', 'retired', 'reserved')
@@ -53,7 +54,7 @@ class AniDBMaper:
             if field in wanted and field not in self.blacklist:
                 bit ^= 1 << len(map) - index - 1
 
-        bit = str(hex(bit)).lstrip("0x").rstrip("L")
+        bit = binary_type(hex(bit)).lstrip("0x").rstrip("L")
         bit = ''.join(["0" for unused in range(int(len(map) / 4) - len(bit))]) + bit
         return bit
 
@@ -106,9 +107,9 @@ class AniDBMaper:
     def checkMapping(self, verbos=False):
 
         print("------")
-        print("File F: " + str(self.checkMapFileF(verbos)))
+        print("File F: " + text_type(self.checkMapFileF(verbos)))
         print("------")
-        print("File A: " + str(self.checkMapFileA(verbos)))
+        print("File A: " + text_type(self.checkMapFileA(verbos)))
 
     def checkMapFileF(self, verbos=False):
         get_general_map = self.getFileMapF
@@ -134,6 +135,6 @@ class AniDBMaper:
             print(mask_re)
             print(bits)
             print(bits_re)
-            print("bits are:" + str((bits_re == bits)))
-            print("map is :" + str((sorted(mask_re) == sorted(mask))))
+            print("bits are:" + text_type((bits_re == bits)))
+            print("map is :" + text_type((sorted(mask_re) == sorted(mask))))
         return (bits_re == bits) and sorted(mask_re) == sorted(mask)

@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
+from six import text_type
 from threading import Lock
 from .aniDBresponses import *
 from .aniDBerrors import *
@@ -66,7 +67,7 @@ class Command:
 
     @staticmethod
     def escape(data):
-        return str(data).replace('&', '&amp;')
+        return text_type(data).replace('&', '&amp;')
 
     def raw_data(self):
         self.raw = self.flatten(self.command, self.parameters)

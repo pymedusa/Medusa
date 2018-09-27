@@ -22,6 +22,7 @@ import threading
 
 from datetime import timedelta
 from time import time, sleep
+from six import text_type
 import sys
 
 from configparser import ConfigParser
@@ -80,7 +81,7 @@ def StopLogging(listener):
 
 
 class Connection(threading.Thread):
-    def __init__(self, clientname='adba', server='api.anidb.info', port=9000, myport=9876, user=None, password=None, session=None, keepAlive=False, commandDelay=4.1):
+    def __init__(self, clientname=b'adba', server=b'api.anidb.info', port=9000, myport=9876, user=None, password=None, session=None, keepAlive=False, commandDelay=4.1):
         super(Connection, self).__init__()
 
         self.link = AniDBLink(server, port, myport, delay=commandDelay)
@@ -120,7 +121,7 @@ class Connection(threading.Thread):
         self.link.stop()
 
     def handle_response(self, response):
-        if response.rescode in ('501', '506') and response.req.command != 'AUTH':
+        if response.rescode in (b'501', b'506') and response.req.command != b'AUTH':
             logger.debug("seems like the last command got a not authed error back trying to reconnect now")
             if self._reAuthenticate():
                 response.req.resp = None
@@ -154,7 +155,7 @@ class Connection(threading.Thread):
             if callback:
                 callback(resp)
 
-        logger.debug("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
+        logger.debug("handling(%s-%s) command %s", self.counter, self.link.delay, command.command)
 
         # make live request
         command.authorize(self.mode, self.link.new_tag(), self.link.session, callback_wrapper)
@@ -188,7 +189,7 @@ class Connection(threading.Thread):
         if self._username and self._password:
             logger.info("auto re authenticating !")
             resp = self.auth(self._username, self._password)
-            if resp.rescode != '500':
+            if resp.rescode != b'500':
                 return True
         else:
             return False
@@ -271,7 +272,7 @@ class Connection(threading.Thread):
             except Exception as e:
                 logger.debug('Auth command with exception %s', e)
                 # we force a config file with logged out to ensure a known state if an exception occurs, forcing us to log in again
-                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'exception': str(e),
+                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'exception': text_type(e),
                                      'lastcommandtime': repr(time())}
                 with open(self.SessionFile, 'w') as configfile:
                     config.write(configfile)

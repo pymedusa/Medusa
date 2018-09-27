@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
+from six import text_type
 from . import aniDBfileInfo as fileInfo
 
 
@@ -31,7 +32,7 @@ class TvDBMap:
 
     def _get_x_for_y(self, xValue, x, y):
         # print("searching "+x+" with the value "+str(xValue)+" and want to give back "+y)
-        x_value = str(xValue)
+        x_value = text_type(xValue)
         for anime in self.xmlMap.findall("anime"):
             try:
                 if anime.get(x, False) == x_value:

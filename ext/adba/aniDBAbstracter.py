@@ -164,6 +164,8 @@ class Anime(aniDBabstractObject):
         if not self.aid:
             return []
         self.rawData = self.aniDB.groupstatus(aid=self.aid)
+        if not self.rawData:
+            return []
         self.release_groups = []
         for line in self.rawData.datalines:
             self.release_groups.append({"name": line["name"].decode("utf-8"),

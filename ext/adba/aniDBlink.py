@@ -214,7 +214,7 @@ class AniDBLink(threading.Thread):
         data = command.raw_data()
 
         self.sock.sendto(bytes(data, b"ASCII"), self.target)
-        if command.command == b'AUTH':
+        if command.command == 'AUTH':
             logger.debug("NetIO > sensitive data is not logged!")
 
     def new_tag(self):
@@ -226,7 +226,7 @@ class AniDBLink(threading.Thread):
         return newtag
 
     def request(self, command):
-        if not (self.session and command.session) and command.command not in (b'AUTH', b'PING', b'ENCRYPT'):
+        if not (self.session and command.session) and command.command not in ('AUTH', 'PING', 'ENCRYPT'):
             raise AniDBMustAuthError("You must be authed to execute commands besides AUTH and PING")
         command.started = time()
         self._cmd_queue(command)
