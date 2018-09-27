@@ -94,10 +94,12 @@ export default {
                 const itemAsObject = Object.assign({
                     id: this.index,
                     toggled: false, memberOf: list
-                }, Object.assign({}, release));
+                }, release);
 
-                this.allReleaseGroups.push(itemAsObject);
-                this.index += 1; // Increment the counter for our next item.
+                if (this.allReleaseGroups.filter((item) => item.name === itemAsObject.name && item.memberOf === list).length === 0) {
+                    this.allReleaseGroups.push(itemAsObject);
+                    this.index += 1; // Increment the counter for our next item.
+                }
             }
         },
         moveToList(list) {
