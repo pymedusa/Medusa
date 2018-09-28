@@ -36,7 +36,7 @@ class SeriesHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'PATCH', 'DELETE', )
 
-    def get(self, series_slug, path_param=None):
+    def http_get(self, series_slug, path_param=None):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234
@@ -74,7 +74,7 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._ok(data)
 
-    def post(self, series_slug=None, path_param=None):
+    def http_post(self, series_slug=None, path_param=None):
         """Add a new series."""
         if series_slug is not None:
             return self._bad_request('Series slug should not be specified')
@@ -101,7 +101,7 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._created(series.to_json(), identifier=identifier.slug)
 
-    def patch(self, series_slug, path_param=None):
+    def http_patch(self, series_slug, path_param=None):
         """Patch series."""
         if not series_slug:
             return self._method_not_allowed('Patching multiple series is not allowed')
@@ -156,9 +156,9 @@ class SeriesHandler(BaseRequestHandler):
         if ignored:
             log.warning('Series patch ignored {items!r}', {'items': ignored})
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
-    def delete(self, series_slug, path_param=None):
+    def http_delete(self, series_slug, path_param=None):
         """Delete the series."""
         if not series_slug:
             return self._method_not_allowed('Deleting multiple series are not allowed')

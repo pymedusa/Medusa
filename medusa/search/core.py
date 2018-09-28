@@ -461,9 +461,9 @@ def wanted_episodes(series_obj, from_date):
 
     # check through the list of statuses to see if we want any
     for episode in sql_results:
-        cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
+        cur_status, cur_quality = int(episode['status'] or UNSET), int(episode['quality'] or Quality.NA)
         should_search, should_search_reason = Quality.should_search(
-            cur_status, cur_quality, series_obj, episode[b'manually_searched']
+            cur_status, cur_quality, series_obj, episode['manually_searched']
         )
         if not should_search:
             continue
@@ -471,12 +471,12 @@ def wanted_episodes(series_obj, from_date):
             log.debug(
                 u'Searching for {show} {ep}. Reason: {reason}', {
                     u'show': series_obj.name,
-                    u'ep': episode_num(episode[b'season'], episode[b'episode']),
+                    u'ep': episode_num(episode['season'], episode['episode']),
                     u'reason': should_search_reason,
                 }
             )
 
-        ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
+        ep_obj = series_obj.get_episode(episode['season'], episode['episode'])
         ep_obj.wanted_quality = [
             quality
             for quality in all_qualities

@@ -55,7 +55,9 @@ function updateImages(data) {
                 // Update Status and Quality
                 let qualityPill = '';
                 if (ep.quality_style !== 'na') {
-                    qualityPill = ' <span class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
+                    // @FIXME: (sharkykh) This is a hack to get the scoped style to work.
+                    const qualityPillScopeId = window.components.find(c => c.name === 'quality-pill')._scopeId;
+                    qualityPill = ' <span ' + qualityPillScopeId + ' class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
                 }
                 htmlContent = ep.status + qualityPill;
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');

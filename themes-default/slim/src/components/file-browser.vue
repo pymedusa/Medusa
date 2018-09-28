@@ -21,6 +21,8 @@
     </div>
 </template>
 <script>
+import { apiRoute } from '../api';
+
 export default {
     name: 'file-browser',
     props: {
