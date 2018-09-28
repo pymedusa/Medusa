@@ -324,10 +324,10 @@ export default {
                     }
                 }
             }).then(response => {
-                log.info(response.data);
+                console.info(response.data);
                 window.location.reload();
             }).catch(error => {
-                log.error(error.data);
+                console.error(error.data);
             });
         });
     },
@@ -370,10 +370,10 @@ export default {
             });
 
             api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                log.info(response.data);
+                console.info(response.data);
                 window.location.reload();
             }).catch(error => {
-                log.error(error.data);
+                console.error(error.data);
             });
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {

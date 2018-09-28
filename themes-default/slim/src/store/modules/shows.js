@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { api } from '../../api';
 import { ADD_SHOW } from '../mutation-types';
 
 const state = {
