@@ -10,6 +10,7 @@
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+- Fixed editShow page crashing because of a memory overflow ([#5314](https://github.com/pymedusa/Medusa/pull/5314))
 
 -----
 
