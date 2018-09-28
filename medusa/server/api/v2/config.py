@@ -605,4 +605,42 @@ class DataGenerator(object):
         section_data['prowl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
         section_data['prowl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
 
+        section_data['libnotify'] = NonEmptyDict()
+        section_data['libnotify']['enabled'] = bool(app.USE_LIBNOTIFY)
+        section_data['libnotify']['notifyOnSnatch'] = bool(app.LIBNOTIFY_NOTIFY_ONSNATCH)
+        section_data['libnotify']['notifyOnDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONDOWNLOAD)
+        section_data['libnotify']['notifyOnSubtitleDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['pushover'] = NonEmptyDict()
+        section_data['pushover']['enabled'] = bool(app.USE_PROWL)
+        section_data['pushover']['apiKey'] = app.PUSHOVER_APIKEY
+        section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
+        section_data['pushover']['device'] = app.PUSHOVER_DEVICE
+        section_data['pushover']['sound'] = app.PUSHOVER_SOUND
+        section_data['pushover']['notifyOnSnatch'] = bool(app.PUSHOVER_NOTIFY_ONSNATCH)
+        section_data['pushover']['notifyOnDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
+        section_data['pushover']['notifyOnSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        section_data['boxcar2'] = NonEmptyDict()
+        section_data['boxcar2']['enabled'] = bool(app.USE_BOXCAR2)
+        section_data['boxcar2']['notifyOnSnatch'] = bool(app.BOXCAR2_NOTIFY_ONSNATCH)
+        section_data['boxcar2']['notifyOnDownload'] = bool(app.BOXCAR2_NOTIFY_ONDOWNLOAD)
+        section_data['boxcar2']['notifyOnSubtitleDownload'] = bool(app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['boxcar2']['accessToken'] = app.BOXCAR2_ACCESSTOKEN
+
+        section_data['pushalot'] = NonEmptyDict()
+        section_data['pushalot']['enabled'] = bool(app.USE_PUSHALOT)
+        section_data['pushalot']['notifyOnSnatch'] = bool(app.PUSHALOT_NOTIFY_ONSNATCH)
+        section_data['pushalot']['notifyOnDownload'] = bool(app.PUSHALOT_NOTIFY_ONDOWNLOAD)
+        section_data['pushalot']['notifyOnSubtitleDownload'] = bool(app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['pushalot']['authToken'] = app.PUSHALOT_AUTHORIZATIONTOKEN
+
+        section_data['pushbullet'] = NonEmptyDict()
+        section_data['pushbullet']['enabled'] = bool(app.USE_PUSHBULLET)
+        section_data['pushbullet']['notifyOnSnatch'] = bool(app.PUSHBULLET_NOTIFY_ONSNATCH)
+        section_data['pushbullet']['notifyOnDownload'] = bool(app.PUSHBULLET_NOTIFY_ONDOWNLOAD)
+        section_data['pushbullet']['notifyOnSubtitleDownload'] = bool(app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['pushbullet']['api'] = app.PUSHBULLET_API
+        section_data['pushbullet']['device'] = app.PUSHBULLET_DEVICE
+
         return section_data

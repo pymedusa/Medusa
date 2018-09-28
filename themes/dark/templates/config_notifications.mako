@@ -26,6 +26,35 @@ window.app = new Vue({
                 { text: 'High', value: 1 },
                 { text: 'Emergency', value: 2 }
             ],
+            pushoverSoundOptions: [
+                { text: 'Pushover', value: 'pushover' },
+                { text: 'Bike', value: 'bike' },
+                { text: 'Bugle', value: 'bugle' },
+                { text: 'Cash Register', value: 'cashregister' },
+                { text: 'classical', value: 'classical' },
+                { text: 'Cosmic', value: 'cosmic' },
+                { text: 'Falling', value: 'falling' },
+                { text: 'Gamelan', value: 'gamelan' },
+                { text: 'Incoming', value: 'incoming' },
+                { text: 'Intermission', value: 'intermission' },
+                { text: 'Magic', value: 'magic' },
+                { text: 'Mechanical', value: 'mechanical' },
+                { text: 'Piano Bar', value: 'pianobar' },
+                { text: 'Siren', value: 'siren' },
+                { text: 'Space Alarm', value: 'spacealarm' },
+                { text: 'Tug Boat', value: 'tugboat' },
+                { text: 'Alien Alarm (long)', value: 'alien' },
+                { text: 'Climb (long)', value: 'climb' },
+                { text: 'Persistent (long)', value: 'persistant' },
+                { text: 'Pushover Echo (long)', value: 'echo' },
+                { text: 'Up Down (long)', value: 'updown' },
+                { text: 'None (silent)', value: 'none' },
+                { text: 'Device specific', value: 'default' }
+            ],
+            pushbulletDeviceOptions: [
+                { text: 'All devices', value: '' }
+            ],
+            pushbulletTestInfo: 'Click below to test.',
             notifiers: {
                 emby: {
                     enabled: null,
@@ -118,6 +147,44 @@ window.app = new Vue({
                     notifyOnSnatch: null,
                     notifyOnDownload: null,
                     notifyOnSubtitleDownload: null
+                },
+                libnotify: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null
+                },
+                pushover: {
+                    enabled: null,
+                    apiKey: null,
+                    userKey: null,
+                    device: [],
+                    sound: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null
+                },
+                boxcar2: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    accessToken: null
+                },
+                pushalot: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    authToken: null
+                },
+                pushbullet: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    authToken: null,
+                    device: ''
                 }
             }
         };
@@ -664,13 +731,13 @@ window.app = new Vue({
 
         $('#testPushbullet').on('click', function() {
             const pushbullet = {};
-            pushbullet.api = $.trim($('#pushbullet_api').val());
+            pushbullet.api = $.trim($('#pushbullet_api').find('input').val());
             if (!pushbullet.api) {
                 $('#testPushbullet-result').html('Please fill out the necessary fields above.');
-                $('#pushbullet_api').addClass('warning');
+                $('#pushbullet_api').find('input').addClass('warning');
                 return;
             }
-            $('#pushbullet_api').removeClass('warning');
+            $('#pushbullet_api').find('input').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testPushbullet-result').html(MEDUSA.config.loading);
             $.get('home/testPushbullet', {
@@ -680,54 +747,6 @@ window.app = new Vue({
                 $('#testPushbullet').prop('disabled', false);
             });
         });
-
-        function getPushbulletDevices(msg) {
-            const pushbullet = {};
-            pushbullet.api = $('#pushbullet_api').val();
-
-            if (msg) {
-                $('#testPushbullet-result').html(MEDUSA.config.loading);
-            }
-
-            if (!pushbullet.api) {
-                $('#testPushbullet-result').html('You didn\'t supply a Pushbullet api key');
-                $('#pushbullet_api').focus();
-                return false;
-            }
-
-            $.get('home/getPushbulletDevices', {
-                api: pushbullet.api
-            }, data => {
-                pushbullet.devices = $.parseJSON(data).devices;
-                pushbullet.currentDevice = $('#pushbullet_device').val();
-                $('#pushbullet_device_list').html('');
-                for (let i = 0, len = pushbullet.devices.length; i < len; i++) {
-                    if (pushbullet.devices[i].active === true) {
-                        if (pushbullet.currentDevice === pushbullet.devices[i].iden) {
-                            $('#pushbullet_device_list').append('<option value="' + pushbullet.devices[i].iden + '" selected>' + pushbullet.devices[i].nickname + '</option>');
-                        } else {
-                            $('#pushbullet_device_list').append('<option value="' + pushbullet.devices[i].iden + '">' + pushbullet.devices[i].nickname + '</option>');
-                        }
-                    }
-                }
-                $('#pushbullet_device_list').prepend('<option value="" ' + (pushbullet.currentDevice === '' ? 'selected' : '') + '>All devices</option>');
-                if (msg) {
-                    $('#testPushbullet-result').html(msg);
-                }
-            });
-
-            $('#pushbullet_device_list').on('change', () => {
-                $('#pushbullet_device').val($('#pushbullet_device_list').val());
-                $('#testPushbullet-result').html('Don\'t forget to save your new pushbullet settings.');
-            });
-        }
-
-        $('#getPushbulletDevices').on('click', () => {
-            getPushbulletDevices('Device list updated. Please choose a device to push to.');
-        });
-
-        // We have to call this function on dom ready to create the devices select
-        getPushbulletDevices();
 
         $('#email_show').on('change', () => {
             const key = parseInt($('#email_show').val(), 10);
@@ -847,6 +866,46 @@ window.app = new Vue({
             const response = await apiRoute('home/loadShowNotifyLists')
             if (response.data._size > 0) {
                 this.prowlSelectedShowApiKeys = selectedShow ? response.data[selectedShow].prowl_notify_list : '';
+            }
+        },
+        async getPushbulletDeviceOptions() {
+            const { api: pushbulletApiKey } = this.notifiers.pushbullet;
+            if (!pushbulletApiKey) {
+                this.pushbulletTestInfo = 'You didn\'t supply a Pushbullet api key';
+                $('#pushbullet_api').find('input').focus();
+                return false;
+            }
+
+            const response = await apiRoute('home/getPushbulletDevices', { params: { api: pushbulletApiKey }});
+            let options = [];
+
+            const { data } = response;
+            if (!data) {
+                return false;
+            }
+
+            options.push({text: 'All devices', value: ''});
+            for (device of data.devices) {
+                if (device.active === true) {
+                    options.push({text: device.nickname, value: device.iden});
+                }
+            }
+            this.pushbulletDeviceOptions = options;
+            this.pushbulletTestInfo = 'Device list updated. Please choose a device to push to.';
+        },
+        async testPushbulletApi() {
+            const { api: pushbulletApiKey } = this.notifiers.pushbullet;
+            if (!pushbulletApiKey) {
+                this.pushbulletTestInfo = 'You didn\'t supply a Pushbullet api key';
+                $('#pushbullet_api').find('input').focus();
+                return false;
+            }
+
+            const response = await apiRoute('home/testPushbullet', { params: { api: pushbulletApiKey }});
+            const { data } = response;
+            
+            if (data) {
+                this.pushbulletTestInfo = data;
             }
         }
     }
@@ -1254,446 +1313,272 @@ window.app = new Vue({
                     </div>
                 
                     <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-prowl" title="Prowl"></span>
-                                <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
-                                <p>A Growl client for iOS.</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for prowl client -->
-                                    <config-toggle-slider :checked="notifiers.prowl.enabled" label="Enable" id="use_prowl" :explanations="['Send Prowl notifications?']" @change="save()"  @update="notifiers.prowl.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.prowl.enabled" id="content-use-prowl"> <!-- show based on notifiers.plex.server.enabled -->
-                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnSnatch" label="Notify on snatch" id="prowl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.prowl.notifyOnSnatch = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.prowl.notifyOnDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.prowl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                        <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_host" class="col-sm-2 control-label">
-                                                    <span>Api</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
-                                                    <span>Prowl API(s) listed here, separated by commas if applicable, will receive notifications for <b>all</b> shows.
-                                                        Your Prowl API key is available at:
-                                                        <app-link href="https://www.prowlapp.com/api_settings.php">
-                                                        https://www.prowlapp.com/api_settings.php</app-link><br>
-                                                        (This field may be blank except when testing.)
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_host" class="col-sm-2 control-label">
-                                                    <span>Show notification list</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <config-textbox :value="prowlSelectedShowApiKeys" placeholder="Separate your api keys with a comma" label="" id="prowl-show-list" :explanations="['Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box. Be sure to activate the \'Save for this show\' button below after each entry.']" @change="saveProwlPerShowNotifyList($event)" @update="prowlSelectedShowApiKeys = $event">
-                                        </config-textbox>
-                                        
-
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="prowl-show-save-button" class="col-sm-2 control-label">
-                                                    <span></span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="saveProwlPerShowNotifyList"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="kodi_host" class="col-sm-2 control-label">
-                                                    <span>Prowl priority:</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
-                                                        <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
-                                                                {{ option.text }}
-                                                        </option>
-                                                    </select>
-                                                    <span>priority of Prowl messages from Medusa.</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                        <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-
-                                    </div>
-                                </fieldset>
-                            </div>
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-prowl" title="Prowl"></span>
+                            <h3><app-link href="http://www.prowlapp.com/">Prowl</app-link></h3>
+                            <p>A Growl client for iOS.</p>
                         </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for prowl client -->
+                                <config-toggle-slider :checked="notifiers.prowl.enabled" label="Enable" id="use_prowl" :explanations="['Send Prowl notifications?']" @change="save()"  @update="notifiers.prowl.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.prowl.enabled" id="content-use-prowl"> <!-- show based on notifiers.plex.server.enabled -->
+                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnSnatch" label="Notify on snatch" id="prowl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.prowl.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.prowl.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.prowl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Api</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
+                                                <span>Prowl API(s) listed here, separated by commas if applicable, will receive notifications for <b>all</b> shows.
+                                                    Your Prowl API key is available at:
+                                                    <app-link href="https://www.prowlapp.com/api_settings.php">
+                                                    https://www.prowlapp.com/api_settings.php</app-link><br>
+                                                    (This field may be blank except when testing.)
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Show notification list</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <config-textbox :value="prowlSelectedShowApiKeys" placeholder="Separate your api keys with a comma" label="" id="prowl-show-list" :explanations="['Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box. Be sure to activate the \'Save for this show\' button below after each entry.']" @change="saveProwlPerShowNotifyList($event)" @update="prowlSelectedShowApiKeys = $event">
+                                    </config-textbox>
+                                    
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="prowl-show-save-button" class="col-sm-2 control-label">
+                                                <span></span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="saveProwlPerShowNotifyList"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Prowl priority:</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
+                                                    <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
+                                                            {{ option.text }}
+                                                    </option>
+                                                </select>
+                                                <span>priority of Prowl messages from Medusa.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="testNotification" id="testProwl-result">Click below to test.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
                     
-                        
-                        <div class="component-group-desc-legacy">
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
                             <h3><app-link href="http://library.gnome.org/devel/libnotify/">Libnotify</app-link></h3>
                             <p>The standard desktop notification API for Linux/*nix systems.  This notifier will only function if the pynotify module is installed (Ubuntu/Debian package <app-link href="apt:python-notify">python-notify</app-link>).</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_libnotify">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_libnotify" id="use_libnotify" ${'checked="checked"' if app.USE_LIBNOTIFY else ''}/>
-                                        <p>Send Libnotify notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_libnotify">
-                                <div class="field-pair">
-                                    <label for="libnotify_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="libnotify_notify_onsnatch" id="libnotify_notify_onsnatch" ${'checked="checked"' if app.LIBNOTIFY_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for plex media client -->
+                                <config-toggle-slider :checked="notifiers.libnotify.enabled" label="Enable" id="use_libnotify_client" :explanations="['Send Libnotify notifications?']" @change="save()"  @update="notifiers.libnotify.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.libnotify.enabled" id="content-use-libnotify"> 
+
+                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnSnatch" label="Notify on snatch" id="libnotify_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.libnotify.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnDownload" label="Notify on download" id="libnotify_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.libnotify.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnSubtitleDownload" label="Notify on subtitle download" id="libnotify_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.libnotify.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+
+                                    <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="libnotify_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="libnotify_notify_ondownload" id="libnotify_notify_ondownload" ${'checked="checked"' if app.LIBNOTIFY_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="libnotify_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="libnotify_notify_onsubtitledownload" id="libnotify_notify_onsubtitledownload" ${'checked="checked"' if app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
-                                <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_libnotify //-->
-                        </fieldset>
-                    </div><!-- /libnotify component-group //-->
-                        <div class="component-group-desc-legacy">
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
                             <h3><app-link href="https://pushover.net/">Pushover</app-link></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_pushover">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_pushover" id="use_pushover" ${'checked="checked"' if app.USE_PUSHOVER else ''}/>
-                                        <p>Send Pushover notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_pushover">
-                                <div class="field-pair">
-                                    <label for="pushover_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushover_notify_onsnatch" id="pushover_notify_onsnatch" ${'checked="checked"' if app.PUSHOVER_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for pushover -->
+                                <config-toggle-slider :checked="notifiers.pushover.enabled" label="Enable" id="use_pushover_client" :explanations="['Send Pushover notifications?']" @change="save()"  @update="notifiers.pushover.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.pushover.enabled" id="content-use-pushover">
+                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnSnatch" label="Notify on snatch" id="pushover_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushover.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnDownload" label="Notify on download" id="pushover_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushover.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushover.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+
+                                    <config-textbox :value="notifiers.pushover.userKey" label="Pushover Key" id="pushover_userkey" :explanations="['user key of your Pushover account']" @change="save()"  @update="notifiers.pushover.userKey = $event"></config-textbox>
+                                    
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                    <span>Pushover API key</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <input type="text" name="pushover_apikey" id="pushover_apikey" v-model="notifiers.pushover.apiKey" class="form-control input-sm max-input350"/>
+                                                <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                                <span>Pushover Devices</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select-list name="pushover_device" id="pushover_device" :list-items="notifiers.pushover.device" @change="notifiers.pushover.device = $event"></select-list>
+                                                <p>List of pushover devices you want to send notifications to</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="pushover_spound" class="col-sm-2 control-label">
+                                                <span>Pushover notification sound</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <select id="pushover_sound" name="pushover_sound" v-model="notifiers.pushover.sound" class="form-control">
+                                                    <option v-for="option in pushoverSoundOptions" v-bind:value="option.value">
+                                                        {{ option.text }}
+                                                    </option>
+                                                </select>
+                                                <span>Choose notification sound to use</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="testNotification" id="testPushover-result">Click below to test.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="pushover_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushover_notify_ondownload" id="pushover_notify_ondownload" ${'checked="checked"' if app.PUSHOVER_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushover_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushover_notify_onsubtitledownload" id="pushover_notify_onsubtitledownload" ${'checked="checked"' if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushover_userkey">
-                                        <span class="component-title">Pushover key</span>
-                                        <input type="text" name="pushover_userkey" id="pushover_userkey" value="${app.PUSHOVER_USERKEY}" class="form-control input-sm input250"
-                                               autocomplete="no" />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">user key of your Pushover account</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushover_apikey">
-                                        <span class="component-title">Pushover API key</span>
-                                        <input type="text" name="pushover_apikey" id="pushover_apikey" value="${app.PUSHOVER_APIKEY}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushover_device">
-                                        <span class="component-title">Pushover devices</span>
-                                        <input type="text" name="pushover_device" id="pushover_device" value="${','.join(app.PUSHOVER_DEVICE)}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">comma separated list of pushover devices you want to send notifications to</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushover_sound">
-                                        <span class="component-title">Pushover notification sound</span>
-                                        <select id="pushover_sound" name="pushover_sound" class="form-control input-sm">
-                                            <option value="pushover" ${'selected="selected"' if app.PUSHOVER_SOUND == 'pushover' else ''}>Pushover</option>
-                                            <option value="bike" ${'selected="selected"' if app.PUSHOVER_SOUND == 'bike' else ''}>Bike</option>
-                                            <option value="bugle" ${'selected="selected"' if app.PUSHOVER_SOUND == 'bugle' else ''}>Bugle</option>
-                                            <option value="cashregister" ${'selected="selected"' if app.PUSHOVER_SOUND == 'cashregister' else ''}>Cash Register</option>
-                                            <option value="classical" ${'selected="selected"' if app.PUSHOVER_SOUND == 'classical' else ''}>Classical</option>
-                                            <option value="cosmic" ${'selected="selected"' if app.PUSHOVER_SOUND == 'cosmic' else ''}>Cosmic</option>
-                                            <option value="falling" ${'selected="selected"' if app.PUSHOVER_SOUND == 'falling' else ''}>Falling</option>
-                                            <option value="gamelan" ${'selected="selected"' if app.PUSHOVER_SOUND == 'gamelan' else ''}>Gamelan</option>
-                                            <option value="incoming" ${'selected="selected"' if app.PUSHOVER_SOUND == 'incoming' else ''}> Incoming</option>
-                                            <option value="intermission" ${'selected="selected"' if app.PUSHOVER_SOUND == 'intermission' else ''}>Intermission</option>
-                                            <option value="magic" ${'selected="selected"' if app.PUSHOVER_SOUND == 'magic' else ''}>Magic</option>
-                                            <option value="mechanical" ${'selected="selected"' if app.PUSHOVER_SOUND == 'mechanical' else ''}>Mechanical</option>
-                                            <option value="pianobar" ${'selected="selected"' if app.PUSHOVER_SOUND == 'pianobar' else ''}>Piano Bar</option>
-                                            <option value="siren" ${'selected="selected"' if app.PUSHOVER_SOUND == 'siren' else ''}>Siren</option>
-                                            <option value="spacealarm" ${'selected="selected"' if app.PUSHOVER_SOUND == 'spacealarm' else ''}>Space Alarm</option>
-                                            <option value="tugboat" ${'selected="selected"' if app.PUSHOVER_SOUND == 'tugboat' else ''}>Tug Boat</option>
-                                            <option value="alien" ${'selected="selected"' if app.PUSHOVER_SOUND == 'alien' else ''}>Alien Alarm (long)</option>
-                                            <option value="climb" ${'selected="selected"' if app.PUSHOVER_SOUND == 'climb' else ''}>Climb (long)</option>
-                                            <option value="persistent" ${'selected="selected"' if app.PUSHOVER_SOUND == 'persistent' else ''}>Persistent (long)</option>
-                                            <option value="echo" ${'selected="selected"' if app.PUSHOVER_SOUND == 'echo' else ''}>Pushover Echo (long)</option>
-                                            <option value="updown" ${'selected="selected"' if app.PUSHOVER_SOUND == 'updown' else ''}>Up Down (long)</option>
-                                            <option value="none" ${'selected="selected"' if app.PUSHOVER_SOUND == 'none' else ''}>None (silent)</option>
-                                            <option value="default" ${'selected="selected"' if app.PUSHOVER_SOUND == 'default' else ''}>Device specific</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Choose notification sound to use</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testPushover-result">Click below to test.</div>
-                                <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_pushover //-->
-                        </fieldset>
-                    </div><!-- /pushover component-group //-->
-                        <div class="component-group-desc-legacy">
+                            </fieldset>
+                        </div>
+                    </div>
+
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-boxcar2" title="Boxcar 2"></span>
                             <h3><app-link href="https://new.boxcar.io/">Boxcar 2</app-link></h3>
                             <p>Read your messages where and when you want them!</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_boxcar2">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_boxcar2" id="use_boxcar2" ${'checked="checked"' if app.USE_BOXCAR2 else ''}/>
-                                        <p>Send Boxcar notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_boxcar2">
-                                <div class="field-pair">
-                                    <label for="boxcar2_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="boxcar2_notify_onsnatch" id="boxcar2_notify_onsnatch" ${'checked="checked"' if app.BOXCAR2_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for boxcar2 client -->
+                                <config-toggle-slider :checked="notifiers.boxcar2.enabled" label="Enable" id="use_boxcar2" :explanations="['Send boxcar2 notifications?']" @change="save()"  @update="notifiers.boxcar2.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.boxcar2.enabled" id="content-use-boxcar2-client"> <!-- show based on notifiers.boxcar2.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnSnatch" label="Notify on snatch" id="boxcar2_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.boxcar2.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnDownload" label="Notify on download" id="boxcar2_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.boxcar2.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnSubtitleDownload" label="Notify on subtitle download" id="boxcar2_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.boxcar2.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.boxcar2.accessToken" label="Boxcar2 Access token" id="boxcar2_accesstoken" :explanations="['access token for your Boxcar account.']" @change="save()"  @update="notifiers.boxcar2.accessToken = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="boxcar2_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="boxcar2_notify_ondownload" id="boxcar2_notify_ondownload" ${'checked="checked"' if app.BOXCAR2_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="boxcar2_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="boxcar2_notify_onsubtitledownload" id="boxcar2_notify_onsubtitledownload" ${'checked="checked"' if app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="boxcar2_accesstoken">
-                                        <span class="component-title">Boxcar2 access token</span>
-                                        <input type="text" name="boxcar2_accesstoken" id="boxcar2_accesstoken" value="${app.BOXCAR2_ACCESSTOKEN}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">access token for your Boxcar account.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
-                                <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_boxcar2 //-->
-                        </fieldset>
-                    </div><!-- /boxcar2 component-group //-->
-                        <div class="component-group-desc-legacy">
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-pushalot" title="Pushalot"></span>
                             <h3><app-link href="https://pushalot.com">Pushalot</app-link></h3>
                             <p>Pushalot is a platform for receiving custom push notifications to connected devices running Windows Phone or Windows 8.</p>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_pushalot">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_pushalot" id="use_pushalot" ${'checked="checked"' if app.USE_PUSHALOT else ''}/>
-                                        <p>Send Pushalot notifications ?
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_pushalot">
-                                <div class="field-pair">
-                                    <label for="pushalot_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushalot_notify_onsnatch" id="pushalot_notify_onsnatch" ${'checked="checked"' if app.PUSHALOT_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for pushalot client -->
+                                <config-toggle-slider :checked="notifiers.pushalot.enabled" label="Enable" id="use_pushalot" :explanations="['Send Pushalot notifications?']" @change="save()"  @update="notifiers.pushalot.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.pushalot.enabled" id="content-use-pushalot-client"> <!-- show based on notifiers.pushalot.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnSnatch" label="Notify on snatch" id="pushalot_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushalot.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnDownload" label="Notify on download" id="pushalot_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushalot.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushalot_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushalot.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.pushalot.authToken" label="Pushalot authorization token" id="pushalot_authorizationtoken" :explanations="['authorization token of your Pushalot account.']" @change="save()"  @update="notifiers.pushalot.authToken = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testPushalot-result">Click below to test.</div>
+                                    <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="pushalot_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushalot_notify_ondownload" id="pushalot_notify_ondownload" ${'checked="checked"' if app.PUSHALOT_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushalot_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushalot_notify_onsubtitledownload" id="pushalot_notify_onsubtitledownload" ${'checked="checked"' if app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushalot_authorizationtoken">
-                                        <span class="component-title">Pushalot authorization token</span>
-                                        <input type="text" name="pushalot_authorizationtoken" id="pushalot_authorizationtoken" value="${app.PUSHALOT_AUTHORIZATIONTOKEN}" class="form-control input-sm input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">authorization token of your Pushalot account.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testPushalot-result">Click below to test.</div>
-                                <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div><!-- /content_use_pushalot //-->
-                        </fieldset>
-                    </div><!-- /pushalot component-group //-->
-                        <div class="component-group-desc-legacy">
-                            <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
-                            <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
-                            <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
+                            </fieldset>
                         </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_pushbullet">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_pushbullet" id="use_pushbullet" ${'checked="checked"' if app.USE_PUSHBULLET else ''}/>
-                                        <p>Send Pushbullet notifications?</p>
-                                    </span>
-                                </label>
+                    </div>
+
+                    <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
+                                <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
+                                <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
                             </div>
-                            <div id="content_use_pushbullet">
-                                <div class="field-pair">
-                                    <label for="pushbullet_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushbullet_notify_onsnatch" id="pushbullet_notify_onsnatch" ${'checked="checked"' if app.PUSHBULLET_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushbullet_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushbullet_notify_ondownload" id="pushbullet_notify_ondownload" ${'checked="checked"' if app.PUSHBULLET_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushbullet_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="pushbullet_notify_onsubtitledownload" id="pushbullet_notify_onsubtitledownload" ${'checked="checked"' if app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushbullet_api">
-                                        <span class="component-title">Pushbullet API key</span>
-                                        <input type="text" name="pushbullet_api" id="pushbullet_api" value="${app.PUSHBULLET_API}" class="form-control input-sm input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">API key of your Pushbullet account</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="pushbullet_device_list">
-                                        <span class="component-title">Pushbullet devices</span>
-                                        <select name="pushbullet_device_list" id="pushbullet_device_list" class="form-control input-sm"></select>
-                                        <input type="hidden" id="pushbullet_device" value="${app.PUSHBULLET_DEVICE}">
-                                        <input type="button" class="btn-medusa btn-inline" value="Update device list" id="getPushbulletDevices" />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">select device you wish to push to.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testPushbullet-result">Click below to test.</div>
-                                <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" />
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div><!-- /content_use_pushbullet //-->
-                        </fieldset>
-                    </div><!-- /pushbullet component-group //-->
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for pushbullet client -->
+                                    <config-toggle-slider :checked="notifiers.pushbullet.enabled" label="Enable" id="use_pushbullet" :explanations="['Send pushbullet notifications?']" @change="save()"  @update="notifiers.pushbullet.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.pushbullet.enabled" id="content-use-pushbullet-client"> <!-- show based on notifiers.pushbullet.enabled -->
+    
+                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSnatch" label="Notify on snatch" id="pushbullet_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSnatch = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnDownload" label="Notify on download" id="pushbullet_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushbullet.notifyOnDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                        <config-textbox :value="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()"  @update="notifiers.pushbullet.api = $event"></config-textbox>
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="pushover_spound" class="col-sm-2 control-label">
+                                                    <span>Pushbullet devices</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
+                                                    <select id="pushbullet_device_list" name="pushbullet_device_list" v-model="notifiers.pushbullet.device" class="form-control">
+                                                        <option v-for="option in pushbulletDeviceOptions" v-bind:value="option.value" @change="pushbulletTestInfo = 'Don\'t forget to save your new pushbullet settings.'">
+                                                            {{ option.text }}
+                                                        </option>
+                                                    </select>
+                                                    <span>select device you wish to push to.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
+                                        <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
+                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+
+
+
                         <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                             <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>

@@ -92,6 +92,44 @@ const state = {
         notifyOnSnatch: null,
         notifyOnDownload: null,
         notifyOnSubtitleDownload: null
+    },
+    libnotify: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null
+    },
+    pushover: {
+        enabled: null,
+        apiKey: null,
+        userKey: null,
+        device: [],
+        sound: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null
+    },
+    boxcar2: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        accessToken: null
+    },
+    pushalot: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        authToken: null
+    },
+    pushbullet: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        authToken: null,
+        device: null
     }
 };
 
