@@ -643,4 +643,20 @@ class DataGenerator(object):
         section_data['pushbullet']['api'] = app.PUSHBULLET_API
         section_data['pushbullet']['device'] = app.PUSHBULLET_DEVICE
 
+        section_data['freemobile'] = NonEmptyDict()
+        section_data['freemobile']['enabled'] = bool(app.USE_FREEMOBILE)
+        section_data['freemobile']['notifyOnSnatch'] = bool(app.FREEMOBILE_NOTIFY_ONSNATCH)
+        section_data['freemobile']['notifyOnDownload'] = bool(app.FREEMOBILE_NOTIFY_ONDOWNLOAD)
+        section_data['freemobile']['notifyOnSubtitleDownload'] = bool(app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['freemobile']['api'] = app.FREEMOBILE_APIKEY
+        section_data['freemobile']['id'] = app.FREEMOBILE_ID
+
+        section_data['telegram'] = NonEmptyDict()
+        section_data['telegram']['enabled'] = bool(app.USE_TELEGRAM)
+        section_data['telegram']['notifyOnSnatch'] = bool(app.TELEGRAM_NOTIFY_ONSNATCH)
+        section_data['telegram']['notifyOnDownload'] = bool(app.TELEGRAM_NOTIFY_ONDOWNLOAD)
+        section_data['telegram']['notifyOnSubtitleDownload'] = bool(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['telegram']['api'] = app.TELEGRAM_APIKEY
+        section_data['telegram']['id'] = app.TELEGRAM_ID
+
         return section_data

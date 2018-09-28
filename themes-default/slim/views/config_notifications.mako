@@ -184,7 +184,23 @@ window.app = new Vue({
                     notifyOnDownload: null,
                     notifyOnSubtitleDownload: null,
                     authToken: null,
-                    device: ''
+                    device: null
+                },
+                freemobile: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    api: null,
+                    id: null
+                },
+                telegram: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    api: null,
+                    id: null
                 }
             }
         };
@@ -1536,191 +1552,103 @@ window.app = new Vue({
                     </div>
 
                     <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
-                                <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
-                                <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for pushbullet client -->
-                                    <config-toggle-slider :checked="notifiers.pushbullet.enabled" label="Enable" id="use_pushbullet" :explanations="['Send pushbullet notifications?']" @change="save()"  @update="notifiers.pushbullet.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.pushbullet.enabled" id="content-use-pushbullet-client"> <!-- show based on notifiers.pushbullet.enabled -->
-    
-                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSnatch" label="Notify on snatch" id="pushbullet_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSnatch = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnDownload" label="Notify on download" id="pushbullet_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushbullet.notifyOnDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                        <config-textbox :value="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()"  @update="notifiers.pushbullet.api = $event"></config-textbox>
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-pushbullet" title="Pushbullet"></span>
+                            <h3><app-link href="https://www.pushbullet.com">Pushbullet</app-link></h3>
+                            <p>Pushbullet is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for pushbullet client -->
+                                <config-toggle-slider :checked="notifiers.pushbullet.enabled" label="Enable" id="use_pushbullet" :explanations="['Send pushbullet notifications?']" @change="save()"  @update="notifiers.pushbullet.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.pushbullet.enabled" id="content-use-pushbullet-client"> <!-- show based on notifiers.pushbullet.enabled -->
 
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="pushover_spound" class="col-sm-2 control-label">
-                                                    <span>Pushbullet devices</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
-                                                    <select id="pushbullet_device_list" name="pushbullet_device_list" v-model="notifiers.pushbullet.device" class="form-control">
-                                                        <option v-for="option in pushbulletDeviceOptions" v-bind:value="option.value" @change="pushbulletTestInfo = 'Don\'t forget to save your new pushbullet settings.'">
-                                                            {{ option.text }}
-                                                        </option>
-                                                    </select>
-                                                    <span>select device you wish to push to.</span>
-                                                </div>
+                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSnatch" label="Notify on snatch" id="pushbullet_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnDownload" label="Notify on download" id="pushbullet_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushbullet.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()"  @update="notifiers.pushbullet.api = $event"></config-textbox>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label for="pushover_spound" class="col-sm-2 control-label">
+                                                <span>Pushbullet devices</span>
+                                            </label>
+                                            <div class="col-sm-10 content">
+                                                <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
+                                                <select id="pushbullet_device_list" name="pushbullet_device_list" v-model="notifiers.pushbullet.device" class="form-control">
+                                                    <option v-for="option in pushbulletDeviceOptions" v-bind:value="option.value" @change="pushbulletTestInfo = 'Don\'t forget to save your new pushbullet settings.'">
+                                                        {{ option.text }}
+                                                    </option>
+                                                </select>
+                                                <span>select device you wish to push to.</span>
                                             </div>
                                         </div>
-
-                                        <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
-                                        <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
-                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                                     </div>
-                                </fieldset>
-                            </div>
+
+                                    <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
+                                    <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                </div>
+                            </fieldset>
                         </div>
-
-
-
-                        <div class="component-group-desc-legacy">
-                            <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
-                            <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
-                            <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
-                        </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_freemobile">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_freemobile" id="use_freemobile" ${'checked="checked"' if app.USE_FREEMOBILE else ''}/>
-                                        <p>Send SMS notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_freemobile">
-                                <div class="field-pair">
-                                    <label for="freemobile_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="freemobile_notify_onsnatch" id="freemobile_notify_onsnatch" ${'checked="checked"' if app.FREEMOBILE_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a SMS when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="freemobile_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="freemobile_notify_ondownload" id="freemobile_notify_ondownload" ${'checked="checked"' if app.FREEMOBILE_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a SMS when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="freemobile_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="freemobile_notify_onsubtitledownload" id="freemobile_notify_onsubtitledownload" ${'checked="checked"' if app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a SMS when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="freemobile_id">
-                                        <span class="component-title">Free Mobile customer ID</span>
-                                        <input type="text" name="freemobile_id" id="freemobile_id" value="${app.FREEMOBILE_ID}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">It's your Free Mobile customer ID (8 digits)</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="freemobile_password">
-                                        <span class="component-title">Free Mobile API Key</span>
-                                        <input type="text" name="freemobile_apikey" id="freemobile_apikey" value="${app.FREEMOBILE_APIKEY}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Find your API Key in your customer portal.</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
-                                <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_freemobile //-->
-                        </fieldset>
-                    </div><!-- /freemobile component-group //-->
-
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-telegram" title="Telegram"></span>
-                        <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
-                        <p>Telegram is a cloud-based instant messaging service.</p>
                     </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_telegram">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_telegram" id="use_telegram" ${'checked="checked"' if app.USE_TELEGRAM else ''}/>
-                                        <p>Send Telegram notifications?</p>
-                                    </span>
-                                </label>
-                            </div>
-                            <div id="content_use_telegram">
-                                <div class="field-pair">
-                                    <label for="telegram_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="telegram_notify_onsnatch" id="telegram_notify_onsnatch" ${'checked="checked"' if app.TELEGRAM_NOTIFY_ONSNATCH else ''}/>
-                                            <p>Send a message when a download starts?</p>
-                                        </span>
-                                    </label>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
+                                <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
+                                <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for freemobile client -->
+                                <config-toggle-slider :checked="notifiers.freemobile.enabled" label="Enable" id="use_freemobile" :explanations="['Send SMS notifications?']" @change="save()"  @update="notifiers.freemobile.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.freemobile.enabled" id="content-use-freemobile-client"> <!-- show based on notifiers.freemobile.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnSnatch" label="Notify on snatch" id="freemobile_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.freemobile.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnDownload" label="Notify on download" id="freemobile_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.freemobile.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnSubtitleDownload" label="Notify on subtitle download" id="freemobile_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.freemobile.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.freemobile.id" label="Free Mobile customer ID" id="freemobile_id" :explanations="['It\'s your Free Mobile customer ID (8 digits)']" @change="save()"  @update="notifiers.freemobile.id = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.freemobile.api" label="Free Mobile API Key" id="freemobile_apikey" :explanations="['Find your API Key in your customer portal.']" @change="save()"  @update="notifiers.freemobile.api = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
+                                    <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="telegram_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="telegram_notify_ondownload" id="telegram_notify_ondownload" ${'checked="checked"' if app.TELEGRAM_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>Send a message when a download finishes?</p>
-                                        </span>
-                                    </label>
+                            </fieldset>
+                        </div>
+                    </div>
+        
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-telegram" title="Telegram"></span>
+                            <h3><app-link href="https://telegram.org/">Telegram</app-link></h3>
+                            <p>Telegram is a cloud-based instant messaging service.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for telegram client -->
+                                <config-toggle-slider :checked="notifiers.telegram.enabled" label="Enable" id="use_telegram" :explanations="['Send Telegram notifications?']" @change="save()"  @update="notifiers.telegram.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.telegram.enabled" id="content-use-telegram-client"> <!-- show based on notifiers.telegram.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.telegram.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.telegram.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.telegram.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.telegram.id" label="User/group ID" id="telegram_id" :explanations="['Contact @myidbot on Telegram to get an ID']" @change="save()"  @update="notifiers.telegram.id = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.telegram.api" label="Bot API token" id="telegram_apikey" :explanations="['Contact @BotFather on Telegram to set up one']" @change="save()"  @update="notifiers.telegram.api = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
                                 </div>
-                                <div class="field-pair">
-                                    <label for="telegram_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="telegram_notify_onsubtitledownload" id="telegram_notify_onsubtitledownload" ${'checked="checked"' if app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>Send a message when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="telegram_id">
-                                        <span class="component-title">User/group ID</span>
-                                        <input type="text" name="telegram_id" id="telegram_id" value="${app.TELEGRAM_ID}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Contact @myidbot on Telegram to get an ID</span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="telegram_password">
-                                        <span class="component-title">Bot API token</span>
-                                        <input type="text" name="telegram_apikey" id="telegram_apikey" value="${app.TELEGRAM_APIKEY}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Contact @BotFather on Telegram to set up one</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
-                                <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_telegram //-->
-                        </fieldset>
-                    </div><!-- /telegram component-group //-->
+                            </fieldset>
+                        </div>
+                    </div>
+
                 </div><!-- #devices //-->
+                
+                
+                
                 <div id="social">
                     <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-twitter" title="Twitter"></span>

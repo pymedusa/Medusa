@@ -130,6 +130,22 @@ const state = {
         notifyOnSubtitleDownload: null,
         authToken: null,
         device: null
+    },
+    freemobile: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        api: null,
+        id: null
+    },
+    telegram: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        api: null,
+        id: null
     }
 };
 
