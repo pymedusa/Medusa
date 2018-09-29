@@ -31,11 +31,44 @@ export default {
         },
         showLists() {
             const { shows, config } = this;
+            if (this.$store.state.stats.stats.length === 0) {
+                return;
+            }
+
+            const toShowObject = show => {
+                const { epTotal, seriesSize, epAirsPrev, epSnatched, epDownloaded, epAirsNext } = this.$store.state.stats.stats.find(({ indexerId, seriesId }) => {
+                    return {
+                        // @TODO: fill these in
+                        1: 'tvdb',
+                        2: '',
+                        3: '',
+                        4: ''
+                    }[indexerId] === show.indexer && seriesId === show.id[show.indexer];
+                });
+
+                // This is the final stats object
+                return {
+                    ...show,
+                    stats: {
+                        episodes: {
+                            total: epTotal,
+                            snatched: epSnatched,
+                            downloaded: epDownloaded,
+                            size: seriesSize
+                        },
+                        airs: {
+                            prev: epAirsPrev,
+                            next: epAirsNext
+                        }
+                    }
+                };
+            };
+
             return config.animeSplitHome ? {
-                anime: shows.filter(show => show.config.anime),
+                anime: shows.filter(show => show.config.anime).map(toShowObject),
                 series: shows.filter(show => !show.config.anime)
             } : {
-                series: shows
+                series: shows.map(toShowObject)
             }
         },
         stats() {

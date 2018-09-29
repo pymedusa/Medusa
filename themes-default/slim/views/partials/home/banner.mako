@@ -91,7 +91,7 @@
         ##     ##     progressbar_percent = nom * 100 / den
         ##     ## %>
                 <tr v-for="show in shows">
-                    <template v-if="stats(show.indexer, show.id[show.indexer]).epAirsNext">
+                    <template v-if="show.stats.airs.next">
                         ## <%
                         ##     try:
                         ##         airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network))
@@ -106,7 +106,7 @@
                         </td>
                     </template>
                     <td v-else align="center" class="nowrap"></td>
-                    <template v-if="stats(show.indexer, show.id[show.indexer]).epAirsPrev">
+                    <template v-if="show.stats.airs.prev">
                     ##     <%
                     ##         try:
                     ##             airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network))
