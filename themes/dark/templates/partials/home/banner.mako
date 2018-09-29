@@ -14,7 +14,7 @@
     ## <h1 class="header">${cur_list_type}</h1>
     ## % endif
     <div class="horizontal-scroll">
-        <table :id="'showListTable' + listTitle" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
+        <table :id="'showListTable' + listTitle.charAt(0).toUpperCase() + listTitle.substr(1)" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr>
                     <th class="nowrap">Next Ep</th>

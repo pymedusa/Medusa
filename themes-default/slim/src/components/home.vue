@@ -33,9 +33,9 @@ export default {
             const { shows, config } = this;
             return config.animeSplitHome ? {
                 anime: shows.filter(show => show.config.anime),
-                shows: shows.filter(show => !show.config.anime)
+                series: shows.filter(show => !show.config.anime)
             } : {
-                shows
+                series: shows
             }
         },
         stats() {
