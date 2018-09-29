@@ -159,7 +159,7 @@
                     ##     <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.series_id}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
                         <span class="visible-print-inline">{{ downloadStats(show.indexer, show.id[show.indexer]).text }}</span>
                     </td>
-                    <td align="center" :data-show-size="stats(show.indexer, show.id[show.indexer]).seriesSize">{{ show.seriesSize >= 0 ? prettyBytes(show.seriesSize) : show.seriesSize}}</td>
+                    <td align="center" :data-show-size="show.stats.episodes.size">{{ prettyBytes(show.stats.episodes.size) }}</td>
                     <td align="center">
                         <img :src="'images/' + (show.config.paused && show.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="show.config.paused && show.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
                     </td>
