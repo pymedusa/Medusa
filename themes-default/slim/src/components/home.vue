@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
+import pretty from 'pretty-bytes';
 import { api } from '../api';
 import AppLink from './app-link.vue';
 
@@ -24,6 +25,82 @@ export default {
                 const page = 'home';
                 $store.dispatch('setLayout', { page, layout });
             }
+        },
+        shows() {
+            return this.$store.state.shows.shows;
+        },
+        showLists() {
+            const { shows, config } = this;
+            return config.animeSplitHome ? {
+                anime: shows.filter(show => show.config.anime),
+                shows: shows.filter(show => !show.config.anime)
+            } : {
+                shows
+            }
+        },
+        stats() {
+            const { stats } = this.$store.state.stats;
+
+            // Return nulls so we don't get undefined issues
+            if (stats.length === 0) {
+                return () => ({
+                    seriesId: null,
+                    epTotal: null,
+                    seriesSize: null,
+                    epAirsPrev: null,
+                    epSnatched: null,
+                    epDownloaded: null,
+                    epAirsNext: null,
+                    indexerId: null,
+                });
+            }
+
+            return (indexer, id) => stats.find(({ indexerId, seriesId }) => {
+                return {
+                    tvdb: 1
+                }[indexer] === indexerId && Number(id) === seriesId
+            });
+        },
+        downloadStats() {
+            const { stats } = this;
+            return (indexer, id) => {
+                const { epTotal, epSnatched } = stats(indexer, id);
+
+                // Still loading from API
+                if (epTotal === null || epSnatched === null) {
+                    return {
+                        text: '',
+                        tooltip: ''
+                    }
+                }
+
+                // Unaired
+                if (!epTotal) {
+                    return {
+                        text: 'Unaired',
+                        tooltip: ''
+                    }
+                }
+
+                let text = epTotal;
+                let tooltip = `Downloaded: ${epTotal}`;
+
+                if (epSnatched) {
+                    text += `+${epSnatched}`;
+                    tooltip += `&#013;Snatched: ${epSnatched}`
+                }
+
+                text += ` / ${epTotal}`;
+                tooltip =+ `&#013;Total: ${epTotal}`;
+
+                return {
+                    text,
+                    tooltip
+                };
+            };
+        },
+        prettyBytes() {
+            return bytes => pretty(bytes);
         }
     },
     methods: {
@@ -90,9 +167,17 @@ export default {
         }
     },
     mounted() {
+        this.$store.dispatch('getShows');
+        this.$store.dispatch('stats/getStats');
+
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
             $('table').trigger('filterReset');
+        });
+
+        const imgLazyLoad = new LazyLoad({ // eslint-disable-line no-undef
+            // Example of options object -> see options section
+            threshold: 500
         });
 
         // Handle filtering in the poster layout
@@ -124,11 +209,6 @@ export default {
             }).catch(error => {
                 console.info(error);
             });
-        });
-
-        const imgLazyLoad = new LazyLoad({ // eslint-disable-line no-undef
-            // Example of options object -> see options section
-            threshold: 500
         });
 
         const initializePage = () => {

@@ -6,4 +6,5 @@ export { default as notifications } from './notifications';
 export { default as qualities } from './qualities';
 export { default as shows } from './shows';
 export { default as socket } from './socket';
+export { default as stats } from './stats';
 export { default as statuses } from './statuses';

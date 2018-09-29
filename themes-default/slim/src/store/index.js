@@ -10,6 +10,7 @@ import {
     qualities,
     shows,
     socket,
+    stats,
     statuses
 } from './modules';
 import {
@@ -35,6 +36,7 @@ const store = new Store({
         qualities,
         shows,
         socket,
+        stats,
         statuses
     },
     state: {},

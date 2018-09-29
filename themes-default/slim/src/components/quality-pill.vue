@@ -15,9 +15,14 @@ import { mapState } from 'vuex';
 export default {
     name: 'quality-pill',
     props: {
+        allowed: {
+            type: Array
+        },
+        preferred: {
+            type: Array
+        },
         quality: {
             type: Number,
-            required: true,
             validator: value => (value >>> 0) >= 0 // Unsigned int
         },
         showTitle: {
@@ -43,7 +48,15 @@ export default {
             qualityCssClassStrings: state => state.qualities.strings.cssClass
         }),
         qualities() {
-            const { quality, splitQuality } = this;
+            const { allowed, preferred, quality, splitQuality } = this;
+
+            // Used for Vueified pages as they have the arrays already split
+            if (allowed && preferred) {
+                return {
+                    allowed,
+                    preferred
+                };
+            }
             return splitQuality(quality);
         },
         title() {

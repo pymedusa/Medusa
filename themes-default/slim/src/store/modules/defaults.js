@@ -12,7 +12,10 @@ const state = {
             dvdOrder: null,
             location: null,
             paused: null,
-            qualities: null,
+            qualities: {
+                allowed: [],
+                preferred: []
+            },
             release: null,
             scene: null,
             seasonFolders: null,
@@ -24,6 +27,8 @@ const state = {
         genres: null,
         id: {
             tvdb: null,
+            trakt: null,
+            imdb: null,
             slug: null
         },
         indexer: null,

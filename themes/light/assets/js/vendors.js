@@ -992,6 +992,18 @@ eval("var isObject = __webpack_require__(/*! ./isObject */ \"./node_modules/loda
 
 /***/ }),
 
+/***/ "./node_modules/pretty-bytes/index.js":
+/*!********************************************!*\
+  !*** ./node_modules/pretty-bytes/index.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nconst UNITS = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];\n\nmodule.exports = num => {\n  if (!Number.isFinite(num)) {\n    throw new TypeError(`Expected a finite number, got ${typeof num}: ${num}`);\n  }\n\n  const neg = num < 0;\n\n  if (neg) {\n    num = -num;\n  }\n\n  if (num < 1) {\n    return (neg ? '-' : '') + num + ' B';\n  }\n\n  const exponent = Math.min(Math.floor(Math.log(num) / Math.log(1000)), UNITS.length - 1);\n  const numStr = Number((num / Math.pow(1000, exponent)).toPrecision(3));\n  const unit = UNITS[exponent];\n  return (neg ? '-' : '') + numStr + ' ' + unit;\n};\n\n//# sourceURL=webpack:///./node_modules/pretty-bytes/index.js?");
+
+/***/ }),
+
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!
