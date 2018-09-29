@@ -155,9 +155,10 @@
                     <td align="center"><quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" show-title></quality-pill></td>
                     <td align="center">
                         <!-- This first span is used for sorting and is never displayed to user -->
-                        <span style="display: none;">{{ downloadStats(show.indexer, show.id[show.indexer]).text }}</span>
-                    ##     <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.series_id}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
-                        <span class="visible-print-inline">{{ downloadStats(show.indexer, show.id[show.indexer]).text }}</span>
+                        <span style="display: none;">{{ show.stats.tooltip.text }}</span>
+                        <progress-bar v-bind="{ ...show.stats.tooltip }"></progress-bar>
+                        ## <div class="progressbar hidden-print" style="position:relative;" :data-show-id="show.id[show.indexer]" :data-progress-percentage="show.stats.tooltip.percentage" :data-progress-text="show.stats.tooltip.text" :data-progress-tip="show.stats.tooltip.tip"></div>
+                        <span class="visible-print-inline">{{ show.stats.tooltip.text }}</span>
                     </td>
                     <td align="center" :data-show-size="show.stats.episodes.size">{{ prettyBytes(show.stats.episodes.size) }}</td>
                     <td align="center">

@@ -4,12 +4,14 @@ import debounce from 'lodash/debounce';
 import pretty from 'pretty-bytes';
 import { api } from '../api';
 import AppLink from './app-link.vue';
+import ProgressBar from './progress-bar.vue';
 
 export default {
     name: 'home',
     template: '#home-template',
     components: {
-        AppLink
+        AppLink,
+        ProgressBar
     },
     computed: {
         ...mapState([
@@ -46,6 +48,26 @@ export default {
                     }[indexerId] === show.indexer && seriesId === show.id[show.indexer];
                 });
 
+                // @NOTE: The newLine cannot be a HTML linebreak as Vue will escape it
+                // @SEE: https://github.com/vuejs/vue/issues/7970#issuecomment-388881520
+                // @SEE: https://stackoverflow.com/questions/41512561/javascript-set-title-with-new-lines/41512954#41512954
+                const newLine = '\u000d';
+                let text = 'Unaired';
+                let title = '';
+
+                if (epTotal >= 1) {
+                    text = epDownloaded;
+                    title = `Downloaded: ${epDownloaded}`;
+
+                    if (epSnatched) {
+                        text += `+${epSnatched}`;
+                        title += `${newLine}Snatched: ${epSnatched}`
+                    }
+
+                    text += ` / ${epTotal}`;
+                    title += `${newLine}Total: ${epTotal}`;
+                }
+
                 // This is the final stats object
                 return {
                     ...show,
@@ -59,11 +81,17 @@ export default {
                         airs: {
                             prev: epAirsPrev,
                             next: epAirsNext
+                        },
+                        tooltip: {
+                            text,
+                            title,
+                            percentage: (epDownloaded * 100) / (epTotal || 1)
                         }
                     }
                 };
             };
 
+            // This is the final show object
             return config.animeSplitHome ? {
                 anime: shows.filter(show => show.config.anime).map(toShowObject),
                 series: shows.filter(show => !show.config.anime)
@@ -93,44 +121,6 @@ export default {
                     tvdb: 1
                 }[indexer] === indexerId && Number(id) === seriesId
             });
-        },
-        downloadStats() {
-            const { stats } = this;
-            return (indexer, id) => {
-                const { epTotal, epSnatched } = stats(indexer, id);
-
-                // Still loading from API
-                if (epTotal === null || epSnatched === null) {
-                    return {
-                        text: '',
-                        tooltip: ''
-                    }
-                }
-
-                // Unaired
-                if (!epTotal) {
-                    return {
-                        text: 'Unaired',
-                        tooltip: ''
-                    }
-                }
-
-                let text = epTotal;
-                let tooltip = `Downloaded: ${epTotal}`;
-
-                if (epSnatched) {
-                    text += `+${epSnatched}`;
-                    tooltip += `&#013;Snatched: ${epSnatched}`
-                }
-
-                text += ` / ${epTotal}`;
-                tooltip =+ `&#013;Total: ${epTotal}`;
-
-                return {
-                    text,
-                    tooltip
-                };
-            };
         },
         prettyBytes() {
             return bytes => pretty(bytes);
@@ -253,17 +243,17 @@ export default {
             });
 
             // This needs to be refined to work a little faster.
-            $('.progressbar').each(function() {
-                const percentage = $(this).data('progress-percentage');
-                const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20; // eslint-disable-line no-nested-ternary
-                $(this).progressbar({
-                    value: percentage
-                });
-                if ($(this).data('progress-text')) {
-                    $(this).append('<div class="progressbarText" title="' + $(this).data('progress-tip') + '">' + $(this).data('progress-text') + '</div>');
-                }
-                $(this).find('.ui-progressbar-value').addClass('progress-' + classToAdd);
-            });
+            // $('.progressbar').each(function() {
+            //     const percentage = $(this).data('progress-percentage');
+            //     const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20; // eslint-disable-line no-nested-ternary
+            //     $(this).progressbar({
+            //         value: percentage
+            //     });
+            //     if ($(this).data('progress-text')) {
+            //         $(this).append('<div class="progressbarText" title="' + $(this).data('progress-tip') + '">' + $(this).data('progress-text') + '</div>');
+            //     }
+            //     $(this).find('.ui-progressbar-value').addClass('progress-' + classToAdd);
+            // });
 
             $('img#network').on('error', function() {
                 $(this).parent().text($(this).attr('alt'));
