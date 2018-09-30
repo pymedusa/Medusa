@@ -98,6 +98,7 @@ from medusa.name_parser.parser import (
 )
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
+from medusa.scene_numbering import get_xem_numbering_for_show
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -556,6 +557,11 @@ class Series(TV):
         self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
         build_name_cache(self)
+
+    @property
+    def xem_numbering(self):
+        """Return series episode xem numbering."""
+        return get_xem_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -2027,6 +2033,7 @@ class Series(TV):
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = list(self.aliases)
+        data['config']['xemNumbering'] = self.xem_numbering
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words

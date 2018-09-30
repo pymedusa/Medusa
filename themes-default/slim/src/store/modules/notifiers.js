@@ -146,6 +146,17 @@ const state = {
         notifyOnSubtitleDownload: null,
         api: null,
         id: null
+    },
+    twitter: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        dmto: null,
+        username: null,
+        password: null,
+        prefix: null,
+        directMessage: null
     }
 };
 

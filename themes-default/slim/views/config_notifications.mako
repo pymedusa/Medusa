@@ -55,6 +55,8 @@ window.app = new Vue({
                 { text: 'All devices', value: '' }
             ],
             pushbulletTestInfo: 'Click below to test.',
+            twitterTestInfo: 'Click below to test.',
+            twitterKey: '',
             notifiers: {
                 emby: {
                     enabled: null,
@@ -201,6 +203,17 @@ window.app = new Vue({
                     notifyOnSubtitleDownload: null,
                     api: null,
                     id: null
+                },
+                twitter: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    dmto: null,
+                    username: null,
+                    password: null,
+                    prefix: null,
+                    directMessage: null
                 }
             }
         };
@@ -398,36 +411,6 @@ window.app = new Vue({
             $('#testLibnotify-result').html(MEDUSA.config.loading);
             $.get('home/testLibnotify', data => {
                 $('#testLibnotify-result').html(data);
-            });
-        });
-
-        $('#twitterStep1').on('click', () => {
-            $('#testTwitter-result').html(MEDUSA.config.loading);
-            $.get('home/twitterStep1', data => {
-                window.open(data);
-            }).done(() => {
-                $('#testTwitter-result').html('<b>Step1:</b> Confirm Authorization');
-            });
-        });
-
-        $('#twitterStep2').on('click', () => {
-            const twitter = {};
-            twitter.key = $.trim($('#twitter_key').val());
-            $('#twitter_key').addRemoveWarningClass(twitter.key);
-            if (twitter.key) {
-                $('#testTwitter-result').html(MEDUSA.config.loading);
-                $.get('home/twitterStep2', {
-                    key: twitter.key
-                }, data => {
-                    $('#testTwitter-result').html(data);
-                });
-            }
-            $('#testTwitter-result').html('Please fill out the necessary fields above.');
-        });
-
-        $('#testTwitter').on('click', () => {
-            $.get('home/testTwitter', data => {
-                $('#testTwitter-result').html(data);
             });
         });
 
@@ -922,6 +905,36 @@ window.app = new Vue({
             
             if (data) {
                 this.pushbulletTestInfo = data;
+            }
+        },
+        async twitterStep1() {
+            this.twitterTestInfo = MEDUSA.config.loading;
+
+            const response = await apiRoute('home/twitterStep1');
+            const { data } = response;
+            window.open(data);
+            this.twitterTestInfo = '<b>Step1:</b> Confirm Authorization';
+        },
+        async twitterStep2() {
+            const twitter = {};
+            const { twitterKey } = this;
+            twitter.key = twitterKey;
+            
+            if (twitter.key) {
+                const response = await apiRoute('home/twitterStep2', { params: { key: twitter.key } });
+                const { data } = response;
+                this.twitterTestInfo = data;
+            } else {
+                this.twitterTestInfo = 'Please fill out the necessary fields above.'
+            }
+        },
+        async twitterTest() {
+            try {
+                const response = await apiRoute('home/testTwitter');
+                const { data } = response;
+                this.twitterTestInfo = data;
+            } catch {
+                this.twitterTestInfo = 'Error while trying to request for a test on the twitter api.'
             }
         }
     }
@@ -1466,7 +1479,7 @@ window.app = new Vue({
 
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="pushover_device" class="col-sm-2 control-label">
                                                 <span>Pushover Devices</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1650,105 +1663,61 @@ window.app = new Vue({
                 
                 
                 <div id="social">
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-twitter" title="Twitter"></span>
-                        <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
-                        <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_twitter">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_twitter" id="use_twitter" ${'checked="checked"' if app.USE_TWITTER else ''}/>
-                                        <p>Should Medusa post tweets on Twitter?</p>
-                                    </span>
-                                </label>
-                                <label>
-                                    <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>Note:</b> you may want to use a secondary account.</span>
-                                </label>
+                    
+                        <div class="row component-group">
+                                <div class="component-group-desc col-xs-12 col-md-2">
+                                    <span class="icon-notifiers-twitter" title="Twitter"></span>
+                                    <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
+                                    <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
+                                </div>
+                                <div class="col-xs-12 col-md-10">
+                                    <fieldset class="component-group-list">
+                                        <!-- All form components here for twitter client -->
+                                        <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
+                                        <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
+        
+                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
+                                            
+                                            
+                                            <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.id = $event"></config-textbox>
+                                            
+                                            <div class="form-group">
+                                                <div class="row">
+                                                    <label for="twitterStep1" class="col-sm-2 control-label">
+                                                        <span>Step 1</span>
+                                                    </label>
+                                                    <div class="col-sm-10 content">
+                                                        <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
+                                                        <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div class="row">
+                                                    <label for="twitterStep2" class="col-sm-2 control-label">
+                                                        <span>Step 2</span>
+                                                    </label>
+                                                    <div class="col-sm-10 content">
+                                                        <input type="text" id="twitter_key" v-model="twitterKey" class="form-control input-sm max-input350" style="display: inline" placeholder="Enter the key Twitter gave you, and click 'Verify Key'"/>
+                                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitter-step-2" @click="twitterStep2($event)"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
+                                            <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
+                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        </div>
+                                    </fieldset>
+                                </div>
                             </div>
-                            <div id="content_use_twitter">
-                                <div class="field-pair">
-                                    <label for="twitter_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="twitter_notify_onsnatch" id="twitter_notify_onsnatch" ${'checked="checked"' if app.TWITTER_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="twitter_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="twitter_notify_ondownload" id="twitter_notify_ondownload" ${'checked="checked"' if app.TWITTER_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="twitter_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="twitter_notify_onsubtitledownload" id="twitter_notify_onsubtitledownload" ${'checked="checked"' if app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="twitter_usedm">
-                                        <span class="component-title">Send direct message</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="twitter_usedm" id="twitter_usedm" ${'checked="checked"' if app.TWITTER_USEDM else ''}/>
-                                            <p>send a notification via Direct Message, not via status update</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="twitter_dmto">
-                                        <span class="component-title">Send DM to</span>
-                                        <input type="text" name="twitter_dmto" id="twitter_dmto" value="${app.TWITTER_DMTO}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <p>
-                                        <span class="component-desc">Twitter account to send Direct Messages to (must follow you)</span>
-                                    </p>
-                                </div>
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Step One</span>
-                                    </label>
-                                    <label>
-                                        <span style="font-size: 11px;">Click the "Request Authorization" button.<br> This will open a new page containing an auth key.<br> <b>Note:</b> if nothing happens check your popup blocker.<br></span>
-                                        <input class="btn-medusa" type="button" value="Request Authorization" id="twitterStep1" />
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Step Two</span>
-                                    </label>
-                                    <label>
-                                        <span style="font-size: 11px;">Enter the key Twitter gave you below, and click "Verify Key".<br><br></span>
-                                        <input type="text" id="twitter_key" value="" class="form-control input-sm input350"/>
-                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitterStep2" />
-                                    </label>
-                                </div>
-                                <!--
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Step Three</span>
-                                    </label>
-                                </div>
-                                //-->
-                                <div class="testNotification" id="testTwitter-result">Click below to test.</div>
-                                <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_twitter //-->
-                        </fieldset>
-                    </div><!-- twitter .component-group //-->
-                        <div class="component-group-desc-legacy">
+                    
+                    
+                            <div class="component-group-desc-legacy">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
                             <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
                             <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
@@ -2026,7 +1995,7 @@ window.app = new Vue({
                                 <div class="field-pair">
                                     <label for="email_list">
                                         <span class="component-title">Global email list</span>
-                                        <input type="text" name="email_list" id="email_list" value="${','.join(app.EMAIL_LIST)}" class="form-control input-sm input350"/>
+                                        <input type="text" name="email_list" id="email_list" value="${','.join(app.EMAIL_LIST)}" class="form-control input-sm max-input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -2040,7 +2009,7 @@ window.app = new Vue({
                                 <div class="field-pair">
                                     <label for="email_subject">
                                         <span class="component-title">Email Subject</span>
-                                        <input type="text" name="email_subject" id="email_subject" value="${app.EMAIL_SUBJECT}" class="form-control input-sm input350"/>
+                                        <input type="text" name="email_subject" id="email_subject" value="${app.EMAIL_SUBJECT}" class="form-control input-sm max-input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -2059,7 +2028,7 @@ window.app = new Vue({
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <input type="text" name="email_show_list" id="email_show_list" class="form-control input-sm input350"/>
+                                        <input type="text" name="email_show_list" id="email_show_list" class="form-control input-sm max-input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>

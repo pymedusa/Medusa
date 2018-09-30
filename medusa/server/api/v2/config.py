@@ -659,4 +659,15 @@ class DataGenerator(object):
         section_data['telegram']['api'] = app.TELEGRAM_APIKEY
         section_data['telegram']['id'] = app.TELEGRAM_ID
 
+        section_data['twitter'] = NonEmptyDict()
+        section_data['twitter']['enabled'] = bool(app.USE_TWITTER)
+        section_data['twitter']['notifyOnSnatch'] = bool(app.TWITTER_NOTIFY_ONSNATCH)
+        section_data['twitter']['notifyOnDownload'] = bool(app.TWITTER_NOTIFY_ONDOWNLOAD)
+        section_data['twitter']['notifyOnSubtitleDownload'] = bool(app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['twitter']['dmto'] = app.TWITTER_DMTO
+        section_data['twitter']['username'] = app.TWITTER_USERNAME
+        section_data['twitter']['password'] = app.TWITTER_PASSWORD
+        section_data['twitter']['prefix'] = app.TWITTER_PREFIX
+        section_data['twitter']['directMessage'] = bool(app.TWITTER_USEDM)
+
         return section_data
