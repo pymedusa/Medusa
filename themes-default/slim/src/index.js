@@ -29,6 +29,7 @@ import {
     Asset,
     Backstretch,
     ConfigTextbox,
+    ConfigTextboxNumber,
     ConfigToggleSlider,
     DisplayShow,
     FileBrowser,
@@ -88,6 +89,7 @@ if (window) {
     window.components.push(Asset);
     window.components.push(Backstretch);
     window.components.push(ConfigTextbox);
+    window.components.push(ConfigTextboxNumber);
     window.components.push(ConfigToggleSlider);
     window.components.push(DisplayShow);
     window.components.push(FileBrowser);

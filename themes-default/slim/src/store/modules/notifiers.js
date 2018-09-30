@@ -157,6 +157,23 @@ const state = {
         password: null,
         prefix: null,
         directMessage: null
+    },
+    trakt: {
+        enabled: null,
+        pinUrl: null,
+        username: null,
+        accessToken: null,
+        timeout: null,
+        defaultIndexer: null,
+        sync: null,
+        syncRemove: null,
+        syncWatchlist: null,
+        methodAdd: null,
+        removeWatchlist: null,
+        removeSerieslist: null,
+        removeShowFromApplication: null,
+        startPaused: null,
+        blacklistName: null
     }
 };
 

@@ -670,4 +670,21 @@ class DataGenerator(object):
         section_data['twitter']['prefix'] = app.TWITTER_PREFIX
         section_data['twitter']['directMessage'] = bool(app.TWITTER_USEDM)
 
+        section_data['trakt'] = NonEmptyDict()
+        section_data['trakt']['enabled'] = bool(app.USE_TWITTER)
+        section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
+        section_data['trakt']['username'] = app.TRAKT_USERNAME
+        section_data['trakt']['accessToken'] = app.TRAKT_ACCESS_TOKEN
+        section_data['trakt']['timeout'] = app.TRAKT_TIMEOUT
+        section_data['trakt']['defaultIndexer'] = int(app.TRAKT_DEFAULT_INDEXER)
+        section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
+        section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
+        section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
+        section_data['trakt']['methodAdd'] = int(app.TRAKT_METHOD_ADD)
+        section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
+        section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)
+        section_data['trakt']['removeShowFromApplication'] = bool(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
+        section_data['trakt']['startPaused'] = bool(app.TRAKT_START_PAUSED)
+        section_data['trakt']['blacklistName'] = app.TRAKT_BLACKLIST_NAME
+
         return section_data

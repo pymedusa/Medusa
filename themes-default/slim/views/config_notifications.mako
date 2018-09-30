@@ -54,6 +54,11 @@ window.app = new Vue({
             pushbulletDeviceOptions: [
                 { text: 'All devices', value: '' }
             ],
+            traktMethodOptions: [
+                { text: 'Skip all', value: 0 },
+                { text: 'Download pilot only', value: 1 },
+                { text: 'Get whole show', value: 2 }
+            ],
             pushbulletTestInfo: 'Click below to test.',
             twitterTestInfo: 'Click below to test.',
             twitterKey: '',
@@ -214,6 +219,23 @@ window.app = new Vue({
                     password: null,
                     prefix: null,
                     directMessage: null
+                },
+                trakt: {
+                    enabled: null,
+                    pinUrl: null,
+                    username: null,
+                    accessToken: null,
+                    timeout: null,
+                    defaultIndexer: null,
+                    sync: null,
+                    syncRemove: null,
+                    syncWatchlist: null,
+                    methodAdd: null,
+                    removeWatchlist: null,
+                    removeSerieslist: null,
+                    removeShowFromApplication: null,
+                    startPaused: null,
+                    blacklistName: null
                 }
             }
         };
@@ -221,6 +243,22 @@ window.app = new Vue({
     computed: {
         stateNotifiers() {
             return this.$store.state.notifiers;
+        },
+        traktNewTokenMessage() {
+            const { accessToken } =  this.notifiers.trakt;
+            return 'Get ' + accessToken ? 'New ' : ' ' + 'Trakt PIN'
+        },
+        traktIndexersOptions() {
+            if (!this.configLoaded) {
+                return;
+            }
+            const { traktIndexers } = this.config.indexers.config.main;
+            const { indexers } = this.config.indexers.config;
+            let options = [];
+            const validTraktIndexer = Object.keys(indexers).filter(k => traktIndexers[k])
+            return validTraktIndexer.map(indexer => {
+                return { text: indexer, value: indexers[indexer].id }
+            })
         }
     },
     created() {
@@ -1665,229 +1703,150 @@ window.app = new Vue({
                 <div id="social">
                     
                         <div class="row component-group">
-                                <div class="component-group-desc col-xs-12 col-md-2">
-                                    <span class="icon-notifiers-twitter" title="Twitter"></span>
-                                    <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
-                                    <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
-                                </div>
-                                <div class="col-xs-12 col-md-10">
-                                    <fieldset class="component-group-list">
-                                        <!-- All form components here for twitter client -->
-                                        <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
-                                        <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
-        
-                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
-                                            
-                                            
-                                            <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.id = $event"></config-textbox>
-                                            
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <label for="twitterStep1" class="col-sm-2 control-label">
-                                                        <span>Step 1</span>
-                                                    </label>
-                                                    <div class="col-sm-10 content">
-                                                        <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
-                                                        <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <label for="twitterStep2" class="col-sm-2 control-label">
-                                                        <span>Step 2</span>
-                                                    </label>
-                                                    <div class="col-sm-10 content">
-                                                        <input type="text" id="twitter_key" v-model="twitterKey" class="form-control input-sm max-input350" style="display: inline" placeholder="Enter the key Twitter gave you, and click 'Verify Key'"/>
-                                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitter-step-2" @click="twitterStep2($event)"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
-                                            <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
-                                            <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                                        </div>
-                                    </fieldset>
-                                </div>
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-twitter" title="Twitter"></span>
+                                <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
+                                <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
                             </div>
-                    
-                    
-                            <div class="component-group-desc-legacy">
-                            <span class="icon-notifiers-trakt" title="Trakt"></span>
-                            <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
-                            <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
-                        </div><!-- .component-group-desc-legacy //-->
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_trakt">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_trakt" id="use_trakt" ${'checked="checked"' if app.USE_TRAKT else ''}/>
-                                        <p>Send Trakt.tv notifications?</p>
-                                    </span>
-                                </label>
-                            </div><!-- .field-pair //-->
-                            <div id="content_use_trakt">
-                                <div class="field-pair">
-                                    <label for="trakt_username">
-                                        <span class="component-title">Username</span>
-                                        <input type="text" name="trakt_username" id="trakt_username" value="${app.TRAKT_USERNAME}" class="form-control input-sm input250"
-                                               autocomplete="no" />
-                                    </label>
-                                    <p>
-                                        <span class="component-desc">username of your Trakt account.</span>
-                                    </p>
-                                </div>
-                                <input type="hidden" id="trakt_pin_url" value="${app.TRAKT_PIN_URL}">
-                                <div class="field-pair">
-                                    <label for="trakt_pin">
-                                        <span class="component-title">Trakt PIN</span>
-                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" class="form-control input-sm input250" ${'disabled' if app.TRAKT_ACCESS_TOKEN else ''} />
-                                        <input type="button" class="btn-medusa" value="Get ${'New' if app.TRAKT_ACCESS_TOKEN else ''} Trakt PIN" id="TraktGetPin" />
-                                        <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
-                                    </label>
-                                    <p>
-                                        <span class="component-desc">PIN code to authorize Medusa to access Trakt on your behalf.</span>
-                                    </p>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="trakt_timeout">
-                                        <span class="component-title">API Timeout</span>
-                                        <input type="number" min="10" step="1" name="trakt_timeout" id="trakt_timeout" value="${app.TRAKT_TIMEOUT}" class="form-control input-sm input75"/>
-                                    </label>
-                                    <p>
-                                        <span class="component-desc">
-                                            Seconds to wait for Trakt API to respond. (Use 0 to wait forever)
-                                        </span>
-                                    </p>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="trakt_default_indexer">
-                                        <span class="component-title">Default indexer</span>
-                                        <span class="component-desc">
-                                            <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
-                                                <% indexers = indexerApi().indexers %>
-                                                % for indexer in indexers:
-                                                    <%
-                                                        if not get_trakt_indexer(indexer):
-                                                            continue
-                                                    %>
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexers[indexer]}</option>
-                                                % endfor
-                                            </select>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="trakt_sync">
-                                        <span class="component-title">Sync libraries</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" class="enabler" name="trakt_sync" id="trakt_sync" ${'checked="checked"' if app.TRAKT_SYNC else ''}/>
-                                            <p>Sync your Medusa show library with your Trakt collection.</p>
-                                            <p><b>Note:</b> Don't enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.</p>
-                                            <p>Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div id="content_trakt_sync">
-                                    <div class="field-pair">
-                                        <label for="trakt_sync_remove">
-                                            <span class="component-title">Remove Episodes From Collection</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="trakt_sync_remove" id="trakt_sync_remove" ${'checked="checked"' if app.TRAKT_SYNC_REMOVE else ''}/>
-                                                <p>Remove an Episode from your Trakt Collection if it is not in your Medusa Library.</p>
-                                                <p><b>Note:</b> Don't enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.</p>
-                                            </span>
-                                        </label>
-                                     </div>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="trakt_sync_watchlist">
-                                        <span class="component-title">Sync watchlist</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" class="enabler" name="trakt_sync_watchlist" id="trakt_sync_watchlist" ${'checked="checked"' if app.TRAKT_SYNC_WATCHLIST else ''}/>
-                                            <p>Sync your Medusa library with your Trakt Watchlist (either Show and Episode).</p>
-                                            <p>Episode will be added on watch list when wanted or snatched and will be removed when downloaded </p>
-                                            <p><b>Note:</b> By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div id="content_trakt_sync_watchlist">
-                                    <div class="field-pair">
-                                        <label for="trakt_method_add">
-                                            <span class="component-title">Watchlist add method</span>
-                                               <select id="trakt_method_add" name="trakt_method_add" class="form-control input-sm">
-                                                <option value="0" ${'selected="selected"' if app.TRAKT_METHOD_ADD == 0 else ''}>Skip All</option>
-                                                <option value="1" ${'selected="selected"' if app.TRAKT_METHOD_ADD == 1 else ''}>Download Pilot Only</option>
-                                                <option value="2" ${'selected="selected"' if app.TRAKT_METHOD_ADD == 2 else ''}>Get whole show</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            <span class="component-title">&nbsp;</span>
-                                            <span class="component-desc">method in which to download episodes for new shows.</span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label for="trakt_remove_watchlist">
-                                            <span class="component-title">Remove episode</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_watchlist" id="trakt_remove_watchlist" ${'checked="checked"' if app.TRAKT_REMOVE_WATCHLIST else ''}/>
-                                                <p>remove an episode from your watchlist after it is downloaded.</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label for="trakt_remove_serieslist">
-                                            <span class="component-title">Remove series</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_serieslist" id="trakt_remove_serieslist" ${'checked="checked"' if app.TRAKT_REMOVE_SERIESLIST else ''}/>
-                                                <p>remove the whole series from your watchlist after any download.</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label for="trakt_remove_show_from_application">
-                                            <span class="component-title">Remove watched show:</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="trakt_remove_show_from_application" id="trakt_remove_show_from_application" ${'checked="checked"' if app.TRAKT_REMOVE_SHOW_FROM_APPLICATION else ''}/>
-                                                <p>remove the show from Medusa if it's ended and completely watched</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label for="trakt_start_paused">
-                                            <span class="component-title">Start paused</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="trakt_start_paused" id="trakt_start_paused" ${'checked="checked"' if app.TRAKT_START_PAUSED else ''}/>
-                                                <p>shows grabbed from your trakt watchlist start paused.</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="trakt_blacklist_name">
-                                        <span class="component-title">Trakt blackList name</span>
-                                        <input type="text" name="trakt_blacklist_name" id="trakt_blacklist_name" value="${app.TRAKT_BLACKLIST_NAME}" class="form-control input-sm input150"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Name(slug) of List on Trakt for blacklisting show on 'Add Trending Show' & 'Add Recommended Shows' pages</span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testTrakt-result">Click below to test.</div>
-                                <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
-                                <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
-                                <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
-                            </div><!-- #content_use_trakt //-->
-                        </fieldset><!-- .component-group-desc-legacy //-->
-                    </div><!-- trakt .component-group //-->
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for twitter client -->
+                                    <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
+    
+                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
+                                        
+                                        
+                                        <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.id = $event"></config-textbox>
+                                        
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="twitterStep1" class="col-sm-2 control-label">
+                                                    <span>Step 1</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
+                                                    <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
+                                                </div>
+                                            </div>
+                                        </div>
 
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="twitterStep2" class="col-sm-2 control-label">
+                                                    <span>Step 2</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <input type="text" id="twitter_key" v-model="twitterKey" class="form-control input-sm max-input350" style="display: inline" placeholder="Enter the key Twitter gave you, and click 'Verify Key'"/>
+                                                    <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitter-step-2" @click="twitterStep2($event)"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
+                                        <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-trakt" title="Trakt"></span>
+                                <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
+                                <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for trakt -->
+                                    <config-toggle-slider :checked="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()"  @update="notifiers.trakt.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
+    
+                                        <config-textbox :value="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()"  @update="notifiers.trakt.username = $event"></config-textbox>
+                                        
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="twitterStep2" class="col-sm-2 control-label">
+                                                    <span>Trakt PIN</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
+                                                    <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" />
+                                                    <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
+                                                    <p>PIN code to authorize Medusa to access Trakt on your behalf.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <config-textbox-number :value="String(notifiers.trakt.timeout)" label="User/group ID" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @change="save()"  @update="notifiers.trakt.timeout = $event"></config-textbox-number>
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="trakt_default_indexer" class="col-sm-2 control-label">
+                                                    <span>Default Indexer</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
+                                                        <option v-for="option in traktIndexersOptions" v-bind:value="option.value">
+                                                            {{ option.text }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <config-toggle-slider :checked="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
+                                        ['Sync your Medusa show library with your Trakt collection.',
+                                        'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
+                                        'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
+                                         @change="save()"  @update="notifiers.trakt.sync = $event"></config-toggle-slider>
+                                        <div v-show="notifiers.trakt.sync" id="content-use-trakt-client">
+                                                <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
+                                                    'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                        </div>
+
+                                        <config-toggle-slider :checked="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
+                                        ['Sync your Medusa library with your Trakt Watchlist (either Show and Episode).',
+                                        'Episode will be added on watch list when wanted or snatched and will be removed when downloaded',
+                                        'Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.']"
+                                         @change="save()"  @update="notifiers.trakt.syncWatchlist = $event"></config-toggle-slider>
+                                        <div v-show="notifiers.trakt.syncWatchlist" id="content-use-trakt-client">
+                                            <div class="form-group">
+                                                <div class="row">
+                                                    <label for="trakt_default_indexer" class="col-sm-2 control-label">
+                                                        <span>Watchlist add method</span>
+                                                    </label>
+                                                    <div class="col-sm-10 content">
+                                                        <select id="trakt_method_add" name="trakt_method_add" v-model="notifiers.trakt.methodAdd" class="form-control">
+                                                            <option v-for="option in traktMethodOptions" v-bind:value="option.value">
+                                                                {{ option.text }}
+                                                            </option>
+                                                        </select>
+                                                        <p>method in which to download episodes for new shows.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        
+                                            <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()"  @update="notifiers.trakt.removeWatchlist = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()"  @update="notifiers.trakt.removeSerieslist = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()"  @update="notifiers.trakt.removeShowFromApplication = $event"></config-toggle-slider>
+                                            <config-toggle-slider :checked="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()"  @update="notifiers.trakt.startPaused = $event"></config-toggle-slider>
+                                        
+                                        </div>
+                                        <config-textbox :value="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()"  @update="notifiers.trakt.blacklistName = $event"></config-textbox>
+                                        
+                                        <div class="testNotification" id="testTrakt-result">Click below to test.</div>
+                                        <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
+                                        <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
+                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    
                     <div class="component-group-desc-legacy">
                         <span class="icon-notifiers-email" title="Email"></span>
                         <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
