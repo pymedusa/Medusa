@@ -9,6 +9,7 @@
 - Changed caching location for the adba and simpleanidb libs to the default Medusa cache location ([#4822](https://github.com/pymedusa/Medusa/pull/4822))
 - Added a new field name 'watched' to the tv_episodes db table. UI will be added in future ([#4825](https://github.com/pymedusa/Medusa/pull/4825))
 - Standardized most titles and headers ([#4663](https://github.com/pymedusa/Medusa/pull/4663))
+- Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
 
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
