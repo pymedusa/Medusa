@@ -174,6 +174,20 @@ const state = {
         removeShowFromApplication: null,
         startPaused: null,
         blacklistName: null
+    },
+    email: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        host: null,
+        port: null,
+        from: null,
+        tls: null,
+        username: null,
+        password: null,
+        adressList: null,
+        subject: null
     }
 };
 

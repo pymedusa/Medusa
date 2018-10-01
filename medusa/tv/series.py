@@ -2033,7 +2033,6 @@ class Series(TV):
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = list(self.aliases)
-        data['config']['xemNumbering'] = self.xem_numbering
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words

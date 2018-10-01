@@ -687,4 +687,18 @@ class DataGenerator(object):
         section_data['trakt']['startPaused'] = bool(app.TRAKT_START_PAUSED)
         section_data['trakt']['blacklistName'] = app.TRAKT_BLACKLIST_NAME
 
+        section_data['email'] = NonEmptyDict()
+        section_data['email']['enabled'] = bool(app.USE_EMAIL)
+        section_data['email']['notifyOnSnatch'] = bool(app.EMAIL_NOTIFY_ONSNATCH)
+        section_data['email']['notifyOnDownload'] = bool(app.EMAIL_NOTIFY_ONDOWNLOAD)
+        section_data['email']['notifyOnSubtitleDownload'] = bool(app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['email']['host'] = app.EMAIL_HOST
+        section_data['email']['port'] = app.EMAIL_PORT
+        section_data['email']['from'] = app.EMAIL_FROM
+        section_data['email']['tls'] = app.EMAIL_TLS
+        section_data['email']['username'] = app.EMAIL_USER
+        section_data['email']['password'] = app.EMAIL_PASSWORD
+        section_data['email']['adressList'] = app.EMAIL_LIST
+        section_data['email']['subject'] = app.EMAIL_SUBJECT
+
         return section_data

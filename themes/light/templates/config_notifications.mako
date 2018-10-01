@@ -18,7 +18,7 @@ window.app = new Vue({
         return {
             configLoaded: false,
             prowlSelectedShow: null,
-            prowlSelectedShowApiKeys: null,
+            prowlSelectedShowApiKeys: [],
             prowlPriorityOptions: [
                 { text: 'Very Low', value: -2 },
                 { text: 'Moderate', value: -1 },
@@ -62,6 +62,8 @@ window.app = new Vue({
             pushbulletTestInfo: 'Click below to test.',
             twitterTestInfo: 'Click below to test.',
             twitterKey: '',
+            emailSelectedShow: null,
+            emailSelectedShowAdresses: [],
             notifiers: {
                 emby: {
                     enabled: null,
@@ -236,6 +238,20 @@ window.app = new Vue({
                     removeShowFromApplication: null,
                     startPaused: null,
                     blacklistName: null
+                },
+                email: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    host: null,
+                    port: null,
+                    from: null,
+                    tls: null,
+                    username: null,
+                    password: null,
+                    adressList: null,
+                    subject: null
                 }
             }
         };
@@ -785,83 +801,6 @@ window.app = new Vue({
             });
         });
 
-        $('#email_show').on('change', () => {
-            const key = parseInt($('#email_show').val(), 10);
-            $.getJSON('home/loadShowNotifyLists', notifyData => {
-                if (notifyData._size > 0) {
-                    $('#email_show_list').val(key >= 0 ? notifyData[key.toString()].list : '');
-                }
-            });
-        });
-        $('#prowl_show').on('change', () => {
-            const key = parseInt($('#prowl_show').val(), 10);
-            $.getJSON('home/loadShowNotifyLists', notifyData => {
-                if (notifyData._size > 0) {
-                    $('#prowl_show_list').val(key >= 0 ? notifyData[key.toString()].prowl_notify_list : '');
-                }
-            });
-        });
-
-        function loadShowNotifyLists() {
-            $.getJSON('home/loadShowNotifyLists', list => {
-                let html;
-                let s;
-                if (list._size === 0) {
-                    return;
-                }
-
-                // Convert the 'list' object to a js array of objects so that we can sort it
-                const _list = [];
-                for (s in list) {
-                    if (s.charAt(0) !== '_') {
-                        _list.push(list[s]);
-                    }
-                }
-                const sortedList = _list.sort((a, b) => {
-                    if (a.name < b.name) {
-                        return -1;
-                    }
-                    if (a.name > b.name) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                html = '<option value="-1">-- Select --</option>';
-                for (s in sortedList) {
-                    if (sortedList[s].id && sortedList[s].name) {
-                        html += '<option value="' + sortedList[s].id + '">' + $('<div/>').text(sortedList[s].name).html() + '</option>';
-                    }
-                }
-                $('#email_show').html(html);
-                $('#email_show_list').val('');
-
-                $('#prowl_show').html(html);
-                $('#prowl_show_list').val('');
-            });
-        }
-        // Load the per show notify lists everytime this page is loaded
-        loadShowNotifyLists();
-
-        // Update the internal data struct anytime settings are saved to the server
-        $('#email_show').on('notify', loadShowNotifyLists);
-        $('#prowl_show').on('notify', loadShowNotifyLists);
-
-        $('#email_show_save').on('click', () => {
-            $.post('home/saveShowNotifyList', {
-                show: $('#email_show').val(),
-                emails: $('#email_show_list').val()
-            }, loadShowNotifyLists);
-        });
-        $('#prowl_show_save').on('click', () => {
-            $.post('home/saveShowNotifyList', {
-                show: $('#prowl_show').val(),
-                prowlAPIs: $('#prowl_show_list').val()
-            }, () => {
-                // Reload the per show notify lists to reflect changes
-                loadShowNotifyLists();
-            });
-        });
-
         // Show instructions for plex when enabled
         $('#use_plex_server').on('click', function() {
             if ($(this).is(':checked')) {
@@ -886,23 +825,48 @@ window.app = new Vue({
         onChangeProwlApi(items) {
             this.notifiers.prowl.api = items.map(item => item.value);
         },
-        saveProwlPerShowNotifyList(item) {
-            const { prowlSelectedShow, prowlSelectedShowApiKeys, prowlUpdateApiKeys } = this;
+        savePerShowNotifyList(items, listType) {
+            const { 
+                emailSelectedShow,
+                emailUpdateShowEmail,
+                emailSelectedShowAdresses,
+                prowlSelectedShow,
+                prowlSelectedShowApiKeys,
+                prowlUpdateApiKeys
+            } = this;
+
+            if (items) {
+                items = items.map(x => x.value);
+            }
             
             let form = new FormData();
-            form.set('show', prowlSelectedShow)
-            form.set('prowlAPIs', prowlSelectedShowApiKeys)
-
-            apiRoute.post('home/saveShowNotifyList', form).then(() => {
-                // Reload the per show notify lists to reflect changes
-                prowlUpdateApiKeys(prowlSelectedShow);
-            });
+            let reloadList = prowlUpdateApiKeys;
+            if (listType === 'prowl') {
+                form.set('show', prowlSelectedShow);
+                form.set('prowlAPIs', items.join(','));
+            } else {
+                form.set('show', emailSelectedShow);
+                form.set('emails', items.join(','));
+                reloadList = emailUpdateShowEmail;
+            }
+            
+            // Save the list
+            apiRoute.post('home/saveShowNotifyList', form);
         },
         async prowlUpdateApiKeys(selectedShow) {
             this.prowlSelectedShow = selectedShow; 
             const response = await apiRoute('home/loadShowNotifyLists')
             if (response.data._size > 0) {
-                this.prowlSelectedShowApiKeys = selectedShow ? response.data[selectedShow].prowl_notify_list : '';
+                const list = response.data[selectedShow].prowl_notify_list ? response.data[selectedShow].prowl_notify_list.split(',') : [];
+                this.prowlSelectedShowApiKeys = selectedShow ? list : [];
+            }
+        },
+        async emailUpdateShowEmail(selectedShow) {
+            this.emailSelectedShow = selectedShow; 
+            const response = await apiRoute('home/loadShowNotifyLists')
+            if (response.data._size > 0) {
+                const list = response.data[selectedShow].list ? response.data[selectedShow].list.split(',') : [];
+                this.emailSelectedShowAdresses = selectedShow ? list : [];
             }
         },
         async getPushbulletDeviceOptions() {
@@ -1063,7 +1027,7 @@ window.app = new Vue({
                                             <span>Enable</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="use_kodi" name="use_kodi" v-model="notifiers.plex.server.enabled" sync></toggle-button>
+                                            <toggle-button :width="45" :height="22" id="use_plex_server" name="use_plex_server" v-model="notifiers.plex.server.enabled" sync></toggle-button>
                                             <p>Send Plex Media Server library updates?</p>
                                         </div>
                                     </div>
@@ -1090,7 +1054,7 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.plex.server.updateLibrary = $event"></config-toggle-slider>
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="plex_server_host" class="col-sm-2 control-label">
                                                 <span>Plex Media Server IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1130,7 +1094,7 @@ window.app = new Vue({
 
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="plex_client_host" class="col-sm-2 control-label">
                                                 <span>Plex Home Theater IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1396,7 +1360,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="prowl_api" class="col-sm-2 control-label">
                                                 <span>Api</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1414,7 +1378,7 @@ window.app = new Vue({
 
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label class="col-sm-2 control-label">
                                                 <span>Show notification list</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1423,9 +1387,16 @@ window.app = new Vue({
                                         </div>
                                     </div>
 
-                                    <config-textbox :value="prowlSelectedShowApiKeys" placeholder="Separate your api keys with a comma" label="" id="prowl-show-list" :explanations="['Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box. Be sure to activate the \'Save for this show\' button below after each entry.']" @change="saveProwlPerShowNotifyList($event)" @update="prowlSelectedShowApiKeys = $event">
-                                    </config-textbox>
-                                    
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <!-- bs3 and 4 -->
+                                            <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
+                                                <select-list name="prowl-show-list" id="prowl-show-list" :list-items="prowlSelectedShowApiKeys" @change="savePerShowNotifyList($event, 'prowl')"></select-list>
+                                                Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box.
+                                                Be sure to activate the \'Save for this show\' button below after each entry.
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <div class="form-group">
                                         <div class="row">
@@ -1433,14 +1404,14 @@ window.app = new Vue({
                                                 <span></span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="saveProwlPerShowNotifyList"/>
+                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList"/>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="prowl_priority" class="col-sm-2 control-label">
                                                 <span>Prowl priority:</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1505,7 +1476,7 @@ window.app = new Vue({
                                     
                                     <div class="form-group">
                                         <div class="row">
-                                            <label for="kodi_host" class="col-sm-2 control-label">
+                                            <label for="pushover_apikey" class="col-sm-2 control-label">
                                                     <span>Pushover API key</span>
                                             </label>
                                             <div class="col-sm-10 content">
@@ -1847,169 +1818,75 @@ window.app = new Vue({
                             </div>
                         </div>
                     
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-email" title="Email"></span>
-                        <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
-                        <p>Allows configuration of email notifications on a per show basis.</p>
-                    </div><!-- .component-group-desc-legacy //-->
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_email">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_email" id="use_email" ${'checked="checked"' if app.USE_EMAIL else ''}/>
-                                        <p>Send email notifications?</p>
-                                    </span>
-                                </label>
-                            </div><!-- .field-pair //-->
-                            <div id="content_use_email">
-                                <div class="field-pair">
-                                    <label for="email_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="email_notify_onsnatch" id="email_notify_onsnatch" ${'checked="checked"' if app.EMAIL_NOTIFY_ONSNATCH else ''}/>
-                                            <p>send a notification when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="email_notify_ondownload" id="email_notify_ondownload" ${'checked="checked"' if app.EMAIL_NOTIFY_ONDOWNLOAD else ''}/>
-                                            <p>send a notification when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="email_notify_onsubtitledownload" id="email_notify_onsubtitledownload" ${'checked="checked"' if app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD else ''}/>
-                                            <p>send a notification when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_host">
-                                        <span class="component-title">SMTP host</span>
-                                        <input type="text" name="email_host" id="email_host" value="${app.EMAIL_HOST}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">hostname of your SMTP email server.</span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_port">
-                                        <span class="component-title">SMTP port</span>
-                                        <input type="number" min="1" step="1" name="email_port" id="email_port" value="${app.EMAIL_PORT}" class="form-control input-sm input75"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">port number used to connect to your SMTP host.</span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_from">
-                                        <span class="component-title">SMTP from</span>
-                                        <input type="text" name="email_from" id="email_from" value="${app.EMAIL_FROM}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">sender email address, some hosts require a real address.</span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_tls">
-                                        <span class="component-title">Use TLS</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="email_tls" id="email_tls" ${'checked="checked"' if app.EMAIL_TLS else ''}/>
-                                            <p>check to use TLS encryption.</p>
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_user">
-                                        <span class="component-title">SMTP user</span>
-                                        <input type="text" name="email_user" id="email_user" value="${app.EMAIL_USER}" class="form-control input-sm input250"
-                                               autocomplete="no" />
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">(optional) your SMTP server username.</span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_password">
-                                        <span class="component-title">SMTP password</span>
-                                        <input type="password" name="email_password" id="email_password" value="${app.EMAIL_PASSWORD}" class="form-control input-sm input250" autocomplete="no"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">(optional) your SMTP server password.</span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_list">
-                                        <span class="component-title">Global email list</span>
-                                        <input type="text" name="email_list" id="email_list" value="${','.join(app.EMAIL_LIST)}" class="form-control input-sm max-input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">
-                                            Email addresses listed here, separated by commas if applicable, will<br>
-                                            receive notifications for <b>all</b> shows.<br>
-                                            (This field may be blank except when testing.)
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_subject">
-                                        <span class="component-title">Email Subject</span>
-                                        <input type="text" name="email_subject" id="email_subject" value="${app.EMAIL_SUBJECT}" class="form-control input-sm max-input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">
-                                            Use a custom subject for some privacy protection?<br>
-                                            (Leave blank for the default Medusa subject)
-                                        </span>
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="field-pair">
-                                    <label for="email_show">
-                                        <span class="component-title">Show notification list</span>
-                                        <select name="email_show" id="email_show" class="form-control input-sm">
-                                            <option value="-1">-- Select a Show --</option>
-                                        </select>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <input type="text" name="email_show_list" id="email_show_list" class="form-control input-sm max-input350"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">
-                                            Configure per-show notifications here by entering email address(es), separated by commas,
-                                            after selecting a show in the drop-down box.   Be sure to activate the 'Save for this show'
-                                            button below after each entry.
-                                        </span>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <input id="email_show_save" class="btn-medusa" type="button" value="Save for this show" />
-                                    </label>
-                                </div><!-- .field-pair //-->
-                                <div class="testNotification" id="testEmail-result">
-                                    Click below to test.
-                                </div><!-- #testEmail-result //-->
-                                <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
-                                <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
-                            </div><!-- #content_use_email //-->
-                        </fieldset><!-- .component-group-list //-->
-                    </div><!-- email .component-group //-->
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-email" title="Email"></span>
+                                <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
+                                <p>Allows configuration of email notifications on a per show basis.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for the email client -->
+                                    <config-toggle-slider :checked="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()"  @update="notifiers.email.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.email.enabled" id="content-use-email">
+    
+                                        <config-toggle-slider :checked="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.email.notifyOnSnatch = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.email.notifyOnDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.email.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                        <config-textbox :value="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()"  @update="notifiers.email.host = $event"></config-textbox>
+                                        <config-textbox :value="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()"  @update="notifiers.email.port = $event"></config-textbox>
+                                        <config-textbox :value="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()"  @update="notifiers.email.from = $event"></config-textbox>
+                                        <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="telegram_notify_onsubtitledownload" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
+                                        <config-textbox :value="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()"  @update="notifiers.email.username = $event"></config-textbox>
+                                        <config-textbox :value="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()"  @update="notifiers.email.password = $event"></config-textbox>
+                                        
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="email_list" class="col-sm-2 control-label">
+                                                    <span>Global email list</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="notifiers.email.addressList = $event"></select-list>
+                                                    Email addresses listed here, separated by commas if applicable, will<br>
+                                                    receive notifications for <b>all</b> shows.<br>
+                                                    (This field may be blank except when testing.)
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <config-textbox :value="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
+                                        ['Use a custom subject for some privacy protection?<br>',
+                                            '(Leave blank for the default Medusa subject)']" @change="save()"  @update="notifiers.email.subject = $event">
+                                        </config-textbox>
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <label for="email_show" class="col-sm-2 control-label">
+                                                    <span>Show notification list</span>
+                                                </label>
+                                                <div class="col-sm-10 content">
+                                                    <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="emailUpdateShowEmail($event)"></show-selector>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <!-- bs3 and 4 -->
+                                                <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
+                                                    <select-list name="email_list" id="email_list" :list-items="emailSelectedShowAdresses" @change="savePerShowNotifyList($event, 'email')" @update="emailSelectedShowAdresses = $event"></select-list>
+                                                    Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
+                                                    (This field may be blank except when testing.)
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="testNotification" id="testEmail-result">Click below to test.</div><!-- #testEmail-result //-->
+                                        <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
+                                        <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
 
 
                     <div class="component-group-desc-legacy">
