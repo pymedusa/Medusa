@@ -250,7 +250,7 @@ window.app = new Vue({
                     tls: null,
                     username: null,
                     password: null,
-                    addressList: null,
+                    addressList: [],
                     subject: null
                 },
                 slack: {
