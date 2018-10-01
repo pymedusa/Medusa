@@ -250,7 +250,7 @@ window.app = new Vue({
                     tls: null,
                     username: null,
                     password: null,
-                    adressList: null,
+                    addressList: null,
                     subject: null
                 },
                 slack: {
@@ -875,6 +875,9 @@ window.app = new Vue({
                 const list = response.data[selectedShow].list ? response.data[selectedShow].list.split(',') : [];
                 this.emailSelectedShowAdresses = selectedShow ? list : [];
             }
+        },
+        emailUpdateAddressList(items) {
+            this.notifiers.email.addressList = items.map(x => x.value);
         },
         async getPushbulletDeviceOptions() {
             const { api: pushbulletApiKey } = this.notifiers.pushbullet;
@@ -1882,9 +1885,8 @@ window.app = new Vue({
                                                     <span>Global email list</span>
                                                 </label>
                                                 <div class="col-sm-10 content">
-                                                    <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="notifiers.email.addressList = $event"></select-list>
-                                                    Email addresses listed here, separated by commas if applicable, will<br>
-                                                    receive notifications for <b>all</b> shows.<br>
+                                                    <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>
+                                                    Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
                                                     (This field may be blank except when testing.)
                                                 </div>
                                             </div>

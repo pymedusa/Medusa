@@ -316,7 +316,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
         'notifiers.email.username': StringField(app, 'EMAIL_USER'),
         'notifiers.email.password': StringField(app, 'TWITTER_USERNAME'),
-        'notifiers.email.adressList': ListField(app, 'EMAIL_LIST'),
+        'notifiers.email.addressList': ListField(app, 'EMAIL_LIST'),
         'notifiers.email.subject': StringField(app, 'EMAIL_SUBJECT'),
         'notifiers.email.notifyOnSnatch': BooleanField(app, 'EMAIL_NOTIFY_ONSNATCH'),
         'notifiers.email.notifyOnDownload': BooleanField(app, 'EMAIL_NOTIFY_ONDOWNLOAD'),
@@ -863,7 +863,7 @@ class DataGenerator(object):
         section_data['email']['tls'] = bool(app.EMAIL_TLS)
         section_data['email']['username'] = app.EMAIL_USER
         section_data['email']['password'] = app.EMAIL_PASSWORD
-        section_data['email']['adressList'] = app.EMAIL_LIST
+        section_data['email']['addressList'] = app.EMAIL_LIST
         section_data['email']['subject'] = app.EMAIL_SUBJECT
 
         section_data['slack'] = NonEmptyDict()

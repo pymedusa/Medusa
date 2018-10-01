@@ -186,7 +186,7 @@ const state = {
         tls: null,
         username: null,
         password: null,
-        adressList: null,
+        addressList: null,
         subject: null
     },
     slack: {
