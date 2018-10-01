@@ -543,7 +543,7 @@ div.xem {
     background-color: rgb(51, 51, 51);
 }
 
-#container-show,
+#container-series,
 #container-anime {
     margin: 0 auto;
 }
@@ -2567,97 +2567,6 @@ span.path {
 .h2footer {
     line-height: 18px;
     clear: both;
-}
-
-span.quality {
-    font: 12px/13px "Open Sans", verdana, sans-serif;
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
-    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
-    color: rgb(255, 255, 255);
-    display: inline-block;
-    padding: 2px 4px;
-    text-align: center;
-    vertical-align: baseline;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-
-span.any-hd {
-    background-color: rgb(38, 114, 182);
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background:
-        repeating-linear-gradient(
-        -45deg,
-        rgb(38, 114, 182),
-        rgb(38, 114, 182) 10px,
-        rgb(91, 153, 13) 10px,
-        rgb(91, 153, 13) 20px
-    );
-    /* stylelint-enable */
-}
-
-span.Custom {
-    background-color: rgb(98, 25, 147);
-}
-
-span.HD {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HDTV {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HD720p {
-    background-color: rgb(91, 153, 13);
-}
-
-span.HD1080p {
-    background-color: rgb(38, 114, 182);
-}
-
-span.UHD-4K {
-    background-color: rgb(117, 0, 255);
-}
-
-span.UHD-8K {
-    background-color: rgb(65, 0, 119);
-}
-
-span.RawHD {
-    background-color: rgb(205, 115, 0);
-}
-
-span.RawHDTV {
-    background-color: rgb(205, 115, 0);
-}
-
-span.SD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDTV {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDDVD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.Any {
-    background-color: rgb(102, 102, 102);
-}
-
-span.Unknown {
-    background-color: rgb(153, 153, 153);
-}
-
-span.Proper {
-    background-color: rgb(63, 127, 0);
 }
 
 /* red */

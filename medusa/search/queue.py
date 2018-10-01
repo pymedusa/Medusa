@@ -80,9 +80,9 @@ class SearchQueue(generic_queue.GenericQueue):
         length = {'backlog': 0, 'daily': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, DailySearchQueueItem):
-                length[b'daily'] += 1
+                length['daily'] += 1
             elif isinstance(cur_item, BacklogQueueItem):
-                length[b'backlog'] += 1
+                length['backlog'] += 1
         return length
 
     def add_item(self, item):
@@ -170,11 +170,11 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         length = {'forced_search': 0, 'manual_search': 0, 'failed': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, FailedQueueItem):
-                length[b'failed'] += 1
+                length['failed'] += 1
             elif isinstance(cur_item, ForcedSearchQueueItem) and not cur_item.manual_search:
-                length[b'forced_search'] += 1
+                length['forced_search'] += 1
             elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.manual_search:
-                length[b'manual_search'] += 1
+                length['manual_search'] += 1
         return length
 
     def add_item(self, item):
@@ -449,16 +449,16 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
         result = providers.get_provider_class(self.provider).get_result(self.segment)
         result.series = self.show
-        result.url = self.cached_result[b'url']
-        result.quality = int(self.cached_result[b'quality'])
-        result.name = self.cached_result[b'name']
-        result.size = int(self.cached_result[b'size'])
-        result.seeders = int(self.cached_result[b'seeders'])
-        result.leechers = int(self.cached_result[b'leechers'])
-        result.release_group = self.cached_result[b'release_group']
-        result.version = int(self.cached_result[b'version'])
-        result.proper_tags = self.cached_result[b'proper_tags'].split('|') \
-            if self.cached_result[b'proper_tags'] else ''
+        result.url = self.cached_result['url']
+        result.quality = int(self.cached_result['quality'])
+        result.name = self.cached_result['name']
+        result.size = int(self.cached_result['size'])
+        result.seeders = int(self.cached_result['seeders'])
+        result.leechers = int(self.cached_result['leechers'])
+        result.release_group = self.cached_result['release_group']
+        result.version = int(self.cached_result['version'])
+        result.proper_tags = self.cached_result['proper_tags'].split('|') \
+            if self.cached_result['proper_tags'] else ''
         result.manually_searched = True
 
         try:

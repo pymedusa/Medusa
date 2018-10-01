@@ -98,7 +98,7 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                recommended_show = self._create_recommended_show(series, storage_key=b'imdb_{0}'.format(series['imdb_tt']))
+                recommended_show = self._create_recommended_show(series, storage_key='imdb_{0}'.format(series['imdb_tt']))
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:

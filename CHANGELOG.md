@@ -3,12 +3,48 @@
 #### New Features
 
 #### Improvements
-- Converted /config/postProcessing to a Vue component ([#4259](https://github.com/pymedusa/Medusa/pull/4259))
+- Updated `guessit` to version 3.0.0 ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+- Updated the API v2 endpoint to handle concurrent requests ([#4970](https://github.com/pymedusa/Medusa/pull/4970))
+- Converted some of the show header to Vue ([#5087](https://github.com/pymedusa/Medusa/pull/5087))
+- Converted "Add Show" options into a Vue SFC ([#4848](https://github.com/pymedusa/Medusa/pull/4848))
+- Added publishing date to Speed.CD provider ([#5190](https://github.com/pymedusa/Medusa/pull/5190))
+- Converted the "quality pill" into a Vue SFC ([#5103](https://github.com/pymedusa/Medusa/pull/5103))
+
+#### Fixes
+- Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
+- Fixed Speed.CD provider exception during searches ([#5190](https://github.com/pymedusa/Medusa/pull/5190))
+- Fixed adba lib trowing exceptions getting release groups for some anime shows ([#5125](https://github.com/pymedusa/Medusa/pull/5125))
+- Fixed trakt icon not showing on the displayShow page, when a trakt id is available ([#5300](https://github.com/pymedusa/Medusa/pull/5300))
+- Fixed editShow page crashing because of a memory overflow ([#5314](https://github.com/pymedusa/Medusa/pull/5314))
+
+
+-----
+
+## 0.2.10 (2018-09-09)
+
+#### Fixes
+- Fixed error due to `null` values in the episodes database table ([#5132](https://github.com/pymedusa/Medusa/pull/5132))
+- Fixed extraneous calls to AniDB when navigating to any show's page ([#5166](https://github.com/pymedusa/Medusa/pull/5166))
+- Fixed being unable to start Medusa due to an import error ([#5145](https://github.com/pymedusa/Medusa/pull/5145))
+- Fixed UI bugs on:
+  - Home page (when using "split home in tabs") ([#5126](https://github.com/pymedusa/Medusa/pull/5126))
+  - Status page ([#5127](https://github.com/pymedusa/Medusa/pull/5127))
+  - Preview Rename page ([#5169](https://github.com/pymedusa/Medusa/pull/5169))
+  - Post Processing Config page - saving `select-list` values incorrectly ([#5165](https://github.com/pymedusa/Medusa/pull/5165))
+- Fixed bug in TorrentLeech provider when fetching multiple pages of results ([#5172](https://github.com/pymedusa/Medusa/pull/5172))
+
+-----
+
+## 0.2.9 (2018-09-06)
+
+#### Improvements
+- Converted Post-Processing Config to a Vue SFC ([#4259](https://github.com/pymedusa/Medusa/pull/4259) + [#4946](https://github.com/pymedusa/Medusa/pull/4946))
 - Bundled the web application using Webpack ([#4692](https://github.com/pymedusa/Medusa/pull/4692))
 - Updated adba (anidb) client to version 1.0.0 (python 2/3 compatible) ([#4822](https://github.com/pymedusa/Medusa/pull/4822))
 - Changed caching location for the adba and simpleanidb libs to the default Medusa cache location ([#4822](https://github.com/pymedusa/Medusa/pull/4822))
 - Added a new field name 'watched' to the tv_episodes db table. UI will be added in future ([#4825](https://github.com/pymedusa/Medusa/pull/4825))
 - Standardized most titles and headers ([#4663](https://github.com/pymedusa/Medusa/pull/4663))
+- Converted IRC page into a Vue SFC ([#5089](https://github.com/pymedusa/Medusa/pull/5089))
 - Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
 
 #### Fixes
@@ -21,6 +57,8 @@
 - Fixed episode lookup with conflicting show IDs ([#4933](https://github.com/pymedusa/Medusa/pull/4933))
 - Fixed error getting season scene exceptions on show page [#4964](https://github.com/pymedusa/Medusa/pull/4964)
 - Fixed testing email notification with TLS ([#4972](https://github.com/pymedusa/Medusa/pull/4972))
+- Fixed provider hd-space parsing pubdate like 'yesterday at 12:00:00' ([#5111](https://github.com/pymedusa/Medusa/pull/5111))
+- Fixed apiv2 call hanging, when opening an anime show, that has malformed data on anidb (with anidb enabled) ([#4961](https://github.com/pymedusa/Medusa/pull/4961))
 
 -----
 

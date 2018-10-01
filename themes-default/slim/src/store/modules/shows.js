@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { api } from '../../api';
 import { ADD_SHOW } from '../mutation-types';
 
 const state = {
@@ -43,17 +44,43 @@ const getters = {
     }
 };
 
+/**
+ * An object representing request parameters for getting a show from the API.
+ *
+ * @typedef {Object} ShowParameteres
+ * @property {string} indexer - The indexer name (e.g. `tvdb`)
+ * @property {string} id - The show ID on the indexer (e.g. `12345`)
+ * @property {boolean} detailed - Whether to fetch detailed information (seasons & episodes)
+ * @property {boolean} fetch - Whether to fetch external information (for example AniDB release groups)
+ */
 const actions = {
-    getShow(context, { indexer, id, detailed }) {
+    /**
+     * Get show from API and commit it to the store.
+     *
+     * @param {*} context - The store context.
+     * @param {ShowParameteres} parameters - Request parameters.
+     * @returns {Promise} The API response.
+     */
+    getShow(context, { indexer, id, detailed, fetch }) {
         const { commit } = context;
         const params = {};
         if (detailed !== undefined) {
             params.detailed = Boolean(detailed);
         }
+        if (fetch !== undefined) {
+            params.fetch = Boolean(fetch);
+        }
         return api.get('/series/' + indexer + id, { params }).then(res => {
             commit(ADD_SHOW, res.data);
         });
     },
+    /**
+     * Get shows from API and commit them to the store.
+     *
+     * @param {*} context - The store context.
+     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 1000 shows.
+     * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
+     */
     getShows(context, shows) {
         const { commit, dispatch } = context;
 

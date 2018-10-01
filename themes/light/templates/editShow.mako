@@ -62,7 +62,8 @@ window.app = new Vue({
     created() {
         const { $store, seriesSlug } = this;
 
-        const params = { detailed: false }; // Don't get episodes
+        // Don't get episodes, but do get external information for AniDB release groups
+        const params = { detailed: false, fetch: true };
         api.get('series/' + seriesSlug, { params }).then(response => {
             this.series = Object.assign({}, this.series, response.data);
             this.seriesLoaded = true;
@@ -215,7 +216,7 @@ window.app = new Vue({
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
                                 <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"/>
+                                    v-model="series.config.defaultEpisodeStatus">
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>

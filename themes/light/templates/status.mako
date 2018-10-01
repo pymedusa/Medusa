@@ -105,7 +105,7 @@
                 % else:
                 <td></td>
                 % endif
-                <td>${service.lastRun.strftime(dateTimeFormat)}</td>
+                <td>${service.lastRun.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
                 <td>${service.silent}</td>
             </tr>
             <% del service %>
@@ -153,7 +153,7 @@
                         % else:
                             <td>app.show_queue_scheduler.action.currentItem.priority</td>
                         % endif
-                        <td>${app.show_queue_scheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
+                        <td>${app.show_queue_scheduler.action.currentItem.added.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
                         <td>${ShowQueueActions.names[app.show_queue_scheduler.action.currentItem.action_id]}</td>
                     </tr>
                 % endif
@@ -185,7 +185,7 @@
                         % else:
                             <td>${item.priority}</td>
                         % endif
-                        <td>${item.added.strftime(dateTimeFormat)}</td>
+                        <td>${item.added.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
                         <td>${ShowQueueActions.names[item.action_id]}</td>
                     </tr>
                 % endfor
@@ -212,15 +212,17 @@
                     % endif
                 </tr>
                 % endif
+                % for cur_index, cur_dir in enumerate(rootDir):
                 <tr>
-                    <td rowspan=${len(rootDir)}>Media Root Directories</td>
-                    % for cur_dir in rootDir:
-                        <td>${cur_dir}</td>
-                        % if rootDir[cur_dir] is not False:
-                            <td align="middle">${rootDir[cur_dir]}</td>
-                        % else:
-                            <td align="middle"><i>Missing</i></td>
-                        % endif
+                    % if cur_index == 0:
+                    <td rowspan="${len(rootDir)}">Media Root Directories</td>
+                    % endif
+                    <td>${cur_dir}</td>
+                    % if rootDir[cur_dir] is not False:
+                        <td align="middle">${rootDir[cur_dir]}</td>
+                    % else:
+                        <td align="middle"><i>Missing</i></td>
+                    % endif
                 </tr>
                 % endfor
             </tbody>

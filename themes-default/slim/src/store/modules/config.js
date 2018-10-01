@@ -1,3 +1,4 @@
+import { api } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
 
 const state = {
@@ -73,6 +74,7 @@ const state = {
     fanartBackground: null,
     trimZero: null,
     animeSplitHome: null,
+    gitUsername: null,
     branch: null,
     commitHash: null,
     indexers: {
@@ -251,7 +253,16 @@ const state = {
     os: null,
     anonRedirect: null,
     logDir: null,
-    recentShows: []
+    recentShows: [],
+    showDefaults: {
+        status: null,
+        statusAfter: null,
+        quality: null,
+        subtitles: null,
+        seasonFolders: null,
+        anime: null,
+        scene: null
+    }
 };
 
 const mutations = {

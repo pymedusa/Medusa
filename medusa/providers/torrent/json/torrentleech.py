@@ -15,6 +15,8 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
+from six.moves import range
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -217,7 +219,7 @@ class TorrentLeechProvider(TorrentProvider):
                         ' in your profile options on {name}.', {'name': self.name})
 
         try:
-            pages = math.ceil(self.max_torrents / per_page)
+            pages = int(math.ceil(self.max_torrents / per_page))
         except ZeroDivisionError:
             pages = 1
 

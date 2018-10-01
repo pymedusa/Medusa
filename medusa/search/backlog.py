@@ -137,10 +137,10 @@ class BacklogSearcher(object):
 
         if not sql_results:
             last_backlog = 1
-        elif sql_results[0][b'last_backlog'] is None or sql_results[0][b'last_backlog'] == '':
+        elif sql_results[0]['last_backlog'] is None or sql_results[0]['last_backlog'] == '':
             last_backlog = 1
         else:
-            last_backlog = int(sql_results[0][b'last_backlog'])
+            last_backlog = int(sql_results[0]['last_backlog'])
             if last_backlog > datetime.date.today().toordinal():
                 last_backlog = 1
 
@@ -169,20 +169,20 @@ class BacklogSearcher(object):
 
         # check through the list of statuses to see if we want any
         for episode in sql_results:
-            cur_status, cur_quality = int(episode[b'status'] or UNSET), int(episode[b'quality'] or Quality.NA)
+            cur_status, cur_quality = int(episode['status'] or UNSET), int(episode['quality'] or Quality.NA)
             should_search, should_search_reason = Quality.should_search(
-                cur_status, cur_quality, series_obj, episode[b'manually_searched']
+                cur_status, cur_quality, series_obj, episode['manually_searched']
             )
             if not should_search:
                 continue
             log.debug(
                 u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
                     'show': series_obj.name,
-                    'ep': episode_num(episode[b'season'], episode[b'episode']),
+                    'ep': episode_num(episode['season'], episode['episode']),
                     'reason': should_search_reason,
                 }
             )
-            ep_obj = series_obj.get_episode(episode[b'season'], episode[b'episode'])
+            ep_obj = series_obj.get_episode(episode['season'], episode['episode'])
 
             if ep_obj.season not in wanted:
                 wanted[ep_obj.season] = [ep_obj]

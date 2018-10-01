@@ -5,6 +5,7 @@
   "author": "p0psicles",
   "scripts": {
     "lint": "xo",
+    "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "install": "yarn run lint",
@@ -27,56 +28,63 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@babel/core": "7.0.0",
+    "@babel/core": "7.1.2",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0",
     "@babel/polyfill": "7.0.0",
-    "@babel/preset-env": "7.0.0",
+    "@babel/preset-env": "7.1.0",
     "@babel/register": "7.0.0",
-    "@vue/test-utils": "1.0.0-beta.24",
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
+    "@vue/test-utils": "1.0.0-beta.25",
     "ava": "1.0.0-beta.8",
     "axios": "0.18.0",
-    "babel-loader": "8.0.0",
+    "babel-loader": "8.0.2",
     "babel-plugin-istanbul": "5.0.1",
     "bootstrap": "3.3.7",
     "browser-env": "3.2.5",
     "clean-webpack-plugin": "0.1.19",
-    "codecov": "3.0.4",
+    "codecov": "3.1.0",
     "copy-webpack-plugin": "4.5.2",
     "cross-env": "5.2.0",
     "css-loader": "1.0.0",
-    "eslint": "5.4.0",
-    "eslint-config-xo": "0.24.2",
+    "date-fns": "1.29.0",
+    "eslint": "5.6.0",
+    "eslint-config-xo": "0.25.0",
     "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.80",
+    "esm": "3.0.84",
     "file-loader": "2.0.0",
-    "filemanager-webpack-plugin": "2.0.2",
+    "filemanager-webpack-plugin": "2.0.5",
     "glob": "7.1.3",
     "gulp": "3.9.1",
     "gulp-changed": "3.2.0",
     "gulp-imagemin": "4.1.0",
     "imagemin-pngquant": "6.0.0",
+    "is-visible": "2.2.0",
     "jquery": "3.3.1",
-    "lodash": "4.17.10",
-    "mini-css-extract-plugin": "0.4.2",
+    "lodash": "4.17.11",
+    "mini-css-extract-plugin": "0.4.3",
     "nyc": "13.0.1",
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
     "require-extension-hooks-vue": "1.1.0",
     "run-sequence": "2.2.1",
+    "stylelint": "9.6.0",
+    "stylelint-config-standard": "18.2.0",
+    "tablesorter": "2.31.0",
     "vue": "2.5.17",
     "vue-async-computed": "3.4.1",
     "vue-js-toggle-button": "1.3.0",
-    "vue-loader": "15.4.1",
+    "vue-loader": "15.4.2",
     "vue-meta": "1.5.3",
-    "vue-native-websocket": "2.0.8",
+    "vue-native-websocket": "2.0.11",
     "vue-router": "3.0.1",
+    "vue-scrollto": "2.13.0",
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.5.17",
     "vue-truncate-collapsed": "2.1.0",
     "vuex": "3.0.1",
-    "webpack": "4.17.1",
-    "webpack-cli": "3.1.0",
-    "xo": "0.22.0"
+    "webpack": "4.20.2",
+    "webpack-cli": "3.1.1",
+    "xo": "0.23.0"
   },
   "xo": {
     "space": 4,
@@ -93,12 +101,10 @@
       ],
       "space-before-function-paren": [
         "error",
-        "never"
-      ],
-      "unicorn/catch-error-name": [
-        "error",
         {
-          "name": "error"
+          "anonymous": "never",
+          "named": "never",
+          "asyncArrow": "always"
         }
       ],
       "valid-jsdoc": [
@@ -112,7 +118,6 @@
       "PNotify",
       "LazyLoad",
       "_",
-      "log",
       "$",
       "MEDUSA",
       "api",
@@ -123,15 +128,53 @@
       "webRoot",
       "apiRoot",
       "apiKey",
-      "Vuex",
-      "dateFns"
+      "Vuex"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js"
     ],
+    "overrides": [
+      {
+        "files": "src/**",
+        "globals": [
+          "$",
+          "MEDUSA"
+        ]
+      }
+    ],
     "esnext": true
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "processors": [
+      [
+        "@mapbox/stylelint-processor-arbitrary-tags",
+        {
+          "fileFilterRegex": [
+            ".vue$"
+          ]
+        }
+      ]
+    ],
+    "rules": {
+      "indentation": [
+        4,
+        {
+          "ignore": [
+            "inside-parens"
+          ],
+          "message": "Please use 4 spaces for indentation.",
+          "severity": "error"
+        }
+      ],
+      "no-descending-specificity": null
+    },
+    "ignoreFiles": [
+      "static/css/lib/**",
+      "static/css/*.min.css"
+    ]
   },
   "ava": {
     "require": [

@@ -42,6 +42,10 @@ def build_argument_parser():
                              help='Expected title to parse (can be used multiple times)')
     naming_opts.add_argument('-G', '--expected-group', action='append', dest='expected_group', default=None,
                              help='Expected release group (can be used multiple times)')
+    naming_opts.add_argument('--includes', action='append', dest='includes', default=None,
+                             help='List of properties to be detected')
+    naming_opts.add_argument('--excludes', action='append', dest='excludes', default=None,
+                             help='List of properties to be ignored')
 
     input_opts = opts.add_argument_group("Input")
     input_opts.add_argument('-f', '--input-file', dest='input_file', default=None,
@@ -92,7 +96,7 @@ def parse_options(options=None, api=False):
     :param options:
     :type options:
     :param api
-    :type boolean
+    :type api: boolean
     :return:
     :rtype:
     """
@@ -157,10 +161,12 @@ def load_config(options):
             if config_file_options:
                 configurations.append(config_file_options)
 
+    embedded_options_data = pkgutil.get_data('guessit', 'config/options.json').decode("utf-8")
+    embedded_options = json.loads(embedded_options_data)
     if not options.get('no_embedded_config'):
-        embedded_options_data = pkgutil.get_data('guessit', 'config/options.json').decode("utf-8")
-        embedded_options = json.loads(embedded_options_data)
         configurations.append(embedded_options)
+    else:
+        configurations.append({'advanced_config': embedded_options['advanced_config']})
 
     if configurations:
         configurations.append(options)

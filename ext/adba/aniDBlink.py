@@ -27,6 +27,9 @@ from time import time, sleep
 from .aniDBerrors import *
 from .aniDBresponses import ResponseResolver
 
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
 
 class AniDBLink(threading.Thread):
     def __init__(self, server, port, myport, delay=2, timeout=20):
@@ -78,7 +81,7 @@ class AniDBLink(threading.Thread):
         # self.sock.close()
 
     def stop(self):
-        logging.info("Releasing socket and stopping link thread")
+        logger.info("Releasing socket and stopping link thread")
         self._quiting = True
         self.disconnectSocket()
         self._stop.set()
@@ -92,25 +95,25 @@ class AniDBLink(threading.Thread):
     def run(self):
         while not self._quiting:
             try:
-                data = self.sock.recv(8192).decode(encoding='UTF-8')
+                data = self.sock.recv(8192)
             except socket.timeout:
                 self._handle_timeouts()
                 continue
-            except OSError as e:
-                logging.exception('Exception: %s', e)
+            except OSError as error:
+                logger.exception('Exception: %s', error)
                 break
-            logging.debug("NetIO < %r", data)
+            logger.debug("NetIO < %r", data)
             try:
                 for i in range(2):
                     try:
                         tmp = data
                         resp = None
-                        if tmp[:2] == '\x00\x00':
+                        if tmp[:2] == b'\x00\x00':
                             tmp = zlib.decompressobj().decompress(tmp[2:])
-                            logging.debug("UnZip | %r", tmp)
+                            logger.debug("UnZip | %r", tmp)
                         resp = ResponseResolver(tmp)
                     except Exception as e:
-                        logging.exception('Exception: %s', e)
+                        logger.exception('Exception: %s', e)
                         sys.excepthook(*sys.exc_info())
                         self.crypt = None
                         self.session = None
@@ -121,18 +124,18 @@ class AniDBLink(threading.Thread):
                 cmd = self._cmd_dequeue(resp)
                 resp = resp.resolve(cmd)
                 resp.parse()
-                if resp.rescode in ('200', '201'):
-                    self.session = resp.attrs['sesskey']
-                if resp.rescode in ('209',):
-                    logging.error("sorry encryption is not supported")
+                if resp.rescode in (b'200', b'201'):
+                    self.session = resp.attrs[b'sesskey']
+                if resp.rescode in (b'209',):
+                    logger.error("sorry encryption is not supported")
                     raise AniDBError()
                     # self.crypt=aes(md5(resp.req.apipassword+resp.attrs['salt']).digest())
-                if resp.rescode in ('203', '403', '500', '501', '503', '506'):
+                if resp.rescode in (b'203', b'403', b'500', b'501', b'503', b'506'):
                     self.session = None
                     self.crypt = None
-                if resp.rescode in ('504', '555'):
+                if resp.rescode in (b'504', b'555'):
                     self.banned = True
-                    logging.critical(("AniDB API informs that user or client is banned:", resp.resstr))
+                    logger.critical(("AniDB API informs that user or client is banned:", resp.resstr))
                 resp.handle()
                 if not cmd or not cmd.mode:
                     self._resp_queue(resp)
@@ -140,7 +143,7 @@ class AniDBLink(threading.Thread):
                     self.tags.remove(resp.restag)
             except:
                 sys.excepthook(*sys.exc_info())
-                logging.error("Avoiding flood by paranoidly panicing: Aborting link thread, killing connection, releasing waiters and quiting")
+                logger.error("Avoiding flood by paranoidly panicing: Aborting link thread, killing connection, releasing waiters and quiting")
                 self.sock.close()
                 try:
                     cmd.waiter.release()
@@ -203,27 +206,27 @@ class AniDBLink(threading.Thread):
 
     def _send(self, command):
         if self.banned:
-            logging.debug("NetIO | BANNED")
+            logger.debug("NetIO | BANNED")
             raise AniDBError("Not sending, banned")
         self._do_delay()
         self.lastpacket = time()
         command.started = time()
         data = command.raw_data()
 
-        self.sock.sendto(bytes(data, "ASCII"), self.target)
-        if command.command == 'AUTH':
-            logging.debug("NetIO > sensitive data is not logged!")
+        self.sock.sendto(bytes(data, b"ASCII"), self.target)
+        if command.command == b'AUTH':
+            logger.debug("NetIO > sensitive data is not logged!")
 
     def new_tag(self):
         if not len(self.tags):
-            maxtag = "T000"
+            maxtag = b"T000"
         else:
             maxtag = max(self.tags)
-        newtag = "T%03d" % (int(maxtag[1:]) + 1)
+        newtag = b"T%03d" % (int(maxtag[1:]) + 1)
         return newtag
 
     def request(self, command):
-        if not (self.session and command.session) and command.command not in ('AUTH', 'PING', 'ENCRYPT'):
+        if not (self.session and command.session) and command.command not in (b'AUTH', b'PING', b'ENCRYPT'):
             raise AniDBMustAuthError("You must be authed to execute commands besides AUTH and PING")
         command.started = time()
         self._cmd_queue(command)
