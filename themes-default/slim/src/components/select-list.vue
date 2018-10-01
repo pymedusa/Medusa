@@ -15,7 +15,7 @@
             </li>
             <div class="new-item">
                 <div class="input-group">
-                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line" />
+                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line"/>
                     <div class="input-group-btn" @click="addNewItem()">
                         <div style="font-size: 14px" class="btn btn-default input-sm">
                             <i class="glyphicon glyphicon-plus" title="Add"></i>
@@ -92,15 +92,18 @@ export default {
             this.indexCounter += 1;
         },
         addNewItem() {
+            const { newItem, editItems } = this;
             if (this.newItem === '') {
                 return;
             }
-            this.addItem(this.newItem);
+            this.addItem(newItem);
             this.newItem = '';
+            this.$emit('change', editItems);
         },
         deleteItem(item) {
             this.editItems = this.editItems.filter(e => e !== item);
             this.$refs.newItemInput.focus();
+            this.$emit('change', this.editItems);
         },
         removeEmpty(item) {
             return item.value === '' ? this.deleteItem(item) : false;
@@ -118,8 +121,9 @@ export default {
 
             return values.map((value, index) => {
                 if (typeof (value) === 'string') {
+                    this.indexCounter += 1;
                     return {
-                        id: index,
+                        id: this.indexCounter - 1,
                         value
                     };
                 }
@@ -155,14 +159,12 @@ export default {
         }
     },
     watch: {
-        editItems: {
-            handler() {
-                this.$emit('change', this.editItems);
-            },
-            deep: true
-        },
         csv() {
             this.syncValues();
+        },
+        listItems(newValues, oldValues) {
+            this.editItems = this.sanitize(this.listItems);
+            this.newItem = '';
         }
     }
 };
