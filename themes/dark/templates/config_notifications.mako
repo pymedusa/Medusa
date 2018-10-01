@@ -1030,7 +1030,7 @@ window.app = new Vue({
                                                 <span>KODI IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="kodi_host" id="kodi_host" :list-items="notifiers.kodi.host" @change="notifiers.kodi.host = $event"></select-list>
+                                                <select-list name="kodi_host" id="kodi_host" :list-items="notifiers.kodi.host" @change="notifiers.kodi.host = $event.map(x => x.value)"></select-list>
                                                 <p>host running KODI (eg. 192.168.1.100:8080)</p>
                                             </div>
                                         </div>
@@ -1097,7 +1097,7 @@ window.app = new Vue({
                                                 <span>Plex Media Server IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event"></select-list>
+                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event.map(x => x.value)"></select-list>
                                                 <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                             </div>
                                         </div>
@@ -1137,7 +1137,7 @@ window.app = new Vue({
                                                 <span>Plex Home Theater IP:Port</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event"></select-list>
+                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event.map(x => x.value)"></select-list>
                                                 <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
                                         </div>
@@ -1531,7 +1531,7 @@ window.app = new Vue({
                                                 <span>Pushover Devices</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select-list name="pushover_device" id="pushover_device" :list-items="notifiers.pushover.device" @change="notifiers.pushover.device = $event"></select-list>
+                                                <select-list name="pushover_device" id="pushover_device" :list-items="notifiers.pushover.device" @change="notifiers.pushover.device = $event.map(x => x.value)"></select-list>
                                                 <p>List of pushover devices you want to send notifications to</p>
                                             </div>
                                         </div>
