@@ -945,6 +945,35 @@ window.app = new Vue({
             } catch {
                 this.twitterTestInfo = 'Error while trying to request for a test on the twitter api.'
             }
+        },
+        save() {
+            const { $store, notifiers } = this;
+            // We want to wait until the page has been fully loaded, before starting to save stuff.
+            if (!this.configLoaded) {
+                return;
+            }
+            // Disable the save button until we're done.
+            this.saving = true;
+
+            // Clone the config into a new object
+            const config = Object.assign({}, {
+                notifiers
+            });
+
+            const section = 'main';
+
+            $store.dispatch('setConfig', { section, config }).then(() => {
+                this.$snotify.success(
+                    'Saved Notifiers config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(() => {
+                this.$snotify.error(
+                    'Error while trying to save notifiers config',
+                    'Error'
+                );
+            });
         }
     }
 });
@@ -954,7 +983,7 @@ window.app = new Vue({
 <h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
-        <form id="configForm" action="config/notifications/saveNotifications" method="post">
+        <form id="configForm" method="post" @submit.prevent="save()">
             <div id="config-components">
                 <ul>
                     <li><app-link href="#home-theater-nas">Home Theater / NAS</app-link></li>
@@ -1009,7 +1038,7 @@ window.app = new Vue({
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                             
                                 </div>
 
@@ -1047,7 +1076,7 @@ window.app = new Vue({
                                                 <span>Plex Media Server Auth Token</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input type="text" name="plex_server_token" id="plex_server_token" v-model="notifiers.plex.server.token" @change="save()" @update="notifiers.plex.server.token = $event"/>
+                                                <input type="text" name="plex_server_token" id="plex_server_token" v-model="notifiers.plex.server.token" @change="save()" @update="notifiers.plex.server.token = $event" class="form-control input-sm max-input350"/>
                                                 <!-- Can't use the config-textbox component, because of the complex descriptions -->
                                                 <p>Auth Token used by plex</p>
                                                 <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
@@ -1076,7 +1105,7 @@ window.app = new Vue({
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
                                         <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                         <div class="clear-left">&nbsp;</div>
                                     </div>
                             
@@ -1117,7 +1146,7 @@ window.app = new Vue({
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
                                         <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                         <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                     </div>
 
@@ -1178,7 +1207,7 @@ window.app = new Vue({
                                 
                                     <div class="testNotification" id="testNMJ-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />        
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>        
 
                                 </div>
                             </fieldset>
@@ -1252,7 +1281,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()"  @update="notifiers.nmjv2.database = $event"></config-textbox>
                                     <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1270,7 +1299,7 @@ window.app = new Vue({
                                 <!-- All form components here for synology indexer -->
                                 <config-toggle-slider :checked="notifiers.synologyIndex.enabled" label="HTTPS" id="use_synoindex" :explanations="['Note: requires Medusa to be running on your Synology NAS.']" @change="save()"  @update="notifiers.synologyIndex.enabled = $event"></config-toggle-slider>
                                 <div v-show="notifiers.synologyIndex.enabled" id="content_use_synoindex">
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1293,7 +1322,7 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.synology.notifyOnSnatch" label="Notify on snatch" id="_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.synology.notifyOnSnatch = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.synology.notifyOnDownload" label="Notify on download" id="synology_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.synology.notifyOnDownload = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.synology.notifyOnSubtitleDownload" label="Notify on subtitle download" id="synology_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.synology.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1314,7 +1343,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()"  @update="notifiers.pyTivo.host = $event"></config-textbox>
                                     <config-textbox :value="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()"  @update="notifiers.pyTivo.shareName = $event"></config-textbox>
                                     <config-textbox :value="notifiers.pyTivo.name" label="Tivo name" id="pytivo_tivo_name" :explanations="['value used in pyTivo Web Configuration to name the share.']" @change="save()"  @update="notifiers.pyTivo.name = $event"></config-textbox>
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1344,7 +1373,7 @@ window.app = new Vue({
                                     
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
                                     <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1372,7 +1401,7 @@ window.app = new Vue({
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
-                                                <span>Prowl API(s) listed here, separated by commas if applicable, will receive notifications for <b>all</b> shows.
+                                                <span>Prowl API(s) listed here, will receive notifications for <b>all</b> shows.
                                                     Your Prowl API key is available at:
                                                     <app-link href="https://www.prowlapp.com/api_settings.php">
                                                     https://www.prowlapp.com/api_settings.php</app-link><br>
@@ -1433,7 +1462,7 @@ window.app = new Vue({
                                     </div>
                                     <div class="testNotification" id="testProwl-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
 
                                 </div>
                             </fieldset>
@@ -1458,7 +1487,7 @@ window.app = new Vue({
 
                                     <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1523,7 +1552,7 @@ window.app = new Vue({
 
                                     <div class="testNotification" id="testPushover-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1549,7 +1578,7 @@ window.app = new Vue({
                                     
                                     <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1574,7 +1603,7 @@ window.app = new Vue({
                                     
                                     <div class="testNotification" id="testPushalot-result">Click below to test.</div>
                                     <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1616,7 +1645,7 @@ window.app = new Vue({
 
                                     <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
                                     <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
-                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1642,7 +1671,7 @@ window.app = new Vue({
                                     
                                     <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1668,7 +1697,7 @@ window.app = new Vue({
                                     
                                     <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1698,7 +1727,7 @@ window.app = new Vue({
                                         <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
                                         
                                         
-                                        <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.id = $event"></config-textbox>
+                                        <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.dmto = $event"></config-textbox>
                                         
                                         <div class="form-group">
                                             <div class="row">
@@ -1726,7 +1755,7 @@ window.app = new Vue({
                                         
                                         <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
                                         <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                     </div>
                                 </fieldset>
                             </div>
@@ -1819,7 +1848,7 @@ window.app = new Vue({
                                         <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                         <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
                                         <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
-                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
+                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                     </div>
                                 </fieldset>
                             </div>
@@ -1843,7 +1872,7 @@ window.app = new Vue({
                                         <config-textbox :value="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()"  @update="notifiers.email.host = $event"></config-textbox>
                                         <config-textbox :value="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()"  @update="notifiers.email.port = $event"></config-textbox>
                                         <config-textbox :value="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()"  @update="notifiers.email.from = $event"></config-textbox>
-                                        <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="telegram_notify_onsubtitledownload" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
                                         <config-textbox :value="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()"  @update="notifiers.email.username = $event"></config-textbox>
                                         <config-textbox :value="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()"  @update="notifiers.email.password = $event"></config-textbox>
                                         
@@ -1889,7 +1918,7 @@ window.app = new Vue({
 
                                         <div class="testNotification" id="testEmail-result">Click below to test.</div><!-- #testEmail-result //-->
                                         <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
-                                        <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes" />
+                                        <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes"/>
                                     </div>
                                 </fieldset>
                             </div>
@@ -1922,14 +1951,14 @@ window.app = new Vue({
                                         
                                         <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
                                         <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                     </div>
                                 </fieldset>
                             </div>
                         </div>
 
                 </div><!-- #social //-->
-                <br><input type="submit" class="config_submitter btn-medusa" value="Save Changes" /><br>
+                <br><input type="submit" class="config_submitter btn-medusa" value="Save Changes"/><br>
             </div><!-- #config-components //-->
         </form><!-- #configForm //-->
     </div><!-- #config-content //-->

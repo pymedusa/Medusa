@@ -162,7 +162,172 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.animeMultiEp': IntegerField(app, 'NAMING_ANIME_MULTI_EP'),
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
-        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+
+        'notifiers.kodi.enabled': BooleanField(app, 'USE_KODI'),
+        'notifiers.kodi.alwaysOn': BooleanField(app, 'USE_KODI'),
+        'notifiers.kodi.notify.snatch': BooleanField(app, 'KODI_NOTIFY_ONSNATCH'),
+        'notifiers.kodi.notify.download': BooleanField(app, 'KODI_NOTIFY_ONDOWNLOAD'),
+        'notifiers.kodi.notify.subtitleDownload': BooleanField(app, 'KODI_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.kodi.update.library': BooleanField(app, 'KODI_UPDATE_LIBRARY'),
+        'notifiers.kodi.update.full': BooleanField(app, 'KODI_UPDATE_FULL'),
+        'notifiers.kodi.update.onlyFirst': BooleanField(app, 'KODI_UPDATE_ONLYFIRST'),
+        'notifiers.kodi.host': ListField(app, 'KODI_HOST'),
+        'notifiers.kodi.username': StringField(app, 'KODI_USERNAME'),
+        'notifiers.kodi.password': StringField(app, 'KODI_PASSWORD'),
+        'notifiers.kodi.libraryCleanPending': BooleanField(app, 'KODI_LIBRARY_CLEAN_PENDING'),
+        'notifiers.kodi.cleanLibrary': BooleanField(app, 'KODI_CLEAN_LIBRARY'),
+
+        'notifiers.plex.server.enabled': BooleanField(app, 'USE_PLEX_SERVER'),
+        'notifiers.plex.server.notify.snatch': BooleanField(app, 'PLEX_NOTIFY_ONSNATCH'),
+        'notifiers.plex.server.notify.download': BooleanField(app, 'PLEX_NOTIFY_ONDOWNLOAD'),
+        'notifiers.plex.server.notify.subtitleDownload': BooleanField(app, 'PLEX_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.plex.server.updateLibrary': BooleanField(app, 'PLEX_UPDATE_LIBRARY'),
+        'notifiers.plex.server.host': ListField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.server.https': BooleanField(app, 'PLEX_SERVER_HTTPS'),
+        'notifiers.plex.server.username': StringField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.server.password': StringField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.server.token': StringField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.client.enabled': BooleanField(app, 'USE_PLEX_CLIENT'),
+        'notifiers.plex.client.username': StringField(app, 'PLEX_CLIENT_USERNAME'),
+        'notifiers.plex.client.host': ListField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.client.notifyOnSnatch': BooleanField(app, 'PLEX_NOTIFY_ONSNATCH'),
+        'notifiers.plex.client.notifyOnDownload': BooleanField(app, 'PLEX_NOTIFY_ONDOWNLOAD'),
+        'notifiers.plex.client.notifyOnSubtitleDownload': BooleanField(app, 'PLEX_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.emby.enabled': BooleanField(app, 'USE_EMBY'),
+        'notifiers.emby.host': StringField(app, 'EMBY_HOST'),
+        'notifiers.emby.apiKey': StringField(app, 'EMBY_APIKEY'),
+
+        'notifiers.nmj.enabled': BooleanField(app, 'USE_NMJ'),
+        'notifiers.nmj.host': StringField(app, 'NMJ_HOST'),
+        'notifiers.nmj.database': StringField(app, 'NMJ_DATABASE'),
+        'notifiers.nmj.mount': StringField(app, 'NMJ_MOUNT'),
+
+        'notifiers.nmjv2.enabled': BooleanField(app, 'USE_NMJv2'),
+        'notifiers.nmjv2.host': StringField(app, 'NMJv2_HOST'),
+        'notifiers.nmjv2.dbloc': StringField(app, 'NMJv2_DBLOC'),
+        'notifiers.nmjv2.database': StringField(app, 'NMJv2_DATABASE'),
+
+        'notifiers.synologyIndex.enabled': BooleanField(app, 'USE_SYNOINDEX'),
+
+        'notifiers.synology.enabled': BooleanField(app, 'USE_SYNOLOGYNOTIFIER'),
+        'notifiers.synology.notifyOnSnatch': BooleanField(app, 'SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH'),
+        'notifiers.synology.notifyOnDownload': BooleanField(app, 'SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD'),
+        'notifiers.synology.notifyOnSubtitleDownload': BooleanField(app, 'SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.pyTivo.enabled': BooleanField(app, 'USE_PYTIVO'),
+        'notifiers.pyTivo.host': StringField(app, 'PYTIVO_HOST'),
+        'notifiers.pyTivo.name': StringField(app, 'PYTIVO_TIVO_NAME'),
+        'notifiers.pyTivo.shareName': StringField(app, 'PYTIVO_SHARE_NAME'),
+
+        'notifiers.growl.enabled': BooleanField(app, 'USE_GROWL'),
+        'notifiers.growl.host': StringField(app, 'GROWL_HOST'),
+        'notifiers.growl.password': StringField(app, 'GROWL_PASSWORD'),
+        'notifiers.growl.notifyOnSnatch': BooleanField(app, 'GROWL_NOTIFY_ONSNATCH'),
+        'notifiers.growl.notifyOnDownload': BooleanField(app, 'GROWL_NOTIFY_ONDOWNLOAD'),
+        'notifiers.growl.notifyOnSubtitleDownload': BooleanField(app, 'GROWL_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.prowl.enabled': BooleanField(app, 'USE_PROWL'),
+        'notifiers.prowl.api': ListField(app, 'PROWL_API'),
+        'notifiers.prowl.messageTitle': StringField(app, 'PROWL_MESSAGE_TITLE'),
+        'notifiers.prowl.priority': IntegerField(app, 'PROWL_PRIORITY'),
+        'notifiers.prowl.notifyOnSnatch': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSNATCH'),
+        'notifiers.prowl.notifyOnDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONDOWNLOAD'),
+        'notifiers.prowl.notifyOnSubtitleDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.libnotify.enabled': BooleanField(app, 'USE_LIBNOTIFY'),
+        'notifiers.libnotify.notifyOnSnatch': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSNATCH'),
+        'notifiers.libnotify.notifyOnDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONDOWNLOAD'),
+        'notifiers.libnotify.notifyOnSubtitleDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.pushover.enabled': BooleanField(app, 'USE_PUSHOVER'),
+        'notifiers.pushover.apiKey': StringField(app, 'PUSHOVER_APIKEY'),
+        'notifiers.pushover.userKey': StringField(app, 'PUSHOVER_USERKEY'),
+        'notifiers.pushover.device': ListField(app, 'PUSHOVER_DEVICE'),
+        'notifiers.pushover.sound': StringField(app, 'PUSHOVER_SOUND'),
+        'notifiers.pushover.notifyOnSnatch': BooleanField(app, 'PUSHOVER_NOTIFY_ONSNATCH'),
+        'notifiers.pushover.notifyOnDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONDOWNLOAD'),
+        'notifiers.pushover.notifyOnSubtitleDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.boxcar2.enabled': BooleanField(app, 'USE_BOXCAR2'),
+        'notifiers.boxcar2.accessToken': StringField(app, 'BOXCAR2_ACCESSTOKEN'),
+        'notifiers.boxcar2.notifyOnSnatch': BooleanField(app, 'BOXCAR2_NOTIFY_ONSNATCH'),
+        'notifiers.boxcar2.notifyOnDownload': BooleanField(app, 'BOXCAR2_NOTIFY_ONDOWNLOAD'),
+        'notifiers.boxcar2.notifyOnSubtitleDownload': BooleanField(app, 'BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.pushalot.enabled': BooleanField(app, 'USE_PUSHALOT'),
+        'notifiers.pushalot.authToken': StringField(app, 'PUSHALOT_AUTHORIZATIONTOKEN'),
+        'notifiers.pushalot.notifyOnSnatch': BooleanField(app, 'PUSHALOT_NOTIFY_ONSNATCH'),
+        'notifiers.pushalot.notifyOnDownload': BooleanField(app, 'PUSHALOT_NOTIFY_ONDOWNLOAD'),
+        'notifiers.pushalot.notifyOnSubtitleDownload': BooleanField(app, 'PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.pushbullet.enabled': BooleanField(app, 'USE_PUSHBULLET'),
+        'notifiers.pushbullet.api': StringField(app, 'PUSHBULLET_API'),
+        'notifiers.pushbullet.device': StringField(app, 'PUSHBULLET_DEVICE'),
+        'notifiers.pushbullet.notifyOnSnatch': BooleanField(app, 'PUSHBULLET_NOTIFY_ONSNATCH'),
+        'notifiers.pushbullet.notifyOnDownload': BooleanField(app, 'PUSHBULLET_NOTIFY_ONDOWNLOAD'),
+        'notifiers.pushbullet.notifyOnSubtitleDownload': BooleanField(app, 'PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.freemobile.enabled': BooleanField(app, 'USE_FREEMOBILE'),
+        'notifiers.freemobile.api': StringField(app, 'FREEMOBILE_APIKEY'),
+        'notifiers.freemobile.id': StringField(app, 'FREEMOBILE_ID'),
+        'notifiers.freemobile.notifyOnSnatch': BooleanField(app, 'FREEMOBILE_NOTIFY_ONSNATCH'),
+        'notifiers.freemobile.notifyOnDownload': BooleanField(app, 'FREEMOBILE_NOTIFY_ONDOWNLOAD'),
+        'notifiers.freemobile.notifyOnSubtitleDownload': BooleanField(app, 'FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.telegram.enabled': BooleanField(app, 'USE_TELEGRAM'),
+        'notifiers.telegram.api': StringField(app, 'TELEGRAM_APIKEY'),
+        'notifiers.telegram.id': StringField(app, 'TELEGRAM_ID'),
+        'notifiers.telegram.notifyOnSnatch': BooleanField(app, 'TELEGRAM_NOTIFY_ONSNATCH'),
+        'notifiers.telegram.notifyOnDownload': BooleanField(app, 'TELEGRAM_NOTIFY_ONDOWNLOAD'),
+        'notifiers.telegram.notifyOnSubtitleDownload': BooleanField(app, 'TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.twitter.enabled': BooleanField(app, 'USE_TWITTER'),
+        'notifiers.twitter.dmto': StringField(app, 'TWITTER_DMTO'),
+        'notifiers.twitter.username': StringField(app, 'TWITTER_USERNAME'),
+        'notifiers.twitter.password': StringField(app, 'TWITTER_PASSWORD'),
+        'notifiers.twitter.prefix': StringField(app, 'TWITTER_PREFIX'),
+        'notifiers.twitter.directMessage': BooleanField(app, 'TWITTER_USEDM'),
+        'notifiers.twitter.notifyOnSnatch': BooleanField(app, 'TWITTER_NOTIFY_ONSNATCH'),
+        'notifiers.twitter.notifyOnDownload': BooleanField(app, 'TWITTER_NOTIFY_ONDOWNLOAD'),
+        'notifiers.twitter.notifyOnSubtitleDownload': BooleanField(app, 'TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.trakt.enabled': BooleanField(app, 'USE_TWITTER'),
+        'notifiers.trakt.pinUrl': StringField(app, 'TRAKT_PIN_URL'),
+        'notifiers.trakt.username': StringField(app, 'TRAKT_USERNAME'),
+        'notifiers.trakt.accessToken': StringField(app, 'TRAKT_ACCESS_TOKEN'),
+        'notifiers.trakt.timeout': IntegerField(app, 'TRAKT_TIMEOUT'),
+        'notifiers.trakt.defaultIndexer': IntegerField(app, 'TRAKT_DEFAULT_INDEXER'),
+        'notifiers.trakt.sync': BooleanField(app, 'TRAKT_SYNC'),
+        'notifiers.trakt.syncRemove': BooleanField(app, 'TRAKT_SYNC_REMOVE'),
+        'notifiers.trakt.syncWatchlist': BooleanField(app, 'TRAKT_SYNC_WATCHLIST'),
+        'notifiers.trakt.methodAdd': IntegerField(app, 'TRAKT_METHOD_ADD'),
+        'notifiers.trakt.removeWatchlist': BooleanField(app, 'TRAKT_REMOVE_WATCHLIST'),
+        'notifiers.trakt.removeSerieslist': BooleanField(app, 'TRAKT_REMOVE_SERIESLIST'),
+        'notifiers.trakt.removeShowFromApplication': BooleanField(app, 'TRAKT_REMOVE_SHOW_FROM_APPLICATION'),
+        'notifiers.trakt.startPaused': BooleanField(app, 'TRAKT_START_PAUSED'),
+        'notifiers.trakt.blacklistName': StringField(app, 'TRAKT_BLACKLIST_NAME'),
+
+        'notifiers.email.enabled': BooleanField(app, 'USE_EMAIL'),
+        'notifiers.email.host': StringField(app, 'EMAIL_HOST'),
+        'notifiers.email.port': StringField(app, 'EMAIL_PORT'),
+        'notifiers.email.from': StringField(app, 'EMAIL_FROM'),
+        'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
+        'notifiers.email.username': StringField(app, 'EMAIL_USER'),
+        'notifiers.email.password': StringField(app, 'TWITTER_USERNAME'),
+        'notifiers.email.adressList': ListField(app, 'EMAIL_LIST'),
+        'notifiers.email.subject': StringField(app, 'EMAIL_SUBJECT'),
+        'notifiers.email.notifyOnSnatch': BooleanField(app, 'EMAIL_NOTIFY_ONSNATCH'),
+        'notifiers.email.notifyOnDownload': BooleanField(app, 'EMAIL_NOTIFY_ONDOWNLOAD'),
+        'notifiers.email.notifyOnSubtitleDownload': BooleanField(app, 'TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.slack.enabled': BooleanField(app, 'USE_SLACK'),
+        'notifiers.slack.webhook': StringField(app, 'SLACK_WEBHOOK'),
+        'notifiers.slack.notifyOnSnatch': BooleanField(app, 'SLACK_NOTIFY_SNATCH'),
+        'notifiers.slack.notifyOnDownload': BooleanField(app, 'SLACK_NOTIFY_DOWNLOAD'),
+        'notifiers.slack.notifyOnSubtitleDownload': BooleanField(app, 'SLACK_NOTIFY_SUBTITLEDOWNLOAD'),
+
     }
 
     def http_get(self, identifier, path_param=None):
@@ -612,7 +777,7 @@ class DataGenerator(object):
         section_data['libnotify']['notifyOnSubtitleDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD)
 
         section_data['pushover'] = NonEmptyDict()
-        section_data['pushover']['enabled'] = bool(app.USE_PROWL)
+        section_data['pushover']['enabled'] = bool(app.USE_PUSHOVER)
         section_data['pushover']['apiKey'] = app.PUSHOVER_APIKEY
         section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
         section_data['pushover']['device'] = app.PUSHOVER_DEVICE
@@ -671,7 +836,7 @@ class DataGenerator(object):
         section_data['twitter']['directMessage'] = bool(app.TWITTER_USEDM)
 
         section_data['trakt'] = NonEmptyDict()
-        section_data['trakt']['enabled'] = bool(app.USE_TWITTER)
+        section_data['trakt']['enabled'] = bool(app.USE_TRAKT)
         section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
         section_data['trakt']['username'] = app.TRAKT_USERNAME
         section_data['trakt']['accessToken'] = app.TRAKT_ACCESS_TOKEN
@@ -695,7 +860,7 @@ class DataGenerator(object):
         section_data['email']['host'] = app.EMAIL_HOST
         section_data['email']['port'] = app.EMAIL_PORT
         section_data['email']['from'] = app.EMAIL_FROM
-        section_data['email']['tls'] = app.EMAIL_TLS
+        section_data['email']['tls'] = bool(app.EMAIL_TLS)
         section_data['email']['username'] = app.EMAIL_USER
         section_data['email']['password'] = app.EMAIL_PASSWORD
         section_data['email']['adressList'] = app.EMAIL_LIST
