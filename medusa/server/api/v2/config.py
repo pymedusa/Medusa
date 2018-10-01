@@ -701,4 +701,11 @@ class DataGenerator(object):
         section_data['email']['adressList'] = app.EMAIL_LIST
         section_data['email']['subject'] = app.EMAIL_SUBJECT
 
+        section_data['slack'] = NonEmptyDict()
+        section_data['slack']['enabled'] = bool(app.USE_SLACK)
+        section_data['slack']['notifyOnSnatch'] = bool(app.SLACK_NOTIFY_SNATCH)
+        section_data['slack']['notifyOnDownload'] = bool(app.SLACK_NOTIFY_DOWNLOAD)
+        section_data['slack']['notifyOnSubtitleDownload'] = bool(app.SLACK_NOTIFY_SUBTITLEDOWNLOAD)
+        section_data['slack']['webhook'] = app.SLACK_WEBHOOK
+
         return section_data

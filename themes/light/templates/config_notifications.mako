@@ -252,6 +252,13 @@ window.app = new Vue({
                     password: null,
                     adressList: null,
                     subject: null
+                },
+                slack: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    webhook: null
                 }
             }
         };
@@ -1888,68 +1895,38 @@ window.app = new Vue({
                             </div>
                         </div>
 
-
-                    <div class="component-group-desc-legacy">
-                        <span class="icon-notifiers-slack" title="Slack"></span>
-                        <h3><app-link href="https://slack.com">Slack</app-link></h3>
-                        <p>Slack is a messaging app for teams.</p>
-                    </div>
-                    <div class="component-group">
-                        <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="use_slack">
-                                    <span class="component-title">Enable</span>
-                                    <span class="component-desc">
-                                        <input type="checkbox" class="enabler" name="use_slack" id="use_slack" ${'checked="checked"' if app.USE_SLACK else ''}/>
-                                        <p>Send Slack notifications?</p>
-                                    </span>
-                                </label>
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <span class="icon-notifiers-slack" title="Slack"></span>
+                                <h3><app-link href="https://slack.com">Slack</app-link></h3>
+                                <p>Slack is a messaging app for teams.</p>
                             </div>
-                            <div id="content_use_slack">
-                                <div class="field-pair">
-                                    <label for="slack_notify_onsnatch">
-                                        <span class="component-title">Notify on snatch</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="slack_notify_onsnatch" id="slack_notify_onsnatch" ${'checked="checked"' if app.SLACK_NOTIFY_SNATCH else ''}/>
-                                            <p>Send a message when a download starts?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="slack_notify_ondownload">
-                                        <span class="component-title">Notify on download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="slack_notify_ondownload" id="slack_notify_ondownload" ${'checked="checked"' if app.SLACK_NOTIFY_DOWNLOAD else ''}/>
-                                            <p>Send a message when a download finishes?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="slack_notify_onsubtitledownload">
-                                        <span class="component-title">Notify on subtitle download</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="slack_notify_onsubtitledownload" id="slack_notify_onsubtitledownload" ${'checked="checked"' if app.SLACK_NOTIFY_SUBTITLEDOWNLOAD else ''}/>
-                                            <p>Send a message when subtitles are downloaded?</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div class="field-pair">
-                                    <label for="slack_webhook">
-                                        <span class="component-title">Slack Incoming Webhook</span>
-                                        <input type="text" name="slack_webhook" id="slack_webhook" value="${app.SLACK_WEBHOOK}" class="form-control input-sm input250"/>
-                                    </label>
-                                    <label>
-                                        <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc">Create an incoming webhook, to communicate with your slack channel.
-                                        <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
-                                    </label>
-                                </div>
-                                <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
-                                <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
-                                <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
-                            </div><!-- /content_use_slack //-->
-                        </fieldset>
-                    </div><!-- /slack component-group //-->
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+                                    <!-- All form components here for slack client -->
+                                    <config-toggle-slider :checked="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()"  @update="notifiers.slack.enabled = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.slack.enabled" id="content-use-slack-client"> <!-- show based on notifiers.slack.enabled -->
+    
+                                        <config-toggle-slider :checked="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.slack.notifyOnSnatch = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.slack.notifyOnDownload" label="Notify on download" id="slack_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.slack.notifyOnDownload = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.slack.notifyOnSubtitleDownload" label="Notify on subtitle download" id="slack_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.slack.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                        <config-textbox :value="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()"  @update="notifiers.slack.webhook = $event"></config-textbox>
+                                        <div class="form-group">
+                                            <div class="row">
+                                                <!-- bs3 and 4 -->
+                                                <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
+                                                    <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
+                                        <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
+                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes" />
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
 
                 </div><!-- #social //-->
                 <br><input type="submit" class="config_submitter btn-medusa" value="Save Changes" /><br>

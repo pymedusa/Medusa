@@ -188,6 +188,13 @@ const state = {
         password: null,
         adressList: null,
         subject: null
+    },
+    slack: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        webhook: null
     }
 };
 
