@@ -557,26 +557,26 @@ class DataGenerator(object):
         section_data = NonEmptyDict()
 
         section_data['general'] = NonEmptyDict()
-        section_data['general']['randomizeProviders'] = app.RANDOMIZE_PROVIDERS
-        section_data['general']['downloadPropers'] = app.DOWNLOAD_PROPERS
-        section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
-        section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
-        section_data['general']['propersSearchDays'] = app.PROPERS_SEARCH_DAYS
-        section_data['general']['backlogDays'] = app.BACKLOG_DAYS
-        section_data['general']['backlogFrequency'] = app.BACKLOG_FREQUENCY
-        section_data['general']['minBacklogFrequency'] = app.MIN_BACKLOG_FREQUENCY
-        section_data['general']['dailySearchFrequency'] = app.DAILYSEARCH_FREQUENCY
-        section_data['general']['minDailySearchFrequency'] = app.MIN_DAILYSEARCH_FREQUENCY
-        section_data['general']['removeFromClient'] = app.REMOVE_FROM_CLIENT
-        section_data['general']['torrentCheckerFrequency'] = app.TORRENT_CHECKER_FREQUENCY
-        section_data['general']['minTorrentCheckerFrequency'] = app.MIN_TORRENT_CHECKER_FREQUENCY
-        section_data['general']['usenetRetention'] = app.USENET_RETENTION
+        section_data['general']['randomizeProviders'] = bool(app.RANDOMIZE_PROVIDERS)
+        section_data['general']['downloadPropers'] = bool(app.DOWNLOAD_PROPERS)
+        section_data['general']['checkPropersInterval'] = int(app.CHECK_PROPERS_INTERVAL)
+        section_data['general']['propersIntervalLabels'] = int(app.PROPERS_INTERVAL_LABELS)
+        section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
+        section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
+        section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
+        section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
+        section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
+        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
+        section_data['general']['torrentCheckerFrequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
-        section_data['general']['allowHighPriority'] = app.ALLOW_HIGH_PRIORITY
-        section_data['general']['useFailedDownloads'] = app.USE_FAILED_DOWNLOADS
-        section_data['general']['deleteFailed'] = app.DELETE_FAILED
-        section_data['general']['cacheTrimming'] = app.CACHE_TRIMMING
-        section_data['general']['maxCacheAge'] = app.MAX_CACHE_AGE
+        section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
+        section_data['general']['useFailedDownloads'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['general']['deleteFailed'] = bool(app.DELETE_FAILED)
+        section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
+        section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
 
         section_data['filters'] = NonEmptyDict()
         section_data['filters']['ignored'] = app.IGNORE_WORDS
@@ -584,6 +584,6 @@ class DataGenerator(object):
         section_data['filters']['preferred'] = app.PREFERRED_WORDS
         section_data['filters']['required'] = app.REQUIRE_WORDS
         section_data['filters']['ignoredSubsList'] = app.IGNORED_SUBS_LIST
-        section_data['filters']['ignoreUnknownSubs'] = app.IGNORE_UND_SUBS
+        section_data['filters']['ignoreUnknownSubs'] = bool(app.IGNORE_UND_SUBS)
 
         return section_data

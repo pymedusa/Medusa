@@ -1478,6 +1478,111 @@ definitions:
                 type: string
               multiEpStrings:
                 type: object
+          search:
+            type: object
+            properties:
+              general:
+                type: object
+                properties:
+                  randomizeProviders:
+                    type: boolean
+                  downloadPropers:
+                    type: boolean
+                  checkPropersInterval:
+                    type: integer
+                  propersIntervalLabels:
+                    type: integer
+                  propersSearchDays:
+                    type: integer
+                  backlogDays:
+                    type: integer
+                  backlogFrequency:
+                    type: integer
+                  minBacklogFrequency:
+                    type: integer
+                  dailySearchFrequency:
+                    type: integer
+                  minDailySearchFrequency:
+                    type: integer
+                  removeFromClient:
+                    type: boolean
+                  torrentCheckerFrequency:
+                    type: integer
+                  minTorrentCheckerFrequency:
+                    type: integer
+                  usenetRetention:
+                    type: integer
+                  trackersList:
+                    type: array
+                  allowHighPriority:
+                    type: boolean
+                  useFailedDownloads:
+                    type: boolean
+                  deleteFailed:
+                    type: boolean
+                  cacheTrimming:
+                    type: boolean
+                  maxCacheAge:
+                    type: integer
+              filters:
+                type: object
+                properties:
+                  ignored:
+                    type: array
+                  undesired:
+                    type: array
+                  preferred:
+                    type: array
+                  required:
+                    type: array
+                  ignoredSubsList:
+                    type: array
+                  ignoreUnknownSubs:
+                    type: boolean
+              showDownloadDir:
+                type: string
+              processAutomatically:
+                type: boolean
+              postponeIfSyncFiles:
+                type: boolean
+              postponeIfNoSubs:
+                type: boolean
+              renameEpisodes:
+                type: boolean
+              createMissingShowDirs:
+                type: boolean
+              addShowsWithoutDir:
+                type: boolean
+              moveAssociatedFiles:
+                type: boolean
+              nfoRename:
+                type: boolean
+              airdateEpisodes:
+                type: boolean
+              unpack:
+                type: boolean
+              deleteRarContent:
+                type: boolean
+              noDelete:
+                type: boolean
+              processMethod:
+                type: string
+              reflinkAvailable:
+                type: boolean
+              autoPostprocessorFrequency:
+                type: integer
+              syncFiles:
+                type: array
+              fileTimestampTimezone:
+                type: string
+              allowedExtensions:
+                type: array
+              extraScripts:
+                type: array
+              extraScriptsUrl:
+                type: string
+              multiEpStrings:
+                type: object
 
   Log:
     type: object
