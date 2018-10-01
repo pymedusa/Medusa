@@ -1490,9 +1490,7 @@ definitions:
                   downloadPropers:
                     type: boolean
                   checkPropersInterval:
-                    type: integer
-                  propersIntervalLabels:
-                    type: integer
+                    type: string
                   propersSearchDays:
                     type: integer
                   backlogDays:

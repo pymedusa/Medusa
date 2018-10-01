@@ -166,8 +166,8 @@ class ConfigHandler(BaseRequestHandler):
 
         'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
         'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
-        'search.general.checkPropersInterval': IntegerField(app, 'CHECK_PROPERS_INTERVAL'),
-        'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
+        'search.general.checkPropersInterval': StringField(app, 'CHECK_PROPERS_INTERVAL'),
+        # 'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
         'search.general.propersSearchDays': IntegerField(app, 'PROPERS_SEARCH_DAYS'),
         'search.general.backlogDays': IntegerField(app, 'BACKLOG_DAYS'),
         'search.general.backlogFrequency': IntegerField(app, 'BACKLOG_FREQUENCY'),
@@ -584,8 +584,10 @@ class DataGenerator(object):
         section_data['general'] = NonEmptyDict()
         section_data['general']['randomizeProviders'] = bool(app.RANDOMIZE_PROVIDERS)
         section_data['general']['downloadPropers'] = bool(app.DOWNLOAD_PROPERS)
-        section_data['general']['checkPropersInterval'] = int(app.CHECK_PROPERS_INTERVAL)
-        section_data['general']['propersIntervalLabels'] = int(app.PROPERS_INTERVAL_LABELS)
+        section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
+        # This can be moved to the frontend. No need to keep in config. The selected option is stored in CHECK_PROPERS_INTERVAL.
+        # {u'45m': u'45 mins', u'15m': u'15 mins', u'4h': u'4 hours', u'daily': u'24 hours', u'90m': u'90 mins'}
+        # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
         section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
         section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
         section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
