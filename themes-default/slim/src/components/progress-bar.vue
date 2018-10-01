@@ -1,6 +1,7 @@
 <template>
-    <div v-bind="{ title }" class="progressbar hidden-print">
+    <div v-bind="{ title }" class="progressbar hidden-print ui-progressbar ui-corner-all ui-widget ui-widget-content" role="progressbar">
         <div v-if="text" class="progressbarText">{{ text }}</div>
+        <div v-show="normalisedPercentage >= 1" :class="['ui-progressbar-value', 'ui-corner-left', 'ui-widget-header', 'progress-' + normalisedPercentage]" :style="{ width: `${percentage}%` }"></div>
     </div>
 </template>
 <script>
@@ -11,16 +12,10 @@ export default {
         percentage: [String, Number]
     },
     computed: {
-        classToAdd() {
+        normalisedPercentage() {
             const percentage = Number(this.percentage);
             return percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
         }
-    },
-    mounted() {
-        $(this.$el).progressbar({
-            value: this.percentage
-        });
-        $(this.$el).find('.ui-progressbar-value').addClass('progress-' + this.classToAdd);
     }
 }
 </script>

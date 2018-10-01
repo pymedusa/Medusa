@@ -1,17 +1,16 @@
 <script>
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
-import pretty from 'pretty-bytes';
 import { api } from '../api';
 import AppLink from './app-link.vue';
-import ProgressBar from './progress-bar.vue';
+import ShowList from './show-list';
 
 export default {
     name: 'home',
     template: '#home-template',
     components: {
         AppLink,
-        ProgressBar
+        ShowList
     },
     computed: {
         ...mapState([
@@ -28,11 +27,7 @@ export default {
                 $store.dispatch('setLayout', { page, layout });
             }
         },
-        shows() {
-            return this.$store.state.shows.shows;
-        },
         showLists() {
-            const { shows, config } = this;
             if (this.$store.state.stats.stats.length === 0) {
                 return;
             }
@@ -92,38 +87,16 @@ export default {
             };
 
             // This is the final show object
+            const { state } = this.$store;
+            const { config } = state;
+            const { shows } = state.shows;
+
             return config.animeSplitHome ? {
                 anime: shows.filter(show => show.config.anime).map(toShowObject),
                 series: shows.filter(show => !show.config.anime)
             } : {
                 series: shows.map(toShowObject)
             }
-        },
-        stats() {
-            const { stats } = this.$store.state.stats;
-
-            // Return nulls so we don't get undefined issues
-            if (stats.length === 0) {
-                return () => ({
-                    seriesId: null,
-                    epTotal: null,
-                    seriesSize: null,
-                    epAirsPrev: null,
-                    epSnatched: null,
-                    epDownloaded: null,
-                    epAirsNext: null,
-                    indexerId: null,
-                });
-            }
-
-            return (indexer, id) => stats.find(({ indexerId, seriesId }) => {
-                return {
-                    tvdb: 1
-                }[indexer] === indexerId && Number(id) === seriesId
-            });
-        },
-        prettyBytes() {
-            return bytes => pretty(bytes);
         }
     },
     methods: {

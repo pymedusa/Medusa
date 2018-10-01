@@ -109,6 +109,7 @@ export default {
             return this.makeQualitySet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
         },
         pill() {
+            // @TODO: Make this work with allowed and preferred lists
             let { quality } = this;
 
             // If allowed and preferred qualities are the same, show pill as allowed quality
@@ -193,7 +194,7 @@ export default {
          * Split a combined quality to allowed and preferred qualities.
          * Converted Python method from `medusa.common.Quality.split_quality`.
          *
-         * @param {number} quality - The combined quality to split
+         * @param {Number} quality - The combined quality to split
          * @returns {Quality} - The split quality
          */
         splitQuality(quality) {
@@ -219,9 +220,9 @@ export default {
          * Assumption: Each array contains unique items only.
          * Source: https://stackoverflow.com/a/48211214/7597273
          *
-         * @param {(number[]|string[])} set1 - Array to be compared against `set2`.
-         * @param {(number[]|string[])} set2 - Array to compare `set1` against.
-         * @returns {boolean} - Whether or not `set1` is a subset of `set2`
+         * @param {(Number[]|String[])} set1 - Array to be compared against `set2`.
+         * @param {(Number[]|String[])} set2 - Array to compare `set1` against.
+         * @returns {Boolean} - Whether or not `set1` is a subset of `set2`
          */
         isSubsetOf(set1, set2) {
             return set1.every(value => set2.includes(value));
