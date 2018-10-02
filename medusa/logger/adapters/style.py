@@ -7,11 +7,16 @@ from __future__ import unicode_literals
 import collections
 import functools
 import logging
+import traceback
 
 from six import text_type, viewitems
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
+
+class BraceException(Exception):
+    """Custom exception for BraceMessage."""
 
 
 class BraceMessage(object):
@@ -33,6 +38,7 @@ class BraceMessage(object):
                 kwargs = self.args[0]
 
         try:
+            exc_origin = ''
             try:
                 return self.msg.format(*args, **kwargs)
             except IndexError:
@@ -40,17 +46,19 @@ class BraceMessage(object):
                     return self.msg.format(**kwargs)
                 except KeyError:
                     return self.msg
-            except KeyError:
+            except KeyError as error:
                 try:
                     return self.msg.format(*args)
                 except KeyError:
-                    raise Exception(self.msg)
-            except Exception:
-                raise Exception(self.msg)
+                    exc_origin = traceback.format_exc(error)
+                    raise BraceException(self.msg)
+            except Exception as error:
+                exc_origin = traceback.format_exc(error)
+                raise BraceException(self.msg)
         except Exception:
             log.exception(
                 'BraceMessage string formatting failed. '
-                'Using representation instead.'
+                'Using representation instead.\n{0}'.format(exc_origin)
             )
             return repr(self)
 
