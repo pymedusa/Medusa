@@ -45,7 +45,7 @@ class BraceMessage(object):
                     return self.msg.format(*args)
                 except KeyError:
                     raise Exception(self.msg)
-             except Exception:
+            except Exception:
                 raise Exception(self.msg)
         except Exception:
             log.exception(
