@@ -89,16 +89,18 @@
             <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
-                % for cur_show_list in show_lists:
-                    <li><app-link href="#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
-                % endfor
+                    <li v-for="(shows, listTitle) in showLists" :key="listTitle">
+                        <%text>
+                        <app-link :href="`#${listTitle}TabContent`" :id="`${listTitle}Tab`">{{ listTitle }}</app-link>
+                        </%text>
+                    </li>
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
-                    % if not app.HOME_LAYOUT == 'banner':
+                    % if not app.HOME_LAYOUT in ['banner', 'simple']:
                         <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                     % endif
-                    <template v-if="['banner'].includes(layout)">
+                    <template v-if="['banner', 'simple'].includes(layout)">
                         <div v-for="(shows, listTitle) in showLists" :key="listTitle" :id="listTitle + 'TabContent'">
                             <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
                         </div> <!-- #...TabContent -->
@@ -106,10 +108,10 @@
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
             <template v-else>
-                % if not app.HOME_LAYOUT == 'banner':
+                % if not app.HOME_LAYOUT in ['banner', 'simple']:
                     <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                 % endif
-                <template v-if="['banner'].includes(layout)">
+                <template v-if="['banner', 'simple'].includes(layout)">
                     <show-list v-for="(shows, listTitle) in showLists" :key="listTitle" v-bind="{ listTitle, layout, shows, header: Object.keys(showLists).length > 1, sortArticle: config.sortArticle }"></show-list>
                 </template>
             </template>
