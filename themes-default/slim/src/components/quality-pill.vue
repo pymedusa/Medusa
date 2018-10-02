@@ -4,6 +4,7 @@
 
 <script>
 import { mapState } from 'vuex';
+import { combineQualities } from '../utils';
 
 /**
  * An object representing a split quality.
@@ -109,8 +110,12 @@ export default {
             return this.makeQualitySet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
         },
         pill() {
-            // @TODO: Make this work with allowed and preferred lists
-            let { quality } = this;
+            let { quality, allowed, preferred } = this;
+
+            // Combine allowed & preferred qualities
+            if (allowed && preferred) {
+                quality = combineQualities(allowed, preferred);
+            }
 
             // If allowed and preferred qualities are the same, show pill as allowed quality
             const sumAllowed = (quality & 0xFFFF) >>> 0; // Unsigned int
