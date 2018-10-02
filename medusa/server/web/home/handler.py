@@ -146,28 +146,35 @@ class Home(WebRoot):
                 shows_dir = None
                 app.SELECTED_ROOT = -1
 
-        series = []
-        if app.ANIME_SPLIT_HOME:
-            anime = []
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                if show.is_anime:
-                    anime.append(show)
-                else:
+        if not app.HOME_LAYOUT in ['simple', 'banner']:
+            series = []
+            if app.ANIME_SPLIT_HOME:
+                anime = []
+                for show in app.showList:
+                    if shows_dir and not show._location.startswith(shows_dir):
+                        continue
+                    if show.is_anime:
+                        anime.append(show)
+                    else:
+                        series.append(show)
+
+                show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
+            else:
+                for show in app.showList:
+                    if shows_dir and not show._location.startswith(shows_dir):
+                        continue
                     series.append(show)
+                show_lists = [['Series', series]]
 
-            show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
+            all_stats = self.show_statistics()
+            stats = all_stats[0]
+            max_download_count = all_stats[1]
         else:
-            for show in app.showList:
-                if shows_dir and not show._location.startswith(shows_dir):
-                    continue
-                series.append(show)
-            show_lists = [['Series', series]]
-
-        stats = self.show_statistics()
-        return t.render(show_lists=show_lists, show_stat=stats[0],
-                        max_download_count=stats[1], controller='home', action='index')
+            show_lists = []
+            stats = []
+            max_download_count = 0
+        return t.render(show_lists=show_lists, show_stat=stats,
+                        max_download_count=max_download_count, controller='home', action='index')
 
     @staticmethod
     def show_statistics():
