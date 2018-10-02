@@ -95,11 +95,23 @@
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
-                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % if not app.HOME_LAYOUT == 'banner':
+                        <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % endif
+                    <template v-if="['banner'].includes(layout)">
+                        <div v-for="(shows, listTitle) in showLists" :key="listTitle" :id="listTitle + 'TabContent'">
+                            <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
+                        </div> <!-- #...TabContent -->
+                    </template>
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
             <template v-else>
-                <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                % if not app.HOME_LAYOUT == 'banner':
+                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                % endif
+                <template v-if="['banner'].includes(layout)">
+                    <show-list v-for="(shows, listTitle) in showLists" :key="listTitle" v-bind="{ listTitle, layout, shows, header: Object.keys(showLists).length > 1, sortArticle: config.sortArticle }"></show-list>
+                </template>
             </template>
         </div>
     </div>

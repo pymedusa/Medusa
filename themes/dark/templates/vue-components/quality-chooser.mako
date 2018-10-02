@@ -85,7 +85,7 @@ const QualityChooserComponent = {
         },
         keep: {
             type: String,
-            default: null,
+            default: '',
             validator(value) {
                 return ['keep', 'show'].includes(value);
             }
@@ -207,7 +207,7 @@ const QualityChooserComponent = {
             // If preset is custom set to last preset
             if (parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset))) preset = oldPreset;
 
-            // Convert values to unsigned int, and filter selected/prefrred qualities
+            // Convert values to unsigned int, and filter selected/preferred qualities
             this.allowedQualities = Object.keys(this.qualityStrings)
                 .map(quality => parseInt(quality, 10))
                 .filter(quality => ( (preset & quality) >>> 0 ) > 0);
