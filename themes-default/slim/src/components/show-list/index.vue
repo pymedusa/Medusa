@@ -1,7 +1,8 @@
 <template>
     <div>
         <h1 v-if="header" class="header">{{ listTitle }}</h1>
-        <component :is="layout" v-bind="$props" />
+        <component v-if="shows.length >= 1" :is="layout" v-bind="$props" />
+        <span v-else>No shows were found for this list type.</span>
     </div>
 </template>
 <script>

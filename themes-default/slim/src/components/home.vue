@@ -89,13 +89,13 @@ export default {
             // This is the final show object
             const { state } = this.$store;
             const { config } = state;
-            const { shows } = state.shows;
+            const shows = state.shows.shows.map(toShowObject);
 
             return config.animeSplitHome ? {
-                anime: shows.filter(show => show.config.anime).map(toShowObject),
+                anime: shows.filter(show => show.config.anime),
                 series: shows.filter(show => !show.config.anime)
             } : {
-                series: shows.map(toShowObject)
+                series: shows
             }
         }
     },
