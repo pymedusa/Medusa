@@ -1308,8 +1308,8 @@ def get_size(start_path='.'):
 def generate_api_key():
     """Return a new randomized API_KEY."""
     log.info(u'Generating New API key')
-    secure_hash = hashlib.sha512(str(time.time()))
-    secure_hash.update(str(random.SystemRandom().getrandbits(4096)))
+    secure_hash = hashlib.sha512(str(time.time()).encode('utf-8'))
+    secure_hash.update(str(random.SystemRandom().getrandbits(4096)).encode('utf-8'))
     return secure_hash.hexdigest()[:32]
 
 
