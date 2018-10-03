@@ -22,7 +22,7 @@ from tornroutes import route
 log = logging.getLogger(__name__)
 
 log_name_filters = {
-    None: html_escape('<No Filter>'),
+    '': html_escape('<No Filter>'),
     'DAILYSEARCHER': 'Daily Searcher',
     'BACKLOG': 'Backlog',
     'SHOWUPDATER': 'Show Updater',
