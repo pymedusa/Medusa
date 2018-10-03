@@ -80,7 +80,9 @@ def rebuild_censored_list():
     for value in itervalues(censored_items):
         if not value:
             continue
-        if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
+
+        if isinstance(value, collections.Iterable) and not isinstance(
+                value, (string_types, bytes, bytearray)):
             for item in value:
                 if item and item != '0':
                     results.add(item)
