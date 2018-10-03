@@ -56,7 +56,7 @@ def refine(video, tv_episode=None, **kwargs):
         return
 
     if not isinstance(video, Episode):
-        log.debug('Video {name} is not an episode. Skipping refiner...',
+        log.debug('Video {name!r} is not an episode. Skipping refiner...',
                   {'name': video.name})
         return
 
@@ -92,5 +92,5 @@ def enrich(attributes, target, source=None, overwrite=True):
 
         if new_value and old_value != new_value:
             setattr(target, key, new_value)
-            log.debug('Attribute {key} changed from {old} to {new}',
+            log.debug('Attribute {key} changed from {old!r} to {new!r}',
                       {'key': key, 'old': old_value, 'new': new_value})
