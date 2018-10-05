@@ -16,6 +16,20 @@ window.app = new Vue({
             currentPid: '${sbPID}'
         };
     },
+    computed: {
+        restartState() {
+            const { status } = this;
+            if (status !== 'restarted') {
+                return 'loading';
+            }
+            if (status === 'restarted') {
+                return 'yes';
+            }
+            if (status === 'failed') {
+                return 'no';
+            }
+        }
+    },
     mounted() {
         const { defaultPage, currentPid } = this;
         const { apiRoute } = window;
@@ -58,9 +72,7 @@ window.app = new Vue({
     </div>
     <div id="restart_message" v-if="status === 'initializing' || status === 'restarted'">
         Waiting for Medusa to start again:
-        <state-switch v-if="status !== 'restarted'" state="loading"></state-switch>
-        <state-switch v-if="status === 'restarted'" state="yes"></state-switch>
-        <state-switch v-if="status === 'failed'" state="no"></state-switch>
+        <state-switch v-if="restartState" :state="restartState"></state-switch>
     </div>
     <div id="refresh_message" v-if="status === 'restarted'">
         Loading the default page: <state-switch state="loading"></state-switch>
