@@ -358,7 +358,8 @@ class Application(object):
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
                 'Your system is using an invalid encoding: {encoding}. Please change your encoding '
-                'as soon as possible or you could encounter unexpected issues.', encoding=app.SYS_ENCODING)
+                'as soon as possible or you could encounter unexpected issues.', encoding=app.SYS_ENCODING
+            )
             app.SYS_ENCODING = 'utf-8'
 
         self.clear_cache()
