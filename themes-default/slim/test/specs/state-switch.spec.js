@@ -1,61 +1,41 @@
 import test from 'ava';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue } from '@vue/test-utils';
 import { StateSwitch } from '../../src/components';
+import { generatePropTest } from '../helpers/generators';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
 });
 
+const stateTestCase = generatePropTest(StateSwitch);
+
 test('renders', t => {
-    const { localVue } = t.context;
+    stateTestCase(t, 'loading with `null`', {
+        state: null
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: null
-        }
-    }).html(), 'loading with `null`');
+    stateTestCase(t, 'loading with string', {
+        state: 'loading'
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: 'loading'
-        }
-    }).html(), 'loading with string');
+    stateTestCase(t, 'loading with `theme` prop', {
+        theme: 'light',
+        state: 'loading'
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            theme: 'light',
-            state: 'loading'
-        }
-    }).html(), 'loading with `theme` prop');
+    stateTestCase(t, 'yes with `true`', {
+        state: true
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: true
-        }
-    }).html(), 'yes with `true`');
+    stateTestCase(t, 'yes with string', {
+        state: 'yes'
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: 'yes'
-        }
-    }).html(), 'yes with string');
+    stateTestCase(t, 'no with `false`', {
+        state: false
+    });
 
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: false
-        }
-    }).html(), 'no with `false`');
-
-    t.snapshot(mount(StateSwitch, {
-        localVue,
-        propsData: {
-            state: 'no'
-        }
-    }).html(), 'no with string');
+    stateTestCase(t, 'no with string', {
+        state: 'no'
+    });
 });
