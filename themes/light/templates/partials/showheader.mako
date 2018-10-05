@@ -1,14 +1,13 @@
 <%!
+    import json
     import operator
+
     from medusa import app, helpers, subtitles, network_timezones
     from medusa.common import SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
 %>
-
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <div class="row">
     ## @TODO: Remove data attributes
     ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436
@@ -146,13 +145,24 @@
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
-                                ${renderQualityPill(show.quality)}
+                                <quality-pill :quality="${show.quality}"></quality-pill>
                             % else:
                                 % if allowed_qualities:
-                                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                    <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
+                                    <i>Allowed:</i>
+                                    <template v-for="(curQuality, $index) in ${allowed_as_json}">
+                                        <template v-if="$index > 0">&comma;</template>
+                                        <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
+                                    </template>
+                                    ${'<br>' if preferred_qualities else ''}
                                 % endif
                                 % if preferred_qualities:
-                                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                    <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
+                                    <i>Preferred:</i>
+                                    <template v-for="(curQuality, $index) in ${preferred_as_json}">
+                                        <template v-if="$index > 0">&comma;</template>
+                                        <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
+                                    </template>
                                 % endif
                             % endif
                                 </td></tr>

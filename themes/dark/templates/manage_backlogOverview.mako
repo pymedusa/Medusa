@@ -1,5 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
+
     from medusa import app
     from medusa import sbdatetime
     from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
@@ -155,8 +157,6 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <div class="row">
 <div id="content-col" class="col-md-12">
     <div class="col-md-12">
@@ -229,7 +229,7 @@ window.app = new Vue({
                             <div class="col-md-6 left-30">
                                 <h3 style="display: inline;"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></h3>
                                  % if cur_show.quality in qualityPresets:
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;<quality-pill :quality="${cur_show.quality}"></quality-pill>
                                  % endif
                             </div>
                             <div class="col-md-6 pull-right right-30">
@@ -254,12 +254,21 @@ window.app = new Vue({
                         <div class="col-md-12 left-30">
                         % if allowed_qualities:
                             <div class="col-md-12 align-left">
-                               <i>Allowed:</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
+                                <i>Allowed:</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <template v-for="curQuality in ${allowed_as_json}">
+                                    &nbsp;<quality-pill :quality="curQuality" :key="'${cur_show.indexer_name}${cur_show.series_id}-allowed-' + curQuality"></quality-pill>
+                                </template>
+                                ${'<br>' if preferred_qualities else ''}
                             </div>
                         % endif
                         % if preferred_qualities:
                             <div class="col-md-12 align-left">
-                               <i>Preferred:</i>&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
+                                <i>Preferred:</i>&nbsp;&nbsp;
+                                <template v-for="curQuality in ${preferred_as_json}">
+                                    &nbsp;<quality-pill :quality="curQuality" :key="'${cur_show.indexer_name}${cur_show.series_id}-preferred-' + curQuality"></quality-pill>
+                                </template>
                            </div>
                         % endif
                         </div>
@@ -282,7 +291,7 @@ window.app = new Vue({
                         <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
                             % if old_quality != Quality.NA:
-                                ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                                ${statusStrings[old_status]} <quality-pill :quality="${old_quality}"></quality-pill>
                             % else:
                                 ${statusStrings[old_status]}
                             % endif

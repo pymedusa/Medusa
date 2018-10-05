@@ -1,7 +1,10 @@
+/* eslint-disable import/no-unassigned-import */
 import $ from 'jquery';
-import 'bootstrap'; // eslint-disable-line import/no-unassigned-import
-import 'bootstrap/dist/css/bootstrap.min.css'; // eslint-disable-line import/no-unassigned-import
-import '../vendor/css/open-sans.css'; // eslint-disable-line import/no-unassigned-import
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../vendor/js/tablesorter';
+import '../vendor/css/open-sans.css';
+/* eslint-enable import/no-unassigned-import */
 
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -31,6 +34,7 @@ import {
     ManualPostProcess,
     NamePattern,
     PlotInfo,
+    QualityPill,
     RootDirs,
     ScrollButtons,
     SelectList,
@@ -88,6 +92,7 @@ if (window) {
     window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
+    window.components.push(QualityPill); // This component is also used in a hack/workaround in `./static/js/ajax-episode-search.js`
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
