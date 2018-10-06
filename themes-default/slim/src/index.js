@@ -28,7 +28,6 @@ import {
     AppLink,
     Asset,
     Backstretch,
-    DisplayShow,
     FileBrowser,
     Home,
     LanguageSelect,
@@ -39,8 +38,10 @@ import {
     RootDirs,
     ScrollButtons,
     SelectList,
+    Show,
     ShowSelector,
     SnatchSelection,
+    StateSwitch,
     Status
 } from './components';
 
@@ -71,7 +72,6 @@ if (window) {
         common: {},
         config: {},
         home: {},
-        manage: {},
         addShows: {}
     };
     window.webRoot = webRoot;
@@ -86,7 +86,6 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
-    window.components.push(DisplayShow);
     window.components.push(FileBrowser);
     window.components.push(Home);
     window.components.push(LanguageSelect);
@@ -97,8 +96,10 @@ if (window) {
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
+    window.components.push(Show);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
+    window.components.push(StateSwitch);
     window.components.push(Status);
 }
 

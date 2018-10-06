@@ -21,7 +21,7 @@ const homeRoutes = [{
     name: 'editShow'
 }, {
     path: '/home/displayShow',
-    name: 'displayShow'
+    name: 'show'
 }, {
     path: '/home/snatchSelection',
     name: 'snatchSelection'
