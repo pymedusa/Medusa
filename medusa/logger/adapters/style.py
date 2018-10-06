@@ -46,16 +46,19 @@ class BraceMessage(object):
                     return self.msg.format(**kwargs)
                 except KeyError:
                     return self.msg
-            except KeyError as error:
+                except Exception as error:
+                    exc_origin = traceback.format_exc(error)
+            except KeyError:
                 try:
                     return self.msg.format(*args)
-                except KeyError:
+                except Exception as error:
                     exc_origin = traceback.format_exc(error)
-                    raise BraceException(self.msg)
             except Exception as error:
                 exc_origin = traceback.format_exc(error)
-                raise BraceException(self.msg)
-        except Exception:
+            finally:
+                if exc_origin:
+                    raise BraceException(self.msg)
+        except BraceException:
             log.exception(
                 'BraceMessage string formatting failed. '
                 'Using representation instead.\n{0}'.format(exc_origin)
