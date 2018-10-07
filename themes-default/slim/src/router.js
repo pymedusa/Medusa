@@ -65,7 +65,8 @@ const configRoutes = [{
     name: 'config',
     meta: {
         title: 'Help & Info',
-        header: 'Medusa Configuration'
+        header: 'Medusa Configuration',
+        converted: true
     },
     component: Config
 }, {
@@ -132,7 +133,8 @@ const addShowRoutes = [{
     name: 'addShows',
     meta: {
         title: 'Add Shows',
-        header: 'Add Shows'
+        header: 'Add Shows',
+        converted: true
     },
     component: AddShows
 }, {

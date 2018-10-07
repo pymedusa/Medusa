@@ -12,6 +12,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
+import router from '../router';
 
 export default {
     name: 'app-link',
@@ -82,8 +83,12 @@ export default {
             }
             return anonRedirect ? anonRedirect + href : href;
         },
+        matchingVueRoute() {
+            const normalise = str => str ? str.replace(/^\/+|\/+$/g, '') : '';
+            return router.options.routes.find(({ path }) => normalise(path) === normalise(this.href));
+        },
         linkProperties() {
-            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref } = this;
+            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref, matchingVueRoute } = this;
             const base = this.computedBase;
             const href = this.computedHref;
 
@@ -109,6 +114,16 @@ export default {
                     is: 'a',
                     // Only tag this as a "false-link" if we passed a name in the props
                     falseLink: Boolean(this.$attrs.name) || undefined
+                };
+            }
+
+            // If current page and next page are both vue routes return router-link
+            if (matchingVueRoute && this.$route && matchingVueRoute.meta.converted && this.$route.meta.converted) {
+                return {
+                    is: 'router-link',
+                    to: {
+                        name: matchingVueRoute.name
+                    }
                 };
             }
 
