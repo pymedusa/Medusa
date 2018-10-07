@@ -119,12 +119,15 @@ export default {
 
             // If current page and next page are both vue routes return router-link
             if (matchingVueRoute && this.$route && matchingVueRoute.meta.converted && this.$route.meta.converted) {
-                return {
-                    is: 'router-link',
-                    to: {
-                        name: matchingVueRoute.name
-                    }
-                };
+                // Allows us to skip when we're in a test
+                if (window.loadMainApp) {
+                    return {
+                        is: 'router-link',
+                        to: {
+                            name: matchingVueRoute.name
+                        }
+                    };
+                }
             }
 
             return {
