@@ -54,7 +54,7 @@
             % endif
                 Load time: <span class="footerhighlight">${"%.4f" % (time() - sbStartTime)}s</span> / Mako: <span class="footerhighlight">${"%.4f" % (time() - makoStartTime)}s</span> |
                 Branch: <span class="footerhighlight">${BRANCH}</span> |
-                Now: <span class="footerhighlight">${datetime.now().strftime(DATE_PRESET+" "+TIME_PRESET).decode(SYS_ENCODING)}</span>
+                Now: <span class="footerhighlight">${datetime.now().strftime(DATE_PRESET+" "+TIME_PRESET)}</span>
             </div>
         </div>
     </footer>
