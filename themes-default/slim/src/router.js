@@ -1,13 +1,11 @@
 import VueRouter from 'vue-router';
-import {
-    AddRecommended,
-    AddShows,
-    Config,
-    ConfigPostProcessing,
-    IRC,
-    Login,
-    NotFound
-} from './components';
+import AddRecommended from './components/add-recommended.vue';
+import AddShows from './components/add-shows.vue';
+import Config from './components/config.vue';
+import ConfigPostProcessing from './components/config-post-processing.vue';
+import IRC from './components/irc.vue';
+import Login from './components/login.vue';
+import NotFound from './components/http/404.vue';
 
 const homeRoutes = [{
     path: '/home',
