@@ -11,8 +11,7 @@ from base64 import b16encode, b32decode
 from os.path import join
 from random import shuffle
 
-import bencode
-from bencode.BTL import BTFailure
+from bencode import BencodeDecodeError, bdecode
 
 from feedparser.util import FeedParserDict
 
@@ -117,11 +116,12 @@ class TorrentProvider(GenericProvider):
 
         try:
             with open(file_name, 'rb') as f:
-                meta_info = bencode.bdecode(f.read())
+                # `bencode.bdecode` is monkeypatched in `medusa.init`
+                meta_info = bdecode(f.read(), allow_extra_data=True)
             return 'info' in meta_info and meta_info['info']
-        except BTFailure as e:
+        except BencodeDecodeError as error:
             log.debug('Failed to validate torrent file: {name}. Error: {error}',
-                      {'name': file_name, 'error': e})
+                      {'name': file_name, 'error': error})
 
         remove_file_failed(file_name)
         log.debug('{result} is not a valid torrent file',

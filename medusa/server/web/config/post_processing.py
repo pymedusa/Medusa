@@ -178,7 +178,7 @@ class ConfigPostProcessing(Config):
             - Simulating in memory rar extraction on test.rar file
         """
         try:
-            rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
+            rar_path = os.path.join(app.PROG_DIR, app.LIB_FOLDER, 'unrar2', 'test.rar')
             testing = RarFile(rar_path).read_files('*test.txt')
             if testing[0][1] == b'This is only a test.':
                 return 'supported'

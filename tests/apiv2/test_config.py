@@ -78,6 +78,15 @@ def config_main(monkeypatch, app_config):
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     config_data['recentShows'] = app.SHOWS_RECENT
 
+    config_data['showDefaults'] = {}
+    config_data['showDefaults']['status'] = app.STATUS_DEFAULT
+    config_data['showDefaults']['statusAfter'] = app.STATUS_DEFAULT_AFTER
+    config_data['showDefaults']['quality'] = app.QUALITY_DEFAULT
+    config_data['showDefaults']['subtitles'] = bool(app.SUBTITLES_DEFAULT)
+    config_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
+    config_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
+    config_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
+
     config_data['news'] = NonEmptyDict()
     config_data['news']['lastRead'] = app.NEWS_LAST_READ
     config_data['news']['latest'] = app.NEWS_LATEST

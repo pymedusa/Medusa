@@ -95,8 +95,11 @@ export default {
                     id: this.index,
                     toggled: false, memberOf: list
                 }, release);
-                this.allReleaseGroups.push(itemAsObject);
-                this.index += 1; // Increment the counter for our next item.
+
+                if (this.allReleaseGroups.filter(group => group.name === itemAsObject.name && group.memberOf === list).length === 0) {
+                    this.allReleaseGroups.push(itemAsObject);
+                    this.index += 1; // Increment the counter for our next item.
+                }
             }
         },
         moveToList(list) {
@@ -159,6 +162,11 @@ export default {
                 this.$emit('change', this.allReleaseGroups);
             },
             deep: true
+        },
+        allGroups: {
+            handler(newValue) {
+                this.createIndexedObjects(newValue, 'releasegroups');
+            }
         }
     }
 };
