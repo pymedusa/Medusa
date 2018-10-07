@@ -4,6 +4,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -16,7 +18,8 @@ window.app = new Vue({
             currentPid: '${sbPID}'
         };
     },
-    computed: {
+    // @TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         restartState() {
             const { status } = this;
             if (status !== 'restarted') {
@@ -29,7 +32,7 @@ window.app = new Vue({
                 return 'no';
             }
         }
-    },
+    }),
     mounted() {
         const { defaultPage, currentPid } = this;
         const { apiRoute } = window;
@@ -68,14 +71,14 @@ window.app = new Vue({
 <div>
     <div id="shut_down_message">
         Waiting for Medusa to shut down:
-        <state-switch :state="status === 'shutting_down' ? 'loading' : 'yes'"></state-switch>
+        <state-switch :theme="config.themeName" :state="status === 'shutting_down' ? 'loading' : 'yes'"></state-switch>
     </div>
     <div id="restart_message" v-if="status === 'initializing' || status === 'restarted'">
         Waiting for Medusa to start again:
-        <state-switch v-if="restartState" :state="restartState"></state-switch>
+        <state-switch v-if="restartState" :theme="config.themeName" :state="restartState"></state-switch>
     </div>
     <div id="refresh_message" v-if="status === 'restarted'">
-        Loading the default page: <state-switch state="loading"></state-switch>
+        Loading the default page: <state-switch :theme="config.themeName" state="loading"></state-switch>
     </div>
     <div id="restart_fail_message" v-if="status === 'failed'">
         Error: The restart has timed out, perhaps something prevented Medusa from starting again?

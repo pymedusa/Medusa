@@ -18,7 +18,7 @@ window.app = new Vue({
             const series = indexerId + '-' + seriesId;
 
             row += '<tr class="good show-' + series + '">';
-            row += '<td align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' + season + 'x' + episode + '"' + (checked ? ' checked' : '') + '></td>';
+            row += '<td align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-' 's' + season + 'e' + episode + '"' + (checked ? ' checked' : '') + '></td>';
             row += '<td style="width: 2%;">' + season + 'x' + episode + '</td>';
             if (subtitles.length > 0) {
                 row += '<td style="width: 8%;">';
