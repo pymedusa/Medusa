@@ -153,7 +153,7 @@ const addShowRoutes = [{
     path: '/addShows/trendingShows',
     name: 'addTrendingShows'
 }, {
-    path: 'popularShows',
+    path: '/addShows/popularShows',
     name: 'addPopularShows',
     meta: {
         title: 'Popular Shows',
