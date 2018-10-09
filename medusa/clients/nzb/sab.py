@@ -79,8 +79,8 @@ def send_nzb_get(params, nzb):
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}', data)
         result, text = _check_sab_response(data)
+        log.debug('Result text from SAB: {0}', text)
         del text
         return result
 
@@ -112,8 +112,8 @@ def send_nzb_post(params, nzb):
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}', data)
         result, text = _check_sab_response(data)
+        log.debug('Result text from SAB: {0}', text)
         del text
         return result
 

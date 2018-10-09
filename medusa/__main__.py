@@ -214,12 +214,7 @@ class Application(object):
         app.PROG_DIR = os.path.dirname(app.MY_FULLNAME)
         app.DATA_DIR = app.PROG_DIR
         app.MY_ARGS = args
-
         app.SYS_ENCODING = sys.getfilesystemencoding()
-        if not is_valid_encoding(app.SYS_ENCODING):
-            logger.warning('Your system is using an invalid encoding: {enc}. Please change your encoding '
-                           'as soon as possible or you could encounter unexpected issues.', enc=app.SYS_ENCODING)
-            app.SYS_ENCODING = 'utf-8'
 
         self.console_logging = (not hasattr(sys, 'frozen')) or (app.MY_NAME.lower().find('-console') > 0)
 
@@ -359,6 +354,13 @@ class Application(object):
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
+
+        if not is_valid_encoding(app.SYS_ENCODING):
+            logger.warning(
+                'Your system is using an invalid encoding: {encoding}. Please change your encoding '
+                'as soon as possible or you could encounter unexpected issues.', encoding=app.SYS_ENCODING
+            )
+            app.SYS_ENCODING = 'utf-8'
 
         self.clear_cache()
         self.migrate_images()
