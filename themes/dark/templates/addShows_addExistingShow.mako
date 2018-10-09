@@ -159,8 +159,13 @@ window.app = new Vue({
             const dirList = this.filteredDirList.filter(dir => dir.selected);
             if (dirList.length === 0) return false;
 
-            const formData = new FormData();
-            formData.append('promptForSettings', this.promptForSettings);
+            const formData = {
+                params: {
+                    prompt_for_settings: this.promptForSettings,
+                    shows_to_add: [],
+                },
+            };
+
             dirList.forEach(dir => {
                 const originalIndexer = dir.metadata.indexer;
                 let seriesId = dir.metadata.seriesId;
@@ -171,12 +176,12 @@ window.app = new Vue({
                 const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
                     .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                formData.params['shows_to_add'].push(seriesToAdd);
             });
 
-            const response = await apiRoute.post('addShows/addExistingShows', formData);
+            const response = await api.get('internal/addExistingShows', formData);
             const { data } = response;
-            const { result, message, redirect, params } = data;
+            const { result, message, redirect, show_to_add, other_shows } = data;
 
             if (message) {
                 if (result === false) {
@@ -187,7 +192,7 @@ window.app = new Vue({
             }
             if (redirect) {
                 const baseUrl = apiRoute.defaults.baseURL;
-                if (params.length === 0) {
+                if (show_to_add.length === 0) {
                     window.location.href = baseUrl + redirect;
                     return;
                 }
@@ -197,11 +202,21 @@ window.app = new Vue({
                 form.action = baseUrl + redirect;
                 form.acceptCharset = 'utf-8';
 
-                params.forEach(param => {
+                show_to_add.forEach(param => {
                     const element = document.createElement('input');
-                    [ element.name, element.value ] = param; // Unpack
+                    element.name = 'show_to_add';
+                    element.value = param;
                     form.appendChild(element);
                 });
+
+                if (show_to_add.length > 0) {
+                    other_shows.forEach(param => {
+                        const element = document.createElement('input');
+                        element.name = 'other_shows';
+                        element.value = param;
+                        form.appendChild(element);
+                    });
+                }
 
                 document.body.appendChild(form);
                 form.submit();

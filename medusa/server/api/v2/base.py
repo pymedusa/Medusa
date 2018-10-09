@@ -270,6 +270,10 @@ class BaseRequestHandler(RequestHandler):
     def _multi_status(self, data=None, headers=None):
         return self.api_response(207, data=data, headers=headers)
 
+    def _see_other(self, data=None, location=None):
+        headers = {'Location': location}
+        return self.api_response(303, data=data, headers=headers)
+
     def _bad_request(self, error):
         return self.api_response(400, error=error)
 

@@ -15,6 +15,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import Series, SeriesIdentifier
 
+from requests.compat import unquote_plus
+
 from six import iteritems, itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -53,6 +55,22 @@ class InternalHandler(BaseRequestHandler):
             return self._bad_request('{key} is a invalid resource'.format(key=resource))
 
         return resource_function()
+
+    @staticmethod
+    def split_extra_show(extra_show):
+        if not extra_show:
+            return None, None, None, None
+        split_vals = extra_show.split('|')
+        if len(split_vals) < 4:
+            indexer = split_vals[0]
+            show_dir = split_vals[1]
+            return indexer, show_dir, None, None
+        indexer = split_vals[0]
+        show_dir = split_vals[1]
+        indexer_id = split_vals[2]
+        show_name = '|'.join(split_vals[3:])
+
+        return indexer, show_dir, indexer_id, show_name
 
     # existingSeries
     def resource_existing_series(self):
@@ -121,8 +139,9 @@ class InternalHandler(BaseRequestHandler):
                 cur_dir['alreadyAdded'] = next((True for path in dir_results if path == cur_path), False)
 
                 if not cur_dir['alreadyAdded']:
-                    # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-                    # is reset. This will prevent errors, when using multiple indexers and caching.
+                    # You may only call .values() on metadata_provider_dict!
+                    # As on values() call the indexer_api attribute is reset.
+                    # This will prevent errors, when using multiple indexers and caching.
                     for cur_provider in itervalues(app.metadata_provider_dict):
                         (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
                         if all((series_id, series_name, indexer)):
@@ -241,3 +260,88 @@ class InternalHandler(BaseRequestHandler):
             'languageId': language_id
         }
         return self._ok(data=data)
+
+    # addExistingShows
+    def resource_add_existing_shows(self):
+        """
+        Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
+        along to the newShow page.
+        """
+        print(repr(self.__dict__))
+        shows_to_add = self.get_arguments('shows_to_add[]')
+        prompt_for_settings = self.get_argument('prompt_for_settings', 'false')
+        prompt_for_settings = False
+
+        # grab a list of other shows to add, if provided
+        if not shows_to_add:
+            shows_to_add = []
+        elif not isinstance(shows_to_add, list):
+            shows_to_add = [shows_to_add]
+
+        shows_to_add = [unquote_plus(x) for x in shows_to_add]
+
+        indexer_id_given = []
+        dirs_only = []
+        # separate all the ones with Indexer IDs
+        for cur_dir in shows_to_add:
+            if '|' not in cur_dir:
+                # 'series_dir'
+                dirs_only.append(cur_dir)
+            else:
+                indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
+                if indexer and show_dir and not indexer_id:
+                    # 'indexer_id|show_dir' or 'indexer_id|show_dir|show_name'
+                    dirs_only.append(cur_dir)
+                    continue
+
+                if not (show_dir and indexer_id and show_name):
+                    # 'indexer_id'
+                    continue
+
+                # 'indexer_id|show_dir|series_id|series_name'
+                indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
+
+        # if they want me to prompt for settings then I will just carry on to the newShow page
+        if prompt_for_settings and shows_to_add:
+            data = {
+                ('show_to_add' if not i else 'other_shows', cur_dir)
+                for i, cur_dir in enumerate(shows_to_add)
+            }
+            return self._see_other(data, location='/addShows/newShow/')
+
+        # if they don't want me to prompt for settings then I can just add all the nfo shows now
+        num_added = 0
+        for cur_show in indexer_id_given:
+            indexer, show_dir, indexer_id, show_name = cur_show
+
+            if indexer is not None and indexer_id is not None:
+                # add the show
+                app.show_queue_scheduler.action.addShow(
+                    indexer, indexer_id, show_dir,
+                    default_status=app.STATUS_DEFAULT,
+                    quality=app.QUALITY_DEFAULT,
+                    season_folders=app.SEASON_FOLDERS_DEFAULT,
+                    subtitles=app.SUBTITLES_DEFAULT,
+                    anime=app.ANIME_DEFAULT,
+                    scene=app.SCENE_DEFAULT,
+                    default_status_after=app.STATUS_DEFAULT_AFTER
+                )
+                num_added += 1
+
+        # if we're done then go home
+        if not dirs_only:
+            self._see_other(location='/home/')
+
+        # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
+        data = {
+            'redirect': 'addShows/newShow/',
+            'show_to_add': [],
+            'other_shows': [],
+        }
+        for i, cur_dir in enumerate(dirs_only):
+            if i == 0:
+                data['show_to_add'].append(cur_dir)
+            else:
+                data['other_shows'].append(cur_dir)
+
+        return self._ok(data)
