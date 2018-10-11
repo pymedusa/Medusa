@@ -304,7 +304,7 @@ class Home(WebRoot):
             if authed:
                 return 'Success. Connected and authenticated'
             else:
-                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
+                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth}'.format(
                     access=acces_msg, auth=auth_msg)
         else:
             return 'Unable to connect to host'
