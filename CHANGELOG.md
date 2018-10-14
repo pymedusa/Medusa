@@ -9,8 +9,8 @@
 - Converted "Add Show" options into a Vue SFC ([#4848](https://github.com/pymedusa/Medusa/pull/4848))
 - Added publishing date to Speed.CD provider ([#5190](https://github.com/pymedusa/Medusa/pull/5190))
 - Converted the "quality pill" into a Vue SFC ([#5103](https://github.com/pymedusa/Medusa/pull/5103))
-- Vueify restart page, move JS files to Vue, add `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
-- Add support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
+- Vueified restart page, moved JS files to Vue, added `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
+- Added support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
@@ -21,6 +21,7 @@
 - Fixed exception when downloading missed subtitles ([#5356](https://github.com/pymedusa/Medusa/pull/5356))
 - Fixed popularShows path on router ([#5356](https://github.com/pymedusa/Medusa/pull/5356))
 - Fixed imdbpie exception on connection error ([#5386](https://github.com/pymedusa/Medusa/pull/5386))
+- Fixed metadata settings not being saved ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 
 -----
 
