@@ -59,6 +59,7 @@ class InternalHandler(BaseRequestHandler):
 
     @staticmethod
     def split_extra_show(extra_show):
+        """Split show information by the amount of separators."""
         if not extra_show:
             return None, None, None, None
 

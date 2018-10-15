@@ -24,7 +24,6 @@ from medusa.show.recommendations.trakt import TraktPopular
 from medusa.show.show import Show
 
 from requests import RequestException
-from requests.compat import unquote_plus
 
 from simpleanidb import REQUEST_HOT
 

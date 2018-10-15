@@ -190,6 +190,7 @@ window.app = new Vue({
                     console.log('Response: ' + message);
                 }
             }
+
             if (redirect) {
                 const baseUrl = apiRoute.defaults.baseURL;
                 if (shows_to_add.length === 0) {
@@ -198,7 +199,6 @@ window.app = new Vue({
                 }
 
                 const form = document.createElement('form');
-                form.method = 'POST';
                 form.action = baseUrl + redirect;
                 form.acceptCharset = 'utf-8';
 
