@@ -181,7 +181,7 @@ window.app = new Vue({
 
             const response = await api.get('internal/addExistingShows', formData);
             const { data } = response;
-            const { result, message, redirect, show_to_add, other_shows } = data;
+            const { result, message, redirect, shows_to_add, shows_added } = data;
 
             if (message) {
                 if (result === false) {
@@ -192,7 +192,7 @@ window.app = new Vue({
             }
             if (redirect) {
                 const baseUrl = apiRoute.defaults.baseURL;
-                if (show_to_add.length === 0) {
+                if (shows_to_add.length === 0) {
                     window.location.href = baseUrl + redirect;
                     return;
                 }
@@ -202,21 +202,16 @@ window.app = new Vue({
                 form.action = baseUrl + redirect;
                 form.acceptCharset = 'utf-8';
 
-                show_to_add.forEach(param => {
+                shows_to_add.forEach((param, i) => {
                     const element = document.createElement('input');
-                    element.name = 'show_to_add';
+                    if (i === 0) {
+                        element.name = 'show_to_add';
+                    } else {
+                        element.name = 'other_shows';
+                    }
                     element.value = param;
                     form.appendChild(element);
                 });
-
-                if (show_to_add.length > 0) {
-                    other_shows.forEach(param => {
-                        const element = document.createElement('input');
-                        element.name = 'other_shows';
-                        element.value = param;
-                        form.appendChild(element);
-                    });
-                }
 
                 document.body.appendChild(form);
                 form.submit();
@@ -237,7 +232,7 @@ window.app = new Vue({
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add Existing Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
-            <form id="addShowForm" method="post" action="addShows/addExistingShows" accept-charset="utf-8">
+            <form id="addShowForm" method="get" action="addShows/addExistingShows" accept-charset="utf-8">
                 <div id="tabs">
                     <ul>
                         <li><app-link href="#tabs-1">Manage Directories</app-link></li>

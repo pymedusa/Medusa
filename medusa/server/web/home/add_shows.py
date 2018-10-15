@@ -68,15 +68,23 @@ class HomeAddShows(Home):
         t = PageTemplate(rh=self, filename='index.mako')
         return t.render(controller='addShows', action='index')
 
-    def newShow(self, show_to_add=None, other_shows=None, search_string=None):
+    def newShow(self, show_to_add, other_shows=None, search_string=None):
         """
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
         t = PageTemplate(rh=self, filename='addShows_newShow.mako')
 
+        if not other_shows:
+            other_shows = []
+        elif not isinstance(other_shows, list):
+            other_shows = [other_shows]
+
         indexer, show_dir, indexer_id, show_name = self.split_extra_show(show_to_add)
         use_provided_info = bool(indexer_id and indexer and show_name)
+        provided_indexer = int(indexer or app.INDEXER_DEFAULT)
+        provided_indexer_id = int(indexer_id or 0)
+        provided_indexer_name = show_name
 
         # use the given show_dir for the indexer search if available
         if not show_dir:
@@ -86,21 +94,11 @@ class HomeAddShows(Home):
                 default_show_name = ''
 
         elif not show_name:
+            # remove the year
             default_show_name = re.sub(r' \(\d{4}\)', '',
                                        os.path.basename(os.path.normpath(show_dir)))
         else:
             default_show_name = show_name
-
-        # carry a list of other dirs if given
-        if not other_shows:
-            other_shows = []
-        elif not isinstance(other_shows, list):
-            other_shows = [other_shows]
-
-        provided_indexer_id = int(indexer_id or 0)
-        provided_indexer_name = show_name
-
-        provided_indexer = int(indexer or app.INDEXER_DEFAULT)
 
         return t.render(
             enable_anime_options=True, use_provided_info=use_provided_info,
@@ -493,7 +491,8 @@ class HomeAddShows(Home):
             allowed_qualities = [allowed_qualities]
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
-        new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities],
+                                                [int(q) for q in preferred_qualities])
 
         # add the show
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
@@ -507,98 +506,15 @@ class HomeAddShows(Home):
     def split_extra_show(extra_show):
         if not extra_show:
             return None, None, None, None
+
         split_vals = extra_show.split('|')
         if len(split_vals) < 4:
             indexer = split_vals[0]
             show_dir = split_vals[1]
             return indexer, show_dir, None, None
+
         indexer = split_vals[0]
         show_dir = split_vals[1]
         indexer_id = split_vals[2]
         show_name = '|'.join(split_vals[3:])
-
         return indexer, show_dir, indexer_id, show_name
-
-    def addExistingShows(self, shows_to_add=None, promptForSettings=None):
-        """
-        Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
-        along to the newShow page.
-        """
-        prompt_for_settings = promptForSettings
-
-        # grab a list of other shows to add, if provided
-        if not shows_to_add:
-            shows_to_add = []
-        elif not isinstance(shows_to_add, list):
-            shows_to_add = [shows_to_add]
-
-        shows_to_add = [unquote_plus(x) for x in shows_to_add]
-
-        prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
-
-        indexer_id_given = []
-        dirs_only = []
-        # separate all the ones with Indexer IDs
-        for cur_dir in shows_to_add:
-            if '|' not in cur_dir:
-                # 'series_dir'
-                dirs_only.append(cur_dir)
-            else:
-                indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
-                if indexer and show_dir and not indexer_id:
-                    # 'indexer_id|show_dir' or 'indexer_id|show_dir|show_name'
-                    dirs_only.append(cur_dir)
-                    continue
-
-                if not (show_dir and indexer_id and show_name):
-                    # 'indexer_id'
-                    continue
-
-                # 'indexer_id|show_dir|series_id|series_name'
-                indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
-
-        # if they want me to prompt for settings then I will just carry on to the newShow page
-        if prompt_for_settings and shows_to_add:
-            return json_response(
-                redirect='/addShows/newShow/',
-                params=[
-                    ('show_to_add' if not i else 'other_shows', cur_dir)
-                    for i, cur_dir in enumerate(shows_to_add)
-                ]
-            )
-
-        # if they don't want me to prompt for settings then I can just add all the nfo shows now
-        num_added = 0
-        for cur_show in indexer_id_given:
-            indexer, show_dir, indexer_id, show_name = cur_show
-
-            if indexer is not None and indexer_id is not None:
-                # add the show
-                app.show_queue_scheduler.action.addShow(
-                    indexer, indexer_id, show_dir,
-                    default_status=app.STATUS_DEFAULT,
-                    quality=app.QUALITY_DEFAULT,
-                    season_folders=app.SEASON_FOLDERS_DEFAULT,
-                    subtitles=app.SUBTITLES_DEFAULT,
-                    anime=app.ANIME_DEFAULT,
-                    scene=app.SCENE_DEFAULT,
-                    default_status_after=app.STATUS_DEFAULT_AFTER
-                )
-                num_added += 1
-
-        if num_added:
-            ui.notifications.message('Shows Added',
-                                     'Automatically added {quantity} from their existing metadata files'.format(quantity=num_added))
-
-        # if we're done then go home
-        if not dirs_only:
-            return json_response(redirect='/home/')
-
-        # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
-        return json_response(
-            redirect='/addShows/newShow/',
-            params=[
-                ('show_to_add' if not i else 'other_shows', cur_dir)
-                for i, cur_dir in enumerate(dirs_only)
-            ]
-        )

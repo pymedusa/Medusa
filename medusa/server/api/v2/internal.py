@@ -8,6 +8,7 @@ import re
 
 from medusa import app, classes, db
 from medusa.helper.common import sanitize_filename, try_int
+from medusa.helpers.utils import truth_to_bool
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from medusa.indexers.utils import reverse_mappings
@@ -60,16 +61,17 @@ class InternalHandler(BaseRequestHandler):
     def split_extra_show(extra_show):
         if not extra_show:
             return None, None, None, None
+
         split_vals = extra_show.split('|')
         if len(split_vals) < 4:
             indexer = split_vals[0]
             show_dir = split_vals[1]
             return indexer, show_dir, None, None
+
         indexer = split_vals[0]
         show_dir = split_vals[1]
         indexer_id = split_vals[2]
         show_name = '|'.join(split_vals[3:])
-
         return indexer, show_dir, indexer_id, show_name
 
     # existingSeries
@@ -264,28 +266,29 @@ class InternalHandler(BaseRequestHandler):
     # addExistingShows
     def resource_add_existing_shows(self):
         """
-        Receives a dir list and add them. Adds the ones with given TVDB IDs first, then forwards
-        along to the newShow page.
+        Search indexers for show name.
+
+        Query parameters:
+        :param shows_to_add: Shows to be added
+        :param prompt_for_settings: Prompt show settings for the next show
         """
-        print(repr(self.__dict__))
         shows_to_add = self.get_arguments('shows_to_add[]')
-        prompt_for_settings = self.get_argument('prompt_for_settings', 'false')
-        prompt_for_settings = False
-
-        # grab a list of other shows to add, if provided
-        if not shows_to_add:
-            shows_to_add = []
-        elif not isinstance(shows_to_add, list):
-            shows_to_add = [shows_to_add]
-
         shows_to_add = [unquote_plus(x) for x in shows_to_add]
+        prompt_for_settings = truth_to_bool(self.get_argument('prompt_for_settings', 'false'))
+
+        if prompt_for_settings and shows_to_add:
+            data = {
+                'redirect': 'addShows/newShow/',
+                'shows_to_add': shows_to_add,
+            }
+            return self._ok(data)
 
         indexer_id_given = []
         dirs_only = []
-        # separate all the ones with Indexer IDs
+        # Separate all the shows with indexer IDs
         for cur_dir in shows_to_add:
             if '|' not in cur_dir:
-                # 'series_dir'
+                # 'show_dir'
                 dirs_only.append(cur_dir)
             else:
                 indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
@@ -301,15 +304,7 @@ class InternalHandler(BaseRequestHandler):
                 # 'indexer_id|show_dir|series_id|series_name'
                 indexer_id_given.append((int(indexer), show_dir, int(indexer_id), show_name))
 
-        # if they want me to prompt for settings then I will just carry on to the newShow page
-        if prompt_for_settings and shows_to_add:
-            data = {
-                ('show_to_add' if not i else 'other_shows', cur_dir)
-                for i, cur_dir in enumerate(shows_to_add)
-            }
-            return self._see_other(data, location='/addShows/newShow/')
-
-        # if they don't want me to prompt for settings then I can just add all the nfo shows now
+        # Add the shows with the default settings
         num_added = 0
         for cur_show in indexer_id_given:
             indexer, show_dir, indexer_id, show_name = cur_show
@@ -328,20 +323,9 @@ class InternalHandler(BaseRequestHandler):
                 )
                 num_added += 1
 
-        # if we're done then go home
-        if not dirs_only:
-            self._see_other(location='/home/')
-
-        # for the remaining shows we need to prompt for each one, so forward this on to the newShow page
         data = {
             'redirect': 'addShows/newShow/',
-            'show_to_add': [],
-            'other_shows': [],
+            'shows_to_add': dirs_only,
+            'shows_added': num_added,
         }
-        for i, cur_dir in enumerate(dirs_only):
-            if i == 0:
-                data['show_to_add'].append(cur_dir)
-            else:
-                data['other_shows'].append(cur_dir)
-
         return self._ok(data)
