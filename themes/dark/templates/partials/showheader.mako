@@ -212,14 +212,14 @@
                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><img :src="'images/' + (show.config.subtitlesEnabled ? 'yes' : 'no') + '16.png'" :alt="show.config.subtitlesEnabled ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Season Folders: </td><td><img :src="'images/' + (show.config.seasonFolders || config.namingForceFolders ? 'yes' : 'no') + '16.png'" :alt="show.config.seasonFolders || config.namingForceFolders ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Paused: </td><td><img :src="'images/' + (show.config.paused ? 'yes' : 'no') + '16.png'" :alt="show.config.paused ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Air-by-Date: </td><td><img :src="'images/' + (show.config.airByDate ? 'yes' : 'no') + '16.png'" :alt="show.config.airByDate ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Sports: </td><td><img :src="'images/' + (show.config.sports ? 'yes' : 'no') + '16.png'" :alt="show.config.sports ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Anime: </td><td><img :src="'images/' + (show.config.anime ? 'yes' : 'no') + '16.png'" :alt="show.config.anime ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">DVD Order: </td><td><img :src="'images/' + (show.config.dvdOrder ? 'yes' : 'no') + '16.png'" :alt="show.config.dvdOrder ? 'Y' : 'N'" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Scene Numbering: </td><td><img :src="'images/' + (show.config.scene ? 'yes' : 'no') + '16.png'" :alt="show.config.scene ? 'Y' : 'N'" width="16" height="16" /></td></tr>
+                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled"></state-switch></td></tr>
+                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders"></state-switch></td></tr>
+                            <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused"></state-switch></td></tr>
+                            <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate"></state-switch></td></tr>
+                            <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports"></state-switch></td></tr>
+                            <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime"></state-switch></td></tr>
+                            <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder"></state-switch></td></tr>
+                            <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene"></state-switch></td></tr>
                         </table>
                      </div> <!-- end of show-status -->
                 </div> <!-- end of summary -->
@@ -230,7 +230,7 @@
 
 <div id="row-show-episodes-controls" class="row">
     <div id="col-show-episodes-controls" class="col-md-12">
-        <div v-if="$route.name === 'displayShow'" class="row key"> <!-- Checkbox filter controls -->
+        <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
                 <div id="key-padding" class="pull-left top-5">
                     <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>

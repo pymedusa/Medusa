@@ -21,7 +21,7 @@ const homeRoutes = [{
     name: 'editShow'
 }, {
     path: '/home/displayShow',
-    name: 'displayShow'
+    name: 'show'
 }, {
     path: '/home/snatchSelection',
     name: 'snatchSelection'
@@ -153,7 +153,7 @@ const addShowRoutes = [{
     path: '/addShows/trendingShows',
     name: 'addTrendingShows'
 }, {
-    path: 'popularShows',
+    path: '/addShows/popularShows',
     name: 'addPopularShows',
     meta: {
         title: 'Popular Shows',

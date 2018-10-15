@@ -241,7 +241,8 @@ class ProcessResult(object):
             self.missedfiles.append('{0}: Failed download'.format(path))
             return False
 
-        if folder.startswith('_unpack'):
+        # SABnzbd: _UNPACK_, NZBGet: _unpack
+        if folder.startswith(('_UNPACK_', '_unpack')):
             self.log('The directory name indicates that this release is in the process of being unpacked.',
                      logger.DEBUG)
             self.missedfiles.append('{0}: Being unpacked'.format(path))

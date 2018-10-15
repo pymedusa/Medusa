@@ -9,6 +9,8 @@
 - Converted "Add Show" options into a Vue SFC ([#4848](https://github.com/pymedusa/Medusa/pull/4848))
 - Added publishing date to Speed.CD provider ([#5190](https://github.com/pymedusa/Medusa/pull/5190))
 - Converted the "quality pill" into a Vue SFC ([#5103](https://github.com/pymedusa/Medusa/pull/5103))
+- Vueify restart page, move JS files to Vue, add `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
+- Add support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
@@ -16,7 +18,9 @@
 - Fixed adba lib trowing exceptions getting release groups for some anime shows ([#5125](https://github.com/pymedusa/Medusa/pull/5125))
 - Fixed trakt icon not showing on the displayShow page, when a trakt id is available ([#5300](https://github.com/pymedusa/Medusa/pull/5300))
 - Fixed editShow page crashing because of a memory overflow ([#5314](https://github.com/pymedusa/Medusa/pull/5314))
-
+- Fixed exception when downloading missed subtitles ([#5356](https://github.com/pymedusa/Medusa/pull/5356))
+- Fixed popularShows path on router ([#5356](https://github.com/pymedusa/Medusa/pull/5356))
+- Fixed imdbpie exception on connection error ([#5386](https://github.com/pymedusa/Medusa/pull/5386))
 
 -----
 
@@ -45,6 +49,7 @@
 - Added a new field name 'watched' to the tv_episodes db table. UI will be added in future ([#4825](https://github.com/pymedusa/Medusa/pull/4825))
 - Standardized most titles and headers ([#4663](https://github.com/pymedusa/Medusa/pull/4663))
 - Converted IRC page into a Vue SFC ([#5089](https://github.com/pymedusa/Medusa/pull/5089))
+- Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
 
 #### Fixes
 - Fixed error when changing episode status from episode status management ([#4783](https://github.com/pymedusa/Medusa/pull/4783))
