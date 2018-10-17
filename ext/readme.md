@@ -30,7 +30,7 @@
 :: | `guessit` | [3.0.0](https://pypi.org/project/guessit/3.0.0/) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
 :: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | ext | -
-:: | `imdbpie` | [5.6.2](https://pypi.org/project/imdbpie/5.6.2/) | **`medusa`** | ext | -
+:: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | ext | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.1](https://pypi.org/project/jsonrpclib-pelix/0.3.1/) | **`medusa`** | ext | Module: `jsonrpclib`
 :: | `PyJWT` | [1.6.4](https://pypi.org/project/pyjwt/1.6.4/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
