@@ -1373,7 +1373,7 @@ definitions:
                 type: string
               method:
                 type: string
-                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
           news:
             type: object
             properties:

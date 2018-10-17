@@ -63,9 +63,10 @@ window.app = new Vue({
                         pausedOption: true,
                         verifyCertOption: true
                     },
-                    download_station: {
+                    downloadstation: {
                         title: 'Synology DS',
-                        description: 'URL to your Synology DS client (e.g. http://localhost:5000)'
+                        description: 'URL to your Synology DS client (e.g. http://localhost:5000)',
+                        pathOption: true
                     },
                     rtorrent: {
                         title: 'rTorrent',
@@ -907,7 +908,7 @@ window.app = new Vue({
                                         <span class="component-desc">
                                             <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="torrent.path" @update="torrent.path = $event"></file-browser>
                                             <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
-                                                <span v-show="torrent.method === 'download_station'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                                <span v-show="torrent.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
                                         </span>
                                     </label>
