@@ -122,6 +122,11 @@ class FixAnimeReleaseGroup(Rule):
             if not group or matches.at_match(group):
                 continue
 
+            # don't use websites as release group
+            websites = matches.named('website')
+            if websites and any(ws for ws in websites if ws.value in group.value):
+                continue
+
             if (not matches.tagged('anime') and not matches.named('video_profile') and
                     matches.named('season') and matches.named('episode')):
                 continue
