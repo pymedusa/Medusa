@@ -3,7 +3,7 @@
 :------: | :-------: | :----------------: | :---- | :--: | :----
 :: | `adba` | pymedusa/[fcb4bf4](https://github.com/pymedusa/adba/tree/fcb4bf43f10ca53f3beb915707c877581b1bf2a5) | **`medusa`** | ext | -
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | ext | -
-:: | `attrs` | [18.1.0](https://pypi.org/project/attrs/18.1.0/) | `imdbpie` | ext | Module: `attr`
+:: | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | ext | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | ext | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | ext | Markers: `python_version < '3.5'`
 :: | `beautifulsoup4` | [4.6.3](https://pypi.org/project/beautifulsoup4/4.6.3/) | **`medusa`**, `subliminal` | **ext2 ext3** | Module: `bs4`
