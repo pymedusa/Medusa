@@ -91,7 +91,7 @@ class CountryFinder(object):
     """Helper class to search and return country matches."""
 
     def __init__(self, allowed_countries, common_words):
-        self.allowed_countries = set([l.lower() for l in allowed_countries or []])
+        self.allowed_countries = {l.lower() for l in allowed_countries or []}
         self.common_words = common_words
 
     def find(self, string):

@@ -188,7 +188,8 @@ class DashSeparatedReleaseGroup(Rule):
                 releasegroup = Match(candidate.start, candidate.end, name='release_group',
                                      formatter=self.value_formatter, input_string=candidate.input_string)
 
-                to_append.append(releasegroup)
+                if releasegroup.value:
+                    to_append.append(releasegroup)
                 return to_remove, to_append
 
 
