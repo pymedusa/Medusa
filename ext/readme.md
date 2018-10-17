@@ -59,6 +59,7 @@
 :: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -
+:: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | ext | -
 :: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | ext | -
 :: | `validators` | [0.12.2](https://pypi.org/project/validators/0.12.2/) | **`medusa`** | ext | -
