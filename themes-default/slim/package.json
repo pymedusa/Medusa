@@ -61,7 +61,7 @@
     "is-visible": "2.2.0",
     "jquery": "3.3.1",
     "lodash": "4.17.11",
-    "mini-css-extract-plugin": "0.4.3",
+    "mini-css-extract-plugin": "0.4.4",
     "nyc": "13.1.0",
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
