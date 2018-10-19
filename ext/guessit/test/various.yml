@@ -764,6 +764,7 @@
   title: Gangs of New York
   type: movie
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   year: 2002
 
 ? Peep.Show.S06E02.DVDrip.x264-faks86.mkv
@@ -875,6 +876,9 @@
   date: 2017-06-22
   screen_size: 720p
   video_codec: H.264
+  video_profile:
+  - Advanced Video Codec High Definition
+  - Scalable Video Coding
   release_group: SDH
   type: episode
 

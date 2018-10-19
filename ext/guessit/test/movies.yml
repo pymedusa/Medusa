@@ -1719,3 +1719,44 @@
   language: [en, de, it]
   release_group: STANDARD
   type: movie
+
+? Ant-Man.and.the.Wasp.2018.Digital.Extras.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG.mkv
+: title: Ant-Man and the Wasp
+  year: 2018
+  alternative_title: Digital Extras
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTG
+  type: movie
+
+? Ant-Man.and.the.Wasp.2018.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG.mkv
+: title: Ant-Man and the Wasp
+  year: 2018
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  video_codec: H.264
+  release_group: NTG
+  type: movie
+
+? Avengers.Infinity.War.2018.3D.Hybrid.REPACK.1080p.BluRay.REMUX.AVC.Atmos-EPSiLON.mk3d
+: title: Avengers Infinity War
+  year: 2018
+  other:
+  - 3D
+  - Proper
+  - Remux
+  proper_count: 1
+  screen_size: 1080p
+  source: Blu-ray
+  video_codec: H.264
+  audio_codec: Dolby Atmos
+  release_group: EPSiLON
+  container: mk3d
+  type: movie

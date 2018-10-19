@@ -2,24 +2,20 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=no-self-use, pointless-statement, missing-docstring, invalid-name
 import logging
-
+import os
 # io.open supports encoding= in python 2.7
 from io import open  # pylint: disable=redefined-builtin
-import os
-import yaml
-
-import six
 
 import babelfish
 import pytest
-
+import six
+import yaml
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
+from .. import guessit
 from ..options import parse_options, load_config
 from ..yamlutils import OrderedDictYAMLLoader
-from .. import guessit
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +60,10 @@ class EntryResult(object):
     def __repr__(self):
         if self.ok:
             return self.string + ': OK!'
-        elif self.warning:
+        if self.warning:
             return '%s%s: WARNING! (valid=%i, extra=%i)' % ('-' if self.negates else '', self.string, len(self.valid),
                                                             len(self.extra))
-        elif self.error:
+        if self.error:
             return '%s%s: ERROR! (valid=%i, missing=%i, different=%i, extra=%i, others=%i)' % \
                    ('-' if self.negates else '', self.string, len(self.valid), len(self.missing), len(self.different),
                     len(self.extra), len(self.others))
@@ -190,13 +186,13 @@ class TestYml(object):
         if not string_predicate or string_predicate(string):  # pylint: disable=not-callable
             entry = self.check(string, expected)
             if entry.ok:
-                logger.debug('[' + filename + '] ' + str(entry))
+                logger.debug('[%s] %s', filename, entry)
             elif entry.warning:
-                logger.warning('[' + filename + '] ' + str(entry))
+                logger.warning('[%s] %s', filename, entry)
             elif entry.error:
-                logger.error('[' + filename + '] ' + str(entry))
+                logger.error('[%s] %s', filename, entry)
                 for line in entry.details:
-                    logger.error('[' + filename + '] ' + ' ' * 4 + line)
+                    logger.error('[%s] %s', filename, ' ' * 4 + line)
         return entry
 
     def check(self, string, expected):
@@ -212,7 +208,7 @@ class TestYml(object):
         try:
             result = guessit(string, options)
         except Exception as exc:
-            logger.error('[' + string + '] Exception: ' + str(exc))
+            logger.error('[%s] Exception: %s', string, exc)
             raise exc
 
         entry = EntryResult(string, negates)
@@ -258,10 +254,10 @@ class TestYml(object):
             return False
         if isinstance(next(iter(values)), babelfish.Language):
             # pylint: disable=no-member
-            expecteds = set([babelfish.Language.fromguessit(expected) for expected in expecteds])
+            expecteds = {babelfish.Language.fromguessit(expected) for expected in expecteds}
         elif isinstance(next(iter(values)), babelfish.Country):
             # pylint: disable=no-member
-            expecteds = set([babelfish.Country.fromguessit(expected) for expected in expecteds])
+            expecteds = {babelfish.Country.fromguessit(expected) for expected in expecteds}
         return values == expecteds
 
     def check_expected(self, result, expected, entry):

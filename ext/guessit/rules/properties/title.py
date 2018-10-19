@@ -317,13 +317,13 @@ class PreferTitleWithYear(Rule):
 
         to_tag = []
         if with_year_in_group:
-            title_values = set([title_match.value for title_match in with_year_in_group])
+            title_values = {title_match.value for title_match in with_year_in_group}
             to_tag.extend(with_year_in_group)
         elif with_year:
-            title_values = set([title_match.value for title_match in with_year])
+            title_values = {title_match.value for title_match in with_year}
             to_tag.extend(with_year)
         else:
-            title_values = set([title_match.value for title_match in titles])
+            title_values = {title_match.value for title_match in titles}
 
         to_remove = []
         for title_match in titles:

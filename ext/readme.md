@@ -27,7 +27,7 @@
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
 :: | `PyGithub` | [1.43.2](https://pypi.org/project/PyGithub/1.43.2/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
-:: | `guessit` | [3.0.0](https://pypi.org/project/guessit/3.0.0/) | **`medusa`**, `subliminal` | ext | -
+:: | `guessit` | [3.0.1](https://pypi.org/project/guessit/3.0.1/) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
 :: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | ext | -
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
@@ -49,7 +49,7 @@
 :: | `python-twitter` | [3.4.2](https://pypi.org/project/python-twitter/3.4.2/) | **`medusa`** | ext | Module: `twitter`
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
-:: | `rebulk` | [0.9.0](https://pypi.org/project/rebulk/0.9.0/) | **`medusa`**, `guessit` | ext | -
+:: | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | ext | -
 :: | `requests` | [2.19.1](https://pypi.org/project/requests/2.19.1/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | ext | -
 :: | `requests-oauthlib` | [1.0.0](https://pypi.org/project/requests-oauthlib/1.0.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`

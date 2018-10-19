@@ -122,6 +122,11 @@ class FixAnimeReleaseGroup(Rule):
             if not group or matches.at_match(group):
                 continue
 
+            # don't use websites as release group
+            websites = matches.named('website')
+            if websites and any(ws for ws in websites if ws.value in group.value):
+                continue
+
             if (not matches.tagged('anime') and not matches.named('video_profile') and
                     matches.named('season') and matches.named('episode')):
                 continue
@@ -1102,84 +1107,6 @@ class FixParentFolderReplacingTitle(Rule):
                     return to_remove, to_append
 
 
-class FixTitleAsAudioProfile(Rule):
-    """Fix titles being parsed as audio profiles.
-
-    Related bug report: https://github.com/guessit-io/guessit/issues/566
-
-    e.g.: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
-
-    guessit -t episode "shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv"
-
-    without the rule:
-        For: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
-        GuessIt found: {
-            "title": "sh",
-            "audio_profile": "Extended Surround",
-            "season": 1,
-            "episode": 8,
-            "screen_size": "720p",
-            "source": "Web",
-            "video_codec": "H.264",
-            "release_group": "strife",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-
-    with the rule:
-        For: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
-        GuessIt found: {
-            "title": "shes gotta have it",
-            "season": 1,
-            "episode": 8,
-            "screen_size": "720p",
-            "source": "Web",
-            "video_codec": "H.264",
-            "release_group": "strife",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-    non_word_chars = re.compile(r'(_+|\W+)')
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        audio_profile = matches.named('audio_profile')
-        if not audio_profile:
-            return
-
-        previous_title = matches.previous(audio_profile[0],
-                                          predicate=lambda match: match.name == 'title')
-        if previous_title:
-            next_match = matches.next(audio_profile[0])
-            if next_match:
-                next_match_start = next_match[0].start - 1
-
-                fileparts = matches.markers.named('path')
-                filename_start = fileparts[-1].start
-
-                title = copy.copy(previous_title)
-                new_title = matches.input_string[filename_start:next_match_start]
-                title[0].value = self.non_word_chars.sub(' ', new_title).strip()
-
-                to_append = title
-                to_remove = audio_profile
-
-                return to_remove, to_append
-
-
 class FixMultipleSources(Rule):
     """Fix multiple sources.
 
@@ -1571,7 +1498,6 @@ def rules():
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
-        FixTitleAsAudioProfile,
         FixMultipleSources,
         FixMultipleReleaseGroups,
         AudioCodecStandardizer,

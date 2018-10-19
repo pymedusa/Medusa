@@ -16,7 +16,7 @@ from ...reutils import build_or_pattern
 from ...rules.common.formatters import raw_cleanup
 
 
-def other(config):  # pylint:disable=unused-argument
+def other(config):  # pylint:disable=unused-argument,too-many-statements
     """
     Builder for rebulk object.
 
