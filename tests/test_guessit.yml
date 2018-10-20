@@ -4319,3 +4319,30 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  episode: 13
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: ca
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]\Por Trece Razones 2x01 [desca202].mkv
+: title: Por Trece Razones
+  season: 2
+  episode: 1
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: [ca, pt]
+  release_group: desca202
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
