@@ -754,9 +754,14 @@ class DataGenerator(object):
         section_data['kodi']['enabled'] = bool(app.USE_KODI)
         section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
         section_data['kodi']['notify'] = NonEmptyDict()
+        section_data['kodi']['notifyOnSnatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
+        section_data['kodi']['notifyOnDownload'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
+        section_data['kodi']['notifyOnSubtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+
         section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
         section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
         section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
+
         section_data['kodi']['update'] = NonEmptyDict()
         section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
         section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
@@ -770,10 +775,6 @@ class DataGenerator(object):
         section_data['plex'] = NonEmptyDict()
         section_data['plex']['server'] = NonEmptyDict()
         section_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
-        section_data['plex']['server']['notify'] = NonEmptyDict()
-        section_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
-        section_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
-        section_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
         section_data['plex']['server']['https'] = bool(app.PLEX_SERVER_HTTPS)

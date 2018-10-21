@@ -1592,15 +1592,12 @@ definitions:
                 type: boolean
               alwaysOn:
                 type: boolean
-              notify:
-                type: object
-                properties:
-                  snatch:
-                    type: boolean
-                  download:
-                    type: boolean
-                  subtitleDownload:
-                    type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
               update:
                 type: object
                 properties:
@@ -1628,15 +1625,6 @@ definitions:
                 properties:
                   enabled:
                     type: boolean
-                  notify:
-                    type: object
-                    properties:
-                      snatch:
-                        type: boolean
-                      download:
-                        type: boolean
-                      subtitleDownload:
-                        type: boolean
                   updateLibrary:
                     type: boolean
                   host:

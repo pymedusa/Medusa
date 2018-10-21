@@ -14,11 +14,9 @@ const state = {
         host: [],
         username: null,
         password: null,
-        notify: {
-            snatch: null,
-            download: null,
-            subtitleDownload: null
-        },
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
         update: {
             library: null,
             full: null,
@@ -41,12 +39,7 @@ const state = {
             https: null,
             username: null,
             password: null,
-            token: null,
-            notify: {
-                download: null,
-                subtitleDownload: null,
-                snatch: null
-            }
+            token: null
         }
     },
     nmj: {

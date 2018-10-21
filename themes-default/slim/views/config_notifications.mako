@@ -78,11 +78,9 @@ window.app = new Vue({
                     host: [],
                     username: null,
                     password: null,
-                    notify: {
-                        snatch: null,
-                        download: null,
-                        subtitleDownload: null
-                    },
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
                     update: {
                         library: null,
                         full: null,
@@ -105,12 +103,7 @@ window.app = new Vue({
                         https: null,
                         username: null,
                         password: null,
-                        token: null,
-                        notify: {
-                            download: null,
-                            subtitleDownload: null,
-                            snatch: null
-                        }
+                        token: null
                     }
                 },
                 nmj: {
@@ -1011,13 +1004,13 @@ window.app = new Vue({
 
                                     <config-toggle-slider :checked="notifiers.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.kodi.alwaysOn = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifiers.kodi.notify.snatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.kodi.notify.snatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnSnatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.kodi.notifyOnSnatch = $event"></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="notifiers.kodi.notify.download" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.download = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnDownload" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.kodi.notifyOnDownload = $event"></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifiers.kodi.notify.subtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.kodi.notify.subtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnSubtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.kodi.notifyOnSubtitleDownload = $event"></config-toggle-slider>
                                         
-                                    <config-toggle-slider :checked="notifiers.kodi.notify.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.library = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.library = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="notifiers.kodi.update.full = $event"></config-toggle-slider>
 
                                     <config-toggle-slider :checked="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="notifiers.kodi.cleanLibrary = $event"></config-toggle-slider>
