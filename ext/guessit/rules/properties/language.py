@@ -197,7 +197,7 @@ class LanguageFinder(object):
                  subtitle_prefixes, subtitle_suffixes,
                  lang_prefixes, lang_suffixes, weak_affixes):
         allowed_languages = context.get('allowed_languages') if context else None
-        self.allowed_languages = set([l.lower() for l in allowed_languages or []])
+        self.allowed_languages = {l.lower() for l in allowed_languages or []}
         self.weak_affixes = weak_affixes
         self.prefixes_map = {}
         self.suffixes_map = {}

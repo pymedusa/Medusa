@@ -5,7 +5,6 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <script type="text/x-template" id="snatch-selection-template">
 <div>
     <input type="hidden" id="series-id" value="${show.indexerid}" />
@@ -50,7 +49,7 @@
                                         ${item['action_date']}
                                     </td>
                                     <td>
-                                    ${item['status_name']} ${renderQualityPill(item['quality'])}
+                                    ${item['status_name']} <quality-pill :quality="${item['quality']}"></quality-pill>
                                     </td>
                                     <td>
                                             % if item['provider_img_link']:
@@ -122,7 +121,7 @@
                                         <img src="${hItem["provider_img_link"]}" width="16" height="16" class="vMiddle curHelp" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                     </span>
                                 </td>
-                                <td class="triggerhighlight">${renderQualityPill(int(hItem["quality"]))}
+                                <td class="triggerhighlight"><quality-pill :quality="${int(hItem['quality'])}"></quality-pill>
                                 % if hItem["proper_tags"]:
                                     <img src="images/info32.png" width="16" height="16" class="vMmiddle" title="${hItem["proper_tags"]}"/>
                                 % endif
@@ -140,10 +139,10 @@
                                 </td>
                                 <% user_preset = app.DATE_PRESET + ' ' + app.TIME_PRESET %>
                                 <td class="col-date triggerhighlight" data-datetime="${hItem['pubdate'].isoformat('T') if hItem['pubdate'] else datetime.min}">
-                                    ${hItem['pubdate'].strftime(user_preset) if hItem['pubdate'] else 'N/A'}
+                                    ${hItem['pubdate'].strftime(user_preset).decode(app.SYS_ENCODING) if hItem['pubdate'] else 'N/A'}
                                 </td>
                                 <td class="col-date triggerhighlight" data-datetime="${hItem['date_added'].isoformat('T') if hItem['date_added'] else datetime.min}">
-                                    ${hItem['date_added'].strftime(user_preset) if hItem['date_added'] else 'N/A'}
+                                    ${hItem['date_added'].strftime(user_preset).decode(app.SYS_ENCODING) if hItem['date_added'] else 'N/A'}
                                 </td>
                                 <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                             </tr>

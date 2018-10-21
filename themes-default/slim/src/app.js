@@ -15,7 +15,6 @@ import {
     Asset,
     Backstretch,
     Config,
-    DisplayShow,
     FileBrowser,
     LanguageSelect,
     NamePattern,
@@ -23,6 +22,7 @@ import {
     RootDirs,
     ScrollButtons,
     SelectList,
+    Show,
     ShowSelector
 } from './components';
 
@@ -51,7 +51,6 @@ const globalComponents = [
     Asset,
     Backstretch,
     Config,
-    DisplayShow,
     FileBrowser,
     LanguageSelect,
     NamePattern,
@@ -59,6 +58,7 @@ const globalComponents = [
     RootDirs,
     ScrollButtons,
     SelectList,
+    Show,
     ShowSelector
 ];
 

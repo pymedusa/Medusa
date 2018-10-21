@@ -223,7 +223,7 @@ class CheckVersion(object):
             assert len(cur_hash) == 40, 'Commit hash wrong length: {length} hash: {hash}'.format(
                 length=len(cur_hash), hash=cur_hash)
 
-            check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/medusa/databases/main_db.py'.format(
+            check_url = 'http://rawcdn.githack.com/{org}/{repo}/{commit}/medusa/databases/main_db.py'.format(
                 org=app.GIT_ORG, repo=app.GIT_REPO, commit=cur_hash)
             response = self.session.get(check_url)
 
@@ -708,7 +708,7 @@ class GitUpdateManager(UpdateManager):
     def clean(self):
         """Call git clean to remove all untracked files.
 
-        It only affects source folders and the lib folder,
+        It only affects source folders and libX and extX folders,
         to prevent deleting untracked user data not known by .gitignore
 
         :return:
@@ -719,7 +719,8 @@ class GitUpdateManager(UpdateManager):
         helper_folder = os.path.join(root_dir, 'helper')
         helpers_folder = os.path.join(root_dir, 'helpers')
 
-        folders = (app.LIB_FOLDER, app.EXT_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER,
+        folders = (app.LIB_FOLDER, app.LIB2_FOLDER, app.LIB3_FOLDER, app.EXT_FOLDER,
+                   app.EXT2_FOLDER, app.EXT3_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER,
                    helper_folder, helpers_folder) + app.LEGACY_SRC_FOLDERS
         _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(' '.join(folders)))
 

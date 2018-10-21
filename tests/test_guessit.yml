@@ -1761,6 +1761,7 @@
   screen_size: 480p
   source: BDRip
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   language: uk
   other: Rip
   release_group: hurtom
@@ -2428,6 +2429,7 @@
   source: Blu-ray
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: SUJAIDR
   type: episode
 
@@ -2439,6 +2441,7 @@
   episode: 2
   screen_size: 720p
   video_codec: H.265
+  video_profile: High Efficiency Video Coding
   audio_codec: AAC
   aspect_ratio: '1.778'
   type: episode
@@ -2453,6 +2456,7 @@
   source: Web
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GOLF68
   type: episode
 
@@ -2569,6 +2573,7 @@
   audio_profile: Master Audio
   audio_channels: '5.1'
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   other: Remux
   screen_size: 1080p
   release_group: FraMeSToR
@@ -3028,6 +3033,7 @@
   audio_channels: '2.0'
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GROUP
   container: mkv
   type: episode
@@ -3042,6 +3048,7 @@
   source: Web
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   other: Rip
   release_group: GROUP
   container: mkv
@@ -3057,6 +3064,7 @@
   source: HDTV
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Blacklisted pattern: blacklist-03
@@ -3070,6 +3078,7 @@
   video_codec: H.265
   video_encoder: x265
   release_group: GROUP
+  video_profile: High Efficiency Video Coding
   container: mkv
   type: episode
 
@@ -3323,6 +3332,7 @@
   screen_size: 1080p
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Regression test
@@ -4260,6 +4270,7 @@
   other: [HDR10, Ultra HD, BT.2020]
   video_codec: [H.265, H.264]
   video_encoder: [x265, x264]
+  video_profile: High Efficiency Video Coding
   audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
@@ -4305,6 +4316,33 @@
   video_codec: H.264
   video_encoder: x264
   release_group: strife
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  episode: 13
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: ca
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]\Por Trece Razones 2x01 [desca202].mkv
+: title: Por Trece Razones
+  season: 2
+  episode: 1
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: [ca, pt]
+  release_group: desca202
   container: mkv
   mimetype: video/x-matroska
   type: episode

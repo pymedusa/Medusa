@@ -122,6 +122,11 @@ class FixAnimeReleaseGroup(Rule):
             if not group or matches.at_match(group):
                 continue
 
+            # don't use websites as release group
+            websites = matches.named('website')
+            if websites and any(ws for ws in websites if ws.value in group.value):
+                continue
+
             if (not matches.tagged('anime') and not matches.named('video_profile') and
                     matches.named('season') and matches.named('episode')):
                 continue
@@ -1102,41 +1107,41 @@ class FixParentFolderReplacingTitle(Rule):
                     return to_remove, to_append
 
 
-class FixTitleAsAudioProfile(Rule):
-    """Fix titles being parsed as audio profiles.
+class FixWordAsLanguage(Rule):
+    """Fix word getting parsed as language with multiple fileparts.
 
-    Related bug report: https://github.com/guessit-io/guessit/issues/566
-
-    e.g.: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
-
-    guessit -t episode "shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv"
+    e.g.: Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]/Por Trece Razones 2x01 [des202].mkv
 
     without the rule:
-        For: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
         GuessIt found: {
-            "title": "sh",
-            "audio_profile": "Extended Surround",
-            "season": 1,
-            "episode": 8,
+            "language": [
+                "Portuguese",
+                "Catalan"
+            ],
+            "title": "Trece Razones",
+            "season": 2,
+            "source": "HDTV",
             "screen_size": "720p",
-            "source": "Web",
-            "video_codec": "H.264",
-            "release_group": "strife",
+            "episode": 1,
+            "audio_codec": "Dolby Digital",
+            "audio_channels": "5.1",
+            "release_group": "des202",
             "container": "mkv",
             "mimetype": "video/x-matroska",
             "type": "episode"
         }
 
     with the rule:
-        For: shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
         GuessIt found: {
-            "title": "shes gotta have it",
-            "season": 1,
-            "episode": 8,
+            "language": "Catalan",
+            "title": "Por Trece Razones",
+            "season": 2,
+            "source": "HDTV",
             "screen_size": "720p",
-            "source": "Web",
-            "video_codec": "H.264",
-            "release_group": "strife",
+            "episode": 1,
+            "audio_codec": "Dolby Digital",
+            "audio_channels": "5.1",
+            "release_group": "des202",
             "container": "mkv",
             "mimetype": "video/x-matroska",
             "type": "episode"
@@ -1145,7 +1150,6 @@ class FixTitleAsAudioProfile(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    non_word_chars = re.compile(r'(_+|\W+)')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1156,28 +1160,56 @@ class FixTitleAsAudioProfile(Rule):
         :type context: dict
         :return:
         """
-        audio_profile = matches.named('audio_profile')
-        if not audio_profile:
+        languages = matches.named('language')
+        if not languages:
             return
 
-        previous_title = matches.previous(audio_profile[0],
-                                          predicate=lambda match: match.name == 'title')
-        if previous_title:
-            next_match = matches.next(audio_profile[0])
-            if next_match:
-                next_match_start = next_match[0].start - 1
+        fileparts = matches.markers.named('path')
+        parts_len = len(fileparts)
+        if parts_len < 2:
+            return
 
-                fileparts = matches.markers.named('path')
-                filename_start = fileparts[-1].start
+        titles = matches.named('title')
+        first_title = titles[0]
+        last_title = titles[-1]
 
-                title = copy.copy(previous_title)
-                new_title = matches.input_string[filename_start:next_match_start]
-                title[0].value = self.non_word_chars.sub(' ', new_title).strip()
+        # Always use the first langauge
+        first_language = languages[0]
+        for language in languages[1:]:
+            if language.start < first_language.start:
+                first_language = language
 
-                to_append = title
-                to_remove = audio_profile
+        lang_start = first_language.start
+        lang_end = first_language.end
 
-                return to_remove, to_append
+        start = end = None
+        # Language is before titles
+        if lang_end == first_title.start:
+            start = lang_start
+            end = last_title.end
+        # Language is after titles
+        elif last_title.end == lang_start:
+            start = first_title.start
+            end = lang_end
+        # Language is between titles
+        elif len(titles) > 1:
+            lang_code = last_title.value.split()[0].lower()
+            if lang_code in context.get('allowed_languages', []):
+                start = first_title.start
+                end = last_title.end
+
+        if start is not None:
+            second_filepart = fileparts[parts_len - 2]
+            rel_start = start - second_filepart.start
+            rel_end = end - second_filepart.end
+
+            new_title = second_filepart.value[rel_start:rel_end]
+            titles[0].value = cleanup(new_title)
+
+            to_append = titles[0]
+            to_remove = first_language
+
+            return to_remove, to_append
 
 
 class FixMultipleSources(Rule):
@@ -1571,7 +1603,7 @@ def rules():
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
-        FixTitleAsAudioProfile,
+        FixWordAsLanguage,
         FixMultipleSources,
         FixMultipleReleaseGroups,
         AudioCodecStandardizer,

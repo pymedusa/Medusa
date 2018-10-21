@@ -13,7 +13,14 @@ import {
     socket,
     statuses
 } from './modules';
-import { SOCKET_ONMESSAGE } from './mutation-types';
+import {
+    SOCKET_ONOPEN,
+    SOCKET_ONCLOSE,
+    SOCKET_ONERROR,
+    SOCKET_ONMESSAGE,
+    SOCKET_RECONNECT,
+    SOCKET_RECONNECT_ERROR
+} from './mutation-types';
 
 const { Store } = Vuex;
 
@@ -43,7 +50,7 @@ const passToStoreHandler = function(eventName, event, next) {
     const target = eventName.toUpperCase();
     const eventData = event.data;
 
-    if (target === SOCKET_ONMESSAGE) {
+    if (target === 'SOCKET_ONMESSAGE') {
         const message = JSON.parse(eventData);
         const { data, event } = message;
 
@@ -77,7 +84,15 @@ Vue.use(VueNativeSock, websocketUrl, {
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)
-    passToStoreHandler // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    passToStoreHandler, // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    mutations: {
+        SOCKET_ONOPEN,
+        SOCKET_ONCLOSE,
+        SOCKET_ONERROR,
+        SOCKET_ONMESSAGE,
+        SOCKET_RECONNECT,
+        SOCKET_RECONNECT_ERROR
+    }
 });
 
 export default store;

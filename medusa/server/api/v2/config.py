@@ -164,6 +164,35 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
         'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
 
+        'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
+        'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
+        'search.general.checkPropersInterval': StringField(app, 'CHECK_PROPERS_INTERVAL'),
+        # 'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
+        'search.general.propersSearchDays': IntegerField(app, 'PROPERS_SEARCH_DAYS'),
+        'search.general.backlogDays': IntegerField(app, 'BACKLOG_DAYS'),
+        'search.general.backlogFrequency': IntegerField(app, 'BACKLOG_FREQUENCY'),
+        'search.general.minBacklogFrequency': IntegerField(app, 'MIN_BACKLOG_FREQUENCY'),
+        'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
+        'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
+        'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
+        'search.general.torrentCheckerFrequency': IntegerField(app, 'TORRENT_CHECKER_FREQUENCY'),
+        'search.general.minTorrentCheckerFrequency': IntegerField(app, 'MIN_TORRENT_CHECKER_FREQUENCY'),
+        'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
+        'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
+        'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
+        'search.general.useFailedDownloads': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
+        'search.general.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
+        'search.general.cacheTrimming': BooleanField(app, 'CACHE_TRIMMING'),
+        'search.general.maxCacheAge': IntegerField(app, 'MAX_CACHE_AGE'),
+
+        'search.filters.ignored': ListField(app, 'IGNORE_WORDS'),
+        'search.filters.undesired': ListField(app, 'UNDESIRED_WORDS'),
+        'search.filters.preferred': ListField(app, 'PREFERRED_WORDS'),
+        'search.filters.required': ListField(app, 'REQUIRE_WORDS'),
+        'search.filters.ignoredSubsList': ListField(app, 'IGNORED_SUBS_LIST'),
+        'search.filters.ignoreUnknownSubs': BooleanField(app, 'IGNORE_UND_SUBS'),
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+
         'notifiers.kodi.enabled': BooleanField(app, 'USE_KODI'),
         'notifiers.kodi.alwaysOn': BooleanField(app, 'USE_KODI'),
         'notifiers.kodi.notify.snatch': BooleanField(app, 'KODI_NOTIFY_ONSNATCH'),
@@ -678,6 +707,44 @@ class DataGenerator(object):
 
         return section_data
 
+    @staticmethod
+    def data_search():
+        """Search filters."""
+        section_data = NonEmptyDict()
+
+        section_data['general'] = NonEmptyDict()
+        section_data['general']['randomizeProviders'] = bool(app.RANDOMIZE_PROVIDERS)
+        section_data['general']['downloadPropers'] = bool(app.DOWNLOAD_PROPERS)
+        section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
+        # This can be moved to the frontend. No need to keep in config. The selected option is stored in CHECK_PROPERS_INTERVAL.
+        # {u'45m': u'45 mins', u'15m': u'15 mins', u'4h': u'4 hours', u'daily': u'24 hours', u'90m': u'90 mins'}
+        # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
+        section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
+        section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
+        section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
+        section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
+        section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
+        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
+        section_data['general']['torrentCheckerFrequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
+        section_data['general']['trackersList'] = app.TRACKERS_LIST
+        section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
+        section_data['general']['useFailedDownloads'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['general']['deleteFailed'] = bool(app.DELETE_FAILED)
+        section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
+        section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
+
+        section_data['filters'] = NonEmptyDict()
+        section_data['filters']['ignored'] = app.IGNORE_WORDS
+        section_data['filters']['undesired'] = app.UNDESIRED_WORDS
+        section_data['filters']['preferred'] = app.PREFERRED_WORDS
+        section_data['filters']['required'] = app.REQUIRE_WORDS
+        section_data['filters']['ignoredSubsList'] = app.IGNORED_SUBS_LIST
+        section_data['filters']['ignoreUnknownSubs'] = bool(app.IGNORE_UND_SUBS)
+
+        return section_data
     @staticmethod
     def data_notifiers():
         """Notifications."""

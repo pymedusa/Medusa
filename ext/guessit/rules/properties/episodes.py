@@ -190,11 +190,9 @@ def episodes(config):
                r'(?P<season>\d+)').repeater('*')
 
     # episode_details property
-    for episode_detail in ('Special', 'Bonus', 'Pilot', 'Unaired', 'Final'):
+    for episode_detail in ('Special', 'Pilot', 'Unaired', 'Final'):
         rebulk.string(episode_detail, value=episode_detail, name='episode_details',
                       disabled=lambda context: is_disabled(context, 'episode_details'))
-    rebulk.regex(r'Extras?', 'Omake', name='episode_details', value='Extras',
-                 disabled=lambda context: is_disabled(context, 'episode_details'))
 
     def validate_roman(match):
         """
@@ -553,8 +551,8 @@ class RenameToAbsoluteEpisode(Rule):
     consequence = RenameMatch('absolute_episode')
 
     def when(self, matches, context):  # pylint:disable=inconsistent-return-statements
-        initiators = set([match.initiator for match in matches.named('episode')
-                          if len(match.initiator.children.named('episode')) > 1])
+        initiators = {match.initiator for match in matches.named('episode')
+                      if len(match.initiator.children.named('episode')) > 1}
         if len(initiators) != 2:
             ret = []
             for filepart in matches.markers.named('path'):
@@ -791,8 +789,8 @@ class RemoveDetachedEpisodeNumber(Rule):
 
         episode_numbers = list(sorted(episode_numbers, key=lambda m: m.value))
         if len(episode_numbers) > 1 and \
-                        episode_numbers[0].value < 10 and \
-                                episode_numbers[1].value - episode_numbers[0].value != 1:
+                episode_numbers[0].value < 10 and \
+                episode_numbers[1].value - episode_numbers[0].value != 1:
             parent = episode_numbers[0]
             while parent:  # TODO: Add a feature in rebulk to avoid this ...
                 ret.append(parent)

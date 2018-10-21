@@ -249,23 +249,13 @@ class Home(WebRoot):
         return show_stat, max_download_count
 
     def is_alive(self, *args, **kwargs):
-        if 'callback' in kwargs and '_' in kwargs:
-            callback, _ = kwargs['callback'], kwargs['_']
-        else:
-            return 'Error: Unsupported Request. Send jsonp request with \'callback\' variable in the query string.'
-
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header('Content-Type', 'text/javascript')
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'x-requested-with')
 
-        return '{callback}({msg});'.format(
-            callback=callback,
-            msg=json.dumps({
-                'msg': '{pid}'.format(
-                    pid=app.PID if app.started else 'nope')
-            })
-        )
+        return json.dumps({
+            'pid': app.PID if app.started else ''
+        })
 
     @staticmethod
     # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
@@ -304,7 +294,7 @@ class Home(WebRoot):
             if authed:
                 return 'Success. Connected and authenticated'
             else:
-                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
+                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth}'.format(
                     access=acces_msg, auth=auth_msg)
         else:
             return 'Unable to connect to host'

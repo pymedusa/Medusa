@@ -29,7 +29,7 @@ class GuessitEncoder(json.JSONEncoder):
             ret['start'] = o.start
             ret['end'] = o.end
             return ret
-        elif hasattr(o, 'name'):  # Babelfish languages/countries long name
+        if hasattr(o, 'name'):  # Babelfish languages/countries long name
             return text_type(o.name)
-        else:  # pragma: no cover
-            return text_type(o)
+        # pragma: no cover
+        return text_type(o)

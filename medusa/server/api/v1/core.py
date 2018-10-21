@@ -25,11 +25,10 @@ from __future__ import unicode_literals
 import json
 import logging
 import os
+import sys
 import time
 from collections import OrderedDict
 from datetime import date, datetime
-
-from future import standard_library
 
 from medusa import (
     app, classes, db, helpers, image_cache, network_timezones,
@@ -69,7 +68,9 @@ from six import binary_type, iteritems, itervalues, string_types, text_type, vie
 from tornado.web import RequestHandler
 
 
-standard_library.install_aliases()
+if sys.version_info[0] == 2:
+    from future import standard_library
+    standard_library.install_aliases()
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
