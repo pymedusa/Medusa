@@ -34,7 +34,7 @@ export default {
         }
     },
     data() {
-        const selectedShowList = this.showSlug || this.placeholder
+        const selectedShowList = this.showSlug || this.placeholder;
         return {
             selectedShowSlug: selectedShowList,
             lock: false

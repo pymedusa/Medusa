@@ -119,7 +119,7 @@ export default {
                 return [];
             }
 
-            return values.map((value, index) => {
+            return values.map(value => {
                 if (typeof (value) === 'string') {
                     this.indexCounter += 1;
                     return {
@@ -162,7 +162,7 @@ export default {
         csv() {
             this.syncValues();
         },
-        listItems(newValues, oldValues) {
+        listItems() {
             this.editItems = this.sanitize(this.listItems);
             this.newItem = '';
         }
