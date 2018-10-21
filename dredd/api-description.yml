@@ -2020,6 +2020,8 @@ parameters:
       - statuses
       - qualities
       - metadata
+      - search
+      - notifiers
   log-level:
     name: level
     in: query
