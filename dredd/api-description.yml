@@ -1916,7 +1916,7 @@ definitions:
                 type: string
               addressList:
                 type: array
-              subjecdt:
+              subject:
                 type: string
               notifyOnSnatch:
                 type: boolean
