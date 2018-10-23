@@ -11,6 +11,7 @@
 - Converted the "quality pill" into a Vue SFC ([#5103](https://github.com/pymedusa/Medusa/pull/5103))
 - Vueified restart page, moved JS files to Vue, added `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
 - Added support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
+- Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens. ([#5159](https://github.com/pymedusa/Medusa/pull/4913))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
