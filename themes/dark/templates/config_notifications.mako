@@ -327,12 +327,13 @@ window.app = new Vue({
 
         $('#testKODI').on('click', function() {
             const kodi = {};
-            kodi.host = $.trim($('#kodi_host').find('input').val());
-            kodi.username = $.trim($('#kodi_username').find('input').val());
-            kodi.password = $.trim($('#kodi_password').find('input').val());
+            const kodiHosts = $.map($('#kodi_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            kodi.host = kodiHosts.join(",");
+            kodi.username = $.trim($('#kodi_username').val());
+            kodi.password = $.trim($('#kodi_password').val());
             if (!kodi.host) {
                 $('#testKODI-result').html('Please fill out the necessary fields above.');
-                $('#kodi_host').addClass('warning');
+                $('#kodi_host').find('input').addClass('warning');
                 return;
             }
             $('#kodi_host').find('input').removeClass('warning');
@@ -351,9 +352,10 @@ window.app = new Vue({
         $('#testPHT').on('click', function() {
             const plex = {};
             plex.client = {};
-            plex.client.host = $.trim($('#plex_client_host').find('input').val());
-            plex.client.username = $.trim($('#plex_client_username').find('input').val());
-            plex.client.password = $.trim($('#plex_client_password').find('input').val());
+            const plexHosts = $.map($('#plex_client_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            plex.client.host = plexHosts.join(",");
+            plex.client.username = $.trim($('#plex_client_username').val());
+            plex.client.password = $.trim($('#plex_client_password').val());
             if (!plex.client.host) {
                 $('#testPHT-result').html('Please fill out the necessary fields above.');
                 $('#plex_client_host').find('input').addClass('warning');
@@ -375,10 +377,12 @@ window.app = new Vue({
         $('#testPMS').on('click', function() {
             const plex = {};
             plex.server = {};
-            plex.server.host = $.trim($('#plex_server_host').find('input').val());
-            plex.server.username = $.trim($('#plex_server_username').find('input').val());
-            plex.server.password = $.trim($('#plex_server_password').find('input').val());
-            plex.server.token = $.trim($('#plex_server_token').find('input').val());
+            const plexHosts = $.map($('#plex_server_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            plex.server.host = plexHosts.join(",");
+
+            plex.server.username = $.trim($('#plex_server_username').val());
+            plex.server.password = $.trim($('#plex_server_password').val());
+            plex.server.token = $.trim($('#plex_server_token').val());
             if (!plex.server.host) {
                 $('#testPMS-result').html('Please fill out the necessary fields above.');
                 $('#plex_server_host').find('input').addClass('warning');
@@ -400,12 +404,12 @@ window.app = new Vue({
 
         $('#testEMBY').on('click', function() {
             const emby = {};
-            emby.host = $('#emby_host').find('input').val();
-            emby.apikey = $('#emby_apikey').find('input').val();
+            emby.host = $('#emby_host').val();
+            emby.apikey = $('#emby_apikey').val();
             if (!emby.host || !emby.apikey) {
                 $('#testEMBY-result').html('Please fill out the necessary fields above.');
-                $('#emby_host').find('input').addRemoveWarningClass(emby.host);
-                $('#emby_apikey').find('input').addRemoveWarningClass(emby.apikey);
+                $('#emby_host').addRemoveWarningClass(emby.host);
+                $('#emby_apikey').addRemoveWarningClass(emby.apikey);
                 return;
             }
             $('#emby_host,#emby_apikey').children('input').removeClass('warning');
@@ -1010,7 +1014,7 @@ window.app = new Vue({
                                     
                                     <config-toggle-slider :checked="notifiers.kodi.notifyOnSubtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.kodi.notifyOnSubtitleDownload = $event"></config-toggle-slider>
                                         
-                                    <config-toggle-slider :checked="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.notify.library = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.update.library = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="notifiers.kodi.update.full = $event"></config-toggle-slider>
 
                                     <config-toggle-slider :checked="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="notifiers.kodi.cleanLibrary = $event"></config-toggle-slider>
@@ -1163,7 +1167,7 @@ window.app = new Vue({
                                 <config-toggle-slider :checked="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()"  @update="notifiers.emby.enabled = $event"></config-toggle-slider>
                                 <div v-show="notifiers.emby.enabled" id="content_use_emby">
                                     <config-textbox :value="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()"  @update="notifiers.emby.host = $event"></config-textbox>
-                                    <config-toggle-slider :checked="notifiers.emby.apiKey" label="HTTPS" id="plex_server_https" @change="save()"  @update="notifiers.emby.apiKey = $event"></config-toggle-slider>
+                                    <config-textbox :checked="notifiers.emby.apiKey" label="Api Key" id="emby_apikey" @change="save()"  @update="notifiers.emby.apiKey = $event"></config-textbox>
                                 
                                     <div class="testNotification" id="testEMBY-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />

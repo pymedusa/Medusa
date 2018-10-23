@@ -191,13 +191,12 @@ class ConfigHandler(BaseRequestHandler):
         'search.filters.required': ListField(app, 'REQUIRE_WORDS'),
         'search.filters.ignoredSubsList': ListField(app, 'IGNORED_SUBS_LIST'),
         'search.filters.ignoreUnknownSubs': BooleanField(app, 'IGNORE_UND_SUBS'),
-        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
 
         'notifiers.kodi.enabled': BooleanField(app, 'USE_KODI'),
         'notifiers.kodi.alwaysOn': BooleanField(app, 'USE_KODI'),
-        'notifiers.kodi.notify.snatch': BooleanField(app, 'KODI_NOTIFY_ONSNATCH'),
-        'notifiers.kodi.notify.download': BooleanField(app, 'KODI_NOTIFY_ONDOWNLOAD'),
-        'notifiers.kodi.notify.subtitleDownload': BooleanField(app, 'KODI_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.kodi.notifyOnSnatch': BooleanField(app, 'KODI_NOTIFY_ONSNATCH'),
+        'notifiers.kodi.notifyOnDownload': BooleanField(app, 'KODI_NOTIFY_ONDOWNLOAD'),
+        'notifiers.kodi.notifyOnSubtitleDownload': BooleanField(app, 'KODI_NOTIFY_ONSUBTITLEDOWNLOAD'),
         'notifiers.kodi.update.library': BooleanField(app, 'KODI_UPDATE_LIBRARY'),
         'notifiers.kodi.update.full': BooleanField(app, 'KODI_UPDATE_FULL'),
         'notifiers.kodi.update.onlyFirst': BooleanField(app, 'KODI_UPDATE_ONLYFIRST'),
@@ -208,9 +207,6 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.kodi.cleanLibrary': BooleanField(app, 'KODI_CLEAN_LIBRARY'),
 
         'notifiers.plex.server.enabled': BooleanField(app, 'USE_PLEX_SERVER'),
-        'notifiers.plex.server.notify.snatch': BooleanField(app, 'PLEX_NOTIFY_ONSNATCH'),
-        'notifiers.plex.server.notify.download': BooleanField(app, 'PLEX_NOTIFY_ONDOWNLOAD'),
-        'notifiers.plex.server.notify.subtitleDownload': BooleanField(app, 'PLEX_NOTIFY_ONSUBTITLEDOWNLOAD'),
         'notifiers.plex.server.updateLibrary': BooleanField(app, 'PLEX_UPDATE_LIBRARY'),
         'notifiers.plex.server.host': ListField(app, 'PLEX_SERVER_HOST'),
         'notifiers.plex.server.https': BooleanField(app, 'PLEX_SERVER_HTTPS'),
@@ -219,7 +215,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.plex.server.token': StringField(app, 'PLEX_SERVER_HOST'),
         'notifiers.plex.client.enabled': BooleanField(app, 'USE_PLEX_CLIENT'),
         'notifiers.plex.client.username': StringField(app, 'PLEX_CLIENT_USERNAME'),
-        'notifiers.plex.client.host': ListField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.client.host': ListField(app, 'PLEX_CLIENT_HOST'),
         'notifiers.plex.client.notifyOnSnatch': BooleanField(app, 'PLEX_NOTIFY_ONSNATCH'),
         'notifiers.plex.client.notifyOnDownload': BooleanField(app, 'PLEX_NOTIFY_ONDOWNLOAD'),
         'notifiers.plex.client.notifyOnSubtitleDownload': BooleanField(app, 'PLEX_NOTIFY_ONSUBTITLEDOWNLOAD'),
@@ -753,15 +749,9 @@ class DataGenerator(object):
         section_data['kodi'] = NonEmptyDict()
         section_data['kodi']['enabled'] = bool(app.USE_KODI)
         section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
-        section_data['kodi']['notify'] = NonEmptyDict()
         section_data['kodi']['notifyOnSnatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
         section_data['kodi']['notifyOnDownload'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
         section_data['kodi']['notifyOnSubtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-
-        section_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
-        section_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
-        section_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-
         section_data['kodi']['update'] = NonEmptyDict()
         section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
         section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
