@@ -1905,7 +1905,7 @@ definitions:
               host:
                 type: string
               port:
-                type: string
+                type: integer
               from:
                 type: string
               tls:
