@@ -1173,7 +1173,7 @@ class FixWordAsLanguage(Rule):
         first_title = titles[0]
         last_title = titles[-1]
 
-        # Always use the first langauge
+        # Always use the first language
         first_language = languages[0]
         for language in languages[1:]:
             if language.start < first_language.start:
