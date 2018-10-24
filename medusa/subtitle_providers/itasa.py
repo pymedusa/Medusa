@@ -302,7 +302,7 @@ class ItaSAProvider(Provider):
                         raise ConfigurationError('Not a zip file: %r' % content)
 
                 with ZipFile(io.BytesIO(content)) as zf:
-                    episode_re = re.compile('s(\d{1,2})e(\d{1,2})')
+                    episode_re = re.compile(r's(\d{1,2})e(\d{1,2})')
                     for name in zf.namelist():
                         match = episode_re.search(name)
                         if not match:  # pragma: no cover

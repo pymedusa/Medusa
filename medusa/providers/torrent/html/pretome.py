@@ -187,7 +187,7 @@ class PretomeProvider(TorrentProvider):
         """Normalize the size from the parsed string."""
         if not size_string:
             return size_string
-        return re.sub(r'(?P<unit>[A-Z]+)', ' \g<unit>', size_string)
+        return re.sub(r'(?P<unit>[A-Z]+)', r' \g<unit>', size_string)
 
 
 provider = PretomeProvider()
