@@ -24,6 +24,7 @@
 - Fixed metadata settings not being saved ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Fixed Synology DS missing location and wrong icon ([#5443](https://github.com/pymedusa/Medusa/pull/5443))
 - Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
+- Fixed saving "config - postprocessing frequency" value ([#5482](https://github.com/pymedusa/Medusa/pull/5482))
 
 -----
 
