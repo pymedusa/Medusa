@@ -43,7 +43,7 @@ setup(
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
         'pep8-naming>=0.7.0',
-        'pycodestyle==2.3.1',
+        'pycodestyle==2.4.0',
         'pytest>=3.8.0',
         'pytest-cov>=2.6.0',
         'pytest-flake8>=1.0.2',
