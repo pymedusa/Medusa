@@ -285,14 +285,14 @@ window.app = new Vue({
     mounted() {
         $('#testGrowl').on('click', function() {
             const growl = {};
-            growl.host = $.trim($('#growl_host').find('input').val());
-            growl.password = $.trim($('#growl_password').find('input').val());
+            growl.host = $.trim($('#growl_host').val());
+            growl.password = $.trim($('#growl_password').val());
             if (!growl.host) {
                 $('#testGrowl-result').html('Please fill out the necessary fields above.');
-                $('#growl_host').find('input').addClass('warning');
+                $('#growl_host').addClass('warning');
                 return;
             }
-            $('#growl_host').find('input').removeClass('warning');
+            $('#growl_host').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testGrowl-result').html(MEDUSA.config.loading);
             $.get('home/testGrowl', {
@@ -426,13 +426,13 @@ window.app = new Vue({
 
         $('#testBoxcar2').on('click', function() {
             const boxcar2 = {};
-            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').find('input').val());
+            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').val());
             if (!boxcar2.accesstoken) {
                 $('#testBoxcar2-result').html('Please fill out the necessary fields above.');
-                $('#boxcar2_accesstoken').find('input').addClass('warning');
+                $('#boxcar2_accesstoken').addClass('warning');
                 return;
             }
-            $('#boxcar2_accesstoken').find('input').removeClass('warning');
+            $('#boxcar2_accesstoken').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testBoxcar2-result').html(MEDUSA.config.loading);
             $.get('home/testBoxcar2', {
@@ -445,15 +445,15 @@ window.app = new Vue({
 
         $('#testPushover').on('click', function() {
             const pushover = {};
-            pushover.userkey = $('#pushover_userkey').find('input').val();
-            pushover.apikey = $('#pushover_apikey').find('input').val();
+            pushover.userkey = $('#pushover_userkey').val();
+            pushover.apikey = $('#pushover_apikey').val();
             if (!pushover.userkey || !pushover.apikey) {
                 $('#testPushover-result').html('Please fill out the necessary fields above.');
-                $('#pushover_userkey').find('input').addRemoveWarningClass(pushover.userkey);
-                $('#pushover_apikey').find('input').addRemoveWarningClass(pushover.apikey);
+                $('#pushover_userkey').addRemoveWarningClass(pushover.userkey);
+                $('#pushover_apikey').addRemoveWarningClass(pushover.apikey);
                 return;
             }
-            $('#pushover_userkey,#pushover_apikey').children('input').removeClass('warning');
+            $('#pushover_userkey,#pushover_apikey').removeClass('warning');
             $(this).prop('disabled', true);
             $('#testPushover-result').html(MEDUSA.config.loading);
             $.get('home/testPushover', {
@@ -474,10 +474,9 @@ window.app = new Vue({
 
         $('#settingsNMJ').on('click', () => {
             const nmj = {};
-            if ($('#nmj_host').find('input').val()) {
+            nmj.host = $('#nmj_host').val();
+            if (nmj.host) {
                 $('#testNMJ-result').html(MEDUSA.config.loading);
-                nmj.host = $('#nmj_host').find('input').val();
-
                 $.get('home/settingsNMJ', {
                     host: nmj.host
                 }, data => {
@@ -501,9 +500,10 @@ window.app = new Vue({
                         $('#nmj_mount').removeAttr('readonly');
                     }
                 });
+            } else {
+                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
+                $('#nmj_host').focus();
             }
-            alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
-            $('#nmj_host').focus();
         });
 
         $('#testNMJ').on('click', function() {
@@ -523,16 +523,17 @@ window.app = new Vue({
                     $('#testNMJ-result').html(data);
                     $('#testNMJ').prop('disabled', false);
                 });
+            } else {
+                $('#testNMJ-result').html('Please fill out the necessary fields above.');
+                $('#nmj_host').addClass('warning');
             }
-            $('#testNMJ-result').html('Please fill out the necessary fields above.');
-            $('#nmj_host').addClass('warning');
         });
 
         $('#settingsNMJv2').on('click', () => {
             const nmjv2 = {};
-            if ($('#nmjv2_host').val()) {
+            nmjv2.host = $('#nmjv2_host').val();
+            if (nmjv2.host) {
                 $('#testNMJv2-result').html(MEDUSA.config.loading);
-                nmjv2.host = $('#nmjv2_host').val();
                 nmjv2.dbloc = '';
                 const radios = document.getElementsByName('nmjv2_dbloc');
                 for (let i = 0, len = radios.length; i < len; i++) {
@@ -561,9 +562,10 @@ window.app = new Vue({
                         $('#nmjv2_database').removeAttr('readonly');
                     }
                 });
+            } else {
+                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
+                $('#nmjv2_host').focus();
             }
-            alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
-            $('#nmjv2_host').focus();
         });
 
         $('#testNMJv2').on('click', function() {
@@ -579,9 +581,10 @@ window.app = new Vue({
                     $('#testNMJv2-result').html(data);
                     $('#testNMJv2').prop('disabled', false);
                 });
+            } else {
+                $('#testNMJv2-result').html('Please fill out the necessary fields above.');
+                $('#nmjv2_host').addClass('warning');
             }
-            $('#testNMJv2-result').html('Please fill out the necessary fields above.');
-            $('#nmjv2_host').addClass('warning');
         });
 
         $('#testFreeMobile').on('click', function() {
@@ -829,7 +832,7 @@ window.app = new Vue({
         onChangeProwlApi(items) {
             this.notifiers.prowl.api = items.map(item => item.value);
         },
-        savePerShowNotifyList(items, listType) {
+        savePerShowNotifyList(listType) {
             const { 
                 emailSelectedShow,
                 emailUpdateShowEmail,
@@ -838,19 +841,15 @@ window.app = new Vue({
                 prowlSelectedShowApiKeys,
                 prowlUpdateApiKeys
             } = this;
-
-            if (items) {
-                items = items.map(x => x.value);
-            }
             
             let form = new FormData();
             let reloadList = prowlUpdateApiKeys;
             if (listType === 'prowl') {
                 form.set('show', prowlSelectedShow);
-                form.set('prowlAPIs', items.join(','));
+                form.set('prowlAPIs', prowlSelectedShowApiKeys);
             } else {
                 form.set('show', emailSelectedShow);
-                form.set('emails', items.join(','));
+                form.set('emails', emailSelectedShowAdresses);
                 reloadList = emailUpdateShowEmail;
             }
             
@@ -1368,7 +1367,7 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.growl.notifyOnSnatch" label="Notify on snatch" id="growl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.growl.notifyOnSnatch = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.growl.notifyOnDownload" label="Notify on download" id="growl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.growl.notifyOnDownload = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.growl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.growl.host" label="Growl IP:Port" id="growl_username" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()"  @update="notifiers.growl.host = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.growl.host" label="Growl IP:Port" id="growl_host" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()"  @update="notifiers.growl.host = $event"></config-textbox>
                                     <config-textbox :value="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()"  @update="notifiers.growl.password = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
@@ -1427,8 +1426,8 @@ window.app = new Vue({
                                         <div class="row">
                                             <!-- bs3 and 4 -->
                                             <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
-                                                <select-list name="prowl-show-list" id="prowl-show-list" :list-items="prowlSelectedShowApiKeys" @change="savePerShowNotifyList($event, 'prowl')"></select-list>
-                                                Configure per-show notifications here by entering Prowl API key(s), separated by commas, after selecting a show in the drop-down box.
+                                                <select-list name="prowl-show-list" id="prowl-show-list" :list-items="prowlSelectedShowApiKeys" @change="savePerShowNotifyList('prowl')"></select-list>
+                                                Configure per-show notifications here by entering Prowl API key(s), after selecting a show in the drop-down box.
                                                 Be sure to activate the \'Save for this show\' button below after each entry.
                                             </div>
                                         </div>
@@ -1440,7 +1439,7 @@ window.app = new Vue({
                                                 <span></span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList"/>
+                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList('prowl')"/>
                                             </div>
                                         </div>
                                     </div>
@@ -1789,7 +1788,7 @@ window.app = new Vue({
                                             </div>
                                         </div>
 
-                                        <config-textbox-number :value="String(notifiers.trakt.timeout)" label="User/group ID" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @change="save()"  @update="notifiers.trakt.timeout = $event"></config-textbox-number>
+                                        <config-textbox-number :value="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @update="notifiers.trakt.timeout = $event"></config-textbox-number>
                                         <div class="form-group">
                                             <div class="row">
                                                 <label for="trakt_default_indexer" class="col-sm-2 control-label">
@@ -1848,6 +1847,7 @@ window.app = new Vue({
                                         <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                         <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
                                         <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
+                                        <input type="hidden" id="trakt_pin_url" :value="notifiers.trakt.pinUrl">
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                     </div>
                                 </fieldset>
@@ -1908,7 +1908,7 @@ window.app = new Vue({
                                             <div class="row">
                                                 <!-- bs3 and 4 -->
                                                 <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
-                                                    <select-list name="email_list" id="email_list" :list-items="emailSelectedShowAdresses" @change="savePerShowNotifyList($event, 'email')" @update="emailSelectedShowAdresses = $event"></select-list>
+                                                    <select-list name="email_list" id="email_list" :list-items="emailSelectedShowAdresses" @change="savePerShowNotifyList('email')" @update="emailSelectedShowAdresses = $event"></select-list>
                                                     Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
                                                     (This field may be blank except when testing.)
                                                 </div>
