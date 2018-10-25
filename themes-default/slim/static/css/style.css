@@ -3352,6 +3352,10 @@ select.input-sm {
 formWizard.css
 ========================================================================== */
 
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
 fieldset.sectionwrap {
     /* width: max-content; */
     padding: 5px;
@@ -3377,6 +3381,7 @@ div.stepsguide .step {
     display: table-cell;
     width: 33%;
     font: bold 24px Arial, sans-serif;
+    border-bottom: 4px solid rgb(87, 68, 43);
 }
 
 div.stepsguide .step p {
@@ -3386,6 +3391,7 @@ div.stepsguide .step p {
 
 div.stepsguide .disabledstep {
     color: rgb(196, 196, 196);
+    border-bottom: 4px solid rgb(138, 119, 94);
 }
 
 div.stepsguide .disabledstep p {
