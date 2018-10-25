@@ -35,7 +35,7 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['tornado==5.1', 'six', 'profilehooks', 'contextlib2', ],
+    install_requires=['tornado==5.1.1', 'six', 'profilehooks', 'contextlib2', ],
     cmdclass={'test': PyTest},
     tests_require=[
         'flake8>=3.5.0',
@@ -47,7 +47,7 @@ setup(
         'pytest>=3.8.0',
         'pytest-cov>=2.6.0',
         'pytest-flake8>=1.0.2',
-        'pytest-tornado5>=1.0.0',
+        'pytest-tornado>=0.5.0',
         'PyYAML>=3.13,<4',
         'vcrpy>=1.13.0',
         'mock>=2.0.0',
