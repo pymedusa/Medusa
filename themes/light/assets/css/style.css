@@ -516,7 +516,7 @@ div.xem {
 
 /* Show options */
 
-.show-option {
+.show-option, .add-show-option {
     float: left;
     margin-left: 10px;
     line-height: 40px;
@@ -883,6 +883,15 @@ home_newShow.mako
     padding: 10px 0;
     font-size: 13px;
 }
+
+#addShowForm > div {
+    width: 100%!important;
+}
+
+#addShowForm > div:nth-child(2) > div {
+    position: relative!important;
+}
+
 
 .newShowPortal {
     max-width: 960px;
@@ -3344,10 +3353,11 @@ formWizard.css
 ========================================================================== */
 
 fieldset.sectionwrap {
-    width: 800px;
+    /* width: max-content; */
     padding: 5px;
     text-align: left;
     border-width: 0;
+    width: fit-content;
 }
 
 legend.legendStep {
@@ -3360,17 +3370,18 @@ div.stepsguide {
     overflow: hidden;
     text-align: left;
     cursor: pointer;
+    display: table;
 }
 
 div.stepsguide .step {
-    float: left;
+    display: table-cell;
     width: 33%;
     font: bold 24px Arial, sans-serif;
 }
 
 div.stepsguide .step p {
     margin: 12px 0;
-    border-bottom: 4px solid rgb(87, 68, 43);
+    border-bottom: none;
 }
 
 div.stepsguide .disabledstep {
@@ -3378,7 +3389,11 @@ div.stepsguide .disabledstep {
 }
 
 div.stepsguide .disabledstep p {
-    border-bottom: 4px solid rgb(138, 119, 94);
+    border-bottom: none;
+}
+
+div.stepsguide .disabledstep p {
+    border-bottom: none;
 }
 
 div.stepsguide .step .smalltext {
