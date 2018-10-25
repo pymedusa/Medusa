@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="number" v-bind="{min, step, id}" :name="id" :value="localValue" :class="inputClass" :placeholder="placeholder"/>
+                    <input type="number" v-bind="{min, step, id}" :name="id" :value="localValue" :class="inputClass" :placeholder="placeholder" @change="$emit('update', Number($event.target.value))"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                 </div>
             </div>
@@ -31,8 +31,8 @@ export default {
             default: () => []
         },
         value: {
-            type: String,
-            default: ''
+            type: Number,
+            default: 10
         },
         /**
          * Overwrite the default configured class on the <input/> element.
@@ -56,15 +56,15 @@ export default {
     },
     data() {
         return {
-            localValue: ''
+            localValue: null
         };
     },
     mounted() {
         this.localValue = this.value;
     },
     watch: {
-        localValue() {
-            this.$emit('update', this.localValue);
+        value() {
+            this.localValue = this.value;
         }
     }
 };
