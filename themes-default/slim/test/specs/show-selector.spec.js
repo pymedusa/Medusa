@@ -50,6 +50,9 @@ test('renders with shows', t => {
                     animeSplitHome: false,
                     sortArticle: true
                 };
+            },
+            propsData: {
+                placeholder: '-- Select a Show --'
             }
         },
         store
@@ -71,6 +74,9 @@ test('renders with articles(The|A|An) ignored', t => {
                     animeSplitHome: false,
                     sortArticle: false
                 };
+            },
+            propsData: {
+                placeholder: '-- Select a Show --'
             }
         },
         store
@@ -92,6 +98,9 @@ test('renders with split sections', t => {
                     animeSplitHome: false,
                     sortArticle: 'asc'
                 };
+            },
+            propsData: {
+                placeholder: '-- Select a Show --'
             }
         },
         store
