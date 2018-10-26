@@ -9,5 +9,5 @@
 : title: This is us title
 
 ? This.Is.Us
-: options: --no-embedded-config
+: options: --no-default-config
   title: This Is Us
