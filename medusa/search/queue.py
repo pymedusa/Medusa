@@ -13,7 +13,7 @@ from builtins import str
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH, SearchType
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
@@ -286,7 +286,21 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                                 'provider': result.provider.name,
                             }
                         )
-                    self.success = snatch_episode(result)
+
+                    # Set the search_type for the result.
+                    result.search_type = SearchType.DAILY_SEARCH
+
+                    # Create the queue item
+                    snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
+
+                    # Add the queue item to the queue
+                    app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
+
+                    self.success = False
+                    while snatch_queue_item.success is not False:
+                        if snatch_queue_item.started and snatch_queue_item.success:
+                            self.success = True
+                        time.sleep(1)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -373,7 +387,21 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                                 'provider': result.provider.name,
                             }
                         )
-                    self.success = snatch_episode(result)
+
+                    # Set the search_type for the result.
+                    result.search_type = SearchType.FORCED_SEARCH
+
+                    # Create the queue item
+                    snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
+
+                    # Add the queue item to the queue
+                    app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
+
+                    self.success = False
+                    while snatch_queue_item.success is not False:
+                        if snatch_queue_item.started and snatch_queue_item.success:
+                            self.success = True
+                        time.sleep(1)
 
                     # Give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -460,6 +488,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         result.proper_tags = self.cached_result['proper_tags'].split('|') \
             if self.cached_result['proper_tags'] else ''
         result.manually_searched = True
+        result.search_type = SearchType.MANUAL_SEARCH
 
         try:
             log.info('Beginning to manual snatch release: {name}',
@@ -496,6 +525,83 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         except Exception:
             self.success = False
             log.exception('Manual snatch failed! For result: {name}', {'name': result.name})
+            ui.notifications.message('Error while snatching selected result',
+                                     'Unable to snatch the result for <i>{name}</i>'.format(name=result.name))
+
+        if self.success is None:
+            self.success = False
+
+        self.finish()
+
+
+class SnatchQueueItem(generic_queue.QueueItem):
+    """
+    A queue item that can be used to queue the snatch of a search result.
+
+    @param show: A show object
+    @param segment: A list of episode objects
+    @param provider: The provider id. For example nyaatorrent and not NyaaTorrent. Or usernet_crawler and not Usenet-Crawler
+    @param cached_result: An sql result of the searched result retrieved from the provider cache table.
+
+    @return: The run() methods snatches the episode(s) if possible.
+    """
+
+    def __init__(self, show, segment, search_result):
+        """Initialize the class."""
+        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
+        self.priority = generic_queue.QueuePriorities.HIGH
+        self.name = 'SNATCH-{indexer_id}'.format(indexer_id=search_result.series.indexerid)
+        self.success = None
+        self.started = None
+        self.segment = segment
+        self.show = show
+        self.results = None
+        self.search_result = search_result
+
+    def run(self):
+        """Run manual snatch job."""
+        generic_queue.QueueItem.run(self)
+        self.started = True
+
+        result = self.search_result
+
+        try:
+            log.info('Beginning to snatch release: {name}',
+                     {'name': result.name})
+
+            if result:
+                if result.seeders not in (-1, None) and result.leechers not in (-1, None):
+                    log.info(
+                        'Downloading {name} with {seeders} seeders and {leechers} leechers'
+                        ' and size {size} from {provider}, through a {search_type} search', {
+                            'name': result.name,
+                            'seeders': result.seeders,
+                            'leechers': result.leechers,
+                            'size': pretty_file_size(result.size),
+                            'provider': result.provider.name,
+                            'search_type': result.search_type
+                        }
+                    )
+                else:
+                    log.info(
+                        'Downloading {name} with size: {size} from {provider}, through a {search_type} search', {
+                            'name': result.name,
+                            'size': pretty_file_size(result.size),
+                            'provider': result.provider.name,
+                            'search_type': result.search_type
+                        }
+                    )
+                self.success = snatch_episode(result)
+            else:
+                log.info('Unable to snatch release: {name}',
+                         {'name': result.name})
+
+            # give the CPU a break
+            time.sleep(common.cpu_presets[app.CPU_PRESET])
+
+        except Exception:
+            self.success = False
+            log.exception('Snatch failed! For result: {name}', {'name': result.name})
             ui.notifications.message('Error while snatching selected result',
                                      'Unable to snatch the result for <i>{name}</i>'.format(name=result.name))
 
@@ -553,7 +659,21 @@ class BacklogQueueItem(generic_queue.QueueItem):
                                     'provider': result.provider.name,
                                 }
                             )
-                        self.success = snatch_episode(result)
+
+                        # Set the search_type for the result.
+                        result.search_type = SearchType.BACKLOG_SEARCH
+
+                        # Create the queue item
+                        snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
+
+                        # Add the queue item to the queue
+                        app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
+
+                        self.success = False
+                        while snatch_queue_item.success is not False:
+                            if snatch_queue_item.started and snatch_queue_item.success:
+                                self.success = True
+                            time.sleep(1)
 
                         # give the CPU a break
                         time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -636,7 +756,21 @@ class FailedQueueItem(generic_queue.QueueItem):
                                 'provider': result.provider.name,
                             }
                         )
-                    self.success = snatch_episode(result)
+
+                    # Set the search_type for the result.
+                    result.search_type = SearchType.FAILED_SEARCH
+
+                    # Create the queue item
+                    snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
+
+                    # Add the queue item to the queue
+                    app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
+
+                    self.success = False
+                    while snatch_queue_item.success is not False:
+                        if snatch_queue_item.started and snatch_queue_item.success:
+                            self.success = True
+                        time.sleep(1)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
