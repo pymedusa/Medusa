@@ -267,6 +267,16 @@
 ? Show.Name.E02.2010
 : title: Show Name
   episode: 2
+  season: 2010
+  year: 2010
+  type: episode
+
+? Show.Name.E02.2010
+: options: {show_type: anime}
+  title: Show Name
+  episode: 2
+  absolute_episode: 2
+  season: 2010
   year: 2010
   type: episode
 
@@ -1028,14 +1038,6 @@
   type: episode
 
 # expected_group
-? Show.Name.x264-CS
-: title: Show Name
-  video_codec: H.264
-  video_encoder: x264
-  release_group: CS
-  type: episode
-
-# expected_group
 ? Show.Name.x264-DR
 : title: Show Name
   video_codec: H.264
@@ -1435,7 +1437,6 @@
 
 # https://github.com/guessit-io/guessit/issues/306
 ? - Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-  - Show.Name.-.Series.3.-.720p.BluRay.-.x264.-.Group
 : title: Show Name
   season: 3
   screen_size: 720p
@@ -2404,7 +2405,7 @@
   type: episode
 
 # Important: the suffix .hdtv.x264 is an existing workaround in the application for a certain provider. It should be removed when there's a video_codec conflict
-? 500.Bus.Stops.Series.1.XviD.hdtv.x264
+? 500.Bus.Stops.Season.1.XviD.hdtv.x264
 : title: 500 Bus Stops
   season: 1
   video_codec: Xvid
@@ -2708,9 +2709,7 @@
 : title: Show Name
   season: 12
   episode: 17
-  other: Proper
-  proper_count: 1
-  proper_tag: DIRFIX
+  other: Fix
   source: HDTV
   video_codec: H.264
   video_encoder: x264
@@ -3374,7 +3373,8 @@
   video_codec: H.264
   video_encoder: x264
   source: Web
-  release_group: HI.C
+  release_group: C
+  language: hi
   type: episode
 
 # Regression Test:
@@ -3457,7 +3457,7 @@
   type: episode
 
 # Regression test: Season repack shouldn't be detected as release_group: season
-? Show.Name.Series.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
+? Show.Name.Season.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
 : title: Show Name
   season: 1
   other: ['HD', 'Proper']
@@ -4133,6 +4133,7 @@
 : title: Show Name
   absolute_episode: [476, 477, 478, 479]
   episode: [476, 477, 478, 479]
+  season: 2007
   year: 2007
   release_group: HorribleSubs
   source: Web
@@ -4142,8 +4143,9 @@
 
 ? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
 : title: Show Name
-  absolute_episode: 7
   episode: 7
+  absolute_episode: 7
+  season: 2016
   year: 2016
   release_group: RH
   language: en
@@ -4156,6 +4158,7 @@
 : title: Show! Name 2
   absolute_episode: 10
   episode: 10
+  season: 2016
   year: 2016
   release_group: HorribleSubs
   source: Web
@@ -4300,7 +4303,8 @@
   type: episode
 
 ? /Comedy 23/Funny.Show.S4E19.mkv
-: title: Funny Show
+: title: Comedy 23
+  episode_title: Funny Show
   season: 4
   episode: 19
   container: mkv
