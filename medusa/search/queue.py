@@ -8,12 +8,11 @@ import logging
 import threading
 import time
 import traceback
-from builtins import str
 
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH, SearchType
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
@@ -461,7 +460,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'MANUALSNATCH-' + str(show.indexerid)
+        self.name = 'MANUALSNATCH-{indexer_id}'.format(indexer_id=show.indexerid)
         self.success = None
         self.started = None
         self.results = None
@@ -548,7 +547,7 @@ class SnatchQueueItem(generic_queue.QueueItem):
 
     def __init__(self, show, segment, search_result):
         """Initialize the class."""
-        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
+        generic_queue.QueueItem.__init__(self, u'Snatch Result', SNATCH_RESULT)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'SNATCH-{indexer_id}'.format(indexer_id=search_result.series.indexerid)
         self.success = None
@@ -618,7 +617,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Backlog', BACKLOG_SEARCH)
         self.priority = generic_queue.QueuePriorities.LOW
-        self.name = 'BACKLOG-' + str(show.indexerid)
+        self.name = 'BACKLOG-{indexer_id}'.format(indexer_id=show.indexerid)
 
         self.success = None
         self.started = None
@@ -699,7 +698,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Retry', FAILED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = 'RETRY-' + str(show.indexerid)
+        self.name = 'RETRY-{indexer_id}'.format(indexer_id=show.indexerid)
 
         self.success = None
         self.started = None
