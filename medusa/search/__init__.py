@@ -2,6 +2,7 @@
 
 """Search module for all Medusa searches."""
 from __future__ import unicode_literals
+
 from enum import Enum
 
 BACKLOG_SEARCH = 10
@@ -14,6 +15,7 @@ SNATCH_RESULT = 70
 
 
 class SearchType(Enum):
+    """Enum with search types."""
     BACKLOG_SEARCH = 10
     DAILY_SEARCH = 20
     FAILED_SEARCH = 30
