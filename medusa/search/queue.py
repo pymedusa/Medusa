@@ -42,7 +42,7 @@ class SearchQueue(generic_queue.GenericQueue):
         """Check if item is in queue."""
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
-                                     ForcedSearchQueueItem, ManualSnatchQueueItem)) \
+                                     ForcedSearchQueueItem, SnatchQueueItem)) \
                     and cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
@@ -90,7 +90,7 @@ class SearchQueue(generic_queue.GenericQueue):
             # daily searches
             generic_queue.GenericQueue.add_item(self, item)
         elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
-                               ManualSnatchQueueItem, ForcedSearchQueueItem)) \
+                               SnatchQueueItem, ForcedSearchQueueItem)) \
                 and not self.is_in_queue(item.show, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -186,7 +186,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
 
 class SnatchQueue(generic_queue.GenericQueue):
-    """Queue for queuing ManualSnatchQueueItem objects (snatch jobs)."""
+    """Queue for queuing SnatchQueueItem objects (snatch jobs)."""
 
     def __init__(self):
         """Initialize the SnatchQueue object."""
@@ -230,9 +230,9 @@ class SnatchQueue(generic_queue.GenericQueue):
 
     def add_item(self, item):
         """
-        Add a ManualSnatchQueueItem queue item.
+        Add a SnatchQueueItem queue item.
 
-        @param item: ManualSnatchQueueItem gueue object
+        @param item: SnatchQueueItem gueue object
         """
         if not self.is_in_queue(item.show, item.segment):
             # backlog searches
