@@ -54,8 +54,8 @@ class ConfigNotifications(Config):
                           twitter_notify_onsubtitledownload=None, twitter_usedm=None, twitter_dmto=None,
                           use_boxcar2=None, boxcar2_notify_onsnatch=None, boxcar2_notify_ondownload=None,
                           boxcar2_notify_onsubtitledownload=None, boxcar2_accesstoken=None,
-                          use_pushover=None, pushover_notify_onsnatch=None, pushover_notify_ondownload=None,
-                          pushover_notify_onsubtitledownload=None, pushover_userkey=None, pushover_apikey=None, pushover_device=None, pushover_sound=None,
+                          use_pushover=None, pushover_notify_onsnatch=None, pushover_notify_ondownload=None, pushover_notify_onsubtitledownload=None,
+                          pushover_userkey=None, pushover_apikey=None, pushover_device=None, pushover_sound=None, pushover_priority=None,
                           use_libnotify=None, libnotify_notify_onsnatch=None, libnotify_notify_ondownload=None,
                           libnotify_notify_onsubtitledownload=None,
                           use_nmj=None, nmj_host=None, nmj_database=None, nmj_mount=None, use_synoindex=None,
@@ -169,6 +169,7 @@ class ConfigNotifications(Config):
         app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushover_notify_onsubtitledownload)
         app.PUSHOVER_USERKEY = pushover_userkey
         app.PUSHOVER_APIKEY = pushover_apikey
+        app.PUSHOVER_PRIORITY = pushover_priority
         app.PUSHOVER_DEVICE = [_.strip() for _ in pushover_device.split(',')]
         app.PUSHOVER_SOUND = pushover_sound
 
