@@ -62,15 +62,15 @@ class Notifier(object):
         if app.BOXCAR2_NOTIFY_ONSNATCH:
             self._notify_boxcar2(title, ep_name)
 
-    def notify_download(self, ep_name, title=common.notifyStrings[common.NOTIFY_DOWNLOAD]):
+    def notify_download(self, ep_obj, title=common.notifyStrings[common.NOTIFY_DOWNLOAD]):
         """Send the download message."""
         if app.BOXCAR2_NOTIFY_ONDOWNLOAD:
-            self._notify_boxcar2(title, ep_name)
+            self._notify_boxcar2(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
 
-    def notify_subtitle_download(self, ep_name, lang, title=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]):
+    def notify_subtitle_download(self, ep_obj, lang, title=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]):
         """Send the subtitle download message."""
         if app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_boxcar2(title, ep_name + ': ' + lang)
+            self._notify_boxcar2(title, ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         """Send update available message."""

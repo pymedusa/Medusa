@@ -32,7 +32,7 @@ class Notifier(object):
             message = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
             self._notify_slack('{message} : {ep_name}'.format(message=message, ep_name=ep_name))
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """
         Send a notification to a slack channel when an episode is downloaded.
 
@@ -40,9 +40,11 @@ class Notifier(object):
         """
         if app.SLACK_NOTIFY_DOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_DOWNLOAD]
-            self._notify_slack('{message} : {ep_name}'.format(message=message, ep_name=ep_name))
+            self._notify_slack('{message} : {ep_name}'.format(message=message,
+                                                              ep_name=ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN')
+                                                              ))
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """
         Send a notification to a Slack channel when subtitles for an episode are downloaded.
 
@@ -51,7 +53,7 @@ class Notifier(object):
         """
         if app.SLACK_NOTIFY_SUBTITLEDOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]
-            self._notify_slack('{message} {ep_name}: {lang}'.format(message=message, ep_name=ep_name, lang=lang))
+            self._notify_slack('{message} {ep_name}: {lang}'.format(message=message, ep_name=ep_obj.pretty_name(), lang=lang))
 
     def notify_git_update(self, new_version='??'):
         """

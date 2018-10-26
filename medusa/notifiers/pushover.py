@@ -140,13 +140,13 @@ class Notifier(object):
         if app.PUSHOVER_NOTIFY_ONSNATCH:
             self._notifyPushover(title, ep_name)
 
-    def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
+    def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONDOWNLOAD:
-            self._notifyPushover(title, ep_name)
+            self._notifyPushover(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
 
-    def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
+    def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notifyPushover(title, ep_name + ': ' + lang)
+            self._notifyPushover(title, ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PUSHOVER:

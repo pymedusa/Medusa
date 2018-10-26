@@ -44,8 +44,8 @@ class Notifier(object):
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
                                      message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
-    def notify_download(self, ep_name):
-        ep_name = ss(ep_name)
+    def notify_download(self, ep_obj):
+        ep_name = ss(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
         if app.PROWL_NOTIFY_ONDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
@@ -56,8 +56,8 @@ class Notifier(object):
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
                                      message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
-    def notify_subtitle_download(self, ep_name, lang):
-        ep_name = ss(ep_name)
+    def notify_subtitle_download(self, ep_obj, lang):
+        ep_name = ss(ep_obj.pretty_name())
         if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)

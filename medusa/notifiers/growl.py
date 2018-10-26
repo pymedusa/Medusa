@@ -30,13 +30,13 @@ class Notifier(object):
                     (common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]
                 ], ep_name)
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.GROWL_NOTIFY_ONDOWNLOAD:
-            self._sendGrowl(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name)
+            self._sendGrowl(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._sendGrowl(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ': ' + lang)
+            self._sendGrowl(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]

@@ -33,20 +33,20 @@ class Notifier(object):
                 message=ep_name
             )
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.PUSHALOT_NOTIFY_ONDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                message=ep_name
+                message=ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN')
             )
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                message='{}:{}'.format(ep_name, lang)
+                message='{}:{}'.format(ep_obj.pretty_name(), lang)
             )
 
     def notify_git_update(self, new_version='??'):

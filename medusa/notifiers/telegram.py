@@ -100,7 +100,7 @@ class Notifier(object):
         if app.TELEGRAM_NOTIFY_ONSNATCH:
             self._notify_telegram(title, ep_name)
 
-    def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
+    def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         """
         Sends a Telegram notification when an episode is downloaded
 
@@ -108,9 +108,9 @@ class Notifier(object):
         :param title: The title of the notification to send
         """
         if app.TELEGRAM_NOTIFY_ONDOWNLOAD:
-            self._notify_telegram(title, ep_name)
+            self._notify_telegram(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
 
-    def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
+    def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         """
         Sends a Telegram notification when subtitles for an episode are downloaded
 
@@ -119,7 +119,7 @@ class Notifier(object):
         :param title: The title of the notification to send
         """
         if app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_telegram(title, '%s: %s' % (ep_name, lang))
+            self._notify_telegram(title, '%s: %s' % (ep_obj.pretty_name(), lang))
 
     def notify_git_update(self, new_version='??'):
         """

@@ -503,7 +503,7 @@ class Episode(TV):
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
             )
-            notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
+            notifiers.notify_subtitle_download(self, subtitle_list)
         else:
             log.info(
                 '{id}: No subtitles found for {series} {ep}', {
