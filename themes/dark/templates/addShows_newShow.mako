@@ -519,23 +519,23 @@ window.app = new Vue({
                     </div>
                     <div v-else class="stepDiv">
                         <div class="row">
-                            <div class="col-lg-12">
-                                <div class="add-show-option">
+                            <div class="col-lg-12 show-add-options">
+                                <div class="show-add-option">
                                     <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350"/>
                                 </div>
                                 
-                                <div class="add-show-option">
+                                <div class="show-add-option">
                                     <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
                                     <b>*</b>
                                 </div>
                                 
-                                <div class="add-show-option">
+                                <div class="show-add-option">
                                     <select v-model.number="indexerId" class="form-control form-control-inline input-sm">
                                         <option v-for="(indexer, indexerId) in indexers" :value="indexerId">{{indexer.name}}</option>
                                     </select>        
                                 </div>
 
-                                <div class="add-show-option">
+                                <div class="show-add-option">
                                     <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers" />
                                 </div>
                                     
@@ -547,61 +547,54 @@ window.app = new Vue({
                                 </div>
                                 
                                 <div>
-                                    
-            
-                                        <div v-show="displayStatus === 'searching'">
-                                                <img :src="spinnerSrc" height="32" width="32" />
-                                                Searching <b>{{ currentSearch.query }}</b>
-                                                on {{ currentSearch.indexerName }}
-                                                in {{ currentSearch.languageName }}...
-                                            </div>
-                                            <div v-show="displayStatus === 'status'" v-html="searchStatus"></div>
-                                            <div v-if="displayStatus === 'results'" class="search-results">
-                                                <legend class="legendStep">Search Results:</legend>
-                                                <table v-if="searchResults.length !== 0" class="search-results">
-                                                    <thead>
-                                                        <tr>
-                                                            <th></th>
-                                                            <th>Show Name</th>
-                                                            <th class="premiere">Premiere</th>
-                                                            <th class="network">Network</th>
-                                                            <th class="indexer">Indexer</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr v-for="result in searchResults" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
-                                                            <td class="search-result">
-                                                                <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug" />
-                                                                <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
-                                                                    <img height="16" width="16" src="images/ico/favicon-16.png" />
-                                                                </app-link>
-                                                            </td>
-                                                            <td>
-                                                                <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                                    <b>{{ result.showName }}</b>
-                                                                </app-link>
-                                                            </td>
-                                                            <td class="premiere">{{ result.premiereDate }}</td>
-                                                            <td class="network">{{ result.network }}</td>
-                                                            <td class="indexer">
-                                                                {{ result.indexerName }}
-                                                                <img height="16" width="16" :src="result.indexerIcon" />
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                                <div v-else class="no-results">
-                                                    <b>No results found, try a different search.</b>
-                                                </div>
-                                            </div>
+                                    <div v-show="displayStatus === 'searching'">
+                                        <img :src="spinnerSrc" height="32" width="32" />
+                                        Searching <b>{{ currentSearch.query }}</b>
+                                        on {{ currentSearch.indexerName }}
+                                        in {{ currentSearch.languageName }}...
+                                    </div>
+                                    <div v-show="displayStatus === 'status'" v-html="searchStatus"></div>
+                                    <div v-if="displayStatus === 'results'" class="search-results">
+                                        <legend class="legendStep">Search Results:</legend>
+                                        <table v-if="searchResults.length !== 0" class="search-results">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Show Name</th>
+                                                    <th class="premiere">Premiere</th>
+                                                    <th class="network">Network</th>
+                                                    <th class="indexer">Indexer</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="result in searchResults" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
+                                                    <td class="search-result">
+                                                        <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug" />
+                                                        <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                            <img height="16" width="16" src="images/ico/favicon-16.png" />
+                                                        </app-link>
+                                                    </td>
+                                                    <td>
+                                                        <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
+                                                            <b>{{ result.showName }}</b>
+                                                        </app-link>
+                                                    </td>
+                                                    <td class="premiere">{{ result.premiereDate }}</td>
+                                                    <td class="network">{{ result.network }}</td>
+                                                    <td class="indexer">
+                                                        {{ result.indexerName }}
+                                                        <img height="16" width="16" :src="result.indexerIcon" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div v-else class="no-results">
+                                            <b>No results found, try a different search.</b>
+                                        </div>
+                                    </div>
                                 </div>
-            
-
                             </div>
                         </div>
-
-
-                        
                     </div>
                 </fieldset>
                 <fieldset class="sectionwrap">

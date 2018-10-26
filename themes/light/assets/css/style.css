@@ -516,9 +516,15 @@ div.xem {
 
 /* Show options */
 
-.show-option, .add-show-option {
+.show-option {
     float: left;
     margin-left: 10px;
+    line-height: 40px;
+}
+
+.show-add-options > div {
+    float: left;
+    padding-right: 10px;
     line-height: 40px;
 }
 
@@ -885,13 +891,12 @@ home_newShow.mako
 }
 
 #addShowForm > div {
-    width: 100%!important;
+    width: 100% !important;
 }
 
 #addShowForm > div:nth-child(2) > div {
-    position: relative!important;
+    position: relative !important;
 }
-
 
 .newShowPortal {
     max-width: 960px;
@@ -3383,18 +3388,9 @@ div.stepsguide .step {
     border-bottom: 4px solid rgb(87, 68, 43);
 }
 
-div.stepsguide .step p {
-    margin: 12px 0;
-    border-bottom: none;
-}
-
 div.stepsguide .disabledstep {
     color: rgb(196, 196, 196);
     border-bottom: 4px solid rgb(138, 119, 94);
-}
-
-div.stepsguide .disabledstep p {
-    border-bottom: none;
 }
 
 div.stepsguide .disabledstep p {
