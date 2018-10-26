@@ -128,7 +128,8 @@ class SearchResult(object):
         # to store a single episode number, as an int.
         self._actual_episode = None
 
-        # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
+        # Search type. Use the medusa.search.SearchType enum, as value.
+        # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH, SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
 
     @property
