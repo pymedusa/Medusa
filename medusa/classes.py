@@ -243,7 +243,6 @@ class SearchResult(object):
 
     def update_from_db(self, show, episodes, cached_result):
         """Update local attributes from the cached result, recovered from db."""
-
         self.series = show
         self.episodes = episodes
         self.url = cached_result['url']

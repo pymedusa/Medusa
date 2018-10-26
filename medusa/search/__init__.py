@@ -16,6 +16,7 @@ SNATCH_RESULT = 70
 
 class SearchType(Enum):
     """Enum with search types."""
+
     BACKLOG_SEARCH = 10
     DAILY_SEARCH = 20
     FAILED_SEARCH = 30
