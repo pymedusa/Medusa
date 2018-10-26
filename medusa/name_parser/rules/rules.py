@@ -1052,6 +1052,7 @@ class FixParentFolderReplacingTitle(Rule):
 
     def when(self, matches, context):
         """Evaluate the rule.
+
         :param matches:
         :type matches: rebulk.match.Matches
         :param context:
