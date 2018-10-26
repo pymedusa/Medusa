@@ -14,7 +14,7 @@ from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
 from .. import guessit
-from ..options import parse_options, load_config
+from ..options import parse_options
 from ..yamlutils import OrderedDictYAMLLoader
 
 logger = logging.getLogger(__name__)
@@ -203,8 +203,6 @@ class TestYml(object):
             options = {}
         if not isinstance(options, dict):
             options = parse_options(options)
-        options['config'] = False
-        options = load_config(options)
         try:
             result = guessit(string, options)
         except Exception as exc:

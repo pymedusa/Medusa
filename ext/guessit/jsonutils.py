@@ -6,14 +6,7 @@ JSON Utils
 import json
 
 from six import text_type
-
-try:
-    from collections import OrderedDict
-except ImportError:  # pragma: no-cover
-    from ordereddict import OrderedDict  # pylint:disable=import-error
-
 from rebulk.match import Match
-
 
 class GuessitEncoder(json.JSONEncoder):
     """
@@ -22,13 +15,7 @@ class GuessitEncoder(json.JSONEncoder):
 
     def default(self, o):  # pylint:disable=method-hidden
         if isinstance(o, Match):
-            ret = OrderedDict()
-            ret['value'] = o.value
-            if o.raw:
-                ret['raw'] = o.raw
-            ret['start'] = o.start
-            ret['end'] = o.end
-            return ret
+            return o.advanced
         if hasattr(o, 'name'):  # Babelfish languages/countries long name
             return text_type(o.name)
         # pragma: no cover

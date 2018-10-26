@@ -23,7 +23,7 @@ def episode_title(config):  # pylint:disable=unused-argument
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    previous_names = ('episode', 'episode_details', 'episode_count',
+    previous_names = ('episode', 'episode_count',
                       'season', 'season_count', 'date', 'title', 'year')
 
     rebulk = Rebulk(disabled=lambda context: is_disabled(context, 'episode_title'))
@@ -223,12 +223,18 @@ class Filepart3EpisodeTitle(Rule):
     Serie name/SO1/E01-episode_title.mkv
     AAAAAAAAAA/BBB/CCCCCCCCCCCCCCCCCCCC
 
+    Serie name/SO1/episode_title-E01.mkv
+    AAAAAAAAAA/BBB/CCCCCCCCCCCCCCCCCCCC
+
     If CCCC contains episode and BBB contains seasonNumber
     Then title is to be found in AAAA.
     """
     consequence = AppendMatch('title')
 
     def when(self, matches, context):  # pylint:disable=inconsistent-return-statements
+        if matches.tagged('filepart-title'):
+            return
+
         fileparts = matches.markers.named('path')
         if len(fileparts) < 3:
             return
@@ -243,6 +249,7 @@ class Filepart3EpisodeTitle(Rule):
 
             if season:
                 hole = matches.holes(subdirectory.start, subdirectory.end,
+                                     ignore=lambda match: 'weak-episode' in match.tags,
                                      formatter=cleanup, seps=title_seps, predicate=lambda match: match.value,
                                      index=0)
                 if hole:
@@ -270,6 +277,9 @@ class Filepart2EpisodeTitle(Rule):
     consequence = AppendMatch('title')
 
     def when(self, matches, context):  # pylint:disable=inconsistent-return-statements
+        if matches.tagged('filepart-title'):
+            return
+
         fileparts = matches.markers.named('path')
         if len(fileparts) < 2:
             return
@@ -282,7 +292,9 @@ class Filepart2EpisodeTitle(Rule):
             season = (matches.range(directory.start, directory.end, lambda match: match.name == 'season', 0) or
                       matches.range(filename.start, filename.end, lambda match: match.name == 'season', 0))
             if season:
-                hole = matches.holes(directory.start, directory.end, formatter=cleanup, seps=title_seps,
+                hole = matches.holes(directory.start, directory.end, ignore=lambda match: 'weak-episode' in match.tags,
+                                     formatter=cleanup, seps=title_seps,
                                      predicate=lambda match: match.value, index=0)
                 if hole:
+                    hole.tags.append('filepart-title')
                     return hole
