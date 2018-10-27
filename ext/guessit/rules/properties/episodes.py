@@ -278,12 +278,12 @@ def episodes(config):
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>[x-])(?P<episode>\d{1,2})').repeater('*')
 
-    # e112, e113
+    # e112, e113, 1e18, 3e19
     # TODO: Enhance rebulk for validator to be used globally (season_episode_validator)
-    rebulk.chain(formatter={'episode': int, 'version': int},
+    rebulk.chain(formatter={'season': int, 'episode': int, 'version': int},
                  disabled=lambda context: is_disabled(context, 'episode')) \
         .defaults(validator=None) \
-        .regex(r'(?P<episodeMarker>e)(?P<episode>\d{1,4})') \
+        .regex(r'(?P<season>\d{1,2})?(?P<episodeMarker>e)(?P<episode>\d{1,4})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>e|x|-)(?P<episode>\d{1,4})').repeater('*')
 

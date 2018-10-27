@@ -110,7 +110,7 @@ class PostProcessor(object):
         # relative path to the file that is being processed
         self.rel_path = self._get_rel_path()
         self.nzb_name = nzb_name
-        self.process_method = process_method if process_method else app.PROCESS_METHOD
+        self.process_method = process_method or app.PROCESS_METHOD
         self.in_history = False
         self.release_group = None
         self.release_name = None
@@ -1304,9 +1304,8 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if not self.nzb_name and all([app.USE_TORRENTS,
-                                     app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink'),
-                                     app.TORRENT_SEED_LOCATION]):
+        if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
+                                      self.process_method in ('hardlink', 'symlink', 'reflink')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
