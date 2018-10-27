@@ -741,6 +741,7 @@ class DataGenerator(object):
         section_data['filters']['ignoreUnknownSubs'] = bool(app.IGNORE_UND_SUBS)
 
         return section_data
+
     @staticmethod
     def data_notifiers():
         """Notifications."""
