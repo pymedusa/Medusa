@@ -21,7 +21,7 @@
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | ext | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | ext | -
 :: | `dogpile.cache` | [0.6.7](https://pypi.org/project/dogpile.cache/0.6.7/) | **`medusa`**, `subliminal` | ext | -
-:: | `enum` | [1.1.6](https://pypi.org/project/enum34/1.1.6/) | **`medusa`** | ext | Backport from pyton 3.4
+:: | `enum` | [1.1.6](https://pypi.org/project/enum34/1.1.6/) | **`medusa`** | ext2 | Backport from pyton 3.4
 :: | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | ext | -
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
