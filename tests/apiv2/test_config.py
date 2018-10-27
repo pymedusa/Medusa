@@ -191,7 +191,7 @@ def config_main(monkeypatch, app_config):
     config_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
     config_data['postProcessing']['syncFiles'] = app.SYNC_FILES
     config_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
-    config_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
+    config_data['postProcessing']['allowedExtensions'] = list(app.ALLOWED_EXTENSIONS)
     config_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
     config_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
     config_data['postProcessing']['multiEpStrings'] = {text_type(k): v for k, v in iteritems(common.MULTI_EP_STRINGS)}
