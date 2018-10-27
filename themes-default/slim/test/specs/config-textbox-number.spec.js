@@ -16,7 +16,7 @@ test('renders', t => {
                 'explanation 1',
                 'explanation 2'
             ],
-            value: '30.5',
+            value: 30,
             id: 'test-id',
             min: 20,
             step: 0.5

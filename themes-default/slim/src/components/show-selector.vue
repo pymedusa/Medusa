@@ -3,7 +3,7 @@
     <div v-else class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
             <select v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
-                <option v-if="placeholder" :value="placeholder" disabled selected hidden>{{placeholder}}</option>
+                <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
                 <template v-if="whichList === -1">
                     <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
                         <option v-for="show in curShowList.shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
