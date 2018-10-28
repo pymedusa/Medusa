@@ -96,7 +96,6 @@
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
@@ -106,13 +105,6 @@
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 

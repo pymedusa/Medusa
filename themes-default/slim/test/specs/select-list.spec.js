@@ -29,6 +29,10 @@ test('renders', t => {
     t.snapshot(wrapper.html());
 });
 
+/*
+In order to regenerate the snapshot with the correct values
+uncomment 2 lines in `select-list.vue :: created()`
+*/
 test.failing('renders with values', t => {
     const { localVue, store } = t.context;
 

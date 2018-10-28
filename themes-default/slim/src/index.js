@@ -28,18 +28,20 @@ import {
     AppLink,
     Asset,
     Backstretch,
-    DisplayShow,
     FileBrowser,
     Home,
     LanguageSelect,
     ManualPostProcess,
     NamePattern,
     PlotInfo,
+    QualityPill,
     RootDirs,
     ScrollButtons,
     SelectList,
+    Show,
     ShowSelector,
     SnatchSelection,
+    StateSwitch,
     Status
 } from './components';
 
@@ -70,7 +72,6 @@ if (window) {
         common: {},
         config: {},
         home: {},
-        manage: {},
         addShows: {}
     };
     window.webRoot = webRoot;
@@ -85,18 +86,20 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
-    window.components.push(DisplayShow);
     window.components.push(FileBrowser);
     window.components.push(Home);
     window.components.push(LanguageSelect);
     window.components.push(ManualPostProcess);
     window.components.push(NamePattern);
     window.components.push(PlotInfo);
+    window.components.push(QualityPill); // This component is also used in a hack/workaround in `./static/js/ajax-episode-search.js`
     window.components.push(RootDirs);
     window.components.push(ScrollButtons);
     window.components.push(SelectList);
+    window.components.push(Show);
     window.components.push(ShowSelector);
     window.components.push(SnatchSelection);
+    window.components.push(StateSwitch);
     window.components.push(Status);
 }
 

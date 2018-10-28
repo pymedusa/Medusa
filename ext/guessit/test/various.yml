@@ -764,6 +764,7 @@
   title: Gangs of New York
   type: movie
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   year: 2002
 
 ? Peep.Show.S06E02.DVDrip.x264-faks86.mkv
@@ -875,12 +876,15 @@
   date: 2017-06-22
   screen_size: 720p
   video_codec: H.264
+  video_profile:
+  - Advanced Video Codec High Definition
+  - Scalable Video Coding
   release_group: SDH
   type: episode
 
 ? Katy Perry - Pepsi & Billboard Summer Beats Concert Series 2012 1080i HDTV 20 Mbps DD2.0 MPEG2-TrollHD.ts
 : title: Katy Perry
-  alternative_title: Pepsi & Billboard Summer Beats Concert
+  alternative_title: Pepsi & Billboard Summer Beats Concert Series
   year: 2012
   screen_size: 1080i
   source: HDTV
@@ -916,7 +920,7 @@
   type: movie
 
 ? This.is.Us
-: options: --no-embedded-config
+: options: --no-default-config
   title: This is Us
   type: movie
 

@@ -32,8 +32,6 @@
 ? +serie Season 2 other
 ? +serie Saisons 2 other
 ? +serie Seasons 2 other
-? +serie Serie 2 other
-? +serie Series 2 other
 ? +serie Season Two other
 ? +serie Season II other
 : season: 2
@@ -277,3 +275,57 @@
 
 ? S01D02&4-6&8
 : disc: [2, 4, 5, 6, 8]
+
+? Something.4x05-06
+? Something - 4x05-06
+? Something:4x05-06
+? Something 4x05-06
+? Something-4x05-06
+: title: Something
+  season: 4
+  episode:
+  - 5
+  - 6
+
+? Something.4x05-06
+? Something - 4x05-06
+? Something:4x05-06
+? Something 4x05-06
+? Something-4x05-06
+: options: -T something
+  title: something
+  season: 4
+  episode:
+  - 5
+  - 6
+
+? Colony 23/S01E01.Some.title.mkv
+: title: Colony 23
+  season: 1
+  episode: 1
+  episode_title: Some title
+
+? Show.Name.E02.2010.mkv
+: options: -t episode
+  title: Show Name
+  year: 2010
+  episode: 2
+
+? Show.Name.E02.S2010.mkv
+: options: -t episode
+  title: Show Name
+  year: 2010
+  season: 2010
+  episode: 2
+
+
+? Show.Name.E02.2010.mkv
+: title: Show Name
+  year: 2010
+  episode: 2
+
+? Show.Name.E02.S2010.mkv
+: title: Show Name
+  year: 2010
+  season: 2010
+  episode: 2

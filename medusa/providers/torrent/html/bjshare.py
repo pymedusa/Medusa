@@ -184,11 +184,11 @@ class BJShareProvider(TorrentProvider):
                 group_index = -2 if 'group_torrent' in result_class else 0
                 try:
                     title = result.select('a[href^="torrents.php?id="]')[0].get_text()
-                    title = re.sub('\s+', ' ', title).strip()  # clean empty lines and multiple spaces
+                    title = re.sub(r'\s+', ' ', title).strip()  # clean empty lines and multiple spaces
 
                     if 'group' in result_class or 'torrent' in result_class:
                         # get international title if available
-                        title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
+                        title = re.sub(r'.* \[(.*?)\](.*)', r'\1\2', title)
 
                     if 'group' in result_class:
                         group_title = title
@@ -197,7 +197,7 @@ class BJShareProvider(TorrentProvider):
                     for serie in self.absolute_numbering:
                         if serie in title:
                             # remove season from title when its in absolute format
-                            title = re.sub('S\d{2}E(\d{2,4})', r'\1', title)
+                            title = re.sub(r'S\d{2}E(\d{2,4})', r'\1', title)
                             break
 
                     download_url = urljoin(self.url, result.select('a[href^="torrents.php?action=download"]')[0]['href'])
@@ -231,7 +231,7 @@ class BJShareProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
-                    torrent_name = re.sub('\s+', ' ', torrent_name)
+                    torrent_name = re.sub(r'\s+', ' ', torrent_name)
 
                     items.append({
                         'title': torrent_name,
