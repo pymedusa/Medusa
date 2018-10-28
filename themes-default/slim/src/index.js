@@ -28,6 +28,7 @@ import {
     AppLink,
     Asset,
     Backstretch,
+    ConfigTemplate,
     ConfigTextbox,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -89,6 +90,7 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
+    window.components.push(ConfigTemplate);
     window.components.push(ConfigTextbox);
     window.components.push(ConfigTextboxNumber);
     window.components.push(ConfigToggleSlider);
