@@ -46,6 +46,7 @@ def audio_codec(config):  # pylint:disable=unused-argument
                     disabled=lambda context: is_disabled(context, 'audio_codec'))
 
     rebulk.regex("MP3", "LAME", r"LAME(?:\d)+-?(?:\d)+", value="MP3")
+    rebulk.string("MP2", value="MP2")
     rebulk.regex('Dolby', 'DolbyDigital', 'Dolby-Digital', 'DD', 'AC3D?', value='Dolby Digital')
     rebulk.regex('Dolby-?Atmos', 'Atmos', value='Dolby Atmos')
     rebulk.string("AAC", value="AAC")

@@ -625,8 +625,7 @@ class Application(object):
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
             app.AUTOPOSTPROCESSOR_FREQUENCY = max(app.MIN_AUTOPOSTPROCESSOR_FREQUENCY,
-                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency',
-                                                                    app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY))
+                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
             app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
                                                 check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',

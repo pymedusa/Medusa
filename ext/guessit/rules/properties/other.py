@@ -35,11 +35,18 @@ def other(config):  # pylint:disable=unused-argument,too-many-statements
     rebulk.regex('ws', 'wide-?screen', value='Widescreen')
     rebulk.regex('Re-?Enc(?:oded)?', value='Reencoded')
 
-    rebulk.string('Real', 'Fix', 'Fixed', value='Proper', tags=['has-neighbor-before', 'has-neighbor-after'])
-    rebulk.string('Proper', 'Repack', 'Rerip', 'Dirfix', 'Nfofix', 'Prooffix', value='Proper',
+    rebulk.string('Proper', 'Repack', 'Rerip', value='Proper',
                   tags=['streaming_service.prefix', 'streaming_service.suffix'])
-    rebulk.regex('(?:Proof-?)?Sample-?Fix', value='Proper',
+
+    rebulk.regex('Real-Proper', 'Real-Repack', 'Real-Rerip', value='Proper',
+                 tags=['streaming_service.prefix', 'streaming_service.suffix', 'real'])
+    rebulk.string('Fix', 'Fixed', value='Fix', tags=['has-neighbor-before', 'has-neighbor-after',
+                                                     'streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.string('Dirfix', 'Nfofix', 'Prooffix', value='Fix',
+                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.regex('(?:Proof-?)?Sample-?Fix', value='Fix',
                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
+
     rebulk.string('Fansub', value='Fan Subtitled', tags='has-neighbor')
     rebulk.string('Fastsub', value='Fast Subtitled', tags='has-neighbor')
 
@@ -150,7 +157,12 @@ class ProperCountRule(Rule):
                 raws[raw_cleanup(proper.raw)] = proper
             proper_count_match = copy.copy(propers[-1])
             proper_count_match.name = 'proper_count'
-            proper_count_match.value = len(raws)
+
+            value = 0
+            for raw in raws.values():
+                value += 2 if 'real' in raw.tags else 1
+
+            proper_count_match.value = value
             return proper_count_match
 
 

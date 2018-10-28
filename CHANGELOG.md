@@ -11,6 +11,7 @@
 - Converted the "quality pill" into a Vue SFC ([#5103](https://github.com/pymedusa/Medusa/pull/5103))
 - Vueified restart page, moved JS files to Vue, added `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
 - Added support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
+- Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
@@ -23,7 +24,7 @@
 - Fixed imdbpie exception on connection error ([#5386](https://github.com/pymedusa/Medusa/pull/5386))
 - Fixed metadata settings not being saved ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Fixed Synology DS missing location and wrong icon ([#5443](https://github.com/pymedusa/Medusa/pull/5443))
-- Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
+- Fixed saving "config - postprocessing frequency" value ([#5482](https://github.com/pymedusa/Medusa/pull/5482))
 
 -----
 

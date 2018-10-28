@@ -484,7 +484,7 @@ class DataGenerator(object):
         section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
         section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
         section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
-        section_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+        section_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
         section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
         section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
