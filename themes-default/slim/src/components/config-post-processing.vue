@@ -359,10 +359,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import AppLink from './app-link.vue';
-import FileBrowser from './file-browser.vue';
-import NamePattern from './name-pattern.vue';
-import SelectList from './select-list.vue';
+import { AppLink, FileBrowser, NamePattern, SelectList } from './helpers';
 
 export default {
     name: 'config-post-processing',

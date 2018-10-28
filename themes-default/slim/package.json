@@ -202,7 +202,11 @@
     "sourceMap": false,
     "instrument": false,
     "extension": [
-      ".vue"
+        ".vue"
+    ],
+    "include": [
+        "src/**/*.vue",
+        "src/**/*.js"
     ],
     "reporter": [
       "lcov",
