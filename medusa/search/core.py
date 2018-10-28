@@ -814,10 +814,10 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
         return multi_candidates
 
     for candidate in wanted_candidates:
-        wanted_episodes = (
+        wanted_episodes = [
             series_obj.want_episode(ep_obj.season, ep_obj.episode, candidate.quality, down_cur_quality)
             for ep_obj in candidate.episodes
-        )
+        ]
 
         if all(wanted_episodes):
             log.info(u'All episodes of this season are needed with this quality, adding {0} {1}',
@@ -835,10 +835,21 @@ def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
             continue
 
         else:
-            log.debug(u'Only some episodes of this season are needed with this quality, ignoring {0} {1}',
-                      candidate.provider.provider_type,
-                      candidate.name)
-            continue
+            # If there are 2 candidates and only one is wanted it
+            # is likely a single episode released as multi episode
+            if len(candidate.episodes) == 2:
+                log.info(u'This is likely a single episode released as multi, adding {0} {1}',
+                         candidate.provider.provider_type,
+                         candidate.name)
+
+                # Skip the result if search delay is enabled for the provider
+                if not delay_search(candidate):
+                    multi_candidates.append(candidate)
+            else:
+                log.debug(u'Only some episodes of this season are needed with this quality, ignoring {0} {1}',
+                          candidate.provider.provider_type,
+                          candidate.name)
+                continue
 
     return multi_candidates
 
