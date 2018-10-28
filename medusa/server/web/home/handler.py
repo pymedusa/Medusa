@@ -1243,7 +1243,7 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action(
+            episode_status_result = main_db_con.select(
                 'SELECT date, action, quality, provider, resource, size '
                 'FROM history '
                 'WHERE indexer_id = ? '
