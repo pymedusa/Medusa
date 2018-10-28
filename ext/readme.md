@@ -23,7 +23,7 @@
 :: | `dogpile.cache` | [0.6.7](https://pypi.org/project/dogpile.cache/0.6.7/) | **`medusa`**, `subliminal` | ext | -
 :: | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | ext | -
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
-:: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
+:: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.0](https://pypi.org/project/future/0.17.0/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
 :: | `PyGithub` | [1.43.2](https://pypi.org/project/PyGithub/1.43.2/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
