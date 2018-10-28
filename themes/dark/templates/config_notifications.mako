@@ -932,6 +932,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
+<vue-snotify></vue-snotify>
 <h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
