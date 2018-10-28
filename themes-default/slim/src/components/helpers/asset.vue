@@ -5,7 +5,7 @@
     </app-link>
 </template>
 <script>
-import { webRoot, apiKey } from '../api';
+import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
 
 export default {
