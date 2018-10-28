@@ -6,8 +6,9 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="number" v-bind="{min, step, id}" :name="id" :value="localValue" :class="inputClass" :placeholder="placeholder" @change="$emit('update', Number($event.target.value))"/>
+                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder}" v-model="localValue" @change="$emit('update', Number($event.target.value))"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>

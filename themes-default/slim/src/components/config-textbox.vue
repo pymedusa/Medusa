@@ -1,13 +1,14 @@
 <template>
-    <div id="config-textbox-content">
+    <div id="config-textbox">
         <div class="form-group">
             <div class="row">
                 <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input :type="type" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" :placeholder="placeholder"/>
+                    <input v-bind="{id, type, name: id, class: inputClass, placeholder}" v-model="localValue"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>
