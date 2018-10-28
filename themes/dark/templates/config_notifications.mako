@@ -283,387 +283,8 @@ window.app = new Vue({
         $store.dispatch('getShows');
     },
     mounted() {
-        $('#testGrowl').on('click', function() {
-            const growl = {};
-            growl.host = $.trim($('#growl_host').val());
-            growl.password = $.trim($('#growl_password').val());
-            if (!growl.host) {
-                $('#testGrowl-result').html('Please fill out the necessary fields above.');
-                $('#growl_host').addClass('warning');
-                return;
-            }
-            $('#growl_host').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testGrowl-result').html(MEDUSA.config.loading);
-            $.get('home/testGrowl', {
-                host: growl.host,
-                password: growl.password
-            }).done(data => {
-                $('#testGrowl-result').html(data);
-                $('#testGrowl').prop('disabled', false);
-            });
-        });
 
-        $('#testProwl').on('click', function() {
-            const prowl = {};
-            prowl.api = $.trim($('#prowl_api').find('input').val());
-            prowl.priority = $('#prowl_priority').find('input').val();
-            if (!prowl.api) {
-                $('#testProwl-result').html('Please fill out the necessary fields above.');
-                $('#prowl_api').find('input').addClass('warning');
-                return;
-            }
-            $('#prowl_api').find('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testProwl-result').html(MEDUSA.config.loading);
-            $.get('home/testProwl', {
-                prowl_api: prowl.api, // eslint-disable-line camelcase
-                prowl_priority: prowl.priority // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testProwl-result').html(data);
-                $('#testProwl').prop('disabled', false);
-            });
-        });
-
-        $('#testKODI').on('click', function() {
-            const kodi = {};
-            const kodiHosts = $.map($('#kodi_host').find('input'), value => { return value.value }).filter(item => item !== "");
-            kodi.host = kodiHosts.join(",");
-            kodi.username = $.trim($('#kodi_username').val());
-            kodi.password = $.trim($('#kodi_password').val());
-            if (!kodi.host) {
-                $('#testKODI-result').html('Please fill out the necessary fields above.');
-                $('#kodi_host').find('input').addClass('warning');
-                return;
-            }
-            $('#kodi_host').find('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testKODI-result').html(MEDUSA.config.loading);
-            $.get('home/testKODI', {
-                host: kodi.host,
-                username: kodi.username,
-                password: kodi.password
-            }).done(data => {
-                $('#testKODI-result').html(data);
-                $('#testKODI').prop('disabled', false);
-            });
-        });
-
-        $('#testPHT').on('click', function() {
-            const plex = {};
-            plex.client = {};
-            const plexHosts = $.map($('#plex_client_host').find('input'), value => { return value.value }).filter(item => item !== "");
-            plex.client.host = plexHosts.join(",");
-            plex.client.username = $.trim($('#plex_client_username').val());
-            plex.client.password = $.trim($('#plex_client_password').val());
-            if (!plex.client.host) {
-                $('#testPHT-result').html('Please fill out the necessary fields above.');
-                $('#plex_client_host').find('input').addClass('warning');
-                return;
-            }
-            $('#plex_client_host').find('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testPHT-result').html(MEDUSA.config.loading);
-            $.get('home/testPHT', {
-                host: plex.client.host,
-                username: plex.client.username,
-                password: plex.client.password
-            }).done(data => {
-                $('#testPHT-result').html(data);
-                $('#testPHT').prop('disabled', false);
-            });
-        });
-
-        $('#testPMS').on('click', function() {
-            const plex = {};
-            plex.server = {};
-            const plexHosts = $.map($('#plex_server_host').find('input'), value => { return value.value }).filter(item => item !== "");
-            plex.server.host = plexHosts.join(",");
-
-            plex.server.username = $.trim($('#plex_server_username').val());
-            plex.server.password = $.trim($('#plex_server_password').val());
-            plex.server.token = $.trim($('#plex_server_token').val());
-            if (!plex.server.host) {
-                $('#testPMS-result').html('Please fill out the necessary fields above.');
-                $('#plex_server_host').find('input').addClass('warning');
-                return;
-            }
-            $('#plex_server_host').find('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testPMS-result').html(MEDUSA.config.loading);
-            $.get('home/testPMS', {
-                host: plex.server.host,
-                username: plex.server.username,
-                password: plex.server.password,
-                plex_server_token: plex.server.token // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testPMS-result').html(data);
-                $('#testPMS').prop('disabled', false);
-            });
-        });
-
-        $('#testEMBY').on('click', function() {
-            const emby = {};
-            emby.host = $('#emby_host').val();
-            emby.apikey = $('#emby_apikey').val();
-            if (!emby.host || !emby.apikey) {
-                $('#testEMBY-result').html('Please fill out the necessary fields above.');
-                $('#emby_host').addRemoveWarningClass(emby.host);
-                $('#emby_apikey').addRemoveWarningClass(emby.apikey);
-                return;
-            }
-            $('#emby_host,#emby_apikey').children('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testEMBY-result').html(MEDUSA.config.loading);
-            $.get('home/testEMBY', {
-                host: emby.host,
-                emby_apikey: emby.apikey // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testEMBY-result').html(data);
-                $('#testEMBY').prop('disabled', false);
-            });
-        });
-
-        $('#testBoxcar2').on('click', function() {
-            const boxcar2 = {};
-            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').val());
-            if (!boxcar2.accesstoken) {
-                $('#testBoxcar2-result').html('Please fill out the necessary fields above.');
-                $('#boxcar2_accesstoken').addClass('warning');
-                return;
-            }
-            $('#boxcar2_accesstoken').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testBoxcar2-result').html(MEDUSA.config.loading);
-            $.get('home/testBoxcar2', {
-                accesstoken: boxcar2.accesstoken
-            }).done(data => {
-                $('#testBoxcar2-result').html(data);
-                $('#testBoxcar2').prop('disabled', false);
-            });
-        });
-
-        $('#testPushover').on('click', function() {
-            const pushover = {};
-            pushover.userkey = $('#pushover_userkey').val();
-            pushover.apikey = $('#pushover_apikey').val();
-            if (!pushover.userkey || !pushover.apikey) {
-                $('#testPushover-result').html('Please fill out the necessary fields above.');
-                $('#pushover_userkey').addRemoveWarningClass(pushover.userkey);
-                $('#pushover_apikey').addRemoveWarningClass(pushover.apikey);
-                return;
-            }
-            $('#pushover_userkey,#pushover_apikey').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testPushover-result').html(MEDUSA.config.loading);
-            $.get('home/testPushover', {
-                userKey: pushover.userkey,
-                apiKey: pushover.apikey
-            }).done(data => {
-                $('#testPushover-result').html(data);
-                $('#testPushover').prop('disabled', false);
-            });
-        });
-
-        $('#testLibnotify').on('click', () => {
-            $('#testLibnotify-result').html(MEDUSA.config.loading);
-            $.get('home/testLibnotify', data => {
-                $('#testLibnotify-result').html(data);
-            });
-        });
-
-        $('#settingsNMJ').on('click', () => {
-            const nmj = {};
-            nmj.host = $('#nmj_host').val();
-            if (nmj.host) {
-                $('#testNMJ-result').html(MEDUSA.config.loading);
-                $.get('home/settingsNMJ', {
-                    host: nmj.host
-                }, data => {
-                    if (data === null) {
-                        $('#nmj_database').removeAttr('readonly');
-                        $('#nmj_mount').removeAttr('readonly');
-                    }
-                    const JSONData = $.parseJSON(data);
-                    $('#testNMJ-result').html(JSONData.message);
-                    $('#nmj_database').val(JSONData.database);
-                    $('#nmj_mount').val(JSONData.mount);
-
-                    if (JSONData.database) {
-                        $('#nmj_database').prop('readonly', true);
-                    } else {
-                        $('#nmj_database').removeAttr('readonly');
-                    }
-                    if (JSONData.mount) {
-                        $('#nmj_mount').prop('readonly', true);
-                    } else {
-                        $('#nmj_mount').removeAttr('readonly');
-                    }
-                });
-            } else {
-                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
-                $('#nmj_host').focus();
-            }
-        });
-
-        $('#testNMJ').on('click', function() {
-            const nmj = {};
-            nmj.host = $.trim($('#nmj_host').val());
-            nmj.database = $('#nmj_database').val();
-            nmj.mount = $('#nmj_mount').val();
-            if (nmj.host) {
-                $('#nmj_host').removeClass('warning');
-                $(this).prop('disabled', true);
-                $('#testNMJ-result').html(MEDUSA.config.loading);
-                $.get('home/testNMJ', {
-                    host: nmj.host,
-                    database: nmj.database,
-                    mount: nmj.mount
-                }).done(data => {
-                    $('#testNMJ-result').html(data);
-                    $('#testNMJ').prop('disabled', false);
-                });
-            } else {
-                $('#testNMJ-result').html('Please fill out the necessary fields above.');
-                $('#nmj_host').addClass('warning');
-            }
-        });
-
-        $('#settingsNMJv2').on('click', () => {
-            const nmjv2 = {};
-            nmjv2.host = $('#nmjv2_host').val();
-            if (nmjv2.host) {
-                $('#testNMJv2-result').html(MEDUSA.config.loading);
-                nmjv2.dbloc = '';
-                const radios = document.getElementsByName('nmjv2_dbloc');
-                for (let i = 0, len = radios.length; i < len; i++) {
-                    if (radios[i].checked) {
-                        nmjv2.dbloc = radios[i].value;
-                        break;
-                    }
-                }
-
-                nmjv2.dbinstance = $('#NMJv2db_instance').val();
-                $.get('home/settingsNMJv2', {
-                    host: nmjv2.host,
-                    dbloc: nmjv2.dbloc,
-                    instance: nmjv2.dbinstance
-                }, data => {
-                    if (data === null) {
-                        $('#nmjv2_database').removeAttr('readonly');
-                    }
-                    const JSONData = $.parseJSON(data);
-                    $('#testNMJv2-result').html(JSONData.message);
-                    $('#nmjv2_database').val(JSONData.database);
-
-                    if (JSONData.database) {
-                        $('#nmjv2_database').prop('readonly', true);
-                    } else {
-                        $('#nmjv2_database').removeAttr('readonly');
-                    }
-                });
-            } else {
-                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
-                $('#nmjv2_host').focus();
-            }
-        });
-
-        $('#testNMJv2').on('click', function() {
-            const nmjv2 = {};
-            nmjv2.host = $.trim($('#nmjv2_host').val());
-            if (nmjv2.host) {
-                $('#nmjv2_host').removeClass('warning');
-                $(this).prop('disabled', true);
-                $('#testNMJv2-result').html(MEDUSA.config.loading);
-                $.get('home/testNMJv2', {
-                    host: nmjv2.host
-                }).done(data => {
-                    $('#testNMJv2-result').html(data);
-                    $('#testNMJv2').prop('disabled', false);
-                });
-            } else {
-                $('#testNMJv2-result').html('Please fill out the necessary fields above.');
-                $('#nmjv2_host').addClass('warning');
-            }
-        });
-
-        $('#testFreeMobile').on('click', function() {
-            const freemobile = {};
-            freemobile.id = $.trim($('#freemobile_id').val());
-            freemobile.apikey = $.trim($('#freemobile_apikey').val());
-            if (!freemobile.id || !freemobile.apikey) {
-                $('#testFreeMobile-result').html('Please fill out the necessary fields above.');
-                if (freemobile.id) {
-                    $('#freemobile_id').removeClass('warning');
-                } else {
-                    $('#freemobile_id').addClass('warning');
-                }
-                if (freemobile.apikey) {
-                    $('#freemobile_apikey').removeClass('warning');
-                } else {
-                    $('#freemobile_apikey').addClass('warning');
-                }
-                return;
-            }
-            $('#freemobile_id,#freemobile_apikey').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testFreeMobile-result').html(MEDUSA.config.loading);
-            $.get('home/testFreeMobile', {
-                freemobile_id: freemobile.id, // eslint-disable-line camelcase
-                freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testFreeMobile-result').html(data);
-                $('#testFreeMobile').prop('disabled', false);
-            });
-        });
-
-        $('#testTelegram').on('click', function() {
-            const telegram = {};
-            telegram.id = $.trim($('#telegram_id').val());
-            telegram.apikey = $.trim($('#telegram_apikey').val());
-            if (!telegram.id || !telegram.apikey) {
-                $('#testTelegram-result').html('Please fill out the necessary fields above.');
-                $('#telegram_id').addRemoveWarningClass(telegram.id);
-                $('#telegram_apikey').addRemoveWarningClass(telegram.apikey);
-                return;
-            }
-            $('#telegram_id,#telegram_apikey').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testTelegram-result').html(MEDUSA.config.loading);
-            $.get('home/testTelegram', {
-                telegram_id: telegram.id, // eslint-disable-line camelcase
-                telegram_apikey: telegram.apikey // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testTelegram-result').html(data);
-                $('#testTelegram').prop('disabled', false);
-            });
-        });
-
-        $('#testSlack').on('click', function() {
-            const slack = {};
-            slack.webhook = $.trim($('#slack_webhook').val());
-
-            if (!slack.webhook) {
-                $('#testSlack-result').html('Please fill out the necessary fields above.');
-                $('#slack_webhook').addRemoveWarningClass(slack.webhook);
-                return;
-            }
-            $('#slack_webhook').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testSlack-result').html(MEDUSA.config.loading);
-            $.get('home/testslack', {
-                slack_webhook: slack.webhook // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testSlack-result').html(data);
-                $('#testSlack').prop('disabled', false);
-            });
-        });
-
-        $('#TraktGetPin').on('click', () => {
-            window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
-            $('#trakt_pin').prop('disabled', false);
-        });
-
+        // TODO: vueify this.
         $('#trakt_pin').on('keyup change', () => {
             if ($('#trakt_pin').val().length === 0) {
                 $('#TraktGetPin').removeClass('hide');
@@ -671,149 +292,6 @@ window.app = new Vue({
             } else {
                 $('#TraktGetPin').addClass('hide');
                 $('#authTrakt').removeClass('hide');
-            }
-        });
-
-        $('#authTrakt').on('click', () => {
-            const trakt = {};
-            trakt.pin = $('#trakt_pin').val();
-            if (trakt.pin.length !== 0) {
-                $.get('home/getTraktToken', {
-                    trakt_pin: trakt.pin // eslint-disable-line camelcase
-                }).done(data => {
-                    $('#testTrakt-result').html(data);
-                    $('#authTrakt').addClass('hide');
-                    $('#trakt_pin').prop('disabled', true);
-                    $('#trakt_pin').val('');
-                    $('#TraktGetPin').removeClass('hide');
-                });
-            }
-        });
-
-        $('#testTrakt').on('click', function() {
-            const trakt = {};
-            trakt.username = $.trim($('#trakt_username').val());
-            trakt.trendingBlacklist = $.trim($('#trakt_blacklist_name').val());
-            if (!trakt.username) {
-                $('#testTrakt-result').html('Please fill out the necessary fields above.');
-                $('#trakt_username').addRemoveWarningClass(trakt.username);
-                return;
-            }
-
-            if (/\s/g.test(trakt.trendingBlacklist)) {
-                $('#testTrakt-result').html('Check blacklist name; the value needs to be a trakt slug');
-                $('#trakt_blacklist_name').addClass('warning');
-                return;
-            }
-            $('#trakt_username').removeClass('warning');
-            $('#trakt_blacklist_name').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testTrakt-result').html(MEDUSA.config.loading);
-            $.get('home/testTrakt', {
-                username: trakt.username,
-                blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
-            }).done(data => {
-                $('#testTrakt-result').html(data);
-                $('#testTrakt').prop('disabled', false);
-            });
-        });
-
-        $('#forceSync').on('click', () => {
-            $('#testTrakt-result').html(MEDUSA.config.loading);
-            $.getJSON('home/forceTraktSync', data => {
-                $('#testTrakt-result').html(data.result);
-            });
-        });
-
-        $('#testEmail').on('click', () => {
-            let to = '';
-            const status = $('#testEmail-result');
-            status.html(MEDUSA.config.loading);
-            let host = $('#email_host').val();
-            host = host.length > 0 ? host : null;
-            let port = $('#email_port').val();
-            port = port.length > 0 ? port : null;
-            const tls = $('#email_tls').find('input').is(':checked') ? 1 : 0;
-            let from = $('#email_from').val();
-            from = from.length > 0 ? from : 'root@localhost';
-            const user = $('#email_username').val().trim();
-            const pwd = $('#email_password').val();
-            let err = '';
-            if (host === null) {
-                err += '<li style="color: red;">You must specify an SMTP hostname!</li>';
-            }
-            if (port === null) {
-                err += '<li style="color: red;">You must specify an SMTP port!</li>';
-            } else if (port.match(/^\d+$/) === null || parseInt(port, 10) > 65535) {
-                err += '<li style="color: red;">SMTP port must be between 0 and 65535!</li>';
-            }
-            if (err.length > 0) {
-                err = '<ol>' + err + '</ol>';
-                status.html(err);
-            } else {
-                to = prompt('Enter an email address to send the test to:', null); // eslint-disable-line no-alert
-                if (to === null || to.length === 0 || to.match(/.*@.*/) === null) {
-                    status.html('<p style="color: red;">You must provide a recipient email address!</p>');
-                } else {
-                    $.get('home/testEmail', {
-                        host,
-                        port,
-                        smtp_from: from, // eslint-disable-line camelcase
-                        use_tls: tls, // eslint-disable-line camelcase
-                        user,
-                        pwd,
-                        to
-                    }, msg => {
-                        $('#testEmail-result').html(msg);
-                    });
-                }
-            }
-        });
-
-        $('#testPushalot').on('click', function() {
-            const pushalot = {};
-            pushalot.authToken = $.trim($('#pushalot_authorizationtoken').val());
-            if (!pushalot.authToken) {
-                $('#testPushalot-result').html('Please fill out the necessary fields above.');
-                $('#pushalot_authorizationtoken').addClass('warning');
-                return;
-            }
-            $('#pushalot_authorizationtoken').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testPushalot-result').html(MEDUSA.config.loading);
-            $.get('home/testPushalot', {
-                authorizationToken: pushalot.authToken
-            }).done(data => {
-                $('#testPushalot-result').html(data);
-                $('#testPushalot').prop('disabled', false);
-            });
-        });
-
-        $('#testPushbullet').on('click', function() {
-            const pushbullet = {};
-            pushbullet.api = $.trim($('#pushbullet_api').find('input').val());
-            if (!pushbullet.api) {
-                $('#testPushbullet-result').html('Please fill out the necessary fields above.');
-                $('#pushbullet_api').find('input').addClass('warning');
-                return;
-            }
-            $('#pushbullet_api').find('input').removeClass('warning');
-            $(this).prop('disabled', true);
-            $('#testPushbullet-result').html(MEDUSA.config.loading);
-            $.get('home/testPushbullet', {
-                api: pushbullet.api
-            }).done(data => {
-                $('#testPushbullet-result').html(data);
-                $('#testPushbullet').prop('disabled', false);
-            });
-        });
-
-        // Show instructions for plex when enabled
-        $('#use_plex_server').on('click', function() {
-            if ($(this).is(':checked')) {
-                $('.plexinfo').removeClass('hide');
-            } else {
-                $('.plexinfo').addClass('hide');
             }
         });
 
@@ -973,6 +451,481 @@ window.app = new Vue({
                     'Error'
                 );
             });
+        },
+        testGrowl() {
+            debugger;
+            const growl = {};
+            growl.host = $.trim($('#growl_host').val());
+            growl.password = $.trim($('#growl_password').val());
+            if (!growl.host) {
+                $('#testGrowl-result').html('Please fill out the necessary fields above.');
+                $('#growl_host').addClass('warning');
+                return;
+            }
+            $('#growl_host').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testGrowl-result').html(MEDUSA.config.loading);
+            $.get('home/testGrowl', {
+                host: growl.host,
+                password: growl.password
+            }).done(data => {
+                $('#testGrowl-result').html(data);
+                $('#testGrowl').prop('disabled', false);
+            });
+        },
+        testProwl() {
+            const prowl = {};
+            prowl.api = $.trim($('#prowl_api').find('input').val());
+            prowl.priority = $('#prowl_priority').find('input').val();
+            if (!prowl.api) {
+                $('#testProwl-result').html('Please fill out the necessary fields above.');
+                $('#prowl_api').find('input').addClass('warning');
+                return;
+            }
+            $('#prowl_api').find('input').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testProwl-result').html(MEDUSA.config.loading);
+            $.get('home/testProwl', {
+                prowl_api: prowl.api, // eslint-disable-line camelcase
+                prowl_priority: prowl.priority // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testProwl-result').html(data);
+                $('#testProwl').prop('disabled', false);
+            });
+        },
+        testKODI() {
+            const kodi = {};
+            const kodiHosts = $.map($('#kodi_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            kodi.host = kodiHosts.join(",");
+            kodi.username = $.trim($('#kodi_username').val());
+            kodi.password = $.trim($('#kodi_password').val());
+            if (!kodi.host) {
+                $('#testKODI-result').html('Please fill out the necessary fields above.');
+                $('#kodi_host').find('input').addClass('warning');
+                return;
+            }
+            $('#kodi_host').find('input').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testKODI-result').html(MEDUSA.config.loading);
+            $.get('home/testKODI', {
+                host: kodi.host,
+                username: kodi.username,
+                password: kodi.password
+            }).done(data => {
+                $('#testKODI-result').html(data);
+                $('#testKODI').prop('disabled', false);
+            });
+        },
+        testPHT() {
+            const plex = {};
+            plex.client = {};
+            const plexHosts = $.map($('#plex_client_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            plex.client.host = plexHosts.join(",");
+            plex.client.username = $.trim($('#plex_client_username').val());
+            plex.client.password = $.trim($('#plex_client_password').val());
+            if (!plex.client.host) {
+                $('#testPHT-result').html('Please fill out the necessary fields above.');
+                $('#plex_client_host').find('input').addClass('warning');
+                return;
+            }
+            $('#plex_client_host').find('input').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testPHT-result').html(MEDUSA.config.loading);
+            $.get('home/testPHT', {
+                host: plex.client.host,
+                username: plex.client.username,
+                password: plex.client.password
+            }).done(data => {
+                $('#testPHT-result').html(data);
+                $('#testPHT').prop('disabled', false);
+            });
+        },
+        testPMS() {
+            const plex = {};
+            plex.server = {};
+            const plexHosts = $.map($('#plex_server_host').find('input'), value => { return value.value }).filter(item => item !== "");
+            plex.server.host = plexHosts.join(",");
+
+            plex.server.username = $.trim($('#plex_server_username').val());
+            plex.server.password = $.trim($('#plex_server_password').val());
+            plex.server.token = $.trim($('#plex_server_token').val());
+            if (!plex.server.host) {
+                $('#testPMS-result').html('Please fill out the necessary fields above.');
+                $('#plex_server_host').find('input').addClass('warning');
+                return;
+            }
+            $('#plex_server_host').find('input').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testPMS-result').html(MEDUSA.config.loading);
+            $.get('home/testPMS', {
+                host: plex.server.host,
+                username: plex.server.username,
+                password: plex.server.password,
+                plex_server_token: plex.server.token // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testPMS-result').html(data);
+                $('#testPMS').prop('disabled', false);
+            });
+        },
+        testEMBY() {
+            const emby = {};
+            emby.host = $('#emby_host').val();
+            emby.apikey = $('#emby_apikey').val();
+            if (!emby.host || !emby.apikey) {
+                $('#testEMBY-result').html('Please fill out the necessary fields above.');
+                $('#emby_host').addRemoveWarningClass(emby.host);
+                $('#emby_apikey').addRemoveWarningClass(emby.apikey);
+                return;
+            }
+            $('#emby_host,#emby_apikey').children('input').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testEMBY-result').html(MEDUSA.config.loading);
+            $.get('home/testEMBY', {
+                host: emby.host,
+                emby_apikey: emby.apikey // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testEMBY-result').html(data);
+                $('#testEMBY').prop('disabled', false);
+            });
+        },
+        testBoxcar2() {
+            const boxcar2 = {};
+            boxcar2.accesstoken = $.trim($('#boxcar2_accesstoken').val());
+            if (!boxcar2.accesstoken) {
+                $('#testBoxcar2-result').html('Please fill out the necessary fields above.');
+                $('#boxcar2_accesstoken').addClass('warning');
+                return;
+            }
+            $('#boxcar2_accesstoken').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testBoxcar2-result').html(MEDUSA.config.loading);
+            $.get('home/testBoxcar2', {
+                accesstoken: boxcar2.accesstoken
+            }).done(data => {
+                $('#testBoxcar2-result').html(data);
+                $('#testBoxcar2').prop('disabled', false);
+            });
+        },
+        testPushover() {
+            const pushover = {};
+            pushover.userkey = $('#pushover_userkey').val();
+            pushover.apikey = $('#pushover_apikey').val();
+            if (!pushover.userkey || !pushover.apikey) {
+                $('#testPushover-result').html('Please fill out the necessary fields above.');
+                $('#pushover_userkey').addRemoveWarningClass(pushover.userkey);
+                $('#pushover_apikey').addRemoveWarningClass(pushover.apikey);
+                return;
+            }
+            $('#pushover_userkey,#pushover_apikey').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testPushover-result').html(MEDUSA.config.loading);
+            $.get('home/testPushover', {
+                userKey: pushover.userkey,
+                apiKey: pushover.apikey
+            }).done(data => {
+                $('#testPushover-result').html(data);
+                $('#testPushover').prop('disabled', false);
+            });
+        },
+        testLibnotify() {
+            $('#testLibnotify-result').html(MEDUSA.config.loading);
+            $.get('home/testLibnotify', data => {
+                $('#testLibnotify-result').html(data);
+            });
+        },
+        settingsNMJ() {
+            const nmj = {};
+            nmj.host = $('#nmj_host').val();
+            if (nmj.host) {
+                $('#testNMJ-result').html(MEDUSA.config.loading);
+                $.get('home/settingsNMJ', {
+                    host: nmj.host
+                }, data => {
+                    if (data === null) {
+                        $('#nmj_database').removeAttr('readonly');
+                        $('#nmj_mount').removeAttr('readonly');
+                    }
+                    const JSONData = $.parseJSON(data);
+                    $('#testNMJ-result').html(JSONData.message);
+                    $('#nmj_database').val(JSONData.database);
+                    $('#nmj_mount').val(JSONData.mount);
+
+                    if (JSONData.database) {
+                        $('#nmj_database').prop('readonly', true);
+                    } else {
+                        $('#nmj_database').removeAttr('readonly');
+                    }
+                    if (JSONData.mount) {
+                        $('#nmj_mount').prop('readonly', true);
+                    } else {
+                        $('#nmj_mount').removeAttr('readonly');
+                    }
+                });
+            } else {
+                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
+                $('#nmj_host').focus();
+            }
+        },
+        testNMJ() {
+            const nmj = {};
+            nmj.host = $.trim($('#nmj_host').val());
+            nmj.database = $('#nmj_database').val();
+            nmj.mount = $('#nmj_mount').val();
+            if (nmj.host) {
+                $('#nmj_host').removeClass('warning');
+                $(this).prop('disabled', true);
+                $('#testNMJ-result').html(MEDUSA.config.loading);
+                $.get('home/testNMJ', {
+                    host: nmj.host,
+                    database: nmj.database,
+                    mount: nmj.mount
+                }).done(data => {
+                    $('#testNMJ-result').html(data);
+                    $('#testNMJ').prop('disabled', false);
+                });
+            } else {
+                $('#testNMJ-result').html('Please fill out the necessary fields above.');
+                $('#nmj_host').addClass('warning');
+            }
+        },
+        settingsNMJv2() {
+            const nmjv2 = {};
+            nmjv2.host = $('#nmjv2_host').val();
+            if (nmjv2.host) {
+                $('#testNMJv2-result').html(MEDUSA.config.loading);
+                nmjv2.dbloc = '';
+                const radios = document.getElementsByName('nmjv2_dbloc');
+                for (let i = 0, len = radios.length; i < len; i++) {
+                    if (radios[i].checked) {
+                        nmjv2.dbloc = radios[i].value;
+                        break;
+                    }
+                }
+
+                nmjv2.dbinstance = $('#NMJv2db_instance').val();
+                $.get('home/settingsNMJv2', {
+                    host: nmjv2.host,
+                    dbloc: nmjv2.dbloc,
+                    instance: nmjv2.dbinstance
+                }, data => {
+                    if (data === null) {
+                        $('#nmjv2_database').removeAttr('readonly');
+                    }
+                    const JSONData = $.parseJSON(data);
+                    $('#testNMJv2-result').html(JSONData.message);
+                    $('#nmjv2_database').val(JSONData.database);
+
+                    if (JSONData.database) {
+                        $('#nmjv2_database').prop('readonly', true);
+                    } else {
+                        $('#nmjv2_database').removeAttr('readonly');
+                    }
+                });
+            } else {
+                alert('Please fill in the Popcorn IP address'); // eslint-disable-line no-alert
+                $('#nmjv2_host').focus();
+            }
+        },
+        testNMJv2() {
+            const nmjv2 = {};
+            nmjv2.host = $.trim($('#nmjv2_host').val());
+            if (nmjv2.host) {
+                $('#nmjv2_host').removeClass('warning');
+                $(this).prop('disabled', true);
+                $('#testNMJv2-result').html(MEDUSA.config.loading);
+                $.get('home/testNMJv2', {
+                    host: nmjv2.host
+                }).done(data => {
+                    $('#testNMJv2-result').html(data);
+                    $('#testNMJv2').prop('disabled', false);
+                });
+            } else {
+                $('#testNMJv2-result').html('Please fill out the necessary fields above.');
+                $('#nmjv2_host').addClass('warning');
+            }
+        },
+        testFreeMobile() {
+            const freemobile = {};
+            freemobile.id = $.trim($('#freemobile_id').val());
+            freemobile.apikey = $.trim($('#freemobile_apikey').val());
+            if (!freemobile.id || !freemobile.apikey) {
+                $('#testFreeMobile-result').html('Please fill out the necessary fields above.');
+                if (freemobile.id) {
+                    $('#freemobile_id').removeClass('warning');
+                } else {
+                    $('#freemobile_id').addClass('warning');
+                }
+                if (freemobile.apikey) {
+                    $('#freemobile_apikey').removeClass('warning');
+                } else {
+                    $('#freemobile_apikey').addClass('warning');
+                }
+                return;
+            }
+            $('#freemobile_id,#freemobile_apikey').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testFreeMobile-result').html(MEDUSA.config.loading);
+            $.get('home/testFreeMobile', {
+                freemobile_id: freemobile.id, // eslint-disable-line camelcase
+                freemobile_apikey: freemobile.apikey // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testFreeMobile-result').html(data);
+                $('#testFreeMobile').prop('disabled', false);
+            });
+        },
+        testTelegram() {
+            const telegram = {};
+            telegram.id = $.trim($('#telegram_id').val());
+            telegram.apikey = $.trim($('#telegram_apikey').val());
+            if (!telegram.id || !telegram.apikey) {
+                $('#testTelegram-result').html('Please fill out the necessary fields above.');
+                $('#telegram_id').addRemoveWarningClass(telegram.id);
+                $('#telegram_apikey').addRemoveWarningClass(telegram.apikey);
+                return;
+            }
+            $('#telegram_id,#telegram_apikey').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testTelegram-result').html(MEDUSA.config.loading);
+            $.get('home/testTelegram', {
+                telegram_id: telegram.id, // eslint-disable-line camelcase
+                telegram_apikey: telegram.apikey // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testTelegram-result').html(data);
+                $('#testTelegram').prop('disabled', false);
+            });
+        },
+        testSlack() {
+            const slack = {};
+            slack.webhook = $.trim($('#slack_webhook').val());
+
+            if (!slack.webhook) {
+                $('#testSlack-result').html('Please fill out the necessary fields above.');
+                $('#slack_webhook').addRemoveWarningClass(slack.webhook);
+                return;
+            }
+            $('#slack_webhook').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testSlack-result').html(MEDUSA.config.loading);
+            $.get('home/testslack', {
+                slack_webhook: slack.webhook // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testSlack-result').html(data);
+                $('#testSlack').prop('disabled', false);
+            });
+        },
+        TraktGetPin() {
+            window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
+            $('#trakt_pin').prop('disabled', false);
+        },
+        authTrakt() {
+            const trakt = {};
+            trakt.pin = $('#trakt_pin').val();
+            if (trakt.pin.length !== 0) {
+                $.get('home/getTraktToken', {
+                    trakt_pin: trakt.pin // eslint-disable-line camelcase
+                }).done(data => {
+                    $('#testTrakt-result').html(data);
+                    $('#authTrakt').addClass('hide');
+                    $('#trakt_pin').prop('disabled', true);
+                    $('#trakt_pin').val('');
+                    $('#TraktGetPin').removeClass('hide');
+                });
+            }
+        },
+        testTrakt() {
+            const trakt = {};
+            trakt.username = $.trim($('#trakt_username').val());
+            trakt.trendingBlacklist = $.trim($('#trakt_blacklist_name').val());
+            if (!trakt.username) {
+                $('#testTrakt-result').html('Please fill out the necessary fields above.');
+                $('#trakt_username').addRemoveWarningClass(trakt.username);
+                return;
+            }
+
+            if (/\s/g.test(trakt.trendingBlacklist)) {
+                $('#testTrakt-result').html('Check blacklist name; the value needs to be a trakt slug');
+                $('#trakt_blacklist_name').addClass('warning');
+                return;
+            }
+            $('#trakt_username').removeClass('warning');
+            $('#trakt_blacklist_name').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testTrakt-result').html(MEDUSA.config.loading);
+            $.get('home/testTrakt', {
+                username: trakt.username,
+                blacklist_name: trakt.trendingBlacklist // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testTrakt-result').html(data);
+                $('#testTrakt').prop('disabled', false);
+            });
+        },
+        traktForceSync() {
+            $('#testTrakt-result').html(MEDUSA.config.loading);
+            $.getJSON('home/forceTraktSync', data => {
+                $('#testTrakt-result').html(data.result);
+            });
+        },
+        testEmail() {
+            let to = '';
+            const status = $('#testEmail-result');
+            status.html(MEDUSA.config.loading);
+            let host = $('#email_host').val();
+            host = host.length > 0 ? host : null;
+            let port = $('#email_port').val();
+            port = port.length > 0 ? port : null;
+            const tls = $('#email_tls').find('input').is(':checked') ? 1 : 0;
+            let from = $('#email_from').val();
+            from = from.length > 0 ? from : 'root@localhost';
+            const user = $('#email_username').val().trim();
+            const pwd = $('#email_password').val();
+            let err = '';
+            if (host === null) {
+                err += '<li style="color: red;">You must specify an SMTP hostname!</li>';
+            }
+            if (port === null) {
+                err += '<li style="color: red;">You must specify an SMTP port!</li>';
+            } else if (port.match(/^\d+$/) === null || parseInt(port, 10) > 65535) {
+                err += '<li style="color: red;">SMTP port must be between 0 and 65535!</li>';
+            }
+            if (err.length > 0) {
+                err = '<ol>' + err + '</ol>';
+                status.html(err);
+            } else {
+                to = prompt('Enter an email address to send the test to:', null); // eslint-disable-line no-alert
+                if (to === null || to.length === 0 || to.match(/.*@.*/) === null) {
+                    status.html('<p style="color: red;">You must provide a recipient email address!</p>');
+                } else {
+                    $.get('home/testEmail', {
+                        host,
+                        port,
+                        smtp_from: from, // eslint-disable-line camelcase
+                        use_tls: tls, // eslint-disable-line camelcase
+                        user,
+                        pwd,
+                        to
+                    }, msg => {
+                        $('#testEmail-result').html(msg);
+                    });
+                }
+            }
+        },
+        testPushalot() {
+            const pushalot = {};
+            pushalot.authToken = $.trim($('#pushalot_authorizationtoken').val());
+            if (!pushalot.authToken) {
+                $('#testPushalot-result').html('Please fill out the necessary fields above.');
+                $('#pushalot_authorizationtoken').addClass('warning');
+                return;
+            }
+            $('#pushalot_authorizationtoken').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testPushalot-result').html(MEDUSA.config.loading);
+            $.get('home/testPushalot', {
+                authorizationToken: pushalot.authToken
+            }).done(data => {
+                $('#testPushalot-result').html(data);
+                $('#testPushalot').prop('disabled', false);
+            });
         }
     }
 });
@@ -1036,7 +989,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" @update="notifiers.kodi.password = $event"></config-textbox>
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
-                                    <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" />
+                                    <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" @click="testKODI"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                             
                                 </div>
@@ -1051,59 +1004,35 @@ window.app = new Vue({
                             <span class="icon-notifiers-plex" title="Plex Media Server"></span>
                             <h3><app-link href="https://plex.tv">Plex Media Server</app-link></h3>
                             <p>Experience your media on a visually stunning, easy to use interface on your Mac connected to your TV. Your media library has never looked this good!</p>
-                            <p class="plexinfo hide">For sending notifications to Plex Home Theater (PHT) clients, use the KODI notifier with port <b>3005</b>.</p>
+                            <p v-if="notifiers.plex.server.enabled" class="plexinfo">For sending notifications to Plex Home Theater (PHT) clients, use the KODI notifier with port <b>3005</b>.</p>
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media server -->
-                                <div class="form-group">
-                                    <div class="row">
-                                        <label for="use_plex_server" class="col-sm-2 control-label">
-                                            <span>Enable</span>
-                                        </label>
-                                        <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="use_plex_server" name="use_plex_server" v-model="notifiers.plex.server.enabled" sync></toggle-button>
-                                            <p>Send Plex Media Server library updates?</p>
-                                        </div>
-                                    </div>
-                                </div>
+                                
+                                <config-toggle-slider :checked="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()"  @update="notifiers.plex.server.enabled = $event"></config-toggle-slider>
 
                                 <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_server_token" class="col-sm-2 control-label">
-                                                <span>Plex Media Server Auth Token</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="text" name="plex_server_token" id="plex_server_token" v-model="notifiers.plex.server.token" @change="save()" @update="notifiers.plex.server.token = $event" class="form-control input-sm max-input350"/>
-                                                <!-- Can't use the config-textbox component, because of the complex descriptions -->
-                                                <p>Auth Token used by plex</p>
-                                                <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-textbox :value="notifiers.plex.server.token" label="Plex Media Server Auth Token" id="plex_server_token" @change="save()"  @update="notifiers.plex.server.token = $event">
+                                        <p>Auth Token used by plex</p>
+                                        <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
+                                    </config-textbox>
 
                                     <config-textbox :value="notifiers.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
                                     <config-textbox :value="notifiers.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
                                     
                                     <config-toggle-slider :checked="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.plex.server.updateLibrary = $event"></config-toggle-slider>
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_server_host" class="col-sm-2 control-label">
-                                                <span>Plex Media Server IP:Port</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event.map(x => x.value)"></select-list>
-                                                <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-    
+                                    
+                                    <config-template label-for="plex_server_host" label="Plex Media Server IP:Port">
+                                        <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event.map(x => x.value)"></select-list>
+                                        <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
+                                    </config-template>
+
                                     <config-toggle-slider :checked="notifiers.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"  @update="notifiers.plex.server.https = $event"></config-toggle-slider>
                                     
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
-                                        <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" />
+                                        <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" @click="testPMS"/>
                                         <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                         <div class="clear-left">&nbsp;</div>
                                     </div>
@@ -1122,29 +1051,23 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
                                 <config-toggle-slider :checked="notifiers.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifiers.plex.client.enabled = $event"></config-toggle-slider>
+                                
                                 <div v-show="notifiers.plex.client.enabled" id="content-use-plex-client"> <!-- show based on notifiers.plex.server.enabled -->
                                     <config-toggle-slider :checked="notifiers.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.plex.client.notifyOnSnatch = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.plex.client.notifyOnDownload = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.plex.client.notifyOnSubtitleDownload = $event"></config-toggle-slider>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="plex_client_host" class="col-sm-2 control-label">
-                                                <span>Plex Home Theater IP:Port</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event.map(x => x.value)"></select-list>
-                                                <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-    
+                                    <config-template label-for="plex_client_host" label="Plex Home Theater IP:Port">
+                                        <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event.map(x => x.value)"></select-list>
+                                        <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
+                                    </config-template>
+                                    
                                     <config-textbox :value="notifiers.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
                                     <config-textbox :value="notifiers.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
 
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
-                                        <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" />
+                                        <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" @click="testPHT"/>
                                         <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                         <div class=clear-left><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                     </div>
@@ -1164,12 +1087,13 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for emby -->
                                 <config-toggle-slider :checked="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()"  @update="notifiers.emby.enabled = $event"></config-toggle-slider>
+                                
                                 <div v-show="notifiers.emby.enabled" id="content_use_emby">
                                     <config-textbox :value="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()"  @update="notifiers.emby.host = $event"></config-textbox>
                                     <config-textbox :checked="notifiers.emby.apiKey" label="Api Key" id="emby_apikey" @change="save()"  @update="notifiers.emby.apiKey = $event"></config-textbox>
                                 
                                     <div class="testNotification" id="testEMBY-result">Click below to test.</div>
-                                    <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" />
+                                    <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" @click="testEMBY"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1188,24 +1112,17 @@ window.app = new Vue({
                                 <div v-show="notifiers.nmj.enabled" id="content-use-nmj">
                                     <config-textbox :value="notifiers.nmj.host" label="Popcorn IP address" id="nmj_host" :explanations="['IP address of Popcorn 200-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmj.host = $event"></config-textbox>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="get_nmj_settings" class="col-sm-2 control-label">
-                                                <span>Get settings</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" />            
-                                                <span>the Popcorn Hour device must be powered on and NMJ running.</span>                    
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="settingsNMJ" label="Get settings">
+                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" @click="settingsNMJ"/>            
+                                        <span>the Popcorn Hour device must be powered on and NMJ running.</span>
+                                    </config-template>
 
                                     <config-textbox :value="notifiers.nmj.database" label="NMJ database" id="nmj_database" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.database = $event"></config-textbox>
 
                                     <config-textbox :value="notifiers.nmj.mount" label="NMJ mount" id="nmj_mount" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.mount = $event"></config-textbox>
                                 
                                     <div class="testNotification" id="testNMJ-result">Click below to test.</div>
-                                    <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" />
+                                    <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" @click="testNMJ"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>        
 
                                 </div>
@@ -1227,59 +1144,38 @@ window.app = new Vue({
 
                                     <config-textbox :value="notifiers.nmjv2.host" label="Popcorn IP address" id="nmjv2_host" :explanations="['IP address of Popcorn 300/400-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmjv2.host = $event"></config-textbox>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="nmjv2_database_location" class="col-sm-2 control-label">
-                                                <span>Database location</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <label for="NMJV2_DBLOC_A" class="space-right">
-                                                    <input type="radio" NAME="nmjv2_dbloc" VALUE="local" id="NMJV2_DBLOC_A" v-model="notifiers.nmjv2.dbloc" value="local"/>
-                                                    PCH Local Media
-                                                </label>
-                                                <label for="NMJV2_DBLOC_B">
-                                                    <input type="radio" NAME="nmjv2_dbloc" VALUE="network" id="NMJV2_DBLOC_B" v-model="notifiers.nmjv2.dbloc" value="network"/>
-                                                    PCH Network Media
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="nmjv2_database_location" label="Database location">
+                                        <label for="NMJV2_DBLOC_A" class="space-right">
+                                            <input type="radio" NAME="nmjv2_dbloc" VALUE="local" id="NMJV2_DBLOC_A" v-model="notifiers.nmjv2.dbloc" value="local"/>
+                                            PCH Local Media
+                                        </label>
+                                        <label for="NMJV2_DBLOC_B">
+                                            <input type="radio" NAME="nmjv2_dbloc" VALUE="network" id="NMJV2_DBLOC_B" v-model="notifiers.nmjv2.dbloc" value="network"/>
+                                            PCH Network Media
+                                        </label>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="nmjv2_database_instance" class="col-sm-2 control-label">
-                                                <span>Database instance</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select id="NMJv2db_instance" class="form-control input-sm">
-                                                    <option value="0">#1 </option>
-                                                    <option value="1">#2 </option>
-                                                    <option value="2">#3 </option>
-                                                    <option value="3">#4 </option>
-                                                    <option value="4">#5 </option>
-                                                    <option value="5">#6 </option>
-                                                    <option value="6">#7 </option>
-                                                </select>
-                                                <span>adjust this value if the wrong database is selected.</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="nmjv2_database_instance" label="Database instance">
+                                        <select id="NMJv2db_instance" class="form-control input-sm">
+                                            <option value="0">#1 </option>
+                                            <option value="1">#2 </option>
+                                            <option value="2">#3 </option>
+                                            <option value="3">#4 </option>
+                                            <option value="4">#5 </option>
+                                            <option value="5">#6 </option>
+                                            <option value="6">#7 </option>
+                                        </select>
+                                        <span>adjust this value if the wrong database is selected.</span>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="get_nmjv2_find_database" class="col-sm-2 control-label">
-                                                <span>Find database</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" />
-                                                <span>the Popcorn Hour device must be powered on.</span>
-                                            </div>
-                                        </div>
-                                    </div>  
+                                    <config-template label-for="get_nmjv2_find_database" label="Find database">
+                                        <input type="button" class="btn-medusa btn-inline" value="Find Database" id="settingsNMJv2" @click="settingsNMJv2"/>
+                                        <span>the Popcorn Hour device must be powered on.</span>
+                                    </config-template>
 
                                     <config-textbox :value="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()"  @update="notifiers.nmjv2.database = $event"></config-textbox>
                                     <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
-                                    <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" />
+                                    <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" @click="testNMJv2"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1327,7 +1223,6 @@ window.app = new Vue({
                         </div>
                     </div>
 
-    
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-pytivo" title="pyTivo"></span>
@@ -1349,9 +1244,7 @@ window.app = new Vue({
                     </div>
                 </div><!-- #home-theater-nas //-->
                 
-                
                 <div id="devices">
-                    
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-growl" title="Growl"></span>
@@ -1371,7 +1264,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()"  @update="notifiers.growl.password = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
-                                    <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" />
+                                    <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" @click="testGrowl"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1393,34 +1286,20 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.prowl.notifyOnDownload = $event"></config-toggle-slider>
                                     <config-toggle-slider :checked="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.prowl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
                                     <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="prowl_api" class="col-sm-2 control-label">
-                                                <span>Api</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
-                                                <span>Prowl API(s) listed here, will receive notifications for <b>all</b> shows.
-                                                    Your Prowl API key is available at:
-                                                    <app-link href="https://www.prowlapp.com/api_settings.php">
-                                                    https://www.prowlapp.com/api_settings.php</app-link><br>
-                                                    (This field may be blank except when testing.)
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
                                     
-
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label class="col-sm-2 control-label">
-                                                <span>Show notification list</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="prowl_api" label="Api">
+                                        <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
+                                        <span>Prowl API(s) listed here, will receive notifications for <b>all</b> shows.
+                                            Your Prowl API key is available at:
+                                            <app-link href="https://www.prowlapp.com/api_settings.php">
+                                            https://www.prowlapp.com/api_settings.php</app-link><br>
+                                            (This field may be blank except when testing.)
+                                        </span>
+                                    </config-template>
+                                    
+                                    <config-template label-for="prowl_show_notification_list" label="Show notification list">
+                                        <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
+                                    </config-template>
 
                                     <div class="form-group">
                                         <div class="row">
@@ -1433,36 +1312,22 @@ window.app = new Vue({
                                         </div>
                                     </div>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="prowl-show-save-button" class="col-sm-2 control-label">
-                                                <span></span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList('prowl')"/>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="prowl-show-save-button" label="">
+                                        <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList('prowl')"/>
+                                    </config-template>
                                     
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="prowl_priority" class="col-sm-2 control-label">
-                                                <span>Prowl priority:</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
-                                                    <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
-                                                            {{ option.text }}
-                                                    </option>
-                                                </select>
-                                                <span>priority of Prowl messages from Medusa.</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="testNotification" id="testProwl-result">Click below to test.</div>
-                                    <input  class="btn-medusa" type="button" value="Test Prowl" id="testProwl" />
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
+                                    <config-template label-for="prowl_priority" label="Prowl priority">
+                                        <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
+                                            <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                        <span>priority of Prowl messages from Medusa.</span>
+                                    </config-template>
 
+                                    <div class="testNotification" id="testProwl-result">Click below to test.</div>
+                                    <input class="btn-medusa" type="button" value="Test Prowl" id="testProwl" @click="testProwl"/>
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
@@ -1485,7 +1350,7 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.libnotify.notifyOnSubtitleDownload" label="Notify on subtitle download" id="libnotify_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.libnotify.notifyOnSubtitleDownload = $event"></config-toggle-slider>
 
                                     <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
-                                    <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" />
+                                    <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" @click="testLibnotify"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1509,54 +1374,31 @@ window.app = new Vue({
 
                                     <config-textbox :value="notifiers.pushover.userKey" label="Pushover Key" id="pushover_userkey" :explanations="['user key of your Pushover account']" @change="save()"  @update="notifiers.pushover.userKey = $event"></config-textbox>
                                     
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="pushover_apikey" class="col-sm-2 control-label">
-                                                    <span>Pushover API key</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="text" name="pushover_apikey" id="pushover_apikey" v-model="notifiers.pushover.apiKey" class="form-control input-sm max-input350"/>
-                                                <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-textbox :value="notifiers.pushover.apiKey" label="Pushover API key" id="pushover_apikey" @change="save()"  @update="notifiers.pushover.apiKey = $event">
+                                        <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
+                                    </config-textbox>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="pushover_device" class="col-sm-2 control-label">
-                                                <span>Pushover Devices</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select-list name="pushover_device" id="pushover_device" :list-items="notifiers.pushover.device" @change="notifiers.pushover.device = $event.map(x => x.value)"></select-list>
-                                                <p>List of pushover devices you want to send notifications to</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="pushover_device" label="Pushover Devices">
+                                        <select-list name="pushover_device" id="pushover_device" :list-items="notifiers.pushover.device" @change="notifiers.pushover.device = $event.map(x => x.value)"></select-list>
+                                        <p>List of pushover devices you want to send notifications to</p>
+                                    </config-template>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="pushover_spound" class="col-sm-2 control-label">
-                                                <span>Pushover notification sound</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <select id="pushover_sound" name="pushover_sound" v-model="notifiers.pushover.sound" class="form-control">
-                                                    <option v-for="option in pushoverSoundOptions" v-bind:value="option.value">
-                                                        {{ option.text }}
-                                                    </option>
-                                                </select>
-                                                <span>Choose notification sound to use</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <config-template label-for="pushover_spound" label="Pushover notification sound">
+                                        <select id="pushover_sound" name="pushover_sound" v-model="notifiers.pushover.sound" class="form-control">
+                                            <option v-for="option in pushoverSoundOptions" v-bind:value="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                        <span>Choose notification sound to use</span>
+                                    </config-template>
 
                                     <div class="testNotification" id="testPushover-result">Click below to test.</div>
-                                    <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" />
+                                    <input  class="btn-medusa" type="button" value="Test Pushover" id="testPushover" @click="testPushover"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
                         </div>
                     </div>
-
 
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
@@ -1576,7 +1418,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.boxcar2.accessToken" label="Boxcar2 Access token" id="boxcar2_accesstoken" :explanations="['access token for your Boxcar account.']" @change="save()"  @update="notifiers.boxcar2.accessToken = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
-                                    <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" />
+                                    <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" @click="testBoxcar2"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1601,7 +1443,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.pushalot.authToken" label="Pushalot authorization token" id="pushalot_authorizationtoken" :explanations="['authorization token of your Pushalot account.']" @change="save()"  @update="notifiers.pushalot.authToken = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testPushalot-result">Click below to test.</div>
-                                    <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" />
+                                    <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" @click="testPushalot"/>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1625,23 +1467,16 @@ window.app = new Vue({
                                     <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSubtitleDownload = $event"></config-toggle-slider>
                                     <config-textbox :value="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()"  @update="notifiers.pushbullet.api = $event"></config-textbox>
 
-                                    <div class="form-group">
-                                        <div class="row">
-                                            <label for="pushover_spound" class="col-sm-2 control-label">
-                                                <span>Pushbullet devices</span>
-                                            </label>
-                                            <div class="col-sm-10 content">
-                                                <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
-                                                <select id="pushbullet_device_list" name="pushbullet_device_list" v-model="notifiers.pushbullet.device" class="form-control">
-                                                    <option v-for="option in pushbulletDeviceOptions" v-bind:value="option.value" @change="pushbulletTestInfo = 'Don\'t forget to save your new pushbullet settings.'">
-                                                        {{ option.text }}
-                                                    </option>
-                                                </select>
-                                                <span>select device you wish to push to.</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <config-template label-for="pushbullet_device_list" label="Pushbullet devices">
+                                        <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
+                                        <select id="pushbullet_device_list" name="pushbullet_device_list" v-model="notifiers.pushbullet.device" class="form-control">
+                                            <option v-for="option in pushbulletDeviceOptions" v-bind:value="option.value" @change="pushbulletTestInfo = 'Don\'t forget to save your new pushbullet settings.'">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                        <span>select device you wish to push to.</span>
+                                    </config-template>
+                                    
                                     <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
                                     <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
@@ -1669,7 +1504,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.freemobile.api" label="Free Mobile API Key" id="freemobile_apikey" :explanations="['Find your API Key in your customer portal.']" @change="save()"  @update="notifiers.freemobile.api = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
-                                    <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" />
+                                    <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" @click="testFreeMobile"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1695,7 +1530,7 @@ window.app = new Vue({
                                     <config-textbox :value="notifiers.telegram.api" label="Bot API token" id="telegram_apikey" :explanations="['Contact @BotFather on Telegram to set up one']" @change="save()"  @update="notifiers.telegram.api = $event"></config-textbox>
                                     
                                     <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
-                                    <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" />
+                                    <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" @click="testTelegram"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1704,257 +1539,201 @@ window.app = new Vue({
 
                 </div><!-- #devices //-->
                 
+                <div id="social">                    
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-twitter" title="Twitter"></span>
+                            <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
+                            <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for twitter client -->
+                                <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
+
+                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
+                                    
+                                    
+                                    <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.dmto = $event"></config-textbox>
+                                    
+                                    <config-template label-for="twitterStep1" label="Step 1">
+                                        <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
+                                        <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
+                                    </config-template>
+
+                                    <config-template label-for="twitterStep2" label="Step 2">
+                                        <input type="text" id="twitter_key" v-model="twitterKey" class="form-control input-sm max-input350" style="display: inline" placeholder="Enter the key Twitter gave you, and click 'Verify Key'"/>
+                                        <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitter-step-2" @click="twitterStep2($event)"/>
+                                    </config-template>
+
+                                    <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
+                                    <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
                 
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-trakt" title="Trakt"></span>
+                            <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
+                            <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for trakt -->
+                                <config-toggle-slider :checked="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()"  @update="notifiers.trakt.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
+
+                                    <config-textbox :value="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()"  @update="notifiers.trakt.username = $event"></config-textbox>
+                                    
+                                    <config-template label-for="twitterStep2" label="Trakt PIN">
+                                        <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
+                                        <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" @click="TraktGetPin"/>
+                                        <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" @click="authTrakt"/>
+                                        <p>PIN code to authorize Medusa to access Trakt on your behalf.</p>
+                                    </config-template>
+
+                                    <config-textbox-number :value="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @update="notifiers.trakt.timeout = $event"></config-textbox-number>
+                                    
+                                    <config-template label-for="twitterStep2" label="Trakt PIN">
+                                        <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
+                                            <option v-for="option in traktIndexersOptions" v-bind:value="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                    </config-template id="trakt_default_indexer" label="Default Indexer">
+                                    
+                                    <config-toggle-slider :checked="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
+                                    ['Sync your Medusa show library with your Trakt collection.',
+                                    'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
+                                    'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
+                                        @change="save()"  @update="notifiers.trakt.sync = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.trakt.sync" id="content-use-trakt-client">
+                                            <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
+                                                'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                    </div>
+
+                                    <config-toggle-slider :checked="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
+                                    ['Sync your Medusa library with your Trakt Watchlist (either Show and Episode).',
+                                    'Episode will be added on watch list when wanted or snatched and will be removed when downloaded',
+                                    'Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.']"
+                                        @change="save()"  @update="notifiers.trakt.syncWatchlist = $event"></config-toggle-slider>
+                                    <div v-show="notifiers.trakt.syncWatchlist" id="content-use-trakt-client">
+                                        <config-template label-for="trakt_default_indexer" label="Watchlist add method">
+                                            <select id="trakt_method_add" name="trakt_method_add" v-model="notifiers.trakt.methodAdd" class="form-control">
+                                                <option v-for="option in traktMethodOptions" v-bind:value="option.value">
+                                                    {{ option.text }}
+                                                </option>
+                                            </select>
+                                            <p>method in which to download episodes for new shows.</p>
+                                        </config-template>
+                                    
+                                        <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()"  @update="notifiers.trakt.removeWatchlist = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()"  @update="notifiers.trakt.removeSerieslist = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()"  @update="notifiers.trakt.removeShowFromApplication = $event"></config-toggle-slider>
+                                        <config-toggle-slider :checked="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()"  @update="notifiers.trakt.startPaused = $event"></config-toggle-slider>
+                                    
+                                    </div>
+                                    <config-textbox :value="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()"  @update="notifiers.trakt.blacklistName = $event"></config-textbox>
+                                    
+                                    <div class="testNotification" id="testTrakt-result">Click below to test.</div>
+                                    <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" @click="testTrakt"/>
+                                    <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" @click="traktForceSync"/>
+                                    <input type="hidden" id="trakt_pin_url" :value="notifiers.trakt.pinUrl">
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
                 
-                <div id="social">
-                    
-                        <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-twitter" title="Twitter"></span>
-                                <h3><app-link href="https://www.twitter.com">Twitter</app-link></h3>
-                                <p>A social networking and microblogging service, enabling its users to send and read other users' messages called tweets.</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for twitter client -->
-                                    <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
-    
-                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
-                                        
-                                        
-                                        <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.dmto = $event"></config-textbox>
-                                        
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="twitterStep1" class="col-sm-2 control-label">
-                                                    <span>Step 1</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
-                                                    <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="twitterStep2" class="col-sm-2 control-label">
-                                                    <span>Step 2</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <input type="text" id="twitter_key" v-model="twitterKey" class="form-control input-sm max-input350" style="display: inline" placeholder="Enter the key Twitter gave you, and click 'Verify Key'"/>
-                                                    <input class="btn-medusa btn-inline" type="button" value="Verify Key" id="twitter-step-2" @click="twitterStep2($event)"/>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="testNotification" id="testTwitter-result" v-html="twitterTestInfo"></div>
-                                        <input  class="btn-medusa" type="button" value="Test Twitter" id="testTwitter" @click="twitterTest" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
-                                    </div>
-                                </fieldset>
-                            </div>
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-email" title="Email"></span>
+                            <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
+                            <p>Allows configuration of email notifications on a per show basis.</p>
                         </div>
-                    
-                        <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-trakt" title="Trakt"></span>
-                                <h3><app-link href="https://trakt.tv/">Trakt</app-link></h3>
-                                <p>trakt helps keep a record of what TV shows and movies you are watching. Based on your favorites, trakt recommends additional shows and movies you'll enjoy!</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for trakt -->
-                                    <config-toggle-slider :checked="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()"  @update="notifiers.trakt.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
-    
-                                        <config-textbox :value="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()"  @update="notifiers.trakt.username = $event"></config-textbox>
-                                        
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="twitterStep2" class="col-sm-2 control-label">
-                                                    <span>Trakt PIN</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
-                                                    <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" />
-                                                    <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" />
-                                                    <p>PIN code to authorize Medusa to access Trakt on your behalf.</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for the email client -->
+                                <config-toggle-slider :checked="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()"  @update="notifiers.email.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.email.enabled" id="content-use-email">
 
-                                        <config-textbox-number :value="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @update="notifiers.trakt.timeout = $event"></config-textbox-number>
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="trakt_default_indexer" class="col-sm-2 control-label">
-                                                    <span>Default Indexer</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
-                                                        <option v-for="option in traktIndexersOptions" v-bind:value="option.value">
-                                                            {{ option.text }}
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <config-toggle-slider :checked="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
-                                        ['Sync your Medusa show library with your Trakt collection.',
-                                        'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
-                                        'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
-                                         @change="save()"  @update="notifiers.trakt.sync = $event"></config-toggle-slider>
-                                        <div v-show="notifiers.trakt.sync" id="content-use-trakt-client">
-                                                <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
-                                                    'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
-                                        </div>
+                                    <config-toggle-slider :checked="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.email.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.email.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.email.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()"  @update="notifiers.email.host = $event"></config-textbox>
+                                    <config-textbox :value="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()"  @update="notifiers.email.port = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()"  @update="notifiers.email.from = $event"></config-textbox>
+                                    <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()"  @update="notifiers.email.username = $event"></config-textbox>
+                                    <config-textbox :value="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()"  @update="notifiers.email.password = $event"></config-textbox>
+                                    
+                                    <config-template label-for="email_list" label="Global email list">
+                                        <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>
+                                        Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
+                                        (This field may be blank except when testing.)
+                                    </config-template>
+                                    
+                                    <config-textbox :value="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
+                                    ['Use a custom subject for some privacy protection?<br>',
+                                        '(Leave blank for the default Medusa subject)']" @change="save()"  @update="notifiers.email.subject = $event">
+                                    </config-textbox>
 
-                                        <config-toggle-slider :checked="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
-                                        ['Sync your Medusa library with your Trakt Watchlist (either Show and Episode).',
-                                        'Episode will be added on watch list when wanted or snatched and will be removed when downloaded',
-                                        'Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.']"
-                                         @change="save()"  @update="notifiers.trakt.syncWatchlist = $event"></config-toggle-slider>
-                                        <div v-show="notifiers.trakt.syncWatchlist" id="content-use-trakt-client">
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <label for="trakt_default_indexer" class="col-sm-2 control-label">
-                                                        <span>Watchlist add method</span>
-                                                    </label>
-                                                    <div class="col-sm-10 content">
-                                                        <select id="trakt_method_add" name="trakt_method_add" v-model="notifiers.trakt.methodAdd" class="form-control">
-                                                            <option v-for="option in traktMethodOptions" v-bind:value="option.value">
-                                                                {{ option.text }}
-                                                            </option>
-                                                        </select>
-                                                        <p>method in which to download episodes for new shows.</p>
-                                                    </div>
-                                                </div>
+                                    <config-template label-for="email_show" label="Show notification list">
+                                        <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="emailUpdateShowEmail($event)"></show-selector>
+                                    </config-template>
+
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <!-- bs3 and 4 -->
+                                            <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
+                                                <select-list name="email_list" id="email_list" :list-items="emailSelectedShowAdresses" @change="savePerShowNotifyList('email')" @update="emailSelectedShowAdresses = $event"></select-list>
+                                                Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
+                                                (This field may be blank except when testing.)
                                             </div>
-                                        
-                                            <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()"  @update="notifiers.trakt.removeWatchlist = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()"  @update="notifiers.trakt.removeSerieslist = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()"  @update="notifiers.trakt.removeShowFromApplication = $event"></config-toggle-slider>
-                                            <config-toggle-slider :checked="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()"  @update="notifiers.trakt.startPaused = $event"></config-toggle-slider>
-                                        
                                         </div>
-                                        <config-textbox :value="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()"  @update="notifiers.trakt.blacklistName = $event"></config-textbox>
-                                        
-                                        <div class="testNotification" id="testTrakt-result">Click below to test.</div>
-                                        <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" />
-                                        <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" />
-                                        <input type="hidden" id="trakt_pin_url" :value="notifiers.trakt.pinUrl">
-                                        <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
                                     </div>
-                                </fieldset>
-                            </div>
+
+                                    <div class="testNotification" id="testEmail-result">Click below to test.</div><!-- #testEmail-result //-->
+                                    <input class="btn-medusa" type="button" value="Test Email" id="testEmail" @click="testEmail"/>
+                                    <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes"/>
+                                </div>
+                            </fieldset>
                         </div>
-                    
-                        <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-email" title="Email"></span>
-                                <h3><app-link href="https://en.wikipedia.org/wiki/Comparison_of_webmail_providers">Email</app-link></h3>
-                                <p>Allows configuration of email notifications on a per show basis.</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for the email client -->
-                                    <config-toggle-slider :checked="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()"  @update="notifiers.email.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.email.enabled" id="content-use-email">
-    
-                                        <config-toggle-slider :checked="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.email.notifyOnSnatch = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.email.notifyOnDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.email.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                        <config-textbox :value="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()"  @update="notifiers.email.host = $event"></config-textbox>
-                                        <config-textbox :value="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()"  @update="notifiers.email.port = $event"></config-textbox>
-                                        <config-textbox :value="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()"  @update="notifiers.email.from = $event"></config-textbox>
-                                        <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
-                                        <config-textbox :value="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()"  @update="notifiers.email.username = $event"></config-textbox>
-                                        <config-textbox :value="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()"  @update="notifiers.email.password = $event"></config-textbox>
-                                        
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="email_list" class="col-sm-2 control-label">
-                                                    <span>Global email list</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>
-                                                    Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
-                                                    (This field may be blank except when testing.)
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <config-textbox :value="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
-                                        ['Use a custom subject for some privacy protection?<br>',
-                                            '(Leave blank for the default Medusa subject)']" @change="save()"  @update="notifiers.email.subject = $event">
-                                        </config-textbox>
+                    </div>
 
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <label for="email_show" class="col-sm-2 control-label">
-                                                    <span>Show notification list</span>
-                                                </label>
-                                                <div class="col-sm-10 content">
-                                                    <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="emailUpdateShowEmail($event)"></show-selector>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <!-- bs3 and 4 -->
-                                                <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
-                                                    <select-list name="email_list" id="email_list" :list-items="emailSelectedShowAdresses" @change="savePerShowNotifyList('email')" @update="emailSelectedShowAdresses = $event"></select-list>
-                                                    Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
-                                                    (This field may be blank except when testing.)
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="testNotification" id="testEmail-result">Click below to test.</div><!-- #testEmail-result //-->
-                                        <input class="btn-medusa" type="button" value="Test Email" id="testEmail" />
-                                        <input class="btn-medusa" type="submit" class="config_submitter" value="Save Changes"/>
-                                    </div>
-                                </fieldset>
-                            </div>
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-slack" title="Slack"></span>
+                            <h3><app-link href="https://slack.com">Slack</app-link></h3>
+                            <p>Slack is a messaging app for teams.</p>
                         </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for slack client -->
+                                <config-toggle-slider :checked="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()"  @update="notifiers.slack.enabled = $event"></config-toggle-slider>
+                                <div v-show="notifiers.slack.enabled" id="content-use-slack-client"> <!-- show based on notifiers.slack.enabled -->
 
-                        <div class="row component-group">
-                            <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-slack" title="Slack"></span>
-                                <h3><app-link href="https://slack.com">Slack</app-link></h3>
-                                <p>Slack is a messaging app for teams.</p>
-                            </div>
-                            <div class="col-xs-12 col-md-10">
-                                <fieldset class="component-group-list">
-                                    <!-- All form components here for slack client -->
-                                    <config-toggle-slider :checked="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()"  @update="notifiers.slack.enabled = $event"></config-toggle-slider>
-                                    <div v-show="notifiers.slack.enabled" id="content-use-slack-client"> <!-- show based on notifiers.slack.enabled -->
-    
-                                        <config-toggle-slider :checked="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.slack.notifyOnSnatch = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.slack.notifyOnDownload" label="Notify on download" id="slack_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.slack.notifyOnDownload = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.slack.notifyOnSubtitleDownload" label="Notify on subtitle download" id="slack_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.slack.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                        <config-textbox :value="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()"  @update="notifiers.slack.webhook = $event"></config-textbox>
-                                        <div class="form-group">
-                                            <div class="row">
-                                                <!-- bs3 and 4 -->
-                                                <div class="offset-sm-2 col-sm-offset-2 col-sm-10 content">
-                                                    <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
-                                        <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" />
-                                        <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
-                                    </div>
-                                </fieldset>
-                            </div>
+                                    <config-toggle-slider :checked="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.slack.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.slack.notifyOnDownload" label="Notify on download" id="slack_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.slack.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider :checked="notifiers.slack.notifyOnSubtitleDownload" label="Notify on subtitle download" id="slack_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.slack.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-textbox :value="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()"  @update="notifiers.slack.webhook = $event">
+                                        <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
+                                    </config-textbox>
+                                    
+                                    <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" @click="testSlack"/>
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
+                                </div>
+                            </fieldset>
                         </div>
+                    </div>
 
                 </div><!-- #social //-->
                 <br><input type="submit" class="config_submitter btn-medusa" value="Save Changes"/><br>
