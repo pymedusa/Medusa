@@ -779,7 +779,7 @@ class ChainMap(MutableMapping):
 
     # Py2 compatibility:
     __nonzero__ = __bool__
-        
+
     @recursive_repr()
     def __repr__(self):
         return '{0.__class__.__name__}({1})'.format(
@@ -817,7 +817,7 @@ class ChainMap(MutableMapping):
         try:
             del self.maps[0][key]
         except KeyError:
-            raise KeyError('Key not found in the first mapping: {!r}'.format(key))
+            raise KeyError('Key not found in the first mapping: {0!r}'.format(key))
 
     def popitem(self):
         'Remove and return an item pair from maps[0]. Raise KeyError is maps[0] is empty.'
@@ -831,7 +831,7 @@ class ChainMap(MutableMapping):
         try:
             return self.maps[0].pop(key, *args)
         except KeyError:
-            raise KeyError('Key not found in the first mapping: {!r}'.format(key))
+            raise KeyError('Key not found in the first mapping: {0!r}'.format(key))
 
     def clear(self):
         'Clear maps[0], leaving maps[1:] intact.'
