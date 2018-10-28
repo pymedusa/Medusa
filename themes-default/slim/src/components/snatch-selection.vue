@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 
 export default {
     name: 'snatchSelection',
