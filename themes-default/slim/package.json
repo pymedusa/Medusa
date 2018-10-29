@@ -30,6 +30,7 @@
   "devDependencies": {
     "@babel/core": "7.1.2",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "7.0.0",
     "@babel/polyfill": "7.0.0",
     "@babel/preset-env": "7.1.0",
     "@babel/register": "7.0.0",
@@ -37,6 +38,7 @@
     "@vue/test-utils": "1.0.0-beta.25",
     "ava": "1.0.0-rc.1",
     "axios": "0.18.0",
+    "babel-eslint": "10.0.1",
     "babel-loader": "8.0.4",
     "babel-plugin-istanbul": "5.1.0",
     "bootstrap": "3.3.7",
@@ -94,6 +96,9 @@
     "extensions": [
       "vue"
     ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
     "rules": {
       "object-curly-spacing": [
         "error",
@@ -202,11 +207,11 @@
     "sourceMap": false,
     "instrument": false,
     "extension": [
-        ".vue"
+      ".vue"
     ],
     "include": [
-        "src/**/*.vue",
-        "src/**/*.js"
+      "src/**/*.vue",
+      "src/**/*.js"
     ],
     "reporter": [
       "lcov",
