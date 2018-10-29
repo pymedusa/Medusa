@@ -1,4 +1,4 @@
-## Unreleased
+## 0.2.11 (2018-10-28)
 
 #### New Features
 
