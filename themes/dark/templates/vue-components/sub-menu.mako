@@ -11,7 +11,7 @@
                 </app-link>
             </template>
 
-            <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug"></show-selector>
+            <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug" follow-selection></show-selector>
         </div>
     </div>
 

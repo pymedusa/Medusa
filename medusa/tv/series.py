@@ -3,6 +3,7 @@
 """Series classes."""
 from __future__ import unicode_literals
 
+import ast
 import copy
 import datetime
 import glob
@@ -97,6 +98,7 @@ from medusa.name_parser.parser import (
 )
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
+from medusa.scene_numbering import get_xem_numbering_for_show
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -196,6 +198,7 @@ class Series(TV):
         """
         super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
                                                           'external', 'imdb_info'})
+        self.show_id = None
         self.name = ''
         self.imdb_id = ''
         self.network = ''
@@ -211,6 +214,7 @@ class Series(TV):
         self.paused = 0
         self.air_by_date = 0
         self.subtitles = enabled_subtitles or int(app.SUBTITLES_DEFAULT)
+        self.notify_list = {}
         self.dvd_order = 0
         self.lang = lang
         self.last_update_indexer = 1
@@ -553,6 +557,11 @@ class Series(TV):
         self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
         build_name_cache(self)
+
+    @property
+    def xem_numbering(self):
+        """Return series episode xem numbering."""
+        return get_xem_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -1383,6 +1392,7 @@ class Series(TV):
                      {'id': self.series_id})
             return
         else:
+            self.show_id = int(sql_results[0]['show_id'] or 0)
             self.indexer = int(sql_results[0]['indexer'] or 0)
 
             if not self.name:
@@ -1410,6 +1420,7 @@ class Series(TV):
             self.sports = int(sql_results[0]['sports'] or 0)
             self.scene = int(sql_results[0]['scene'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
+            self.notify_list = dict(ast.literal_eval(sql_results[0]['notify_list'] or '{}'))
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.season_folders = int(not (sql_results[0]['flatten_folders'] or 0))  # TODO: Rename this in the DB
