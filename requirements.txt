@@ -29,7 +29,7 @@ git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6
 profilehooks==1.10.0
 PyGithub==1.43.2
 PyJWT==1.6.4
-python-dateutil==2.7.3
+python-dateutil==2.7.5
 python-twitter==3.4.2
 rarfile==3.0
 rebulk==1.0.0
