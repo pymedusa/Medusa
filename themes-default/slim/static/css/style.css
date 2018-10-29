@@ -522,6 +522,12 @@ div.xem {
     line-height: 40px;
 }
 
+.show-add-options > div {
+    float: left;
+    padding-right: 10px;
+    line-height: 40px;
+}
+
 .show-grid {
     display: none;
     margin-bottom: 60px !important;
@@ -882,6 +888,14 @@ home_newShow.mako
     margin-right: auto;
     padding: 10px 0;
     font-size: 13px;
+}
+
+#addShowForm > div {
+    width: 100% !important;
+}
+
+#addShowForm > div:nth-child(2) > div {
+    position: relative !important;
 }
 
 .newShowPortal {
@@ -3343,11 +3357,15 @@ select.input-sm {
 formWizard.css
 ========================================================================== */
 
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
 fieldset.sectionwrap {
-    width: 800px;
     padding: 5px;
     text-align: left;
     border-width: 0;
+    width: 100%;
 }
 
 legend.legendStep {
@@ -3360,25 +3378,23 @@ div.stepsguide {
     overflow: hidden;
     text-align: left;
     cursor: pointer;
+    display: table;
 }
 
 div.stepsguide .step {
-    float: left;
+    display: table-cell;
     width: 33%;
     font: bold 24px Arial, sans-serif;
-}
-
-div.stepsguide .step p {
-    margin: 12px 0;
     border-bottom: 4px solid rgb(87, 68, 43);
 }
 
 div.stepsguide .disabledstep {
     color: rgb(196, 196, 196);
+    border-bottom: 4px solid rgb(138, 119, 94);
 }
 
 div.stepsguide .disabledstep p {
-    border-bottom: 4px solid rgb(138, 119, 94);
+    border-bottom: none;
 }
 
 div.stepsguide .step .smalltext {
