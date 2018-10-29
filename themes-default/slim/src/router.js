@@ -1,4 +1,5 @@
 import VueRouter from 'vue-router';
+
 const AddRecommended = () => import('./components/add-recommended.vue');
 const AddShows = () => import('./components/add-shows.vue');
 const Config = () => import('./components/config.vue');
