@@ -12,6 +12,7 @@
 - Vueified restart page, moved JS files to Vue, added `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
 - Added support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
+- Improved the add new show page responsiveness on smaller width viewports ([#5509](https://github.com/pymedusa/Medusa/pull/5509))
 - Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens. ([#5159](https://github.com/pymedusa/Medusa/pull/4913))
 
 #### Fixes
