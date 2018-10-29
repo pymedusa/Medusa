@@ -369,7 +369,6 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         self.inc_minor_version()
 
 
-
 class TestIncreaseMajorVersion(AddMinorVersion):
     """
     This tests the inc_major_version function
