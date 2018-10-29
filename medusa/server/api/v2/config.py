@@ -437,6 +437,8 @@ class DataGenerator(object):
         section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
         section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
+        section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
+        section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
 
         section_data['layout'] = NonEmptyDict()
         section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
