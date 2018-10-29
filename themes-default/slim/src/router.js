@@ -1,11 +1,11 @@
 import VueRouter from 'vue-router';
-import AddRecommended from './components/add-recommended.vue';
-import AddShows from './components/add-shows.vue';
-import Config from './components/config.vue';
-import ConfigPostProcessing from './components/config-post-processing.vue';
-import IRC from './components/irc.vue';
-import Login from './components/login.vue';
-import NotFound from './components/http/404.vue';
+const AddRecommended = () => import('./components/add-recommended.vue');
+const AddShows = () => import('./components/add-shows.vue');
+const Config = () => import('./components/config.vue');
+const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
+const IRC = () => import('./components/irc.vue');
+const Login = () => import('./components/login.vue');
+const NotFound = () => import('./components/http/404.vue');
 
 const homeRoutes = [{
     path: '/home',
