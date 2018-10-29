@@ -182,8 +182,6 @@ class ClearProviderTables(AddIndexerIds):
         self.clear_provider_tables()
         self.inc_major_version()
 
-        log.info('Updated to: {}.{}', *self.connection.version)
-
     def clear_provider_tables(self):
         providers = self.connection.select(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('lastUpdate',"
@@ -197,4 +195,6 @@ class ClearProviderTables(AddIndexerIds):
         major_version, minor_version = self.connection.version
         major_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
+        log.info('[CACHE-DB] Updated major version to: {}.{}', *self.connection.version)
+
         return self.connection.version
