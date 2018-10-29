@@ -3,8 +3,7 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api, apiRoute } from '../api';
-import AppLink from './app-link.vue';
-import PlotInfo from './plot-info.vue';
+import { AppLink, PlotInfo } from './helpers';
 
 export default {
     name: 'show',

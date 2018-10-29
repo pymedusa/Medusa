@@ -542,7 +542,7 @@ class Cache(object):
             # TODO: Add support for season results
             # Season result
             if not sql_episodes:
-                ep_objs = self.series.get_all_episodes(search_result.season)
+                ep_objs = series_obj.get_all_episodes(search_result.season)
                 actual_episodes = [ep.episode for ep in ep_objs]
                 episode_number = SEASON_RESULT
             # Multi or single episode result

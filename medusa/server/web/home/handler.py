@@ -293,7 +293,7 @@ class Home(WebRoot):
             if authed:
                 return 'Success. Connected and authenticated'
             else:
-                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
+                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth}'.format(
                     access=acces_msg, auth=auth_msg)
         else:
             return 'Unable to connect to host'
@@ -1243,7 +1243,7 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action(
+            episode_status_result = main_db_con.select(
                 'SELECT date, action, quality, provider, resource, size '
                 'FROM history '
                 'WHERE indexer_id = ? '

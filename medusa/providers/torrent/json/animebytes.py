@@ -172,16 +172,16 @@ class AnimeBytes(TorrentProvider):
                 title_info = row.get('EditionData').get('EditionTitle')
                 if title_info != '':
                     if title_info.startswith('Episodes'):
-                        episode = re.match('Episodes 1-(\d+)', title_info).group(1)
+                        episode = re.match(r'Episodes 1-(\d+)', title_info).group(1)
                         release_type = MULTI_EP
                     elif title_info.startswith('Episode'):
                         episode = re.match('^Episode.([0-9]+)', title_info).group(1)
                         release_type = SINGLE_EP
                     elif title_info.startswith('Season'):
-                        if re.match('Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
+                        if re.match(r'Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
                             # We can read the season AND the episodes, but we can only process multiep.
                             # So i've chosen to use it like 12-23 or 1-12.
-                            match = re.match('Season.([0-9]+)-([0-9]+).\(([0-9-]+)\)', title_info)
+                            match = re.match(r'Season.([0-9]+)-([0-9]+).\(([0-9-]+)\)', title_info)
                             episode = match.group(3).upper()
                             season = '{0}-{1}'.format(match.group(1), match.group(2))
                             release_type = MULTI_SEASON
