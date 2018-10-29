@@ -17,6 +17,7 @@ window.app = new Vue({
     el: '#vue-wrap',
     data() {
         return {
+            configLoaded: false,
             clients: {
                 torrent: {
                     blackhole: {
@@ -103,60 +104,118 @@ window.app = new Vue({
                     }
                 },
             },
-            torrent: {
-                enabled: ${js_bool(app.USE_TORRENTS)},
-                dir: ${json.dumps(app.TORRENT_DIR)},
-                method: ${json.dumps(app.TORRENT_METHOD)},
-                host: ${json.dumps(app.TORRENT_HOST)},
-                rpcUrl: ${json.dumps(app.TORRENT_RPCURL)},
-                username: ${json.dumps(app.TORRENT_USERNAME)},
-                password: ${json.dumps(app.TORRENT_PASSWORD)},
-                label: ${json.dumps(app.TORRENT_LABEL)},
-                labelAnime: ${json.dumps(app.TORRENT_LABEL_ANIME)},
-                path: ${json.dumps(app.TORRENT_PATH)},
-                seedLocation: ${json.dumps(app.TORRENT_SEED_LOCATION)},
-                seedTime: ${json.dumps(app.TORRENT_SEED_TIME)},
-                testStatus: 'Click below to test',
-                authType: ${json.dumps(app.TORRENT_AUTH_TYPE)},
-                verifyCert: ${js_bool(app.TORRENT_VERIFY_CERT)},
-                paused: ${js_bool(app.TORRENT_PAUSED)},
-                highBandwidth: ${js_bool(app.TORRENT_HIGH_BANDWIDTH)},
+            search: {
+		        filters: {
+                    ignoreUnknownSubs: false,
+                    ignored: [
+                        'german',
+                        'french',
+                        'core2hd',
+                        'dutch',
+                        'swedish',
+                        'reenc',
+                        'MrLss',
+                        'dubbed'
+                    ],
+                    undesired: [
+                        'internal',
+                        'xvid'
+                    ],
+                    ignoredSubsList: [
+                        'dk',
+                        'fin',
+                        'heb',
+                        'kor',
+                        'nor',
+                        'nordic',
+                        'pl',
+                        'swe'
+                    ],
+                    required: [],
+                    preferred: []
+                },
+                general: {
+                    minDailySearchFrequency: 10,
+                    minBacklogFrequency: 720,
+                    dailySearchFrequency: 40,
+                    checkPropersInterval: '4h',
+                    usenetRetention: 500,
+                    maxCacheAge: 30,
+                    backlogDays: 7,
+                    torrentCheckerFrequency: 60,
+                    backlogFrequency: 720,
+                    cacheTrimming: false,
+                    deleteFailed: false,
+                    downloadPropers: true,
+                    useFailedDownloads: false,
+                    minTorrentCheckerFrequency: 30,
+                    removeFromClient: false,
+                    randomizeProviders: false,
+                    propersSearchDays: 2,
+                    allowHighPriority: true,
+                    trackersList: [
+                        'udp://tracker.coppersurfer.tk:6969/announce',
+                        'udp://tracker.leechers-paradise.org:6969/announce',
+                        'udp://tracker.zer0day.to:1337/announce',
+                        'udp://tracker.opentrackr.org:1337/announce',
+                        'http://tracker.opentrackr.org:1337/announce',
+                        'udp://p4p.arenabg.com:1337/announce',
+                        'http://p4p.arenabg.com:1337/announce',
+                        'udp://explodie.org:6969/announce',
+                        'udp://9.rarbg.com:2710/announce',
+                        'http://explodie.org:6969/announce',
+                        'http://tracker.dler.org:6969/announce',
+                        'udp://public.popcorn-tracker.org:6969/announce',
+                        'udp://tracker.internetwarriors.net:1337/announce',
+                        'udp://ipv4.tracker.harry.lu:80/announce',
+                        'http://ipv4.tracker.harry.lu:80/announce',
+                        'udp://mgtracker.org:2710/announce',
+                        'http://mgtracker.org:6969/announce',
+                        'udp://tracker.mg64.net:6969/announce',
+                        'http://tracker.mg64.net:6881/announce',
+                        'http://torrentsmd.com:8080/announce'
+                    ]
+                }
+            },
+
+            torrents: {
+                authType: null,
+                dir: null,
+                enabled: null,
+                highBandwidth: null,
+                host: null,
+                label: null,
+                labelAnime: null,
+                method: null,
+                path: null,
+                paused: null,
+                rpcurl: null,
+                seedLocation: null,
+                seedTime: null,
+                username: null,
+                verifySSL: null
             },
             nzb: {
-                enabled: ${js_bool(app.USE_NZBS)},
-                dir: ${json.dumps(app.NZB_DIR)},
-                method: ${json.dumps(app.NZB_METHOD)},
+                enabled: null,
+                method: null,
                 nzbget: {
-                    useHttps: ${js_bool(app.NZBGET_USE_HTTPS)},
-                    host: ${json.dumps(app.NZBGET_HOST)},
-                    username: ${json.dumps(app.NZBGET_USERNAME)},
-                    password: ${json.dumps(app.NZBGET_PASSWORD)},
-                    testStatus: 'Click below to test',
-                    category: ${json.dumps(app.NZBGET_CATEGORY)},
-                    categoryBacklog: ${json.dumps(app.NZBGET_CATEGORY_BACKLOG)},
-                    categoryAnime: ${json.dumps(app.NZBGET_CATEGORY_ANIME)},
-                    categoryAnimeBacklog: ${json.dumps(app.NZBGET_CATEGORY_ANIME_BACKLOG)},
-                    priority: ${app.NZBGET_PRIORITY},
-                    priorityOptions: {
-                        'Very low': -100,
-                        'Low': -50,
-                        'Normal': 0,
-                        'High': 50,
-                        'Very high': 100,
-                        'Force': 900
-                    }
+                    category: null,
+                    categoryAnime: null,
+                    categoryAnimeBacklog: null,
+                    categoryBacklog: null,
+                    host: null,
+                    priority: null,
+                    useHttps: null,
+                    username: null
                 },
                 sabnzbd: {
-                    host: ${json.dumps(app.SAB_HOST)},
-                    username: ${json.dumps(app.SAB_USERNAME)},
-                    password: ${json.dumps(app.SAB_PASSWORD)},
-                    apiKey: ${json.dumps(app.SAB_APIKEY)},
-                    testStatus: 'Click below to test',
-                    category: ${json.dumps(app.SAB_CATEGORY)},
-                    categoryBacklog: ${json.dumps(app.SAB_CATEGORY_BACKLOG)},
-                    categoryAnime: ${json.dumps(app.SAB_CATEGORY_ANIME)},
-                    categoryAnimeBacklog: ${json.dumps(app.SAB_CATEGORY_ANIME_BACKLOG)},
-                    forced: ${js_bool(app.SAB_FORCED)}
+                    category: null,
+                    forced: null,
+                    categoryAnime: null,
+                    categoryBacklog: null,
+                    categoryAnimeBacklog: null,
+                    host: null,
+                    username: null
                 }
             },
             httpAuthTypes: {
@@ -164,39 +223,6 @@ window.app = new Vue({
                 basic: 'Basic',
                 digest: 'Digest'
             },
-
-            // Episode Search: General Config
-            randomizeProviders: ${js_bool(app.RANDOMIZE_PROVIDERS)},
-            downloadPropers: ${js_bool(app.DOWNLOAD_PROPERS)},
-            checkPropersInterval: ${json.dumps(app.CHECK_PROPERS_INTERVAL)},
-            propersIntervalLabels: ${json.dumps(app.PROPERS_INTERVAL_LABELS)},
-            propersSearchDays: ${app.PROPERS_SEARCH_DAYS},
-            backlogDays: ${app.BACKLOG_DAYS},
-            backlogFrequency: ${app.BACKLOG_FREQUENCY},
-            minBacklogFrequency: ${app.MIN_BACKLOG_FREQUENCY},
-            dailySearchFrequency: ${app.DAILYSEARCH_FREQUENCY},
-            minDailySearchFrequency: ${app.MIN_DAILYSEARCH_FREQUENCY},
-            removeFromClient: ${js_bool(app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged'))},
-            torrentCheckerFrequency: ${app.TORRENT_CHECKER_FREQUENCY},
-            minTorrentCheckerFrequency: ${app.MIN_TORRENT_CHECKER_FREQUENCY},
-            usenetRetention: ${app.USENET_RETENTION},
-            trackersList: ${json.dumps(app.TRACKERS_LIST)}.join(', '),
-            allowHighPriority: ${js_bool(app.ALLOW_HIGH_PRIORITY)},
-            useFailedDownloads: ${js_bool(app.USE_FAILED_DOWNLOADS)},
-            deleteFailed: ${js_bool(app.DELETE_FAILED)},
-            cacheTrimming: ${js_bool(app.CACHE_TRIMMING)},
-            maxCacheAge: ${app.MAX_CACHE_AGE},
-
-            // Episode Search: Search Filters
-            ignoreWords: ${json.dumps(app.IGNORE_WORDS)}.join(', '),
-            undesiredWords: ${json.dumps(app.UNDESIRED_WORDS)}.join(', '),
-            preferredWords: ${json.dumps(app.PREFERRED_WORDS)}.join(', '),
-            requireWords: ${json.dumps(app.REQUIRE_WORDS)}.join(', '),
-            ignoredSubsList: ${json.dumps(app.IGNORED_SUBS_LIST)}.join(', '),
-            ignoreUndSubs: ${js_bool(app.IGNORE_UND_SUBS)},
-
-            // Global
-            dataDir: ${json.dumps(app.DATA_DIR)},
         };
     },
     beforeMount() {
@@ -204,10 +230,10 @@ window.app = new Vue({
     },
     methods: {
         async testTorrentClient() {
-            const { torrent } = this;
-            const { method, host, username, password } = torrent;
+            const { torrents } = this;
+            const { method, host, username, password } = torrents;
 
-            this.torrent.testStatus = MEDUSA.config.loading;
+            this.torrents.testStatus = MEDUSA.config.loading;
 
             const params = {
                 torrent_method: method,
@@ -217,7 +243,7 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testTorrent', { params });
 
-            this.torrent.testStatus = resp.data;
+            this.torrents.testStatus = resp.data;
         },
         async testNzbget() {
             const { nzb } = this;
@@ -255,29 +281,41 @@ window.app = new Vue({
         }
     },
     watch: {
-        'torrent.host'(host) {
-            const { torrent } = this;
-            const { method } = torrent;
+        'torrents.host'(host) {
+            const { torrents } = this;
+            const { method } = torrents;
 
             if (method === 'rtorrent') {
                 const isMatch = host.startsWith('scgi://');
 
                 if (isMatch) {
-                    this.torrent.username = '';
-                    this.torrent.password = '';
-                    this.torrent.authType = 'none';
+                    this.torrents.username = '';
+                    this.torrents.password = '';
+                    this.torrents.authType = 'none';
                 }
             }
 
             if (method === 'deluge') {
-                this.torrent.username = '';
+                this.torrents.username = '';
             }
         },
-        'torrent.method'(method) {
+        'torrents.method'(method) {
+            debugger;
             if (!this.clients.torrent[method].removeFromClientOption) {
-                this.removeFromClient = false;
+                this.search.general.removeFromClient = false;
             }
         }
+    },
+    mounted() {
+        // The real vue stuff
+        // This is used to wait for the config to be loaded by the store.
+        this.$once('loaded', () => {
+            const { search, stateSearch } = this;
+
+            // Map the state values to local data.
+            this.search = Object.assign({}, search, stateSearch);
+            this.configLoaded = true;
+        });
     }
 });
 </script>
@@ -305,7 +343,7 @@ window.app = new Vue({
                                 <label for="randomize_providers">
                                     <span class="component-title">Randomize Providers</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="randomize_providers" id="randomize_providers" v-model="randomizeProviders"/>
+                                        <input type="checkbox" name="randomize_providers" id="randomize_providers" v-model="search.general.randomizeProviders"/>
                                         <p>randomize the provider search order instead of going in order of placement</p>
                                     </span>
                                 </label>
@@ -314,18 +352,18 @@ window.app = new Vue({
                                 <label for="download_propers">
                                     <span class="component-title">Download propers</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="download_propers" id="download_propers" v-model="downloadPropers"/>
+                                        <input type="checkbox" name="download_propers" id="download_propers" v-model="search.general.downloadPropers"/>
                                         <p>replace original download with "Proper" or "Repack" if nuked</p>
                                     </span>
                                 </label>
                             </div><!-- download propers -->
-                            <div v-show="downloadPropers">
+                            <div v-show="search.general.downloadPropers">
                                 <div class="field-pair">
                                     <label for="check_propers_interval">
                                         <span class="component-title">Check propers every:</span>
                                         <span class="component-desc">
-                                            <select id="check_propers_interval" name="check_propers_interval" v-model="checkPropersInterval" class="form-control input-sm">
-                                                <option v-for="(label, interval) in propersIntervalLabels" :value="interval">{{label}}</option>
+                                            <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
+                                                <option v-for="(label, interval) in search.general.propersIntervalLabels" :value="interval">{{label}}</option>
                                             </select>
                                         </span>
                                     </label>
@@ -334,7 +372,7 @@ window.app = new Vue({
                                     <label>
                                         <span class="component-title">Proper search days</span>
                                         <span class="component-desc">
-                                            <input type="number" min="2" max="7" step="1" name="propers_search_days" v-model.number="propersSearchDays" class="form-control input-sm input75"/>
+                                            <input type="number" min="2" max="7" step="1" name="propers_search_days" v-model.number="search.general.propersSearchDays" class="form-control input-sm input75"/>
                                             <p>how many days to keep searching for propers since episode airdate (default: 2 days)</p>
                                         </span>
                                     </label>
@@ -344,7 +382,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Forced backlog search day(s)</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="backlog_days" v-model.number="backlogDays" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="backlog_days" v-model.number="search.general.backlogDays" class="form-control input-sm input75"/>
                                         <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
                                     </span>
                                 </label>
@@ -353,8 +391,8 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Backlog search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" :min="minBacklogFrequency" step="1" name="backlog_frequency" v-model.number="backlogFrequency" class="form-control input-sm input75"/>
-                                        <p>time in minutes between searches (min. {{minBacklogFrequency}})</p>
+                                        <input type="number" :min="search.general.minBacklogFrequency" step="1" name="backlog_frequency" v-model.number="search.general.backlogFrequency" class="form-control input-sm input75"/>
+                                        <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                     </span>
                                 </label>
                             </div><!-- backlog frequency -->
@@ -362,27 +400,27 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Daily search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" :min="minDailySearchFrequency" step="1" name="dailysearch_frequency" v-model.number="dailySearchFrequency" class="form-control input-sm input75"/>
-                                        <p>time in minutes between searches (min. {{minDailySearchFrequency}})</p>
+                                        <input type="number" :min="search.general.minDailySearchFrequency" step="1" name="dailysearch_frequency" v-model.number="search.general.dailySearchFrequency" class="form-control input-sm input75"/>
+                                        <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                     </span>
                                 </label>
                             </div><!-- daily search frequency -->
-                            <div class="field-pair" v-show="clients.torrent[torrent.method].removeFromClientOption">
+                            <div class="field-pair" v-if="clients.torrent[torrents.method]" v-show="clients.torrent[torrents.method].removeFromClientOption">
                                 <label for="remove_from_client">
                                     <span class="component-title">Remove torrents from client</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" v-model="removeFromClient"/>
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" v-model="search.general.removeFromClient"/>
                                         <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
                                         <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </span>
                                 </label>
                             </div>
-                            <div v-show="removeFromClient">
+                            <div v-show="search.general.removeFromClient">
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Frequency to check torrents ratio</span>
                                         <span class="component-desc">
-                                            <input type="number" :min="minTorrentCheckerFrequency" step="1" name="torrent_checker_frequency" v-model.number="torrentCheckerFrequency" class="form-control input-sm input75"/>
+                                            <input type="number" :min="search.general.minTorrentCheckerFrequency" step="1" name="torrent_checker_frequency" v-model.number="search.general.torrentCheckerFrequency" class="form-control input-sm input75"/>
                                             <p>Frequency in minutes to check torrent's ratio (default: 60)</p>
                                         </span>
                                     </label>
@@ -392,7 +430,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Usenet retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="usenet_retention" v-model.number="usenetRetention" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="usenet_retention" v-model.number="search.general.usenetRetention" class="form-control input-sm input75"/>
                                         <p>age limit in days for usenet articles to be used (e.g. 500)</p>
                                     </span>
                                 </label>
@@ -401,7 +439,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
-                                        <input type="text" name="trackers_list" v-model="trackersList" class="form-control input-sm input350"/>
+                                        <input type="text" name="trackers_list" v-model="search.general.trackersList" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             Trackers that will be added to magnets without trackers<br>
                                             separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
@@ -413,7 +451,7 @@ window.app = new Vue({
                                 <label for="allow_high_priority">
                                     <span class="component-title">Allow high priority</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="allow_high_priority" id="allow_high_priority" v-model="allowHighPriority"/>
+                                        <input type="checkbox" name="allow_high_priority" id="allow_high_priority" v-model="search.general.allowHighPriority"/>
                                         <p>set downloads of recently aired episodes to high priority</p>
                                     </span>
                                 </label>
@@ -422,17 +460,17 @@ window.app = new Vue({
                                 <label for="use_failed_downloads">
                                     <span class="component-title">Use Failed Downloads</span>
                                     <span class="component-desc">
-                                        <input id="use_failed_downloads" type="checkbox" name="use_failed_downloads" v-model="useFailedDownloads"/>
+                                        <input id="use_failed_downloads" type="checkbox" name="use_failed_downloads" v-model="search.general.useFailedDownloads"/>
                                         Use Failed Download Handling?<br>
                                         Will only work with snatched/downloaded episodes after enabling this
                                     </span>
                                 </label>
                             </div><!-- use failed -->
-                            <div class="field-pair" v-show="useFailedDownloads">
+                            <div class="field-pair" v-show="search.general.useFailedDownloads">
                                 <label for="delete_failed">
                                     <span class="component-title">Delete Failed</span>
                                     <span class="component-desc">
-                                        <input id="delete_failed" type="checkbox" name="delete_failed" v-model="deleteFailed"/>
+                                        <input id="delete_failed" type="checkbox" name="delete_failed" v-model="search.general.deleteFailed"/>
                                         Delete files left over from a failed download?<br>
                                         <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
                                     </span>
@@ -442,16 +480,16 @@ window.app = new Vue({
                                 <label for="cache_trimming">
                                     <span class="component-title">Cache Trimming</span>
                                     <span class="component-desc">
-                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" v-model="cacheTrimming"/>
+                                        <input id="cache_trimming" type="checkbox" name="cache_trimming" v-model="search.general.cacheTrimming"/>
                                         Enable trimming of provider cache<br>
                                     </span>
                                 </label>
                             </div><!-- cache trimming -->
-                            <div class="field-pair" v-show="cacheTrimming">
+                            <div class="field-pair" v-show="search.general.cacheTrimming">
                                 <label for="max_cache_age">
                                     <span class="component-title">Cache Retention</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" v-model.number="maxCacheAge" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" v-model.number="search.general.maxCacheAge" class="form-control input-sm input75"/>
                                         days<br>
                                         <br>
                                         Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
@@ -472,7 +510,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignore_words" v-model="ignoreWords" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignore_words" v-model="search.filters.ignored" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             results with any words from this list will be ignored<br>
                                             separate words with a comma, e.g. "word1,word2,word3"
@@ -484,7 +522,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="undesired_words" v-model="undesiredWords" class="form-control input-sm input350"/>
+                                        <input type="text" name="undesired_words" v-model="search.filters.undesired" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             results with words from this list will only be selected as a last resort<br>
                                             separate words with a comma, e.g. "word1, word2, word3"
@@ -496,7 +534,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="preferred_words" v-model="preferredWords" class="form-control input-sm input350"/>
+                                        <input type="text" name="preferred_words" v-model="search.filters.preferred" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             results with one or more word from this list will be chosen over others<br>
                                             separate words with a comma, e.g. "word1, word2, word3"
@@ -508,7 +546,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="require_words" v-model="requireWords" class="form-control input-sm input350"/>
+                                        <input type="text" name="require_words" v-model="search.filters.required" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             results must include at least one word from this list<br>
                                             separate words with a comma, e.g. "word1,word2,word3"
@@ -520,7 +558,7 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignored_subs_list" v-model="ignoredSubsList" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignored_subs_list" v-model="search.filters.ignoredSubsList" class="form-control input-sm input350"/>
                                         <div class="clear-left">
                                             Ignore subbed releases based on language names <br>
                                             Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
@@ -533,7 +571,7 @@ window.app = new Vue({
                                 <label for="ignore_und_subs">
                                     <span class="component-title">Ignore unknown subbed releases</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" v-model="ignoreUndSubs"/>
+                                        <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" v-model="search.filters.ignoreUnknownSubs"/>
                                         Ignore subbed releases without language names <br>
                                         Filter words: subbed, subpack, subbed, subs, etc.)
                                     </span>
@@ -590,7 +628,7 @@ window.app = new Vue({
                                         <span class="component-desc">
                                             <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p v-html="clients.nzb[nzb.method].description"></p>
+                                                <p v-if="clients.nzb[nzb.method]" v-html="clients.nzb[nzb.method].description"></p>
                                             </div>
                                         </span>
                                     </label>
@@ -658,7 +696,7 @@ window.app = new Vue({
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair" v-show="allowHighPriority">
+                                <div class="field-pair" v-show="search.general.allowHighPriority">
                                     <label for="sab_forced">
                                         <span class="component-title">Use forced priority</span>
                                         <span class="component-desc">
@@ -686,7 +724,7 @@ window.app = new Vue({
                                         <span class="component-desc">
                                             <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p v-html="clients.nzb[nzb.method].description"></p>
+                                                <p v-if="clients.nzb[nzb.method]" v-html="clients.nzb[nzb.method].description"></p>
                                             </div>
                                         </span>
                                     </label>
@@ -767,35 +805,35 @@ window.app = new Vue({
                     <div class="component-group-desc-legacy">
                         <h3>Torrent Search</h3>
                         <p>How to handle Torrent search results.</p>
-                        <div id="torrent_method_icon" :class="'add-client-icon-' + torrent.method"></div>
+                        <div id="torrent_method_icon" :class="'add-client-icon-' + torrents.method"></div>
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
                             <label for="use_torrents">
                                 <span class="component-title">Search torrents</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" name="use_torrents" id="use_torrents" v-model="torrent.enabled"/>
+                                    <input type="checkbox" name="use_torrents" id="use_torrents" v-model="torrents.enabled"/>
                                     <p>enable torrent search providers</p>
                                 </span>
                             </label>
                         </div>
-                        <div v-show="torrent.enabled">
+                        <div v-show="torrents.enabled">
                             <div class="field-pair">
                                 <label for="torrent_method">
                                     <span class="component-title">Send .torrent files to:</span>
                                     <span class="component-desc">
-                                        <select v-model="torrent.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
+                                        <select v-model="torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
                                             <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
                                         </select>
                                     </span>
                                 </label>
                             </div>
-                            <div v-show="torrent.method === 'blackhole'">
+                            <div v-show="torrents.method === 'blackhole'">
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Black hole folder location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="torrent.dir" @update="torrent.dir = $event"></file-browser>
+                                            <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="torrents.dir" @update="torrents.dir = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
                                             </div>
@@ -804,123 +842,123 @@ window.app = new Vue({
                                 </div>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
-                            <div v-show="torrent.method !== 'blackhole'">
+                            <div v-show="torrents.method !== 'blackhole'">
                                 <div class="field-pair">
                                     <label>
-                                        <span class="component-title" id="host_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} host:port</span>
+                                        <span class="component-title" v-if="clients.torrent[torrents.method]" id="host_title">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} host:port</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_host" id="torrent_host" v-model="torrent.host" class="form-control input-sm input350"/>
+                                            <input type="text" name="torrent_host" id="torrent_host" v-model="torrents.host" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p v-html="clients.torrent[torrent.method].description"></p>
+                                                <p v-if="clients.nzb[nzb.method]" v-html="clients.torrent[torrents.method].description"></p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="torrent.method === 'transmission'" class="field-pair" id="torrent_rpcurl_option">
+                                <div v-show="torrents.method === 'transmission'" class="field-pair" id="torrent_rpcurl_option">
                                     <label>
-                                        <span class="component-title" id="rpcurl_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} RPC URL</span>
+                                        <span class="component-title" v-if="clients.torrent[torrents.method]" id="rpcurl_title">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} RPC URL</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" v-model="torrent.rpcUrl" class="form-control input-sm input350"/>
+                                            <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" v-model="torrents.rpcUrl" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://')" class="field-pair" id="torrent_auth_type_option">
+                                <div v-show="torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://')" class="field-pair" id="torrent_auth_type_option">
                                     <label>
                                         <span class="component-title">Http Authentication</span>
                                         <span class="component-desc">
-                                            <select v-model="torrent.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
+                                            <select v-model="torrents.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
                                                 <option v-for="(title, name) in httpAuthTypes" :value="name">{{title}}</option>
                                             </select>
                                             <p></p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].verifyCertOption" class="field-pair">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].verifyCertOption" class="field-pair">
                                     <label for="torrent_verify_cert">
                                         <span class="component-title">Verify certificate</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_verify_cert" id="torrent_verify_cert" v-model="torrent.verifyCert"/>
+                                            <input type="checkbox" name="torrent_verify_cert" id="torrent_verify_cert" v-model="torrents.verifyCert"/>
                                             <p>Verify SSL certificates for HTTPS requests</p>
-                                            <p v-show="torrent.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
+                                            <p v-show="torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="!['rtorrent', 'deluge'].includes(torrent.method) || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_username_option">
+                                <div v-if="torrents.method" v-show="!['rtorrent', 'deluge'].includes(torrents.method) || (torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://'))" class="field-pair" id="torrent_username_option">
                                     <label>
-                                        <span class="component-title" id="username_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} username</span>
+                                        <span class="component-title" id="username_title" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} username</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_username" id="torrent_username" v-model="torrent.username" class="form-control input-sm input200" autocomplete="no" />
+                                            <input type="text" name="torrent_username" id="torrent_username" v-model="torrents.username" class="form-control input-sm input200" autocomplete="no" />
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="torrent.method !== 'rtorrent' || (torrent.method === 'rtorrent' && !torrent.host.startsWith('scgi://'))" class="field-pair" id="torrent_password_option">
+                                <div v-if="torrents.method" v-show="torrents.method !== 'rtorrent' || (torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://'))" class="field-pair" id="torrent_password_option">
                                     <label>
-                                        <span class="component-title" id="password_title">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}} password</span>
+                                        <span class="component-title" id="password_title" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} password</span>
                                         <span class="component-desc">
-                                            <input type="password" name="torrent_password" id="torrent_password" v-model="torrent.password" class="form-control input-sm input200" autocomplete="no"/>
+                                            <input type="password" name="torrent_password" id="torrent_password" v-model="torrents.password" class="form-control input-sm input200" autocomplete="no"/>
                                             <p>(blank for none)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].labelOption" class="field-pair" id="torrent_label_option">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].labelOption" class="field-pair" id="torrent_label_option">
                                     <label>
                                         <span class="component-title">Add label to torrent</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label" id="torrent_label" v-model="torrent.label" class="form-control input-sm input200"/>
-                                            <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
+                                            <input type="text" name="torrent_label" id="torrent_label" v-model="torrents.label" class="form-control input-sm input200"/>
+                                            <span v-show="['deluge', 'deluged'].includes(torrents.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
                                             </span>
-                                            <span v-show="torrent.method === 'utorrent'">
+                                            <span v-show="torrents.method === 'utorrent'">
                                                 <div class="clear-left"><p>Global label for torrents.<br>
                                                 <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].labelAnimeOption" class="field-pair">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].labelAnimeOption" class="field-pair">
                                     <label>
                                         <span class="component-title">Add label to torrent for anime</span>
                                         <span class="component-desc">
-                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" v-model="torrent.labelAnime" class="form-control input-sm input200"/>
-                                            <span v-show="['deluge', 'deluged'].includes(torrent.method)"><p>(blank spaces are not allowed)</p>
+                                            <input type="text" name="torrent_label_anime" id="torrent_label_anime" v-model="torrents.labelAnime" class="form-control input-sm input200"/>
+                                            <span v-show="['deluge', 'deluged'].includes(torrents.method)"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
                                             </span>
-                                            <span v-show="torrent.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
+                                            <span v-show="torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
                                                 <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
                                             </span>
-                                            <span v-show="torrent.method === 'utorrent'">
+                                            <span v-show="torrents.method === 'utorrent'">
                                                 <div class="clear-left"><p>Global label for torrents.<br>
                                                 <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
                                             </span>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].pathOption" class="field-pair" id="torrent_path_option">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].pathOption" class="field-pair" id="torrent_path_option">
                                     <label>
                                         <span class="component-title" id="directory_title">Downloaded files location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="torrent.path" @update="torrent.path = $event"></file-browser>
-                                            <div class="clear-left"><p>where <span id="torrent_client">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will save downloaded files (blank for client default)
-                                                <span v-show="torrent.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                            <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="torrents.path" @update="torrents.path = $event"></file-browser>
+                                            <div class="clear-left"><p>where <span id="torrent_client" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}}</span> will save downloaded files (blank for client default)
+                                                <span v-show="torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
                                             </div>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].seedLocationOption" class="field-pair">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].seedLocationOption" class="field-pair">
                                     <label>
                                         <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
                                         <span class="component-desc">
-                                            <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="torrent.seedLocation" @update="torrent.seedLocation = $event"></file-browser>
+                                            <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="torrents.seedLocation" @update="torrents.seedLocation = $event"></file-browser>
                                             <div class="clear-left">
                                                 <p>
-                                                    where <span id="torrent_client_seed_path">{{clients.torrent[torrent.method].shortTitle || clients.torrent[torrent.method].title}}</span> will move Torrents after Post-Processing<br/>
+                                                    where <span id="torrent_client_seed_path">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}}</span> will move Torrents after Post-Processing<br/>
                                                     <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
                                                     to another location after Post-Processor to prevent reprocessing the same file over and over.
                                                     This feature does a "Set Torrent location" or "Move Torrent" like in client
@@ -929,34 +967,34 @@ window.app = new Vue({
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
                                     <label>
-                                        <span class="component-title" id="torrent_seed_time_label">{{torrent.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
+                                        <span class="component-title" id="torrent_seed_time_label">{{torrents.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
                                         <span class="component-desc">
-                                            <input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrent.seedTime" class="form-control input-sm input100" />
+                                            <input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrents.seedTime" class="form-control input-sm input100" />
                                             <p>hours. (default: '0' passes blank to client and '-1' passes nothing)</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="clients.torrent[torrent.method].pausedOption" class="field-pair" id="torrent_paused_option">
+                                <div v-if="torrents.method" v-show="clients.torrent[torrents.method].pausedOption" class="field-pair" id="torrent_paused_option">
                                     <label>
                                         <span class="component-title">Start torrent paused</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_paused" id="torrent_paused" v-model="torrent.paused"/>
+                                            <input type="checkbox" name="torrent_paused" id="torrent_paused" v-model="torrents.paused"/>
                                             <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div v-show="torrent.method === 'transmission'" class="field-pair">
+                                <div v-if="torrents.method" v-show="torrents.method === 'transmission'" class="field-pair">
                                     <label>
                                         <span class="component-title">Allow high bandwidth</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="torrent_high_bandwidth" id="torrent_high_bandwidth" v-model="torrent.highBandwidth"/>
+                                            <input type="checkbox" name="torrent_high_bandwidth" id="torrent_high_bandwidth" v-model="torrents.highBandwidth"/>
                                             <p>use high bandwidth allocation if priority is high</p>
                                         </span>
                                     </label>
                                 </div>
-                                <div class="testNotification" v-show="torrent.testStatus" v-html="torrent.testStatus"></div>
+                                <div class="testNotification" v-show="torrents.testStatus" v-html="torrents.testStatus"></div>
                                 <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button"/>
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                             </div>
@@ -964,7 +1002,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /#torrent-search //-->
                 <br>
-                <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{dataDir}}</span></b> </h6>
+                <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{config.dataDir}}</span></b> </h6>
                 <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes" />
             </div><!-- /config-components //-->
         </form>

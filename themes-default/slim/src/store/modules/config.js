@@ -67,7 +67,9 @@ const state = {
             categoryBacklog: null,
             categoryAnimeBacklog: null,
             host: null,
-            username: null
+            username: null,
+            password: null,
+            apiKey: null
         }
     },
     configFile: null,
