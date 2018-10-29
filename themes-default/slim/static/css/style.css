@@ -522,6 +522,12 @@ div.xem {
     line-height: 40px;
 }
 
+.show-add-options > div {
+    float: left;
+    padding-right: 10px;
+    line-height: 40px;
+}
+
 .show-grid {
     display: none;
     margin-bottom: 60px !important;
@@ -882,6 +888,14 @@ home_newShow.mako
     margin-right: auto;
     padding: 10px 0;
     font-size: 13px;
+}
+
+#addShowForm > div {
+    width: 100% !important;
+}
+
+#addShowForm > div:nth-child(2) > div {
+    position: relative !important;
 }
 
 .newShowPortal {
@@ -2237,7 +2251,7 @@ select .selected {
     background-position: -172px 0;
 }
 
-.add-client-icon-download-station {
+.add-client-icon-downloadstation {
     background-position: -205px 0;
 }
 
@@ -2567,97 +2581,6 @@ span.path {
 .h2footer {
     line-height: 18px;
     clear: both;
-}
-
-span.quality {
-    font: 12px/13px "Open Sans", verdana, sans-serif;
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
-    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
-    color: rgb(255, 255, 255);
-    display: inline-block;
-    padding: 2px 4px;
-    text-align: center;
-    vertical-align: baseline;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-
-span.any-hd {
-    background-color: rgb(38, 114, 182);
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background:
-        repeating-linear-gradient(
-        -45deg,
-        rgb(38, 114, 182),
-        rgb(38, 114, 182) 10px,
-        rgb(91, 153, 13) 10px,
-        rgb(91, 153, 13) 20px
-    );
-    /* stylelint-enable */
-}
-
-span.Custom {
-    background-color: rgb(98, 25, 147);
-}
-
-span.HD {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HDTV {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HD720p {
-    background-color: rgb(91, 153, 13);
-}
-
-span.HD1080p {
-    background-color: rgb(38, 114, 182);
-}
-
-span.UHD-4K {
-    background-color: rgb(117, 0, 255);
-}
-
-span.UHD-8K {
-    background-color: rgb(65, 0, 119);
-}
-
-span.RawHD {
-    background-color: rgb(205, 115, 0);
-}
-
-span.RawHDTV {
-    background-color: rgb(205, 115, 0);
-}
-
-span.SD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDTV {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDDVD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.Any {
-    background-color: rgb(102, 102, 102);
-}
-
-span.Unknown {
-    background-color: rgb(153, 153, 153);
-}
-
-span.Proper {
-    background-color: rgb(63, 127, 0);
 }
 
 /* red */
@@ -3434,11 +3357,15 @@ select.input-sm {
 formWizard.css
 ========================================================================== */
 
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
 fieldset.sectionwrap {
-    width: 800px;
     padding: 5px;
     text-align: left;
     border-width: 0;
+    width: 100%;
 }
 
 legend.legendStep {
@@ -3451,25 +3378,23 @@ div.stepsguide {
     overflow: hidden;
     text-align: left;
     cursor: pointer;
+    display: table;
 }
 
 div.stepsguide .step {
-    float: left;
+    display: table-cell;
     width: 33%;
     font: bold 24px Arial, sans-serif;
-}
-
-div.stepsguide .step p {
-    margin: 12px 0;
     border-bottom: 4px solid rgb(87, 68, 43);
 }
 
 div.stepsguide .disabledstep {
     color: rgb(196, 196, 196);
+    border-bottom: 4px solid rgb(138, 119, 94);
 }
 
 div.stepsguide .disabledstep p {
-    border-bottom: 4px solid rgb(138, 119, 94);
+    border-bottom: none;
 }
 
 div.stepsguide .step .smalltext {

@@ -17,6 +17,7 @@ from medusa import (
     logger,
     ws,
 )
+from medusa.common import IGNORED, Quality, SKIPPED, WANTED
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
@@ -49,6 +50,11 @@ def layout_schedule_post_processor(v):
 def theme_name_setter(object, name, value):
     """Hot-swap theme."""
     config.change_theme(value)
+
+
+def season_folders_validator(value):
+    """Validate default season folders setting."""
+    return not (app.NAMING_FORCE_FOLDERS and value is False)
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -116,6 +122,15 @@ class ConfigHandler(BaseRequestHandler):
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
+
+        'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES, converter=bool),
+        'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator, converter=bool),
+        'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
+        'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
+
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
         'postProcessing.processMethod': StringField(app, 'PROCESS_METHOD'),
@@ -147,10 +162,38 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.naming.animeMultiEp': IntegerField(app, 'NAMING_ANIME_MULTI_EP'),
         'postProcessing.naming.animeNamingType': IntegerField(app, 'NAMING_ANIME'),
         'postProcessing.naming.multiEp': IntegerField(app, 'NAMING_MULTI_EP'),
-        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR')
+        'postProcessing.naming.stripYear': BooleanField(app, 'NAMING_STRIP_YEAR'),
+
+        'search.general.randomizeProviders': BooleanField(app, 'RANDOMIZE_PROVIDERS'),
+        'search.general.downloadPropers': BooleanField(app, 'DOWNLOAD_PROPERS'),
+        'search.general.checkPropersInterval': StringField(app, 'CHECK_PROPERS_INTERVAL'),
+        # 'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
+        'search.general.propersSearchDays': IntegerField(app, 'PROPERS_SEARCH_DAYS'),
+        'search.general.backlogDays': IntegerField(app, 'BACKLOG_DAYS'),
+        'search.general.backlogFrequency': IntegerField(app, 'BACKLOG_FREQUENCY'),
+        'search.general.minBacklogFrequency': IntegerField(app, 'MIN_BACKLOG_FREQUENCY'),
+        'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
+        'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
+        'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
+        'search.general.torrentCheckerFrequency': IntegerField(app, 'TORRENT_CHECKER_FREQUENCY'),
+        'search.general.minTorrentCheckerFrequency': IntegerField(app, 'MIN_TORRENT_CHECKER_FREQUENCY'),
+        'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
+        'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
+        'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
+        'search.general.useFailedDownloads': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
+        'search.general.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
+        'search.general.cacheTrimming': BooleanField(app, 'CACHE_TRIMMING'),
+        'search.general.maxCacheAge': IntegerField(app, 'MAX_CACHE_AGE'),
+
+        'search.filters.ignored': ListField(app, 'IGNORE_WORDS'),
+        'search.filters.undesired': ListField(app, 'UNDESIRED_WORDS'),
+        'search.filters.preferred': ListField(app, 'PREFERRED_WORDS'),
+        'search.filters.required': ListField(app, 'REQUIRE_WORDS'),
+        'search.filters.ignoredSubsList': ListField(app, 'IGNORED_SUBS_LIST'),
+        'search.filters.ignoreUnknownSubs': BooleanField(app, 'IGNORE_UND_SUBS'),
     }
 
-    def get(self, identifier, path_param=None):
+    def http_get(self, identifier, path_param=None):
         """Query general configuration.
 
         :param identifier:
@@ -180,7 +223,7 @@ class ConfigHandler(BaseRequestHandler):
 
         return self._ok(data=config_data)
 
-    def patch(self, identifier, *args, **kwargs):
+    def http_patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
         if not identifier:
             return self._bad_request('Config identifier not specified')
@@ -224,7 +267,7 @@ class ConfigHandler(BaseRequestHandler):
         })
         msg.push()
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
 
 class DataGenerator(object):
@@ -296,6 +339,15 @@ class DataGenerator(object):
         section_data['subtitles'] = NonEmptyDict()
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+
+        section_data['showDefaults'] = {}
+        section_data['showDefaults']['status'] = app.STATUS_DEFAULT
+        section_data['showDefaults']['statusAfter'] = app.STATUS_DEFAULT_AFTER
+        section_data['showDefaults']['quality'] = app.QUALITY_DEFAULT
+        section_data['showDefaults']['subtitles'] = bool(app.SUBTITLES_DEFAULT)
+        section_data['showDefaults']['seasonFolders'] = bool(app.SEASON_FOLDERS_DEFAULT)
+        section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
+        section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
         section_data['news'] = NonEmptyDict()
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
@@ -432,7 +484,7 @@ class DataGenerator(object):
         section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
         section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
         section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
-        section_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+        section_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
         section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
         section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
@@ -521,5 +573,44 @@ class DataGenerator(object):
         for provider in itervalues(app.metadata_provider_dict):
             json_repr = provider.to_json()
             section_data['metadataProviders'][json_repr['id']] = json_repr
+
+        return section_data
+
+    @staticmethod
+    def data_search():
+        """Search filters."""
+        section_data = NonEmptyDict()
+
+        section_data['general'] = NonEmptyDict()
+        section_data['general']['randomizeProviders'] = bool(app.RANDOMIZE_PROVIDERS)
+        section_data['general']['downloadPropers'] = bool(app.DOWNLOAD_PROPERS)
+        section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
+        # This can be moved to the frontend. No need to keep in config. The selected option is stored in CHECK_PROPERS_INTERVAL.
+        # {u'45m': u'45 mins', u'15m': u'15 mins', u'4h': u'4 hours', u'daily': u'24 hours', u'90m': u'90 mins'}
+        # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
+        section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
+        section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
+        section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
+        section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
+        section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
+        section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
+        section_data['general']['torrentCheckerFrequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
+        section_data['general']['trackersList'] = app.TRACKERS_LIST
+        section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
+        section_data['general']['useFailedDownloads'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['general']['deleteFailed'] = bool(app.DELETE_FAILED)
+        section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
+        section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
+
+        section_data['filters'] = NonEmptyDict()
+        section_data['filters']['ignored'] = app.IGNORE_WORDS
+        section_data['filters']['undesired'] = app.UNDESIRED_WORDS
+        section_data['filters']['preferred'] = app.PREFERRED_WORDS
+        section_data['filters']['required'] = app.REQUIRE_WORDS
+        section_data['filters']['ignoredSubsList'] = app.IGNORED_SUBS_LIST
+        section_data['filters']['ignoreUnknownSubs'] = bool(app.IGNORE_UND_SUBS)
 
         return section_data

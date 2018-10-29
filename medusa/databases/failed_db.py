@@ -27,7 +27,7 @@ class InitialSchema(db.SchemaUpgrade):
              ' status NUMERIC DEFAULT -1, quality NUMERIC DEFAULT 0, showid NUMERIC DEFAULT -1,'
              ' season NUMERIC DEFAULT -1, episode NUMERIC DEFAULT -1);',),
             ('CREATE TABLE db_version (db_version INTEGER);',),
-            ('INSERT INTO db_version (db_version) VALUES (1);',),
+            ('INSERT INTO db_version (db_version) VALUES (2);',),
         ]
         for query in queries:
             if len(query) == 1:
@@ -91,8 +91,8 @@ class AddIndexerIds(HistoryStatus):
         series_dict = {}
         # check for double
         for series in all_series:
-            if series[b'indexer_id'] not in series_dict:
-                series_dict[series[b'indexer_id']] = series[b'indexer']
+            if series['indexer_id'] not in series_dict:
+                series_dict[series['indexer_id']] = series['indexer']
 
         query = 'SELECT showid FROM history WHERE indexer_id IS NULL'
         results = self.connection.select(query)
@@ -125,7 +125,6 @@ class UpdateHistoryTableQuality(AddIndexerIds):
         utils.backup_database(self.connection.path, self.connection.version)
 
         self.translate_status()
-        self.inc_major_version()
 
     def translate_status(self):
         """
@@ -151,14 +150,16 @@ class UpdateHistoryTableQuality(AddIndexerIds):
 
         sql_results = self.connection.select('SELECT status FROM history GROUP BY status;')
         for result in sql_results:
-            status, quality = utils.split_composite_status(result[b'status'])
+            status, quality = utils.split_composite_status(result['status'])
             self.connection.action('UPDATE history SET status = ?, quality = ? WHERE status = ?;',
-                                   [status, quality, result[b'status']])
+                                   [status, quality, result['status']])
 
     def inc_major_version(self):
         major_version, minor_version = self.connection.version
         major_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
+        log.info(u'[FAILED-DB] Updated major version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
 
@@ -176,8 +177,6 @@ class ShiftQualities(UpdateHistoryTableQuality):
         self.update_status_unknown()
         self.inc_major_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
     def shift_history_qualities(self):
         """
         Shift all qualities << 1.
@@ -187,7 +186,7 @@ class ShiftQualities(UpdateHistoryTableQuality):
         log.info('Shift qualities in history one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
             self.connection.action(
                 'UPDATE history SET quality = ? WHERE quality = ?;',

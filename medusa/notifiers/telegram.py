@@ -72,7 +72,7 @@ class Notifier(object):
             success = True
         except IOError as e:
             message = 'Unknown IO error: %s' % e
-            if hasattr(e, b'code'):
+            if hasattr(e, 'code'):
                 error_message = {
                     400: 'Missing parameter(s). Double check your settings or if the channel/user exists.',
                     401: 'Authentication failed.',

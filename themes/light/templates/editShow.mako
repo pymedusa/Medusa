@@ -167,7 +167,7 @@ window.app = new Vue({
         saveButton() {
             return this.saving === false ? 'Save Changes' : 'Saving...';
         },
-        displayShowUrl() {
+        showUrl() {
             // @TODO: Change the URL generation to use `this.series`. Currently not possible because
             // the values are not available at the time of app-link component creation.
             return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
@@ -183,7 +183,7 @@ window.app = new Vue({
 <input type="hidden" id="series-slug" value="${show.slug}" />
 <h1 class="header">
     Edit Show
-    <span v-show="series.title"> - <app-link :href="displayShowUrl">{{series.title}}</app-link></span>
+    <span v-show="series.title"> - <app-link :href="showUrl">{{series.title}}</app-link></span>
 </h1>
 <div id="config-content">
     <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -216,7 +216,7 @@ window.app = new Vue({
                             <label for="defaultEpStatusSelect" class="col-sm-2 control-label">Default Episode Status</label>
                             <div class="col-sm-10 content">
                                 <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="series.config.defaultEpisodeStatus"/>
+                                    v-model="series.config.defaultEpisodeStatus">
                                     <option v-for="option in defaultEpisodeStatusOptions" :value="option.value">{{ option.text }}</option>
                                 </select>
                                 <div class="clear-left"><p>This will set the status for future episodes.</p></div>

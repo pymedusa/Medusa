@@ -7,6 +7,7 @@ from datetime import date
 import tempfile
 import logging
 
+from trans import trans
 import requests
 from six import text_type
 from six.moves import http_client as httplib
@@ -148,8 +149,10 @@ class Imdb(Auth):
             response.raise_for_status()
 
     def _suggest_search(self, query):
-        query_encoded = quote(query)
-        first_alphanum_char = self._query_first_alpha_num(query)
+        # translates national characters into similar sounding latin characters
+        cleaned_query = trans(query)
+        query_encoded = quote(cleaned_query)
+        first_alphanum_char = self._query_first_alpha_num(cleaned_query)
         path = '/suggests/{0}/{1}.json'.format(
             first_alphanum_char, query_encoded
         )

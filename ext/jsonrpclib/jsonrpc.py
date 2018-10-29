@@ -36,13 +36,13 @@ appropriately.
 See https://github.com/tcalmant/jsonrpclib for more info.
 
 :authors: Josh Marshall, Thomas Calmant
-:copyright: Copyright 2017, Thomas Calmant
+:copyright: Copyright 2018, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.3.1
+:version: 0.3.2
 
 ..
 
-    Copyright 2017 Thomas Calmant
+    Copyright 2018 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ import jsonrpclib.utils as utils
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 3, 1)
+__version_info__ = (0, 3, 2)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format

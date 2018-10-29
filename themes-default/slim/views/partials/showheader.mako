@@ -1,73 +1,60 @@
 <%!
+    import json
     import operator
+
     from medusa import app, helpers, subtitles, network_timezones
     from medusa.common import SKIPPED, WANTED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
 %>
-
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <div class="row">
-    <div id="showtitle" class="col-lg-12" data-showname="${show.name | h}">
+    ## @TODO: Remove data attributes
+    ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436
+    <div id="showtitle" class="col-lg-12" :data-showname="show.title">
         <div>
-            <h1 class="title" data-indexer-name="${show.indexer_name}" data-series-id="${show.indexerid}" id="scene_exception_${show.indexerid}">
-                <app-link href="home/displayShow?indexername=${show.indexer_name}&seriesid=${show.indexerid}" class="snatchTitle">${show.name | h}</app-link>
+            ## @TODO: Remove data attributes
+            ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142
+            <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
+                <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]" class="snatchTitle">{{ show.title }}</app-link>
             </h1>
         </div>
 
-    % if action == 'snatchSelection':
-        <div id="show-specials-and-seasons" class="pull-right">
+        <div v-if="$route.name === 'snatchSelection'" id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
-                <%include file="/partials/seasonEpisode.mako"/>
+                Manual search for:<br>
+                <app-link
+                    :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
+                    class="snatchTitle"
+                    >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && !$route.query.manual_search_type"> Episode {{ episode }}</template>
             </span>
         </div>
-    % else:
-        % if season_results:
-            ##There is a special/season_0?##
-            % if int(season_results[-1]["season"]) == 0:
-                <% season_special = 1 %>
-            % else:
-                <% season_special = 0 %>
-            % endif
-            % if not app.DISPLAY_SHOW_SPECIALS and season_special:
-                <% lastSeason = season_results.pop(-1) %>
-            % endif
-            <div id="show-specials-and-seasons" class="pull-right">
-                <span class="h2footer display-specials">
-                % if season_special:
-                    Display Specials: <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
-                % endif
-                </span>
+        <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
+            <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
+                Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ config.layout.show.specials ? 'Hide' : 'Show' }}</a>
+            </span>
 
-                <div class="h2footer display-seasons clear">
-                    <span>
-                    % if (len(season_results) > 14):
-                        <select id="seasonJump" class="form-control input-sm" style="position: relative">
-                            <option value="jump">Jump to Season</option>
-                        % for seasonNum in season_results:
-                            <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
-                        % endfor
-                        </select>
-                    % else:
+            <div class="h2footer display-seasons clear">
+                <span>
+                    <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
+                        <option value="jump">Jump to Season</option>
+                        <option v-for="season in show.seasons" :value="'#season-' + season[0].season" :data-season="season[0].season">
+                        <%text>
+                            {{ season[0].season === 0 ? 'Specials' : `Season ${season[0].season}` }}
+                        </%text>
+                        </option>
+                    </select>
+                    <template v-else-if="show.seasons.length >= 1">
                         Season:
-                        % for seasonNum in season_results:
-                            % if int(seasonNum["season"]) == 0:
-                                <app-link href="#season-${seasonNum["season"]}">Specials</app-link>
-                            % else:
-                                <app-link href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</app-link>
-                            % endif
-                            % if seasonNum != season_results[-1]:
-                                <span class="separator">|</span>
-                            % endif
-                        % endfor
-                    % endif
-                    </span>
-                </div>
+                        <template v-for="(season, $index) in reverse(show.seasons)">
+                            <app-link :href="'#season-' + season[0].season">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
+                            <slot> </slot>
+                            <span v-if="$index !== (show.seasons.length - 1)" class="separator">| </span>
+                        </template>
+                    </template>
+                </span>
             </div>
-            % endif
-        % endif
+        </div>
     </div> <!-- end show title -->
 </div> <!-- end row showtitle-->
 
@@ -84,7 +71,7 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <asset default="images/poster.png" show-slug="${show.slug}" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                    <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true"></asset>
                 </div>
             </div>
         </div>
@@ -94,55 +81,50 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <asset default="images/banner.png" show-slug="${show.slug}" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                    <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                 % if 'rating' in show.imdb_info:
-                     <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
-                     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
-                 % endif
-                 % if not show.imdb_id:
-                     <span>(${show.start_year}) - ${show.runtime} minutes - </span>
-                 % else:
-                     % if 'country_codes' in show.imdb_info:
-                         % for country in show.imdb_info['country_codes'].split('|'):
-                                 <img src="images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
-                         % endfor
-                     % endif
-                                 <span>
-                     % if show.imdb_info.get('year'):
-                                     (${show.imdb_info['year']}) -
-                     % endif
-                                     ${show.imdb_info.get('runtimes') or show.runtime} minutes
-                                 </span>
-                                 <app-link href="http://www.imdb.com/title/${show.imdb_id}" title="http://www.imdb.com/title/${show.imdb_id}">
-                                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
-                                 </app-link>
-                 % endif
-                % if show.externals.get('trakt_id'):
-                    <app-link href="https://trakt.tv/shows/${show.externals.get('trakt_id')}" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
+                    <span v-if="show.rating.imdb && show.rating.imdb.rating"
+                        class="imdbstars"
+                        :qtip-content="show.rating.imdb.rating + ' / 10 Stars<br> ' + show.rating.imdb.votes + ' Votes'"
+                    >
+                        <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
+                    </span>
+                    <template v-if="!show.id.imdb">
+                        <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
+                    </template>
+                    <template v-else>
+                        <img v-for="country in show.country_codes" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                        <span>
+                        % if show.imdb_info.get('year'):
+                            (${show.imdb_info['year']}) -
+                        % endif
+                            ${show.imdb_info.get('runtimes') or show.runtime} minutes
+                        </span>
+                        <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
+                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                        </app-link>
+                    </template>
+                    <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </app-link>
-                % endif
-                 <app-link href="${indexerApi(show.indexer).config['show_url']}${show.indexerid}" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-                     <img alt="${indexerApi(show.indexer).name | h}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
-                 </app-link>
+                    <app-link v-if="showIndexerUrl" :href="showIndexerUrl" :title="showIndexerUrl">
+                        <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
+                    </app-link>
                  % if xem_numbering or xem_absolute_numbering:
                      <app-link href="http://thexem.de/search?q=${show.name | h}" title="http://thexem.de/search?q-${show.name | h}">
                          <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                      </app-link>
                  % endif
-                     <app-link href="https://fanart.tv/series/${show.indexerid}" title="https://fanart.tv/series/${show.name | h}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
+                    <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
-                         % if show.imdb_info.get('genres'):
+                         %if show.genre:
+                            <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv.'"><li>{{ genre }}</li></app-link>
+                         % elif show.imdb_info.get('genres'):
                              % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <app-link href="http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
-                             % endfor
-                         % elif show.genre:
-                             % for genre in show.genre.strip('|').split('|'):
-                                 <app-link href="http://trakt.tv/shows/popular/?genres=${genre.lower()}" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></app-link>
+                                 <app-link href="https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
                              % endfor
                          % endif
                      </ul>
@@ -152,7 +134,7 @@
             <div class="row">
                 <!-- Show Summary -->
                 <div id="summary" class="col-md-12">
-                    <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
+                    <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                         <table class="summaryTable pull-left">
                             <tr v-if="show.plot">
                                 <td colspan="2" style="padding-bottom: 15px;">
@@ -163,25 +145,32 @@
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
-                                ${renderQualityPill(show.quality)}
+                                <quality-pill :quality="${show.quality}"></quality-pill>
                             % else:
                                 % if allowed_qualities:
-                                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                    <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
+                                    <i>Allowed:</i>
+                                    <template v-for="(curQuality, $index) in ${allowed_as_json}">
+                                        <template v-if="$index > 0">&comma;</template>
+                                        <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
+                                    </template>
+                                    ${'<br>' if preferred_qualities else ''}
                                 % endif
                                 % if preferred_qualities:
-                                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                    <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
+                                    <i>Preferred:</i>
+                                    <template v-for="(curQuality, $index) in ${preferred_as_json}">
+                                        <template v-if="$index > 0">&comma;</template>
+                                        <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
+                                    </template>
                                 % endif
                             % endif
                                 </td></tr>
-                            % if show.network and show.airs:
-                                <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
-                            % elif show.network:
-                                <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
-                            % elif show.airs:
-                                <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
-                            % endif
-                                <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
-                                <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
+                                <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on {{ show.network }}</td></tr>
+                                <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
+                                <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
+                                <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
+                                <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
                             % if showLoc[1]:
                                 <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
                             % else:
@@ -223,16 +212,14 @@
                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-                            % if app.USE_SUBTITLES:
-                            <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
-                            % endif
-                            <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(show.season_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Anime: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvd_order)]}" alt="${("N", "Y")[bool(show.dvd_order)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">Scene Numbering: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled"></state-switch></td></tr>
+                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders"></state-switch></td></tr>
+                            <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused"></state-switch></td></tr>
+                            <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate"></state-switch></td></tr>
+                            <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports"></state-switch></td></tr>
+                            <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime"></state-switch></td></tr>
+                            <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder"></state-switch></td></tr>
+                            <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene"></state-switch></td></tr>
                         </table>
                      </div> <!-- end of show-status -->
                 </div> <!-- end of summary -->
@@ -243,8 +230,7 @@
 
 <div id="row-show-episodes-controls" class="row">
     <div id="col-show-episodes-controls" class="col-md-12">
-    % if (action == "displayShow"):
-        <div class="row key"> <!-- Checkbox filter controls -->
+        <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
                 <div id="key-padding" class="pull-left top-5">
                     <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
@@ -283,8 +269,6 @@
                 </div>
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->
-    % else:
-        <div></div>
-    % endif
+        <div v-else></div>
     </div> <!-- end of col -->
 </div> <!-- end of row -->

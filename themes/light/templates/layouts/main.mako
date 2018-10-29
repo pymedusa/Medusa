@@ -10,12 +10,7 @@
         <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- These values come from css/dark.css and css/light.css -->
-        % if app.THEME_NAME == "dark":
         <meta name="theme-color" content="#333333">
-        % elif app.THEME_NAME == "light":
-        <meta name="theme-color" content="#333333">
-        % endif
         <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
@@ -88,21 +83,19 @@
         </div>
         <%block name="load_main_app" />
 
-        ## This contains all the Webpack-imported modules
+        ## These contain all the Webpack-imported modules
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
@@ -112,13 +105,6 @@
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 

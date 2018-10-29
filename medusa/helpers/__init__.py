@@ -759,11 +759,11 @@ def get_absolute_number_from_season_and_episode(series_obj, season, episode):
 
     if season and episode:
         main_db_con = db.DBConnection()
-        sql = b'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
+        sql = 'SELECT * FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?'
         sql_results = main_db_con.select(sql, [series_obj.indexer, series_obj.series_id, season, episode])
 
         if len(sql_results) == 1:
-            absolute_number = int(sql_results[0][b'absolute_number'])
+            absolute_number = int(sql_results[0]['absolute_number'])
             log.debug(
                 u'Found absolute number {absolute} for show {show} {ep}', {
                     'absolute': absolute_number,
