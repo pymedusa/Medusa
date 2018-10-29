@@ -58,14 +58,17 @@ export default {
         };
     },
     mounted() {
-        this.localValue = this.value;
+        const { value } = this;
+        this.localValue = value;
     },
     watch: {
         localValue() {
-            this.$emit('update', this.localValue);
+            const { $emit, localValue } = this;
+            $emit('update', localValue);
         },
         value() {
-            this.localValue = this.value;
+            const { value } = this;
+            this.localValue = value;
         }
     }
 };
@@ -76,14 +79,17 @@ export default {
     width: 75px;
     margin-top: -4px;
 }
+
 .input250 {
     width: 250px;
     margin-top: -4px;
 }
+
 .input350 {
     width: 350px;
     margin-top: -4px;
 }
+
 .input450 {
     width: 450px;
     margin-top: -4px;

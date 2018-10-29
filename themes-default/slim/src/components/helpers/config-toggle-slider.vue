@@ -46,14 +46,17 @@ export default {
         };
     },
     mounted() {
-        this.localChecked = this.checked;
+        const { checked } = this;
+        this.localChecked = checked;
     },
     watch: {
         checked() {
-            this.localChecked = this.checked;
+            const { checked } = this;
+            this.localChecked = checked;
         },
         localChecked() {
-            this.$emit('update', this.localChecked);
+            const { $emit, localChecked } = this;
+            $emit('update', localChecked);
         }
     }
 };

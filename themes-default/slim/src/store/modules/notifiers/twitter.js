@@ -1,5 +1,5 @@
 export const state = {
-   enabled: null,
+    enabled: null,
     notifyOnSnatch: null,
     notifyOnDownload: null,
     notifyOnSubtitleDownload: null,

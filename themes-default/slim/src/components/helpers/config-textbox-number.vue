@@ -61,11 +61,13 @@ export default {
         };
     },
     mounted() {
-        this.localValue = this.value;
+        const { value } = this;
+        this.localValue = value;
     },
     watch: {
         value() {
-            this.localValue = this.value;
+            const { value } = this;
+            this.localValue = value;
         }
     }
 };
