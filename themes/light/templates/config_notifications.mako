@@ -453,7 +453,6 @@ window.app = new Vue({
             });
         },
         testGrowl() {
-            debugger;
             const growl = {};
             growl.host = $.trim($('#growl_host').val());
             growl.password = $.trim($('#growl_password').val());
@@ -1669,7 +1668,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()" ></config-textbox>
-                                    <config-textbox v-model="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()" ></config-textbox>
+                                    <config-textbox-number :min="1" :step="1" v-model="notifiers.email.port" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()" ></config-textbox-number>
                                     <config-textbox v-model="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()" ></config-textbox>
                                     <config-toggle-slider v-model="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()" ></config-textbox>

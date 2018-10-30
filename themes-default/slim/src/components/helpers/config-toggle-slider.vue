@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" :value="localChecked" sync @input="updateValue()"></toggle-button>
+                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @input="updateValue()"></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot></slot>
                 </div>
@@ -51,15 +51,14 @@ export default {
     },
     watch: {
         value() {
-            debugger;
             const { value } = this;
             this.localChecked = value;
         }
     },
     methods: {
         updateValue() {
-            const { $emit, localChecked } = this;
-            $emit('update', localChecked);
+            const { localChecked } = this;
+            this.$emit('input', localChecked);
         }
     }
 };
