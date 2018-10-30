@@ -31,7 +31,6 @@ from builtins import str
 from medusa import app, logger
 from medusa.helper.exceptions import ex
 
-import six
 from six import itervalues, text_type
 
 

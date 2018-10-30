@@ -1442,9 +1442,9 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT last_backlog FROM info')
 
-        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat)
 
         data = {'backlog_is_paused': int(backlog_paused), 'backlog_is_running': int(backlog_running),
                 'last_backlog': _ordinal_to_date_form(sql_results[0]['last_backlog']),
