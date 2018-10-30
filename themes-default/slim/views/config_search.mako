@@ -215,7 +215,9 @@ window.app = new Vue({
                     categoryBacklog: null,
                     categoryAnimeBacklog: null,
                     host: null,
-                    username: null
+                    username: null,
+                    password: null,
+                    apiKey: null
                 }
             },
             httpAuthTypes: {

@@ -1,5 +1,13 @@
 ## Unreleased
 
+#### Improvements
+- Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens. ([#5159](https://github.com/pymedusa/Medusa/pull/4913))
+
+#### Fixes
+
+
+## 0.2.11 (2018-10-29)
+
 #### New Features
 
 #### Improvements
@@ -26,6 +34,7 @@
 - Fixed metadata settings not being saved ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Fixed Synology DS missing location and wrong icon ([#5443](https://github.com/pymedusa/Medusa/pull/5443))
 - Fixed saving "config - postprocessing frequency" value ([#5482](https://github.com/pymedusa/Medusa/pull/5482))
+- Fixed database trying to update even if up to date ([#5543](https://github.com/pymedusa/Medusa/pull/5543))
 
 -----
 
