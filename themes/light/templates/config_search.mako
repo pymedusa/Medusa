@@ -301,7 +301,6 @@ window.app = new Vue({
             });
 
             const section = 'main';
-            debugger;
             $store.dispatch('setConfig', { section, config }).then(() => {
                 this.$snotify.success(
                     'Saved Search config',
@@ -336,7 +335,6 @@ window.app = new Vue({
             }
         },
         'torrents.method'(method) {
-            debugger;
             if (!this.clients.torrent[method].removeFromClientOption) {
                 this.search.general.removeFromClient = false;
             }
@@ -357,6 +355,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
+<vue-snotify></vue-snotify>
 <h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
