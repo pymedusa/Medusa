@@ -1,13 +1,14 @@
 <template>
-    <div id="config-textbox-content">
+    <div id="config-textbox-number-content">
         <div class="form-group">
             <div class="row">
                 <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" />
+                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder}" v-model="localValue" @change="$emit('update', Number($event.target.value))"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>
@@ -16,7 +17,7 @@
 
 <script>
 export default {
-    name: 'config-textbox',
+    name: 'config-textbox-number',
     props: {
         label: {
             type: String,
@@ -31,17 +32,28 @@ export default {
             default: () => []
         },
         value: {
-            type: String,
-            default: ''
+            type: Number,
+            default: 10
         },
         /**
          * Overwrite the default configured class on the <input/> element.
          */
         inputClass: {
             type: String,
-            default: 'form-control input-sm max-input350'
+            default: 'form-control input-sm input75'
+        },
+        min: {
+            type: Number,
+            default: 10
+        },
+        step: {
+            type: Number,
+            default: 1
+        },
+        placeholder: {
+            type: String,
+            default: ''
         }
-
     },
     data() {
         return {
@@ -49,17 +61,23 @@ export default {
         };
     },
     mounted() {
-        this.localValue = this.value;
+        const { value } = this;
+        this.localValue = value;
     },
     watch: {
-        localValue() {
-            this.$emit('update', this.localValue);
+        value() {
+            const { value } = this;
+            this.localValue = value;
         }
     }
 };
 </script>
 
 <style>
+.form-control {
+    color: rgb(0, 0, 0);
+}
+
 .input75 {
     width: 75px;
     margin-top: -4px;

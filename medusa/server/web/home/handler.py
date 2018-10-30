@@ -2,7 +2,6 @@
 
 from __future__ import unicode_literals
 
-import ast
 import json
 import os
 import time
@@ -104,6 +103,7 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
+from medusa.tv.series import Series, SeriesIdentifier
 from medusa.version_checker import CheckVersion
 
 from requests.compat import (
@@ -293,7 +293,7 @@ class Home(WebRoot):
             if authed:
                 return 'Success. Connected and authenticated'
             else:
-                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
+                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth}'.format(
                     access=acces_msg, auth=auth_msg)
         else:
             return 'Unable to connect to host'
@@ -564,30 +564,20 @@ class Home(WebRoot):
 
     @staticmethod
     def loadShowNotifyLists():
-        main_db_con = db.DBConnection()
-        rows = main_db_con.select(
-            'SELECT show_id, show_name, notify_list '
-            'FROM tv_shows '
-            'ORDER BY show_name ASC'
-        )
-
         data = {}
         size = 0
-        for r in rows:
+        for show in app.showList:
             notify_list = {
                 'emails': '',
                 'prowlAPIs': '',
             }
-            if r['notify_list']:
-                # First, handle legacy format (emails only)
-                if not r['notify_list'][0] == '{':
-                    notify_list['emails'] = r['notify_list']
-                else:
-                    notify_list = dict(ast.literal_eval(r['notify_list']))
+            if show.notify_list:
+                notify_list = show.notify_list
 
-            data[r['show_id']] = {
-                'id': r['show_id'],
-                'name': r['show_name'],
+            data[show.identifier.slug] = {
+                'id': show.show_id,
+                'name': show.name,
+                'slug': show.identifier.slug,
                 'list': notify_list['emails'],
                 'prowl_notify_list': notify_list['prowlAPIs']
             }
@@ -598,42 +588,23 @@ class Home(WebRoot):
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
         entries = {'emails': '', 'prowlAPIs': ''}
-        main_db_con = db.DBConnection()
 
-        # Get current data
-        sql_results = main_db_con.select(
-            'SELECT notify_list '
-            'FROM tv_shows '
-            'WHERE show_id = ?',
-            [show]
-        )
-        for subs in sql_results:
-            if subs['notify_list']:
-                # First, handle legacy format (emails only)
-                if not subs['notify_list'][0] == '{':
-                    entries['emails'] = subs['notify_list']
-                else:
-                    entries = dict(ast.literal_eval(subs['notify_list']))
+        series_identifier = SeriesIdentifier.from_slug(show)
+        series_obj = Series.find_by_identifier(series_identifier)
+
+        if series_obj:
+            if series_obj.notify_list:
+                entries = series_obj.notify_list
 
         if emails is not None:
             entries['emails'] = emails
-            if not main_db_con.action(
-                    'UPDATE tv_shows '
-                    'SET notify_list = ? '
-                    'WHERE show_id = ?',
-                    [str(entries), show]
-            ):
-                return 'ERROR'
+            series_obj.notify_list = entries
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            if not main_db_con.action(
-                    'UPDATE tv_shows '
-                    'SET notify_list = ? '
-                    'WHERE show_id = ?',
-                    [str(entries), show]
-            ):
-                return 'ERROR'
+            series_obj.notify_list = entries
+
+        series_obj.save_to_db()
 
         return 'OK'
 
@@ -1243,7 +1214,7 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action(
+            episode_status_result = main_db_con.select(
                 'SELECT date, action, quality, provider, resource, size '
                 'FROM history '
                 'WHERE indexer_id = ? '

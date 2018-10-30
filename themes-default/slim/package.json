@@ -30,24 +30,26 @@
   "devDependencies": {
     "@babel/core": "7.1.2",
     "@babel/plugin-proposal-object-rest-spread": "7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "7.0.0",
     "@babel/polyfill": "7.0.0",
     "@babel/preset-env": "7.1.0",
     "@babel/register": "7.0.0",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
     "@vue/test-utils": "1.0.0-beta.25",
-    "ava": "1.0.0-beta.8",
+    "ava": "1.0.0-rc.1",
     "axios": "0.18.0",
+    "babel-eslint": "10.0.1",
     "babel-loader": "8.0.4",
-    "babel-plugin-istanbul": "5.0.1",
+    "babel-plugin-istanbul": "5.1.0",
     "bootstrap": "3.3.7",
     "browser-env": "3.2.5",
     "clean-webpack-plugin": "0.1.19",
     "codecov": "3.1.0",
-    "copy-webpack-plugin": "4.5.2",
+    "copy-webpack-plugin": "4.5.4",
     "cross-env": "5.2.0",
     "css-loader": "1.0.0",
     "date-fns": "1.29.0",
-    "eslint": "5.6.1",
+    "eslint": "5.8.0",
     "eslint-config-xo": "0.25.0",
     "eslint-plugin-vue": "5.0.0-beta.3",
     "esm": "3.0.84",
@@ -61,13 +63,13 @@
     "is-visible": "2.2.0",
     "jquery": "3.3.1",
     "lodash": "4.17.11",
-    "mini-css-extract-plugin": "0.4.3",
-    "nyc": "13.0.1",
+    "mini-css-extract-plugin": "0.4.4",
+    "nyc": "13.1.0",
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
     "require-extension-hooks-vue": "1.1.0",
     "run-sequence": "2.2.1",
-    "stylelint": "9.6.0",
+    "stylelint": "9.7.0",
     "stylelint-config-standard": "18.2.0",
     "tablesorter": "2.31.0",
     "vue": "2.5.17",
@@ -82,7 +84,7 @@
     "vue-template-compiler": "2.5.17",
     "vue-truncate-collapsed": "2.1.0",
     "vuex": "3.0.1",
-    "webpack": "4.20.2",
+    "webpack": "4.21.0",
     "webpack-cli": "3.1.2",
     "xo": "0.23.0"
   },
@@ -94,6 +96,9 @@
     "extensions": [
       "vue"
     ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
     "rules": {
       "object-curly-spacing": [
         "error",
@@ -203,6 +208,10 @@
     "instrument": false,
     "extension": [
       ".vue"
+    ],
+    "include": [
+      "src/**/*.vue",
+      "src/**/*.js"
     ],
     "reporter": [
       "lcov",

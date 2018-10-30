@@ -265,7 +265,7 @@
 
 <script>
 import formatDate from 'date-fns/format';
-import { apiRoute } from '../api';
+import { apiRoute } from '../../api';
 
 export default {
     name: 'name-pattern',

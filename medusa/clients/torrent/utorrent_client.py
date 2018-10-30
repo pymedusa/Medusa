@@ -24,10 +24,11 @@ def get_torrent_subfolder(result):
     """Retrieve the series destination-subfolder required for uTorrent WebUI 'start' action."""
     # Get the subfolder name the user has assigned to that series
     root_dirs = app.ROOT_DIRS
-    root_location = root_dirs[int(root_dirs[0]) + 1]
+    if root_dirs:
+        root_location = root_dirs[int(root_dirs[0]) + 1]
     torrent_path = result.series.raw_location
 
-    if not root_location == torrent_path:
+    if root_dirs and root_location != torrent_path:
         # Subfolder is under root, but possibly not directly under
         if torrent_path.startswith(root_location):
             torrent_subfolder = torrent_path.replace(root_location, '')

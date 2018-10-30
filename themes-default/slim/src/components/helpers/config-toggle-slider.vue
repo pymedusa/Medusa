@@ -8,6 +8,7 @@
                 <div class="col-sm-10 content">
                     <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>
@@ -45,14 +46,17 @@ export default {
         };
     },
     mounted() {
-        this.localChecked = this.checked;
+        const { checked } = this;
+        this.localChecked = checked;
     },
     watch: {
         checked() {
-            this.localChecked = this.checked;
+            const { checked } = this;
+            this.localChecked = checked;
         },
         localChecked() {
-            this.$emit('update', this.localChecked);
+            const { $emit, localChecked } = this;
+            $emit('update', localChecked);
         }
     }
 };

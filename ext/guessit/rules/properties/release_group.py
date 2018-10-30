@@ -125,7 +125,10 @@ class DashSeparatedReleaseGroup(Rule):
         count = 0
         match = candidate
         while match:
-            current = matches.range(start, match.start, index=-1, predicate=lambda m: not m.private)
+            current = matches.range(start,
+                                    match.start,
+                                    index=-1,
+                                    predicate=lambda m: not m.private and not 'expected' in m.tags)
             if not current:
                 break
 
@@ -188,7 +191,8 @@ class DashSeparatedReleaseGroup(Rule):
                 releasegroup = Match(candidate.start, candidate.end, name='release_group',
                                      formatter=self.value_formatter, input_string=candidate.input_string)
 
-                to_append.append(releasegroup)
+                if releasegroup.value:
+                    to_append.append(releasegroup)
                 return to_remove, to_append
 
 
