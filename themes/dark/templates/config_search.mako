@@ -18,6 +18,13 @@ window.app = new Vue({
     data() {
         return {
             configLoaded: false,
+            checkPropersIntervalLabels: [
+                { text: '24 hours', value: 'daily' },
+                { text: '4 hours', value: '4h' },
+                { text: '90 mins', value: '90m' },
+                { text: '45 mins', value: '45m' },
+                { text: '24 hours', value: '15m' }
+            ],
             clients: {
                 torrent: {
                     blackhole: {
@@ -313,6 +320,9 @@ window.app = new Vue({
                     'Error'
                 );
             });
+        },
+        updateTrackersList() {
+            debugger;
         }
     },
     watch: {
@@ -376,163 +386,62 @@ window.app = new Vue({
                     
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
-                                <div class="field-pair">
-                                    <label for="randomize_providers">
-                                        <span class="component-title">Randomize Providers</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="randomize_providers" id="randomize_providers" v-model="search.general.randomizeProviders"/>
-                                            <p>randomize the provider search order instead of going in order of placement</p>
-                                        </span>
-                                    </label>
-                                </div><!-- randomize providers -->
-                                <div class="field-pair">
-                                    <label for="download_propers">
-                                        <span class="component-title">Download propers</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="download_propers" id="download_propers" v-model="search.general.downloadPropers"/>
-                                            <p>replace original download with "Proper" or "Repack" if nuked</p>
-                                        </span>
-                                    </label>
-                                </div><!-- download propers -->
+                                <config-toggle-slider v-model="search.general.randomizeProviders" label="Randomize Providers" id="randomize_providers" :explanations="['randomize the provider search order instead of going in order of placement']" ></config-toggle-slider>
+                                <config-toggle-slider v-model="search.general.downloadPropers" label="Download propers" id="download_propers" :explanations="['replace original download with \'Proper\' or \'Repack\' if nuked']" ></config-toggle-slider>
+                                
                                 <div v-show="search.general.downloadPropers">
-                                    <div class="field-pair">
-                                        <label for="check_propers_interval">
-                                            <span class="component-title">Check propers every:</span>
-                                            <span class="component-desc">
-                                                <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
-                                                    <option v-for="(label, interval) in search.general.propersIntervalLabels" :value="interval">{{label}}</option>
-                                                </select>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label>
-                                            <span class="component-title">Proper search days</span>
-                                            <span class="component-desc">
-                                                <input type="number" min="2" max="7" step="1" name="propers_search_days" v-model.number="search.general.propersSearchDays" class="form-control input-sm input75"/>
-                                                <p>how many days to keep searching for propers since episode airdate (default: 2 days)</p>
-                                            </span>
-                                        </label>
-                                    </div><!-- check propers -->
-                                </div>
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Forced backlog search day(s)</span>
-                                        <span class="component-desc">
-                                            <input type="number" min="1" step="1" name="backlog_days" v-model.number="search.general.backlogDays" class="form-control input-sm input75"/>
-                                            <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
-                                        </span>
-                                    </label>
-                                </div><!-- backlog days -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Backlog search frequency</span>
-                                        <span class="component-desc">
-                                            <input type="number" :min="search.general.minBacklogFrequency" step="1" name="backlog_frequency" v-model.number="search.general.backlogFrequency" class="form-control input-sm input75"/>
-                                            <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
-                                        </span>
-                                    </label>
-                                </div><!-- backlog frequency -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Daily search frequency</span>
-                                        <span class="component-desc">
-                                            <input type="number" :min="search.general.minDailySearchFrequency" step="1" name="dailysearch_frequency" v-model.number="search.general.dailySearchFrequency" class="form-control input-sm input75"/>
-                                            <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
-                                        </span>
-                                    </label>
-                                </div><!-- daily search frequency -->
-                                <div class="field-pair" v-if="clients.torrent[torrents.method]" v-show="clients.torrent[torrents.method].removeFromClientOption">
-                                    <label for="remove_from_client">
-                                        <span class="component-title">Remove torrents from client</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="remove_from_client" id="remove_from_client" v-model="search.general.removeFromClient"/>
-                                            <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
-                                            <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div v-show="search.general.removeFromClient">
-                                    <div class="field-pair">
-                                        <label>
-                                            <span class="component-title">Frequency to check torrents ratio</span>
-                                            <span class="component-desc">
-                                                <input type="number" :min="search.general.minTorrentCheckerFrequency" step="1" name="torrent_checker_frequency" v-model.number="search.general.torrentCheckerFrequency" class="form-control input-sm input75"/>
-                                                <p>Frequency in minutes to check torrent's ratio (default: 60)</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Usenet retention</span>
-                                        <span class="component-desc">
-                                            <input type="number" min="1" step="1" name="usenet_retention" v-model.number="search.general.usenetRetention" class="form-control input-sm input75"/>
-                                            <p>age limit in days for usenet articles to be used (e.g. 500)</p>
-                                        </span>
-                                    </label>
-                                </div><!-- usenet retention -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Trackers list</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="trackers_list" v-model="search.general.trackersList" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                Trackers that will be added to magnets without trackers<br>
-                                                separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- trackers -->
-                                <div class="field-pair">
-                                    <label for="allow_high_priority">
-                                        <span class="component-title">Allow high priority</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="allow_high_priority" id="allow_high_priority" v-model="search.general.allowHighPriority"/>
-                                            <p>set downloads of recently aired episodes to high priority</p>
-                                        </span>
-                                    </label>
-                                </div><!-- high priority -->
-                                <div class="field-pair">
-                                    <label for="use_failed_downloads">
-                                        <span class="component-title">Use Failed Downloads</span>
-                                        <span class="component-desc">
-                                            <input id="use_failed_downloads" type="checkbox" name="use_failed_downloads" v-model="search.general.useFailedDownloads"/>
-                                            Use Failed Download Handling?<br>
-                                            Will only work with snatched/downloaded episodes after enabling this
-                                        </span>
-                                    </label>
-                                </div><!-- use failed -->
-                                <div class="field-pair" v-show="search.general.useFailedDownloads">
-                                    <label for="delete_failed">
-                                        <span class="component-title">Delete Failed</span>
-                                        <span class="component-desc">
-                                            <input id="delete_failed" type="checkbox" name="delete_failed" v-model="search.general.deleteFailed"/>
-                                            Delete files left over from a failed download?<br>
-                                            <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
-                                        </span>
-                                    </label>
-                                </div><!-- delete failed -->
-                                <div class="field-pair">
-                                    <label for="cache_trimming">
-                                        <span class="component-title">Cache Trimming</span>
-                                        <span class="component-desc">
-                                            <input id="cache_trimming" type="checkbox" name="cache_trimming" v-model="search.general.cacheTrimming"/>
-                                            Enable trimming of provider cache<br>
-                                        </span>
-                                    </label>
-                                </div><!-- cache trimming -->
-                                <div class="field-pair" v-show="search.general.cacheTrimming">
-                                    <label for="max_cache_age">
-                                        <span class="component-title">Cache Retention</span>
-                                        <span class="component-desc">
-                                            <input type="number" min="1" step="1" name="max_cache_age" id="max_cache_age" v-model.number="search.general.maxCacheAge" class="form-control input-sm input75"/>
-                                            days<br>
-                                            <br>
-                                            Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.
-                                        </span>
-                                    </label>
-                                </div><!-- max cache age -->
+                                    <config-template label="Check propers every" label-for="check_propers_interval">
+                                        <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
+                                            <option v-for="option in checkPropersIntervalLabels" v-bind:value="option.value">
+                                                {{option.text}}
+                                            </option>
+                                        </select>
+                                    </config-template>
+
+                                    <config-textbox-number :min="2" :max="7" :step="1" v-model.number="search.general.propersSearchDays" label="Proper search days" id="propers_search_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+                                    
+                                </div><!-- check propers -->
+                                
+                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+                                    
+                                <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.minBacklogFrequency" label="Backlog search frequency" id="backlog_frequency">
+                                    <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
+                                </config-textbox-number>
+                                
+                                <config-toggle-slider v-if="clients.torrent[torrents.method]" v-show="clients.torrent[torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
+                                    <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
+                                    <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
+                                </config-toggle-slider>
+                                    
+                                <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.minTorrentCheckerFrequency" :step="1" v-model.number="search.general.torrentCheckerFrequency" label="Frequency to check torrents ratio" id="torrent_checker_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']"></config-textbox-number>
+
+
+                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']"></config-textbox-number>
+
+                                <config-template label-for="trackers_list" label="Trackers list">
+                                    <select-list name="trackers_list" id="trackers_list" :list-items="search.general.trackersList" @change="updateTrackersList"></select-list>
+                                    Trackers that will be added to magnets without trackers<br>
+                                    separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
+                                </config-template>
+
+                                <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" ></config-toggle-slider>
+                                
+                                
+                                <config-toggle-slider v-model="search.general.useFailedDownloads" label="Use Failed Downloads" id="use_failed_downloads" :explanations="['Use Failed Download Handling?',
+                                    'Will only work with snatched/downloaded episodes after enabling this']" >
+                                </config-toggle-slider>
+                                
+                                
+                                <config-toggle-slider v-show="search.general.useFailedDownloads" v-model="search.general.deleteFailed" label="Delete Failed" id="delete_failed">
+                                    Delete files left over from a failed download?<br>
+                                    <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
+                                </config-toggle-slider>
+
+
+                                <config-toggle-slider v-model="search.general.cacheTrimming" label="Cache Trimming" id="cache_trimming" :explanations="['Enable trimming of provider cache']" ></config-toggle-slider>
+                                
+                                <config-textbox-number v-show="search.general.cacheTrimming" :min="1" :step="1" v-model.number="search.general.maxCacheAge" label="Cache Retention" id="max_cache_age" :explanations="['Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.']"></config-textbox-number>
+
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </fieldset>
                         </div><!-- /general settings //-->

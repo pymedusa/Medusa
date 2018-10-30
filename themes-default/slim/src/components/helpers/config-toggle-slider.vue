@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @change="$emit('update', localChecked)"></toggle-button>
+                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @input="updateValue()"></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot></slot>
                 </div>
@@ -27,7 +27,7 @@ export default {
             type: String,
             required: true
         },
-        checked: {
+        value: {
             type: Boolean,
             default: null
         },
@@ -46,13 +46,19 @@ export default {
         };
     },
     mounted() {
-        const { checked } = this;
-        this.localChecked = checked;
+        const { value } = this;
+        this.localChecked = value;
     },
     watch: {
-        checked() {
-            const { checked } = this;
-            this.localChecked = checked;
+        value() {
+            const { value } = this;
+            this.localChecked = value;
+        }
+    },
+    methods: {
+        updateValue() {
+            const { localChecked } = this;
+            this.$emit('input', localChecked);
         }
     }
 };

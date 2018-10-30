@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder}" v-model="localValue" @change="$emit('update', Number($event.target.value))"/>
+                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder}" :max="max" v-model="localValue" @input="updateValue()"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot></slot>
                 </div>
@@ -46,6 +46,10 @@ export default {
             type: Number,
             default: 10
         },
+        max: {
+            type: Number,
+            default: null
+        },
         step: {
             type: Number,
             default: 1
@@ -68,6 +72,12 @@ export default {
         value() {
             const { value } = this;
             this.localValue = value;
+        }
+    },
+    methods: {
+        updateValue() {
+            const { localValue } = this;
+            this.$emit('input', Number(localValue));
         }
     }
 };
