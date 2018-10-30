@@ -3,9 +3,7 @@
 """Search module for all Medusa searches."""
 from __future__ import unicode_literals
 
-import sys
-if sys.version_info < (3, 4):
-    from ext2.enum import Enum
+from enum import Enum
 
 BACKLOG_SEARCH = 10
 DAILY_SEARCH = 20
