@@ -14,17 +14,19 @@ from medusa.server.web.core import PageTemplate
 
 from tornroutes import route
 
-
 @route('/config/backuprestore(/?.*)')
 class ConfigBackupRestore(Config):
     def __init__(self, *args, **kwargs):
         super(ConfigBackupRestore, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='config_backuprestore.mako')
+        """
+        Render template for route /config/backuprestore.
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='backupRestore')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='config', action='backupRestore')
 
     @staticmethod
     def backup(backupDir=None):

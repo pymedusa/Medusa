@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 const AddRecommended = () => import('./components/add-recommended.vue');
 const AddShows = () => import('./components/add-shows.vue');
 const Config = () => import('./components/config.vue');
+const ConfigBackuprestore = () => import('./components/config-backuprestore.vue');
 const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
 const IRC = () => import('./components/irc.vue');
 const Login = () => import('./components/login.vue');
@@ -80,8 +81,10 @@ const configRoutes = [{
     name: 'configBackupRestore',
     meta: {
         title: 'Config - Backup/Restore',
-        header: 'Backup/Restore'
-    }
+        header: 'Backup/Restore',
+        converted: true
+    },
+    component: ConfigBackuprestore
 }, {
     path: '/config/general',
     name: 'configGeneral',
@@ -297,8 +300,8 @@ const changesRoute = {
 };
 
 const ircRoute = {
-    path: '/IRC',
-    name: 'IRC',
+    path: '/irc',
+    name: 'irc',
     meta: {
         title: 'IRC'
     },

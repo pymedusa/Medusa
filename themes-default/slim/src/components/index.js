@@ -5,6 +5,7 @@ export { default as AnidbReleaseGroupUi } from './anidb-release-group-ui.vue';
 export { default as AppHeader } from './app-header.vue';
 export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
+export { default as ConfigBackuprestore } from './config-backuprestore.vue';
 export { default as ConfigPostProcessing } from './config-post-processing.vue';
 export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
