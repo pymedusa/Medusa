@@ -424,9 +424,9 @@ window.app = new Vue({
             }
         },
         save() {
-            const { $store, notifiers } = this;
+            const { $store, configLoaded, notifiers } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.configLoaded) {
+            if (!configLoaded) {
                 return;
             }
             // Disable the save button until we're done.

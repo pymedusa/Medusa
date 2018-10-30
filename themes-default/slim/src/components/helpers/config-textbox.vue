@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input v-bind="{id, type, name: id, class: inputClass, placeholder}" v-model="localValue"/>
+                    <input v-bind="{id, type, name: id, class: inputClass, placeholder}" v-model="localValue" @change="$emit('update', localValue)"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot></slot>
                 </div>
@@ -62,10 +62,6 @@ export default {
         this.localValue = value;
     },
     watch: {
-        localValue() {
-            const { $emit, localValue } = this;
-            $emit('update', localValue);
-        },
         value() {
             const { value } = this;
             this.localValue = value;

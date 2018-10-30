@@ -9,6 +9,7 @@ import {
     notifications,
     notifiers,
     qualities,
+    search,
     shows,
     socket,
     statuses
@@ -35,6 +36,7 @@ const store = new Store({
         notifications,
         notifiers,
         qualities,
+        search,
         shows,
         socket,
         statuses
