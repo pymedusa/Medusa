@@ -72,43 +72,43 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
-        'torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
-        'torrents.dir': StringField(app, 'TORRENT_DIR'),
-        'torrents.enabled': BooleanField(app, 'USE_TORRENTS'),
-        'torrents.highBandwidth': StringField(app, 'TORRENT_HIGH_BANDWIDTH'),
-        'torrents.host': StringField(app, 'TORRENT_HOST'),
-        'torrents.label': StringField(app, 'TORRENT_LABEL'),
-        'torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
-        'torrents.method': StringField(app, 'TORRENT_METHOD'),
-        'torrents.password': StringField(app, 'TORRENT_PASSWORD'),
-        'torrents.path': BooleanField(app, 'TORRENT_PATH'),
-        'torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
-        'torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
-        'torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
-        'torrents.seedTime': StringField(app, 'TORRENT_SEED_TIME'),
-        'torrents.username': StringField(app, 'TORRENT_USERNAME'),
-        'torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
-        'nzb.enabled': BooleanField(app, 'USE_NZBS'),
-        'nzb.dir': StringField(app, 'NZB_DIR'),
-        'nzb.method': StringField(app, 'NZB_METHOD'),
-        'nzb.nzbget.category': StringField(app, 'NZBGET_CATEGORY'),
-        'nzb.nzbget.categoryAnime': StringField(app, 'NZBGET_CATEGORY_ANIME'),
-        'nzb.nzbget.categoryAnimeBacklog': StringField(app, 'NZBGET_CATEGORY_ANIME_BACKLOG'),
-        'nzb.nzbget.categoryBacklog': StringField(app, 'NZBGET_CATEGORY_BACKLOG'),
-        'nzb.nzbget.host': StringField(app, 'NZBGET_HOST'),
-        'nzb.nzbget.password': StringField(app, 'NZBGET_PASSWORD'),
-        'nzb.nzbget.priority': StringField(app, 'NZBGET_PRIORITY'),
-        'nzb.nzbget.useHttps': BooleanField(app, 'NZBGET_USE_HTTPS'),
-        'nzb.nzbget.username': StringField(app, 'NZBGET_USERNAME'),
-        'nzb.sabnzbd.apiKey': StringField(app, 'SAB_APIKEY'),
-        'nzb.sabnzbd.category': StringField(app, 'SAB_CATEGORY'),
-        'nzb.sabnzbd.categoryAnime': StringField(app, 'SAB_CATEGORY_ANIME'),
-        'nzb.sabnzbd.categoryAnimeBacklog': StringField(app, 'SAB_CATEGORY_ANIME_BACKLOG'),
-        'nzb.sabnzbd.categoryBacklog': StringField(app, 'SAB_CATEGORY_BACKLOG'),
-        'nzb.sabnzbd.forced': BooleanField(app, 'SAB_FORCED'),
-        'nzb.sabnzbd.host': StringField(app, 'SAB_HOST'),
-        'nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
-        'nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
+        'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
+        'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
+        'clients.torrents.enabled': BooleanField(app, 'USE_TORRENTS'),
+        'clients.torrents.highBandwidth': StringField(app, 'TORRENT_HIGH_BANDWIDTH'),
+        'clients.torrents.host': StringField(app, 'TORRENT_HOST'),
+        'clients.torrents.label': StringField(app, 'TORRENT_LABEL'),
+        'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
+        'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
+        'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
+        'clients.torrents.path': BooleanField(app, 'TORRENT_PATH'),
+        'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
+        'clients.torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
+        'clients.torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
+        'clients.torrents.seedTime': StringField(app, 'TORRENT_SEED_TIME'),
+        'clients.torrents.username': StringField(app, 'TORRENT_USERNAME'),
+        'clients.torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
+        'clients.nzb.enabled': BooleanField(app, 'USE_NZBS'),
+        'clients.nzb.dir': StringField(app, 'NZB_DIR'),
+        'clients.nzb.method': StringField(app, 'NZB_METHOD'),
+        'clients.nzb.nzbget.category': StringField(app, 'NZBGET_CATEGORY'),
+        'clients.nzb.nzbget.categoryAnime': StringField(app, 'NZBGET_CATEGORY_ANIME'),
+        'clients.nzb.nzbget.categoryAnimeBacklog': StringField(app, 'NZBGET_CATEGORY_ANIME_BACKLOG'),
+        'clients.nzb.nzbget.categoryBacklog': StringField(app, 'NZBGET_CATEGORY_BACKLOG'),
+        'clients.nzb.nzbget.host': StringField(app, 'NZBGET_HOST'),
+        'clients.nzb.nzbget.password': StringField(app, 'NZBGET_PASSWORD'),
+        'clients.nzb.nzbget.priority': StringField(app, 'NZBGET_PRIORITY'),
+        'clients.nzb.nzbget.useHttps': BooleanField(app, 'NZBGET_USE_HTTPS'),
+        'clients.nzb.nzbget.username': StringField(app, 'NZBGET_USERNAME'),
+        'clients.nzb.sabnzbd.apiKey': StringField(app, 'SAB_APIKEY'),
+        'clients.nzb.sabnzbd.category': StringField(app, 'SAB_CATEGORY'),
+        'clients.nzb.sabnzbd.categoryAnime': StringField(app, 'SAB_CATEGORY_ANIME'),
+        'clients.nzb.sabnzbd.categoryAnimeBacklog': StringField(app, 'SAB_CATEGORY_ANIME_BACKLOG'),
+        'clients.nzb.sabnzbd.categoryBacklog': StringField(app, 'SAB_CATEGORY_BACKLOG'),
+        'clients.nzb.sabnzbd.forced': BooleanField(app, 'SAB_FORCED'),
+        'clients.nzb.sabnzbd.host': StringField(app, 'SAB_HOST'),
+        'clients.nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
+        'clients.nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
         'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
         'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
                                      default_value='banner', post_processor=layout_schedule_post_processor),
@@ -336,7 +336,7 @@ class ConfigHandler(BaseRequestHandler):
 
         'notifiers.email.enabled': BooleanField(app, 'USE_EMAIL'),
         'notifiers.email.host': StringField(app, 'EMAIL_HOST'),
-        'notifiers.email.port': StringField(app, 'EMAIL_PORT'),
+        'notifiers.email.port': IntegerField(app, 'EMAIL_PORT'),
         'notifiers.email.from': StringField(app, 'EMAIL_FROM'),
         'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
         'notifiers.email.username': StringField(app, 'EMAIL_USER'),
@@ -524,48 +524,6 @@ class DataGenerator(object):
         section_data['failedDownloads'] = NonEmptyDict()
         section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
         section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
-
-        section_data['torrents'] = NonEmptyDict()
-        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
-        section_data['torrents']['dir'] = app.TORRENT_DIR
-        section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
-        section_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
-        section_data['torrents']['host'] = app.TORRENT_HOST
-        section_data['torrents']['label'] = app.TORRENT_LABEL
-        section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
-        section_data['torrents']['method'] = app.TORRENT_METHOD
-        section_data['torrents']['path'] = app.TORRENT_PATH
-        section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
-        section_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-        section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
-        section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
-        section_data['torrents']['username'] = app.TORRENT_USERNAME
-        section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
-
-        section_data['nzb'] = NonEmptyDict()
-        section_data['nzb']['enabled'] = bool(app.USE_NZBS)
-        section_data['nzb']['dir'] = app.NZB_DIR
-        section_data['nzb']['method'] = app.NZB_METHOD
-        section_data['nzb']['nzbget'] = NonEmptyDict()
-        section_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
-        section_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
-        section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
-        section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
-        section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-        section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
-        section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
-        section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
-
-        section_data['nzb']['sabnzbd'] = NonEmptyDict()
-        section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
-        section_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
-        section_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
-        section_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
-        section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
-        section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
-        section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
-        section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
-        section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
 
         section_data['layout'] = NonEmptyDict()
         section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
@@ -933,5 +891,52 @@ class DataGenerator(object):
         section_data['slack']['notifyOnDownload'] = bool(app.SLACK_NOTIFY_DOWNLOAD)
         section_data['slack']['notifyOnSubtitleDownload'] = bool(app.SLACK_NOTIFY_SUBTITLEDOWNLOAD)
         section_data['slack']['webhook'] = app.SLACK_WEBHOOK
+
+        return section_data
+
+    @staticmethod
+    def data_clients():
+        """Notifications."""
+        section_data = NonEmptyDict()
+
+        section_data['torrents'] = NonEmptyDict()
+        section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
+        section_data['torrents']['dir'] = app.TORRENT_DIR
+        section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
+        section_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
+        section_data['torrents']['host'] = app.TORRENT_HOST
+        section_data['torrents']['label'] = app.TORRENT_LABEL
+        section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
+        section_data['torrents']['method'] = app.TORRENT_METHOD
+        section_data['torrents']['path'] = app.TORRENT_PATH
+        section_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
+        section_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
+        section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
+        section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
+        section_data['torrents']['username'] = app.TORRENT_USERNAME
+        section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
+
+        section_data['nzb'] = NonEmptyDict()
+        section_data['nzb']['enabled'] = bool(app.USE_NZBS)
+        section_data['nzb']['dir'] = app.NZB_DIR
+        section_data['nzb']['method'] = app.NZB_METHOD
+        section_data['nzb']['nzbget'] = NonEmptyDict()
+        section_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
+        section_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
+        section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
+        section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
+        section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
+        section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
+        section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
+        section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
+
+        section_data['nzb']['sabnzbd'] = NonEmptyDict()
+        section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
+        section_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
+        section_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
+        section_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
+        section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
+        section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
+        section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
 
         return section_data

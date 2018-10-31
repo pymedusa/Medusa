@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
+    clients,
     config,
     defaults,
     metadata,
@@ -30,6 +31,7 @@ Vue.use(Vuex);
 const store = new Store({
     modules: {
         auth,
+        clients,
         config,
         defaults,
         metadata,

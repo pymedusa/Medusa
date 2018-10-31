@@ -25,7 +25,8 @@ window.app = new Vue({
                 { text: '45 mins', value: '45m' },
                 { text: '24 hours', value: '15m' }
             ],
-            clients: {
+            // Static clients config
+            clientConfig: {
                 torrent: {
                     blackhole: {
                         title: 'Black hole'
@@ -111,6 +112,63 @@ window.app = new Vue({
                     }
                 },
             },
+            // Mapped from state module: clients.js
+            clients: {
+                torrents: {
+                    authType: null,
+                    dir: null,
+                    enabled: null,
+                    highBandwidth: null,
+                    host: null,
+                    label: null,
+                    labelAnime: null,
+                    method: null,
+                    path: null,
+                    paused: null,
+                    rpcurl: null,
+                    seedLocation: null,
+                    seedTime: null,
+                    username: null,
+                    verifySSL: null,
+                    testStatus: 'Click below to test',
+                },
+                nzb: {
+                    enabled: null,
+                    method: null,
+                    nzbget: {
+                        category: null,
+                        categoryAnime: null,
+                        categoryAnimeBacklog: null,
+                        categoryBacklog: null,
+                        host: null,
+                        priority: null,
+                        useHttps: null,
+                        username: null,
+                        priorityOptions: {
+                            'Very low': -100,
+                            'Low': -50,
+                            'Normal': 0,
+                            'High': 50,
+                            'Very high': 100,
+                            'Force': 900
+                        },
+                        testStatus: 'Click below to test',
+                    },
+                    sabnzbd: {
+                        category: null,
+                        forced: null,
+                        categoryAnime: null,
+                        categoryBacklog: null,
+                        categoryAnimeBacklog: null,
+                        host: null,
+                        username: null,
+                        password: null,
+                        apiKey: null,
+                        testStatus: 'Click below to test',
+                    }
+                }
+            },
+            // Mapped from state module: search.js
             search: {
 		        filters: {
                     ignoreUnknownSubs: false,
@@ -184,49 +242,6 @@ window.app = new Vue({
                     ]
                 }
             },
-
-            torrents: {
-                authType: null,
-                dir: null,
-                enabled: null,
-                highBandwidth: null,
-                host: null,
-                label: null,
-                labelAnime: null,
-                method: null,
-                path: null,
-                paused: null,
-                rpcurl: null,
-                seedLocation: null,
-                seedTime: null,
-                username: null,
-                verifySSL: null
-            },
-            nzb: {
-                enabled: null,
-                method: null,
-                nzbget: {
-                    category: null,
-                    categoryAnime: null,
-                    categoryAnimeBacklog: null,
-                    categoryBacklog: null,
-                    host: null,
-                    priority: null,
-                    useHttps: null,
-                    username: null
-                },
-                sabnzbd: {
-                    category: null,
-                    forced: null,
-                    categoryAnime: null,
-                    categoryBacklog: null,
-                    categoryAnimeBacklog: null,
-                    host: null,
-                    username: null,
-                    password: null,
-                    apiKey: null
-                }
-            },
             httpAuthTypes: {
                 none: 'None',
                 basic: 'Basic',
@@ -238,16 +253,50 @@ window.app = new Vue({
         stateSearch() {
             return this.$store.state.search;
         },
+        stateClients() {
+            return this.$store.state.clients;            
+        },
+        torrentUsernameIsDisabled() {
+            const { clients } = this;
+            const { torrents } = clients;
+            const { host, method } = torrents;
+            let torrentHost = host || '' 
+            if (!['rtorrent', 'deluge'].includes(method) || method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
+                return false;
+            }
+            return true;
+        },
+        torrentPasswordIsDisabled() {
+            const { clients } = this;
+            const { torrents } = clients;
+            const { host, method } = torrents;
+            let torrentHost = host || '' 
+            if (method !== 'rtorrent' || method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
+                return false;
+            }
+            return true;
+        },
+        authTypeIsDisabled() {
+            const { clients } = this;
+            const { torrents } = clients;
+            const { host, method } = torrents;
+            let torrentHost = host || '' 
+            if (method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
+                return false;
+            }
+            return true;
+        }
     },
     beforeMount() {
         $('#config-components').tabs();
     },
     methods: {
         async testTorrentClient() {
-            const { torrents } = this;
+            const { clients } = this;
+            const { torrents } = clients;
             const { method, host, username, password } = torrents;
 
-            this.torrents.testStatus = MEDUSA.config.loading;
+            this.clients.torrents.testStatus = MEDUSA.config.loading;
 
             const params = {
                 torrent_method: method,
@@ -257,14 +306,15 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testTorrent', { params });
 
-            this.torrents.testStatus = resp.data;
+            this.clients.torrents.testStatus = resp.data;
         },
         async testNzbget() {
-            const { nzb } = this;
+            const { clients } = this;
+            const { nzb } = clients;
             const { nzbget } = nzb;
             const { host, username, password, useHttps } = nzbget;
 
-            this.nzb.nzbget.testStatus = MEDUSA.config.loading;
+            this.clients.nzb.nzbget.testStatus = MEDUSA.config.loading;
 
             const params = {
                 host,
@@ -274,14 +324,15 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testNZBget', { params });
 
-            this.nzb.nzbget.testStatus = resp.data;
+            this.clients.nzb.nzbget.testStatus = resp.data;
         },
         async testSabnzbd() {
-            const { nzb } = this;
+            const { clients } = this;
+            const { nzb } = clients;
             const { sabnzbd } = nzb;
             const { host, username, password, apiKey } = sabnzbd;
 
-            this.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
+            this.clients.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
             const params = {
                 host,
@@ -291,10 +342,10 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testSABnzbd', { params });
 
-            this.nzb.sabnzbd.testStatus = resp.data;
+            this.clients.nzb.sabnzbd.testStatus = resp.data;
         },
         save() {
-            const { $store, configLoaded, search } = this;
+            const { $store, clients, configLoaded, search } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!configLoaded) {
                 return;
@@ -303,9 +354,7 @@ window.app = new Vue({
             this.saving = true;
 
             // Clone the config into a new object
-            const config = Object.assign({}, {
-                search
-            });
+            const config = Object.assign({}, {search}, {clients});
 
             const section = 'main';
             $store.dispatch('setConfig', { section, config }).then(() => {
@@ -320,32 +369,33 @@ window.app = new Vue({
                     'Error'
                 );
             });
-        },
-        updateTrackersList() {
-            debugger;
         }
     },
     watch: {
-        'torrents.host'(host) {
-            const { torrents } = this;
+        'clients.torrents.host'(host) {
+            const { clients } = this;
+            const { torrents } = clients;
             const { method } = torrents;
 
             if (method === 'rtorrent') {
+                if (!host) {
+                    return;
+                }
                 const isMatch = host.startsWith('scgi://');
 
                 if (isMatch) {
-                    this.torrents.username = '';
-                    this.torrents.password = '';
-                    this.torrents.authType = 'none';
+                    this.clients.torrents.username = '';
+                    this.clients.torrents.password = '';
+                    this.clients.torrents.authType = 'none';
                 }
             }
 
             if (method === 'deluge') {
-                this.torrents.username = '';
+                this.clients.torrents.username = '';
             }
         },
-        'torrents.method'(method) {
-            if (!this.clients.torrent[method].removeFromClientOption) {
+        'clients.torrents.method'(method) {
+            if (!this.clientConfig.torrent[method].removeFromClientOption) {
                 this.search.general.removeFromClient = false;
             }
         }
@@ -354,10 +404,11 @@ window.app = new Vue({
         // The real vue stuff
         // This is used to wait for the config to be loaded by the store.
         this.$once('loaded', () => {
-            const { search, stateSearch } = this;
-
+            const { clients, search, stateClients, stateSearch } = this;
+            debugger;
             // Map the state values to local data.
             this.search = Object.assign({}, search, stateSearch);
+            this.clients = Object.assign({}, clients, stateClients);
             this.configLoaded = true;
         });
     }
@@ -408,7 +459,7 @@ window.app = new Vue({
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                 </config-textbox-number>
                                 
-                                <config-toggle-slider v-if="clients.torrent[torrents.method]" v-show="clients.torrent[torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
+                                <config-toggle-slider v-if="clientConfig.torrent[clients.torrents.method]" v-show="clientConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
                                     <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
                                     <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                 </config-toggle-slider>
@@ -419,7 +470,7 @@ window.app = new Vue({
                                 <config-textbox-number :min="1" :step="1" v-model.number="search.general.usenetRetention" label="Usenet retention" id="usenet_retention" :explanations="['age limit in days for usenet articles to be used (e.g. 500)']"></config-textbox-number>
 
                                 <config-template label-for="trackers_list" label="Trackers list">
-                                    <select-list name="trackers_list" id="trackers_list" :list-items="search.general.trackersList" @change="updateTrackersList"></select-list>
+                                    <select-list name="trackers_list" id="trackers_list" :list-items="search.general.trackersList" @change="search.general.trackersList = $event.map(x => x.value)"></select-list>
                                     Trackers that will be added to magnets without trackers<br>
                                     separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
                                 </config-template>
@@ -455,77 +506,34 @@ window.app = new Vue({
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Ignore words</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="ignore_words" v-model="search.filters.ignored" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                results with any words from this list will be ignored<br>
-                                                separate words with a comma, e.g. "word1,word2,word3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- ignored words -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Undesired words</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="undesired_words" v-model="search.filters.undesired" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                results with words from this list will only be selected as a last resort<br>
-                                                separate words with a comma, e.g. "word1, word2, word3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- undesired words -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Preferred words</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="preferred_words" v-model="search.filters.preferred" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                results with one or more word from this list will be chosen over others<br>
-                                                separate words with a comma, e.g. "word1, word2, word3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- preferred words -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Require words</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="require_words" v-model="search.filters.required" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                results must include at least one word from this list<br>
-                                                separate words with a comma, e.g. "word1,word2,word3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- required words -->
-                                <div class="field-pair">
-                                    <label>
-                                        <span class="component-title">Ignore language names in subbed results</span>
-                                        <span class="component-desc">
-                                            <input type="text" name="ignored_subs_list" v-model="search.filters.ignoredSubsList" class="form-control input-sm input350"/>
-                                            <div class="clear-left">
-                                                Ignore subbed releases based on language names <br>
-                                                Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
-                                                separate languages with a comma, e.g. "lang1, lang2, lang3"
-                                            </div>
-                                        </span>
-                                    </label>
-                                </div><!-- subbed results -->
-                                <div class="field-pair">
-                                    <label for="ignore_und_subs">
-                                        <span class="component-title">Ignore unknown subbed releases</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="ignore_und_subs" id="ignore_und_subs" v-model="search.filters.ignoreUnknownSubs"/>
-                                            Ignore subbed releases without language names <br>
-                                            Filter words: subbed, subpack, subbed, subs, etc.)
-                                        </span>
-                                    </label>
-                                </div><!-- ignore unknown subs -->
+                                <config-template label-for="ignore_words" label="Ignore words">
+                                    <select-list name="ignore_words" id="ignore_words" :list-items="search.filters.ignored" @change="search.filters.ignored = $event.map(x => x.value)"></select-list>
+                                    results with any words from this list will be ignored
+                                </config-template>
+
+                                <config-template label-for="undesired_words" label="Undesired words">
+                                    <select-list name="undesired_words" id="undesired_words" :list-items="search.filters.undesired" @change="search.filters.undesired = $event.map(x => x.value)"></select-list>
+                                    results with words from this list will only be selected as a last resort
+                                </config-template>
+
+                                <config-template label-for="preferred_words" label="Preferred words">
+                                    <select-list name="preferred_words" id="preferred_words" :list-items="search.filters.preferred" @change="search.filters.preferred = $event.map(x => x.value)"></select-list>
+                                    results with one or more word from this list will be chosen over others
+                                </config-template>
+
+                                <config-template label-for="require_words" label="Require words">
+                                    <select-list name="require_words" id="require_words" :list-items="search.filters.required" @change="search.filters.required = $event.map(x => x.value)"></select-list>
+                                    results must include at least one word from this list
+                                </config-template>
+
+                                <config-template label-for="ignored_subs_list" label="Ignore language names in subbed results">
+                                    <select-list name="ignored_subs_list" id="ignored_subs_list" :list-items="search.filters.ignoredSubsList" @change="search.filters.ignoredSubsList = $event.map(x => x.value)"></select-list>
+                                    Ignore subbed releases based on language names <br>
+                                    Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
+                                </config-template>
+
+                                <config-toggle-slider v-model="search.filters.ignoreUnknownSubs" label="Ignore unknown subbed releases" id="ignore_und_subs" :explanations="['Ignore subbed releases without language names', 'Filter words: subbed, subpack, subbed, subs, etc.)']"></config-toggle-slider>
+
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </fieldset>
                         </div><!-- /col //-->
@@ -538,217 +546,74 @@ window.app = new Vue({
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <h3>NZB Search</h3>
                             <p>How to handle NZB search results.</p>
-                            <div id="nzb_method_icon" :class="'add-client-icon-' + nzb.method"></div>
+                            <div id="nzb_method_icon" :class="'add-client-icon-' + clients.nzb.method"></div>
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
-                                <div class="field-pair">
-                                    <label for="use_nzbs">
-                                        <span class="component-title">Search NZBs</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="use_nzbs" id="use_nzbs" v-model="nzb.enabled"/>
-                                            <p>enable NZB search providers</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div v-show="nzb.enabled">
-                                    <div class="field-pair">
-                                        <label for="nzb_method">
-                                            <span class="component-title">Send .nzb files to:</span>
-                                            <span class="component-desc">
-                                                <select v-model="nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
-                                                    <option v-for="(client, name) in clients.nzb" :value="name">{{client.title}}</option>
-                                                </select>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div v-show="nzb.method === 'blackhole'" id="blackhole_settings">
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Black hole folder location</span>
-                                                <span class="component-desc">
-                                                    <file-browser name="nzb_dir" title="Select .nzb black hole location" :initial-dir="nzb.dir" @update="nzb.dir = $event"></file-browser>
-                                                    <div class="clear-left">
-                                                        <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
-                                                    </div>
-                                                </span>
-                                            </label>
+                                <config-toggle-slider v-model="clients.nzb.enabled" label="Search NZBs" id="use_nzbs" :explanations="['enable NZB search providers']"></config-toggle-slider>
+
+                                <div v-show="clients.nzb.enabled">
+                                    <config-template label-for="nzb_method" label="Send .nzb files to">
+                                        <select v-model="clients.nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
+                                            <option v-for="(client, name) in clientConfig.nzb" :value="name">{{client.title}}</option>
+                                        </select>
+                                    </config-template>
+                                    
+                                    <config-template v-show="clients.nzb.method === 'blackhole'" id="blackhole_settings" label-for="nzb_dir" label="Black hole folder location">
+                                        <file-browser name="nzb_dir" title="Select .nzb black hole location" :initial-dir="clients.nzb.dir" @update="clients.nzb.dir = $event"></file-browser>
+                                        <div class="clear-left">
+                                            <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                         </div>
-                                    </div>
-                                    <div v-if="nzb.method" v-show="nzb.method === 'sabnzbd'" id="sabnzbd_settings">
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">SABnzbd server URL</span>
-                                                <span class="component-desc">
-                                                    <input v-model="nzb.sabnzbd.host" type="text" id="sab_host" name="sab_host" class="form-control input-sm input350"/>
-                                                    <div class="clear-left">
-                                                        <p v-html="clients.nzb[nzb.method].description"></p>
-                                                    </div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">SABnzbd username</span>
-                                                <span class="component-desc">
-                                                    <input v-model="nzb.sabnzbd.username" type="text" name="sab_username" id="sab_username" class="form-control input-sm input200" autocomplete="no" />
-                                                    <p>(blank for none)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">SABnzbd password</span>
-                                                <span class="component-desc">
-                                                    <input v-model="nzb.sabnzbd.password" type="password" name="sab_password" id="sab_password" class="form-control input-sm input200" autocomplete="no"/>
-                                                    <p>(blank for none)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">SABnzbd API key</span>
-                                                <span class="component-desc">
-                                                    <input v-model="nzb.sabnzbd.apiKey" type="text" name="sab_apikey" id="sab_apikey" class="form-control input-sm input350"/>
-                                                    <div class="clear-left"><p>locate at... SABnzbd Config -> General -> API Key</p></div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use SABnzbd category</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="sab_category" id="sab_category" v-model="nzb.sabnzbd.category" class="form-control input-sm input200"/>
-                                                    <p>add downloads to this category (e.g. TV)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use SABnzbd category (backlog episodes)</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="sab_category_backlog" id="sab_category_backlog" v-model="nzb.sabnzbd.categoryBacklog" class="form-control input-sm input200"/>
-                                                    <p>add downloads of old episodes to this category (e.g. TV)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use SABnzbd category for anime</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="sab_category_anime" id="sab_category_anime" v-model="nzb.sabnzbd.categoryAnime" class="form-control input-sm input200"/>
-                                                    <p>add anime downloads to this category (e.g. anime)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use SABnzbd category for anime (backlog episodes)</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="sab_category_anime_backlog" id="sab_category_anime_backlog" v-model="nzb.sabnzbd.categoryAnimeBacklog" class="form-control input-sm input200"/>
-                                                    <p>add anime downloads of old episodes to this category (e.g. anime)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair" v-show="search.general.allowHighPriority">
-                                            <label for="sab_forced">
-                                                <span class="component-title">Use forced priority</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="sab_forced" id="sab_forced" v-model="nzb.sabnzbd.forced"/>
-                                                    <p>enable to change priority from HIGH to FORCED</p></span>
-                                            </label>
-                                        </div>
-                                        <div class="testNotification" v-show="nzb.sabnzbd.testStatus" v-html="nzb.sabnzbd.testStatus"></div>
+                                    </config-template>
+                                    
+                                    
+                                    <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
+                                        
+                                        <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
+                                            <div class="clear-left">
+                                                <p v-html="clientConfig.nzb[clients.nzb.method].description"></p>
+                                            </div>
+                                        </config-textbox>
+                                        
+                                        <config-textbox v-model="clients.nzb.sabnzbd.username" label="SABnzbd username" id="sab_username" :explanations="['(blank for none)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.password" type="password" label="SABnzbd password" id="sab_password" :explanations="['(blank for none)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.apiKey" label="SABnzbd API key" id="sab_apikey" :explanations="['locate at... SABnzbd Config -> General -> API Key']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.category" label="Use SABnzbd category" id="sab_category" :explanations="['add downloads to this category (e.g. TV)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.categoryBacklog" label="Use SABnzbd category (backlog episodes)" id="sab_category_backlog" :explanations="['add downloads of old episodes to this category (e.g. TV)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.categoryAnime" label="Use SABnzbd category for anime" id="sab_category_anime" :explanations="['add anime downloads to this category (e.g. anime)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.sabnzbd.categoryAnimeBacklog" label="Use SABnzbd category for anime (backlog episodes)" id="sab_category_anime_backlog" :explanations="['add anime downloads of old episodes to this category (e.g. anime)']"></config-textbox>
+                                        <config-toggle-slider v-model="clients.nzb.sabnzbd.forced" label="Use forced priority" id="sab_forced" :explanations="['enable to change priority from HIGH to FORCED']" ></config-toggle-slider>
+                                
+                                        <div class="testNotification" v-show="clients.nzb.sabnzbd.testStatus" v-html="clients.nzb.sabnzbd.testStatus"></div>
                                         <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>
-                                    <div v-if="nzb.method" v-show="nzb.method === 'nzbget'" id="nzbget_settings">
-                                        <div class="field-pair">
-                                            <label for="nzbget_use_https">
-                                                <span class="component-title">Connect using HTTPS</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="nzbget_use_https" id="nzbget_use_https" v-model="nzb.nzbget.useHttps"/>
-                                                    <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">NZBget host:port</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_host" id="nzbget_host" v-model="nzb.nzbget.host" class="form-control input-sm input350"/>
-                                                    <div class="clear-left">
-                                                        <p v-if="clients.nzb[nzb.method]" v-html="clients.nzb[nzb.method].description"></p>
-                                                    </div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">NZBget username</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_username" id="nzbget_username" v-model="nzb.nzbget.username" class="form-control input-sm input200" autocomplete="no" />
-                                                    <p>locate in nzbget.conf (default:nzbget)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">NZBget password</span>
-                                                <span class="component-desc">
-                                                    <input type="password" name="nzbget_password" id="nzbget_password" v-model="nzb.nzbget.password" class="form-control input-sm input200" autocomplete="no"/>
-                                                    <p>locate in nzbget.conf (default:tegbzn6789)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use NZBget category</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_category" id="nzbget_category" v-model="nzb.nzbget.category" class="form-control input-sm input200"/>
-                                                    <p>send downloads marked this category (e.g. TV)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use NZBget category (backlog episodes)</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_category_backlog" id="nzbget_category_backlog" v-model="nzb.nzbget.categoryBacklog" class="form-control input-sm input200"/>
-                                                    <p>send downloads of old episodes marked this category (e.g. TV)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use NZBget category for anime</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_category_anime" id="nzbget_category_anime" v-model="nzb.nzbget.categoryAnime" class="form-control input-sm input200"/>
-                                                    <p>send anime downloads marked this category (e.g. anime)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Use NZBget category for anime (backlog episodes)</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="nzbget_category_anime_backlog" id="nzbget_category_anime_backlog" v-model="nzb.nzbget.categoryAnimeBacklog" class="form-control input-sm input200"/>
-                                                    <p>send anime downloads of old episodes marked this category (e.g. anime)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">NZBget priority</span>
-                                                <span class="component-desc">
-                                                    <select name="nzbget_priority" id="nzbget_priority" v-model="nzb.nzbget.priority" class="form-control input-sm">
-                                                        <option v-for="(value, title) in nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
-                                                    </select>
-                                                    <span>priority for daily snatches (no backlog)</span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="testNotification" v-show="nzb.nzbget.testStatus" v-html="nzb.nzbget.testStatus"></div>
+                                    
+                                    <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
+                                        
+                                        <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTP" id="nzbget_use_https">
+                                            <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
+                                        </config-toggle-slider>
+
+                                        <config-textbox v-model="clients.nzb.nzbget.host" label="NZBget host:port" id="nzbget_host">
+                                            <p v-if="clientConfig.nzb[clients.nzb.method]" v-html="clientConfig.nzb[clients.nzb.method].description"></p>
+                                        </config-textbox>
+
+                                        <config-textbox v-model="clients.nzb.nzbget.username" label="NZBget username" id="nzbget_username" :explanations="['locate in nzbget.conf (default:nzbget)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.nzbget.password" type="password" label="NZBget password" id="nzbget_password" :explanations="['locate in nzbget.conf (default:tegbzn6789)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.nzbget.category" label="Use NZBget category" id="nzbget_category" :explanations="['send downloads marked this category (e.g. TV)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.nzbget.categoryBacklog" label="Use NZBget category (backlog episodes)" id="nzbget_category_backlog" :explanations="['send downloads of old episodes marked this category (e.g. TV)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.nzbget.categoryAnime" label="Use NZBget category for anime" id="nzbget_category_anime" :explanations="['send anime downloads marked this category (e.g. anime)']"></config-textbox>
+                                        <config-textbox v-model="clients.nzb.nzbget.categoryAnimeBacklog" label="Use NZBget category for anime (backlog episodes)" id="nzbget_category_anime_backlog" :explanations="['send anime downloads of old episodes marked this category (e.g. anime)']"></config-textbox>
+                                        
+                                        <config-template label-for="nzbget_priority" label="NZBget priority">
+                                            <select name="nzbget_priority" id="nzbget_priority" v-model="clients.nzb.nzbget.priority" class="form-control input-sm">
+                                                <option v-for="(value, title) in clients.nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
+                                            </select>
+                                            <span>priority for daily snatches (no backlog)</span>
+                                        </config-template>
+                                        
+                                        <div class="testNotification" v-show="clients.nzb.nzbget.testStatus" v-html="clients.nzb.nzbget.testStatus"></div>
                                         <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div><!-- /nzb.enabled //-->
@@ -763,197 +628,114 @@ window.app = new Vue({
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <h3>Torrent Search</h3>
                             <p>How to handle Torrent search results.</p>
-                            <div id="torrent_method_icon" :class="'add-client-icon-' + torrents.method"></div>
+                            <div id="torrent_method_icon" :class="'add-client-icon-' + clients.torrents.method"></div>
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
-                                <div class="field-pair">
-                                    <label for="use_torrents">
-                                        <span class="component-title">Search torrents</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="use_torrents" id="use_torrents" v-model="torrents.enabled"/>
-                                            <p>enable torrent search providers</p>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div v-show="torrents.enabled">
-                                    <div class="field-pair">
-                                        <label for="torrent_method">
-                                            <span class="component-title">Send .torrent files to:</span>
-                                            <span class="component-desc">
-                                                <select v-model="torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
-                                                    <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
-                                                </select>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div v-if="torrents.method" v-show="torrents.method === 'blackhole'">
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title">Black hole folder location</span>
-                                                <span class="component-desc">
-                                                    <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="torrents.dir" @update="torrents.dir = $event"></file-browser>
-                                                    <div class="clear-left">
-                                                        <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
-                                                    </div>
-                                                </span>
-                                            </label>
-                                        </div>
+                                
+                                <config-toggle-slider v-model="clients.torrents.enabled" label="Search torrents" id="use_torrents" :explanations="['enable torrent search providers']"></config-toggle-slider>
+                                <div v-show="clients.torrents.enabled">
+                                    
+                                    <config-template label-for="torrent_method" label="Send .torrent files to">
+                                        <select v-model="clients.torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
+                                            <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
+                                        </select>
+                                    </config-template>
+                                    
+                                    <div v-if="clients.torrents.method" v-show="clients.torrents.method === 'blackhole'">
+                                        <config-template label-for="torrent_dir" label="Black hole folder location">
+                                            <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event"></file-browser>
+                                            <p><b>.torrent</b> files are stored at this location for external software to find and use</p>
+                                        </config-template>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>
-                                    <div v-if="torrents.method" v-show="torrents.method !== 'blackhole'">
-                                        <div class="field-pair">
-                                            <label>
-                                                <span class="component-title" v-if="clients.torrent[torrents.method]" id="host_title">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} host:port</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="torrent_host" id="torrent_host" v-model="torrents.host" class="form-control input-sm input350"/>
-                                                    <div class="clear-left">
-                                                        <p v-if="clients.nzb[nzb.method]" v-html="clients.torrent[torrents.method].description"></p>
-                                                    </div>
+
+                                    <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
+                                        
+                                        <config-textbox v-model="clients.torrents.host" :label="clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
+                                            <p v-html="clientConfig.torrent[clients.torrents.method].description"></p>
+                                        </config-textbox>
+                                        
+                                        <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
+                                            <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
+                                        </config-textbox>
+
+                                        <config-template v-show="!authTypeIsDisabled" label-for="torrent_auth_type" label="Http Authentication">
+                                            <select v-model="clients.torrents.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
+                                                <option v-for="(title, name) in httpAuthTypes" :value="name">{{title}}</option>
+                                            </select>
+                                        </config-template>
+
+                                        <config-toggle-slider v-show="clientConfig.torrent[clients.torrents.method].verifyCertOption" v-model="clients.torrents.verifyCert" label="Verify certificate" id="torrent_verify_cert">
+                                            <p>Verify SSL certificates for HTTPS requests</p>
+                                            <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
+                                        </config-toggle-slider>
+
+                                        <config-textbox v-show="!torrentUsernameIsDisabled" 
+                                            v-model="clients.torrents.username" :label="(clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']">
+                                        </config-textbox>
+                                        
+                                        <config-textbox type="password" v-show="!torrentPasswordIsDisabled" 
+                                            v-model="clients.torrents.password" :label="(clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']">
+                                        </config-textbox>
+                                        
+                                        <div v-show="clientConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
+                                            <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
+                                                <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
+                                                    <p>(blank spaces are not allowed)</p>
+                                                    <p>note: label plugin must be enabled in Deluge clients</p>
                                                 </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="torrents.method === 'transmission'" class="field-pair" id="torrent_rpcurl_option">
-                                            <label>
-                                                <span class="component-title" v-if="clients.torrent[torrents.method]" id="rpcurl_title">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} RPC URL</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="torrent_rpcurl" id="torrent_rpcurl" v-model="torrents.rpcUrl" class="form-control input-sm input350"/>
-                                                    <div class="clear-left">
-                                                        <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
-                                                    </div>
+                                                <span v-show="clients.torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
+                                                    <p>note: for qBitTorrent 3.3.1 and up</p>
                                                 </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://')" class="field-pair" id="torrent_auth_type_option">
-                                            <label>
-                                                <span class="component-title">Http Authentication</span>
-                                                <span class="component-desc">
-                                                    <select v-model="torrents.authType" name="torrent_auth_type" id="torrent_auth_type" class="form-control input-sm">
-                                                        <option v-for="(title, name) in httpAuthTypes" :value="name">{{title}}</option>
-                                                    </select>
-                                                    <p></p>
+                                                <span v-show="clients.torrents.method === 'utorrent'">
+                                                    <p>Global label for torrents.<br>
+                                                    <b>%N:</b> use Series-Name as label (can be used with other text)</p>
                                                 </span>
-                                            </label>
+                                            </config-textbox>
                                         </div>
-                                        <div v-show="clients.torrent[torrents.method].verifyCertOption" class="field-pair">
-                                            <label for="torrent_verify_cert">
-                                                <span class="component-title">Verify certificate</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="torrent_verify_cert" id="torrent_verify_cert" v-model="torrents.verifyCert"/>
-                                                    <p>Verify SSL certificates for HTTPS requests</p>
-                                                    <p v-show="torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
+
+                                        <div v-show="clientConfig.torrent[clients.torrents.method].labelAnimeOption">
+                                            <config-textbox v-model="clients.torrents.labelAnime" label="Add label to torrent for anime" id="torrent_label_anime">
+                                                <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
+                                                    <p>(blank spaces are not allowed)</p>
+                                                    <p>note: label plugin must be enabled in Deluge clients</p>
                                                 </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="!['rtorrent', 'deluge'].includes(torrents.method) || (torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://'))" class="field-pair" id="torrent_username_option">
-                                            <label>
-                                                <span class="component-title" id="username_title" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} username</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="torrent_username" id="torrent_username" v-model="torrents.username" class="form-control input-sm input200" autocomplete="no" />
-                                                    <p>(blank for none)</p>
+                                                <span v-show="clients.torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
+                                                    <p>note: for qBitTorrent 3.3.1 and up</p>
+                                                <span v-show="clients.torrents.method === 'utorrent'">
+                                                    <p>Global label for torrents.<br>
+                                                    <b>%N:</b> use Series-Name as label (can be used with other text)</p>
                                                 </span>
-                                            </label>
+                                            </config-textbox>
                                         </div>
-                                        <div v-show="torrents.method !== 'rtorrent' || (torrents.method === 'rtorrent' && !torrents.host.startsWith('scgi://'))" class="field-pair" id="torrent_password_option">
-                                            <label>
-                                                <span class="component-title" id="password_title" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}} password</span>
-                                                <span class="component-desc">
-                                                    <input type="password" name="torrent_password" id="torrent_password" v-model="torrents.password" class="form-control input-sm input200" autocomplete="no"/>
-                                                    <p>(blank for none)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].labelOption" class="field-pair" id="torrent_label_option">
-                                            <label>
-                                                <span class="component-title">Add label to torrent</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="torrent_label" id="torrent_label" v-model="torrents.label" class="form-control input-sm input200"/>
-                                                    <span v-show="['deluge', 'deluged'].includes(torrents.method)"><p>(blank spaces are not allowed)</p>
-                                                        <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
-                                                    </span>
-                                                    <span v-show="torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
-                                                        <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
-                                                    </span>
-                                                    <span v-show="torrents.method === 'utorrent'">
-                                                        <div class="clear-left"><p>Global label for torrents.<br>
-                                                        <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
-                                                    </span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].labelAnimeOption" class="field-pair">
-                                            <label>
-                                                <span class="component-title">Add label to torrent for anime</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="torrent_label_anime" id="torrent_label_anime" v-model="torrents.labelAnime" class="form-control input-sm input200"/>
-                                                    <span v-show="['deluge', 'deluged'].includes(torrents.method)"><p>(blank spaces are not allowed)</p>
-                                                        <div class="clear-left"><p>note: label plugin must be enabled in Deluge clients</p></div>
-                                                    </span>
-                                                    <span v-show="torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
-                                                        <div class="clear-left"><p>note: for qBitTorrent 3.3.1 and up</p></div>
-                                                    </span>
-                                                    <span v-show="torrents.method === 'utorrent'">
-                                                        <div class="clear-left"><p>Global label for torrents.<br>
-                                                        <b>%N:</b> use Series-Name as label (can be used with other text)</p></div>
-                                                    </span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].pathOption" class="field-pair" id="torrent_path_option">
-                                            <label>
-                                                <span class="component-title" id="directory_title">Downloaded files location</span>
-                                                <span class="component-desc">
-                                                    <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="torrents.path" @update="torrents.path = $event"></file-browser>
-                                                    <div class="clear-left"><p>where <span id="torrent_client" v-if="clients.torrent[torrents.method]">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}}</span> will save downloaded files (blank for client default)
-                                                        <span v-show="torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
-                                                    </div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].seedLocationOption" class="field-pair">
-                                            <label>
-                                                <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
-                                                <span class="component-desc">
-                                                    <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="torrents.seedLocation" @update="torrents.seedLocation = $event"></file-browser>
-                                                    <div class="clear-left">
-                                                        <p>
-                                                            where <span id="torrent_client_seed_path">{{clients.torrent[torrents.method].shortTitle || clients.torrent[torrents.method].title}}</span> will move Torrents after Post-Processing<br/>
-                                                            <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
-                                                            to another location after Post-Processor to prevent reprocessing the same file over and over.
-                                                            This feature does a "Set Torrent location" or "Move Torrent" like in client
-                                                        </p>
-                                                    </div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].seedTimeOption" class="field-pair" id="torrent_seed_time_option">
-                                            <label>
-                                                <span class="component-title" id="torrent_seed_time_label">{{torrents.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'}}</span>
-                                                <span class="component-desc">
-                                                    <input type="number" step="1" name="torrent_seed_time" id="torrent_seed_time" v-model="torrents.seedTime" class="form-control input-sm input100" />
-                                                    <p>hours. (default: '0' passes blank to client and '-1' passes nothing)</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="clients.torrent[torrents.method].pausedOption" class="field-pair" id="torrent_paused_option">
-                                            <label>
-                                                <span class="component-title">Start torrent paused</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="torrent_paused" id="torrent_paused" v-model="torrents.paused"/>
-                                                    <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div v-show="torrents.method === 'transmission'" class="field-pair">
-                                            <label>
-                                                <span class="component-title">Allow high bandwidth</span>
-                                                <span class="component-desc">
-                                                    <input type="checkbox" name="torrent_high_bandwidth" id="torrent_high_bandwidth" v-model="torrents.highBandwidth"/>
-                                                    <p>use high bandwidth allocation if priority is high</p>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="testNotification" v-show="torrents.testStatus" v-html="torrents.testStatus"></div>
+
+                                        <config-template v-show="clientConfig.torrent[clients.torrents.method].pathOption" label-for="torrent_client" label="Downloaded files location">
+                                                <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="clients.torrents.path" @update="clients.torrents.path = $event"></file-browser>
+                                                <p>where <span id="torrent_client" v-if="clientConfig.torrent[clients.torrents.method]">{{clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title}}</span> will save downloaded files (blank for client default)
+                                                    <span v-show="clients.torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span>
+                                                </p>
+                                        </config-template>
+                                        
+                                        <config-template v-show="clientConfig.torrent[clients.torrents.method].seedLocationOption" label-for="torrent_seed_location" label="Post-Processed seeding torrents location">
+                                                <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="clients.torrents.seedLocation" @update="clients.torrents.seedLocation = $event"></file-browser>
+                                                <p>
+                                                    where <span id="torrent_client_seed_path">{{clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title}}</span> will move Torrents after Post-Processing<br/>
+                                                    <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                    to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                    This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                </p>
+                                        </config-template>
+
+                                        <config-textbox-number v-show="clientConfig.torrent[clients.torrents.method].seedTimeOption" :min="-1" :step="1" v-model.number="clients.torrents.seedTime" :label="clients.torrents.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'" id="torrent_seed_time" :explanations="['hours. (default: \'0\' passes blank to client and \'-1\' passes nothing)']"></config-textbox-number>
+
+                                        <config-toggle-slider v-show="clientConfig.torrent[clients.torrents.method].pausedOption" v-model="clients.torrents.paused" label="Start torrent paused" id="torrent_paused">
+                                            <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
+                                        </config-toggle-slider>
+
+                                        <config-toggle-slider v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.highBandwidth" label="Allow high bandwidth" id="torrent_high_bandwidth" :explanations="['use high bandwidth allocation if priority is high']"></config-toggle-slider>
+
+                                        <div class="testNotification" v-show="clients.torrents.testStatus" v-html="clients.torrents.testStatus"></div>
                                         <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>

@@ -1,4 +1,5 @@
 export { default as auth } from './auth';
+export { default as clients } from './clients';
 export { default as config } from './config';
 export { default as defaults } from './defaults';
 export { default as metadata } from './metadata';
