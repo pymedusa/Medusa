@@ -6,7 +6,8 @@
 #### Fixes
 - Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
 - Fixed wrong placeholder reference in log ([#5562](https://github.com/pymedusa/Medusa/pull/5562))
-- Fix guessit exception when parsing release without title ([#5569](https://github.com/pymedusa/Medusa/pull/5569))
+- Fixed guessit exception when parsing release without title ([#5569](https://github.com/pymedusa/Medusa/pull/5569))
+- Fixed Download Station BraceAdapter exception ([#5573](https://github.com/pymedusa/Medusa/pull/5573))
 
 -----
 
