@@ -142,7 +142,7 @@ class Notifier(object):
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONDOWNLOAD:
-            self._notifyPushover(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+            self._notifyPushover(title, ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:

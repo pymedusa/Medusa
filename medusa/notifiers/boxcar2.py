@@ -65,7 +65,7 @@ class Notifier(object):
     def notify_download(self, ep_obj, title=common.notifyStrings[common.NOTIFY_DOWNLOAD]):
         """Send the download message."""
         if app.BOXCAR2_NOTIFY_ONDOWNLOAD:
-            self._notify_boxcar2(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+            self._notify_boxcar2(title, ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang, title=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]):
         """Send the subtitle download message."""

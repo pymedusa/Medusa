@@ -38,7 +38,7 @@ class Notifier(object):
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                message=ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN')
+                message=ep_obj.pretty_name_with_quality()
             )
 
     def notify_subtitle_download(self, ep_obj, lang):

@@ -108,7 +108,7 @@ class Notifier(object):
         :param title: The title of the notification to send
         """
         if app.TELEGRAM_NOTIFY_ONDOWNLOAD:
-            self._notify_telegram(title, ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+            self._notify_telegram(title, ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         """

@@ -41,7 +41,7 @@ class Notifier(object):
         if app.SLACK_NOTIFY_DOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_DOWNLOAD]
             self._notify_slack('{message} : {ep_name}'.format(message=message,
-                                                              ep_name=ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN')
+                                                              ep_name=ep_obj.pretty_name_with_quality()
                                                               ))
 
     def notify_subtitle_download(self, ep_obj, lang):

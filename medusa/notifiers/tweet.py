@@ -48,7 +48,7 @@ class Notifier(object):
         """
         if app.TWITTER_NOTIFY_ONDOWNLOAD:
             self._notify_twitter('{0}: {1}'.format(common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                                   ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN')))
+                                                   ep_obj.pretty_name_with_quality()))
 
     def notify_subtitle_download(self, ep_obj, lang):
         """

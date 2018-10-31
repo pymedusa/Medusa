@@ -117,7 +117,7 @@ class Notifier(object):
         ep_name: The name of the episode that was downloaded
         title: The title of the notification (optional)
         """
-        ep_name = ss(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        ep_name = ss(ep_obj.pretty_name_with_quality())
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
             parsed = self._parse_name(ep_name)

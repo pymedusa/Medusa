@@ -22,7 +22,7 @@ class Notifier(object):
 
     def notify_download(self, ep_obj):
         if app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD:
-            self._send_synologyNotifier(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'),
+            self._send_synologyNotifier(ep_obj.pretty_name_with_quality(),
                                         common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_obj, lang):

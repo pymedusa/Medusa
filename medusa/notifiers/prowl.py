@@ -45,7 +45,7 @@ class Notifier(object):
                                      message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
     def notify_download(self, ep_obj):
-        ep_name = ss(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        ep_name = ss(ep_obj.pretty_name_with_quality())
         if app.PROWL_NOTIFY_ONDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
