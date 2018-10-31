@@ -3,7 +3,7 @@
 
 import medusa.clients.torrent as sut
 from medusa.clients.torrent import (
-    deluge_client, deluged_client, download_station_client, mlnet_client,
+    deluge_client, deluged_client, downloadstation_client, mlnet_client,
     qbittorrent_client, rtorrent_client, transmission_client, utorrent_client
 )
 import pytest
@@ -19,8 +19,8 @@ import pytest
         'expected': deluged_client
     },
     {  # p2
-        'client': 'download_station',
-        'expected': download_station_client
+        'client': 'downloadstation',
+        'expected': downloadstation_client
     },
     {  # p3
         'client': 'mlnet',
@@ -74,8 +74,8 @@ def test_get_client_module__non_existent():
         'expected': deluged_client.DelugeDAPI
     },
     {  # p2
-        'client': 'download_station',
-        'expected': download_station_client.DownloadStationAPI
+        'client': 'downloadstation',
+        'expected': downloadstation_client.DownloadStationAPI
     },
     {  # p3
         'client': 'mlnet',

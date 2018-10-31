@@ -24,4 +24,3 @@ class FixAddFutureImportsExceptUnicodeLiterals(fixer_base.BaseFix):
         future_import(u"print_function", node)
         future_import(u"division", node)
         future_import(u"absolute_import", node)
-
