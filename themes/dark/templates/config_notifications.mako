@@ -1518,14 +1518,14 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for join client -->
-                                <config-toggle-slider v-model="notifiers.join.enabled" label="Enable" id="use_join" :explanations="['Send join notifications?']" @change="save()"  @update="notifiers.join.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.join.enabled" label="Enable" id="use_join" :explanations="['Send join notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.join.enabled" id="content-use-join-client"> <!-- show based on notifiers.join.enabled -->
 
-                                    <config-toggle-slider v-model="notifiers.join.notifyOnSnatch" label="Notify on snatch" id="join_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.join.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider v-model="notifiers.join.notifyOnDownload" label="Notify on download" id="join_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.join.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider v-model="notifiers.join.notifyOnSubtitleDownload" label="Notify on subtitle download" id="join_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.join.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox v-model="notifiers.join.api" label="Join API key" id="join_api" :explanations="['API key of your Join account.']" @change="save()"  @update="notifiers.join.api = $event"></config-textbox>
-                                    <config-textbox v-model="notifiers.join.device" label="Join Device ID(s) key" id="join_device" :explanations="['Enter DeviceID of the device(s) you wish to send notifications to, comma separated if using multiple.']" @change="save()"  @update="notifiers.join.device = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnSnatch" label="Notify on snatch" id="join_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnDownload" label="Notify on download" id="join_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnSubtitleDownload" label="Notify on subtitle download" id="join_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.join.api" label="Join API key" id="join_api" :explanations="['API key of your Join account.']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.join.device" label="Join Device ID(s) key" id="join_device" :explanations="['Enter DeviceID of the device(s) you wish to send notifications to, comma separated if using multiple.']" @change="save()" ></config-textbox>
                                     </config-template>
 
                                     <div class="testNotification" id="testJoin-result">{{joinTestInfo}}</div>
