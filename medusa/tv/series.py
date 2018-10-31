@@ -1308,7 +1308,7 @@ class Series(TV):
             parse_result = NameParser(series=self, try_indexers=True, parse_method=(
                 'normal', 'anime')[self.is_anime]).parse(filepath)
         except (InvalidNameException, InvalidShowException) as error:
-            log.debug(u'{indexerid}: {error}',
+            log.debug(u'{indexer_id}: {error}',
                       {'indexer_id': self.series_id, 'error': error})
             return None
 

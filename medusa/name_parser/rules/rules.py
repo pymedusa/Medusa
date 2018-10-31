@@ -984,6 +984,9 @@ class FixWordAsLanguage(Rule):
             return
 
         titles = matches.named('title')
+        if not titles:
+            return
+
         first_title = titles[0]
         last_title = titles[-1]
 

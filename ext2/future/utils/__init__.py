@@ -18,7 +18,7 @@ This module exports useful functions for 2/3 compatible code:
     * types:
 
         * text_type: unicode in Python 2, str in Python 3
-        * binary_type: str in Python 2, bythes in Python 3
+        * binary_type: str in Python 2, bytes in Python 3
         * string_types: basestring in Python 2, str in Python 3
 
     * bchr(c):
@@ -56,6 +56,8 @@ import inspect
 
 
 PY3 = sys.version_info[0] == 3
+PY35_PLUS = sys.version_info[0:2] >= (3, 5)
+PY36_PLUS = sys.version_info[0:2] >= (3, 6)
 PY2 = sys.version_info[0] == 2
 PY26 = sys.version_info[0:2] == (2, 6)
 PY27 = sys.version_info[0:2] == (2, 7)

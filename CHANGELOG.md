@@ -4,7 +4,9 @@
 - Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens. ([#4913](https://github.com/pymedusa/Medusa/pull/4913))
 
 #### Fixes
-- Fix test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
+- Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
+- Fixed wrong placeholder reference in log ([#5562](https://github.com/pymedusa/Medusa/pull/5562))
+- Fix guessit exception when parsing release without title ([#5569](https://github.com/pymedusa/Medusa/pull/5569))
 
 -----
 
