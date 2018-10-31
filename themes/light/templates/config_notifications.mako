@@ -453,7 +453,6 @@ window.app = new Vue({
             });
         },
         testGrowl() {
-            debugger;
             const growl = {};
             growl.host = $.trim($('#growl_host').val());
             growl.password = $.trim($('#growl_password').val());
@@ -955,23 +954,23 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for KODI -->
 
-                                <config-toggle-slider :checked="notifiers.kodi.enabled" label="Enable" id="use_kodi" :explanations="['Send KODI commands?']" @change="save()"  @update="notifiers.kodi.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.kodi.enabled" label="Enable" id="use_kodi" :explanations="['Send KODI commands?']" @change="save()" ></config-toggle-slider>
 
                                 <div v-show="notifiers.kodi.enabled" id="content-use-kodi"> <!-- show based on notifiers.kodi.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.kodi.alwaysOn = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()" ></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnSnatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.kodi.notifyOnSnatch = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.notifyOnSnatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnDownload" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.kodi.notifyOnDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.notifyOnDownload" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     
-                                    <config-toggle-slider :checked="notifiers.kodi.notifyOnSubtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.kodi.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.notifyOnSubtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                         
-                                    <config-toggle-slider :checked="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()"  @update="notifiers.kodi.update.library = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()"  @update="notifiers.kodi.update.full = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()" ></config-toggle-slider>
 
-                                    <config-toggle-slider :checked="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()"  @update="notifiers.kodi.cleanLibrary = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()"  @update="notifiers.kodi.update.onlyFirst = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()" ></config-toggle-slider>
                                     
                                     
                                     <div class="form-group">
@@ -986,8 +985,8 @@ window.app = new Vue({
                                         </div>
                                     </div>
 
-                                    <config-textbox :value="notifiers.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()"  @update="notifiers.kodi.username = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()" @update="notifiers.kodi.password = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.kodi.username" label="Username" id="kodi_username" :explanations="['username for your KODI server (blank for none)']" @change="save()"></config-textbox>
+                                    <config-textbox v-model="notifiers.kodi.password" type="password" label="Password" id="kodi_password" :explanations="['password for your KODI server (blank for none)']" @change="save()"></config-textbox>
 
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" @click="testKODI"/>
@@ -995,7 +994,7 @@ window.app = new Vue({
                             
                                 </div>
 
-                            </fieldset>    
+                            </fieldset>
                         </div>
 
                     </div>
@@ -1011,25 +1010,25 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media server -->
                                 
-                                <config-toggle-slider :checked="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()"  @update="notifiers.plex.server.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()" ></config-toggle-slider>
 
                                 <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
-                                    <config-textbox :value="notifiers.plex.server.token" label="Plex Media Server Auth Token" id="plex_server_token" @change="save()"  @update="notifiers.plex.server.token = $event">
+                                    <config-textbox v-model="notifiers.plex.server.token" label="Plex Media Server Auth Token" id="plex_server_token" @change="save()" >
                                         <p>Auth Token used by plex</p>
                                         <p><span>See: <app-link href="https://support.plex.tv/hc/en-us/articles/204059436-Finding-your-account-token-X-Plex-Token" class="wiki"><strong>Finding your account token</strong></app-link></span></p>
                                     </config-textbox>
 
-                                    <config-textbox :value="notifiers.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"></config-textbox>
+                                    <config-textbox v-model="notifiers.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"></config-textbox>
                                     
-                                    <config-toggle-slider :checked="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"  @update="notifiers.plex.server.updateLibrary = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"></config-toggle-slider>
                                     
                                     <config-template label-for="plex_server_host" label="Plex Media Server IP:Port">
                                         <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event.map(x => x.value)"></select-list>
                                         <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                     </config-template>
 
-                                    <config-toggle-slider :checked="notifiers.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"  @update="notifiers.plex.server.https = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"></config-toggle-slider>
                                     
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
@@ -1051,20 +1050,20 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
-                                <config-toggle-slider :checked="notifiers.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifiers.plex.client.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()" ></config-toggle-slider>
                                 
                                 <div v-show="notifiers.plex.client.enabled" id="content-use-plex-client"> <!-- show based on notifiers.plex.server.enabled -->
-                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.plex.client.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.plex.client.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.plex.client.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.plex.client.notifyOnSubtitleDownload" label="Notify on subtitle download" id="plex_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
                                     <config-template label-for="plex_client_host" label="Plex Home Theater IP:Port">
                                         <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event.map(x => x.value)"></select-list>
                                         <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                     </config-template>
                                     
-                                    <config-textbox :value="notifiers.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.username = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()"  @update="notifiers.plex.server.password = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()" ></config-textbox>
 
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
@@ -1087,11 +1086,11 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for emby -->
-                                <config-toggle-slider :checked="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()"  @update="notifiers.emby.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()" ></config-toggle-slider>
                                 
                                 <div v-show="notifiers.emby.enabled" id="content_use_emby">
-                                    <config-textbox :value="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()"  @update="notifiers.emby.host = $event"></config-textbox>
-                                    <config-textbox :checked="notifiers.emby.apiKey" label="Api Key" id="emby_apikey" @change="save()"  @update="notifiers.emby.apiKey = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.emby.apiKey" label="Api Key" id="emby_apikey" @change="save()" ></config-textbox>
                                 
                                     <div class="testNotification" id="testEMBY-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" @click="testEMBY"/>
@@ -1109,18 +1108,18 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for nmj -->
-                                <config-toggle-slider :checked="notifiers.nmj.enabled" label="Enable" id="use_nmj" :explanations="['Send update commands to NMJ?']" @change="save()"  @update="notifiers.nmj.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.nmj.enabled" label="Enable" id="use_nmj" :explanations="['Send update commands to NMJ?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.nmj.enabled" id="content-use-nmj">
-                                    <config-textbox :value="notifiers.nmj.host" label="Popcorn IP address" id="nmj_host" :explanations="['IP address of Popcorn 200-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmj.host = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.nmj.host" label="Popcorn IP address" id="nmj_host" :explanations="['IP address of Popcorn 200-series (eg. 192.168.1.100)']" @change="save()" ></config-textbox>
 
                                     <config-template label-for="settingsNMJ" label="Get settings">
                                         <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" @click="settingsNMJ"/>            
                                         <span>the Popcorn Hour device must be powered on and NMJ running.</span>
                                     </config-template>
 
-                                    <config-textbox :value="notifiers.nmj.database" label="NMJ database" id="nmj_database" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.database = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.nmj.database" label="NMJ database" id="nmj_database" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()" ></config-textbox>
 
-                                    <config-textbox :value="notifiers.nmj.mount" label="NMJ mount" id="nmj_mount" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()"  @update="notifiers.nmj.mount = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.nmj.mount" label="NMJ mount" id="nmj_mount" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()" ></config-textbox>
                                 
                                     <div class="testNotification" id="testNMJ-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" @click="testNMJ"/>
@@ -1140,10 +1139,10 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for njm (popcorn) client -->
-                                <config-toggle-slider :checked="notifiers.nmjv2.enabled" label="Enable" id="use_nmjv2" :explanations="['Send popcorn hour (nmjv2) notifications?']" @change="save()"  @update="notifiers.nmjv2.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.nmjv2.enabled" label="Enable" id="use_nmjv2" :explanations="['Send popcorn hour (nmjv2) notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.nmjv2.enabled" id="content-use-nmjv2">
 
-                                    <config-textbox :value="notifiers.nmjv2.host" label="Popcorn IP address" id="nmjv2_host" :explanations="['IP address of Popcorn 300/400-series (eg. 192.168.1.100)']" @change="save()"  @update="notifiers.nmjv2.host = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.nmjv2.host" label="Popcorn IP address" id="nmjv2_host" :explanations="['IP address of Popcorn 300/400-series (eg. 192.168.1.100)']" @change="save()" ></config-textbox>
 
                                     <config-template label-for="nmjv2_database_location" label="Database location">
                                         <label for="NMJV2_DBLOC_A" class="space-right">
@@ -1174,7 +1173,7 @@ window.app = new Vue({
                                         <span>the Popcorn Hour device must be powered on.</span>
                                     </config-template>
 
-                                    <config-textbox :value="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()"  @update="notifiers.nmjv2.database = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.nmjv2.database" label="NMJv2 database" id="nmjv2_database" :explanations="['automatically filled via the \'Find Database\' buttons.']" @change="save()" ></config-textbox>
                                     <div class="testNotification" id="testNMJv2-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test NMJv2" id="testNMJv2" @click="testNMJv2"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
@@ -1193,7 +1192,7 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for synology indexer -->
-                                <config-toggle-slider :checked="notifiers.synologyIndex.enabled" label="HTTPS" id="use_synoindex" :explanations="['Note: requires Medusa to be running on your Synology NAS.']" @change="save()"  @update="notifiers.synologyIndex.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.synologyIndex.enabled" label="HTTPS" id="use_synoindex" :explanations="['Note: requires Medusa to be running on your Synology NAS.']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.synologyIndex.enabled" id="content_use_synoindex">
                                         <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
@@ -1210,14 +1209,14 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for synology notifier -->
-                                <config-toggle-slider :checked="notifiers.synology.enabled" label="Enable" id="use_synologynotifier" 
+                                <config-toggle-slider v-model="notifiers.synology.enabled" label="Enable" id="use_synologynotifier" 
                                     :explanations="['Send notifications to the Synology Notifier?', 'Note: requires Medusa to be running on your Synology DSM.']" 
-                                    @change="save()"  @update="notifiers.synology.enabled = $event">
+                                    @change="save()" >
                                 </config-toggle-slider>
                                 <div v-show="notifiers.synology.enabled" id="content-use-synology-notifier">
-                                    <config-toggle-slider :checked="notifiers.synology.notifyOnSnatch" label="Notify on snatch" id="_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.synology.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.synology.notifyOnDownload" label="Notify on download" id="synology_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.synology.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.synology.notifyOnSubtitleDownload" label="Notify on subtitle download" id="synology_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.synology.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.synology.notifyOnSnatch" label="Notify on snatch" id="_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.synology.notifyOnDownload" label="Notify on download" id="synology_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.synology.notifyOnSubtitleDownload" label="Notify on subtitle download" id="synology_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1233,11 +1232,11 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for pyTivo client -->
-                                <config-toggle-slider :checked="notifiers.pyTivo.enabled" label="Enable" id="use_pytivo" :explanations="['Send Plex Home Theater notifications?']" @change="save()"  @update="notifiers.pyTivo.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.pyTivo.enabled" label="Enable" id="use_pytivo" :explanations="['Send Plex Home Theater notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.pyTivo.enabled" id="content-use-pytivo"> <!-- show based on notifiers.pyTivo.enabled -->
-                                    <config-textbox :value="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()"  @update="notifiers.pyTivo.host = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()"  @update="notifiers.pyTivo.shareName = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.pyTivo.name" label="Tivo name" id="pytivo_tivo_name" :explanations="['value used in pyTivo Web Configuration to name the share.']" @change="save()"  @update="notifiers.pyTivo.name = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.pyTivo.name" label="Tivo name" id="pytivo_tivo_name" :explanations="['value used in pyTivo Web Configuration to name the share.']" @change="save()" ></config-textbox>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                 </div>
                             </fieldset>
@@ -1255,14 +1254,14 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for growl client -->
-                                <config-toggle-slider :checked="notifiers.growl.enabled" label="Enable" id="use_growl_client" :explanations="['Send growl Home Theater notifications?']" @change="save()"  @update="notifiers.growl.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.growl.enabled" label="Enable" id="use_growl_client" :explanations="['Send growl Home Theater notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.growl.enabled" id="content-use-growl-client"> <!-- show based on notifiers.growl.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.growl.notifyOnSnatch" label="Notify on snatch" id="growl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.growl.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.growl.notifyOnDownload" label="Notify on download" id="growl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.growl.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.growl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.growl.host" label="Growl IP:Port" id="growl_host" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()"  @update="notifiers.growl.host = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()"  @update="notifiers.growl.password = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.growl.notifyOnSnatch" label="Notify on snatch" id="growl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.growl.notifyOnDownload" label="Notify on download" id="growl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.growl.host" label="Growl IP:Port" id="growl_host" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
                                     <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" @click="testGrowl"/>
@@ -1281,12 +1280,12 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for prowl client -->
-                                <config-toggle-slider :checked="notifiers.prowl.enabled" label="Enable" id="use_prowl" :explanations="['Send Prowl notifications?']" @change="save()"  @update="notifiers.prowl.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.prowl.enabled" label="Enable" id="use_prowl" :explanations="['Send Prowl notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.prowl.enabled" id="content-use-prowl"> <!-- show based on notifiers.plex.server.enabled -->
-                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnSnatch" label="Notify on snatch" id="prowl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.prowl.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.prowl.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.prowl.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()"  @update="notifiers.prowl.messageTitle = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.prowl.notifyOnSnatch" label="Notify on snatch" id="prowl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()" ></config-textbox>
                                     
                                     <config-template label-for="prowl_api" label="Api">
                                         <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
@@ -1343,12 +1342,12 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
-                                <config-toggle-slider :checked="notifiers.libnotify.enabled" label="Enable" id="use_libnotify_client" :explanations="['Send Libnotify notifications?']" @change="save()"  @update="notifiers.libnotify.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.libnotify.enabled" label="Enable" id="use_libnotify_client" :explanations="['Send Libnotify notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.libnotify.enabled" id="content-use-libnotify"> 
 
-                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnSnatch" label="Notify on snatch" id="libnotify_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.libnotify.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnDownload" label="Notify on download" id="libnotify_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.libnotify.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.libnotify.notifyOnSubtitleDownload" label="Notify on subtitle download" id="libnotify_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.libnotify.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.libnotify.notifyOnSnatch" label="Notify on snatch" id="libnotify_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.libnotify.notifyOnDownload" label="Notify on download" id="libnotify_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.libnotify.notifyOnSubtitleDownload" label="Notify on subtitle download" id="libnotify_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
                                     <div class="testNotification" id="testLibnotify-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Libnotify" id="testLibnotify" @click="testLibnotify"/>
@@ -1367,15 +1366,15 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for pushover -->
-                                <config-toggle-slider :checked="notifiers.pushover.enabled" label="Enable" id="use_pushover_client" :explanations="['Send Pushover notifications?']" @change="save()"  @update="notifiers.pushover.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.pushover.enabled" label="Enable" id="use_pushover_client" :explanations="['Send Pushover notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.pushover.enabled" id="content-use-pushover">
-                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnSnatch" label="Notify on snatch" id="pushover_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushover.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnDownload" label="Notify on download" id="pushover_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushover.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushover.notifyOnSubtitleDownload = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushover.notifyOnSnatch" label="Notify on snatch" id="pushover_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushover.notifyOnDownload" label="Notify on download" id="pushover_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
-                                    <config-textbox :value="notifiers.pushover.userKey" label="Pushover Key" id="pushover_userkey" :explanations="['user key of your Pushover account']" @change="save()"  @update="notifiers.pushover.userKey = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.pushover.userKey" label="Pushover Key" id="pushover_userkey" :explanations="['user key of your Pushover account']" @change="save()" ></config-textbox>
                                     
-                                    <config-textbox :value="notifiers.pushover.apiKey" label="Pushover API key" id="pushover_apikey" @change="save()"  @update="notifiers.pushover.apiKey = $event">
+                                    <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API key" id="pushover_apikey" @change="save()" >
                                         <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </config-textbox>
 
@@ -1410,13 +1409,13 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for boxcar2 client -->
-                                <config-toggle-slider :checked="notifiers.boxcar2.enabled" label="Enable" id="use_boxcar2" :explanations="['Send boxcar2 notifications?']" @change="save()"  @update="notifiers.boxcar2.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.boxcar2.enabled" label="Enable" id="use_boxcar2" :explanations="['Send boxcar2 notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.boxcar2.enabled" id="content-use-boxcar2-client"> <!-- show based on notifiers.boxcar2.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnSnatch" label="Notify on snatch" id="boxcar2_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.boxcar2.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnDownload" label="Notify on download" id="boxcar2_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.boxcar2.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.boxcar2.notifyOnSubtitleDownload" label="Notify on subtitle download" id="boxcar2_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.boxcar2.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.boxcar2.accessToken" label="Boxcar2 Access token" id="boxcar2_accesstoken" :explanations="['access token for your Boxcar account.']" @change="save()"  @update="notifiers.boxcar2.accessToken = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.boxcar2.notifyOnSnatch" label="Notify on snatch" id="boxcar2_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.boxcar2.notifyOnDownload" label="Notify on download" id="boxcar2_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.boxcar2.notifyOnSubtitleDownload" label="Notify on subtitle download" id="boxcar2_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.boxcar2.accessToken" label="Boxcar2 Access token" id="boxcar2_accesstoken" :explanations="['access token for your Boxcar account.']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" @click="testBoxcar2"/>
@@ -1435,13 +1434,13 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for pushalot client -->
-                                <config-toggle-slider :checked="notifiers.pushalot.enabled" label="Enable" id="use_pushalot" :explanations="['Send Pushalot notifications?']" @change="save()"  @update="notifiers.pushalot.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.pushalot.enabled" label="Enable" id="use_pushalot" :explanations="['Send Pushalot notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.pushalot.enabled" id="content-use-pushalot-client"> <!-- show based on notifiers.pushalot.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnSnatch" label="Notify on snatch" id="pushalot_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushalot.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnDownload" label="Notify on download" id="pushalot_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushalot.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushalot.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushalot_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushalot.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.pushalot.authToken" label="Pushalot authorization token" id="pushalot_authorizationtoken" :explanations="['authorization token of your Pushalot account.']" @change="save()"  @update="notifiers.pushalot.authToken = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.pushalot.notifyOnSnatch" label="Notify on snatch" id="pushalot_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushalot.notifyOnDownload" label="Notify on download" id="pushalot_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushalot.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushalot_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.pushalot.authToken" label="Pushalot authorization token" id="pushalot_authorizationtoken" :explanations="['authorization token of your Pushalot account.']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testPushalot-result">Click below to test.</div>
                                     <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" @click="testPushalot"/>
@@ -1460,13 +1459,13 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for pushbullet client -->
-                                <config-toggle-slider :checked="notifiers.pushbullet.enabled" label="Enable" id="use_pushbullet" :explanations="['Send pushbullet notifications?']" @change="save()"  @update="notifiers.pushbullet.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.pushbullet.enabled" label="Enable" id="use_pushbullet" :explanations="['Send pushbullet notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.pushbullet.enabled" id="content-use-pushbullet-client"> <!-- show based on notifiers.pushbullet.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSnatch" label="Notify on snatch" id="pushbullet_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnDownload" label="Notify on download" id="pushbullet_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.pushbullet.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.pushbullet.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()"  @update="notifiers.pushbullet.api = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.pushbullet.notifyOnSnatch" label="Notify on snatch" id="pushbullet_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushbullet.notifyOnDownload" label="Notify on download" id="pushbullet_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.pushbullet.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushbullet_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.pushbullet.api" label="Pushbullet API key" id="pushbullet_api" :explanations="['API key of your Pushbullet account.']" @change="save()" ></config-textbox>
 
                                     <config-template label-for="pushbullet_device_list" label="Pushbullet devices">
                                         <input type="button" class="btn-medusa btn-inline" value="Update device list" id="get-pushbullet-devices" @click="getPushbulletDeviceOptions" />
@@ -1495,14 +1494,14 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for freemobile client -->
-                                <config-toggle-slider :checked="notifiers.freemobile.enabled" label="Enable" id="use_freemobile" :explanations="['Send SMS notifications?']" @change="save()"  @update="notifiers.freemobile.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.freemobile.enabled" label="Enable" id="use_freemobile" :explanations="['Send SMS notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.freemobile.enabled" id="content-use-freemobile-client"> <!-- show based on notifiers.freemobile.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnSnatch" label="Notify on snatch" id="freemobile_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.freemobile.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnDownload" label="Notify on download" id="freemobile_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.freemobile.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.freemobile.notifyOnSubtitleDownload" label="Notify on subtitle download" id="freemobile_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.freemobile.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.freemobile.id" label="Free Mobile customer ID" id="freemobile_id" :explanations="['It\'s your Free Mobile customer ID (8 digits)']" @change="save()"  @update="notifiers.freemobile.id = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.freemobile.api" label="Free Mobile API Key" id="freemobile_apikey" :explanations="['Find your API Key in your customer portal.']" @change="save()"  @update="notifiers.freemobile.api = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.freemobile.notifyOnSnatch" label="Notify on snatch" id="freemobile_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.freemobile.notifyOnDownload" label="Notify on download" id="freemobile_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.freemobile.notifyOnSubtitleDownload" label="Notify on subtitle download" id="freemobile_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.freemobile.id" label="Free Mobile customer ID" id="freemobile_id" :explanations="['It\'s your Free Mobile customer ID (8 digits)']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.freemobile.api" label="Free Mobile API Key" id="freemobile_apikey" :explanations="['Find your API Key in your customer portal.']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" @click="testFreeMobile"/>
@@ -1521,14 +1520,14 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for telegram client -->
-                                <config-toggle-slider :checked="notifiers.telegram.enabled" label="Enable" id="use_telegram" :explanations="['Send Telegram notifications?']" @change="save()"  @update="notifiers.telegram.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.telegram.enabled" label="Enable" id="use_telegram" :explanations="['Send Telegram notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.telegram.enabled" id="content-use-telegram-client"> <!-- show based on notifiers.telegram.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.telegram.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.telegram.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.telegram.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.telegram.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.telegram.id" label="User/group ID" id="telegram_id" :explanations="['Contact @myidbot on Telegram to get an ID']" @change="save()"  @update="notifiers.telegram.id = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.telegram.api" label="Bot API token" id="telegram_apikey" :explanations="['Contact @BotFather on Telegram to set up one']" @change="save()"  @update="notifiers.telegram.api = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.telegram.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.telegram.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.telegram.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.telegram.id" label="User/group ID" id="telegram_id" :explanations="['Contact @myidbot on Telegram to get an ID']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.telegram.api" label="Bot API token" id="telegram_apikey" :explanations="['Contact @BotFather on Telegram to set up one']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" @click="testTelegram"/>
@@ -1550,16 +1549,16 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for twitter client -->
-                                <config-toggle-slider :checked="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()"  @update="notifiers.twitter.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.twitter.enabled" label="Enable" id="use_twitter" :explanations="['Should Medusa post tweets on Twitter?', 'Note: you may want to use a secondary account.']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.twitter.enabled" id="content-use-twitter"> <!-- show based on notifiers.twitter.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()"  @update="notifiers.twitter.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()"  @update="notifiers.twitter.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()"  @update="notifiers.twitter.directMessage = $event"></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.twitter.notifyOnSnatch" label="Notify on snatch" id="twitter_notify_onsnatch" :explanations="['send an SMS when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()" ></config-toggle-slider>
                                     
                                     
-                                    <config-textbox :value="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()"  @update="notifiers.twitter.dmto = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()" ></config-textbox>
                                     
                                     <config-template label-for="twitterStep1" label="Step 1">
                                         <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
@@ -1588,10 +1587,10 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for trakt -->
-                                <config-toggle-slider :checked="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()"  @update="notifiers.trakt.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.trakt.enabled" label="Enable" id="use_trakt" :explanations="['Send Trakt.tv notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
 
-                                    <config-textbox :value="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()"  @update="notifiers.trakt.username = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()" ></config-textbox>
                                     
                                     <config-template label-for="twitterStep2" label="Trakt PIN">
                                         <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
@@ -1600,7 +1599,7 @@ window.app = new Vue({
                                         <p>PIN code to authorize Medusa to access Trakt on your behalf.</p>
                                     </config-template>
 
-                                    <config-textbox-number :value="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']" @update="notifiers.trakt.timeout = $event"></config-textbox-number>
+                                    <config-textbox-number v-model="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']"></config-textbox-number>
                                     
                                     <config-template label-for="twitterStep2" label="Trakt PIN">
                                         <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
@@ -1610,21 +1609,21 @@ window.app = new Vue({
                                         </select>
                                     </config-template id="trakt_default_indexer" label="Default Indexer">
                                     
-                                    <config-toggle-slider :checked="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
+                                    <config-toggle-slider v-model="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
                                     ['Sync your Medusa show library with your Trakt collection.',
                                     'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
                                     'Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.']"
-                                        @change="save()"  @update="notifiers.trakt.sync = $event"></config-toggle-slider>
+                                        @change="save()" ></config-toggle-slider>
                                     <div v-show="notifiers.trakt.sync" id="content-use-trakt-client">
-                                            <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
-                                                'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()"  @update="notifiers.twitter.notifyOnSnatch = $event"></config-toggle-slider>
+                                            <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove Episodes From Collection" id="trakt_remove_watchlist" :explanations="['Remove an Episode from your Trakt Collection if it is not in your Medusa Library.',
+                                                'Note:Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.']" @change="save()" ></config-toggle-slider>
                                     </div>
 
-                                    <config-toggle-slider :checked="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
+                                    <config-toggle-slider v-model="notifiers.trakt.syncWatchlist" label="Sync watchlist" id="trakt_sync_watchlist" :explanations="
                                     ['Sync your Medusa library with your Trakt Watchlist (either Show and Episode).',
                                     'Episode will be added on watch list when wanted or snatched and will be removed when downloaded',
                                     'Note: By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.']"
-                                        @change="save()"  @update="notifiers.trakt.syncWatchlist = $event"></config-toggle-slider>
+                                        @change="save()" ></config-toggle-slider>
                                     <div v-show="notifiers.trakt.syncWatchlist" id="content-use-trakt-client">
                                         <config-template label-for="trakt_default_indexer" label="Watchlist add method">
                                             <select id="trakt_method_add" name="trakt_method_add" v-model="notifiers.trakt.methodAdd" class="form-control">
@@ -1635,13 +1634,13 @@ window.app = new Vue({
                                             <p>method in which to download episodes for new shows.</p>
                                         </config-template>
                                     
-                                        <config-toggle-slider :checked="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()"  @update="notifiers.trakt.removeWatchlist = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()"  @update="notifiers.trakt.removeSerieslist = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()"  @update="notifiers.trakt.removeShowFromApplication = $event"></config-toggle-slider>
-                                        <config-toggle-slider :checked="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()"  @update="notifiers.trakt.startPaused = $event"></config-toggle-slider>
+                                        <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()" ></config-toggle-slider>
+                                        <config-toggle-slider v-model="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()" ></config-toggle-slider>
+                                        <config-toggle-slider v-model="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()" ></config-toggle-slider>
+                                        <config-toggle-slider v-model="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()" ></config-toggle-slider>
                                     
                                     </div>
-                                    <config-textbox :value="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()"  @update="notifiers.trakt.blacklistName = $event"></config-textbox>
+                                    <config-textbox v-model="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()" ></config-textbox>
                                     
                                     <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                     <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" @click="testTrakt"/>
@@ -1662,18 +1661,18 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for the email client -->
-                                <config-toggle-slider :checked="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()"  @update="notifiers.email.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.email.enabled" id="content-use-email">
 
-                                    <config-toggle-slider :checked="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()"  @update="notifiers.email.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()"  @update="notifiers.email.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()"  @update="notifiers.email.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()"  @update="notifiers.email.host = $event"></config-textbox>
-                                    <config-textbox :value="String(notifiers.email.port)" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()"  @update="notifiers.email.port = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()"  @update="notifiers.email.from = $event"></config-textbox>
-                                    <config-toggle-slider :checked="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()"  @update="notifiers.email.tls = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()"  @update="notifiers.email.username = $event"></config-textbox>
-                                    <config-textbox :value="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()"  @update="notifiers.email.password = $event"></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()" ></config-textbox>
+                                    <config-textbox-number :min="1" :step="1" v-model="notifiers.email.port" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()" ></config-textbox-number>
+                                    <config-textbox v-model="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()" ></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()" ></config-textbox>
                                     
                                     <config-template label-for="email_list" label="Global email list">
                                         <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>
@@ -1681,9 +1680,9 @@ window.app = new Vue({
                                         (This field may be blank except when testing.)
                                     </config-template>
                                     
-                                    <config-textbox :value="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
+                                    <config-textbox v-model="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
                                     ['Use a custom subject for some privacy protection?<br>',
-                                        '(Leave blank for the default Medusa subject)']" @change="save()"  @update="notifiers.email.subject = $event">
+                                        '(Leave blank for the default Medusa subject)']" @change="save()" >
                                     </config-textbox>
 
                                     <config-template label-for="email_show" label="Show notification list">
@@ -1718,13 +1717,13 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for slack client -->
-                                <config-toggle-slider :checked="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()"  @update="notifiers.slack.enabled = $event"></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.slack.enabled" id="content-use-slack-client"> <!-- show based on notifiers.slack.enabled -->
 
-                                    <config-toggle-slider :checked="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()"  @update="notifiers.slack.notifyOnSnatch = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.slack.notifyOnDownload" label="Notify on download" id="slack_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()"  @update="notifiers.slack.notifyOnDownload = $event"></config-toggle-slider>
-                                    <config-toggle-slider :checked="notifiers.slack.notifyOnSubtitleDownload" label="Notify on subtitle download" id="slack_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()"  @update="notifiers.slack.notifyOnSubtitleDownload = $event"></config-toggle-slider>
-                                    <config-textbox :value="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()"  @update="notifiers.slack.webhook = $event">
+                                    <config-toggle-slider v-model="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.slack.notifyOnDownload" label="Notify on download" id="slack_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.slack.notifyOnSubtitleDownload" label="Notify on subtitle download" id="slack_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()" >
                                         <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
                                     </config-textbox>
                                     
