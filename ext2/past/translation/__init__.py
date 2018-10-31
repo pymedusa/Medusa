@@ -28,7 +28,7 @@ You can unregister the hook using::
     >>> from past.translation import remove_hooks
     >>> remove_hooks()
 
-Author: Ed Schofield. 
+Author: Ed Schofield.
 Inspired by and based on ``uprefix`` by Vinay M. Sajip.
 """
 
@@ -220,16 +220,16 @@ def detect_python2(source, pathname):
         # The above fixers made changes, so we conclude it's Python 2 code
         logger.debug('Detected Python 2 code: {0}'.format(pathname))
         with open('/tmp/original_code.py', 'w') as f:
-            f.write('### Original code (detected as py2): %s\n%s' % 
+            f.write('### Original code (detected as py2): %s\n%s' %
                     (pathname, source))
         with open('/tmp/py2_detection_code.py', 'w') as f:
-            f.write('### Code after running py3 detection (from %s)\n%s' % 
+            f.write('### Code after running py3 detection (from %s)\n%s' %
                     (pathname, str(tree)[:-1]))
         return True
     else:
         logger.debug('Detected Python 3 code: {0}'.format(pathname))
         with open('/tmp/original_code.py', 'w') as f:
-            f.write('### Original code (detected as py3): %s\n%s' % 
+            f.write('### Original code (detected as py3): %s\n%s' %
                     (pathname, source))
         try:
             os.remove('/tmp/futurize_code.py')
@@ -359,7 +359,7 @@ class Py2Fixer(object):
                 # Is the test in the next line more or less robust than the
                 # following one? Presumably less ...
                 # ispkg = self.pathname.endswith('__init__.py')
-                
+
                 if self.kind == imp.PKG_DIRECTORY:
                     mod.__path__ = [ os.path.dirname(self.pathname) ]
                     mod.__package__ = fullname
@@ -367,7 +367,7 @@ class Py2Fixer(object):
                     #else, regular module
                     mod.__path__ = []
                     mod.__package__ = fullname.rpartition('.')[0]
-                    
+
                 try:
                     cachename = imp.cache_from_source(self.pathname)
                     if not os.path.exists(cachename):
@@ -396,15 +396,15 @@ class Py2Fixer(object):
                         if detect_python2(source, self.pathname):
                             source = self.transform(source)
                             with open('/tmp/futurized_code.py', 'w') as f:
-                                f.write('### Futurized code (from %s)\n%s' % 
+                                f.write('### Futurized code (from %s)\n%s' %
                                         (self.pathname, source))
 
                         code = compile(source, self.pathname, 'exec')
 
                         dirname = os.path.dirname(cachename)
-                        if not os.path.exists(dirname):
-                            os.makedirs(dirname)
                         try:
+                            if not os.path.exists(dirname):
+                                os.makedirs(dirname)
                             with open(cachename, 'wb') as f:
                                 data = marshal.dumps(code)
                                 f.write(data)
@@ -457,7 +457,7 @@ def detect_hooks():
 class hooks(object):
     """
     Acts as a context manager. Use like this:
-    
+
     >>> from past import translation
     >>> with translation.hooks():
     ...     import mypy2module
@@ -477,7 +477,7 @@ class hooks(object):
 class suspend_hooks(object):
     """
     Acts as a context manager. Use like this:
-    
+
     >>> from past import translation
     >>> translation.install_hooks()
     >>> import http.client
@@ -495,4 +495,3 @@ class suspend_hooks(object):
     def __exit__(self, *args):
         if self.hooks_were_installed:
             install_hooks()
-

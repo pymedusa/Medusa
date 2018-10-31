@@ -90,7 +90,10 @@ class newrange(Sequence):
     def index(self, value):
         """Return the 0-based position of integer `value` in
         the sequence this range represents."""
-        diff = value - self._start
+        try:
+            diff = value - self._start
+        except TypeError:
+            raise ValueError('%r is not in range' % value)
         quotient, remainder = divmod(diff, self._step)
         if remainder == 0 and 0 <= quotient < self._len:
             return abs(quotient)
@@ -151,6 +154,9 @@ class range_iterator(Iterator):
 
     def __iter__(self):
         return self
+
+    def __next__(self):
+        return next(self._stepper)
 
     def next(self):
         return next(self._stepper)
