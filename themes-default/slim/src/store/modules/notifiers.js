@@ -124,6 +124,14 @@ const state = {
         authToken: null,
         device: null
     },
+    join: {
+        enabled: null,
+        notifyOnSnatch: null,
+        notifyOnDownload: null,
+        notifyOnSubtitleDownload: null,
+        api: null,
+        device: null
+    },
     freemobile: {
         enabled: null,
         notifyOnSnatch: null,
