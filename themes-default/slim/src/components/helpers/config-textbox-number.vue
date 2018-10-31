@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder}" :max="max" v-model="localValue" @input="updateValue()"/>
+                    <input type="number" v-bind="{min, step, id, name: id, class: inputClass, placeholder, disabled}" :max="max" v-model="localValue" @input="updateValue()"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
                     <slot></slot>
                 </div>
@@ -57,6 +57,10 @@ export default {
         placeholder: {
             type: String,
             default: ''
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
