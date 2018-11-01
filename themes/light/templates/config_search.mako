@@ -25,8 +25,18 @@ window.app = new Vue({
                 { text: '45 mins', value: '45m' },
                 { text: '24 hours', value: '15m' }
             ],
+            nzbGetPriorityOptions: [
+                { text: 'Very low', value: -100 },
+                { text: 'Low', value: -50 },
+                { text: 'Normal', value: 0 },
+                { text: 'High', value: 50 },
+                { text: 'Very high', value: 100 },
+                { text: 'Force', value: 900 },
+
+            ],
+
             // Static clients config
-            clientConfig: {
+            clientsConfig: {
                 torrent: {
                     blackhole: {
                         title: 'Black hole'
@@ -144,14 +154,6 @@ window.app = new Vue({
                         priority: null,
                         useHttps: null,
                         username: null,
-                        priorityOptions: {
-                            'Very low': -100,
-                            'Low': -50,
-                            'Normal': 0,
-                            'High': 50,
-                            'Very high': 100,
-                            'Force': 900
-                        },
                         testStatus: 'Click below to test',
                     },
                     sabnzbd: {
@@ -395,7 +397,7 @@ window.app = new Vue({
             }
         },
         'clients.torrents.method'(method) {
-            if (!this.clientConfig.torrent[method].removeFromClientOption) {
+            if (!this.clientsConfig.torrent[method].removeFromClientOption) {
                 this.search.general.removeFromClient = false;
             }
         }
@@ -405,7 +407,7 @@ window.app = new Vue({
         // This is used to wait for the config to be loaded by the store.
         this.$once('loaded', () => {
             const { clients, search, stateClients, stateSearch } = this;
-            debugger;
+
             // Map the state values to local data.
             this.search = Object.assign({}, search, stateSearch);
             this.clients = Object.assign({}, clients, stateClients);
@@ -443,7 +445,7 @@ window.app = new Vue({
                                 <div v-show="search.general.downloadPropers">
                                     <config-template label="Check propers every" label-for="check_propers_interval">
                                         <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
-                                            <option v-for="option in checkPropersIntervalLabels" v-bind:value="option.value">
+                                            <option v-for="option in checkPropersIntervalLabels" :value="option.value">
                                                 {{option.text}}
                                             </option>
                                         </select>
@@ -459,7 +461,7 @@ window.app = new Vue({
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                 </config-textbox-number>
                                 
-                                <config-toggle-slider v-if="clientConfig.torrent[clients.torrents.method]" v-show="clientConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
+                                <config-toggle-slider v-if="clientsConfig.torrent[clients.torrents.method]" v-show="clientsConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
                                     <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
                                     <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                 </config-toggle-slider>
@@ -555,7 +557,7 @@ window.app = new Vue({
                                 <div v-show="clients.nzb.enabled">
                                     <config-template label-for="nzb_method" label="Send .nzb files to">
                                         <select v-model="clients.nzb.method" name="nzb_method" id="nzb_method" class="form-control input-sm">
-                                            <option v-for="(client, name) in clientConfig.nzb" :value="name">{{client.title}}</option>
+                                            <option v-for="(client, name) in clientsConfig.nzb" :value="name">{{client.title}}</option>
                                         </select>
                                     </config-template>
                                     
@@ -571,7 +573,7 @@ window.app = new Vue({
                                         
                                         <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
                                             <div class="clear-left">
-                                                <p v-html="clientConfig.nzb[clients.nzb.method].description"></p>
+                                                <p v-html="clientsConfig.nzb[clients.nzb.method].description"></p>
                                             </div>
                                         </config-textbox>
                                         
@@ -596,7 +598,7 @@ window.app = new Vue({
                                         </config-toggle-slider>
 
                                         <config-textbox v-model="clients.nzb.nzbget.host" label="NZBget host:port" id="nzbget_host">
-                                            <p v-if="clientConfig.nzb[clients.nzb.method]" v-html="clientConfig.nzb[clients.nzb.method].description"></p>
+                                            <p v-if="clientsConfig.nzb[clients.nzb.method]" v-html="clientsConfig.nzb[clients.nzb.method].description"></p>
                                         </config-textbox>
 
                                         <config-textbox v-model="clients.nzb.nzbget.username" label="NZBget username" id="nzbget_username" :explanations="['locate in nzbget.conf (default:nzbget)']"></config-textbox>
@@ -608,7 +610,7 @@ window.app = new Vue({
                                         
                                         <config-template label-for="nzbget_priority" label="NZBget priority">
                                             <select name="nzbget_priority" id="nzbget_priority" v-model="clients.nzb.nzbget.priority" class="form-control input-sm">
-                                                <option v-for="(value, title) in clients.nzb.nzbget.priorityOptions" :value="value">{{title}}</option>
+                                                <option v-for="option in nzbGetPriorityOptions" :value="option.value">{{option.text}}</option>
                                             </select>
                                             <span>priority for daily snatches (no backlog)</span>
                                         </config-template>
@@ -638,7 +640,7 @@ window.app = new Vue({
                                     
                                     <config-template label-for="torrent_method" label="Send .torrent files to">
                                         <select v-model="clients.torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
-                                            <option v-for="(client, name) in clients.torrent" :value="name">{{client.title}}</option>
+                                            <option v-for="(client, name) in clientsConfig.torrent" :value="name">{{client.title}}</option>
                                         </select>
                                     </config-template>
                                     
@@ -652,11 +654,11 @@ window.app = new Vue({
 
                                     <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
                                         
-                                        <config-textbox v-model="clients.torrents.host" :label="clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
-                                            <p v-html="clientConfig.torrent[clients.torrents.method].description"></p>
+                                        <config-textbox v-model="clients.torrents.host" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
+                                            <p v-html="clientsConfig.torrent[clients.torrents.method].description"></p>
                                         </config-textbox>
                                         
-                                        <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
+                                        <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
                                             <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                         </config-textbox>
 
@@ -666,20 +668,20 @@ window.app = new Vue({
                                             </select>
                                         </config-template>
 
-                                        <config-toggle-slider v-show="clientConfig.torrent[clients.torrents.method].verifyCertOption" v-model="clients.torrents.verifyCert" label="Verify certificate" id="torrent_verify_cert">
+                                        <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifyCertOption" v-model="clients.torrents.verifyCert" label="Verify certificate" id="torrent_verify_cert">
                                             <p>Verify SSL certificates for HTTPS requests</p>
                                             <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                         </config-toggle-slider>
 
                                         <config-textbox v-show="!torrentUsernameIsDisabled" 
-                                            v-model="clients.torrents.username" :label="(clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']">
+                                            v-model="clients.torrents.username" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']">
                                         </config-textbox>
                                         
                                         <config-textbox type="password" v-show="!torrentPasswordIsDisabled" 
-                                            v-model="clients.torrents.password" :label="(clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']">
+                                            v-model="clients.torrents.password" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']">
                                         </config-textbox>
                                         
-                                        <div v-show="clientConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
+                                        <div v-show="clientsConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
                                             <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
                                                 <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
                                                     <p>(blank spaces are not allowed)</p>
@@ -695,7 +697,7 @@ window.app = new Vue({
                                             </config-textbox>
                                         </div>
 
-                                        <div v-show="clientConfig.torrent[clients.torrents.method].labelAnimeOption">
+                                        <div v-show="clientsConfig.torrent[clients.torrents.method].labelAnimeOption">
                                             <config-textbox v-model="clients.torrents.labelAnime" label="Add label to torrent for anime" id="torrent_label_anime">
                                                 <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
                                                     <p>(blank spaces are not allowed)</p>
@@ -710,26 +712,26 @@ window.app = new Vue({
                                             </config-textbox>
                                         </div>
 
-                                        <config-template v-show="clientConfig.torrent[clients.torrents.method].pathOption" label-for="torrent_client" label="Downloaded files location">
+                                        <config-template v-show="clientsConfig.torrent[clients.torrents.method].pathOption" label-for="torrent_client" label="Downloaded files location">
                                                 <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="clients.torrents.path" @update="clients.torrents.path = $event"></file-browser>
-                                                <p>where <span id="torrent_client" v-if="clientConfig.torrent[clients.torrents.method]">{{clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title}}</span> will save downloaded files (blank for client default)
+                                                <p>where <span id="torrent_client" v-if="clientsConfig.torrent[clients.torrents.method]">{{clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title}}</span> will save downloaded files (blank for client default)
                                                     <span v-show="clients.torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span>
                                                 </p>
                                         </config-template>
                                         
-                                        <config-template v-show="clientConfig.torrent[clients.torrents.method].seedLocationOption" label-for="torrent_seed_location" label="Post-Processed seeding torrents location">
+                                        <config-template v-show="clientsConfig.torrent[clients.torrents.method].seedLocationOption" label-for="torrent_seed_location" label="Post-Processed seeding torrents location">
                                                 <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="clients.torrents.seedLocation" @update="clients.torrents.seedLocation = $event"></file-browser>
                                                 <p>
-                                                    where <span id="torrent_client_seed_path">{{clientConfig.torrent[clients.torrents.method].shortTitle || clientConfig.torrent[clients.torrents.method].title}}</span> will move Torrents after Post-Processing<br/>
+                                                    where <span id="torrent_client_seed_path">{{clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title}}</span> will move Torrents after Post-Processing<br/>
                                                     <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
                                                     to another location after Post-Processor to prevent reprocessing the same file over and over.
                                                     This feature does a "Set Torrent location" or "Move Torrent" like in client
                                                 </p>
                                         </config-template>
 
-                                        <config-textbox-number v-show="clientConfig.torrent[clients.torrents.method].seedTimeOption" :min="-1" :step="1" v-model.number="clients.torrents.seedTime" :label="clients.torrents.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'" id="torrent_seed_time" :explanations="['hours. (default: \'0\' passes blank to client and \'-1\' passes nothing)']"></config-textbox-number>
+                                        <config-textbox-number v-show="clientsConfig.torrent[clients.torrents.method].seedTimeOption" :min="-1" :step="1" v-model.number="clients.torrents.seedTime" :label="clients.torrents.method === 'transmission' ? 'Stop seeding when inactive for' : 'Minimum seeding time is'" id="torrent_seed_time" :explanations="['hours. (default: \'0\' passes blank to client and \'-1\' passes nothing)']"></config-textbox-number>
 
-                                        <config-toggle-slider v-show="clientConfig.torrent[clients.torrents.method].pausedOption" v-model="clients.torrents.paused" label="Start torrent paused" id="torrent_paused">
+                                        <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].pausedOption" v-model="clients.torrents.paused" label="Start torrent paused" id="torrent_paused">
                                             <p>add .torrent to client but do <b style="font-weight:900;">not</b> start downloading</p>
                                         </config-toggle-slider>
 

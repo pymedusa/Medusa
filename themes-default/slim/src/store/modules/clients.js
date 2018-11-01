@@ -31,14 +31,6 @@ const state = {
             priority: null,
             useHttps: null,
             username: null,
-            priorityOptions: {
-                'Very low': -100,
-                'Low': -50,
-                'Normal': 0,
-                'High': 50,
-                'Very high': 100,
-                'Force': 900
-            },
             testStatus: 'Click below to test'
         },
         sabnzbd: {
