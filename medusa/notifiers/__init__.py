@@ -86,18 +86,18 @@ notifiers = [
 ]
 
 
-def notify_download(ep_name):
+def notify_download(ep_obj):
     for n in notifiers:
         try:
-            n.notify_download(ep_name)
+            n.notify_download(ep_obj)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
-def notify_subtitle_download(ep_name, lang):
+def notify_subtitle_download(ep_obj, lang):
     for n in notifiers:
         try:
-            n.notify_subtitle_download(ep_name, lang)
+            n.notify_subtitle_download(ep_obj, lang)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
