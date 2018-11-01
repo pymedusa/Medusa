@@ -6,8 +6,6 @@ import random
 import sys
 from threading import Lock
 
-from six import viewitems
-
 
 class MedusaApp(object):
     """Medusa app config."""
@@ -663,5 +661,5 @@ class MedusaApp(object):
 
 
 app = MedusaApp()
-for app_key, app_value in viewitems(app.__dict__):
+for app_key, app_value in app.__dict__.items():
     setattr(sys.modules[__name__], app_key, app_value)
