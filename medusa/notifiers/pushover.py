@@ -135,10 +135,10 @@ class Notifier(object):
         log.info(u'Pushover notification successful.')
         return True
 
-    def notify_snatch(self, ep_name, is_proper):
-        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+    def notify_snatch(self, ep_obj, is_proper):
+        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.PUSHOVER_NOTIFY_ONSNATCH:
-            self._notifyPushover(title, ep_name)
+            self._notifyPushover(title, ep_obj.pretty_name_with_quality())
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONDOWNLOAD:

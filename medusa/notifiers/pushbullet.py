@@ -41,11 +41,13 @@ class Notifier(object):
         except ValueError:
             return {}
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, ep_obj, is_proper):
         if app.PUSHBULLET_NOTIFY_ONSNATCH:
+            ep_name = ep_obj.pretty_name_with_quality()
             self._sendPushbullet(
                 pushbullet_api=None,
-                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ': ' + ep_name,
+                event=common.notifyStrings[(common.NOTIFY_SNATCH,
+                                            common.NOTIFY_SNATCH_PROPER)[is_proper]] + ': ' + ep_name,
                 message=ep_name
             )
 

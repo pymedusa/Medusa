@@ -102,10 +102,10 @@ def notify_subtitle_download(ep_obj, lang):
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
-def notify_snatch(ep_name, is_proper):
+def notify_snatch(ep_obj, is_proper):
     for n in notifiers:
         try:
-            n.notify_snatch(ep_name, is_proper)
+            n.notify_snatch(ep_obj, is_proper)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 

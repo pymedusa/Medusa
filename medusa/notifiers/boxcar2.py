@@ -56,11 +56,11 @@ class Notifier(object):
         log.debug('Boxcar2 notification successful.')
         return True
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, ep_obj, is_proper):
         """Send the snatch message."""
         title = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.BOXCAR2_NOTIFY_ONSNATCH:
-            self._notify_boxcar2(title, ep_name)
+            self._notify_boxcar2(title, ep_obj.pretty_name_with_quality())
 
     def notify_download(self, ep_obj, title=common.notifyStrings[common.NOTIFY_DOWNLOAD]):
         """Send the download message."""

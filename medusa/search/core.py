@@ -219,14 +219,12 @@ def snatch_episode(result):
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status != common.DOWNLOADED:
-            notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
                 notifiers.notify_snatch(u'{0} with {1} seeders and {2} leechers from {3}'.format
-                                        (notify_message, result.seeders,
-                                         result.leechers, result.provider.name), is_proper)
+                                        (curEpObj, result.seeders, result.leechers, result.provider.name), is_proper)
             else:
-                notifiers.notify_snatch(u'{0} from {1}'.format(notify_message, result.provider.name), is_proper)
+                notifiers.notify_snatch(u'{0} from {1}'.format(curEpObj, result.provider.name), is_proper)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))

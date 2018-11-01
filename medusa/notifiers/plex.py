@@ -68,13 +68,14 @@ class Notifier(object):
 # Public functions
 ##############################################################################
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, ep_obj, is_proper):
         if app.PLEX_NOTIFY_ONSNATCH:
-            self._notify_pht(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_pht(ep_obj.pretty_name_with_quality(),
+                             common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.PLEX_NOTIFY_ONDOWNLOAD:
-            self._notify_pht(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
+            self._notify_pht(ep_obj.pretty_name_with_quality(), common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_obj, lang):
         if app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD:

@@ -421,11 +421,13 @@ class Notifier(object):
     # Public functions which will call the JSON or Legacy HTTP API methods
     ##############################################################################
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, ep_obj, is_proper):
         """Send the snatch message."""
         if app.KODI_NOTIFY_ONSNATCH:
-            self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH,
-                                                             common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_kodi(
+                ep_obj.pretty_name_with_quality(),
+                common.notifyStrings[(common.NOTIFY_SNATCH,
+                                      common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_obj):
         """Send the download message."""

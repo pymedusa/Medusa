@@ -25,12 +25,12 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, ep_obj, is_proper):
         if app.PUSHALOT_NOTIFY_ONSNATCH:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                message=ep_name
+                message=ep_obj.pretty_name_with_quality()
             )
 
     def notify_download(self, ep_obj):
