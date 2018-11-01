@@ -110,14 +110,14 @@ class Notifier(object):
                 else:
                     log.warning('Snatch notification error: {0}', self.last_err)
 
-    def notify_download(self, ep_name, title='Completed:'):
+    def notify_download(self, ep_obj, title='Completed:'):
         """
         Send a notification that an episode was downloaded.
 
         ep_name: The name of the episode that was downloaded
         title: The title of the notification (optional)
         """
-        ep_name = ss(ep_name)
+        ep_name = ss(ep_obj.pretty_name_with_quality())
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONDOWNLOAD:
             parsed = self._parse_name(ep_name)
@@ -161,14 +161,14 @@ class Notifier(object):
                 else:
                     log.warning('Download notification error: {0}', self.last_err)
 
-    def notify_subtitle_download(self, ep_name, lang, title='Downloaded subtitle:'):
+    def notify_subtitle_download(self, ep_obj, lang, title='Downloaded subtitle:'):
         """
         Send a notification that a subtitle was downloaded.
 
         ep_name: The name of the episode that was downloaded
         lang: Subtitle language wanted
         """
-        ep_name = ss(ep_name)
+        ep_name = ss(ep_obj.pretty_name())
 
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD:
             parsed = self._parse_name(ep_name)
