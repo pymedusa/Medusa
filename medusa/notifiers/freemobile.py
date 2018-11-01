@@ -83,13 +83,13 @@ class Notifier(object):
         if app.FREEMOBILE_NOTIFY_ONSNATCH:
             self._notifyFreeMobile(title, ep_name)
 
-    def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
+    def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.FREEMOBILE_NOTIFY_ONDOWNLOAD:
-            self._notifyFreeMobile(title, ep_name)
+            self._notifyFreeMobile(title, ep_obj.pretty_name_with_quality())
 
-    def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
+    def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         if app.FREEMOBILE_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notifyFreeMobile(title, ep_name + ': ' + lang)
+            self._notifyFreeMobile(title, ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.USE_FREEMOBILE:
