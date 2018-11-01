@@ -337,7 +337,7 @@ class ConfigHandler(BaseRequestHandler):
 
         'notifiers.email.enabled': BooleanField(app, 'USE_EMAIL'),
         'notifiers.email.host': StringField(app, 'EMAIL_HOST'),
-        'notifiers.email.port': StringField(app, 'EMAIL_PORT'),
+        'notifiers.email.port': IntegerField(app, 'EMAIL_PORT'),
         'notifiers.email.from': StringField(app, 'EMAIL_FROM'),
         'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
         'notifiers.email.username': StringField(app, 'EMAIL_USER'),
