@@ -1526,7 +1526,6 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.join.notifyOnSubtitleDownload" label="Notify on subtitle download" id="join_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.join.api" label="Join API key" id="join_api" :explanations="['API key of your Join account.']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.join.device" label="Join Device ID(s) key" id="join_device" :explanations="['Enter DeviceID of the device(s) you wish to send notifications to, comma separated if using multiple.']" @change="save()" ></config-textbox>
-                                    </config-template>
 
                                     <div class="testNotification" id="testJoin-result">{{joinTestInfo}}</div>
                                     <input type="button" class="btn-medusa" value="Test Join" id="testJoin" @click="testJoinApi" />
