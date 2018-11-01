@@ -11,6 +11,7 @@ from six import viewitems
 
 class MedusaApp(object):
     """Medusa app config."""
+
     def __init__(self):
         """Initialize medusa application config."""
         # Application instance
