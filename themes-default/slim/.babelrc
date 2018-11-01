@@ -3,6 +3,7 @@
     "@babel/preset-env"
   ],
   "plugins": [
+    "@babel/transform-runtime",
     "@babel/plugin-syntax-dynamic-import",
     "@babel/plugin-proposal-object-rest-spread"
   ],

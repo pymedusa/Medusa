@@ -4,6 +4,7 @@ const AddRecommended = () => import('./components/add-recommended.vue');
 const AddShows = () => import('./components/add-shows.vue');
 const Config = () => import('./components/config.vue');
 const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
+const ConfigNotifications = () => import('./components/config/notifications/index.vue');
 const IRC = () => import('./components/irc.vue');
 const Login = () => import('./components/login.vue');
 const NotFound = () => import('./components/http/404.vue');
@@ -95,7 +96,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Notifications',
         header: 'Notifications'
-    }
+    },
+    component: ConfigNotifications
 }, {
     path: '/config/postProcessing',
     name: 'configPostProcessing',

@@ -1,0 +1,9 @@
+export { default as Kodi } from './kodi.vue';
+export { default as PlexServer } from './plex-server.vue';
+export { default as PlexClient } from './plex-client.vue';
+export { default as Emby } from './emby.vue';
+export { default as Nmj } from './nmj.vue';
+export { default as Nmjv2 } from './nmjv2.vue';
+export { default as Synology } from './synology.vue';
+export { default as SynologyIndexer } from './synology-indexer.vue';
+export { default as PyTivo } from './py-tivo.vue';
