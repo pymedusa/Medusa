@@ -8,6 +8,7 @@
 - Fixed wrong placeholder reference in log ([#5562](https://github.com/pymedusa/Medusa/pull/5562))
 - Fixed guessit exception when parsing release without title ([#5569](https://github.com/pymedusa/Medusa/pull/5569))
 - Fixed Download Station BraceAdapter exception ([#5573](https://github.com/pymedusa/Medusa/pull/5573))
+- Fixed saving multiple metadata providers ([#5576](https://github.com/pymedusa/Medusa/pull/5576))
 
 -----
 
