@@ -75,7 +75,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
         'clients.torrents.enabled': BooleanField(app, 'USE_TORRENTS'),
-        'clients.torrents.highBandwidth': StringField(app, 'TORRENT_HIGH_BANDWIDTH'),
+        'clients.torrents.highBandwidth': BooleanField(app, 'TORRENT_HIGH_BANDWIDTH'),
         'clients.torrents.host': StringField(app, 'TORRENT_HOST'),
         'clients.torrents.label': StringField(app, 'TORRENT_LABEL'),
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
@@ -85,7 +85,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
         'clients.torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
         'clients.torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
-        'clients.torrents.seedTime': StringField(app, 'TORRENT_SEED_TIME'),
+        'clients.torrents.seedTime': IntegerField(app, 'TORRENT_SEED_TIME'),
         'clients.torrents.username': StringField(app, 'TORRENT_USERNAME'),
         'clients.torrents.verifySSL': BooleanField(app, 'TORRENT_VERIFY_CERT'),
         'clients.nzb.enabled': BooleanField(app, 'USE_NZBS'),
@@ -97,7 +97,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.nzb.nzbget.categoryBacklog': StringField(app, 'NZBGET_CATEGORY_BACKLOG'),
         'clients.nzb.nzbget.host': StringField(app, 'NZBGET_HOST'),
         'clients.nzb.nzbget.password': StringField(app, 'NZBGET_PASSWORD'),
-        'clients.nzb.nzbget.priority': StringField(app, 'NZBGET_PRIORITY'),
+        'clients.nzb.nzbget.priority': IntegerField(app, 'NZBGET_PRIORITY'),
         'clients.nzb.nzbget.useHttps': BooleanField(app, 'NZBGET_USE_HTTPS'),
         'clients.nzb.nzbget.username': StringField(app, 'NZBGET_USERNAME'),
         'clients.nzb.sabnzbd.apiKey': StringField(app, 'SAB_APIKEY'),
@@ -903,7 +903,7 @@ class DataGenerator(object):
         section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
         section_data['torrents']['dir'] = app.TORRENT_DIR
         section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
-        section_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
+        section_data['torrents']['highBandwidth'] = bool(app.TORRENT_HIGH_BANDWIDTH)
         section_data['torrents']['host'] = app.TORRENT_HOST
         section_data['torrents']['label'] = app.TORRENT_LABEL
         section_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
@@ -926,7 +926,7 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
         section_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
         section_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-        section_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
+        section_data['nzb']['nzbget']['priority'] = int(app.NZBGET_PRIORITY)
         section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
 
