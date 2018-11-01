@@ -10,8 +10,9 @@ from six import viewitems
 
 
 class MedusaApp(object):
+    """Medusa app config."""
     def __init__(self):
-        """Class for retrieving and setting medusa's global variables."""
+        """Initialize medusa application config."""
         # Application instance
         self.instance = None
 
