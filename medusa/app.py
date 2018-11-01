@@ -13,7 +13,7 @@ class MedusaApp(object):
     """Medusa app config."""
 
     def __init__(self):
-        """Initialize medusa application config."""
+        """Initialize Medusa application config."""
         # Application instance
         self.instance = None
 
@@ -638,7 +638,13 @@ class MedusaApp(object):
 
         self.PRIVACY_LEVEL = 'normal'
 
-        self.PROPERS_SEARCH_INTERVAL = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
+        self.PROPERS_SEARCH_INTERVAL = {
+            '15m': 15,
+            '45m': 45,
+            '90m': 90,
+            '4h': 4 * 60,
+            'daily': 24 * 60
+        }
 
         self.PROPERS_INTERVAL_LABELS = {
             'daily': '24 hours',
