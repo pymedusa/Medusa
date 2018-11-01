@@ -796,7 +796,8 @@ class Application(object):
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
             app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
-            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
+            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'default')
+            app.PUSHOVER_PRIORITY = check_setting_str(app.CFG, 'Pushover', 'pushover_priority', '0')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
             app.LIBNOTIFY_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Libnotify', 'libnotify_notify_onsnatch', 0))
@@ -1773,6 +1774,7 @@ class Application(object):
         new_config['Pushover']['pushover_apikey'] = app.PUSHOVER_APIKEY
         new_config['Pushover']['pushover_device'] = app.PUSHOVER_DEVICE
         new_config['Pushover']['pushover_sound'] = app.PUSHOVER_SOUND
+        new_config['Pushover']['pushover_priority'] = app.PUSHOVER_PRIORITY
 
         new_config['Libnotify'] = {}
         new_config['Libnotify']['use_libnotify'] = int(app.USE_LIBNOTIFY)
