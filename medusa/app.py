@@ -6,6 +6,7 @@ import random
 import sys
 from threading import Lock
 
+
 class MedusaApp(object):
     """Medusa app config."""
 
