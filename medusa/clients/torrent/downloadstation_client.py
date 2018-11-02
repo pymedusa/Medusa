@@ -9,6 +9,7 @@ http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_
 
 from __future__ import unicode_literals
 
+import json
 import logging
 import os
 import re
@@ -120,7 +121,7 @@ class DownloadStationAPI(GenericClient):
 
         if torrent_path:
             data['destination'] = torrent_path
-        log.debug('Add torrent URI with data: {}'.format(data))
+        log.debug('Add torrent URI with data: {0}'.format(json.dumps(data)))
         self._request(method='post', data=data)
         return self._check_response()
 
@@ -143,7 +144,7 @@ class DownloadStationAPI(GenericClient):
 
         files = {'file': ('{name}.torrent'.format(name=result.name), result.content)}
 
-        log.debug('Add torrent files with data: {}'.format(data))
+        log.debug('Add torrent files with data: {0}'.format(json.dumps(data)))
         self._request(method='post', data=data, files=files)
         return self._check_response()
 

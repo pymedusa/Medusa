@@ -76,9 +76,9 @@ class Notifier(object):
         if app.PLEX_NOTIFY_ONDOWNLOAD:
             self._notify_pht(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_pht(ep_name + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
+            self._notify_pht(ep_obj.pretty_name() + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
 
     def notify_git_update(self, new_version='??'):
         if app.NOTIFY_ON_UPDATE:
