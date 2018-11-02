@@ -96,10 +96,8 @@ class Notifier(object):
         log.debug('Join devices: {0!r}', join_device)
 
         post_data = {'title': event, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
-        urllib.quote_plus = urllib.quote
-        params = urllib.urlencode(post_data)
 
-        r = requests.get(self.url, params=params)
+        r = requests.get(self.url, params=post_data)
 
         try:
             response = r.json()
