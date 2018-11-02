@@ -117,10 +117,10 @@
 </template>
 <script>
 import pretty from 'pretty-bytes';
-import Asset from '../asset.vue';
-import AppLink from '../app-link.vue';
-import ProgressBar from '../progress-bar.vue';
-import QualityPill from '../quality-pill.vue';
+import { Asset } from '../helpers';
+import { AppLink } from '../helpers';
+import { ProgressBar } from '../helpers';
+import { QualityPill } from '../helpers';
 
 export default {
     name: 'banner',
