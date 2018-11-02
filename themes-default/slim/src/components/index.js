@@ -10,7 +10,6 @@ export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
-export { default as QualityPill } from './quality-pill.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as Show } from './show.vue';
 export { default as SnatchSelection } from './snatch-selection.vue';

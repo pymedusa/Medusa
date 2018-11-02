@@ -4,7 +4,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import { combineQualities } from '../utils';
+import { combineQualities } from '../../utils';
 
 /**
  * An object representing a split quality.
