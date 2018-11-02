@@ -28,6 +28,10 @@ import {
     AppLink,
     Asset,
     Backstretch,
+    ConfigTemplate,
+    ConfigTextbox,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
     FileBrowser,
     Home,
     LanguageSelect,
@@ -86,6 +90,10 @@ if (window) {
     window.components.push(AppLink);
     window.components.push(Asset);
     window.components.push(Backstretch);
+    window.components.push(ConfigTemplate);
+    window.components.push(ConfigTextbox);
+    window.components.push(ConfigTextboxNumber);
+    window.components.push(ConfigToggleSlider);
     window.components.push(FileBrowser);
     window.components.push(Home);
     window.components.push(LanguageSelect);

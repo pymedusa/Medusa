@@ -120,6 +120,7 @@ media_extensions = [
     'ogm',
     'ogv',
     'rmvb',
+    'strm',
     'tp',
     'ts',
     'vob',

@@ -2,7 +2,7 @@
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
 import { api } from '../api';
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 import ShowList from './show-list';
 
 export default {

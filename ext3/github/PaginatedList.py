@@ -155,7 +155,7 @@ class PaginatedList(PaginatedListBase):
                 headers=self.__headers
             )
             if 'link' not in headers:
-                self.__totalCount = len(data)
+                self.__totalCount = len(data) if data else 0
             else:
                 links = self.__parseLinkHeader(headers)
                 lastUrl = links.get("last")
@@ -175,7 +175,7 @@ class PaginatedList(PaginatedListBase):
 
     @property
     def reversed(self):
-        r = PaginatedList(self.__contentClass, self.__requester, self.__firstUrl, self.__firstParams)
+        r = PaginatedList(self.__contentClass, self.__requester, self.__firstUrl, self.__firstParams, self.__headers, self.__list_item)
         r.__reverse()
         return r
 

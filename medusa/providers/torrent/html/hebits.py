@@ -122,7 +122,7 @@ class HeBitsProvider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile('details\.php')).find('b').get_text()
+                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile(r'details\.php')).find('b').get_text()
                     if '/' in heb_eng_title:
                         title = heb_eng_title.split('/')[1].strip()
                     elif '\\' in heb_eng_title:
@@ -130,7 +130,7 @@ class HeBitsProvider(TorrentProvider):
                     else:
                         continue
 
-                    download_id = row.find('div', class_='bTitle').find(href=re.compile('download\.php'))['href']
+                    download_id = row.find('div', class_='bTitle').find(href=re.compile(r'download\.php'))['href']
 
                     if not all([title, download_id]):
                         continue

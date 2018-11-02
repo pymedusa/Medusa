@@ -51,7 +51,7 @@ else:
         #                     URLopener,
         #                     FancyURLopener,
         #                     proxy_bypass)
-    
+
         # from urllib2 import (
         #                  AbstractBasicAuthHandler,
         #                  AbstractDigestAuthHandler,
@@ -80,7 +80,7 @@ else:
         #                  UnknownHandler,
         #                  urlopen,
         #                 )
-    
+
         # from urlparse import (
         #                  urldefrag
         #                  urljoin,

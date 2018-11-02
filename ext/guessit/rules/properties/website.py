@@ -27,9 +27,12 @@ def website(config):
     rebulk = rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(name="website")
 
-    tlds = [l.strip().decode('utf-8')
-            for l in resource_stream('guessit', 'tlds-alpha-by-domain.txt').readlines()
-            if b'--' not in l][1:]  # All registered domain extension
+    with resource_stream('guessit', 'tlds-alpha-by-domain.txt') as tld_file:
+        tlds = [
+            tld.strip().decode('utf-8')
+            for tld in tld_file.readlines()
+            if b'--' not in tld
+        ][1:]  # All registered domain extension
 
     safe_tlds = config['safe_tlds']  # For sure a website extension
     safe_subdomains = config['safe_subdomains']  # For sure a website subdomain

@@ -1,13 +1,14 @@
 <template>
-    <div id="config-textbox-content">
+    <div id="config-toggle-slider-content">
         <div class="form-group">
             <div class="row">
                 <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" />
+                    <toggle-button :width="45" :height="22" v-bind="{id, name: id, disabled}" v-model="localChecked" sync @input="updateValue()"></toggle-button>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>
@@ -16,7 +17,7 @@
 
 <script>
 export default {
-    name: 'config-textbox',
+    name: 'config-toggle-slider',
     props: {
         label: {
             type: String,
@@ -26,34 +27,38 @@ export default {
             type: String,
             required: true
         },
+        value: {
+            type: Boolean,
+            default: null
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
         explanations: {
             type: Array,
             default: () => []
-        },
-        value: {
-            type: String,
-            default: ''
-        },
-        /**
-         * Overwrite the default configured class on the <input/> element.
-         */
-        inputClass: {
-            type: String,
-            default: 'form-control input-sm max-input350'
         }
-
     },
     data() {
         return {
-            localValue: null
+            localChecked: null
         };
     },
     mounted() {
-        this.localValue = this.value;
+        const { value } = this;
+        this.localChecked = value;
     },
     watch: {
-        localValue() {
-            this.$emit('update', this.localValue);
+        value() {
+            const { value } = this;
+            this.localChecked = value;
+        }
+    },
+    methods: {
+        updateValue() {
+            const { localChecked } = this;
+            this.$emit('input', localChecked);
         }
     }
 };

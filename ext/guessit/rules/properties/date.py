@@ -23,6 +23,9 @@ def date(config):  # pylint:disable=unused-argument
 
     rebulk.regex(r"\d{4}", name="year", formatter=int,
                  disabled=lambda context: is_disabled(context, 'year'),
+                 conflict_solver=lambda match, other: other
+                 if other.name in ('episode', 'season') and len(other.raw) < len(match.raw)
+                 else '__default__',
                  validator=lambda match: seps_surround(match) and valid_year(match.value))
 
     def date_functional(string, context):  # pylint:disable=inconsistent-return-statements

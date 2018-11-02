@@ -22,7 +22,7 @@ log.logger.addHandler(logging.NullHandler())
 class ShanaProjectProvider(TorrentProvider):
     """ShanaProject Torrent provider."""
 
-    size_regex = re.compile('([\d.]+)(.*)')
+    size_regex = re.compile(r'([\d.]+)(.*)')
 
     def __init__(self):
         """Initialize the class."""
