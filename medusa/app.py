@@ -499,6 +499,13 @@ class MedusaApp(object):
         self.PUSHBULLET_API = None
         self.PUSHBULLET_DEVICE = None
 
+        self.USE_JOIN = False
+        self.JOIN_NOTIFY_ONSNATCH = False
+        self.JOIN_NOTIFY_ONDOWNLOAD = False
+        self.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = False
+        self.JOIN_API = None
+        self.JOIN_DEVICE = None
+
         self.USE_EMAIL = False
         self.EMAIL_NOTIFY_ONSNATCH = False
         self.EMAIL_NOTIFY_ONDOWNLOAD = False
