@@ -1,10 +1,10 @@
 # coding=utf-8
 
+"""Pushover notifier module."""
 from __future__ import unicode_literals
 
 import logging
 import time
-from builtins import object
 
 from medusa import app
 from medusa.common import (
@@ -31,30 +31,37 @@ API_URL = 'https://api.pushover.net/1/messages.json'
 
 
 class Notifier(object):
+    """Pushover notifier class."""
+
     def __init__(self):
+        """Initialize Pushover notifier."""
         pass
 
-    def test_notify(self, userKey=None, apiKey=None):
-        return self._notifyPushover('This is a test notification from Medusa', 'Test', userKey=userKey, apiKey=apiKey, force=True)
-
-    def _sendPushover(self, msg, title, sound=None, userKey=None, apiKey=None, priority=None):
+    def test_notify(self, user_key=None, api_key=None):
         """
-        Sends a pushover notification to the address provided
+        Send a test notification.
 
-        msg: The message to send (unicode)
-        title: The title of the message
-        sound: The notification sound to use
-        userKey: The pushover user id to send the message to (or to subscribe with)
-        apiKey: The pushover api key to use
-        priority: The pushover priority to use
-        returns: True if the message succeeded, False otherwise
+        :return: True for no issue or False if there was an error
         """
+        return self._notify_pushover('This is a test notification from Medusa', 'Test', user_key=user_key, api_key=api_key, force=True)
 
-        if userKey is None:
-            userKey = app.PUSHOVER_USERKEY
+    def _send_pushover(self, msg, title, sound=None, user_key=None, api_key=None, priority=None):
+        """
+        Send a pushover notification to the address provided.
 
-        if apiKey is None:
-            apiKey = app.PUSHOVER_APIKEY
+        :param msg: The message to send (unicode)
+        :param title: The title of the message
+        :param sound: The notification sound to use
+        :param user_key: The pushover user id to send the message to (or to subscribe with)
+        :param api_key: The pushover api key to use
+        :param priority: The pushover priority to use
+        :return: True if the message succeeded, False otherwise
+        """
+        if user_key is None:
+            user_key = app.PUSHOVER_USERKEY
+
+        if api_key is None:
+            api_key = app.PUSHOVER_APIKEY
 
         if sound is None:
             sound = app.PUSHOVER_SOUND
@@ -67,8 +74,8 @@ class Notifier(object):
 
         # default args
         args = {
-            'token': apiKey,
-            'user': userKey,
+            'token': api_key,
+            'user': user_key,
             'title': title.encode('utf-8'),
             'message': msg.encode('utf-8'),
             'timestamp': int(time.time()),
@@ -84,7 +91,7 @@ class Notifier(object):
         if app.PUSHOVER_DEVICE:
             args['device'] = ','.join(app.PUSHOVER_DEVICE)
 
-        log.debug(u'PUSHOVER: Sending notice with details: title="{0}" message="{1}", priority={2}, sound={3}',
+        log.debug('PUSHOVER: Sending notice with details: title="{0}" message="{1}", priority={2}, sound={3}',
                   args['title'], args['message'], priority, sound)
 
         conn = HTTPSConnection('api.pushover.net:443')
@@ -93,81 +100,109 @@ class Notifier(object):
         conn_resp = conn.getresponse()
 
         if conn_resp.status == 200:
-            log.info(u'Pushover notification successful.')
+            log.info('Pushover notification successful.')
             return True
 
         # HTTP status 404 if the provided email address isn't a Pushover user.
         elif conn_resp.status == 404:
-            log.warning(u'Username is wrong/not a pushover email. Pushover will send an email to it')
+            log.warning('Username is wrong/not a pushover email. Pushover will send an email to it')
             return False
 
         # For HTTP status code 401's, it is because you are passing in either an invalid token, or the user has not added your service.
         elif conn_resp.status == 401:
             # HTTP status 401 if the user doesn't have the service added
-            subscribeNote = self._sendPushover(msg, title, sound=sound, userKey=userKey, apiKey=apiKey)
-            if subscribeNote:
-                log.debug(u'Subscription sent')
+            subscribe_note = self._send_pushover(msg, title, sound=sound, user_key=user_key, api_key=api_key)
+            if subscribe_note:
+                log.debug('Subscription sent')
                 return True
             else:
-                log.error(u'Subscription could not be sent')
+                log.error('Subscription could not be sent')
 
         # If you receive an HTTP status code of 400, it is because you failed to send the proper parameters
         elif conn_resp.status == 400:
-            log.error(u'Wrong keys sent to pushover')
+            log.error('Wrong keys sent to pushover')
             return False
 
         # If you receive a HTTP status code of 429, it is because the message limit has been reached (free limit is 7,500)
         elif conn_resp.status == 429:
-            log.error(u'Pushover API message limit reached - try a different API key')
+            log.error('Pushover API message limit reached - try a different API key')
             return False
 
         # Something else has gone wrong... who knows what's really happening
         else:
-            log.error(u'Pushover notification failed. HTTP response code: {0}', conn_resp.status)
+            log.error('Pushover notification failed. HTTP response code: {0}', conn_resp.status)
             return False
 
     def notify_snatch(self, ep_name, is_proper):
+        """
+        Send a notification that an episode was snatched.
+
+        :param ep_name: The name of the episode snatched
+        :param is_proper: Boolean. If snatch is proper or not
+        """
         title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.PUSHOVER_NOTIFY_ONSNATCH:
-            self._notifyPushover(title, ep_name)
+            self._notify_pushover(title, ep_name)
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
+        """
+        Send a notification that an episode was downloaded.
+
+        :param ep_obj: The object of the episode downloaded
+        :param title: The title of the notification to send
+        """
         if app.PUSHOVER_NOTIFY_ONDOWNLOAD:
-            self._notifyPushover(title, ep_obj.pretty_name_with_quality())
+            self._notify_pushover(title, ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
+        """
+        Send a notification that subtitles for an episode were downloaded.
+
+        :param ep_obj: The object of the episode subtitles were downloaded for
+        :param lang: The language of the downloaded subtitles
+        :param title: The title of the notification to send
+        """
         if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notifyPushover(title, ep_obj.pretty_name() + ': ' + lang)
+            self._notify_pushover(title, ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
+        """
+        Send a notification that Medusa was updated.
+
+        :param new_version: The commit Medusa was updated to
+        """
         if app.USE_PUSHOVER:
             update_text = notifyStrings[NOTIFY_GIT_UPDATE_TEXT]
             title = notifyStrings[NOTIFY_GIT_UPDATE]
-            self._notifyPushover(title, update_text + new_version)
+            self._notify_pushover(title, update_text + new_version)
 
     def notify_login(self, ipaddress=''):
+        """
+        Send a notification that Medusa was logged into remotely.
+
+        :param ipaddress: The IP address Medusa was logged into from
+        """
         if app.USE_PUSHOVER:
             update_text = notifyStrings[NOTIFY_LOGIN_TEXT]
             title = notifyStrings[NOTIFY_LOGIN]
-            self._notifyPushover(title, update_text.format(ipaddress))
+            self._notify_pushover(title, update_text.format(ipaddress))
 
-    def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, priority=None, force=False):
+    def _notify_pushover(self, title, message, sound=None, user_key=None, api_key=None, priority=None, force=False):
         """
-        Sends a pushover notification based on the provided info or Medusa config
+        Send a pushover notification based on the provided info or Medusa config.
 
-        title: The title of the notification to send
-        message: The message string to send
-        sound: The notification sound to use
-        userKey: The userKey to send the notification to
-        apiKey: The apiKey to use to send the notification
-        priority: The pushover priority to use
-        force: Enforce sending, for instance for testing
+        :param title: The title of the notification to send
+        :param message: The message string to send
+        :param sound: The notification sound to use
+        :param user_key: The userKey to send the notification to
+        :param api_key: The apiKey to use to send the notification
+        :param priority: The pushover priority to use
+        :param force: Enforce sending, for instance for testing
         """
-
         if not app.USE_PUSHOVER and not force:
-            log.debug(u'Notification for Pushover not enabled, skipping this notification')
+            log.debug('Notification for Pushover not enabled, skipping this notification')
             return False
 
-        log.debug(u'Sending notification for {0}', message)
+        log.debug('Sending notification for {0}', message)
 
-        return self._sendPushover(message, title, sound=sound, userKey=userKey, apiKey=apiKey, priority=priority)
+        return self._send_pushover(message, title, sound=sound, user_key=user_key, api_key=api_key, priority=priority)
