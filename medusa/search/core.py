@@ -211,7 +211,7 @@ def snatch_episode(result):
             curEpObj.subtitles_lastsearch = u'0001-01-01 00:00:00'
 
             # Need to store the correct is_proper. Not use the old one
-            curEpObj.is_proper = True if result.proper_tags else False
+            curEpObj.is_proper = is_proper
             curEpObj.version = 0
 
             curEpObj.manually_searched = result.manually_searched
@@ -219,12 +219,7 @@ def snatch_episode(result):
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status != common.DOWNLOADED:
-            if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
-                    result.leechers not in (-1, None)]):
-                notifiers.notify_snatch(u'{0} with {1} seeders and {2} leechers from {3}'.format
-                                        (curEpObj, result.seeders, result.leechers, result.provider.name), is_proper)
-            else:
-                notifiers.notify_snatch(u'{0} from {1}'.format(curEpObj, result.provider.name), is_proper)
+            notifiers.notify_snatch(curEpObj, result)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))

@@ -99,13 +99,20 @@ def notify_subtitle_download(ep_obj, lang):
         try:
             n.notify_subtitle_download(ep_obj, lang)
         except (RequestException, socket.gaierror, socket.timeout) as error:
-            log.debug(u'Unable to send download notification. Error: {0}', error.message)
+            log.debug(u'Unable to send subtitle download notification. Error: {0}', error.message)
 
 
-def notify_snatch(ep_obj, is_proper):
+def notify_snatch(ep_obj, result):
+    if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
+            result.leechers not in (-1, None)]):
+            info = u'with {0} seeders and {1} leechers from {2}'.format(
+                result.seeders, result.leechers, result.provider.name)
+    else:
+        info = 'from {0}'.format(result.provider.name)
+
     for n in notifiers:
         try:
-            n.notify_snatch(ep_obj, is_proper)
+            n.notify_snatch(ep_obj, result)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
