@@ -46,7 +46,7 @@
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
 :: | `python-dateutil` | [2.7.5](https://pypi.org/project/python-dateutil/2.7.5/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
-:: | `python-twitter` | [3.4.2](https://pypi.org/project/python-twitter/3.4.2/) | **`medusa`** | ext | Module: `twitter`
+:: | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | ext | Module: `twitter`
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
 :: | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | ext | -
