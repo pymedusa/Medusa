@@ -46,7 +46,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 
 export default {
     name: 'config',

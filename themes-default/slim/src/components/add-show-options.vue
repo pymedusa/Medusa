@@ -86,7 +86,7 @@
 import { mapState } from 'vuex';
 import { apiRoute } from '../api';
 import { combineQualities } from '../utils';
-import ConfigToggleSlider from './config-toggle-slider.vue';
+import { ConfigToggleSlider } from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 
 export default {
@@ -223,7 +223,7 @@ export default {
                 );
             }).catch(error => {
                 this.$snotify.error(
-                    'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
+                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
                     'Error'
                 );
             }).finally(() => {

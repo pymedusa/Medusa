@@ -97,7 +97,6 @@
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
@@ -159,7 +158,7 @@
                 }
 
                 Vue.use(Vuex);
-                Vue.use(VueRouter);
+                Vue.use(VueRouter); 
                 Vue.use(AsyncComputed);
                 Vue.use(VueMeta);
 

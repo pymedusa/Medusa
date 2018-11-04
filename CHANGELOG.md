@@ -1,5 +1,19 @@
 ## Unreleased
 
+#### Improvements
+- Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens. ([#4913](https://github.com/pymedusa/Medusa/pull/4913))
+
+#### Fixes
+- Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
+- Fixed wrong placeholder reference in log ([#5562](https://github.com/pymedusa/Medusa/pull/5562))
+- Fixed guessit exception when parsing release without title ([#5569](https://github.com/pymedusa/Medusa/pull/5569))
+- Fixed Download Station BraceAdapter exception ([#5573](https://github.com/pymedusa/Medusa/pull/5573))
+- Fixed saving multiple metadata providers ([#5576](https://github.com/pymedusa/Medusa/pull/5576))
+
+-----
+
+## 0.2.11 (2018-10-29)
+
 #### New Features
 
 #### Improvements
@@ -12,6 +26,7 @@
 - Vueified restart page, moved JS files to Vue, added `state-switch` component and misc changes ([#5159](https://github.com/pymedusa/Medusa/pull/5159))
 - Added support for SABnzbd's Direct Unpack feature ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Added config/search values to apiv2 ([#5079](https://github.com/pymedusa/Medusa/pull/5079))
+- Improved the add new show page responsiveness on smaller width viewports ([#5509](https://github.com/pymedusa/Medusa/pull/5509))
 
 #### Fixes
 - Fixed many release name parsing issues as a result of updating `guessit` ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
@@ -25,6 +40,7 @@
 - Fixed metadata settings not being saved ([#5385](https://github.com/pymedusa/Medusa/pull/5385))
 - Fixed Synology DS missing location and wrong icon ([#5443](https://github.com/pymedusa/Medusa/pull/5443))
 - Fixed saving "config - postprocessing frequency" value ([#5482](https://github.com/pymedusa/Medusa/pull/5482))
+- Fixed database trying to update even if up to date ([#5543](https://github.com/pymedusa/Medusa/pull/5543))
 
 -----
 

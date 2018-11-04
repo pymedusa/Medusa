@@ -60,6 +60,7 @@
 # Copyright 2018 per1234 <accounts@perglass.com>                               #
 # Copyright 2018 sechastain <sechastain@gmail.com>                             #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
+# Copyright 2018 Vinay Hegde <vinayhegde2010@gmail.com>
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.readthedocs.io/                                              #
@@ -1247,9 +1248,9 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert has_wiki is github.GithubObject.NotSet or isinstance(has_wiki, bool), has_wiki
         assert has_downloads is github.GithubObject.NotSet or isinstance(has_downloads, bool), has_downloads
         assert default_branch is github.GithubObject.NotSet or isinstance(default_branch, str), default_branch
-        assert allow_squash_merge is github.GithubObject.NotSet or (isinstance(allow_squash_merge, bool) and allow_squash_merge is True), allow_squash_merge
-        assert allow_merge_commit is github.GithubObject.NotSet or (isinstance(allow_merge_commit, bool) and allow_merge_commit is True), allow_merge_commit
-        assert allow_rebase_merge is github.GithubObject.NotSet or (isinstance(allow_rebase_merge, bool) and allow_rebase_merge is True), allow_rebase_merge
+        assert allow_squash_merge is github.GithubObject.NotSet or isinstance(allow_squash_merge, bool), allow_squash_merge
+        assert allow_merge_commit is github.GithubObject.NotSet or isinstance(allow_merge_commit, bool), allow_merge_commit
+        assert allow_rebase_merge is github.GithubObject.NotSet or isinstance(allow_rebase_merge, bool), allow_rebase_merge
         assert archived is github.GithubObject.NotSet or (isinstance(archived, bool) and archived is True), archived
         post_parameters = {
             "name": name,
@@ -1340,16 +1341,26 @@ class Repository(github.GithubObject.CompletableGithubObject):
             None
         )
 
-    def get_collaborators(self):
+    def get_collaborators(self, affiliation=github.GithubObject.NotSet):
         """
         :calls: `GET /repos/:owner/:repo/collaborators <http://developer.github.com/v3/repos/collaborators>`_
+        :param affiliation: string
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.NamedUser.NamedUser`
         """
+
+        url_parameters = dict()
+        allowed_affiliations = ['outside', 'direct', 'all']
+        if affiliation is not github.GithubObject.NotSet:
+            assert isinstance(affiliation, str), affiliation
+            assert affiliation in allowed_affiliations, \
+                'Affiliation can be one of ' + ', '.join(allowed_affiliations)
+            url_parameters['affiliation'] = affiliation
+
         return github.PaginatedList.PaginatedList(
             github.NamedUser.NamedUser,
             self._requester,
             self.url + "/collaborators",
-            None
+            url_parameters
         )
 
     def get_comment(self, id):
@@ -1449,7 +1460,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             url_parameters["ref"] = ref
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
-            self.url + "/contents" + urllib.parse.quote(path),
+            self.url + "/contents/" + urllib.parse.quote(path),
             parameters=url_parameters
         )
         if isinstance(data, list):
@@ -1530,7 +1541,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
-            self.url + "/contents" + urllib.parse.quote(path),
+            self.url + "/contents/" + urllib.parse.quote(path),
             input=put_parameters
         )
 
@@ -1594,7 +1605,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
         headers, data = self._requester.requestJsonAndCheck(
             "PUT",
-            self.url + "/contents" + urllib.parse.quote(path),
+            self.url + "/contents/" + urllib.parse.quote(path),
             input=put_parameters
         )
 
@@ -1644,7 +1655,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
 
         headers, data = self._requester.requestJsonAndCheck(
             "DELETE",
-            self.url + "/contents" + urllib.parse.quote(path),
+            self.url + "/contents/" + urllib.parse.quote(path),
             input=url_parameters
         )
 
@@ -1665,7 +1676,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             url_parameters["ref"] = ref
         headers, data = self._requester.requestJsonAndCheck(
             "GET",
-            self.url + "/contents" + urllib.parse.quote(path),
+            self.url + "/contents/" + urllib.parse.quote(path),
             parameters=url_parameters
         )
 
@@ -2472,6 +2483,22 @@ class Repository(github.GithubObject.CompletableGithubObject):
             github.Issue.Issue(self._requester, headers, github.Legacy.convertIssue(element), completed=False)
             for element in data["issues"]
         ]
+
+    def mark_notifications_as_read(self, last_read_at=datetime.datetime.utcnow()):
+        """
+        :calls: `PUT /repos/:owner/:repo/notifications <https://developer.github.com/v3/activity/notifications>`_
+        :param last_read_at: datetime
+        """
+        assert isinstance(last_read_at, datetime.datetime)
+        put_parameters = {
+            "last_read_at": last_read_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        }
+
+        headers, data = self._requester.requestJsonAndCheck(
+            "PUT",
+            self.url + "/notifications",
+            input=put_parameters
+        )
 
     def merge(self, base, head, commit_message=github.GithubObject.NotSet):
         """

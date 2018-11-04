@@ -18,13 +18,11 @@ from medusa.common import (
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
-from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
 
 from six.moves.http_client import HTTPSConnection
-from six.moves.urllib.error import HTTPError
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -39,7 +37,7 @@ class Notifier(object):
     def test_notify(self, userKey=None, apiKey=None):
         return self._notifyPushover('This is a test notification from Medusa', 'Test', userKey=userKey, apiKey=apiKey, force=True)
 
-    def _sendPushover(self, msg, title, sound=None, userKey=None, apiKey=None):
+    def _sendPushover(self, msg, title, sound=None, userKey=None, apiKey=None, priority=None):
         """
         Sends a pushover notification to the address provided
 
@@ -48,6 +46,7 @@ class Notifier(object):
         sound: The notification sound to use
         userKey: The pushover user id to send the message to (or to subscribe with)
         apiKey: The pushover api key to use
+        priority: The pushover priority to use
         returns: True if the message succeeded, False otherwise
         """
 
@@ -60,93 +59,95 @@ class Notifier(object):
         if sound is None:
             sound = app.PUSHOVER_SOUND
 
-        log.debug(u'Pushover API KEY in use: {0}', apiKey)
+        if priority is None:
+            priority = app.PUSHOVER_PRIORITY
 
         # build up the URL and parameters
         msg = msg.strip()
 
         # send the request to pushover
-        try:
-            if app.PUSHOVER_SOUND != 'default':
-                args = {
-                    'token': apiKey,
-                    'user': userKey,
-                    'title': title.encode('utf-8'),
-                    'message': msg.encode('utf-8'),
-                    'timestamp': int(time.time()),
-                    'retry': 60,
-                    'expire': 3600,
-                    'sound': sound,
-                }
+        if sound != 'default':
+            args = {
+                'token': apiKey,
+                'user': userKey,
+                'title': title.encode('utf-8'),
+                'message': msg.encode('utf-8'),
+                'timestamp': int(time.time()),
+                'retry': 60,
+                'expire': 3600,
+                'sound': sound,
+                'priority': priority,
+            }
+        else:
+            # sound is default, so don't send it
+            args = {
+                'token': apiKey,
+                'user': userKey,
+                'title': title.encode('utf-8'),
+                'message': msg.encode('utf-8'),
+                'timestamp': int(time.time()),
+                'retry': 60,
+                'expire': 3600,
+                'priority': priority,
+            }
+
+        if app.PUSHOVER_DEVICE:
+            args['device'] = ','.join(app.PUSHOVER_DEVICE)
+
+        log.debug(u'PUSHOVER: Sending notice with details: title="{0}" message="{1}", priority={2}, sound={3}',
+                  args['title'], args['message'], priority, sound)
+
+        conn = HTTPSConnection('api.pushover.net:443')
+        conn.request('POST', '/1/messages.json',
+                     urlencode(args), {'Content-type': 'application/x-www-form-urlencoded'})
+        conn_resp = conn.getresponse()
+
+        if conn_resp.status == 200:
+            log.info(u'Pushover notification successful.')
+            return True
+
+        # HTTP status 404 if the provided email address isn't a Pushover user.
+        elif conn_resp.status == 404:
+            log.warning(u'Username is wrong/not a pushover email. Pushover will send an email to it')
+            return False
+
+        # For HTTP status code 401's, it is because you are passing in either an invalid token, or the user has not added your service.
+        elif conn_resp.status == 401:
+            # HTTP status 401 if the user doesn't have the service added
+            subscribeNote = self._sendPushover(msg, title, sound=sound, userKey=userKey, apiKey=apiKey)
+            if subscribeNote:
+                log.debug(u'Subscription sent')
+                return True
             else:
-                # sound is default, so don't send it
-                args = {
-                    'token': apiKey,
-                    'user': userKey,
-                    'title': title.encode('utf-8'),
-                    'message': msg.encode('utf-8'),
-                    'timestamp': int(time.time()),
-                    'retry': 60,
-                    'expire': 3600,
-                }
+                log.error(u'Subscription could not be sent')
 
-            if app.PUSHOVER_DEVICE:
-                args['device'] = ','.join(app.PUSHOVER_DEVICE)
+        # If you receive an HTTP status code of 400, it is because you failed to send the proper parameters
+        elif conn_resp.status == 400:
+            log.error(u'Wrong keys sent to pushover')
+            return False
 
-            conn = HTTPSConnection('api.pushover.net:443')
-            conn.request('POST', '/1/messages.json',
-                         urlencode(args), {'Content-type': 'application/x-www-form-urlencoded'})
+        # If you receive a HTTP status code of 429, it is because the message limit has been reached (free limit is 7,500)
+        elif conn_resp.status == 429:
+            log.error(u'Pushover API message limit reached - try a different API key')
+            return False
 
-        except HTTPError as e:
-            # if we get an error back that doesn't have an error code then who knows what's really happening
-            if not hasattr(e, 'code'):
-                log.error(u'Pushover notification failed. {}', ex(e))
-                return False
-            else:
-                log.error(u'Pushover notification failed. Error code: {0}', e.code)
-
-            # HTTP status 404 if the provided email address isn't a Pushover user.
-            if e.code == 404:
-                log.warning(u'Username is wrong/not a pushover email. Pushover will send an email to it')
-                return False
-
-            # For HTTP status code 401's, it is because you are passing in either an invalid token, or the user has not added your service.
-            elif e.code == 401:
-
-                # HTTP status 401 if the user doesn't have the service added
-                subscribeNote = self._sendPushover(msg, title, sound=sound, userKey=userKey, apiKey=apiKey)
-                if subscribeNote:
-                    log.debug(u'Subscription sent')
-                    return True
-                else:
-                    log.error(u'Subscription could not be sent')
-                    return False
-
-            # If you receive an HTTP status code of 400, it is because you failed to send the proper parameters
-            elif e.code == 400:
-                log.error(u'Wrong data sent to pushover')
-                return False
-
-            # If you receive a HTTP status code of 429, it is because the message limit has been reached (free limit is 7,500)
-            elif e.code == 429:
-                log.error(u'Pushover API message limit reached - try a different API key')
-                return False
-
-        log.info(u'Pushover notification successful.')
-        return True
+        # Something else has gone wrong... who knows what's really happening
+        else:
+            log.error(u'Pushover notification failed. HTTP response code: {0}', conn_resp.status)
+            return False
 
     def notify_snatch(self, ep_name, is_proper):
-        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.PUSHOVER_NOTIFY_ONSNATCH:
             self._notifyPushover(title, ep_name)
 
-    def notify_download(self, ep_name, title=notifyStrings[NOTIFY_DOWNLOAD]):
+    def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONDOWNLOAD:
-            self._notifyPushover(title, ep_name)
+            self._notifyPushover(title, ep_obj.pretty_name_with_quality())
 
-    def notify_subtitle_download(self, ep_name, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
+    def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         if app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notifyPushover(title, ep_name + ': ' + lang)
+            self._notifyPushover(title, ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PUSHOVER:
@@ -160,7 +161,7 @@ class Notifier(object):
             title = notifyStrings[NOTIFY_LOGIN]
             self._notifyPushover(title, update_text.format(ipaddress))
 
-    def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, force=False):
+    def _notifyPushover(self, title, message, sound=None, userKey=None, apiKey=None, priority=None, force=False):
         """
         Sends a pushover notification based on the provided info or Medusa config
 
@@ -169,6 +170,7 @@ class Notifier(object):
         sound: The notification sound to use
         userKey: The userKey to send the notification to
         apiKey: The apiKey to use to send the notification
+        priority: The pushover priority to use
         force: Enforce sending, for instance for testing
         """
 
@@ -178,4 +180,4 @@ class Notifier(object):
 
         log.debug(u'Sending notification for {0}', message)
 
-        return self._sendPushover(message, title, sound=sound, userKey=userKey, apiKey=apiKey)
+        return self._sendPushover(message, title, sound=sound, userKey=userKey, apiKey=apiKey, priority=priority)

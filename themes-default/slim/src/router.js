@@ -1,13 +1,12 @@
 import VueRouter from 'vue-router';
-import {
-    AddRecommended,
-    AddShows,
-    Config,
-    ConfigPostProcessing,
-    IRC,
-    Login,
-    NotFound
-} from './components';
+
+const AddRecommended = () => import('./components/add-recommended.vue');
+const AddShows = () => import('./components/add-shows.vue');
+const Config = () => import('./components/config.vue');
+const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
+const IRC = () => import('./components/irc.vue');
+const Login = () => import('./components/login.vue');
+const NotFound = () => import('./components/http/404.vue');
 
 const homeRoutes = [{
     path: '/home',
@@ -65,7 +64,8 @@ const configRoutes = [{
     name: 'config',
     meta: {
         title: 'Help & Info',
-        header: 'Medusa Configuration'
+        header: 'Medusa Configuration',
+        converted: true
     },
     component: Config
 }, {
@@ -132,7 +132,8 @@ const addShowRoutes = [{
     name: 'addShows',
     meta: {
         title: 'Add Shows',
-        header: 'Add Shows'
+        header: 'Add Shows',
+        converted: true
     },
     component: AddShows
 }, {

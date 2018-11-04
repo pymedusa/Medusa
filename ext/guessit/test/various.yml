@@ -884,7 +884,7 @@
 
 ? Katy Perry - Pepsi & Billboard Summer Beats Concert Series 2012 1080i HDTV 20 Mbps DD2.0 MPEG2-TrollHD.ts
 : title: Katy Perry
-  alternative_title: Pepsi & Billboard Summer Beats Concert
+  alternative_title: Pepsi & Billboard Summer Beats Concert Series
   year: 2012
   screen_size: 1080i
   source: HDTV
@@ -920,7 +920,7 @@
   type: movie
 
 ? This.is.Us
-: options: --no-embedded-config
+: options: --no-default-config
   title: This is Us
   type: movie
 

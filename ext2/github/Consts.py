@@ -89,3 +89,9 @@ mediaTypeOrganizationInvitationPreview = "application/vnd.github.dazzler-preview
 
 # https://developer.github.com/changes/2018-03-16-protected-branches-required-approving-reviews/
 mediaTypeRequireMultipleApprovingReviews = "application/vnd.github.luke-cage-preview+json"
+
+# https://developer.github.com/v3/search/#highlighting-code-search-results-1
+highLightSearchPreview = "application/vnd.github.v3.text-match+json"
+
+# https://developer.github.com/changes/2018-02-22-protected-branches-required-signatures/
+signaturesProtectedBranchesPreview = "application/vnd.github.zzzax-preview+json"

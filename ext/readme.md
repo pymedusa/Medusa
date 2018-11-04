@@ -24,16 +24,16 @@
 :: | `enum` | [1.1.6](https://pypi.org/project/enum34/1.1.6/) | **`medusa`** | ext2 | Backport from pyton 3.4
 :: | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | ext | -
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
-:: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.16.0](https://pypi.org/project/future/0.16.0/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
+:: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.0](https://pypi.org/project/future/0.17.0/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.43.2](https://pypi.org/project/PyGithub/1.43.2/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43.3](https://pypi.org/project/PyGithub/1.43.3/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
-:: | `guessit` | [3.0.1](https://pypi.org/project/guessit/3.0.1/) | **`medusa`**, `subliminal` | ext | -
+:: | `guessit` | [3.0.3](https://pypi.org/project/guessit/3.0.3/) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
 :: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | ext | -
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | ext | Module: `js2py`
-:: | `jsonrpclib-pelix` | [0.3.1](https://pypi.org/project/jsonrpclib-pelix/0.3.1/) | **`medusa`** | ext | Module: `jsonrpclib`
+:: | `jsonrpclib-pelix` | [0.3.2](https://pypi.org/project/jsonrpclib-pelix/0.3.2/) | **`medusa`** | ext | Module: `jsonrpclib`
 :: | `PyJWT` | [1.6.4](https://pypi.org/project/pyjwt/1.6.4/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
 :: | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | ext | -
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
@@ -46,7 +46,7 @@
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
-:: | `python-dateutil` | [2.7.3](https://pypi.org/project/python-dateutil/2.7.3/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
+:: | `python-dateutil` | [2.7.5](https://pypi.org/project/python-dateutil/2.7.5/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
 :: | `python-twitter` | [3.4.2](https://pypi.org/project/python-twitter/3.4.2/) | **`medusa`** | ext | Module: `twitter`
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
@@ -56,7 +56,7 @@
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
-:: | `stevedore` | [1.29.0](https://pypi.org/project/stevedore/1.29.0/) | `subliminal` | ext | -
+:: | `stevedore` | [1.30.0](https://pypi.org/project/stevedore/1.30.0/) | `subliminal` | ext | -
 :: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -

@@ -27,7 +27,7 @@ class InitialSchema(db.SchemaUpgrade):
              ' status NUMERIC DEFAULT -1, quality NUMERIC DEFAULT 0, showid NUMERIC DEFAULT -1,'
              ' season NUMERIC DEFAULT -1, episode NUMERIC DEFAULT -1);',),
             ('CREATE TABLE db_version (db_version INTEGER);',),
-            ('INSERT INTO db_version (db_version) VALUES (1);',),
+            ('INSERT INTO db_version (db_version) VALUES (2);',),
         ]
         for query in queries:
             if len(query) == 1:
@@ -125,7 +125,6 @@ class UpdateHistoryTableQuality(AddIndexerIds):
         utils.backup_database(self.connection.path, self.connection.version)
 
         self.translate_status()
-        self.inc_major_version()
 
     def translate_status(self):
         """
@@ -159,6 +158,8 @@ class UpdateHistoryTableQuality(AddIndexerIds):
         major_version, minor_version = self.connection.version
         major_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
+        log.info(u'[FAILED-DB] Updated major version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
 
@@ -175,8 +176,6 @@ class ShiftQualities(UpdateHistoryTableQuality):
         self.shift_history_qualities()
         self.update_status_unknown()
         self.inc_major_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
     def shift_history_qualities(self):
         """
