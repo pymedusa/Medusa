@@ -18,6 +18,81 @@ window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
+    data() {
+        return {
+            localConfig: {
+                launchBrowser: null,
+                defaultPage: null,
+                trashRemoveShow: null,
+                actualLogDir: null,
+                logNr: null,
+                logSize: null,
+                indexerDefaultLanguage: null,
+                showUpdateHour: null,
+                indexerTimeout: null,
+                indexerDefault: null,
+                plexFallBack: {
+                    enable: null,
+                    notifications: null,
+                    timeout: null
+                },
+                versionNotify: null,
+                autoUpdate: null,
+                updateFrequency: null,
+                notifyOnUpdate: null,
+                availableThemes: null,
+                layoutWide: null,
+                comingEpsMissedRange: null,
+                timeStyle: null,
+                timePresets: [],
+                datePresets: [],
+                timezoneDisplay: null,
+                webInterface: {
+                    apiKey: null,
+                    log: null,
+                    username: null,
+                    password: null,
+                    port: null,
+                    notifyOnLogin: null,
+                    ipv6: null,
+                    httpsEnable: null,
+                    httpsCert: null,
+                    httpsKey: null,
+                    handleReverseProxy: null
+                },
+                cpuPreset: null,
+                cpuPresets: null,
+                sslVerify: null,
+                sslCaBundle: null,
+                noRestart: null,
+                encryptionVersion: null,
+                calendarUnprotected: null,
+                calendarIcons: null,
+                proxySetting: null,
+                proxyIndexers: null,
+                skipRemovedFiles: null,
+                epDefaultDeletedStatus: null,
+                debug: null,
+                dbDebug: null,
+                subliminalLog: null,
+                privacyLevel: null,
+                developer: null,
+                git: {
+                    username: null,
+                    password: null,
+                    token: null,
+                    authType: null,
+                    remote: null,
+                    remoteBanches: null,
+                    path: null,
+                    org: null,
+                    reset: null,
+                    resetBranches: null,
+                    githubIoUrl: null
+                }
+            }
+        }
+    },
     mounted() {
         if ($('input[name="proxy_setting"]').val().length === 0) {
             $('input[id="proxy_indexers"]').prop('checked', false);
@@ -48,6 +123,17 @@ window.app = new Vue({
 
         $('#log_dir').fileBrowser({
             title: 'Select log file folder location'
+        });
+
+        // The real vue stuff
+        // This is used to wait for the config to be loaded by the store.
+        this.$once('loaded', () => {
+            const { localConfig, config: stateConfig } = this;
+            debugger;
+
+            // Map the state values to local data.
+            this.localConfig = Object.assign({}, localConfig, stateConfig);
+            this.configLoaded = true;
         });
     }
 });
