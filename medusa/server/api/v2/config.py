@@ -271,6 +271,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.pushover.userKey': StringField(app, 'PUSHOVER_USERKEY'),
         'notifiers.pushover.device': ListField(app, 'PUSHOVER_DEVICE'),
         'notifiers.pushover.sound': StringField(app, 'PUSHOVER_SOUND'),
+        'notifiers.pushover.priority': IntegerField(app, 'PUSHOVER_PRIORITY'),
         'notifiers.pushover.notifyOnSnatch': BooleanField(app, 'PUSHOVER_NOTIFY_ONSNATCH'),
         'notifiers.pushover.notifyOnDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONDOWNLOAD'),
         'notifiers.pushover.notifyOnSubtitleDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD'),
@@ -293,6 +294,13 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.pushbullet.notifyOnSnatch': BooleanField(app, 'PUSHBULLET_NOTIFY_ONSNATCH'),
         'notifiers.pushbullet.notifyOnDownload': BooleanField(app, 'PUSHBULLET_NOTIFY_ONDOWNLOAD'),
         'notifiers.pushbullet.notifyOnSubtitleDownload': BooleanField(app, 'PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
+        'notifiers.join.enabled': BooleanField(app, 'USE_JOIN'),
+        'notifiers.join.api': StringField(app, 'JOIN_API'),
+        'notifiers.join.device': StringField(app, 'JOIN_DEVICE'),
+        'notifiers.join.notifyOnSnatch': BooleanField(app, 'JOIN_NOTIFY_ONSNATCH'),
+        'notifiers.join.notifyOnDownload': BooleanField(app, 'JOIN_NOTIFY_ONDOWNLOAD'),
+        'notifiers.join.notifyOnSubtitleDownload': BooleanField(app, 'JOIN_NOTIFY_ONSUBTITLEDOWNLOAD'),
 
         'notifiers.freemobile.enabled': BooleanField(app, 'USE_FREEMOBILE'),
         'notifiers.freemobile.api': StringField(app, 'FREEMOBILE_APIKEY'),
@@ -841,6 +849,7 @@ class DataGenerator(object):
         section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
         section_data['pushover']['device'] = app.PUSHOVER_DEVICE
         section_data['pushover']['sound'] = app.PUSHOVER_SOUND
+        section_data['pushover']['priority'] = app.PUSHOVER_PRIORITY
         section_data['pushover']['notifyOnSnatch'] = bool(app.PUSHOVER_NOTIFY_ONSNATCH)
         section_data['pushover']['notifyOnDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
         section_data['pushover']['notifyOnSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)
@@ -866,6 +875,14 @@ class DataGenerator(object):
         section_data['pushbullet']['notifyOnSubtitleDownload'] = bool(app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['pushbullet']['api'] = app.PUSHBULLET_API
         section_data['pushbullet']['device'] = app.PUSHBULLET_DEVICE
+
+        section_data['join'] = NonEmptyDict()
+        section_data['join']['enabled'] = bool(app.USE_JOIN)
+        section_data['join']['notifyOnSnatch'] = bool(app.JOIN_NOTIFY_ONSNATCH)
+        section_data['join']['notifyOnDownload'] = bool(app.JOIN_NOTIFY_ONDOWNLOAD)
+        section_data['join']['notifyOnSubtitleDownload'] = bool(app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['join']['api'] = app.JOIN_API
+        section_data['join']['device'] = app.JOIN_DEVICE
 
         section_data['freemobile'] = NonEmptyDict()
         section_data['freemobile']['enabled'] = bool(app.USE_FREEMOBILE)

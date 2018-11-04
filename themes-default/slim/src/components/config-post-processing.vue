@@ -566,11 +566,10 @@ export default {
         },
         'metadata.metadataProviders': {
             handler(newValue) {
-                const { getFirstEnabledMetadataProvider } = this;
-
                 // Map the state values to local data.
                 this.metadataProviders = Object.assign({}, this.metadataProviders, newValue);
-                this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+                // This is not properly worked out. metadata.metadataProviders watch is triggered, when a users clicks on one of the chechboxes.
+                // this.metadataProviderSelected = getFirstEnabledMetadataProvider();
             },
             deep: true,
             immediate: false

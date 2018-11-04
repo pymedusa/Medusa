@@ -422,6 +422,7 @@ class MedusaApp(object):
         self.PUSHOVER_APIKEY = None
         self.PUSHOVER_DEVICE = []
         self.PUSHOVER_SOUND = None
+        self.PUSHOVER_PRIORITY = 0
 
         self.USE_LIBNOTIFY = False
         self.LIBNOTIFY_NOTIFY_ONSNATCH = False
@@ -498,6 +499,13 @@ class MedusaApp(object):
         self.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = False
         self.PUSHBULLET_API = None
         self.PUSHBULLET_DEVICE = None
+
+        self.USE_JOIN = False
+        self.JOIN_NOTIFY_ONSNATCH = False
+        self.JOIN_NOTIFY_ONDOWNLOAD = False
+        self.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = False
+        self.JOIN_API = None
+        self.JOIN_DEVICE = None
 
         self.USE_EMAIL = False
         self.EMAIL_NOTIFY_ONSNATCH = False

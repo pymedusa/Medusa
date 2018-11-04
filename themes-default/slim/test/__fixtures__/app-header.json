@@ -251,6 +251,13 @@
         "enabled": true,
         "api": ""
       },
+      "join": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true,
+        "api": ""
+      },
       "nmjv2": {
         "enabled": false
       },

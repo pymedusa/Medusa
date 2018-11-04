@@ -640,6 +640,14 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification: {0}'.format(result.get('error'))
 
     @staticmethod
+    def testJoin(api=None, device=None):
+        result = notifiers.join_notifier.test_notify(api, device)
+        if result.get('success'):
+            return 'Join notification succeeded. Check your device to make sure it worked'
+        else:
+            return 'Error sending Join notification: {0}'.format(result.get('error'))
+
+    @staticmethod
     def getPushbulletDevices(api=None):
         result = notifiers.pushbullet_notifier.get_devices(api)
         if result:

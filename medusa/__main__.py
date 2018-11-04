@@ -435,7 +435,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet', 'Join',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -796,7 +796,8 @@ class Application(object):
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
             app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
-            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
+            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'default')
+            app.PUSHOVER_PRIORITY = check_setting_str(app.CFG, 'Pushover', 'pushover_priority', '0')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
             app.LIBNOTIFY_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Libnotify', 'libnotify_notify_onsnatch', 0))
@@ -874,6 +875,13 @@ class Application(object):
             app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Pushbullet', 'pushbullet_notify_onsubtitledownload', 0))
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
+
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Pushbullet', 'use_join', 0))
+            app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
+            app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
+            app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
+            app.JOIN_API = check_setting_str(app.CFG, 'Join', 'join_api', '', censor_log='low')
+            app.JOIN_DEVICE = check_setting_str(app.CFG, 'Join', 'join_device', '')
 
             app.USE_EMAIL = bool(check_setting_int(app.CFG, 'Email', 'use_email', 0))
             app.EMAIL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Email', 'email_notify_onsnatch', 0))
@@ -1773,6 +1781,7 @@ class Application(object):
         new_config['Pushover']['pushover_apikey'] = app.PUSHOVER_APIKEY
         new_config['Pushover']['pushover_device'] = app.PUSHOVER_DEVICE
         new_config['Pushover']['pushover_sound'] = app.PUSHOVER_SOUND
+        new_config['Pushover']['pushover_priority'] = app.PUSHOVER_PRIORITY
 
         new_config['Libnotify'] = {}
         new_config['Libnotify']['use_libnotify'] = int(app.USE_LIBNOTIFY)
@@ -1851,6 +1860,14 @@ class Application(object):
         new_config['Pushbullet']['pushbullet_notify_onsubtitledownload'] = int(app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Pushbullet']['pushbullet_api'] = app.PUSHBULLET_API
         new_config['Pushbullet']['pushbullet_device'] = app.PUSHBULLET_DEVICE
+
+        new_config['Join'] = {}
+        new_config['Join']['use_join'] = int(app.USE_JOIN)
+        new_config['Join']['join_notify_onsnatch'] = int(app.JOIN_NOTIFY_ONSNATCH)
+        new_config['Join']['join_notify_ondownload'] = int(app.JOIN_NOTIFY_ONDOWNLOAD)
+        new_config['Join']['join_notify_onsubtitledownload'] = int(app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Join']['join_api'] = app.JOIN_API
+        new_config['Join']['join_device'] = app.JOIN_DEVICE
 
         new_config['Email'] = {}
         new_config['Email']['use_email'] = int(app.USE_EMAIL)

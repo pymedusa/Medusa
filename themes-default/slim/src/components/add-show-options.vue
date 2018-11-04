@@ -223,7 +223,7 @@ export default {
                 );
             }).catch(error => {
                 this.$snotify.error(
-                    'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
+                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
                     'Error'
                 );
             }).finally(() => {

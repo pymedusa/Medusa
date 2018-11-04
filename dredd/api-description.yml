@@ -1813,6 +1813,21 @@ definitions:
                 type: boolean
               notifyOnSubtitleDownload:
                 type: boolean
+          join:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              device:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
           freemobile:
             type: object
             properties:
