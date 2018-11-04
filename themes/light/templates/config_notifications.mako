@@ -1407,9 +1407,7 @@ window.app = new Vue({
                                     <config-textbox v-model="notifiers.pushover.userKey" label="Pushover User Key" id="pushover_userkey" :explanations="['User Key of your Pushover account']" @change="save()" ></config-textbox>
                                     
                                     <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API Key" id="pushover_apikey" @change="save()" >
-                                    
-                                    <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
-
+                                        <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </config-textbox>
 
                                     <config-template label-for="pushover_device" label="Pushover Devices">
