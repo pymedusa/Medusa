@@ -280,7 +280,7 @@ class BTNProvider(TorrentProvider):
                 log.warning('Incorrect authentication credentials.')
             elif (code, message) == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of 150 calls per hour.')
-            elif code in (500, 502, 524):
+            elif code in (500, 502, 521, 524):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
                             {'code': code, 'text': message})
             else:
