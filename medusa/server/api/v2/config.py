@@ -17,10 +17,11 @@ from medusa import (
     logger,
     ws,
 )
-from medusa.common import IGNORED, Quality, SKIPPED, WANTED
+from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_config import get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.sbdatetime import date_presets, time_presets
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -118,7 +119,7 @@ class ConfigHandler(BaseRequestHandler):
         'layout.show.allSeasons': BooleanField(app, 'DISPLAY_ALL_SEASONS'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
-        'theme.name': StringField(app, 'THEME_NAME', setter=theme_name_setter),
+        'themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
@@ -618,6 +619,84 @@ class DataGenerator(object):
         section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
         section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
         section_data['postProcessing']['multiEpStrings'] = common.MULTI_EP_STRINGS
+
+        # Added for config - main, needs refactoring in the structure.
+        section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
+        section_data['defaultPage'] = app.DEFAULT_PAGE
+        section_data['trashRemoveShow'] = bool(app.TRASH_REMOVE_SHOW)
+        section_data['actualLogDir'] = app.ACTUAL_LOG_DIR
+        section_data['logNr'] = int(app.LOG_NR)
+        section_data['logSize'] = float(app.LOG_SIZE)
+
+        section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
+        section_data['showUpdateHour'] = int(app.SHOWUPDATE_HOUR)
+        section_data['indexerTimeout'] = int(app.INDEXER_TIMEOUT)
+        section_data['indexerDefault'] = app.INDEXER_DEFAULT
+
+        section_data['plexFallBack'] = NonEmptyDict()
+        section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
+        section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
+        section_data['plexFallBack']['timeout'] = bool(app.FALLBACK_PLEX_TIMEOUT)
+
+        section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
+        section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
+        section_data['updateFrequency'] = int(app.UPDATE_FREQUENCY)
+        section_data['notifyOnUpdate'] = bool(app.NOTIFY_ON_UPDATE)
+        section_data['availableThemes'] = bool(app.AVAILABLE_THEMES)
+
+        section_data['layoutWide'] = bool(app.LAYOUT_WIDE)
+
+        section_data['comingEpsMissedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['timeStyle'] = bool(app.TIME_PRESET_W_SECONDS)
+        section_data['timePresets'] = list(time_presets)
+        section_data['datePresets'] = list(date_presets)
+        section_data['timezoneDisplay'] = bool(app.TIMEZONE_DISPLAY)
+
+        section_data['webInterface'] = NonEmptyDict()
+        section_data['webInterface']['apiKey'] = app.API_KEY
+        section_data['webInterface']['log'] = bool(app.WEB_LOG)
+        section_data['webInterface']['username'] = app.WEB_USERNAME
+        section_data['webInterface']['password'] = app.WEB_PASSWORD
+        section_data['webInterface']['port'] = int(app.WEB_PORT)
+        section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
+        section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
+        section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
+        section_data['webInterface']['httpsCert'] = app.HTTPS_CERT
+        section_data['webInterface']['httpsKey'] = app.HTTPS_KEY
+        section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
+
+        section_data['cpuPreset'] = app.CPU_PRESET
+        section_data['cpuPresets'] = cpu_presets
+        section_data['sslVerify'] = bool(app.SSL_VERIFY)
+        section_data['sslCaBundle'] = app.SSL_CA_BUNDLE
+        section_data['noRestart'] = bool(app.NO_RESTART)
+        section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
+        section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
+        section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+        section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
+        section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
+        section_data['debug'] = bool(app.DEBUG)
+        section_data['dbDebug'] = bool(app.DBDEBUG)
+        section_data['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
+        section_data['privacyLevel'] = app.PRIVACY_LEVEL
+        section_data['developer'] = bool(app.DEVELOPER)
+
+        section_data['git'] = NonEmptyDict()
+        # TODO: move main['gitUsername'] -> main['git']['username']
+        section_data['git']['username'] = app.GIT_USERNAME
+        section_data['git']['password'] = app.GIT_PASSWORD
+        section_data['git']['token'] = app.GIT_TOKEN
+        section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
+        section_data['git']['remote'] = app.GIT_REMOTE
+        section_data['git']['remoteBanches'] = app.GIT_REMOTE_BRANCHES
+        section_data['git']['path'] = app.GIT_PATH
+        section_data['git']['org'] = app.GIT_ORG
+        section_data['git']['reset'] = bool(app.GIT_RESET)
+        section_data['git']['resetBranches'] = app.GIT_RESET_BRANCHES
+        # TODO: move main['githubUrl'] -> main['git']['url']
+        section_data['git']['githubIoUrl'] = app.GITHUB_IO_URL
 
         return section_data
 
