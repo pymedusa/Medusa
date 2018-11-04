@@ -6,6 +6,7 @@ import datetime
 import json
 import logging
 import os
+import six
 import re
 
 from medusa import app, config, helpers, ui
@@ -532,7 +533,8 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [unquote_plus(x) for x in shows_to_add]
+        if six.PY2:
+            shows_to_add = [x.decode('utf-8', 'ignore') for x in shows_to_add]
 
         prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 

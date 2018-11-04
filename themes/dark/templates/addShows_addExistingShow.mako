@@ -163,6 +163,7 @@ window.app = new Vue({
             formData.append('promptForSettings', this.promptForSettings);
             dirList.forEach(dir => {
                 const originalIndexer = dir.metadata.indexer;
+                const { quoteUrl } = this;
                 let seriesId = dir.metadata.seriesId;
                 if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
                     seriesId = '';
@@ -171,7 +172,7 @@ window.app = new Vue({
                 const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
                     .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                formData.append('shows_to_add', seriesToAdd);
             });
 
             const response = await apiRoute.post('addShows/addExistingShows', formData);
