@@ -65,31 +65,21 @@ class Notifier(object):
         # build up the URL and parameters
         msg = msg.strip()
 
-        # send the request to pushover
+        # default args
+        args = {
+            'token': apiKey,
+            'user': userKey,
+            'title': title.encode('utf-8'),
+            'message': msg.encode('utf-8'),
+            'timestamp': int(time.time()),
+            'retry': 60,
+            'expire': 3600,
+            'priority': priority,
+        }
+
+        # If sound is not default, add it.
         if sound != 'default':
-            args = {
-                'token': apiKey,
-                'user': userKey,
-                'title': title.encode('utf-8'),
-                'message': msg.encode('utf-8'),
-                'timestamp': int(time.time()),
-                'retry': 60,
-                'expire': 3600,
-                'sound': sound,
-                'priority': priority,
-            }
-        else:
-            # sound is default, so don't send it
-            args = {
-                'token': apiKey,
-                'user': userKey,
-                'title': title.encode('utf-8'),
-                'message': msg.encode('utf-8'),
-                'timestamp': int(time.time()),
-                'retry': 60,
-                'expire': 3600,
-                'priority': priority,
-            }
+            args['sound'] = sound
 
         if app.PUSHOVER_DEVICE:
             args['device'] = ','.join(app.PUSHOVER_DEVICE)
