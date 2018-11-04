@@ -12,8 +12,6 @@ from medusa.common import (
     NOTIFY_GIT_UPDATE_TEXT,
     NOTIFY_LOGIN,
     NOTIFY_LOGIN_TEXT,
-    NOTIFY_SNATCH,
-    NOTIFY_SNATCH_PROPER,
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
