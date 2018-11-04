@@ -20,7 +20,7 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         """Trakt don't support this method."""
         pass
 

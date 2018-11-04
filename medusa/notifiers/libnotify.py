@@ -73,10 +73,9 @@ class Notifier(object):
         self.gobject = GObject
         return True
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         if app.LIBNOTIFY_NOTIFY_ONSNATCH:
-            self._notify(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                         ep_obj.pretty_name_with_quality())
+            self._notify(title, message)
 
     def notify_download(self, ep_obj):
         if app.LIBNOTIFY_NOTIFY_ONDOWNLOAD:

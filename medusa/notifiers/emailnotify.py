@@ -17,8 +17,6 @@ from medusa.common import (
     NOTIFY_DOWNLOAD,
     NOTIFY_GIT_UPDATE,
     NOTIFY_LOGIN,
-    NOTIFY_SNATCH,
-    NOTIFY_SNATCH_PROPER,
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
@@ -67,17 +65,14 @@ class Notifier(object):
         msg['Date'] = formatdate(localtime=True)
         return self._sendmail(host, port, smtp_from, use_tls, user, pwd, [to], msg, True)
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
         ep_name: The name of the episode that was snatched
         """
         if app.USE_EMAIL and app.EMAIL_NOTIFY_ONSNATCH:
-            title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
-            ep_name = ep_obj.pretty_name_with_quality()
-
-            parsed = self._parse_name(ep_name)
+            parsed = self._parse_name(message)
             to = self._generate_recipients(parsed['show'])
             if not to:
                 log.debug('Skipping email notify because there are no configured recipients')
@@ -100,14 +95,14 @@ class Notifier(object):
 
                 except Exception:
                     try:
-                        msg = MIMEText(ep_name)
+                        msg = MIMEText(message)
                     except Exception:
                         msg = MIMEText(title)
 
                 if app.EMAIL_SUBJECT:
                     msg['Subject'] = '{0}: {1}'.format(title, app.EMAIL_SUBJECT)
                 else:
-                    msg['Subject'] = '{0}: {1}'.format(title, ep_name)
+                    msg['Subject'] = '{0}: {1}'.format(title, message)
                 msg['From'] = app.EMAIL_FROM
                 msg['To'] = ','.join(to)
                 msg['Date'] = formatdate(localtime=True)
@@ -115,7 +110,7 @@ class Notifier(object):
                 if self._sendmail(app.EMAIL_HOST, app.EMAIL_PORT, app.EMAIL_FROM, app.EMAIL_TLS,
                                   app.EMAIL_USER, app.EMAIL_PASSWORD, to, msg):
                     log.debug('Snatch notification sent to {recipient} for {episode}',
-                              {'recipient': to, 'episode': ep_name})
+                              {'recipient': to, 'episode': message})
                 else:
                     log.warning('Snatch notification error: {0}', self.last_err)
 

@@ -65,7 +65,7 @@ class Notifier(object):
         else:
             return False
 
-    def _notify_kodi(self, message, title='Medusa', host=None, username=None, password=None,
+    def _notify_kodi(self, title, message, host=None, username=None, password=None,
                      force=False, dest_app='KODI'):
         """Private wrapper for the notify_snatch and notify_download functions.
 
@@ -421,41 +421,38 @@ class Notifier(object):
     # Public functions which will call the JSON or Legacy HTTP API methods
     ##############################################################################
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         """Send the snatch message."""
         if app.KODI_NOTIFY_ONSNATCH:
-            self._notify_kodi(
-                ep_obj.pretty_name_with_quality(),
-                common.notifyStrings[(common.NOTIFY_SNATCH,
-                                      common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_kodi(title, message)
 
     def notify_download(self, ep_obj):
         """Send the download message."""
         if app.KODI_NOTIFY_ONDOWNLOAD:
-            self._notify_kodi(ep_obj.pretty_name_with_quality(), common.notifyStrings[common.NOTIFY_DOWNLOAD])
+            self._notify_kodi(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang):
         """Send the subtitle download message."""
         if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_kodi(ep_obj.pretty_name() + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
+            self._notify_kodi(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         """Send update available message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._notify_kodi(update_text + new_version, title)
+            self._notify_kodi(title, update_text + new_version)
 
     def notify_login(self, ipaddress=''):
         """Send the new login message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._notify_kodi(update_text.format(ipaddress), title)
+            self._notify_kodi(title, update_text.format(ipaddress))
 
     def test_notify(self, host, username, password):
         """Test notifier."""
-        return self._notify_kodi('Testing KODI notifications from Medusa', 'Test Notification', host, username,
+        return self._notify_kodi('Test Notification', 'Testing KODI notifications from Medusa', host, username,
                                  password, force=True)
 
     def update_library(self, series_name=None):

@@ -6,6 +6,11 @@ import logging
 import socket
 
 from medusa import app
+from medusa.common import (
+    NOTIFY_SNATCH,
+    NOTIFY_SNATCH_PROPER,
+    notifyStrings,
+)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.notifiers import (
     boxcar2,
@@ -106,16 +111,20 @@ def notify_subtitle_download(ep_obj, lang):
 
 
 def notify_snatch(ep_obj, result):
+    ep_name = ep_obj.pretty_name_with_quality()
+    is_proper = bool(result.proper_tags)
+    title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+
     if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
             result.leechers not in (-1, None)]):
-            info = u'with {0} seeders and {1} leechers from {2}'.format(
-                result.seeders, result.leechers, result.provider.name)
+            message = u'{0} with {1} seeders and {2} leechers from {3}'.format(
+                ep_name, result.seeders, result.leechers, result.provider.name)
     else:
-        info = 'from {0}'.format(result.provider.name)
+        message = u'{0} from {1}'.format(ep_name, result.provider.name)
 
     for n in notifiers:
         try:
-            n.notify_snatch(ep_obj, result)
+            n.notify_snatch(title, message)
         except (RequestException, socket.gaierror, socket.timeout) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 

@@ -35,13 +35,13 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """Send Join notification when nzb snatched if selected in config."""
         if app.JOIN_NOTIFY_ONSNATCH:
             self._sendjoin(
                 join_api=None,
-                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
-                message=ep_name
+                event=title,
+                message=message
             )
 
     def notify_download(self, ep_name):

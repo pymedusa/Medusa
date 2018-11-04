@@ -30,19 +30,17 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, ep_obj, is_proper):
-        ep_name = ep_obj.pretty_name_with_quality()
+    def notify_snatch(self, title, message):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(ep_name)
+            show = self._parse_episode(message)
             recipients = self._generate_recipients(show)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None,
-                                     event=common.notifyStrings[(common.NOTIFY_SNATCH,
-                                                                 common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                     message=ep_name)
+                                     event=title,
+                                     message=message)
 
     def notify_download(self, ep_obj):
         ep_name = ep_obj.pretty_name_with_quality()

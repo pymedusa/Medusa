@@ -30,7 +30,7 @@ class Notifier(object):
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
@@ -38,9 +38,7 @@ class Notifier(object):
         :param is_proper: Boolean. If snatch is proper or not
         """
         if app.TWITTER_NOTIFY_ONSNATCH:
-            self._notify_twitter('{0}: {1}'.format(common.notifyStrings[(common.NOTIFY_SNATCH,
-                                                                         common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                                   ep_obj.pretty_name_with_quality()))
+            self._notify_twitter('{0}: {1}'.format(title, message))
 
     def notify_download(self, ep_obj):
         """

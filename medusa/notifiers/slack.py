@@ -21,7 +21,7 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """Slack notifier class."""
 
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification to a Slack channel when an episode is snatched.
 
@@ -29,9 +29,8 @@ class Notifier(object):
         :param is_proper: Boolean. If snatch is proper or not
         """
         if app.SLACK_NOTIFY_SNATCH:
-            message = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
-            self._notify_slack('{message} : {ep_name}'.format(message=message,
-                                                              ep_name=ep_obj.pretty_name_with_quality()))
+            self._notify_slack('{title}: {message}'.format(title=title,
+                                                           message=message))
 
     def notify_download(self, ep_obj):
         """
@@ -41,8 +40,8 @@ class Notifier(object):
         """
         if app.SLACK_NOTIFY_DOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_DOWNLOAD]
-            self._notify_slack('{message} : {ep_name}'.format(message=message,
-                                                              ep_name=ep_obj.pretty_name_with_quality()))
+            self._notify_slack('{message}: {ep_name}'.format(message=message,
+                                                             ep_name=ep_obj.pretty_name_with_quality()))
 
     def notify_subtitle_download(self, ep_obj, lang):
         """

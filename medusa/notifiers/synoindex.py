@@ -16,7 +16,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_obj, is_proper):
+    def notify_snatch(self, title, message):
         pass
 
     def notify_download(self, ep_obj):
