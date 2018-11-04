@@ -14,7 +14,7 @@ dirtyjson==1.0.7
 dogpile.cache==0.6.7
 git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
 git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
-future==0.17.0
+future==0.17.1
 futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
 gntp==1.0.3
 guessit==3.0.3
