@@ -422,6 +422,7 @@ class MedusaApp(object):
         self.PUSHOVER_APIKEY = None
         self.PUSHOVER_DEVICE = []
         self.PUSHOVER_SOUND = None
+        self.PUSHOVER_PRIORITY = 0
 
         self.USE_LIBNOTIFY = False
         self.LIBNOTIFY_NOTIFY_ONSNATCH = False

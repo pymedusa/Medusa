@@ -271,6 +271,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.pushover.userKey': StringField(app, 'PUSHOVER_USERKEY'),
         'notifiers.pushover.device': ListField(app, 'PUSHOVER_DEVICE'),
         'notifiers.pushover.sound': StringField(app, 'PUSHOVER_SOUND'),
+        'notifiers.pushover.priority': IntegerField(app, 'PUSHOVER_PRIORITY'),
         'notifiers.pushover.notifyOnSnatch': BooleanField(app, 'PUSHOVER_NOTIFY_ONSNATCH'),
         'notifiers.pushover.notifyOnDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONDOWNLOAD'),
         'notifiers.pushover.notifyOnSubtitleDownload': BooleanField(app, 'PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD'),
@@ -848,6 +849,7 @@ class DataGenerator(object):
         section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
         section_data['pushover']['device'] = app.PUSHOVER_DEVICE
         section_data['pushover']['sound'] = app.PUSHOVER_SOUND
+        section_data['pushover']['priority'] = app.PUSHOVER_PRIORITY
         section_data['pushover']['notifyOnSnatch'] = bool(app.PUSHOVER_NOTIFY_ONSNATCH)
         section_data['pushover']['notifyOnDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
         section_data['pushover']['notifyOnSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)

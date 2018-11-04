@@ -26,7 +26,15 @@ window.app = new Vue({
                 { text: 'High', value: 1 },
                 { text: 'Emergency', value: 2 }
             ],
+            pushoverPriorityOptions: [
+                 { text: 'Lowest', value: -2 },
+                 { text: 'Low', value: -1 },
+                 { text: 'Normal', value: 0 },
+                 { text: 'High', value: 1 },
+                 { text: 'Emergency', value: 2 }
+             ],
             pushoverSoundOptions: [
+                { text: 'Default', value: 'default' },
                 { text: 'Pushover', value: 'pushover' },
                 { text: 'Bike', value: 'bike' },
                 { text: 'Bugle', value: 'bugle' },
@@ -48,8 +56,7 @@ window.app = new Vue({
                 { text: 'Persistent (long)', value: 'persistant' },
                 { text: 'Pushover Echo (long)', value: 'echo' },
                 { text: 'Up Down (long)', value: 'updown' },
-                { text: 'None (silent)', value: 'none' },
-                { text: 'Device specific', value: 'default' }
+                { text: 'None (silent)', value: 'none' }
             ],
             pushbulletDeviceOptions: [
                 { text: 'All devices', value: '' }
@@ -163,6 +170,7 @@ window.app = new Vue({
                     userKey: null,
                     device: [],
                     sound: null,
+                    priority: null,
                     notifyOnSnatch: null,
                     notifyOnDownload: null,
                     notifyOnSubtitleDownload: null
@@ -1396,10 +1404,12 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.pushover.notifyOnDownload" label="Notify on download" id="pushover_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
-                                    <config-textbox v-model="notifiers.pushover.userKey" label="Pushover Key" id="pushover_userkey" :explanations="['user key of your Pushover account']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.pushover.userKey" label="Pushover User Key" id="pushover_userkey" :explanations="['User Key of your Pushover account']" @change="save()" ></config-textbox>
+                                    
+                                    <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API Key" id="pushover_apikey" @change="save()" >
+                                    
+                                    <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
 
-                                    <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API key" id="pushover_apikey" @change="save()" >
-                                        <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </config-textbox>
 
                                     <config-template label-for="pushover_device" label="Pushover Devices">
@@ -1407,13 +1417,22 @@ window.app = new Vue({
                                         <p>List of pushover devices you want to send notifications to</p>
                                     </config-template>
 
-                                    <config-template label-for="pushover_spound" label="Pushover notification sound">
+                                    <config-template label-for="pushover_sound" label="Pushover notification sound">
                                         <select id="pushover_sound" name="pushover_sound" v-model="notifiers.pushover.sound" class="form-control">
                                             <option v-for="option in pushoverSoundOptions" v-bind:value="option.value">
                                                 {{ option.text }}
                                             </option>
                                         </select>
                                         <span>Choose notification sound to use</span>
+                                    </config-template>
+
+                                    <config-template label-for="pushover_priority" label="Pushover notification priority">
+                                        <select id="pushover_priority" name="pushover_priority" v-model="notifiers.pushover.priority" class="form-control">
+                                            <option v-for="option in pushoverPriorityOptions" v-bind:value="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                        <span>priority of Pushover messages from Medusa</span>
                                     </config-template>
 
                                     <div class="testNotification" id="testPushover-result">Click below to test.</div>
