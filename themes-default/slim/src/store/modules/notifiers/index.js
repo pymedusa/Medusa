@@ -11,6 +11,7 @@ import plex from './plex';
 import prowl from './prowl';
 import pushalot from './pushalot';
 import pushbullet from './pushbullet';
+import join from './join';
 import pushover from './pushover';
 import pyTivo from './py-tivo';
 import slack from './slack';
@@ -47,6 +48,7 @@ const modules = {
     prowl,
     pushalot,
     pushbullet,
+    join,
     pushover,
     pyTivo,
     slack,

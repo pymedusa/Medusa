@@ -74,6 +74,8 @@ class ConfigNotifications(Config):
                           use_pushbullet=None, pushbullet_notify_onsnatch=None, pushbullet_notify_ondownload=None,
                           pushbullet_notify_onsubtitledownload=None, pushbullet_api=None, pushbullet_device=None,
                           pushbullet_device_list=None,
+                          use_join=None, join_notify_onsnatch=None, join_notify_ondownload=None,
+                          join_notify_onsubtitledownload=None, join_api=None, join_device=None,
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
                           email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
@@ -251,6 +253,13 @@ class ConfigNotifications(Config):
         app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushbullet_notify_onsubtitledownload)
         app.PUSHBULLET_API = pushbullet_api
         app.PUSHBULLET_DEVICE = pushbullet_device_list
+
+        app.USE_JOIN = config.checkbox_to_value(use_join)
+        app.JOIN_NOTIFY_ONSNATCH = config.checkbox_to_value(join_notify_onsnatch)
+        app.JOIN_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(join_notify_ondownload)
+        app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(join_notify_onsubtitledownload)
+        app.JOIN_API = join_api
+        app.JOIN_DEVICE = join_device
 
         app.instance.save_config()
 

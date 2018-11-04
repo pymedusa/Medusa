@@ -67,6 +67,7 @@ window.app = new Vue({
                 { text: 'Get whole show', value: 2 }
             ],
             pushbulletTestInfo: 'Click below to test.',
+            joinTestInfo: 'Click below to test.',
             twitterTestInfo: 'Click below to test.',
             twitterKey: '',
             emailSelectedShow: null,
@@ -196,6 +197,14 @@ window.app = new Vue({
                     authToken: null,
                     device: null
                 },
+                join: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    api: null,
+                    device: null
+                },
                 freemobile: {
                     enabled: null,
                     notifyOnSnatch: null,
@@ -319,7 +328,7 @@ window.app = new Vue({
             this.notifiers.prowl.api = items.map(item => item.value);
         },
         savePerShowNotifyList(listType) {
-            const { 
+            const {
                 emailSelectedShow,
                 emailUpdateShowEmail,
                 emailSelectedShowAdresses,
@@ -327,7 +336,7 @@ window.app = new Vue({
                 prowlSelectedShowApiKeys,
                 prowlUpdateApiKeys
             } = this;
-            
+
             let form = new FormData();
             let reloadList = prowlUpdateApiKeys;
             if (listType === 'prowl') {
@@ -338,12 +347,12 @@ window.app = new Vue({
                 form.set('emails', emailSelectedShowAdresses);
                 reloadList = emailUpdateShowEmail;
             }
-            
+
             // Save the list
             apiRoute.post('home/saveShowNotifyList', form);
         },
         async prowlUpdateApiKeys(selectedShow) {
-            this.prowlSelectedShow = selectedShow; 
+            this.prowlSelectedShow = selectedShow;
             const response = await apiRoute('home/loadShowNotifyLists')
             if (response.data._size > 0) {
                 const list = response.data[selectedShow].prowl_notify_list ? response.data[selectedShow].prowl_notify_list.split(',') : [];
@@ -351,7 +360,7 @@ window.app = new Vue({
             }
         },
         async emailUpdateShowEmail(selectedShow) {
-            this.emailSelectedShow = selectedShow; 
+            this.emailSelectedShow = selectedShow;
             const response = await apiRoute('home/loadShowNotifyLists')
             if (response.data._size > 0) {
                 const list = response.data[selectedShow].list ? response.data[selectedShow].list.split(',') : [];
@@ -396,9 +405,24 @@ window.app = new Vue({
 
             const response = await apiRoute('home/testPushbullet', { params: { api: pushbulletApiKey }});
             const { data } = response;
-            
+
             if (data) {
                 this.pushbulletTestInfo = data;
+            }
+        },
+        async testJoinApi() {
+            const { api: joinApiKey } = this.notifiers.join;
+            if (!joinApiKey) {
+                this.joinTestInfo = 'You didn\'t supply a Join api key';
+                $('#join_api').find('input').focus();
+                return false;
+            }
+
+            const response = await apiRoute('home/testJoin', { params: { api: joinApiKey }});
+            const { data } = response;
+
+            if (data) {
+                this.joinTestInfo = data;
             }
         },
         async twitterStep1() {
@@ -413,7 +437,7 @@ window.app = new Vue({
             const twitter = {};
             const { twitterKey } = this;
             twitter.key = twitterKey;
-            
+
             if (twitter.key) {
                 const response = await apiRoute('home/twitterStep2', { params: { key: twitter.key } });
                 const { data } = response;
@@ -950,8 +974,8 @@ window.app = new Vue({
                     <li><app-link href="#devices">Devices</app-link></li>
                     <li><app-link href="#social">Social</app-link></li>
                 </ul>
-                
-                <div id="home-theater-nas">    
+
+                <div id="home-theater-nas">
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-kodi" title="KODI"></span>
@@ -967,20 +991,20 @@ window.app = new Vue({
                                 <div v-show="notifiers.kodi.enabled" id="content-use-kodi"> <!-- show based on notifiers.kodi.enabled -->
 
                                     <config-toggle-slider v-model="notifiers.kodi.alwaysOn" label="Always on" id="kodi_always_on" :explanations="['log errors when unreachable?']" @change="save()" ></config-toggle-slider>
-                                    
+
                                     <config-toggle-slider v-model="notifiers.kodi.notifyOnSnatch" label="Notify on snatch" id="kodi_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
 
                                     <config-toggle-slider v-model="notifiers.kodi.notifyOnDownload" label="Notify on download" id="kodi_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
-                                    
+
                                     <config-toggle-slider v-model="notifiers.kodi.notifyOnSubtitleDownload" label="Notify on subtitle download" id="kodi_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
-                                        
+
                                     <config-toggle-slider v-model="notifiers.kodi.update.library" label="Update library" id="kodi_update_library" :explanations="['update KODI library when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.kodi.update.full" label="Full library update" id="kodi_update_full" :explanations="['perform a full library update if update per-show fails?']" @change="save()" ></config-toggle-slider>
 
                                     <config-toggle-slider v-model="notifiers.kodi.cleanLibrary" label="Clean library" id="kodi_clean_library" :explanations="['clean KODI library when replaces a already downloaded episode?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.kodi.update.onlyFirst" label="Only update first host" id="kodi_update_onlyfirst" :explanations="['only send library updates/clean to the first active host?']" @change="save()" ></config-toggle-slider>
-                                    
-                                    
+
+
                                     <div class="form-group">
                                         <div class="row">
                                             <label for="kodi_host" class="col-sm-2 control-label">
@@ -999,7 +1023,7 @@ window.app = new Vue({
                                     <div class="testNotification" id="testKODI-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test KODI" id="testKODI" @click="testKODI"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
-                            
+
                                 </div>
 
                             </fieldset>
@@ -1017,7 +1041,7 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media server -->
-                                
+
                                 <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()" ></config-toggle-slider>
 
                                 <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
@@ -1028,27 +1052,27 @@ window.app = new Vue({
 
                                     <config-textbox v-model="notifiers.plex.server.username" label="Username" id="plex_server_username" :explanations="['blank = no authentication']" @change="save()"></config-textbox>
                                     <config-textbox v-model="notifiers.plex.server.password" type="password" label="Password" id="plex_server_password" :explanations="['blank = no authentication']" @change="save()"></config-textbox>
-                                    
+
                                     <config-toggle-slider v-model="notifiers.plex.server.updateLibrary" label="Update Library" id="plex_update_library" :explanations="['log errors when unreachable?']" @change="save()"></config-toggle-slider>
-                                    
+
                                     <config-template label-for="plex_server_host" label="Plex Media Server IP:Port">
                                         <select-list name="plex_server_host" id="plex_server_host" :list-items="notifiers.plex.server.host" @change="notifiers.plex.server.host = $event.map(x => x.value)"></select-list>
                                         <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                     </config-template>
 
                                     <config-toggle-slider v-model="notifiers.plex.server.https" label="HTTPS" id="plex_server_https" :explanations="['use https for plex media server requests?']" @change="save()"></config-toggle-slider>
-                                    
+
                                     <div class="field-pair">
                                         <div class="testNotification" id="testPMS-result">Click below to test Plex Media Server(s)</div>
                                         <input class="btn-medusa" type="button" value="Test Plex Media Server" id="testPMS" @click="testPMS"/>
                                         <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
                                         <div class="clear-left">&nbsp;</div>
                                     </div>
-                            
+
                                 </div>
                             </fieldset>
                         </div>
-                    </div>    
+                    </div>
 
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
@@ -1059,7 +1083,7 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
                                 <config-toggle-slider v-model="notifiers.plex.client.enabled" label="Enable" id="use_plex_client" :explanations="['Send Plex Home Theater notifications?']" @change="save()" ></config-toggle-slider>
-                                
+
                                 <div v-show="notifiers.plex.client.enabled" id="content-use-plex-client"> <!-- show based on notifiers.plex.server.enabled -->
                                     <config-toggle-slider v-model="notifiers.plex.client.notifyOnSnatch" label="Notify on snatch" id="plex_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.plex.client.notifyOnDownload" label="Notify on download" id="plex_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
@@ -1069,7 +1093,7 @@ window.app = new Vue({
                                         <select-list name="plex_client_host" id="plex_client_host" :list-items="notifiers.plex.client.host" @change="notifiers.plex.client.host = $event.map(x => x.value)"></select-list>
                                         <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                     </config-template>
-                                    
+
                                     <config-textbox v-model="notifiers.plex.client.username" label="Username" id="plex_client_username" :explanations="['blank = no authentication']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.plex.client.password" type="password" label="Password" id="plex_client_password" :explanations="['blank = no authentication']" @change="save()" ></config-textbox>
 
@@ -1095,11 +1119,11 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for emby -->
                                 <config-toggle-slider v-model="notifiers.emby.enabled" label="Enable" id="use_emby" :explanations="['Send update commands to Emby?']" @change="save()" ></config-toggle-slider>
-                                
+
                                 <div v-show="notifiers.emby.enabled" id="content_use_emby">
                                     <config-textbox v-model="notifiers.emby.host" label="Emby IP:Port" id="emby_host" :explanations="['host running Emby (eg. 192.168.1.100:8096)']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.emby.apiKey" label="Api Key" id="emby_apikey" @change="save()" ></config-textbox>
-                                
+
                                     <div class="testNotification" id="testEMBY-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test Emby" id="testEMBY" @click="testEMBY"/>
                                 </div>
@@ -1121,17 +1145,17 @@ window.app = new Vue({
                                     <config-textbox v-model="notifiers.nmj.host" label="Popcorn IP address" id="nmj_host" :explanations="['IP address of Popcorn 200-series (eg. 192.168.1.100)']" @change="save()" ></config-textbox>
 
                                     <config-template label-for="settingsNMJ" label="Get settings">
-                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" @click="settingsNMJ"/>            
+                                        <input class="btn-medusa btn-inline" type="button" value="Get Settings" id="settingsNMJ" @click="settingsNMJ"/>
                                         <span>the Popcorn Hour device must be powered on and NMJ running.</span>
                                     </config-template>
 
                                     <config-textbox v-model="notifiers.nmj.database" label="NMJ database" id="nmj_database" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()" ></config-textbox>
 
                                     <config-textbox v-model="notifiers.nmj.mount" label="NMJ mount" id="nmj_mount" :explanations="['automatically filled via the \'Get Settings\' button.']" @change="save()" ></config-textbox>
-                                
+
                                     <div class="testNotification" id="testNMJ-result">Click below to test.</div>
                                     <input class="btn-medusa" type="button" value="Test NMJ" id="testNMJ" @click="testNMJ"/>
-                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>        
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
 
                                 </div>
                             </fieldset>
@@ -1217,8 +1241,8 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for synology notifier -->
-                                <config-toggle-slider v-model="notifiers.synology.enabled" label="Enable" id="use_synologynotifier" 
-                                    :explanations="['Send notifications to the Synology Notifier?', 'Note: requires Medusa to be running on your Synology DSM.']" 
+                                <config-toggle-slider v-model="notifiers.synology.enabled" label="Enable" id="use_synologynotifier"
+                                    :explanations="['Send notifications to the Synology Notifier?', 'Note: requires Medusa to be running on your Synology DSM.']"
                                     @change="save()" >
                                 </config-toggle-slider>
                                 <div v-show="notifiers.synology.enabled" id="content-use-synology-notifier">
@@ -1251,7 +1275,7 @@ window.app = new Vue({
                         </div>
                     </div>
                 </div><!-- #home-theater-nas //-->
-                
+
                 <div id="devices">
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
@@ -1270,7 +1294,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.growl.host" label="Growl IP:Port" id="growl_host" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
                                     <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" @click="testGrowl"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
@@ -1278,7 +1302,7 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-                
+
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-prowl" title="Prowl"></span>
@@ -1294,7 +1318,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.prowl.notifyOnDownload" label="Notify on download" id="prowl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.prowl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="prowl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.prowl.messageTitle" label="Prowl Message Title" id="prowl_message_title" @change="save()" ></config-textbox>
-                                    
+
                                     <config-template label-for="prowl_api" label="Api">
                                         <select-list name="prowl_api" id="prowl_api" csv-enabled :list-items="notifiers.prowl.api" @change="onChangeProwlApi"></select-list>
                                         <span>Prowl API(s) listed here, will receive notifications for <b>all</b> shows.
@@ -1304,7 +1328,7 @@ window.app = new Vue({
                                             (This field may be blank except when testing.)
                                         </span>
                                     </config-template>
-                                    
+
                                     <config-template label-for="prowl_show_notification_list" label="Show notification list">
                                         <show-selector select-class="form-control input-sm max-input350" placeholder="-- Select a Show --" @change="prowlUpdateApiKeys($event)"></show-selector>
                                     </config-template>
@@ -1323,7 +1347,7 @@ window.app = new Vue({
                                     <config-template label-for="prowl-show-save-button" label="">
                                         <input id="prowl-show-save-button" class="btn-medusa" type="button" value="Save for this show" @click="savePerShowNotifyList('prowl')"/>
                                     </config-template>
-                                    
+
                                     <config-template label-for="prowl_priority" label="Prowl priority">
                                         <select id="prowl_priority" name="prowl_priority" v-model="notifiers.prowl.priority" class="form-control input-sm">
                                             <option v-for="option in prowlPriorityOptions" v-bind:value="option.value">
@@ -1340,7 +1364,7 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-                    
+
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-libnotify" title="Libnotify"></span>
@@ -1351,7 +1375,7 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media client -->
                                 <config-toggle-slider v-model="notifiers.libnotify.enabled" label="Enable" id="use_libnotify_client" :explanations="['Send Libnotify notifications?']" @change="save()" ></config-toggle-slider>
-                                <div v-show="notifiers.libnotify.enabled" id="content-use-libnotify"> 
+                                <div v-show="notifiers.libnotify.enabled" id="content-use-libnotify">
 
                                     <config-toggle-slider v-model="notifiers.libnotify.notifyOnSnatch" label="Notify on snatch" id="libnotify_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.libnotify.notifyOnDownload" label="Notify on download" id="libnotify_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
@@ -1385,6 +1409,7 @@ window.app = new Vue({
                                     <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API Key" id="pushover_apikey" @change="save()" >
                                     
                                     <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
+
                                     </config-textbox>
 
                                     <config-template label-for="pushover_device" label="Pushover Devices">
@@ -1434,7 +1459,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.boxcar2.notifyOnDownload" label="Notify on download" id="boxcar2_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.boxcar2.notifyOnSubtitleDownload" label="Notify on subtitle download" id="boxcar2_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.boxcar2.accessToken" label="Boxcar2 Access token" id="boxcar2_accesstoken" :explanations="['access token for your Boxcar account.']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testBoxcar2-result">Click below to test.</div>
                                     <input  class="btn-medusa" type="button" value="Test Boxcar" id="testBoxcar2" @click="testBoxcar2"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
@@ -1459,7 +1484,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.pushalot.notifyOnDownload" label="Notify on download" id="pushalot_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.pushalot.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushalot_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.pushalot.authToken" label="Pushalot authorization token" id="pushalot_authorizationtoken" :explanations="['authorization token of your Pushalot account.']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testPushalot-result">Click below to test.</div>
                                     <input type="button" class="btn-medusa" value="Test Pushalot" id="testPushalot" @click="testPushalot"/>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
@@ -1494,7 +1519,7 @@ window.app = new Vue({
                                         </select>
                                         <span>select device you wish to push to.</span>
                                     </config-template>
-                                    
+
                                     <div class="testNotification" id="testPushbullet-resultsfsf">{{pushbulletTestInfo}}</div>
                                     <input type="button" class="btn-medusa" value="Test Pushbullet" id="testPushbullet" @click="testPushbulletApi" />
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
@@ -1505,7 +1530,33 @@ window.app = new Vue({
 
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
-                                <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
+                            <span class="icon-notifiers-join" title="Join"></span>
+                            <h3><app-link href="https://joaoapps.com/join/">Join</app-link></h3>
+                            <p>Join is a platform for receiving custom push notifications to connected devices running Android and desktop Chrome browsers.</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for join client -->
+                                <config-toggle-slider v-model="notifiers.join.enabled" label="Enable" id="use_join" :explanations="['Send join notifications?']" @change="save()" ></config-toggle-slider>
+                                <div v-show="notifiers.join.enabled" id="content-use-join-client"> <!-- show based on notifiers.join.enabled -->
+
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnSnatch" label="Notify on snatch" id="join_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnDownload" label="Notify on download" id="join_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.join.notifyOnSubtitleDownload" label="Notify on subtitle download" id="join_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.join.api" label="Join API key" id="join_api" :explanations="['API key of your Join account.']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.join.device" label="Join Device ID(s) key" id="join_device" :explanations="['Enter DeviceID of the device(s) you wish to send notifications to, comma separated if using multiple.']" @change="save()" ></config-textbox>
+
+                                    <div class="testNotification" id="testJoin-result">{{joinTestInfo}}</div>
+                                    <input type="button" class="btn-medusa" value="Test Join" id="testJoin" @click="testJoinApi" />
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes"/>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-freemobile" title="Free Mobile"></span>
                                 <h3><app-link href="http://mobile.free.fr/">Free Mobile</app-link></h3>
                                 <p>Free Mobile is a famous French cellular network provider.<br> It provides to their customer a free SMS API.</p>
                         </div>
@@ -1520,7 +1571,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.freemobile.notifyOnSubtitleDownload" label="Notify on subtitle download" id="freemobile_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.freemobile.id" label="Free Mobile customer ID" id="freemobile_id" :explanations="['It\'s your Free Mobile customer ID (8 digits)']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.freemobile.api" label="Free Mobile API Key" id="freemobile_apikey" :explanations="['Find your API Key in your customer portal.']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testFreeMobile-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test SMS" id="testFreeMobile" @click="testFreeMobile"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
@@ -1528,7 +1579,7 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-        
+
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-telegram" title="Telegram"></span>
@@ -1546,7 +1597,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.telegram.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.telegram.id" label="User/group ID" id="telegram_id" :explanations="['Contact @myidbot on Telegram to get an ID']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.telegram.api" label="Bot API token" id="telegram_apikey" :explanations="['Contact @BotFather on Telegram to set up one']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testTelegram-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test Telegram" id="testTelegram" @click="testTelegram"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
@@ -1556,8 +1607,8 @@ window.app = new Vue({
                     </div>
 
                 </div><!-- #devices //-->
-                
-                <div id="social">                    
+
+                <div id="social">
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-twitter" title="Twitter"></span>
@@ -1574,10 +1625,10 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.twitter.notifyOnDownload" label="Notify on download" id="twitter_notify_ondownload" :explanations="['send an SMS when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.twitter.notifyOnSubtitleDownload" label="Notify on subtitle download" id="twitter_notify_onsubtitledownload" :explanations="['send an SMS when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.twitter.directMessage" label="Send direct message" id="twitter_usedm" :explanations="['send a notification via Direct Message, not via status update']" @change="save()" ></config-toggle-slider>
-                                    
-                                    
+
+
                                     <config-textbox v-model="notifiers.twitter.dmto" label="Send DM to" id="twitter_dmto" :explanations="['Twitter account to send Direct Messages to (must follow you)']" @change="save()" ></config-textbox>
-                                    
+
                                     <config-template label-for="twitterStep1" label="Step 1">
                                         <span style="font-size: 11px;">Click the "Request Authorization" button. </br>This will open a new page containing an auth key. </br>Note: if nothing happens check your popup blocker.</span>
                                         <p><input class="btn-medusa" type="button" value="Request Authorization" id="twitter-step-1" @click="twitterStep1($event)"/></p>
@@ -1595,7 +1646,7 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-                
+
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-trakt" title="Trakt"></span>
@@ -1609,7 +1660,7 @@ window.app = new Vue({
                                 <div v-show="notifiers.trakt.enabled" id="content-use-trakt-client"> <!-- show based on notifiers.trakt.enabled -->
 
                                     <config-textbox v-model="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()" ></config-textbox>
-                                    
+
                                     <config-template label-for="twitterStep2" label="Trakt PIN">
                                         <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
                                         <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" @click="TraktGetPin"/>
@@ -1618,7 +1669,7 @@ window.app = new Vue({
                                     </config-template>
 
                                     <config-textbox-number v-model="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']"></config-textbox-number>
-                                    
+
                                     <config-template label-for="twitterStep2" label="Trakt PIN">
                                         <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
                                             <option v-for="option in traktIndexersOptions" v-bind:value="option.value">
@@ -1626,7 +1677,7 @@ window.app = new Vue({
                                             </option>
                                         </select>
                                     </config-template id="trakt_default_indexer" label="Default Indexer">
-                                    
+
                                     <config-toggle-slider v-model="notifiers.trakt.sync" label="Sync libraries" id="trakt_sync" :explanations="
                                     ['Sync your Medusa show library with your Trakt collection.',
                                     'Note: Don\'t enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.',
@@ -1651,15 +1702,15 @@ window.app = new Vue({
                                             </select>
                                             <p>method in which to download episodes for new shows.</p>
                                         </config-template>
-                                    
+
                                         <config-toggle-slider v-model="notifiers.trakt.removeWatchlist" label="Remove episode" id="trakt_remove_watchlist" :explanations="['remove an episode from your watchlist after it\'s downloaded.']" @change="save()" ></config-toggle-slider>
                                         <config-toggle-slider v-model="notifiers.trakt.removeSerieslist" label="Remove series" id="trakt_remove_serieslist" :explanations="['remove the whole series from your watchlist after any download.']" @change="save()" ></config-toggle-slider>
                                         <config-toggle-slider v-model="notifiers.trakt.removeShowFromApplication" label="Remove watched show" id="trakt_remove_show_from_application" :explanations="['remove the show from Medusa if it\'s ended and completely watched']" @change="save()" ></config-toggle-slider>
                                         <config-toggle-slider v-model="notifiers.trakt.startPaused" label="Start paused" id="trakt_start_paused" :explanations="['shows grabbed from your trakt watchlist start paused.']" @change="save()" ></config-toggle-slider>
-                                    
+
                                     </div>
                                     <config-textbox v-model="notifiers.trakt.blacklistName" label="Trakt blackList name" id="trakt_blacklist_name" :explanations="['Name(slug) of List on Trakt for blacklisting show on \'Add Trending Show\' & \'Add Recommended Shows\' pages']" @change="save()" ></config-textbox>
-                                    
+
                                     <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                     <input type="button" class="btn-medusa" value="Test Trakt" id="testTrakt" @click="testTrakt"/>
                                     <input type="button" class="btn-medusa" value="Force Sync" id="forceSync" @click="traktForceSync"/>
@@ -1669,7 +1720,7 @@ window.app = new Vue({
                             </fieldset>
                         </div>
                     </div>
-                
+
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-email" title="Email"></span>
@@ -1691,13 +1742,13 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()" ></config-textbox>
-                                    
+
                                     <config-template label-for="email_list" label="Global email list">
                                         <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>
                                         Email addresses listed here, will receive notifications for <b>all</b> shows.<br>
                                         (This field may be blank except when testing.)
                                     </config-template>
-                                    
+
                                     <config-textbox v-model="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
                                     ['Use a custom subject for some privacy protection?<br>',
                                         '(Leave blank for the default Medusa subject)']" @change="save()" >
@@ -1744,7 +1795,7 @@ window.app = new Vue({
                                     <config-textbox v-model="notifiers.slack.webhook" label="Slack Incoming Webhook" id="slack_webhook" :explanations="['Create an incoming webhook, to communicate with your slack channel.']" @change="save()" >
                                         <app-link href="https://my.slack.com/services/new/incoming-webhook">https://my.slack.com/services/new/incoming-webhook/</app-link></span>
                                     </config-textbox>
-                                    
+
                                     <div class="testNotification" id="testSlack-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test Slack" id="testSlack" @click="testSlack"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
