@@ -12,8 +12,6 @@ from medusa.common import (
     NOTIFY_GIT_UPDATE_TEXT,
     NOTIFY_LOGIN,
     NOTIFY_LOGIN_TEXT,
-    NOTIFY_SNATCH,
-    NOTIFY_SNATCH_PROPER,
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
@@ -89,16 +87,15 @@ class Notifier(object):
             log.info(message)
         return success, message
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """
         Sends a Telegram notification when an episode is snatched
 
         :param ep_name: The name of the episode snatched
         :param is_proper: Boolean. If snatch is proper or not
         """
-        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.TELEGRAM_NOTIFY_ONSNATCH:
-            self._notify_telegram(title, ep_name)
+            self._notify_telegram(title, message)
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         """

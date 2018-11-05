@@ -16,32 +16,33 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         if app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH:
-            self._send_synologyNotifier(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._send_synologyNotifier(title, message)
 
     def notify_download(self, ep_obj):
         if app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD:
-            self._send_synologyNotifier(ep_obj.pretty_name_with_quality(),
-                                        common.notifyStrings[common.NOTIFY_DOWNLOAD])
+            self._send_synologyNotifier(common.notifyStrings[common.NOTIFY_DOWNLOAD],
+                                        ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang):
         if app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._send_synologyNotifier(ep_obj.pretty_name() + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
+            self._send_synologyNotifier(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
+                                        ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.USE_SYNOLOGYNOTIFIER:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._send_synologyNotifier(update_text + new_version, title)
+            self._send_synologyNotifier(title, update_text + new_version)
 
     def notify_login(self, ipaddress=''):
         if app.USE_SYNOLOGYNOTIFIER:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._send_synologyNotifier(update_text.format(ipaddress), title)
+            self._send_synologyNotifier(title, update_text.format(ipaddress))
 
-    def _send_synologyNotifier(self, message, title):
+    def _send_synologyNotifier(self, title, message):
         synodsmnotify_cmd = ['/usr/syno/bin/synodsmnotify', '@administrators', title, message]
         log.info(u'Executing command {0}', synodsmnotify_cmd)
         log.debug(u'Absolute path to command: {0}', os.path.abspath(synodsmnotify_cmd[0]))

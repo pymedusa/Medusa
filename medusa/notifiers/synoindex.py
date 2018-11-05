@@ -16,13 +16,13 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         pass
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         pass
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         pass
 
     def notify_git_update(self, new_version):

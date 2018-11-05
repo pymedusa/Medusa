@@ -22,21 +22,21 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
-    def notify_snatch(self, ep_name, is_proper):  # pylint: disable=unused-argument
+    def notify_snatch(self, title, message):
         return False
         # Not implemented: Start the scanner when snatched does not make any sense
 
-    def notify_download(self, ep_name):  # pylint: disable=unused-argument
+    def notify_download(self, ep_obj):
         self._notifyNMJ()
 
-    def notify_subtitle_download(self, ep_name, lang):  # pylint: disable=unused-argument
+    def notify_subtitle_download(self, ep_obj, lang):
         self._notifyNMJ()
 
-    def notify_git_update(self, new_version):  # pylint: disable=unused-argument
+    def notify_git_update(self, new_version):
         return False
         # Not implemented, no reason to start scanner.
 
-    def notify_login(self, ipaddress=''):  # pylint: disable=unused-argument
+    def notify_login(self, ipaddress=''):
         return False
 
     def test_notify(self, host):
