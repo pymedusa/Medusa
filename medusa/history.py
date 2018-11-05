@@ -22,7 +22,6 @@ import datetime
 
 from medusa import db
 from medusa.common import FAILED, SNATCHED, SUBTITLED
-from medusa.helper.encoding import ss
 from medusa.show.history import History
 
 
@@ -37,8 +36,7 @@ def _log_history_item(action, ep_obj, resource, provider, version=-1, proper_tag
     :param provider: provider used
     :param version: tracked version of file (defaults to -1)
     """
-    logDate = datetime.datetime.today().strftime(History.date_format)
-    resource = ss(resource)
+    log_date = datetime.datetime.today().strftime(History.date_format)
 
     main_db_con = db.DBConnection()
     main_db_con.action(
@@ -46,8 +44,8 @@ def _log_history_item(action, ep_obj, resource, provider, version=-1, proper_tag
         '(action, date, indexer_id, showid, season, episode, quality, '
         'resource, provider, version, proper_tags, manually_searched, info_hash, size) '
         'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [action, logDate, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode, ep_obj.quality,
-         resource, provider, version, proper_tags, manually_searched, info_hash, size])
+        [action, log_date, ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season, ep_obj.episode,
+         ep_obj.quality, resource, provider, version, proper_tags, manually_searched, info_hash, size])
 
 
 def log_snatch(search_result):
