@@ -44,22 +44,22 @@ class Notifier(object):
                 message=message
             )
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """Send Join notification when nzb download completed if selected in config."""
         if app.JOIN_NOTIFY_ONDOWNLOAD:
             self._sendjoin(
                 join_api=None,
-                event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ' : ' + ep_name,
-                message=ep_name
+                event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + ep_obj.pretty_name_with_quality(),
+                message=ep_obj.pretty_name_with_quality()
             )
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """Send Join notification when subtitles downloaded if selected in config."""
         if app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendjoin(
                 join_api=None,
-                event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
-                message=ep_name + ': ' + lang
+                event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ': ' + ep_obj.pretty_name() + ': ' + lang,
+                message=ep_obj.pretty_name() + ': ' + lang
             )
 
     def notify_git_update(self, new_version='??'):
