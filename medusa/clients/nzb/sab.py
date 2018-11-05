@@ -10,6 +10,7 @@ https://github.com/sabnzbd/sabnzbd
 from __future__ import unicode_literals
 
 import datetime
+import json
 import logging
 
 from medusa import app
@@ -79,8 +80,8 @@ def send_nzb_get(params, nzb):
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}', data)
         result, text = _check_sab_response(data)
+        log.debug('Result text from SAB: {0}', text)
         del text
         return result
 
@@ -112,8 +113,8 @@ def send_nzb_post(params, nzb):
     if not data:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}', data)
         result, text = _check_sab_response(data)
+        log.debug('Result text from SAB: {0}', text)
         del text
         return result
 
@@ -127,12 +128,14 @@ def _check_sab_response(jdata):
     """
     error = jdata.get('error')
 
-    if error == 'API Key Incorrect':
+    if error == 'API Key Required':
+        log.warning("Sabnzbd's API key is missing")
+    elif error == 'API Key Incorrect':
         log.warning("Sabnzbd's API key is incorrect")
     elif error:
         log.error('Sabnzbd encountered an error: {0}', error)
 
-    return not error, error or jdata
+    return not error, error or json.dumps(jdata)
 
 
 def get_sab_access_method(host=None):
@@ -178,5 +181,5 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
         log.info('Error connecting to sab, no data returned')
     else:
         # check the result and determine if it's good or not
-        result, sab_text = _check_sab_response(data)
-        return result, 'success' if result else sab_text
+        result, text = _check_sab_response(data)
+        return result, 'success' if result else text

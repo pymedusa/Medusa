@@ -40,6 +40,8 @@ from logging import (
 )
 from logging.handlers import RotatingFileHandler
 
+import adba
+
 import knowit
 
 from medusa import app
@@ -611,6 +613,7 @@ class Logger(object):
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
         self.loggers.extend(get_loggers(knowit))
+        self.loggers.extend(get_loggers(adba))
 
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger

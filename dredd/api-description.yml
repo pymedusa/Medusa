@@ -1373,7 +1373,7 @@ definitions:
                 type: string
               method:
                 type: string
-                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
           news:
             type: object
             properties:
@@ -1479,7 +1479,479 @@ definitions:
                 type: string
               multiEpStrings:
                 type: object
-
+      search:
+        type: object
+        properties:
+          general:
+            type: object
+            properties:
+              randomizeProviders:
+                type: boolean
+              downloadPropers:
+                type: boolean
+              checkPropersInterval:
+                type: string
+              propersSearchDays:
+                type: integer
+              backlogDays:
+                type: integer
+              backlogFrequency:
+                type: integer
+              minBacklogFrequency:
+                type: integer
+              dailySearchFrequency:
+                type: integer
+              minDailySearchFrequency:
+                type: integer
+              removeFromClient:
+                type: boolean
+              torrentCheckerFrequency:
+                type: integer
+              minTorrentCheckerFrequency:
+                type: integer
+              usenetRetention:
+                type: integer
+              trackersList:
+                type: array
+              allowHighPriority:
+                type: boolean
+              useFailedDownloads:
+                type: boolean
+              deleteFailed:
+                type: boolean
+              cacheTrimming:
+                type: boolean
+              maxCacheAge:
+                type: integer
+          filters:
+            type: object
+            properties:
+              ignored:
+                type: array
+              undesired:
+                type: array
+              preferred:
+                type: array
+              required:
+                type: array
+              ignoredSubsList:
+                type: array
+              ignoreUnknownSubs:
+                type: boolean
+          showDownloadDir:
+            type: string
+          processAutomatically:
+            type: boolean
+          postponeIfSyncFiles:
+            type: boolean
+          postponeIfNoSubs:
+            type: boolean
+          renameEpisodes:
+            type: boolean
+          createMissingShowDirs:
+            type: boolean
+          addShowsWithoutDir:
+            type: boolean
+          moveAssociatedFiles:
+            type: boolean
+          nfoRename:
+            type: boolean
+          airdateEpisodes:
+            type: boolean
+          unpack:
+            type: boolean
+          deleteRarContent:
+            type: boolean
+          noDelete:
+            type: boolean
+          processMethod:
+            type: string
+          reflinkAvailable:
+            type: boolean
+          autoPostprocessorFrequency:
+            type: integer
+          syncFiles:
+            type: array
+          fileTimestampTimezone:
+            type: string
+          allowedExtensions:
+            type: array
+          extraScripts:
+            type: array
+          extraScriptsUrl:
+            type: string
+          multiEpStrings:
+            type: object
+      notifiers:
+        type: object
+        properties:
+          kodi:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              alwaysOn:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+              update:
+                type: object
+                properties:
+                  library:
+                    type: boolean
+                  full:
+                    type: boolean
+                  onlyFirst:
+                    type: boolean
+              host:
+                type: array
+              username:
+                type: string
+              password:
+                type: string
+              libraryCleanPending:
+                type: boolean
+              cleanLibrary:
+                type: boolean
+          plex:
+            type: object
+            properties:
+              server:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  updateLibrary:
+                    type: boolean
+                  host:
+                    type: array
+                  https:
+                    type: boolean
+                  username:
+                    type: string
+                  password:
+                    type: string
+                  token:
+                    type: string
+              client:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  username:
+                    type: string
+                  host:
+                    type: array
+                  notifyOnSnatch:
+                    type: boolean
+                  notifyOnDownload:
+                    type: boolean
+                  notifyOnSubtitleDownload:
+                    type: boolean
+          emby:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              apiKey:
+                type: string
+          nmj:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              database:
+                type: string
+              mount:
+                type: string
+          nmjv2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              dbloc:
+                type: string
+              database:
+                type: string
+          synologyIndex:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          synology:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pyTivo:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              name:
+                type: string
+              shareName:
+                type: string
+          growl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              password:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          prowl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: array
+              messageTitle:
+                type: string
+              priority:
+                type: integer
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          libnotify:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushover:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              apiKey:
+                type: string
+              userKey:
+                type: string
+              device:
+                type: array
+              sound:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          boxcar2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              accessToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushalot:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              authToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushbullet:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          join:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              device:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          freemobile:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          telegram:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          twitter:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dmto:
+                type: string
+              username:
+                type: string
+              password:
+                type: string
+              prefix:
+                type: string
+              directMessage:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          trakt:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              pinUrl:
+                type: string
+              username:
+                type: string
+              accessToken:
+                type: string
+              timeout:
+                type: integer
+              defaultIndexer:
+                type: integer
+              sync:
+                type: boolean
+              syncRemove:
+                type: boolean
+              syncWatchlist:
+                type: boolean
+              methodAdd:
+                type: integer
+              removeWatchlist:
+                type: boolean
+              removeSerieslist:
+                type: boolean
+              removeShowFromApplication:
+                type: boolean
+              startPaused:
+                type: boolean
+              blacklistName:
+                type: string
+          email:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              port:
+                type: integer
+              from:
+                type: string
+              tls:
+                type: boolean
+              username:
+                type: string
+              password:
+                type: string
+              addressList:
+                type: array
+              subject:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          slack:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              webhook:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
   Log:
     type: object
     properties:
@@ -1917,6 +2389,8 @@ parameters:
       - statuses
       - qualities
       - metadata
+      - search
+      - notifiers
   log-level:
     name: level
     in: query

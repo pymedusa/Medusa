@@ -77,6 +77,7 @@ from medusa.config import (
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -90,7 +91,6 @@ from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
 
-from six import text_type
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,8 @@ class Application(object):
 
                     # Check for the different possible images and move them.
                     for image_type in ('poster', 'fanart', 'banner'):
-                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id, image_type=image_type)
+                        image_name = '{series_id}.{image_type}.jpg'.format(series_id=series_obj.series_id,
+                                                                           image_type=image_type)
                         src = os.path.join(app.CACHE_DIR, 'images', image_name)
                         dst = os.path.join(images_root_indexer, image_name)
                         if os.path.isfile(src) and not os.path.isfile(dst):
@@ -213,31 +214,7 @@ class Application(object):
         app.PROG_DIR = os.path.dirname(app.MY_FULLNAME)
         app.DATA_DIR = app.PROG_DIR
         app.MY_ARGS = args
-
-        try:
-            locale.setlocale(locale.LC_ALL, '')
-            app.SYS_ENCODING = locale.getpreferredencoding()
-        except (locale.Error, IOError):
-            app.SYS_ENCODING = 'UTF-8'
-
-        # pylint: disable=no-member
-        if (not app.SYS_ENCODING or
-                app.SYS_ENCODING.lower() in ('ansi_x3.4-1968', 'us-ascii', 'ascii', 'charmap') or
-                (sys.platform.startswith('win') and
-                    sys.getwindowsversion()[0] >= 6 and
-                    text_type(getattr(sys.stdout, 'device', sys.stdout).encoding).lower() in ('cp65001', 'charmap'))):
-            app.SYS_ENCODING = 'UTF-8'
-
-        # TODO: Continue working on making this unnecessary, this hack creates all sorts of hellish problems
-        if not hasattr(sys, 'setdefaultencoding'):
-            reload(sys)
-
-        try:
-            # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
-            sys.setdefaultencoding(app.SYS_ENCODING)  # pylint: disable=no-member
-        except (AttributeError, LookupError):
-            sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable or '
-                     'find another way to force Python to use {encoding} for string encoding.'.format(encoding=app.SYS_ENCODING))
+        app.SYS_ENCODING = sys.getfilesystemencoding()
 
         self.console_logging = (not hasattr(sys, 'frozen')) or (app.MY_NAME.lower().find('-console') > 0)
 
@@ -378,6 +355,13 @@ class Application(object):
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
+        if not is_valid_encoding(app.SYS_ENCODING):
+            logger.warning(
+                'Your system is using an invalid encoding: {encoding}. Please change your encoding '
+                'as soon as possible or you could encounter unexpected issues.', encoding=app.SYS_ENCODING
+            )
+            app.SYS_ENCODING = 'utf-8'
+
         self.clear_cache()
         self.migrate_images()
 
@@ -451,7 +435,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet', 'Join',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -641,8 +625,7 @@ class Application(object):
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
             app.AUTOPOSTPROCESSOR_FREQUENCY = max(app.MIN_AUTOPOSTPROCESSOR_FREQUENCY,
-                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency',
-                                                                    app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY))
+                                                  check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency', 10))
 
             app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
                                                 check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
@@ -813,7 +796,8 @@ class Application(object):
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
             app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
-            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
+            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'default')
+            app.PUSHOVER_PRIORITY = check_setting_str(app.CFG, 'Pushover', 'pushover_priority', '0')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
             app.LIBNOTIFY_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Libnotify', 'libnotify_notify_onsnatch', 0))
@@ -891,6 +875,13 @@ class Application(object):
             app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Pushbullet', 'pushbullet_notify_onsubtitledownload', 0))
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
+
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Pushbullet', 'use_join', 0))
+            app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
+            app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
+            app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
+            app.JOIN_API = check_setting_str(app.CFG, 'Join', 'join_api', '', censor_log='low')
+            app.JOIN_DEVICE = check_setting_str(app.CFG, 'Join', 'join_device', '')
 
             app.USE_EMAIL = bool(check_setting_int(app.CFG, 'Email', 'use_email', 0))
             app.EMAIL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Email', 'email_notify_onsnatch', 0))
@@ -1790,6 +1781,7 @@ class Application(object):
         new_config['Pushover']['pushover_apikey'] = app.PUSHOVER_APIKEY
         new_config['Pushover']['pushover_device'] = app.PUSHOVER_DEVICE
         new_config['Pushover']['pushover_sound'] = app.PUSHOVER_SOUND
+        new_config['Pushover']['pushover_priority'] = app.PUSHOVER_PRIORITY
 
         new_config['Libnotify'] = {}
         new_config['Libnotify']['use_libnotify'] = int(app.USE_LIBNOTIFY)
@@ -1868,6 +1860,14 @@ class Application(object):
         new_config['Pushbullet']['pushbullet_notify_onsubtitledownload'] = int(app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Pushbullet']['pushbullet_api'] = app.PUSHBULLET_API
         new_config['Pushbullet']['pushbullet_device'] = app.PUSHBULLET_DEVICE
+
+        new_config['Join'] = {}
+        new_config['Join']['use_join'] = int(app.USE_JOIN)
+        new_config['Join']['join_notify_onsnatch'] = int(app.JOIN_NOTIFY_ONSNATCH)
+        new_config['Join']['join_notify_ondownload'] = int(app.JOIN_NOTIFY_ONDOWNLOAD)
+        new_config['Join']['join_notify_onsubtitledownload'] = int(app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Join']['join_api'] = app.JOIN_API
+        new_config['Join']['join_device'] = app.JOIN_DEVICE
 
         new_config['Email'] = {}
         new_config['Email']['use_email'] = int(app.USE_EMAIL)

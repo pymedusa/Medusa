@@ -198,7 +198,7 @@
 ? DVD.Real.XViD
 ? DVD.fix.XViD
 : options: --exclude other
-  -other: Proper
+  -other: Fix
   -proper_count: 1
 
 ? Part 3

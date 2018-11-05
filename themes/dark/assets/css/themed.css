@@ -787,12 +787,16 @@ legend.legendStep {
     margin-bottom: 0;
 }
 
-div.stepsguide .step p {
+div.stepsguide .step {
     margin: 12px 0;
     border-bottom: 4px solid rgb(35, 175, 220);
 }
 
-div.stepsguide .disabledstep p {
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
+div.stepsguide .disabledstep {
     border-bottom: 4px solid rgb(17, 120, 179);
 }
 

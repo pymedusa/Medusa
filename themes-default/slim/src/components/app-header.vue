@@ -107,7 +107,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 
 export default {
     name: 'app-header',
@@ -128,7 +128,10 @@ export default {
         };
     },
     computed: {
-        ...mapState(['config']),
+        ...mapState([
+            'config',
+            'notifiers'
+        ]),
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
@@ -176,8 +179,9 @@ export default {
             return '';
         },
         linkVisible() {
-            const { config } = this;
-            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { config, notifiers } = this;
+            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { kodi, plex, emby } = notifiers;
 
             return {
                 plex: plex.server.enabled && plex.server.host.length !== 0,

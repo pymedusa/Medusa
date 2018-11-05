@@ -60,7 +60,7 @@
                                                 <span>Auto Post-Processing Frequency</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model="postProcessing.autoPostprocessorFrequency" class="form-control input-sm input75" />
+                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model.number="postProcessing.autoPostprocessorFrequency" class="form-control input-sm input75" />
                                                 <span>Time in minutes to check for new files to auto post-process (min 10)</span>
                                             </div>
                                         </div>
@@ -359,10 +359,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import AppLink from './app-link.vue';
-import FileBrowser from './file-browser.vue';
-import NamePattern from './name-pattern.vue';
-import SelectList from './select-list.vue';
+import { AppLink, FileBrowser, NamePattern, SelectList } from './helpers';
 
 export default {
     name: 'config-post-processing',
@@ -569,11 +566,10 @@ export default {
         },
         'metadata.metadataProviders': {
             handler(newValue) {
-                const { getFirstEnabledMetadataProvider } = this;
-
                 // Map the state values to local data.
                 this.metadataProviders = Object.assign({}, this.metadataProviders, newValue);
-                this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+                // This is not properly worked out. metadata.metadataProviders watch is triggered, when a users clicks on one of the chechboxes.
+                // this.metadataProviderSelected = getFirstEnabledMetadataProvider();
             },
             deep: true,
             immediate: false

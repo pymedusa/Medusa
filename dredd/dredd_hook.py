@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 """Dredd hook."""
 from __future__ import absolute_import
 

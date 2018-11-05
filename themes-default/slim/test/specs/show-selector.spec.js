@@ -52,6 +52,9 @@ test('renders with shows', t => {
                 };
             }
         },
+        propsData: {
+            placeholder: '-- Select a Show --'
+        },
         store
     });
 
@@ -73,6 +76,9 @@ test('renders with articles(The|A|An) ignored', t => {
                 };
             }
         },
+        propsData: {
+            placeholder: '-- Select a Show --'
+        },
         store
     });
 
@@ -80,6 +86,30 @@ test('renders with articles(The|A|An) ignored', t => {
 });
 
 test('renders with split sections', t => {
+    const { localVue, store } = t.context;
+    const wrapper = mount(ShowSelector, {
+        localVue,
+        computed: {
+            shows() {
+                return shows;
+            },
+            config() {
+                return {
+                    animeSplitHome: false,
+                    sortArticle: 'asc'
+                };
+            }
+        },
+        propsData: {
+            placeholder: '-- Select a Show --'
+        },
+        store
+    });
+
+    t.snapshot(wrapper.html());
+});
+
+test('renders without placeholder', t => {
     const { localVue, store } = t.context;
     const wrapper = mount(ShowSelector, {
         localVue,

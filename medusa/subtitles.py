@@ -597,58 +597,54 @@ def get_current_subtitles(tv_episode):
         return get_subtitles(video)
 
 
-def _encode(value, fallback=None):
+def _encode(value):
     """Encode the value using the specified encoding.
 
-    It fallbacks to the specified encoding or SYS_ENCODING if not defined
+    It fallbacks to UTF-8 if not defined
 
     :param value: the value to be encoded
     :type value: str
     :param encoding: the encoding to be used
     :type encoding: str
-    :param fallback: the fallback encoding to be used
-    :type fallback: str
     :return: the encoded value
     :rtype: str
     """
     if isinstance(value, binary_type):
         return value
 
-    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+    encoding = app.SYS_ENCODING
 
     try:
         return value.encode(encoding)
     except UnicodeEncodeError:
-        logger.debug(u'Failed to encode to %s, falling back to %s: %r',
-                     encoding, fallback or app.SYS_ENCODING, value)
-        return value.encode(fallback or app.SYS_ENCODING)
+        logger.debug(u'Failed to encode to %s, falling back to UTF-8: %r',
+                     encoding, value)
+        return value.encode('utf-8')
 
 
-def _decode(value, fallback=None):
+def _decode(value):
     """Decode the value using the specified encoding.
 
-    It fallbacks to the specified encoding or SYS_ENCODING if not defined
+    It fallbacks to UTF-8 if not defined
 
     :param value: the value to be encoded
     :type value: str
     :param encoding: the encoding to be used
     :type encoding: str
-    :param fallback: the fallback encoding to be used
-    :type fallback: str
     :return: the decoded value
     :rtype: unicode
     """
     if isinstance(value, text_type):
         return value
 
-    encoding = 'utf-8' if os.name != 'nt' else app.SYS_ENCODING
+    encoding = app.SYS_ENCODING
 
     try:
         return text_type(value, encoding)
     except UnicodeDecodeError:
-        logger.debug(u'Failed to decode to %s, falling back to %s: %r',
-                     encoding, fallback or app.SYS_ENCODING, value)
-        return text_type(value, fallback or app.SYS_ENCODING)
+        logger.debug(u'Failed to decode to %s, falling back to UTF-8: %r',
+                     encoding, value)
+        return text_type(value, 'utf-8')
 
 
 def get_subtitle_description(subtitle):
@@ -717,6 +713,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.debug(u'Found cached video information under key %s', key)
         return cached_payload['video']
 
+    video_is_mkv = video_path.endswith('.mkv')
     video_path = _encode(video_path)
     subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
 
@@ -738,7 +735,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
 
         if embedded_subtitles is None:
-            embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
+            embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_is_mkv)
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
@@ -1016,7 +1013,7 @@ class SubtitlesFinder(object):
 
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')
-            subtitle_path = _encode(ep_to_sub['location'], fallback='utf-8')
+            subtitle_path = _encode(ep_to_sub['location'])
             if not os.path.isfile(subtitle_path):
                 logger.debug('Episode file does not exist, cannot download subtitles for %s %s',
                              ep_to_sub['show_name'], ep_num)

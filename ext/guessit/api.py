@@ -13,18 +13,18 @@ import os
 import traceback
 
 import six
-
 from rebulk.introspector import introspect
 
-from .rules import rebulk_builder
-from .options import parse_options, load_config
 from .__version__ import __version__
+from .options import parse_options, load_config, merge_options
+from .rules import rebulk_builder
 
 
 class GuessitException(Exception):
     """
     Exception raised when guessit fails to perform a guess because of an internal error.
     """
+
     def __init__(self, string, options):
         super(GuessitException, self).__init__("An internal error has occured in guessit.\n"
                                                "===================== Guessit Exception Report =====================\n"
@@ -43,17 +43,19 @@ class GuessitException(Exception):
         self.options = options
 
 
-def configure(options, rules_builder=rebulk_builder):
+def configure(options=None, rules_builder=rebulk_builder, force=False):
     """
-    Load rebulk rules according to advanced configuration in options dictionary.
+    Load configuration files and initialize rebulk rules if required.
 
     :param options:
     :type options: dict
     :param rules_builder:
     :type rules_builder:
+    :param force:
+    :type force: bool
     :return:
     """
-    default_api.configure(options, rules_builder=rules_builder, force=True)
+    default_api.configure(options, rules_builder=rules_builder, force=force)
 
 
 def guessit(string, options=None):
@@ -88,6 +90,9 @@ class GuessItApi(object):
     def __init__(self):
         """Default constructor."""
         self.rebulk = None
+        self.config = None
+        self.load_config_options = None
+        self.advanced_config = None
 
     @classmethod
     def _fix_encoding(cls, value):
@@ -101,32 +106,51 @@ class GuessItApi(object):
             return value.decode('ascii')
         return value
 
-    def configure(self, options, rules_builder=rebulk_builder, force=False):
+    @classmethod
+    def _has_same_properties(cls, dic1, dic2, values):
+        for value in values:
+            if dic1.get(value) != dic2.get(value):
+                return False
+        return True
+
+    def configure(self, options=None, rules_builder=rebulk_builder, force=False, sanitize_options=True):
         """
-        Load rebulk rules according to advanced configuration in options dictionary.
+        Load configuration files and initialize rebulk rules if required.
 
         :param options:
         :type options: str|dict
         :param rules_builder:
         :type rules_builder:
         :param force:
+        :type force: bool
         :return:
         :rtype: dict
         """
-        options = parse_options(options, True)
-        should_load = force or not self.rebulk
-        advanced_config = options.pop('advanced_config', None)
+        if sanitize_options:
+            options = parse_options(options, True)
+            options = self._fix_encoding(options)
 
-        if should_load and not advanced_config:
-            advanced_config = load_config(options)['advanced_config']
+        if self.config is None or self.load_config_options is None or force or \
+                not self._has_same_properties(self.load_config_options,
+                                              options,
+                                              ['config', 'no_user_config', 'no_default_config']):
+            config = load_config(options)
+            config = self._fix_encoding(config)
+            self.load_config_options = options
+        else:
+            config = self.config
 
-        options = self._fix_encoding(options)
+        advanced_config = merge_options(config.get('advanced_config'), options.get('advanced_config'))
 
-        if should_load:
-            advanced_config = self._fix_encoding(advanced_config)
+        should_build_rebulk = force or not self.rebulk or not self.advanced_config or \
+                              self.advanced_config != advanced_config
+
+        if should_build_rebulk:
+            self.advanced_config = advanced_config
             self.rebulk = rules_builder(advanced_config)
 
-        return options
+        self.config = config
+        return self.config
 
     def guessit(self, string, options=None):  # pylint: disable=too-many-branches
         """
@@ -150,7 +174,10 @@ class GuessItApi(object):
             pass
 
         try:
-            options = self.configure(options)
+            options = parse_options(options, True)
+            options = self._fix_encoding(options)
+            config = self.configure(options, sanitize_options=False)
+            options = merge_options(config, options)
             result_decode = False
             result_encode = False
 
@@ -189,7 +216,10 @@ class GuessItApi(object):
         :return:
         :rtype:
         """
-        options = self.configure(options)
+        options = parse_options(options, True)
+        options = self._fix_encoding(options)
+        config = self.configure(options, sanitize_options=False)
+        options = merge_options(config, options)
         unordered = introspect(self.rebulk, options).properties
         ordered = OrderedDict()
         for k in sorted(unordered.keys(), key=six.text_type):

@@ -4,11 +4,7 @@
     from contextlib2 import suppress
     import os
     import re
-    from medusa.app import (
-        daily_search_scheduler as daily_search_scheduler,
-        backlog_search_scheduler as backlog_search_scheduler,
-        BRANCH, DATE_PRESET, TIME_PRESET
-    )
+    from medusa import app
     from medusa.helper.common import pretty_file_size
     from medusa.show.show import Show
 
@@ -40,8 +36,8 @@
             <span class="footerhighlight"><app-link href="manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</app-link></span> Snatched
             % endif
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
-            | Daily Search: <span class="footerhighlight">${str(daily_search_scheduler.timeLeft()).split('.')[0]}</span>
-            | Backlog Search: <span class="footerhighlight">${str(backlog_search_scheduler.timeLeft()).split('.')[0]}</span>
+            | Daily Search: <span class="footerhighlight">${str(app.daily_search_scheduler.timeLeft()).split('.')[0]}</span>
+            | Backlog Search: <span class="footerhighlight">${str(app.backlog_search_scheduler.timeLeft()).split('.')[0]}</span>
             <div>
             % if mem_usage:
                 Memory used: <span class="footerhighlight">
@@ -53,8 +49,8 @@
                 </span> |
             % endif
                 Load time: <span class="footerhighlight">${"%.4f" % (time() - sbStartTime)}s</span> / Mako: <span class="footerhighlight">${"%.4f" % (time() - makoStartTime)}s</span> |
-                Branch: <span class="footerhighlight">${BRANCH}</span> |
-                Now: <span class="footerhighlight">${datetime.now().strftime(DATE_PRESET+" "+TIME_PRESET)}</span>
+                Branch: <span class="footerhighlight">${app.BRANCH}</span> |
+                Now: <span class="footerhighlight">${datetime.now().strftime(app.DATE_PRESET+" "+app.TIME_PRESET).decode(app.SYS_ENCODING)}</span>
             </div>
         </div>
     </footer>

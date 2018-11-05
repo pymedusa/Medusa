@@ -267,6 +267,16 @@
 ? Show.Name.E02.2010
 : title: Show Name
   episode: 2
+  season: 2010
+  year: 2010
+  type: episode
+
+? Show.Name.E02.2010
+: options: {show_type: anime}
+  title: Show Name
+  episode: 2
+  absolute_episode: 2
+  season: 2010
   year: 2010
   type: episode
 
@@ -1028,14 +1038,6 @@
   type: episode
 
 # expected_group
-? Show.Name.x264-CS
-: title: Show Name
-  video_codec: H.264
-  video_encoder: x264
-  release_group: CS
-  type: episode
-
-# expected_group
 ? Show.Name.x264-DR
 : title: Show Name
   video_codec: H.264
@@ -1435,7 +1437,6 @@
 
 # https://github.com/guessit-io/guessit/issues/306
 ? - Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-  - Show.Name.-.Series.3.-.720p.BluRay.-.x264.-.Group
 : title: Show Name
   season: 3
   screen_size: 720p
@@ -1761,6 +1762,7 @@
   screen_size: 480p
   source: BDRip
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   language: uk
   other: Rip
   release_group: hurtom
@@ -2403,7 +2405,7 @@
   type: episode
 
 # Important: the suffix .hdtv.x264 is an existing workaround in the application for a certain provider. It should be removed when there's a video_codec conflict
-? 500.Bus.Stops.Series.1.XviD.hdtv.x264
+? 500.Bus.Stops.Season.1.XviD.hdtv.x264
 : title: 500 Bus Stops
   season: 1
   video_codec: Xvid
@@ -2428,6 +2430,7 @@
   source: Blu-ray
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: SUJAIDR
   type: episode
 
@@ -2439,6 +2442,7 @@
   episode: 2
   screen_size: 720p
   video_codec: H.265
+  video_profile: High Efficiency Video Coding
   audio_codec: AAC
   aspect_ratio: '1.778'
   type: episode
@@ -2453,6 +2457,7 @@
   source: Web
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GOLF68
   type: episode
 
@@ -2569,6 +2574,7 @@
   audio_profile: Master Audio
   audio_channels: '5.1'
   video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   other: Remux
   screen_size: 1080p
   release_group: FraMeSToR
@@ -2703,9 +2709,7 @@
 : title: Show Name
   season: 12
   episode: 17
-  other: Proper
-  proper_count: 1
-  proper_tag: DIRFIX
+  other: Fix
   source: HDTV
   video_codec: H.264
   video_encoder: x264
@@ -3028,6 +3032,7 @@
   audio_channels: '2.0'
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GROUP
   container: mkv
   type: episode
@@ -3042,6 +3047,7 @@
   source: Web
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   other: Rip
   release_group: GROUP
   container: mkv
@@ -3057,6 +3063,7 @@
   source: HDTV
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Blacklisted pattern: blacklist-03
@@ -3070,6 +3077,7 @@
   video_codec: H.265
   video_encoder: x265
   release_group: GROUP
+  video_profile: High Efficiency Video Coding
   container: mkv
   type: episode
 
@@ -3323,6 +3331,7 @@
   screen_size: 1080p
   video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Regression test
@@ -3364,7 +3373,8 @@
   video_codec: H.264
   video_encoder: x264
   source: Web
-  release_group: HI.C
+  release_group: C
+  language: hi
   type: episode
 
 # Regression Test:
@@ -3447,7 +3457,7 @@
   type: episode
 
 # Regression test: Season repack shouldn't be detected as release_group: season
-? Show.Name.Series.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
+? Show.Name.Season.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
 : title: Show Name
   season: 1
   other: ['HD', 'Proper']
@@ -4123,6 +4133,7 @@
 : title: Show Name
   absolute_episode: [476, 477, 478, 479]
   episode: [476, 477, 478, 479]
+  season: 2007
   year: 2007
   release_group: HorribleSubs
   source: Web
@@ -4132,8 +4143,9 @@
 
 ? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
 : title: Show Name
-  absolute_episode: 7
   episode: 7
+  absolute_episode: 7
+  season: 2016
   year: 2016
   release_group: RH
   language: en
@@ -4146,6 +4158,7 @@
 : title: Show! Name 2
   absolute_episode: 10
   episode: 10
+  season: 2016
   year: 2016
   release_group: HorribleSubs
   source: Web
@@ -4260,6 +4273,7 @@
   other: [HDR10, Ultra HD, BT.2020]
   video_codec: [H.265, H.264]
   video_encoder: [x265, x264]
+  video_profile: High Efficiency Video Coding
   audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
@@ -4305,6 +4319,33 @@
   video_codec: H.264
   video_encoder: x264
   release_group: strife
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  episode: 13
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: ca
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]\Por Trece Razones 2x01 [desca202].mkv
+: title: Por Trece Razones
+  season: 2
+  episode: 1
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: [ca, pt]
+  release_group: desca202
   container: mkv
   mimetype: video/x-matroska
   type: episode

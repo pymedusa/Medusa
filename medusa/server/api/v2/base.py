@@ -10,6 +10,7 @@ import logging
 import operator
 import traceback
 from builtins import object
+from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 
@@ -20,7 +21,7 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import itervalues, string_types, text_type, viewitems
+from six import iteritems, string_types, text_type, viewitems
 
 from tornado.gen import coroutine
 from tornado.httpclient import HTTPError
@@ -318,7 +319,7 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid page parameter')
 
-    def _get_limit(self, default=20, maximum=1000):
+    def _get_limit(self, default=20, maximum=10000):
         try:
             limit = self._parse(self.get_argument('limit', default=default))
             if limit < 1 or limit > maximum:
@@ -583,20 +584,44 @@ class MetadataStructureField(PatchField):
 
     def patch(self, target, value):
         """Patch the field with the specified value."""
-        map_values = {
-            'showMetadata': 'show_metadata',
-            'episodeMetadata': 'episode_metadata',
-            'episodeThumbnails': 'episode_thumbnails',
-            'seasonPosters': 'season_posters',
-            'seasonBanners': 'season_banners',
-            'seasonAllPoster': 'season_all_poster',
-            'seasonAllBanner': 'season_all_banner',
+        patches = {
+            'kodi': ListField(app, 'METADATA_KODI'),
+            'kodi_12plus': ListField(app, 'METADATA_KODI_12PLUS'),
+            'mede8er': ListField(app, 'METADATA_MEDE8ER'),
+            'mediabrowser': ListField(app, 'METADATA_MEDIABROWSER'),
+            'sony_ps3': ListField(app, 'METADATA_PS3'),
+            'tivo': ListField(app, 'METADATA_TIVO'),
+            'wdtv': ListField(app, 'METADATA_WDTV'),
         }
 
+        map_values = OrderedDict([
+            ('showMetadata', 'show_metadata'),
+            ('episodeMetadata', 'episode_metadata'),
+            ('fanart', 'fanart'),
+            ('poster', 'poster'),
+            ('banner', 'banner'),
+            ('episodeThumbnails', 'episode_thumbnails'),
+            ('seasonPosters', 'season_posters'),
+            ('seasonBanners', 'season_banners'),
+            ('seasonAllPoster', 'season_all_poster'),
+            ('seasonAllBanner', 'season_all_banner'),
+        ])
+
         try:
-            for new_provider_config in itervalues(value):
+            for name, new_provider_config in viewitems(value):
+                new_values = {}
                 for k, v in viewitems(new_provider_config):
-                    setattr(target.metadata_provider_dict[new_provider_config['name']], map_values.get(k, k), v)
+                    key = map_values.get(k)
+                    if key:
+                        # The order comes from map_values
+                        index = list(map_values).index(k)
+                        new_values[index] = int(v)
+                    setattr(target.metadata_provider_dict[new_provider_config['name']], key or k, v)
+
+                patch_field = patches.get(name)
+                if patch_field:
+                    sorted_values = [v for k, v in sorted(iteritems(new_values))]
+                    patch_field.patch(app, sorted_values)
         except Exception as error:
             log.warning('Error trying to change attribute app.metadata_provider_dict: {0!r}', error)
             return False

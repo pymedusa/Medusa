@@ -24,7 +24,7 @@ def crc(config):  # pylint:disable=unused-argument
     rebulk.defaults(validator=seps_surround)
 
     rebulk.regex('(?:[a-fA-F]|[0-9]){8}', name='crc32',
-                 conflict_solver=lambda match, other: match
+                 conflict_solver=lambda match, other: other
                  if other.name in ['episode', 'season']
                  else '__default__')
 

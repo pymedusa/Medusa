@@ -73,17 +73,17 @@ class Notifier(object):
         self.gobject = GObject
         return True
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         if app.LIBNOTIFY_NOTIFY_ONSNATCH:
-            self._notify(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name)
+            self._notify(title, message)
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.LIBNOTIFY_NOTIFY_ONDOWNLOAD:
-            self._notify(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name)
+            self._notify(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_obj.pretty_name_with_quality())
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name + ': ' + lang)
+            self._notify(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.USE_LIBNOTIFY:
