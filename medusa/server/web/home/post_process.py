@@ -3,11 +3,10 @@
 from __future__ import unicode_literals
 
 from medusa import process_tv
-from medusa.helper.encoding import ss
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 
-from six import string_types, text_type, PY2
+from six import string_types, text_type
 
 from tornroutes import route
 
