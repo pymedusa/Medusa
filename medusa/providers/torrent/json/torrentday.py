@@ -28,7 +28,7 @@ class TorrentDayProvider(TorrentProvider):
         super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # URLs
-        self.url = 'https://www.torrentday.com'
+        self.url = 'https://td.findnemo.net'
         self.urls = {
             'login': urljoin(self.url, '/torrents/'),
             'search': urljoin(self.url, '/t.json'),
