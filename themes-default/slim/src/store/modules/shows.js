@@ -78,16 +78,16 @@ const actions = {
      * Get shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 1000 shows.
+     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 10k shows.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
         const { commit, dispatch } = context;
 
-        // If no shows are provided get the first 1000
+        // If no shows are provided get the first 10k
         if (!shows) {
             const params = {
-                limit: 1000
+                limit: 10000
             };
             return api.get('/series', { params }).then(res => {
                 const shows = res.data;

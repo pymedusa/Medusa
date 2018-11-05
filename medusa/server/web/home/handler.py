@@ -81,6 +81,7 @@ from medusa.scene_numbering import (
     set_scene_numbering,
     xem_refresh,
 )
+from medusa.search import SearchType
 from medusa.search.manual import (
     SEARCH_STATUS_FINISHED,
     SEARCH_STATUS_QUEUED,
@@ -93,7 +94,7 @@ from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
     ForcedSearchQueueItem,
-    ManualSnatchQueueItem,
+    SnatchQueueItem,
 )
 from medusa.server.web.core import (
     PageTemplate,
@@ -633,6 +634,14 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification: {0}'.format(result.get('error'))
 
     @staticmethod
+    def testJoin(api=None, device=None):
+        result = notifiers.join_notifier.test_notify(api, device)
+        if result.get('success'):
+            return 'Join notification succeeded. Check your device to make sure it worked'
+        else:
+            return 'Error sending Join notification: {0}'.format(result.get('error'))
+
+    @staticmethod
     def getPushbulletDevices(api=None):
         result = notifiers.pushbullet_notifier.get_devices(api)
         if result:
@@ -1003,8 +1012,15 @@ class Home(WebRoot):
         else:
             ep_objs.extend(series_obj.get_all_episodes([int(cached_result['season'])]))
 
+        search_result = providers.get_provider_class(provider).get_result(ep_objs)
+
+        # Map the db fields to result attributes
+        search_result.update_from_db(series_obj, ep_objs, cached_result)
+
+        search_result.search_type = SearchType.MANUAL_SEARCH
+
         # Create the queue item
-        snatch_queue_item = ManualSnatchQueueItem(series_obj, ep_objs, provider, cached_result)
+        snatch_queue_item = SnatchQueueItem(search_result.series, search_result.episodes, search_result)
 
         # Add the queue item to the queue
         app.manual_snatch_scheduler.action.add_item(snatch_queue_item)

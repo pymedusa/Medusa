@@ -319,7 +319,7 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid page parameter')
 
-    def _get_limit(self, default=20, maximum=1000):
+    def _get_limit(self, default=20, maximum=10000):
         try:
             limit = self._parse(self.get_argument('limit', default=default))
             if limit < 1 or limit > maximum:
