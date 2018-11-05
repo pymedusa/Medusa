@@ -22,7 +22,6 @@ import datetime
 
 from medusa import db
 from medusa.common import FAILED, SNATCHED, SUBTITLED
-from medusa.helper.encoding import ss
 from medusa.show.history import History
 
 
