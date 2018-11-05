@@ -1,4 +1,4 @@
-FROM lsiobase/alpine.python:3.7
+FROM lsiobase/alpine.python:3.8
 MAINTAINER bobbysteel
 
 # set version label
