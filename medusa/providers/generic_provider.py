@@ -76,12 +76,12 @@ class GenericProvider(object):
         self.anime_only = False
         self.bt_cache_urls = [
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
             'https://cache.torrentgalaxy.org/get/{info_hash}',
+            'https://www.seedpeer.me/torrent/{info_hash}',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
