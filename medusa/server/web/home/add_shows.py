@@ -533,8 +533,7 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        if six.PY2:
-            shows_to_add = [text_type(x, 'utf-8') if not isinstance(x, text_type) else x for x in shows_to_add]
+        shows_to_add = [text_type(x, 'utf-8') if not isinstance(x, text_type) else x for x in shows_to_add]
 
         prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 
