@@ -163,7 +163,6 @@ window.app = new Vue({
             formData.append('promptForSettings', this.promptForSettings);
             dirList.forEach(dir => {
                 const originalIndexer = dir.metadata.indexer;
-                const { quoteUrl } = this;
                 let seriesId = dir.metadata.seriesId;
                 if (originalIndexer !== null && originalIndexer !== dir.selectedIndexer) {
                     seriesId = '';
