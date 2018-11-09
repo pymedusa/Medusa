@@ -32,7 +32,7 @@ class NyaaProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = True
+        self.anime_only = False
         self.confirmed = False
 
         # Torrent Stats
@@ -48,7 +48,7 @@ class NyaaProvider(TorrentProvider):
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
-        :param ep_obj: Not used
+        :param ep_obj: An episode object
         :returns: A list of search results (structure)
         """
         results = []
@@ -56,7 +56,7 @@ class NyaaProvider(TorrentProvider):
         # Search Params
         search_params = {
             'page': 'rss',
-            'c': '1_0',  # All Anime
+            'c': '1_0' if ep_obj.series.is_anime else '4_0',  # All Anime
             'f': 0,  # No filter
             'q': '',
         }
