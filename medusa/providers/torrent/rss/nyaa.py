@@ -54,9 +54,15 @@ class NyaaProvider(TorrentProvider):
         results = []
 
         # Search Params
+        if ep_obj:
+            category = '1_0' if ep_obj.series.is_anime else '4_0',  # All Anime if is_anime, else All Live Action
+        else:
+            # If ep_obj is None, assume we want anime
+            category = '1_0'
+
         search_params = {
             'page': 'rss',
-            'c': '1_0' if ep_obj.series.is_anime else '4_0',  # All Anime
+            'c': category,
             'f': 0,  # No filter
             'q': '',
         }
