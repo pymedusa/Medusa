@@ -56,8 +56,14 @@ class AniDexProvider(TorrentProvider):
         """
         results = []
 
+        if ep_obj:
+            category = '1,2,3' if ep_obj.series.is_anime else '4,5'
+        else:
+            # If ep_obj is None, assume we want anime, since this in an anime-first tracker
+            category = '1,2,3'
+
         search_params = {
-            'id': '1,2,3' if ep_obj.series.is_anime else '4,5'
+            'id': category
         }
 
         for mode in search_strings:
