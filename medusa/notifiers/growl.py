@@ -66,7 +66,7 @@ class Notifier(object):
         if message:
             notice.add_header('Notification-Text', message)
 
-        response = self._send(options['host'], options['port'], notice.encode('utf-8'), options['debug'])
+        response = self._send(options['host'], options['port'], notice.encode(), options['debug'])
         return True if isinstance(response, gntp.core.GNTPOK) else False
 
     @staticmethod
@@ -181,7 +181,7 @@ class Notifier(object):
             register.set_password(opts['password'])
 
         try:
-            return self._send(opts['host'], opts['port'], register.encode('utf-8'), opts['debug'])
+            return self._send(opts['host'], opts['port'], register.encode(), opts['debug'])
         except Exception as error:
             log.warning(
                 u'GROWL: Unable to send growl to {host}:{port} - {msg!r}',
