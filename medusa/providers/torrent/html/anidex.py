@@ -36,7 +36,6 @@ class AniDexProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = False
 
         # Torrent Stats
         self.minseed = None
@@ -56,11 +55,9 @@ class AniDexProvider(TorrentProvider):
         """
         results = []
 
-        if ep_obj:
-            category = '1,2,3' if ep_obj.series.is_anime else '4,5'
-        else:
-            # If ep_obj is None, assume we want anime, since this in an anime-first tracker
-            category = '1,2,3'
+        category = '1,2,3'
+        if ep_obj and not ep_obj.series.is_anime:
+            category = '4,5'
 
         search_params = {
             'id': category
