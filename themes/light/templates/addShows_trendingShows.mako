@@ -16,6 +16,12 @@ window.app = new Vue({
         return {
             rootDirs: []
         };
+    },
+    mounted() {
+        debugger;
+        $('.recommended-show-url').each(obj, index => {
+            debugger;
+        })
     }
 });
 </script>

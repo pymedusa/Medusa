@@ -22,6 +22,7 @@ import logging
 import threading
 import time
 from builtins import object
+import datetime
 
 from medusa import app, db, network_timezones, ui
 from medusa.helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -29,6 +30,10 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from medusa.scene_exceptions import refresh_exceptions_cache
 from medusa.session.core import MedusaSession
+from medusa.show.recommendations.anidb import AnidbPopular
+from medusa.show.recommendations.imdb import ImdbPopular
+from medusa.show.recommendations.trakt import TraktPopular
+from simpleanidb import REQUEST_HOT
 
 from requests.exceptions import HTTPError, RequestException
 
@@ -225,6 +230,45 @@ class ShowUpdater(object):
             logger.info(u'Completed scheduling updates on shows')
         else:
             logger.info(u'Completed but there was nothing to update')
+
+        # Update recommended shows from trakt, imdb and anidb
+        # recommended shows are dogpilled into cache/recommended.dbm
+
+        if app.CACHE_RECOMMEDED_SHOWS:
+            logger.info(u'Started caching recommended shows')
+
+            # Cache trakt shows
+            for page_url in (
+                'shows/trending',
+                'shows/popular',
+                'shows/anticipated',
+                'shows/collected',
+                'shows/watched',
+                'shows/played',
+                'recommendations/shows',
+                'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d'),
+                'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
+            ):
+                try:
+                    TraktPopular().fetch_popular_shows(page_url=page_url)
+                except Exception as error:
+                    logger.info(u'Could not get trakt recommended shows for %s because of error: %s', page_url, error)
+                    logger.debug(u'Not bothering getting the other trakt lists')
+                    break
+
+            # Cache imdb shows
+            try:
+                ImdbPopular().fetch_popular_shows()
+            except (RequestException, Exception) as error:
+                logger.info(u'Could not get imdb recommended shows because of error: %s', error)
+
+            # Cache anidb shows
+            try:
+                AnidbPopular().fetch_popular_shows(REQUEST_HOT)
+            except Exception as error:
+                logger.info(u'Could not get anidb recommended shows because of error: %s', error)
+
+            logger.info(u'Finished caching recommended shows')
 
         self.amActive = False
 

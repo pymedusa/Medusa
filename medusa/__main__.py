@@ -1172,9 +1172,9 @@ class Application(object):
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                             cycleTime=datetime.timedelta(hours=1),
-                                                            threadName='SHOWUPDATER',
-                                                            start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
-                                                                                     minute=random.randint(0, 59)))
+                                                            threadName='SHOWUPDATER')#,
+                                                            # start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
+                                                            #                          minute=random.randint(0, 59)))
 
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),

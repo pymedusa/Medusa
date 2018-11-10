@@ -50,7 +50,8 @@ class TraktPopular(object):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(
             self,
-            series['show']['ids'], series['show']['title'],
+            series['show']['ids']['trakt'],
+            series['show']['title'],
             INDEXER_TVDBV2,  # indexer
             series['show']['ids']['tvdb'],
             **{'rating': series['show']['rating'],

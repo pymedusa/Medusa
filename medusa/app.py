@@ -667,6 +667,9 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = '0629B785CE550C8D'
 
+        # show updater recommeded show caching
+        self.CACHE_RECOMMEDED_SHOWS = True
+
 
 app = MedusaApp()
 for app_key, app_value in app.__dict__.items():
