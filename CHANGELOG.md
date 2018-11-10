@@ -14,6 +14,7 @@
 - Fixed Download Station BraceAdapter exception ([#5573](https://github.com/pymedusa/Medusa/pull/5573))
 - Fixed saving multiple metadata providers ([#5576](https://github.com/pymedusa/Medusa/pull/5576))
 - Fixed show-selector for libraries with more than 1k shows ([#5623](https://github.com/pymedusa/Medusa/pull/5623))
+- Fixed Growl registration error ([#5684](https://github.com/pymedusa/Medusa/pull/5684))
 
 -----
 
