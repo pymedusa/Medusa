@@ -330,7 +330,7 @@ paths:
       parameters:
         - $ref: '#/parameters/series-id'
           name: seriesid
-        - $ref: '#/parameters/episode-id'
+        - $ref: '#/parameters/episode-id-delete'
           name: id
       responses:
         204:
@@ -2369,6 +2369,13 @@ parameters:
     required: true
     description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
     x-example: s01e01
+    type: string
+  episode-id-delete:
+    name: episode-id
+    in: path
+    required: true
+    description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
+    x-example: s01e02
     type: string
   alias-id:
     name: alias-id
