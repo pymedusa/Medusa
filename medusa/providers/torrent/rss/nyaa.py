@@ -32,7 +32,6 @@ class NyaaProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = False
         self.confirmed = False
 
         # Torrent Stats
@@ -54,11 +53,9 @@ class NyaaProvider(TorrentProvider):
         results = []
 
         # Search Params
-        if ep_obj:
-            category = '1_0' if ep_obj.series.is_anime else '4_0',  # All Anime if is_anime, else All Live Action
-        else:
-            # If ep_obj is None, assume we want anime
-            category = '1_0'
+        category = '1_0'
+        if ep_obj and not ep_obj.series.is_anime:
+            category = '4_0'
 
         search_params = {
             'page': 'rss',
