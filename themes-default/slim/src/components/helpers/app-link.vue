@@ -173,4 +173,8 @@ e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
     margin-top: -100px;
     z-index: -100;
 }
+
+.router-link-active {
+    cursor: pointer;
+}
 </style>
