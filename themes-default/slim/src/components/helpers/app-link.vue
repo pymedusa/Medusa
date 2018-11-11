@@ -6,6 +6,7 @@
         :target="linkProperties.target"
         :rel="linkProperties.rel"
         :false-link="linkProperties.falseLink"
+        :class="{ 'router-link': linkProperties.is === 'router-link' }"
     >
         <slot></slot>
     </component>
@@ -174,6 +175,7 @@ e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
     z-index: -100;
 }
 
+.router-link,
 .router-link-active {
     cursor: pointer;
 }
