@@ -352,6 +352,7 @@ paths:
         409:
           $ref: '#/responses/error'
           description: Unable to delete episode
+          x-disabled: true
   /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
@@ -2371,7 +2372,7 @@ parameters:
     x-example: s01e01
     type: string
   episode-id-delete:
-    name: episode-id
+    name: episode-id-delete
     in: path
     required: true
     description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
