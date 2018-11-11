@@ -89,6 +89,29 @@ class CheckVersion(object):
 
         self.amActive = False
 
+    def run_in_docker(self):
+        """"
+        Check if medusa is run in a docker container.
+
+        If run in a container, we don't want to use the auto update feature, but just want to inform the user
+        there is an update available. The user can update through getting the latest docker tag.
+        """
+        path = '/proc/{pid}/cgroup'.format(pid=os.getpid())
+        try:
+            if not os.path.isfile(path):
+                return False
+
+            with open(path) as f:
+                for line in f:
+                    if re.match("\d+:[\w=]+:/docker(-[ce]e)?/\w+", line):
+                        log.debug(u'Running in a docker container')
+                        return True
+                return False
+        except (EnvironmentError, OSError) as error:
+            log.info(u'Tried to check the path {path} if we are running in a docker container, '
+                     u'but an error occurred: {error}', {'path': path, 'error': error})
+            return False
+
     def run_backup_if_safe(self):
         return self.safe_to_update() is True and self._runbackup() is True
 
