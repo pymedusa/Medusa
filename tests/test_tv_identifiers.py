@@ -130,7 +130,7 @@ def test_series_identifier(p):
     },
     {  # p11: e1234
         'slug': 'e1234',
-        'expected': AbsoluteNumber(1234)
+        'expected': AbsoluteNumber(1234),
     },
     {  # p12: E15
         'slug': 'E15',
