@@ -95,8 +95,8 @@ class EpisodeNumber(Identifier):
 
     date_fmt = '%Y-%m-%d'
     regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
-                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,2}))|'
-                       r'(?:e(?P<abs_episode>\d{1,3})))\b', re.IGNORECASE)
+                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,4}))|'
+                       r'(?:e(?P<abs_episode>\d{1,4})))\b', re.IGNORECASE)
 
     @classmethod
     def from_slug(cls, slug):
