@@ -90,7 +90,7 @@ class CheckVersion(object):
         self.amActive = False
 
     def runs_in_docker(self):
-        """"
+        """
         Check if medusa is run in a docker container.
 
         If run in a container, we don't want to use the auto update feature, but just want to inform the user
@@ -106,7 +106,7 @@ class CheckVersion(object):
 
             with open(path) as f:
                 for line in f:
-                    if re.match(r'\\d+:[\\w=]+:/docker(-[ce]e)?/\\w+', line):
+                    if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
                         log.debug(u'Running in a docker container')
                         app.RUNS_IN_DOCKER = True
                         app.instance.save_config()
