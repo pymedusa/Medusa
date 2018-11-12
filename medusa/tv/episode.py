@@ -79,7 +79,6 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import Identifier, TV
 
-import six
 from six import itervalues, viewitems
 
 try:
