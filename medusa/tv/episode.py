@@ -412,10 +412,7 @@ class Episode(TV):
                 self.series.network)
         )
 
-        if six.PY3:
-            return date_parsed.isoformat('T')
-        else:
-            return date_parsed.isoformat(b'T')
+        return date_parsed.isoformat('T')
 
     @property
     def status_name(self):
