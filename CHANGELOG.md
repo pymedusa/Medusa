@@ -4,9 +4,12 @@
 - Added Join notifier ([#5241](https://github.com/pymedusa/Medusa/pull/5241))
 
 #### Improvements
-- Vueified "config - notifications" page. Improved components: config-textbox, select-list, show-selector, config-textbox-number. Improved responsiveness of the notification page on smaller screens ([#4913](https://github.com/pymedusa/Medusa/pull/4913))
-- Allow the use of priorities in the Pushover notifier ([#5567](https://github.com/pymedusa/Medusa/pull/5567))
-- Add delete method to EpisodeHandler (apiv2), for deleting a single episode ([#5685](https://github.com/pymedusa/Medusa/pull/5685))
+- Vueified "config - notifications" page:
+  - Improved components: config-textbox, select-list, show-selector, config-textbox-number.
+  - Improved responsiveness of the notification page on smaller screens ([#4913](https://github.com/pymedusa/Medusa/pull/4913))
+- Allowed the use of priorities in the Pushover notifier ([#5567](https://github.com/pymedusa/Medusa/pull/5567))
+- Added delete method to EpisodeHandler (apiv2), for deleting a single episode ([#5685](https://github.com/pymedusa/Medusa/pull/5685))
+- Allowed Nyaa and Anidex to search for non-anime shows ([#5680](https://github.com/pymedusa/Medusa/pull/5680) & [#5680](https://github.com/pymedusa/Medusa/pull/5681))
 
 #### Fixes
 - Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))

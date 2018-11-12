@@ -76,6 +76,7 @@ class MedusaApp(object):
         self.DATA_DIR = ''
         self.CREATEPID = False
         self.PIDFILE = ''
+        self.RUNS_IN_DOCKER = None
 
         self.DAEMON = None
         self.NO_RESIZE = False
