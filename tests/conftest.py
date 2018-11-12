@@ -212,12 +212,7 @@ def create_structure(tmpdir, create_file, create_dir):
     def create(path, structure):
         for element in structure:
             if isinstance(element, dict):
-                if six.PY3:
-                    element_iter = element.items()
-                else:
-                    element_iter = element.iteritems()
-
-                for name, values in element_iter:
+                for name, values in iteritems(element):
                     path = os.path.join(path, name)
                     create_dir(path)
                     create(path, values)
