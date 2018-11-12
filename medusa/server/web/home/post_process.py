@@ -3,11 +3,10 @@
 from __future__ import unicode_literals
 
 from medusa import process_tv
-from medusa.helper.encoding import ss
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
 
-from six import string_types
+from six import string_types, text_type
 
 from tornroutes import route
 
@@ -38,12 +37,19 @@ class HomePostProcess(Home):
 
             return argument
 
+        def _decode(value):
+            if not value or isinstance(value, text_type):
+                return value
+
+            return text_type(value, 'utf-8')
+
         if not proc_dir:
             return self.redirect('/home/postprocess/')
         else:
-            resource_name = ss(nzbName) if nzbName else None
+            proc_dir = _decode(proc_dir)
+            resource_name = _decode(nzbName)
 
-            result = process_tv.ProcessResult(ss(proc_dir), process_method=process_method).process(
+            result = process_tv.ProcessResult(proc_dir, process_method=process_method).process(
                 resource_name=resource_name, force=argToBool(force), is_priority=argToBool(is_priority),
                 delete_on=argToBool(delete_on), failed=argToBool(failed), proc_type=type,
                 ignore_subs=argToBool(ignore_subs)

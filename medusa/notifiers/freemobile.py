@@ -12,8 +12,6 @@ from medusa.common import (
     NOTIFY_GIT_UPDATE_TEXT,
     NOTIFY_LOGIN,
     NOTIFY_LOGIN_TEXT,
-    NOTIFY_SNATCH,
-    NOTIFY_SNATCH_PROPER,
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
@@ -78,10 +76,9 @@ class Notifier(object):
         log.info(message)
         return True, message
 
-    def notify_snatch(self, ep_name, is_proper):
-        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+    def notify_snatch(self, title, message):
         if app.FREEMOBILE_NOTIFY_ONSNATCH:
-            self._notifyFreeMobile(title, ep_name)
+            self._notifyFreeMobile(title, message)
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         if app.FREEMOBILE_NOTIFY_ONDOWNLOAD:

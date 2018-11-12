@@ -324,6 +324,35 @@ paths:
               {"status": 2, "quality": 4}
             path-params:
               id: e999
+    delete:
+      summary: Delete a specific episode from a given series
+      description: Delete a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id-delete'
+          name: id
+      responses:
+        204:
+          description: Episode is deleted successfully
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: 123456
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: s9999e9999
+        409:
+          $ref: '#/responses/error'
+          description: Unable to delete episode
+          x-disabled: true
   /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
@@ -1813,6 +1842,21 @@ definitions:
                 type: boolean
               notifyOnSubtitleDownload:
                 type: boolean
+          join:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              device:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
           freemobile:
             type: object
             properties:
@@ -2326,6 +2370,13 @@ parameters:
     required: true
     description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
     x-example: s01e01
+    type: string
+  episode-id-delete:
+    name: episode-id-delete
+    in: path
+    required: true
+    description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
+    x-example: s01e02
     type: string
   alias-id:
     name: alias-id

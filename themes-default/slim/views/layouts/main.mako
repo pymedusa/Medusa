@@ -135,6 +135,7 @@
                                 pageComponent: false
                             };
                         }
+                        return {};
                     },
                     mounted() {
                         if (this.$root === this && !document.location.pathname.includes('/login')) {
@@ -158,7 +159,7 @@
                 }
 
                 Vue.use(Vuex);
-                Vue.use(VueRouter); 
+                Vue.use(VueRouter);
                 Vue.use(AsyncComputed);
                 Vue.use(VueMeta);
 

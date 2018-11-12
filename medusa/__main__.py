@@ -95,34 +95,6 @@ from medusa.tv import Series
 logger = logging.getLogger(__name__)
 
 
-def fix_incorrect_list_values(data):
-    """
-    @TODO: Remove this in a future version.
-
-    Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
-    See: https://github.com/pymedusa/Medusa/issues/5155
-
-    Example: `"{u'id': 0, u'value': u'!sync'}"` to `"!sync"`
-    """
-    import ast
-
-    result = []
-    for item in data:
-        if not item:
-            continue
-        if not (item.startswith('{') and item.endswith('}')):
-            # Simple value, don't do anything to it
-            result.append(item)
-            continue
-        try:
-            # Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
-            result.append(ast.literal_eval(item)['value'])
-        except (SyntaxError, KeyError):
-            pass
-
-    return result
-
-
 class Application(object):
     """Main application module."""
 
@@ -435,7 +407,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet', 'Join',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -616,11 +588,7 @@ class Application(object):
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
             app.ALLOW_HIGH_PRIORITY = bool(check_setting_int(app.CFG, 'General', 'allow_high_priority', 1))
             app.SKIP_REMOVED_FILES = bool(check_setting_int(app.CFG, 'General', 'skip_removed_files', 0))
-
             app.ALLOWED_EXTENSIONS = check_setting_list(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
-            # @TODO: Remove this in a future version.
-            app.ALLOWED_EXTENSIONS = fix_incorrect_list_values(app.ALLOWED_EXTENSIONS)
-
             app.USENET_RETENTION = check_setting_int(app.CFG, 'General', 'usenet_retention', 500)
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
@@ -661,11 +629,7 @@ class Application(object):
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
-
             app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
-            # @TODO: Remove this in a future version.
-            app.SYNC_FILES = fix_incorrect_list_values(app.SYNC_FILES)
-
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
@@ -796,7 +760,8 @@ class Application(object):
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
             app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
-            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
+            app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'default')
+            app.PUSHOVER_PRIORITY = check_setting_str(app.CFG, 'Pushover', 'pushover_priority', '0')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
             app.LIBNOTIFY_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Libnotify', 'libnotify_notify_onsnatch', 0))
@@ -875,6 +840,13 @@ class Application(object):
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
 
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Join', 'use_join', 0))
+            app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
+            app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
+            app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
+            app.JOIN_API = check_setting_str(app.CFG, 'Join', 'join_api', '', censor_log='low')
+            app.JOIN_DEVICE = check_setting_str(app.CFG, 'Join', 'join_device', '')
+
             app.USE_EMAIL = bool(check_setting_int(app.CFG, 'Email', 'use_email', 0))
             app.EMAIL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Email', 'email_notify_onsnatch', 0))
             app.EMAIL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Email', 'email_notify_ondownload', 0))
@@ -938,8 +910,6 @@ class Application(object):
             app.NO_RESTART = bool(check_setting_int(app.CFG, 'General', 'no_restart', 0))
 
             app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'General', 'extra_scripts')]
-            # @TODO: Remove this in a future version.
-            app.EXTRA_SCRIPTS = fix_incorrect_list_values(app.EXTRA_SCRIPTS)
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
@@ -1773,6 +1743,7 @@ class Application(object):
         new_config['Pushover']['pushover_apikey'] = app.PUSHOVER_APIKEY
         new_config['Pushover']['pushover_device'] = app.PUSHOVER_DEVICE
         new_config['Pushover']['pushover_sound'] = app.PUSHOVER_SOUND
+        new_config['Pushover']['pushover_priority'] = app.PUSHOVER_PRIORITY
 
         new_config['Libnotify'] = {}
         new_config['Libnotify']['use_libnotify'] = int(app.USE_LIBNOTIFY)
@@ -1851,6 +1822,14 @@ class Application(object):
         new_config['Pushbullet']['pushbullet_notify_onsubtitledownload'] = int(app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Pushbullet']['pushbullet_api'] = app.PUSHBULLET_API
         new_config['Pushbullet']['pushbullet_device'] = app.PUSHBULLET_DEVICE
+
+        new_config['Join'] = {}
+        new_config['Join']['use_join'] = int(app.USE_JOIN)
+        new_config['Join']['join_notify_onsnatch'] = int(app.JOIN_NOTIFY_ONSNATCH)
+        new_config['Join']['join_notify_ondownload'] = int(app.JOIN_NOTIFY_ONDOWNLOAD)
+        new_config['Join']['join_notify_onsubtitledownload'] = int(app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Join']['join_api'] = app.JOIN_API
+        new_config['Join']['join_device'] = app.JOIN_DEVICE
 
         new_config['Email'] = {}
         new_config['Email']['use_email'] = int(app.USE_EMAIL)

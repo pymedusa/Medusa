@@ -14,7 +14,7 @@ dirtyjson==1.0.7
 dogpile.cache==0.6.7
 git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
 git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
-future==0.17.0
+future==0.17.1
 futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
 gntp==1.0.3
 guessit==3.0.3
@@ -30,10 +30,10 @@ profilehooks==1.10.0
 PyGithub==1.43.3
 PyJWT==1.6.4
 python-dateutil==2.7.5
-python-twitter==3.4.2
+python-twitter==3.5
 rarfile==3.0
 rebulk==1.0.0
-requests==2.20.0
+requests==2.20.1
 requests-oauthlib==1.0.0
 six==1.11.0
 stevedore==1.30.0
