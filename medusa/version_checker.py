@@ -68,6 +68,9 @@ class CheckVersion(object):
         # Update remote branches and store in app.GIT_REMOTE_BRANCHES
         self.list_remote_branches()
 
+        # For now only use to populate the app.RUNS_IN_DOCKER variable
+        self.runs_in_docker()
+
         if self.updater:
             # set current branch version
             app.BRANCH = self.get_branch()
@@ -106,10 +109,9 @@ class CheckVersion(object):
 
             with open(path) as f:
                 for line in f:
-                    if re.match(r'\\d+:[\\w=]+:/docker(-[ce]e)?/\\w+', line):
+                    if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
                         log.debug(u'Running in a docker container')
                         app.RUNS_IN_DOCKER = True
-                        app.instance.save_config()
                         return True
                 return False
         except (EnvironmentError, OSError) as error:
