@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import re
+import traceback
 from fnmatch import fnmatch
 
 from medusa import app
@@ -329,7 +330,9 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        log.exception('Casting to int failed.')
+        # Get the current stack trace (excluding the following line)
+        stack_trace = traceback.format_stack(limit=10)[:-2]
+        log.exception('Casting to int failed.\nStack trace:\n{0}', ''.join(stack_trace))
         return default_value
 
 
