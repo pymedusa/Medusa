@@ -409,6 +409,20 @@ class UpdateManager(object):
     def get_update_url():
         return app.WEB_ROOT + '/home/update/?pid=' + str(app.PID)
 
+    def set_newest_text_docker(self):
+        """
+        Set an alternative update text, when running in a docker container.
+
+        This method is used by the GitUpdateMananager and the SourceUpdateManager. Both should not auto update from
+        within the container.
+        """
+        if runs_in_docker() and (not self._cur_commit_hash or self._num_commits_behind > 0):
+            log.debug(u'There is an update available, medusa is running in a docker container, so auto updating is disabled.')
+            app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
+                                        'and rebuild your container to update'
+            return True
+        return False
+
 
 class GitUpdateManager(UpdateManager):
     def __init__(self):
@@ -634,6 +648,9 @@ class GitUpdateManager(UpdateManager):
 
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
+
+        if self.set_newest_text_docker():
+            return
 
         if self._num_commits_behind > 0 or self._is_hard_reset_allowed():
 
@@ -897,10 +914,7 @@ class SourceUpdateManager(UpdateManager):
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
 
-        if runs_in_docker() and (not self._cur_commit_hash or self._num_commits_behind > 0):
-            log.debug(u'There is an update available, medusa is running in a docker container, so auto updating is disabled.')
-            app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
-                                        'and rebuild your container to update'
+        if self.set_newest_text_docker():
             return
 
         if not self._cur_commit_hash:
