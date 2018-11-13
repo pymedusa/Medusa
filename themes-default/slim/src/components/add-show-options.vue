@@ -13,7 +13,7 @@
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :checked="defaultConfig.subtitles" @update="selectedSubtitleEnabled = $event"
+                <config-toggle-slider label="Subtitles" id="subtitles" v-model="defaultConfig.subtitles" @input="selectedSubtitleEnabled = $event"
                     :explanations="['Download subtitles for this show?']">
                 </config-toggle-slider>
             </div>
@@ -44,12 +44,12 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folders?']" @update="selectedSeasonFoldersEnabled = $event">
+            <config-toggle-slider label="Season Folders" id="season_folders" :value="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
+                :explanations="['Group episodes by season folders?']" @input="selectedSeasonFoldersEnabled = $event">
             </config-toggle-slider>
 
-            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime" :checked="defaultConfig.anime"
-                :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
+            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime"
+                :explanations="['Is this show an Anime?']" v-model="defaultConfig.anime" @input="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
@@ -65,8 +65,8 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :checked="defaultConfig.scene"
-                :explanations="['Is this show scene numbered?']" @update="selectedSceneEnabled = $event">
+            <config-toggle-slider label="Scene Numbering" id="scene" v-model="defaultConfig.scene"
+                :explanations="['Is this show scene numbered?']" @input="selectedSceneEnabled = $event">
             </config-toggle-slider>
 
             <div class="form-group">
