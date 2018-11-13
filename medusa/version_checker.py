@@ -896,6 +896,12 @@ class SourceUpdateManager(UpdateManager):
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
 
+        if self.runs_in_docker() and (not self._cur_commit_hash or self._num_commits_behind > 0):
+            log.debug(u'There is an update available, medusa is running in a docker container, so auto updating is disabled.')
+            app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
+                                        'and rebuild your container to update'
+            return
+
         if not self._cur_commit_hash:
             log.debug(u"Unknown current version number, don't know if we should update or not")
 
