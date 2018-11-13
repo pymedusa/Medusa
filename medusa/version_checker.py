@@ -97,7 +97,7 @@ class CheckVersion(object):
         # Update remote branches and store in app.GIT_REMOTE_BRANCHES
         self.list_remote_branches()
 
-        # For now only use to populate the app.RUNS_IN_DOCKER variable
+        # For now only use to populate the app.RUNS_IN_DOCKER variable.
         runs_in_docker()
 
         if self.updater:
