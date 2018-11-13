@@ -411,7 +411,7 @@ class Episode(TV):
                 self.series.network)
         )
 
-        return date_parsed.isoformat('T')
+        return date_parsed.isoformat()
 
     @property
     def status_name(self):
