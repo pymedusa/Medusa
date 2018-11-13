@@ -46,6 +46,35 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+def runs_in_docker():
+    """
+    Check if medusa is run in a docker container.
+
+    If run in a container, we don't want to use the auto update feature, but just want to inform the user
+    there is an update available. The user can update through getting the latest docker tag.
+    """
+    if app.RUNS_IN_DOCKER is not None:
+        return app.RUNS_IN_DOCKER
+
+    path = '/proc/{pid}/cgroup'.format(pid=os.getpid())
+    try:
+        if not os.path.isfile(path):
+            return False
+
+        with open(path) as f:
+            for line in f:
+                if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
+                    log.debug(u'Running in a docker container')
+                    app.RUNS_IN_DOCKER = True
+                    app.instance.save_config()
+                    return True
+            return False
+    except (EnvironmentError, OSError) as error:
+        log.info(u'Tried to check the path {path} if we are running in a docker container, '
+                 u'but an error occurred: {error}', {'path': path, 'error': error})
+        return False
+
+
 class CheckVersion(object):
     """Version check class meant to run as a thread object with the sr scheduler."""
 
@@ -69,7 +98,7 @@ class CheckVersion(object):
         self.list_remote_branches()
 
         # For now only use to populate the app.RUNS_IN_DOCKER variable
-        self.runs_in_docker()
+        runs_in_docker()
 
         if self.updater:
             # set current branch version
@@ -91,34 +120,6 @@ class CheckVersion(object):
             self.check_for_new_news(force)
 
         self.amActive = False
-
-    def runs_in_docker(self):
-        """
-        Check if medusa is run in a docker container.
-
-        If run in a container, we don't want to use the auto update feature, but just want to inform the user
-        there is an update available. The user can update through getting the latest docker tag.
-        """
-        if app.RUNS_IN_DOCKER is not None:
-            return app.RUNS_IN_DOCKER
-
-        path = '/proc/{pid}/cgroup'.format(pid=os.getpid())
-        try:
-            if not os.path.isfile(path):
-                return False
-
-            with open(path) as f:
-                for line in f:
-                    if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
-                        log.debug(u'Running in a docker container')
-                        app.RUNS_IN_DOCKER = True
-                        app.instance.save_config()
-                        return True
-                return False
-        except (EnvironmentError, OSError) as error:
-            log.info(u'Tried to check the path {path} if we are running in a docker container, '
-                     u'but an error occurred: {error}', {'path': path, 'error': error})
-            return False
 
     def run_backup_if_safe(self):
         return self.safe_to_update() is True and self._runbackup() is True
@@ -896,7 +897,7 @@ class SourceUpdateManager(UpdateManager):
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
 
-        if self.runs_in_docker() and (not self._cur_commit_hash or self._num_commits_behind > 0):
+        if runs_in_docker() and (not self._cur_commit_hash or self._num_commits_behind > 0):
             log.debug(u'There is an update available, medusa is running in a docker container, so auto updating is disabled.')
             app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
                                         'and rebuild your container to update'
