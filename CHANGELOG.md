@@ -10,6 +10,7 @@
 - Allowed the use of priorities in the Pushover notifier ([#5567](https://github.com/pymedusa/Medusa/pull/5567))
 - Added delete method to EpisodeHandler (apiv2), for deleting a single episode ([#5685](https://github.com/pymedusa/Medusa/pull/5685))
 - Allowed Nyaa and Anidex to search for non-anime shows ([#5680](https://github.com/pymedusa/Medusa/pull/5680) & [#5681](https://github.com/pymedusa/Medusa/pull/5681))
+- Do not allow to enable the anime options, when using tmdb or tvmaze ([#5701](https://github.com/pymedusa/Medusa/pull/5701))
 
 #### Fixes
 - Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
