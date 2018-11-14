@@ -385,7 +385,7 @@ class UpdateManager(object):
     @staticmethod
     def runs_in_docker():
         """
-        Check if medusa is run in a docker container.
+        Check if Medusa is run in a docker container.
 
         If run in a container, we don't want to use the auto update feature, but just want to inform the user
         there is an update available. The user can update through getting the latest docker tag.
@@ -418,7 +418,7 @@ class UpdateManager(object):
         within the container.
         """
         if app.RUNS_IN_DOCKER and (not self._cur_commit_hash or self._num_commits_behind > 0):
-            log.debug(u'There is an update available, medusa is running in a docker container, so auto updating is disabled.')
+            log.debug(u'There is an update available, Medusa is running in a docker container, so auto updating is disabled.')
             app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
                                         'and rebuild your container to update'
             return True
