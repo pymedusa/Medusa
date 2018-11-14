@@ -615,7 +615,7 @@ window.app = new Vue({
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <add-show-options :show-name="showName" :enable-anime-options="enableAnimeOptions" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
+                        <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
             </form>
