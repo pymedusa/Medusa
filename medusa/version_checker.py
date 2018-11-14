@@ -367,7 +367,7 @@ class CheckVersion(object):
 class UpdateManager(object):
     def __init__(self):
         """Update manager initialization."""
-        # Initialize the app.RUNS_IN_DOCKER variable.
+        # Initialize the app.RUNS_IN_DOCKER variable
         self.runs_in_docker()
 
     @staticmethod
