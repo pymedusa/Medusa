@@ -13,7 +13,7 @@
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" v-model="defaultConfig.subtitles" @input="selectedSubtitleEnabled = $event"
+                <config-toggle-slider label="Subtitles" id="subtitles" :value="defaultConfig.subtitles" @input="selectedSubtitleEnabled = $event"
                     :explanations="['Download subtitles for this show?']">
                 </config-toggle-slider>
             </div>
@@ -49,7 +49,7 @@
             </config-toggle-slider>
 
             <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime"
-                :explanations="['Is this show an Anime?']" v-model="defaultConfig.anime" @input="selectedAnimeEnabled = $event">
+                :explanations="['Is this show an Anime?']" :value="defaultConfig.anime" @input="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" v-model="defaultConfig.scene"
+            <config-toggle-slider label="Scene Numbering" id="scene" :value="defaultConfig.scene"
                 :explanations="['Is this show scene numbered?']" @input="selectedSceneEnabled = $event">
             </config-toggle-slider>
 
