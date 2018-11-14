@@ -403,7 +403,6 @@ class UpdateManager(object):
                     if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
                         log.debug(u'Running in a docker container')
                         app.RUNS_IN_DOCKER = True
-                        app.instance.save_config()
                         return True
                 return False
         except (EnvironmentError, OSError) as error:
