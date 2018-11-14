@@ -114,19 +114,6 @@ export default {
     components: {
         AppLink
     },
-    data() {
-        return {
-            topMenuMapping: [
-                ['system', ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC']],
-                ['home', ['/home', '/addShows', '/addRecommended']],
-                ['config', ['/config']],
-                ['history', ['/history']],
-                ['schedule', ['/schedule']],
-                ['manage', ['/manage']],
-                ['login', ['/login']]
-            ]
-        };
-    },
     computed: {
         ...mapState([
             'config',
@@ -147,20 +134,7 @@ export default {
             });
         },
         topMenu() {
-            // This is a workaround, until we're able to use VueRouter to determine that.
-            // The possible `topmenu` values are: config, history, schedule, system, home, manage, login [unused]
-            const { topMenuMapping } = this;
-            const { pathname } = window.location;
-
-            for (const item of topMenuMapping) {
-                const [topMenu, routes] = item; // Unpacking
-                for (const route of routes) {
-                    if (pathname.includes(route)) {
-                        return topMenu;
-                    }
-                }
-            }
-            return null;
+            return this.$route.meta.topMenu;
         },
         toolsBadgeCount() {
             const { config } = this;
