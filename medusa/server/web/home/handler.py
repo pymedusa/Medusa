@@ -1397,7 +1397,6 @@ class Home(WebRoot):
         preferred_qualities = preferred_qualities or []
         exceptions = exceptions_list or set()
 
-        anidb_failed = False
         errors = 0
 
         if not indexername or not seriesid:
