@@ -1373,6 +1373,8 @@ definitions:
             type: string
           webRoot:
             type: string
+          runsInDocker:
+            type: boolean
           torrents:
             type: object
             properties:

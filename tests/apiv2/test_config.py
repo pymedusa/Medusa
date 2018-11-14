@@ -68,6 +68,7 @@ def config_main(monkeypatch, app_config):
     config_data['logDir'] = app.LOG_DIR
     config_data['appArgs'] = app.MY_ARGS
     config_data['webRoot'] = app.WEB_ROOT
+    config_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     config_data['githubUrl'] = app.GITHUB_IO_URL
     config_data['wikiUrl'] = app.WIKI_URL
     config_data['donationsUrl'] = app.DONATIONS_URL
