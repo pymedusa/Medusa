@@ -238,6 +238,7 @@ class Series(TV):
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self._load_from_db()
+        self.has_xem_numbering = bool(self.xem_numbering)
 
     @classmethod
     def find_series(cls, predicate=None):
@@ -2042,6 +2043,8 @@ class Series(TV):
         if self.is_anime:
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
+
+        data['has_xem_numbering'] = self.has_xem_numbering
 
         # Fetch data from external sources
         if fetch:
