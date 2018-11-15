@@ -1,5 +1,5 @@
 <template>
-    <div class="select-list max-width" :disabled="disabled">
+    <div class="select-list max-width" v-bind="{disabled}">
         <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values"></i>
 
         <ul v-if="!csvMode">
