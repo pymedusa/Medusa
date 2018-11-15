@@ -257,9 +257,9 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.prowl.api': ListField(app, 'PROWL_API'),
         'notifiers.prowl.messageTitle': StringField(app, 'PROWL_MESSAGE_TITLE'),
         'notifiers.prowl.priority': IntegerField(app, 'PROWL_PRIORITY'),
-        'notifiers.prowl.notifyOnSnatch': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSNATCH'),
-        'notifiers.prowl.notifyOnDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONDOWNLOAD'),
-        'notifiers.prowl.notifyOnSubtitleDownload': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.prowl.notifyOnSnatch': BooleanField(app, 'PROWL_NOTIFY_ONSNATCH'),
+        'notifiers.prowl.notifyOnDownload': BooleanField(app, 'PROWL_NOTIFY_ONDOWNLOAD'),
+        'notifiers.prowl.notifyOnSubtitleDownload': BooleanField(app, 'PROWL_NOTIFY_ONSUBTITLEDOWNLOAD'),
 
         'notifiers.libnotify.enabled': BooleanField(app, 'USE_LIBNOTIFY'),
         'notifiers.libnotify.notifyOnSnatch': BooleanField(app, 'LIBNOTIFY_NOTIFY_ONSNATCH'),
@@ -326,7 +326,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.twitter.notifyOnDownload': BooleanField(app, 'TWITTER_NOTIFY_ONDOWNLOAD'),
         'notifiers.twitter.notifyOnSubtitleDownload': BooleanField(app, 'TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD'),
 
-        'notifiers.trakt.enabled': BooleanField(app, 'USE_TWITTER'),
+        'notifiers.trakt.enabled': BooleanField(app, 'USE_TRAKT'),
         'notifiers.trakt.pinUrl': StringField(app, 'TRAKT_PIN_URL'),
         'notifiers.trakt.username': StringField(app, 'TRAKT_USERNAME'),
         'notifiers.trakt.accessToken': StringField(app, 'TRAKT_ACCESS_TOKEN'),
@@ -348,12 +348,12 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.email.from': StringField(app, 'EMAIL_FROM'),
         'notifiers.email.tls': BooleanField(app, 'EMAIL_TLS'),
         'notifiers.email.username': StringField(app, 'EMAIL_USER'),
-        'notifiers.email.password': StringField(app, 'TWITTER_USERNAME'),
+        'notifiers.email.password': StringField(app, 'EMAIL_PASSWORD'),
         'notifiers.email.addressList': ListField(app, 'EMAIL_LIST'),
         'notifiers.email.subject': StringField(app, 'EMAIL_SUBJECT'),
         'notifiers.email.notifyOnSnatch': BooleanField(app, 'EMAIL_NOTIFY_ONSNATCH'),
         'notifiers.email.notifyOnDownload': BooleanField(app, 'EMAIL_NOTIFY_ONDOWNLOAD'),
-        'notifiers.email.notifyOnSubtitleDownload': BooleanField(app, 'TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.email.notifyOnSubtitleDownload': BooleanField(app, 'EMAIL_NOTIFY_ONSUBTITLEDOWNLOAD'),
 
         'notifiers.slack.enabled': BooleanField(app, 'USE_SLACK'),
         'notifiers.slack.webhook': StringField(app, 'SLACK_WEBHOOK'),
@@ -499,6 +499,7 @@ class DataGenerator(object):
         section_data['logDir'] = app.LOG_DIR
         section_data['appArgs'] = app.MY_ARGS
         section_data['webRoot'] = app.WEB_ROOT
+        section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
@@ -794,8 +795,8 @@ class DataGenerator(object):
         section_data['prowl']['messageTitle'] = app.PROWL_MESSAGE_TITLE
         section_data['prowl']['priority'] = int(app.PROWL_PRIORITY)
         section_data['prowl']['notifyOnSnatch'] = bool(app.PROWL_NOTIFY_ONSNATCH)
-        section_data['prowl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
-        section_data['prowl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['prowl']['notifyOnDownload'] = bool(app.PROWL_NOTIFY_ONDOWNLOAD)
+        section_data['prowl']['notifyOnSubtitleDownload'] = bool(app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
 
         section_data['libnotify'] = NonEmptyDict()
         section_data['libnotify']['enabled'] = bool(app.USE_LIBNOTIFY)
@@ -809,7 +810,7 @@ class DataGenerator(object):
         section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
         section_data['pushover']['device'] = app.PUSHOVER_DEVICE
         section_data['pushover']['sound'] = app.PUSHOVER_SOUND
-        section_data['pushover']['priority'] = app.PUSHOVER_PRIORITY
+        section_data['pushover']['priority'] = int(app.PUSHOVER_PRIORITY)
         section_data['pushover']['notifyOnSnatch'] = bool(app.PUSHOVER_NOTIFY_ONSNATCH)
         section_data['pushover']['notifyOnDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
         section_data['pushover']['notifyOnSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)

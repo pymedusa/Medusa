@@ -171,7 +171,7 @@ window.app = new Vue({
                 const seriesToAdd = [dir.selectedIndexer, dir.path, seriesId, dir.metadata.seriesName]
                     .filter(i => typeof(i) === 'number' || Boolean(i)).join('|');
 
-                formData.append('shows_to_add', encodeURIComponent(seriesToAdd));
+                formData.append('shows_to_add', seriesToAdd);
             });
 
             const response = await apiRoute.post('addShows/addExistingShows', formData);

@@ -74,15 +74,15 @@ class Notifier(object):
 
         return True
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         return False
         # Not implemented: Start the scanner when snatched does not make any sense
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.USE_NMJ:
             self._notifyNMJ()
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.USE_NMJ:
             self._notifyNMJ()
 
