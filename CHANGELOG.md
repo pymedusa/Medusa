@@ -1,6 +1,16 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 0.2.12 (2018-11-16)
+
+#### New Features
 - Added Join notifier ([#5241](https://github.com/pymedusa/Medusa/pull/5241))
 
 #### Improvements
@@ -25,8 +35,6 @@
 -----
 
 ## 0.2.11 (2018-10-29)
-
-#### New Features
 
 #### Improvements
 - Updated `guessit` to version 3.0.0 ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
