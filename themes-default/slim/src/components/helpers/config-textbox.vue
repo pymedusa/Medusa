@@ -1,13 +1,14 @@
 <template>
-    <div id="config-textbox-content">
+    <div id="config-textbox">
         <div class="form-group">
             <div class="row">
                 <label :for="id" class="col-sm-2 control-label">
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="text" v-bind="{id, name: id}" v-model="localValue" :class="inputClass" />
+                    <input v-bind="{id, type, name: id, class: inputClass, placeholder, disabled}" v-model="localValue" @input="updateValue()"/>
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
+                    <slot></slot>
                 </div>
             </div>
         </div>
@@ -34,12 +35,24 @@ export default {
             type: String,
             default: ''
         },
+        type: {
+            type: String,
+            default: 'text'
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
         /**
          * Overwrite the default configured class on the <input/> element.
          */
         inputClass: {
             type: String,
             default: 'form-control input-sm max-input350'
+        },
+        placeholder: {
+            type: String,
+            default: ''
         }
 
     },
@@ -49,11 +62,19 @@ export default {
         };
     },
     mounted() {
-        this.localValue = this.value;
+        const { value } = this;
+        this.localValue = value;
     },
     watch: {
-        localValue() {
-            this.$emit('update', this.localValue);
+        value() {
+            const { value } = this;
+            this.localValue = value;
+        }
+    },
+    methods: {
+        updateValue() {
+            const { localValue } = this;
+            this.$emit('input', localValue);
         }
     }
 };

@@ -2,14 +2,13 @@ import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { AppLink, AppHeader } from '../../src/components';
+import { AppHeader } from '../../src/components';
 import fixtures from '../__fixtures__/app-header';
 
 test.beforeEach(t => {
     t.context.localVue = createLocalVue();
     t.context.localVue.use(Vuex);
     t.context.localVue.use(VueRouter);
-    t.context.localVue.component('app-link', AppLink);
 
     const { state } = fixtures;
     const { Store } = Vuex;
@@ -24,8 +23,12 @@ test('renders', t => {
         store,
         computed: {
             config() {
-                return Object.assign(state.config, {
-                });
+                return {
+                    ...state.config
+                };
+            },
+            topMenu() {
+                return 'home';
             }
         }
     });

@@ -30,7 +30,7 @@ class Notifier(object):
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
@@ -38,18 +38,19 @@ class Notifier(object):
         :param is_proper: Boolean. If snatch is proper or not
         """
         if app.TWITTER_NOTIFY_ONSNATCH:
-            self._notify_twitter('{0}: {1}'.format(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name))
+            self._notify_twitter('{0}: {1}'.format(title, message))
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """
         Send a notification that an episode was downloaded.
 
         :param ep_name: The name of the episode downloaded
         """
         if app.TWITTER_NOTIFY_ONDOWNLOAD:
-            self._notify_twitter('{0}: {1}'.format(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_name))
+            self._notify_twitter('{0}: {1}'.format(common.notifyStrings[common.NOTIFY_DOWNLOAD],
+                                                   ep_obj.pretty_name_with_quality()))
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """
         Send a notification that subtitles for an episode were downloaded.
 
@@ -57,7 +58,8 @@ class Notifier(object):
         :param lang: The language of the downloaded subtitles
         """
         if app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_twitter('{0} {1}: {2}'.format(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_name, lang))
+            self._notify_twitter('{0} {1}: {2}'.format(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
+                                                       ep_obj.pretty_name(), lang))
 
     def notify_git_update(self, new_version='??'):
         """

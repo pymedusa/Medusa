@@ -97,7 +97,6 @@
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
@@ -136,6 +135,7 @@
                                 pageComponent: false
                             };
                         }
+                        return {};
                     },
                     mounted() {
                         if (this.$root === this && !document.location.pathname.includes('/login')) {

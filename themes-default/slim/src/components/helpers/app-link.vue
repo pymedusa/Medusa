@@ -6,12 +6,14 @@
         :target="linkProperties.target"
         :rel="linkProperties.rel"
         :false-link="linkProperties.falseLink"
+        :class="{ 'router-link': linkProperties.is === 'router-link' }"
     >
         <slot></slot>
     </component>
 </template>
 <script>
 import { mapState } from 'vuex';
+import router from '../../router';
 
 export default {
     name: 'app-link',
@@ -82,8 +84,12 @@ export default {
             }
             return anonRedirect ? anonRedirect + href : href;
         },
+        matchingVueRoute() {
+            const normalise = str => str ? str.replace(/^\/+|\/+$/g, '') : '';
+            return router.options.routes.find(({ path }) => normalise(path) === normalise(this.href));
+        },
         linkProperties() {
-            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref } = this;
+            const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref, matchingVueRoute } = this;
             const base = this.computedBase;
             const href = this.computedHref;
 
@@ -110,6 +116,19 @@ export default {
                     // Only tag this as a "false-link" if we passed a name in the props
                     falseLink: Boolean(this.$attrs.name) || undefined
                 };
+            }
+
+            // If current page and next page are both vue routes return router-link
+            if (matchingVueRoute && this.$route && matchingVueRoute.meta.converted && this.$route.meta.converted) {
+                // Allows us to skip when we're in a test
+                if (window.loadMainApp) {
+                    return {
+                        is: 'router-link',
+                        to: {
+                            name: matchingVueRoute.name
+                        }
+                    };
+                }
             }
 
             return {
@@ -154,5 +173,10 @@ e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
     height: 100px;
     margin-top: -100px;
     z-index: -100;
+}
+
+.router-link,
+.router-link-active {
+    cursor: pointer;
 }
 </style>

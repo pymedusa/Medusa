@@ -76,7 +76,7 @@ Credits
 
 Licensing
 ---------
-Copyright 2013-2016 Python Charmers Pty Ltd, Australia.
+Copyright 2013-2018 Python Charmers Pty Ltd, Australia.
 The software is distributed under an MIT licence. See LICENSE.txt.
 
 """
@@ -84,10 +84,10 @@ The software is distributed under an MIT licence. See LICENSE.txt.
 __title__ = 'future'
 __author__ = 'Ed Schofield'
 __license__ = 'MIT'
-__copyright__ = 'Copyright 2013-2016 Python Charmers Pty Ltd'
+__copyright__ = 'Copyright 2013-2018 Python Charmers Pty Ltd'
 __ver_major__ = 0
-__ver_minor__ = 16
-__ver_patch__ = 0
+__ver_minor__ = 17
+__ver_patch__ = 1
 __ver_sub__ = ''
 __version__ = "%d.%d.%d%s" % (__ver_major__, __ver_minor__,
                               __ver_patch__, __ver_sub__)

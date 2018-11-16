@@ -36,7 +36,6 @@ class AniDexProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = True
 
         # Torrent Stats
         self.minseed = None
@@ -51,13 +50,17 @@ class AniDexProvider(TorrentProvider):
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
-        :param ep_obj: Not used
+        :param ep_obj: An episode object
         :returns: A list of search results (structure)
         """
         results = []
 
+        category = '1,2,3'
+        if ep_obj and not ep_obj.series.is_anime:
+            category = '4,5'
+
         search_params = {
-            'id': '1,2,3'
+            'id': category
         }
 
         for mode in search_strings:

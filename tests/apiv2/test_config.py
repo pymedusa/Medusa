@@ -47,6 +47,7 @@ def config_main(monkeypatch, app_config):
     config_data['trimZero'] = bool(app.TRIM_ZERO)
     config_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
     config_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+    config_data['gitUsername'] = app.GIT_USERNAME
     config_data['branch'] = app.BRANCH
     config_data['commitHash'] = app.CUR_COMMIT_HASH
     config_data['release'] = app.APP_VERSION
@@ -55,8 +56,8 @@ def config_main(monkeypatch, app_config):
     config_data['databaseVersion'] = NonEmptyDict()
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
-    config_data['pid'] = app.PID
     config_data['os'] = platform.platform()
+    config_data['pid'] = app.PID
     config_data['locale'] = app_locale
     config_data['localUser'] = os_user
     config_data['programDir'] = app.PROG_DIR
@@ -67,6 +68,7 @@ def config_main(monkeypatch, app_config):
     config_data['logDir'] = app.LOG_DIR
     config_data['appArgs'] = app.MY_ARGS
     config_data['webRoot'] = app.WEB_ROOT
+    config_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     config_data['githubUrl'] = app.GITHUB_IO_URL
     config_data['wikiUrl'] = app.WIKI_URL
     config_data['donationsUrl'] = app.DONATIONS_URL
@@ -100,89 +102,6 @@ def config_main(monkeypatch, app_config):
     config_data['failedDownloads'] = NonEmptyDict()
     config_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
     config_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
-
-    config_data['kodi'] = NonEmptyDict()
-    config_data['kodi']['enabled'] = bool(app.USE_KODI)
-    config_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
-    config_data['kodi']['notify'] = NonEmptyDict()
-    config_data['kodi']['notify']['snatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
-    config_data['kodi']['notify']['download'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
-    config_data['kodi']['notify']['subtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-    config_data['kodi']['update'] = NonEmptyDict()
-    config_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
-    config_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
-    config_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
-    config_data['kodi']['host'] = app.KODI_HOST
-    config_data['kodi']['username'] = app.KODI_USERNAME
-    # config_data['kodi']['password'] = app.KODI_PASSWORD
-    config_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
-    config_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
-
-    config_data['plex'] = NonEmptyDict()
-    config_data['plex']['server'] = NonEmptyDict()
-    config_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
-    config_data['plex']['server']['notify'] = NonEmptyDict()
-    config_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
-    config_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
-    config_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
-    config_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
-    config_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
-    # config_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
-    config_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
-    # config_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
-    config_data['plex']['client'] = NonEmptyDict()
-    config_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
-    config_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
-    # config_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
-    config_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
-
-    config_data['emby'] = NonEmptyDict()
-    config_data['emby']['enabled'] = bool(app.USE_EMBY)
-    config_data['emby']['host'] = app.EMBY_HOST
-
-    config_data['torrents'] = NonEmptyDict()
-    config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
-    config_data['torrents']['dir'] = app.TORRENT_DIR
-    config_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
-    config_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
-    config_data['torrents']['host'] = app.TORRENT_HOST
-    config_data['torrents']['label'] = app.TORRENT_LABEL
-    config_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
-    config_data['torrents']['method'] = app.TORRENT_METHOD
-    # config_data['torrents']['password'] = app.TORRENT_PASSWORD
-    config_data['torrents']['path'] = app.TORRENT_PATH
-    config_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
-    config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-    config_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
-    config_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
-    config_data['torrents']['username'] = app.TORRENT_USERNAME
-    config_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
-
-    config_data['nzb'] = NonEmptyDict()
-    config_data['nzb']['enabled'] = bool(app.USE_NZBS)
-    config_data['nzb']['dir'] = app.NZB_DIR
-    config_data['nzb']['method'] = app.NZB_METHOD
-    config_data['nzb']['nzbget'] = NonEmptyDict()
-    config_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
-    config_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
-    config_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
-    config_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
-    config_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-    # config_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
-    config_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
-    config_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
-    config_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
-
-    config_data['nzb']['sabnzbd'] = NonEmptyDict()
-    # config_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
-    config_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
-    config_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
-    config_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
-    config_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
-    config_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
-    config_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
-    # config_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
-    config_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
 
     config_data['layout'] = NonEmptyDict()
     config_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
@@ -230,7 +149,7 @@ def config_main(monkeypatch, app_config):
     config_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
     config_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
     config_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
-    config_data['postProcessing']['autoPostprocessorFrequency'] = app.AUTOPOSTPROCESSOR_FREQUENCY
+    config_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
     config_data['postProcessing']['syncFiles'] = app.SYNC_FILES
     config_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
     config_data['postProcessing']['allowedExtensions'] = list(app.ALLOWED_EXTENSIONS)

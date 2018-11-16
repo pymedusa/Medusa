@@ -4310,6 +4310,16 @@
   mimetype: video/x-matroska
   type: episode
 
+? Rugrats Season 1/Rugrats - 01x01 - Tommy's First Birthday[JM].avi
+: title: Rugrats
+  season: 1
+  episode: 1
+  episode_title: Tommy's First Birthday
+  release_group: JM
+  container: avi
+  mimetype: video/avi
+  type: episode
+
 ? shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
 : title: shes gotta have it
   season: 1

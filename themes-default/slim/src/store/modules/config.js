@@ -67,7 +67,9 @@ const state = {
             categoryBacklog: null,
             categoryAnimeBacklog: null,
             host: null,
-            username: null
+            username: null,
+            password: null,
+            apiKey: null
         }
     },
     configFile: null,
@@ -142,30 +144,9 @@ const state = {
     rootDirs: [],
     fanartBackgroundOpacity: null,
     appArgs: [],
-    emby: {
-        enabled: null,
-        host: null
-    },
     comingEpsDisplayPaused: null,
     sortArticle: null,
     timePreset: null,
-    plex: {
-        client: {
-            host: [],
-            username: null,
-            enabled: null
-        },
-        server: {
-            updateLibrary: null,
-            host: [],
-            enabled: null,
-            notify: {
-                download: null,
-                subtitleDownload: null,
-                snatch: null
-            }
-        }
-    },
     subtitles: {
         enabled: null
     },
@@ -175,23 +156,6 @@ const state = {
         period: null
     },
     posterSortby: null,
-    kodi: {
-        enabled: null,
-        alwaysOn: null,
-        libraryCleanPending: null,
-        cleanLibrary: null,
-        host: [],
-        notify: {
-            snatch: null,
-            download: null,
-            subtitleDownload: null
-        },
-        update: {
-            library: null,
-            full: null,
-            onlyFirst: null
-        }
-    },
     news: {
         lastRead: null,
         latest: null,

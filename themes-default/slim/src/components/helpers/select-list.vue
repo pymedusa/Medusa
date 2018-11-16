@@ -1,5 +1,5 @@
 <template>
-    <div class="select-list max-width">
+    <div class="select-list max-width" v-bind="{disabled}">
         <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values"></i>
 
         <ul v-if="!csvMode">
@@ -15,7 +15,7 @@
             </li>
             <div class="new-item">
                 <div class="input-group">
-                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line" />
+                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line"/>
                     <div class="input-group-btn" @click="addNewItem()">
                         <div style="font-size: 14px" class="btn btn-default input-sm">
                             <i class="glyphicon glyphicon-plus" title="Add"></i>
@@ -51,6 +51,10 @@ export default {
             type: Boolean,
             default: false,
             required: false
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -92,15 +96,18 @@ export default {
             this.indexCounter += 1;
         },
         addNewItem() {
+            const { newItem, editItems } = this;
             if (this.newItem === '') {
                 return;
             }
-            this.addItem(this.newItem);
+            this.addItem(newItem);
             this.newItem = '';
+            this.$emit('change', editItems);
         },
         deleteItem(item) {
             this.editItems = this.editItems.filter(e => e !== item);
             this.$refs.newItemInput.focus();
+            this.$emit('change', this.editItems);
         },
         removeEmpty(item) {
             return item.value === '' ? this.deleteItem(item) : false;
@@ -116,10 +123,11 @@ export default {
                 return [];
             }
 
-            return values.map((value, index) => {
+            return values.map(value => {
                 if (typeof (value) === 'string') {
+                    this.indexCounter += 1;
                     return {
-                        id: index,
+                        id: this.indexCounter - 1,
                         value
                     };
                 }
@@ -155,14 +163,12 @@ export default {
         }
     },
     watch: {
-        editItems: {
-            handler() {
-                this.$emit('change', this.editItems);
-            },
-            deep: true
-        },
         csv() {
             this.syncValues();
+        },
+        listItems() {
+            this.editItems = this.sanitize(this.listItems);
+            this.newItem = '';
         }
     }
 };

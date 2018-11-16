@@ -95,8 +95,8 @@ class EpisodeNumber(Identifier):
 
     date_fmt = '%Y-%m-%d'
     regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
-                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,2}))|'
-                       r'(?:e(?P<abs_episode>\d{1,3})))\b', re.IGNORECASE)
+                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,4}))|'
+                       r'(?:e(?P<abs_episode>\d{1,4})))\b', re.IGNORECASE)
 
     @classmethod
     def from_slug(cls, slug):
@@ -503,7 +503,7 @@ class Episode(TV):
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
             )
-            notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
+            notifiers.notify_subtitle_download(self, subtitle_list)
         else:
             log.info(
                 '{id}: No subtitles found for {series} {ep}', {
@@ -1373,6 +1373,21 @@ class Episode(TV):
             return self._format_pattern('%SN - %AD - %EN')
 
         return self._format_pattern('%SN - S%0SE%0E - %EN')
+
+    def pretty_name_with_quality(self):
+        """Return the name of this episode in a "pretty" human-readable format, with quality information.
+
+        Used for notifications.
+
+        :return: A string representing the episode's name, season/ep numbers and quality
+        :rtype: str
+        """
+        if self.series.anime and not self.series.scene:
+            return self._format_pattern('%SN - %AB - %EN - %QN')
+        elif self.series.air_by_date:
+            return self._format_pattern('%SN - %AD - %EN - %QN')
+
+        return self._format_pattern('%SN - %Sx%0E - %EN - %QN')
 
     def __ep_name(self):
         """Return the name of the episode to use during renaming.

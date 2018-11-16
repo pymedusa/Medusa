@@ -117,6 +117,9 @@ class HDTorrentsProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -158,7 +161,7 @@ class HDTorrentsProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text()
                     pubdate = self.parse_pubdate(pubdate_raw)

@@ -38,9 +38,9 @@ from future import utils
 if not utils.PY3:
     # We only import names that shadow the builtins on Py2. No other namespace
     # pollution on Py2.
-    
+
     # Only shadow builtins on Py2; no new names
-    __all__ = ['filter', 'map', 'zip', 
+    __all__ = ['filter', 'map', 'zip',
                'ascii', 'chr', 'hex', 'input', 'next', 'oct', 'open', 'pow',
                'round', 'super',
                'bytes', 'dict', 'int', 'list', 'object', 'range', 'str',

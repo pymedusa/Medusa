@@ -16,10 +16,31 @@ test('renders', t => {
                 'explanation 1',
                 'explanation 2'
             ],
-            value: '30.5',
+            value: 30,
             id: 'test-id',
             min: 20,
             step: 0.5
+        }
+    });
+
+    t.snapshot(wrapper.html());
+});
+
+test('renders with min and max', t => {
+    const { localVue } = t.context;
+    const wrapper = mount(ConfigTextboxNumber, {
+        localVue,
+        propsData: {
+            label: 'test-label',
+            explanations: [
+                'explanation 1',
+                'explanation 2'
+            ],
+            value: 30,
+            id: 'test-id',
+            min: 20,
+            step: 0.5,
+            max: 100
         }
     });
 

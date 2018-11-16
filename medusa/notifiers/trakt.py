@@ -20,15 +20,15 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """Trakt don't support this method."""
         pass
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """Trakt don't support this method."""
         pass
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """Trakt don't support this method."""
         pass
 

@@ -27,6 +27,7 @@
 # Copyright 2018 Svend Sorensen <svend@svends.net>                             #
 # Copyright 2018 Wan Liuyang <tsfdye@gmail.com>                                #
 # Copyright 2018 sfdye <tsfdye@gmail.com>                                      #
+# Copyright 2018 itsbruce <it.is.bruce@gmail.com>                              #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.readthedocs.io/                                              #
@@ -45,6 +46,8 @@
 # along with PyGithub. If not, see <http://www.gnu.org/licenses/>.             #
 #                                                                              #
 ################################################################################
+
+import datetime
 
 import urllib.request, urllib.parse, urllib.error
 import pickle
@@ -91,7 +94,7 @@ class Github(object):
     This is the main class you instantiate to access the Github API v3. Optional parameters allow different authentication methods.
     """
 
-    def __init__(self, login_or_token=None, password=None, base_url=DEFAULT_BASE_URL, timeout=DEFAULT_TIMEOUT, client_id=None, client_secret=None, user_agent='PyGithub/Python', per_page=DEFAULT_PER_PAGE, api_preview=False, verify=True):
+    def __init__(self, login_or_token=None, password=None, jwt=None, base_url=DEFAULT_BASE_URL, timeout=DEFAULT_TIMEOUT, client_id=None, client_secret=None, user_agent='PyGithub/Python', per_page=DEFAULT_PER_PAGE, api_preview=False, verify=True):
         """
         :param login_or_token: string
         :param password: string
@@ -106,13 +109,14 @@ class Github(object):
 
         assert login_or_token is None or isinstance(login_or_token, str), login_or_token
         assert password is None or isinstance(password, str), password
+        assert jwt is None or isinstance(jwt, str), jwt
         assert isinstance(base_url, str), base_url
         assert isinstance(timeout, int), timeout
         assert client_id is None or isinstance(client_id, str), client_id
         assert client_secret is None or isinstance(client_secret, str), client_secret
         assert user_agent is None or isinstance(user_agent, str), user_agent
         assert isinstance(api_preview, (bool))
-        self.__requester = Requester(login_or_token, password, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview, verify)
+        self.__requester = Requester(login_or_token, password, jwt, base_url, timeout, client_id, client_secret, user_agent, per_page, api_preview, verify)
 
     def __get_FIX_REPO_GET_GIT_REF(self):
         """
@@ -334,16 +338,21 @@ class Github(object):
         )
         return github.Gist.Gist(self.__requester, headers, data, completed=True)
 
-    def get_gists(self):
+    def get_gists(self, since=github.GithubObject.NotSet):
         """
         :calls: `GET /gists/public <http://developer.github.com/v3/gists>`_
+        :param since: datetime.datetime format YYYY-MM-DDTHH:MM:SSZ
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Gist.Gist`
         """
+        assert since is github.GithubObject.NotSet or isinstance(since, datetime.datetime), since
+        url_parameters = dict()
+        if since is not github.GithubObject.NotSet:
+            url_parameters["since"] = since.strftime("%Y-%m-%dT%H:%M:%SZ")
         return github.PaginatedList.PaginatedList(
             github.Gist.Gist,
             self.__requester,
             "/gists/public",
-            None
+            url_parameters
         )
 
     def search_repositories(self, query, sort=github.GithubObject.NotSet, order=github.GithubObject.NotSet, **qualifiers):
@@ -451,12 +460,13 @@ class Github(object):
             url_parameters
         )
 
-    def search_code(self, query, sort=github.GithubObject.NotSet, order=github.GithubObject.NotSet, **qualifiers):
+    def search_code(self, query, sort=github.GithubObject.NotSet, order=github.GithubObject.NotSet, highlight=False, **qualifiers):
         """
         :calls: `GET /search/code <http://developer.github.com/v3/search>`_
         :param query: string
         :param sort: string ('indexed')
         :param order: string ('asc', 'desc')
+        :param highlight: boolean (True, False)
         :param qualifiers: keyword dict query qualifiers
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.ContentFile.ContentFile`
         """
@@ -479,13 +489,15 @@ class Github(object):
         url_parameters["q"] = ' '.join(query_chunks)
         assert url_parameters["q"], "need at least one qualifier"
 
+        headers = {"Accept": Consts.highLightSearchPreview} if highlight else None
+
         return github.PaginatedList.PaginatedList(
             github.ContentFile.ContentFile,
             self.__requester,
             "/search/code",
-            url_parameters
+            url_parameters,
+            headers=headers
         )
-
 
     def search_commits(self, query, sort=github.GithubObject.NotSet, order=github.GithubObject.NotSet, **qualifiers):
         """

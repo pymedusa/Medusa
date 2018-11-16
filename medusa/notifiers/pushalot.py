@@ -25,28 +25,28 @@ class Notifier(object):
             force=True
         )
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         if app.PUSHALOT_NOTIFY_ONSNATCH:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
-                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                message=ep_name
+                event=title,
+                message=message
             )
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.PUSHALOT_NOTIFY_ONDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                message=ep_name
+                message=ep_obj.pretty_name_with_quality()
             )
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendPushalot(
                 pushalot_authorizationtoken=None,
                 event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                message='{}:{}'.format(ep_name, lang)
+                message='{}:{}'.format(ep_obj.pretty_name(), lang)
             )
 
     def notify_git_update(self, new_version='??'):
