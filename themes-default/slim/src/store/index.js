@@ -3,12 +3,14 @@ import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
+    clients,
     config,
     defaults,
     metadata,
     notifications,
     notifiers,
     qualities,
+    search,
     shows,
     socket,
     statuses
@@ -29,12 +31,14 @@ Vue.use(Vuex);
 const store = new Store({
     modules: {
         auth,
+        clients,
         config,
         defaults,
         metadata,
         notifications,
         notifiers,
         qualities,
+        search,
         shows,
         socket,
         statuses

@@ -1983,6 +1983,84 @@ definitions:
                 type: boolean
               notifyOnSubtitleDownload:
                 type: boolean
+      clients:
+        type: object
+        properties:
+          nzb:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dir:
+                type: string
+              method:
+                type: string
+              nzbget:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  host:
+                    type: string
+                  priority:
+                    type: integer
+                  useHttps:
+                    type: boolean
+                  username:
+                    type: string
+              sabnzbd:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  forced:
+                    type: boolean
+                  host:
+                    type: string
+                  username:
+                    type: string
+          torrents:
+            type: object
+            properties:
+              username:
+                type: string
+              seedTime:
+                type: integer
+              rpcurl:
+                type: string
+              authType:
+                type: string
+              paused:
+                type: boolean
+              host:
+                type: string
+              path:
+                type: string
+              verifySSL:
+                type: boolean
+              highBandwidth:
+                type: boolean
+              enabled:
+                type: boolean
+              label:
+                type: string
+              labelAnime:
+                type: string
+              method:
+                type: string
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
   Log:
     type: object
     properties:
