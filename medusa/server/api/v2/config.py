@@ -932,6 +932,7 @@ class DataGenerator(object):
         section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
         section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
         section_data['torrents']['username'] = app.TORRENT_USERNAME
+        section_data['torrents']['password'] = app.TORRENT_PASSWORD
         section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
 
         section_data['nzb'] = NonEmptyDict()

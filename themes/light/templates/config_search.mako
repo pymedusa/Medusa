@@ -139,6 +139,7 @@ window.app = new Vue({
                     seedLocation: null,
                     seedTime: null,
                     username: null,
+                    password: null,
                     verifySSL: null,
                     testStatus: 'Click below to test',
                 },
