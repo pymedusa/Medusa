@@ -52,7 +52,7 @@
                 :explanations="['Is this show an Anime?']" :value="selectedAnimeEnabled" @input="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
-            <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
+                        <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
                     <label for="anidbReleaseGroup" class="col-sm-2 control-label">
                         <span>Release Groups</span>
@@ -305,6 +305,7 @@ export default {
         },
         release: {
             handler() {
+                this.$emit('refresh');
                 this.update();
             },
             deep: true,
