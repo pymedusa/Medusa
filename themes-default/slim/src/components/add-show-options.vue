@@ -13,7 +13,7 @@
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :value="defaultConfig.subtitles" @input="selectedSubtitleEnabled = $event"
+                <config-toggle-slider label="Subtitles" id="subtitles" :value="selectedSubtitleEnabled" @input="selectedSubtitleEnabled = $event"
                     :explanations="['Download subtitles for this show?']">
                 </config-toggle-slider>
             </div>
@@ -44,7 +44,7 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :value="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
+            <config-toggle-slider label="Season Folders" id="season_folders" :value="selectedSeasonFoldersEnabled" :disabled="namingForceFolders"
                 :explanations="['Group episodes by season folders?']" @input="selectedSeasonFoldersEnabled = $event">
             </config-toggle-slider>
 
@@ -52,7 +52,7 @@
                 :explanations="['Is this show an Anime?']" :value="selectedAnimeEnabled" @input="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
-                        <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
+            <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
                     <label for="anidbReleaseGroup" class="col-sm-2 control-label">
                         <span>Release Groups</span>
@@ -65,7 +65,7 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :value="defaultConfig.scene"
+            <config-toggle-slider label="Scene Numbering" id="scene" :value="selectedSceneEnabled"
                 :explanations="['Is this show scene numbered?']" @input="selectedSceneEnabled = $event">
             </config-toggle-slider>
 
@@ -328,9 +328,13 @@ export default {
             this.update();
         },
         defaultConfig(newValue) {
+            const { namingForceFolders } = this;
             this.selectedStatus = newValue.status;
             this.selectedStatusAfter = newValue.statusAfter;
+            this.selectedSubtitleEnabled = newValue.subtitles;
             this.selectedAnimeEnabled = newValue.anime;
+            this.selectedSeasonFoldersEnabled = newValue.seasonFolders || namingForceFolders;
+            this.selectedSceneEnabled = newValue.scene;
         }
     }
 };
