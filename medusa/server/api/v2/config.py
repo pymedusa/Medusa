@@ -81,7 +81,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
         'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
-        'clients.torrents.path': BooleanField(app, 'TORRENT_PATH'),
+        'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
         'clients.torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
         'clients.torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
