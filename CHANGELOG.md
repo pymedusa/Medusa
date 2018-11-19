@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed ImportError when using Download Station client ([#5748](https://github.com/pymedusa/Medusa/pull/5748))
 - Fixed Torrent Search path option not being saved ([#5736](https://github.com/pymedusa/Medusa/pull/5736))
 
 -----

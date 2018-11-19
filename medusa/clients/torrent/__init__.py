@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 _clients = [
     'deluge',
     'deluged',
-    'download_station',
+    'downloadstation',
     'mlnet',
     'qbittorrent',
     'rtorrent',
