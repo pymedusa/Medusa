@@ -49,7 +49,7 @@
             </config-toggle-slider>
 
             <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime"
-                :explanations="['Is this show an Anime?']" :value="defaultConfig.anime" @input="selectedAnimeEnabled = $event">
+                :explanations="['Is this show an Anime?']" :value="selectedAnimeEnabled" @input="selectedAnimeEnabled = $event">
             </config-toggle-slider>
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
@@ -138,7 +138,8 @@ export default {
             vm.selectedStatusAfter,
             vm.selectedSubtitleEnabled,
             vm.selectedSeasonFoldersEnabled,
-            vm.selectedSceneEnabled
+            vm.selectedSceneEnabled,
+            vm.selectedAnimeEnabled
         ].join(), () => {
             this.update();
         });
@@ -264,7 +265,6 @@ export default {
                 enableAnimeOptions,
                 defaultConfig,
                 namingForceFolders,
-
                 selectedStatus,
                 selectedStatusAfter,
                 combinedQualities,
@@ -329,6 +329,7 @@ export default {
         defaultConfig(newValue) {
             this.selectedStatus = newValue.status;
             this.selectedStatusAfter = newValue.statusAfter;
+            this.selectedAnimeEnabled = newValue.anime;
         }
     }
 };
