@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed Torrent Search path option not being saved ([#5736](https://github.com/pymedusa/Medusa/pull/5736))
 
 -----
 
