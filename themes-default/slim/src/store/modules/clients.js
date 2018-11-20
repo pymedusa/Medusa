@@ -16,6 +16,7 @@ const state = {
         seedLocation: null,
         seedTime: null,
         username: null,
+        password: null,
         verifySSL: null,
         testStatus: 'Click below to test'
     },
@@ -31,7 +32,7 @@ const state = {
             priority: null,
             useHttps: null,
             username: null,
-            testStatus: 'Click below to test'
+            password: null
         },
         sabnzbd: {
             category: null,
@@ -42,8 +43,7 @@ const state = {
             host: null,
             username: null,
             password: null,
-            apiKey: null,
-            testStatus: 'Click below to test'
+            apiKey: null
         }
     }
 };
