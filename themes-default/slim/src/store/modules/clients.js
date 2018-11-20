@@ -43,7 +43,8 @@ const state = {
             host: null,
             username: null,
             password: null,
-            apiKey: null        }
+            apiKey: null
+        }
     }
 };
 
