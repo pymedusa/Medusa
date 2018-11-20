@@ -90,7 +90,7 @@ class Notifier(object):
             args['device'] = ','.join(app.PUSHOVER_DEVICE)
 
         log.debug('PUSHOVER: Sending notice with details: title="{0}" message="{1}", priority={2}, sound={3}',
-                  args['title'], args['message'], priority, sound)
+                  title, msg, priority, sound)
 
         conn = HTTPSConnection('api.pushover.net:443')
         conn.request('POST', '/1/messages.json',

@@ -9,6 +9,7 @@
 - Fixed ImportError when using Download Station client ([#5748](https://github.com/pymedusa/Medusa/pull/5748))
 - Fixed Torrent Search path option not being saved ([#5736](https://github.com/pymedusa/Medusa/pull/5736))
 - Fixed adding anime release group when adding show ([#5749](https://github.com/pymedusa/Medusa/pull/5749))
+- Fixed Pushover debug log causing BraceException ([#5759](https://github.com/pymedusa/Medusa/pull/5759))
 
 -----
 
