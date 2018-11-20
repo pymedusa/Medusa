@@ -948,6 +948,7 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['priority'] = int(app.NZBGET_PRIORITY)
         section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
+        section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
 
         section_data['nzb']['sabnzbd'] = NonEmptyDict()
         section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
@@ -957,5 +958,7 @@ class DataGenerator(object):
         section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
         section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
+        section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
+        section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
 
         return section_data
