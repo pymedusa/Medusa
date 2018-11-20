@@ -10019,10 +10019,10 @@ table@^5.0.0, table@^5.0.2:
     slice-ansi "1.0.0"
     string-width "^2.1.1"
 
-tablesorter@2.31.0:
-  version "2.31.0"
-  resolved "https://registry.yarnpkg.com/tablesorter/-/tablesorter-2.31.0.tgz#56fb478bb5317ecdfd4769b2f1b17598c98fee39"
-  integrity sha512-ys8Cvsc6V9wj7h+zU9uwS3LwKnct9FbE4UrLJE6hane96+Dl5oC3qQYPzM1YZZo9S0rZuvf2ozUj57psIXB7PQ==
+tablesorter@2.31.1:
+  version "2.31.1"
+  resolved "https://registry.yarnpkg.com/tablesorter/-/tablesorter-2.31.1.tgz#19c550c555fad4d3814500bfd4373e8b4f972305"
+  integrity sha512-xXFYMu2vc73oKNWcf+hdId1Rvtl2W3zS9pJAX0BWjJcn6zmhquXCk+kuBQzKid/Iq/T8ERPlyAJ7q0Wkgym7Sg==
   dependencies:
     jquery ">=1.2.6"
 
