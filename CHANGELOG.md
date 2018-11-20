@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Improved perfect match for subtitles downloading by making it a bit less strict ([#5729](https://github.com/pymedusa/Medusa/issues/5729))
 
 #### Fixes
 - Fixed ImportError when using Download Station client ([#5748](https://github.com/pymedusa/Medusa/pull/5748))
