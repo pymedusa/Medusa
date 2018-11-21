@@ -81,7 +81,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.torrents.labelAnime': StringField(app, 'TORRENT_LABEL_ANIME'),
         'clients.torrents.method': StringField(app, 'TORRENT_METHOD'),
         'clients.torrents.password': StringField(app, 'TORRENT_PASSWORD'),
-        'clients.torrents.path': BooleanField(app, 'TORRENT_PATH'),
+        'clients.torrents.path': StringField(app, 'TORRENT_PATH'),
         'clients.torrents.paused': BooleanField(app, 'TORRENT_PAUSED'),
         'clients.torrents.rpcurl': StringField(app, 'TORRENT_RPCURL'),
         'clients.torrents.seedLocation': StringField(app, 'TORRENT_SEED_LOCATION'),
@@ -210,9 +210,9 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.plex.server.updateLibrary': BooleanField(app, 'PLEX_UPDATE_LIBRARY'),
         'notifiers.plex.server.host': ListField(app, 'PLEX_SERVER_HOST'),
         'notifiers.plex.server.https': BooleanField(app, 'PLEX_SERVER_HTTPS'),
-        'notifiers.plex.server.username': StringField(app, 'PLEX_SERVER_HOST'),
-        'notifiers.plex.server.password': StringField(app, 'PLEX_SERVER_HOST'),
-        'notifiers.plex.server.token': StringField(app, 'PLEX_SERVER_HOST'),
+        'notifiers.plex.server.username': StringField(app, 'PLEX_SERVER_USERNAME'),
+        'notifiers.plex.server.password': StringField(app, 'PLEX_SERVER_PASSWORD'),
+        'notifiers.plex.server.token': StringField(app, 'PLEX_SERVER_TOKEN'),
         'notifiers.plex.client.enabled': BooleanField(app, 'USE_PLEX_CLIENT'),
         'notifiers.plex.client.username': StringField(app, 'PLEX_CLIENT_USERNAME'),
         'notifiers.plex.client.host': ListField(app, 'PLEX_CLIENT_HOST'),
@@ -932,6 +932,7 @@ class DataGenerator(object):
         section_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
         section_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
         section_data['torrents']['username'] = app.TORRENT_USERNAME
+        section_data['torrents']['password'] = app.TORRENT_PASSWORD
         section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
 
         section_data['nzb'] = NonEmptyDict()
@@ -947,6 +948,7 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['priority'] = int(app.NZBGET_PRIORITY)
         section_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
+        section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
 
         section_data['nzb']['sabnzbd'] = NonEmptyDict()
         section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
@@ -956,5 +958,7 @@ class DataGenerator(object):
         section_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
         section_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
+        section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
+        section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
 
         return section_data

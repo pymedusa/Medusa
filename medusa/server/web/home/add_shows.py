@@ -480,8 +480,12 @@ class HomeAddShows(Home):
         subtitles = config.checkbox_to_value(subtitles)
 
         if whitelist:
+            if not isinstance(whitelist, list):
+                whitelist = [whitelist]
             whitelist = short_group_names(whitelist)
         if blacklist:
+            if not isinstance(blacklist, list):
+                blacklist = [blacklist]
             blacklist = short_group_names(blacklist)
 
         if not allowed_qualities:

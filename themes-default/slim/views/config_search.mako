@@ -114,11 +114,13 @@ window.app = new Vue({
                     },
                     nzbget: {
                         title: 'NZBget',
-                        description: 'NZBget RPC host name and port number (not NZBgetweb!) (e.g. localhost:6789)'
+                        description: 'NZBget RPC host name and port number (not NZBgetweb!) (e.g. localhost:6789)',
+                        testStatus: 'Click below to test'
                     },
                     sabnzbd: {
                         title: 'SABnzbd',
-                        description: 'URL to your SABnzbd server (e.g. http://localhost:8080/)'
+                        description: 'URL to your SABnzbd server (e.g. http://localhost:8080/)',
+                        testStatus: 'Click below to test'
                     }
                 },
             },
@@ -139,8 +141,8 @@ window.app = new Vue({
                     seedLocation: null,
                     seedTime: null,
                     username: null,
-                    verifySSL: null,
-                    testStatus: 'Click below to test',
+                    password: null,
+                    verifySSL: null
                 },
                 nzb: {
                     enabled: null,
@@ -154,7 +156,7 @@ window.app = new Vue({
                         priority: null,
                         useHttps: null,
                         username: null,
-                        testStatus: 'Click below to test',
+                        password: null
                     },
                     sabnzbd: {
                         category: null,
@@ -165,8 +167,7 @@ window.app = new Vue({
                         host: null,
                         username: null,
                         password: null,
-                        apiKey: null,
-                        testStatus: 'Click below to test',
+                        apiKey: null
                     }
                 }
             },
@@ -298,7 +299,7 @@ window.app = new Vue({
             const { torrents } = clients;
             const { method, host, username, password } = torrents;
 
-            this.clients.torrents.testStatus = MEDUSA.config.loading;
+            this.clientsConfig.torrent[method].testStatus = MEDUSA.config.loading;
 
             const params = {
                 torrent_method: method,
@@ -308,15 +309,15 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testTorrent', { params });
 
-            this.clients.torrents.testStatus = resp.data;
+            this.clientsConfig.torrent[method].testStatus = resp.data;
         },
         async testNzbget() {
             const { clients } = this;
             const { nzb } = clients;
-            const { nzbget } = nzb;
+            const { nzbget, method } = nzb;
             const { host, username, password, useHttps } = nzbget;
 
-            this.clients.nzb.nzbget.testStatus = MEDUSA.config.loading;
+            this.clientsConfig.nzb.nzbget.testStatus = MEDUSA.config.loading;
 
             const params = {
                 host,
@@ -326,7 +327,7 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testNZBget', { params });
 
-            this.clients.nzb.nzbget.testStatus = resp.data;
+            this.clientsConfig.nzb.nzbget.testStatus = resp.data;
         },
         async testSabnzbd() {
             const { clients } = this;
@@ -334,7 +335,7 @@ window.app = new Vue({
             const { sabnzbd } = nzb;
             const { host, username, password, apiKey } = sabnzbd;
 
-            this.clients.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
+            this.clientsConfig.nzb.sabnzbd.testStatus = MEDUSA.config.loading;
 
             const params = {
                 host,
@@ -344,7 +345,7 @@ window.app = new Vue({
             };
             const resp = await apiRoute.get('home/testSABnzbd', { params });
 
-            this.clients.nzb.sabnzbd.testStatus = resp.data;
+            this.clientsConfig.nzb.sabnzbd.testStatus = resp.data;
         },
         save() {
             const { $store, clients, configLoaded, search } = this;
@@ -586,7 +587,7 @@ window.app = new Vue({
                                         <config-textbox v-model="clients.nzb.sabnzbd.categoryAnimeBacklog" label="Use SABnzbd category for anime (backlog episodes)" id="sab_category_anime_backlog" :explanations="['add anime downloads of old episodes to this category (e.g. anime)']"></config-textbox>
                                         <config-toggle-slider v-model="clients.nzb.sabnzbd.forced" label="Use forced priority" id="sab_forced" :explanations="['enable to change priority from HIGH to FORCED']" ></config-toggle-slider>
                                 
-                                        <div class="testNotification" v-show="clients.nzb.sabnzbd.testStatus" v-html="clients.nzb.sabnzbd.testStatus"></div>
+                                        <div class="testNotification" v-show="clients.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus"></div>
                                         <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>
@@ -615,7 +616,7 @@ window.app = new Vue({
                                             <span>priority for daily snatches (no backlog)</span>
                                         </config-template>
                                         
-                                        <div class="testNotification" v-show="clients.nzb.nzbget.testStatus" v-html="clients.nzb.nzbget.testStatus"></div>
+                                        <div class="testNotification" v-show="clientsConfig.nzb.nzbget.testStatus" v-html="clientsConfig.nzb.nzbget.testStatus"></div>
                                         <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div><!-- /nzb.enabled //-->
@@ -737,7 +738,7 @@ window.app = new Vue({
 
                                         <config-toggle-slider v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.highBandwidth" label="Allow high bandwidth" id="torrent_high_bandwidth" :explanations="['use high bandwidth allocation if priority is high']"></config-toggle-slider>
 
-                                        <div class="testNotification" v-show="clients.torrents.testStatus" v-html="clients.torrents.testStatus"></div>
+                                        <div class="testNotification" v-show="clientsConfig.torrent[clients.torrents.method].testStatus" v-html="clientsConfig.torrent[clients.torrents.method].testStatus"></div>
                                         <input @click="testTorrentClient" type="button" value="Test Connection" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>

@@ -1042,7 +1042,7 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media server -->
 
-                                <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send Plex server notifications?']" @change="save()" ></config-toggle-slider>
 
                                 <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
                                     <config-textbox v-model="notifiers.plex.server.token" label="Plex Media Server Auth Token" id="plex_server_token" @change="save()" >
