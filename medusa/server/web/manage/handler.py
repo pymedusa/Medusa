@@ -791,7 +791,7 @@ class Manage(Home, WebRoot):
 
         if app.TORRENT_METHOD == 'utorrent':
             webui_url = '/'.join(s.strip('/') for s in (webui_url, 'gui/'))
-        if app.TORRENT_METHOD == 'download_station':
+        if app.TORRENT_METHOD == 'downloadstation':
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
