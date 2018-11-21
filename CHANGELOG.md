@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 0.2.13 (2018-11-21)
 
 #### Improvements
 - Improved perfect match for subtitles downloading by making it a bit less strict ([#5729](https://github.com/pymedusa/Medusa/issues/5729))
