@@ -1,6 +1,30 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 0.2.13 (2018-11-21)
+
+#### Improvements
+- Improved perfect match for subtitles downloading by making it a bit less strict ([#5729](https://github.com/pymedusa/Medusa/issues/5729))
+
+#### Fixes
+- Fixed ImportError when using Download Station client ([#5748](https://github.com/pymedusa/Medusa/pull/5748))
+- Fixed Torrent Search path option not being saved ([#5736](https://github.com/pymedusa/Medusa/pull/5736))
+- Fixed adding anime release group when adding show ([#5749](https://github.com/pymedusa/Medusa/pull/5749))
+- Fixed Pushover debug log causing BraceException ([#5759](https://github.com/pymedusa/Medusa/pull/5759))
+- Fixed torrent method Downloadstation not selected after restart ([#5761](https://github.com/pymedusa/Medusa/pull/5761))
+
+-----
+
+## 0.2.12 (2018-11-16)
+
+#### New Features
 - Added Join notifier ([#5241](https://github.com/pymedusa/Medusa/pull/5241))
 
 #### Improvements
@@ -10,6 +34,8 @@
 - Allowed the use of priorities in the Pushover notifier ([#5567](https://github.com/pymedusa/Medusa/pull/5567))
 - Added delete method to EpisodeHandler (apiv2), for deleting a single episode ([#5685](https://github.com/pymedusa/Medusa/pull/5685))
 - Allowed Nyaa and Anidex to search for non-anime shows ([#5680](https://github.com/pymedusa/Medusa/pull/5680) & [#5681](https://github.com/pymedusa/Medusa/pull/5681))
+- Do not allow to enable the anime options, when using tmdb or tvmaze ([#5701](https://github.com/pymedusa/Medusa/pull/5701))
+- Vueified "config - search" page. Improved responsiveness of the notification page on smaller screens. ([#5553](https://github.com/pymedusa/Medusa/pull/5553))
 
 #### Fixes
 - Fixed test not working for Download Station ([#5561](https://github.com/pymedusa/Medusa/pull/5561))
@@ -23,8 +49,6 @@
 -----
 
 ## 0.2.11 (2018-10-29)
-
-#### New Features
 
 #### Improvements
 - Updated `guessit` to version 3.0.0 ([#4244](https://github.com/pymedusa/Medusa/pull/4244))
