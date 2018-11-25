@@ -212,7 +212,7 @@ class HomeAddShows(Home):
         """
         Fetches list recommeded shows from anidb.info.
         """
-        t = PageTemplate(rh=self, filename='addShows_recommended.mako')
+        t = PageTemplate(rh=self, filename='addShows_recommended_vue.mako')
         e = None
 
         try:
@@ -225,6 +225,15 @@ class HomeAddShows(Home):
                         recommended_shows=recommended_shows, exception=e, groups=[],
                         enable_anime_options=True, blacklist=[], whitelist=[],
                         controller='addShows', action='recommendedShows', realpage='popularAnime')
+
+    def recommended(self):
+        """
+        Serve Vue page addShows_recommeded_vue.mako
+        """
+        t = PageTemplate(rh=self, filename='addShows_recommended_vue.mako')
+
+        return t.render(title='Recommended shows', header='Recommended shows',
+                        controller='addShows', action='recommendedShows', realpage='recommended')
 
     def addShowToBlacklist(self, seriesid):
         # URL parameters

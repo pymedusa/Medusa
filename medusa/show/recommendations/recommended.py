@@ -20,10 +20,10 @@ from __future__ import unicode_literals
 import logging
 import os
 import posixpath
-from builtins import object
 from os.path import join
 
 from medusa import (
+    db,
     app,
     helpers,
 )
@@ -31,6 +31,7 @@ from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
+from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -84,6 +85,16 @@ class MissingTvdbMapping(Exception):
     """Exception used when a show can't be mapped to a tvdb indexer id."""
 
 
+class BasePopular(object):
+    def __init__(self, recommender=None, source=None, cache_subfoler=None):
+        """Base class for the recommended show classes (AnidbPopular, TraktPopular, etc)."""
+        self.session = MedusaSession()
+        self.recommender = recommender
+        self.source = source
+        self.cache_subfolder = 'recommended'
+        self.default_img_src = 'poster.png'
+
+
 class RecommendedShow(object):
     """Base class for show recommendations."""
 
@@ -102,6 +113,7 @@ class RecommendedShow(object):
         :param image_src: the local url to the "cached" image (poster)
         :param default_img_src: a default image when no poster available
         """
+        self.source = rec_show_prov.source
         self.recommender = rec_show_prov.recommender
         self.cache_subfolder = rec_show_prov.cache_subfolder or 'recommended'
         self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
@@ -110,12 +122,14 @@ class RecommendedShow(object):
         self.title = title
         self.mapped_indexer = int(mapped_indexer)
         self.mapped_indexer_name = indexer_id_to_name(mapped_indexer)
-        try:
-            self.mapped_series_id = int(mapped_series_id)
-        except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
+        self.mapped_series_id = series_id
+        if self.mapped_series_id:
+            try:
+                self.mapped_series_id = int(self.mapped_series_id)
+            except ValueError:
+                raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
 
-        self.rating = show_attr.get('rating') or 0
+        self.rating = float(show_attr.get('rating') or 0)
 
         self.votes = show_attr.get('votes')
         if self.votes and not isinstance(self.votes, int):
@@ -125,12 +139,13 @@ class RecommendedShow(object):
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
         self.ids = show_attr.get('ids', {})
-        self.is_anime = False
+        self.is_anime = show_attr.get('is_anime', False)
 
-        # Check if the show is currently already in the db
-        self.show_in_list = bool([show.indexerid for show in app.showList
-                                 if show.series_id == self.mapped_series_id and
-                                 show.indexer == self.mapped_indexer])
+        if self.mapped_series_id:
+            # Check if the show is currently already in the db
+            self.show_in_list = bool([show.indexerid for show in app.showList
+                                     if show.series_id == self.mapped_series_id and
+                                     show.indexer == self.mapped_indexer])
         self.session = session
 
     def cache_image(self, image_url, default=None):
@@ -182,6 +197,105 @@ class RecommendedShow(object):
     def __str__(self):
         """Return a string repr of the recommended list."""
         return 'Recommended show {0} from recommended list: {1}'.format(self.title, self.recommender)
+
+    def save_to_db(self):
+        """Insert or update the recommended show to db."""
+        cache_db_con = db.DBConnection('cache.db')
+        # Add to db
+
+        existing_show = cache_db_con.select('SELECT recommended_id from RECOMMENDED WHERE source = ? AND series_id = ?',
+                                            [self.source, self.series_id])
+        if not existing_show:
+            cache_db_con.action(
+                'INSERT INTO recommended '
+                '    (source, series_id, default_indexer, title, rating, votes, is_anime, image_href)'
+                'VALUES (?,?,?,?,?,?,?,?)',
+                [self.source, self.series_id, self.mapped_indexer, self.title, self.rating, self.votes, int(self.is_anime), self.image_href]
+            )
+        else:
+            cache_db_con.action('UPDATE recommended SET default_indexer = ?, title = ?, rating = ?, votes = ?, is_anime = ?, image_href = ? '
+                                'WHERE recommended_id = ?',
+                                [self.mapped_indexer, self.title, self.rating,
+                                 self.votes, int(self.is_anime), self.image_href, existing_show[0]['recommended_id']])
+
+    def to_json(self):
+        """
+        Return JSON representation.
+        """
+
+        data = {}
+        data['source'] = self.source
+        data['cacheSubfolder'] = self.cache_subfolder
+        data['seriesId'] = self.series_id
+        data['title'] = self.title
+        data['mappedIndexer'] = self.mapped_indexer_name
+        data['mappedSeriesId'] = self.mapped_series_id
+        data['rating'] = self.rating
+        data['votes'] = self.votes
+        data['imageHref'] = self.image_href
+        data['imageSrc'] = self.image_src
+        data['externals'] = self.ids
+        data['isAnime'] = self.is_anime
+        data['showInLibrary'] = self.show_in_list
+
+        return data
+
+
+def get_recommended_shows(source=None, series_id=None):
+    """
+    Retrieve recommended shows from the db cache/recommended table.
+
+    All shows are transformed to Recommended objects.
+    :param source: The Indexer or External source ID
+    :returns: A list of Rcommended objects.
+    """
+
+    cache_db_con = db.DBConnection('cache.db')
+    query = 'SELECT * from recommended {where}'
+    where = []
+    params = []
+
+    if source:
+        where.append('source = ?')
+        params.append(source)
+
+    if series_id:
+        where.append('series_id = ?')
+        params.append(series_id)
+
+    shows = cache_db_con.select(
+        query.format(where='' if not where else ' WHERE ' + ' AND '.join(where)), params
+    )
+
+    recommended_shows = []
+    from medusa.show.recommendations.anidb import AnidbPopular
+    from medusa.show.recommendations.imdb import ImdbPopular
+    from medusa.show.recommendations.trakt import TraktPopular
+    mapped_source = {EXTERNAL_TRAKT: TraktPopular, EXTERNAL_ANIDB: AnidbPopular, EXTERNAL_IMDB: ImdbPopular}
+    for show in shows:
+
+        try:
+            recommended_shows.append(
+                RecommendedShow(
+                    BasePopular(
+                        recommender=mapped_source.get(show[b'source']).TITLE,
+                        source=show[b'source'],
+                        cache_subfoler=mapped_source.get(show[b'source']).CACHE_SUBFOLDER
+                    ),
+                    show[b'series_id'],
+                    show[b'title'],
+                    show[b'default_indexer'],
+                    None,
+                    **{
+                        'rating': show[b'rating'],
+                        'votes': show[b'votes'],
+                        'image_href': show[b'image_href']
+                    }
+                )
+            )
+        except Exception as error:
+            pass
+    return recommended_shows
 
 
 @LazyApi.load_anidb_api

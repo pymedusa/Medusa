@@ -132,12 +132,12 @@ window.app = new Vue({
                             <p>${int(float(cur_rating)*10)}% <img src="images/heart.png">
                                 % if cur_show.is_anime and cur_show.ids.get('aid'):
                                     <app-link class="recommended-show-url" href="https://anidb.net/a${cur_show.ids['aid']}">
-                                        <img src="images/anidb_inline_refl.png" class="recommeded-show-link-inline" alt=""/>
+                                        <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt=""/>
                                     </app-link>
                                 % endif
                                 % if cur_show.recommender == 'Trakt Popular':
                                     <a class="recommended-show-url" href="https://trakt.tv/shows/${cur_show.series_id}">
-                                        <img src="images/trakt.png" class="recommeded-show-link-inline" alt=""/>
+                                        <img src="images/trakt.png" class="recommended-show-link-inline" alt=""/>
                                     </a>
                                 % endif
                             </p>

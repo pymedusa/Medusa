@@ -25,11 +25,13 @@ from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.recommended import RecommendedHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from medusa.server.api.v2.stats import StatsHandler
+
 from medusa.server.web import (
     CalendarHandler,
     KeyHandler,
@@ -108,6 +110,9 @@ def get_apiv2_handlers(base):
 
         # /api/v2/authenticate
         AuthHandler.create_app_handler(base),
+
+        # /api/v2/recommeded
+        RecommendedHandler.create_app_handler(base),
 
         # Always keep this last!
         NotFoundHandler.create_app_handler(base)

@@ -9,11 +9,11 @@ from os.path import join
 
 from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_ANIDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series,
+    BasePopular, MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series,
     update_recommended_series_cache_index
 )
 
@@ -27,17 +27,22 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class AnidbPopular(object):  # pylint: disable=too-few-public-methods
+class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
+
+    BASE_URL = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
+    TITLE = 'Anidb Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
+
     def __init__(self):
         """Class retrieves a specified recommended show list from Trakt.
 
         List of returned shows is mapped to a RecommendedShow object
         """
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
+        self.cache_subfolder = AnidbPopular.CACHE_SUBFOLDER
         self.session = MedusaSession()
-        self.recommender = 'Anidb Popular'
-        self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
-        self.default_img_src = 'poster.png'
+        self.recommender = AnidbPopular.TITLE
+        self.source = EXTERNAL_ANIDB
+        self.base_url = AnidbPopular.BASE_URL
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series, storage_key=None):
@@ -55,24 +60,23 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(
             self,
             series.aid,
-            series.title,
+            unicode(series.title),
             INDEXER_TVDBV2,
             tvdb_id,
             **{'rating': series.rating_permanent,
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),
-                'ids': {'tvdb': tvdb_id,
-                        'aid': series.aid
-                        }
-               }
+                'ids': {
+                    'tvdb': tvdb_id,
+                    'aid': series.aid,
+                    'is_anime': True
+                }
+            }
         )
 
         # Check cache or get and save image
         use_default = self.default_img_src if not series.picture.url else None
         rec_show.cache_image(series.picture.url, default=use_default)
-
-        # By default pre-configure the show option anime = True
-        rec_show.is_anime = True
 
         return rec_show
 

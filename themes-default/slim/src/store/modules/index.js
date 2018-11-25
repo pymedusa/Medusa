@@ -5,6 +5,7 @@ export { default as metadata } from './metadata';
 export { default as notifications } from './notifications';
 export { default as notifiers } from './notifiers';
 export { default as qualities } from './qualities';
+export { default as recommended } from './recommended';
 export { default as shows } from './shows';
 export { default as socket } from './socket';
 export { default as statuses } from './statuses';

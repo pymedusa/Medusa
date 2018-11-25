@@ -234,39 +234,47 @@ class ShowUpdater(object):
         # Update recommended shows from trakt, imdb and anidb
         # recommended shows are dogpilled into cache/recommended.dbm
 
-        if app.CACHE_RECOMMEDED_SHOWS:
+        if app.CACHE_RECOMMENDED_SHOWS:
             logger.info(u'Started caching recommended shows')
 
-            # Cache trakt shows
-            for page_url in (
-                'shows/trending',
-                'shows/popular',
-                'shows/anticipated',
-                'shows/collected',
-                'shows/watched',
-                'shows/played',
-                'recommendations/shows',
-                'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d'),
-                'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
-            ):
+            if app.CACHE_RECOMMENDED_TRAKT:
+                # Cache trakt shows
+                for page_url in (
+                    'shows/trending',
+                    'shows/popular',
+                    'shows/anticipated',
+                    'shows/collected',
+                    'shows/watched',
+                    'shows/played',
+                    'recommendations/shows',
+                    'calendars/all/shows/new/%s/30' % datetime.date.today().strftime('%Y-%m-%d'),
+                    'calendars/all/shows/premieres/%s/30' % datetime.date.today().strftime('%Y-%m-%d')
+                ):
+                    try:
+                        blacklist, trending_shows, removed_from_medusa = TraktPopular().fetch_popular_shows(page_url=page_url)
+                        for show in trending_shows:
+                            show.save_to_db()
+                    except Exception as error:
+                        logger.info(u'Could not get trakt recommended shows for %s because of error: %s', page_url, error)
+                        logger.debug(u'Not bothering getting the other trakt lists')
+
+            if app.CACHE_RECOMMENDED_IMDB:
+                # Cache imdb shows
                 try:
-                    TraktPopular().fetch_popular_shows(page_url=page_url)
+                    shows = ImdbPopular().fetch_popular_shows()
+                    for show in shows:
+                        show.save_to_db()
+                except (RequestException, Exception) as error:
+                    logger.info(u'Could not get imdb recommended shows because of error: %s', error)
+
+            if app.CACHE_RECOMMENDED_ANIDB:
+                # Cache anidb shows
+                try:
+                    shows = AnidbPopular().fetch_popular_shows(REQUEST_HOT)
+                    for show in shows:
+                        show.save_to_db()
                 except Exception as error:
-                    logger.info(u'Could not get trakt recommended shows for %s because of error: %s', page_url, error)
-                    logger.debug(u'Not bothering getting the other trakt lists')
-                    break
-
-            # Cache imdb shows
-            try:
-                ImdbPopular().fetch_popular_shows()
-            except (RequestException, Exception) as error:
-                logger.info(u'Could not get imdb recommended shows because of error: %s', error)
-
-            # Cache anidb shows
-            try:
-                AnidbPopular().fetch_popular_shows(REQUEST_HOT)
-            except Exception as error:
-                logger.info(u'Could not get anidb recommended shows because of error: %s', error)
+                    logger.info(u'Could not get anidb recommended shows because of error: %s', error)
 
             logger.info(u'Finished caching recommended shows')
 

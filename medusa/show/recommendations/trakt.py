@@ -11,11 +11,11 @@ from medusa.cache import recommended_series_cache
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, create_key_from_series, update_recommended_series_cache_index
+    BasePopular, RecommendedShow, create_key_from_series
 )
 
 from six import binary_type, text_type
@@ -32,17 +32,23 @@ log.logger.addHandler(logging.NullHandler())
 missing_posters = ExpiringList(cache_timeout=3600 * 24 * 3)  # Cache 3 days
 
 
-class TraktPopular(object):
+class TraktPopular(BasePopular):
     """This class retrieves a speficed recommended show list from Trakt.
 
     The list of returned shows is mapped to a RecommendedShow object
     """
 
+    TITLE = 'Trakt Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
+    BASE_URL = 'http://www.trakt.tv/shows/{0}'
+
     def __init__(self):
         """Initialize the trakt recommended list object."""
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.recommender = 'Trakt Popular'
+        self.cache_subfolder = TraktPopular.CACHE_SUBFOLDER
+        self.source = EXTERNAL_TRAKT
+        self.recommender = TraktPopular.TITLE
         self.default_img_src = 'trakt-default.png'
+        self.base_url = TraktPopular.BASE_URL
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
@@ -56,7 +62,7 @@ class TraktPopular(object):
             series['show']['ids']['tvdb'],
             **{'rating': series['show']['rating'],
                 'votes': try_int(series['show']['votes'], '0'),
-                'image_href': 'http://www.trakt.tv/shows/{0}'.format(series['show']['ids']['slug']),
+                'image_href': self.base_url.format(series['show']['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
                 'ids': series['show']['ids']
@@ -172,8 +178,8 @@ class TraktPopular(object):
                 except MultipleShowObjectsException:
                     continue
 
-            # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
+            # # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
+            # update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as error:

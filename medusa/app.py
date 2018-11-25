@@ -668,7 +668,10 @@ class MedusaApp(object):
         self.TVDB_API_KEY = '0629B785CE550C8D'
 
         # show updater recommeded show caching
-        self.CACHE_RECOMMEDED_SHOWS = True
+        self.CACHE_RECOMMENDED_SHOWS = True
+        self.CACHE_RECOMMENDED_TRAKT = True
+        self.CACHE_RECOMMENDED_IMDB = True
+        self.CACHE_RECOMMENDED_ANIDB = True
 
 
 app = MedusaApp()

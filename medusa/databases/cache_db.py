@@ -195,6 +195,28 @@ class ClearProviderTables(AddIndexerIds):
         major_version, minor_version = self.connection.version
         major_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
-        log.info('[CACHE-DB] Updated major version to: {}.{}', *self.connection.version)
+        return self.connection.version
 
         return self.connection.version
+
+
+class AddRecommendedTable(ClearProviderTables):
+    """Add table to cache the recommended shows."""
+
+    def test(self):
+        return self.hasTable('recommended')
+
+    def execute(self):
+        self.connection.action(
+            """CREATE TABLE "recommended" (
+                `recommended_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+                `source`	INTEGER NOT NULL,
+                `series_id`	INTEGER NOT NULL,
+                `default_indexer`	INTEGER,
+                `title`	TEXT NOT NULL,
+                `rating`	NUMERIC,
+                `votes`	INTEGER,
+                `is_anime`	INTEGER DEFAULT 0,
+                `image_href`	TEXT
+            )"""
+        )

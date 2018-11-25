@@ -6,16 +6,15 @@ import logging
 import os
 import posixpath
 import re
-from builtins import object
 
 from medusa import helpers
 from medusa.cache import recommended_series_cache
 from medusa.imdb import Imdb
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_IMDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, cached_get_imdb_series_details, create_key_from_series,
+    BasePopular, RecommendedShow, cached_get_imdb_series_details, create_key_from_series,
     update_recommended_series_cache_index
 )
 
@@ -27,16 +26,19 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class ImdbPopular(object):
+class ImdbPopular(BasePopular):
     """Gets a list of most popular TV series from imdb."""
+
+    TITLE = 'IMDB Popular'
+    CACHE_SUBFOLDER = __name__.split('.')[-1] if '.' in __name__ else __name__
+    BASE_URL = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
 
     def __init__(self):
         """Initialize class."""
-        self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = MedusaSession()
+        self.cache_subfolder = ImdbPopular.CACHE_SUBFOLDER
         self.imdb_api = Imdb(session=self.session)
-        self.recommender = 'IMDB Popular'
-        self.default_img_src = 'poster.png'
+        self.recommender = ImdbPopular.TITLE
+        self.source = EXTERNAL_IMDB
 
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series, storage_key=None):
