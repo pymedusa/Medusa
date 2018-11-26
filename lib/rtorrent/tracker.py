@@ -31,7 +31,7 @@ class Tracker:
     def __init__(self, _rt_obj, info_hash, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent using this tracker
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         # for clarity's sake...

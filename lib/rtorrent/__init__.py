@@ -663,6 +663,6 @@ class_methods_pair = {
     rtorrent.tracker.Tracker: rtorrent.tracker.methods,
     rtorrent.peer.Peer: rtorrent.peer.methods,
 }
-for c in class_methods_pair.keys():
+for c in class_methods_pair:
     rtorrent.rpc._build_rpc_methods(c, class_methods_pair[c])
     _build_class_methods(c)

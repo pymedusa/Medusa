@@ -31,7 +31,7 @@ class Peer:
     def __init__(self, _rt_obj, info_hash, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent the peer is associated with
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         self.rpc_id = '{0}:p{1}'.format(

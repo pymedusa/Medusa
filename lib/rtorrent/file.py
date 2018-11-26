@@ -32,7 +32,7 @@ class File:
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent the file is associated with
         self.index = index  # : The position of the file within the file list
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         self.rpc_id = '{0}:f{1}'.format(
