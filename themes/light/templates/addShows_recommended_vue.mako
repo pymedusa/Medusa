@@ -55,11 +55,6 @@ window.app = new Vue({
             selected: (MEDUSA.config.sortArticle ? -1 : 0)
         });
 
-        const imgLazyLoad = new LazyLoad({
-            // Example of options object -> see options section
-            threshold: 500
-        });
-
         $.initRemoteShowGrid = function() {
             // Set defaults on page load
             imgLazyLoad.update();
@@ -335,7 +330,6 @@ window.app = new Vue({
             const { stateShows, shows } = this;
 
             // Map the state values to local data.
-            debugger;
             this.shows = stateShows;
             this.configLoaded = true;
         });
@@ -369,7 +363,7 @@ window.app = new Vue({
 
         },
         containerClass(show) {
-            let classes = 'recommended-container default-poster';
+            let classes = 'recommended-container default-poster show-row';
             const { removedFromMedusa } = this;
             if (show.showInLibrary || removedFromMedusa.includes(show.mappedSeriesId)) {
                 classes += ' show-in-list';
@@ -459,60 +453,59 @@ window.app = new Vue({
 <div id="recommended-shows" class="row">
     <div id="popularShows" class="col-md-12">
         
-            <div v-if="false" class="recommended_show" style="width:100%; margin-top:20px">
-                <p class="red-text">Fetching of Recommender Data failed.</p>
-                <strong>Exception:</strong>
-                <p>###Exception here###??</p>
-            </div>
+        <div v-if="false" class="recommended_show" style="width:100%; margin-top:20px">
+            <p class="red-text">Fetching of Recommender Data failed.</p>
+            <strong>Exception:</strong>
+            <p>###Exception here###??</p>
+        </div>
 
-            <isotope :list="stateShows" id="container" class="isoDefault" :options='option' @layout="isotopeLayout($event)">
-                <div v-for="show in filteredShowsByList" :key="show.seriesId" class="show-row" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
-                    <div :class="containerClass(show)">
-                        <div class="recommended-image">
-                            <app-link :href="show.imageHref">
-                                <img alt="" class="recommended-image" src="images/poster.png" :data-original="show.imageSrc" height="273px" width="186px"/>
+        <isotope :list="filteredShowsByList" id="container" class="isoDefault" :options='option' @layout="isotopeLayout($event)">
+            <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
+                <div class="recommended-image">
+                    <app-link :href="show.imageHref">
+                        <img alt="" class="recommended-image" src="images/poster.png" :data-original="show.imageSrc" height="273px" width="186px"/>
+                    </app-link>
+                </div>
+                <div id="check-overlay"></div>
+
+                <div class="show-title">
+                    {{show.title}}
+                </div>
+
+                <div class="clearfix show-attributes">
+                    <p>{{show.rating}} <img src="images/heart.png">
+                        <div v-if="show.isAnime" id="linkAnime">
+                            <app-link class="recommended-show-url" :href="'https://anidb.net/a' + show.externals.aid">
+                                <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt=""/>
                             </app-link>
                         </div>
-                        <div id="check-overlay"></div>
-    
-                        <div class="show-title">
-                            {{show.title}}
+                        <div v-if="show.recommender === 'Trakt Popular'" id="linkAnime">
+                            <a class="recommended-show-url" href="'https://trakt.tv/shows/' + show.seriesId">
+                                <img src="images/trakt.png" class="recommended-show-link-inline" alt=""/>
+                            </a>
                         </div>
-    
-                        <div class="clearfix show-attributes">
-                            <p>{{show.rating}} <img src="images/heart.png">
-                                <div v-if="show.isAnime" id="linkAnime">
-                                    <app-link class="recommended-show-url" :href="'https://anidb.net/a' + show.externals.aid">
-                                        <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt=""/>
-                                    </app-link>
-                                </div>
-                                <div v-if="show.recommender === 'Trakt Popular'" id="linkAnime">
-                                    <a class="recommended-show-url" href="'https://trakt.tv/shows/' + show.seriesId">
-                                        <img src="images/trakt.png" class="recommended-show-link-inline" alt=""/>
-                                    </a>
-                                </div>
-                            </p>
-                            <i>{{show.votes}} votes</i>
-    
-                            <div class="recommendedShowTitleIcons">
-                                <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                                    <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">In List</app-link>
-                                </button>
-                                
-                                <button v-if="!show.showInLibrary" class="btn-medusa btn-xs" data-isanime="1" :data-indexer="show.mappedIndexer"
-                                    :data-indexer-id="show.mappedSeriesId" :data-show-name="show.title || 'u'" data-add-show>
-                                    Add
-                                </button>
-    
-                                <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs"><app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">Watched</app-link></button>
-                                <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
-                                    <button :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
-    
-                            </div>
-                        </div>
+                    </p>
+                    <i>{{show.votes}} votes</i>
+
+                    <div class="recommendedShowTitleIcons">
+                        <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
+                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">In List</app-link>
+                        </button>
+                        
+                        <button v-if="!show.showInLibrary" class="btn-medusa btn-xs" data-isanime="1" :data-indexer="show.mappedIndexer"
+                            :data-indexer-id="show.mappedSeriesId" :data-show-name="show.title || 'u'" data-add-show>
+                            Add
+                        </button>
+
+                        <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
+                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
+                        </button>
+                        <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
+                        <button :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
                     </div>
                 </div>
-            </isotope>
-    </div>
-</div>
+            </div>
+        </isotope>
+    </div> <!-- End of col -->
+</div> <!-- End of row -->
 </%block>

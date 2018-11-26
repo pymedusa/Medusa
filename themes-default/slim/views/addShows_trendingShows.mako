@@ -18,10 +18,7 @@ window.app = new Vue({
         };
     },
     mounted() {
-        debugger;
-        $('.recommended-show-url').each(obj, index => {
-            debugger;
-        })
+        $('.recommended-show-url').each(obj, index => {})
     }
 });
 </script>
