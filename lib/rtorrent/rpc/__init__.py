@@ -24,8 +24,12 @@ import re
 import rtorrent
 from rtorrent.common import (bool_to_int, convert_version_tuple_to_str,
                              safe_repr)
-from rtorrent.compat import xmlrpclib
 from rtorrent.err import MethodError
+
+try:
+    import xmlrpc.client as xmlrpc_client
+except ImportError:
+    import xmlrpclib as xmlrpc_client
 
 
 def get_varname(rpc_call):
@@ -159,7 +163,7 @@ class Multicall(object):
         @return: the results (post-processed), in the order they were added
         @rtype: tuple
         """
-        m = xmlrpclib.MultiCall(self.rt_obj._get_conn())
+        m = xmlrpc_client.MultiCall(self.rt_obj._get_conn())
         for call in self.calls:
             method, args = call
             rpc_call = getattr(method, 'rpc_call')
