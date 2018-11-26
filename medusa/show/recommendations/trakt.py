@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import logging
 import os
-from builtins import object
 
 from medusa import app
 from medusa.cache import recommended_series_cache
@@ -18,7 +17,7 @@ from medusa.show.recommendations.recommended import (
     BasePopular, RecommendedShow, create_key_from_series
 )
 
-from six import binary_type, text_type
+from six import text_type, iteritems
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 
@@ -55,6 +54,7 @@ class TraktPopular(BasePopular):
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
     def _create_recommended_show(self, series, storage_key=None):
         """Create the RecommendedShow object from the returned showobj."""
+        externals_mapping = {u'tmdb': 'tmdb_id', u'tvdb': 'tvdb_id', u'imdb': u'imdb_id'}
         rec_show = RecommendedShow(
             self,
             series['show']['ids']['trakt'],
@@ -66,7 +66,7 @@ class TraktPopular(BasePopular):
                 'image_href': self.base_url.format(series['show']['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': series['show']['ids']
+                'ids': {externals_mapping[k]: v for k, v in iteritems(series['show']['ids']) if externals_mapping.get(k)}
                }
         )
 

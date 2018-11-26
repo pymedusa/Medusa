@@ -9,7 +9,7 @@ from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAlreadyInLibrary, IndexerUnavailable
-from medusa.indexers.utils import mappings
+from medusa.indexers.utils import mappings, reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -172,6 +172,26 @@ def check_existing_shows(indexed_show, indexer):
                                                   'Please remove the show, before you can add it through {2}.'
                                                   .format(show.name, indexerApi(show.indexer).name,
                                                           indexerApi(indexer).name))
+
+
+def save_externals_to_db(indexer, series_id, externals):
+    """Save the indexers external id's to the db."""
+    sql_l = []
+
+    for external in externals:
+        if external in reverse_mappings and externals[external]:
+            sql_l.append(['INSERT OR IGNORE '
+                          'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
+                          'VALUES (?,?,?,?)',
+                          [series_id,
+                           indexer,
+                           externals[external],
+                           int(reverse_mappings[external])
+                           ]])
+
+    if sql_l:
+        main_db_con = db.DBConnection()
+        main_db_con.mass_action(sql_l)
 
 
 def load_externals_from_db(indexer=None, indexer_id=None):

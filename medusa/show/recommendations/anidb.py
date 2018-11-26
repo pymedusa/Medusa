@@ -67,10 +67,10 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),
                 'ids': {
-                    'tvdb': tvdb_id,
-                    'aid': series.aid,
-                    'is_anime': True
-                }
+                    'tvdb_id': tvdb_id,
+                    'anidb_id': series.aid
+                },
+               'is_anime': True
             }
         )
 

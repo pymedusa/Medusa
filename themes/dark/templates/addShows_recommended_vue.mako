@@ -1,19 +1,29 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
+const IMDB = 10;
+const ANIDB = 11;
+const TRAKT = 12;
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
     data() {
+        const externals = {
+            IMDB: 10,
+            ANIDB: 11,
+            TRAKT: 12
+        };
         return {
+            externals,
             configLoaded: false,
             rootDirs: [],
+            
             options: [
-                { text: 'Anidb', value: 11 },
-                { text: 'IMDB', value: 10 },
-                { text: 'Trakt', value: 12 },
+                { text: 'Anidb', value: externals.ANIDB },
+                { text: 'IMDB', value: externals.IMDB },
+                { text: 'Trakt', value: externals.TRAKT },
                 { text: 'all', value: -1}
             ],
             selectedList: 11,
@@ -501,7 +511,7 @@ window.app = new Vue({
                             <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
                         </button>
                         <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
-                        <button :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
+                        <button v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
                     </div>
                 </div>
             </div>

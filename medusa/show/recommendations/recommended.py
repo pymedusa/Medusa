@@ -29,6 +29,7 @@ from medusa import (
 )
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
+from medusa.helpers.externals import load_externals_from_db, save_externals_to_db
 from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
 from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
@@ -221,6 +222,10 @@ class RecommendedShow(object):
                                 [self.mapped_indexer, self.mapped_series_id, self.title, self.rating,
                                  self.votes, int(self.is_anime), self.image_href, self.image_src, existing_show[0]['recommended_id']])
 
+        # If there are any external id's, save them to main/indexer_mappings
+        if self.ids:
+            save_externals_to_db(self.source, self.series_id, self.ids)
+
     def to_json(self):
         """
         Return JSON representation.
@@ -278,6 +283,9 @@ def get_recommended_shows(source=None, series_id=None):
     mapped_source = {EXTERNAL_TRAKT: TraktPopular, EXTERNAL_ANIDB: AnidbPopular, EXTERNAL_IMDB: ImdbPopular}
     for show in shows:
 
+        # Get the external id's
+        externals = load_externals_from_db(show[b'source'], show[b'series_id'])
+
         try:
             recommended_shows.append(
                 RecommendedShow(
@@ -294,7 +302,8 @@ def get_recommended_shows(source=None, series_id=None):
                         'rating': show[b'rating'],
                         'votes': show[b'votes'],
                         'image_href': show[b'image_href'],
-                        'image_src': show[b'image_src']
+                        'image_src': show[b'image_src'],
+                        'ids': externals
                     }
                 )
             )
