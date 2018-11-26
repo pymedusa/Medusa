@@ -53,12 +53,12 @@ def _handle_unavailable_rpc_method(method, rt_obj):
     raise MethodError(msg)
 
 
-class DummyClass:
+class DummyClass(object):
     def __init__(self):
         pass
 
 
-class Method:
+class Method(object):
     """Represents an individual RPC method."""
 
     def __init__(self, _class, method_name,
@@ -115,7 +115,7 @@ class Method:
             return(True)
 
 
-class Multicall:
+class Multicall(object):
     def __init__(self, class_obj, **kwargs):
         self.class_obj = class_obj
         if class_obj.__class__.__name__ == 'RTorrent':
@@ -169,7 +169,7 @@ class Multicall:
         results = tuple(results)
         results_processed = []
 
-        for r, c in zip(results, self.calls):
+        for r, c in list(zip(results, self.calls)):
             method = c[0]  # Method instance
             result = process_result(method, r)
             results_processed.append(result)

@@ -25,7 +25,7 @@ from rtorrent.common import safe_repr
 Method = rtorrent.rpc.Method
 
 
-class File:
+class File(object):
     """Represents an individual file within a L{Torrent} instance."""
 
     def __init__(self, _rt_obj, info_hash, index, **kwargs):
