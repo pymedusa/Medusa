@@ -330,9 +330,10 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        # Get the current stack trace (excluding the following line)
-        stack_trace = traceback.format_stack(limit=10)[:-2]
-        log.exception('Casting to int failed.\nStack trace:\n{0}', ''.join(stack_trace))
+        if candidate is not None:
+            # Get the current stack trace (excluding the following line)
+            stack_trace = traceback.format_stack(limit=10)[:-2]
+            log.exception('Casting to int failed.\nStack trace:\n{0}'.format(''.join(stack_trace)))
         return default_value
 
 
