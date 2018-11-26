@@ -300,7 +300,6 @@ window.app = new Vue({
         $store.dispatch('getShows');
     },
     mounted() {
-
         // TODO: vueify this.
         $('#trakt_pin').on('keyup change', () => {
             if ($('#trakt_pin').val().length === 0) {

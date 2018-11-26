@@ -122,7 +122,7 @@ class RecommendedShow(object):
         self.title = title
         self.mapped_indexer = int(mapped_indexer)
         self.mapped_indexer_name = indexer_id_to_name(mapped_indexer)
-        self.mapped_series_id = series_id
+        self.mapped_series_id = mapped_series_id
         if self.mapped_series_id:
             try:
                 self.mapped_series_id = int(self.mapped_series_id)
@@ -141,6 +141,7 @@ class RecommendedShow(object):
         self.ids = show_attr.get('ids', {})
         self.is_anime = show_attr.get('is_anime', False)
 
+        self.show_in_list = None
         if self.mapped_series_id:
             # Check if the show is currently already in the db
             self.show_in_list = bool([show.indexerid for show in app.showList
@@ -208,15 +209,17 @@ class RecommendedShow(object):
         if not existing_show:
             cache_db_con.action(
                 'INSERT INTO recommended '
-                '    (source, series_id, default_indexer, title, rating, votes, is_anime, image_href)'
-                'VALUES (?,?,?,?,?,?,?,?)',
-                [self.source, self.series_id, self.mapped_indexer, self.title, self.rating, self.votes, int(self.is_anime), self.image_href]
+                '    (source, series_id, mapped_indexer, mapped_series_id, title, rating, votes, is_anime, image_href, image_src) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?)',
+                [self.source, self.series_id, self.mapped_indexer, self.mapped_series_id, self.title, self.rating, self.votes,
+                 int(self.is_anime), self.image_href, self.image_src]
             )
         else:
-            cache_db_con.action('UPDATE recommended SET default_indexer = ?, title = ?, rating = ?, votes = ?, is_anime = ?, image_href = ? '
+            cache_db_con.action('UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ?, title = ?, rating = ?, votes = ?, '
+                                'is_anime = ?, image_href = ?, image_src = ? '
                                 'WHERE recommended_id = ?',
-                                [self.mapped_indexer, self.title, self.rating,
-                                 self.votes, int(self.is_anime), self.image_href, existing_show[0]['recommended_id']])
+                                [self.mapped_indexer, self.mapped_series_id, self.title, self.rating,
+                                 self.votes, int(self.is_anime), self.image_href, self.image_src, existing_show[0]['recommended_id']])
 
     def to_json(self):
         """
@@ -228,7 +231,8 @@ class RecommendedShow(object):
         data['cacheSubfolder'] = self.cache_subfolder
         data['seriesId'] = self.series_id
         data['title'] = self.title
-        data['mappedIndexer'] = self.mapped_indexer_name
+        data['mappedIndexer'] = self.mapped_indexer
+        data['mappedIndexerName'] = self.mapped_indexer_name
         data['mappedSeriesId'] = self.mapped_series_id
         data['rating'] = self.rating
         data['votes'] = self.votes
@@ -284,12 +288,13 @@ def get_recommended_shows(source=None, series_id=None):
                     ),
                     show[b'series_id'],
                     show[b'title'],
-                    show[b'default_indexer'],
-                    None,
+                    show[b'mapped_indexer'],
+                    show[b'mapped_series_id'],
                     **{
                         'rating': show[b'rating'],
                         'votes': show[b'votes'],
-                        'image_href': show[b'image_href']
+                        'image_href': show[b'image_href'],
+                        'image_src': show[b'image_src']
                     }
                 )
             )

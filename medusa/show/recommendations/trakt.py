@@ -44,6 +44,7 @@ class TraktPopular(BasePopular):
 
     def __init__(self):
         """Initialize the trakt recommended list object."""
+        super(TraktPopular, self).__init__()
         self.cache_subfolder = TraktPopular.CACHE_SUBFOLDER
         self.source = EXTERNAL_TRAKT
         self.recommender = TraktPopular.TITLE
@@ -171,10 +172,11 @@ class TraktPopular(BasePopular):
                                                            for s in not_liked_show if s['type'] == 'show'):
                             continue
                     else:
-                        trending_shows.append(self._create_recommended_show(
+                        recommended_show = self._create_recommended_show(
                             show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
-                        ))
-
+                        )
+                        recommended_show.save_to_db()
+                        trending_shows.append(recommended_show)
                 except MultipleShowObjectsException:
                     continue
 

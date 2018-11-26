@@ -35,6 +35,7 @@ class ImdbPopular(BasePopular):
 
     def __init__(self):
         """Initialize class."""
+        super(ImdbPopular, self).__init__()
         self.cache_subfolder = ImdbPopular.CACHE_SUBFOLDER
         self.imdb_api = Imdb(session=self.session)
         self.recommender = ImdbPopular.TITLE
@@ -66,16 +67,21 @@ class ImdbPopular(BasePopular):
 
     def fetch_popular_shows(self):
         """Get popular show information from IMDB."""
-        popular_shows = []
 
         imdb_result = self.imdb_api.get_popular_shows()
-
+        result = []
         for imdb_show in imdb_result['ranks']:
             series = {}
+            show_details = None
             imdb_id = series['imdb_tt'] = imdb_show['id'].strip('/').split('/')[-1]
 
             if imdb_id:
-                show_details = cached_get_imdb_series_details(imdb_id)
+                try:
+                    show_details = cached_get_imdb_series_details(imdb_id)
+                except RequestException as error:
+                    log.warning('Could not get show details for {imdb_id} with error: {error!r}',
+                                {'imdb_id': imdb_id, 'error': error})
+
                 if show_details:
                     try:
                         series['year'] = imdb_show.get('year')
@@ -88,30 +94,27 @@ class ImdbPopular(BasePopular):
                         series['votes'] = show_details['ratings'].get('ratingCount', 0)
                         series['outline'] = show_details['plot'].get('outline', {}).get('text')
                         series['rating'] = show_details['ratings'].get('rating', 0)
+
+                        if all([series['year'], series['name'], series['imdb_tt']]):
+                            try:
+                                recommended_show = self._create_recommended_show(series, storage_key='imdb_{0}'.format(
+                                    series['imdb_tt']
+                                ))
+                                if recommended_show:
+                                    recommended_show.save_to_db()
+                                    result.append(recommended_show)
+                            except RequestException:
+                                log.warning(
+                                    u'Could not connect to indexers to check if you already have'
+                                    u' this show in your library: {show} ({year})',
+                                    {'show': series['name'], 'year': series['name']}
+                                )
+
                     except Exception as error:
                         log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue
-
-            if all([series['year'], series['name'], series['imdb_tt']]):
-                popular_shows.append(series)
-
-        result = []
-        for series in popular_shows:
-            try:
-                recommended_show = self._create_recommended_show(series, storage_key='imdb_{0}'.format(series['imdb_tt']))
-                if recommended_show:
-                    result.append(recommended_show)
-            except RequestException:
-                log.warning(
-                    u'Could not connect to indexers to check if you already have'
-                    u' this show in your library: {show} ({year})',
-                    {'show': series['name'], 'year': series['name']}
-                )
-
-        # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-        update_recommended_series_cache_index('imdb', [binary_type(s.series_id) for s in result])
 
         return result
 

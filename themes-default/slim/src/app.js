@@ -5,8 +5,10 @@ import AsyncComputed from 'vue-async-computed';
 import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import Truncate from 'vue-truncate-collapsed';
+import isotope from 'vueisotope';
 import store from './store';
 import router from './router';
+
 import { isDevelopment } from './utils';
 import {
     AnidbReleaseGroupUi,
@@ -34,6 +36,8 @@ Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(ToggleButton);
 Vue.use(Snotify);
+
+Vue.component('isotope', isotope);
 
 // Load x-template components
 window.components.forEach(component => {

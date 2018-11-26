@@ -212,11 +212,13 @@ class AddRecommendedTable(ClearProviderTables):
                 `recommended_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
                 `source`	INTEGER NOT NULL,
                 `series_id`	INTEGER NOT NULL,
-                `default_indexer`	INTEGER,
+                `mapped_indexer`	INTEGER,
+                `mapped_series_id`	INTEGER,
                 `title`	TEXT NOT NULL,
                 `rating`	NUMERIC,
                 `votes`	INTEGER,
                 `is_anime`	INTEGER DEFAULT 0,
-                `image_href`	TEXT
+                `image_href`	TEXT,
+                `image_src`	TEXT
             )"""
         )

@@ -38,8 +38,8 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
 
         List of returned shows is mapped to a RecommendedShow object
         """
+        super(AnidbPopular, self).__init__()
         self.cache_subfolder = AnidbPopular.CACHE_SUBFOLDER
-        self.session = MedusaSession()
         self.recommender = AnidbPopular.TITLE
         self.source = EXTERNAL_ANIDB
         self.base_url = AnidbPopular.BASE_URL
@@ -94,6 +94,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
             try:
                 recommended_show = self._create_recommended_show(show, storage_key='anidb_{0}'.format(show.aid))
                 if recommended_show:
+                    recommended_show.save_to_db()
                     result.append(recommended_show)
             except MissingTvdbMapping:
                 log.info('Could not parse AniDB show {0}, missing tvdb mapping', show.title)

@@ -1,16 +1,20 @@
+import Vue from 'vue';
+import { api } from '../../api';
 import { ADD_RECOMMENDED_SHOW } from '../mutation-types';
 
 const state = {
-    recommended: []
+    recommended: {
+        shows: []
+    }
 };
 
 const mutations = {
     [ADD_RECOMMENDED_SHOW](state, show) {
-        const existingShow = state.recommended.find(({ seriesId, source }) => Number(show.seriesId[show.source]) === Number(seriesId[source]));
+        const existingShow = state.recommended.shows.find(({ seriesId, source }) => Number(show.seriesId[show.source]) === Number(seriesId[source]));
 
         if (!existingShow) {
             console.debug(`Adding ${show.title || show.source + String(show.seriesId)} as it wasn't found in the shows array`, show);
-            state.recommended.push(show);
+            state.recommended.shows.push(show);
             return;
         }
 
@@ -24,7 +28,7 @@ const mutations = {
         };
 
         // Update state
-        Vue.set(state.recommended, state.recommended.indexOf(existingShow), newShow);
+        Vue.set(state.recommended.shows, state.recommended.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.source + String(newShow.seriesId)}`, newShow);
     }
 };

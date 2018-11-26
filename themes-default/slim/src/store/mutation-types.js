@@ -16,7 +16,6 @@ const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
 const ADD_RECOMMENDED_SHOW = '📺 Recommended Show added to store';
 
-
 export {
     LOGIN_PENDING,
     LOGIN_SUCCESS,

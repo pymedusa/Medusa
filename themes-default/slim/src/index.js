@@ -17,6 +17,7 @@ import Snotify from 'vue-snotify';
 import Truncate from 'vue-truncate-collapsed';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
+import isotope from 'vueisotope';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
@@ -109,6 +110,7 @@ if (window) {
     window.components.push(SnatchSelection);
     window.components.push(StateSwitch);
     window.components.push(Status);
+    window.components.push(isotope);
 }
 
 const UTIL = {
