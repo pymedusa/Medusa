@@ -1,5 +1,6 @@
 # coding=utf-8
 """Configuration for pytest."""
+from __future__ import unicode_literals
 import logging
 import os
 from logging.handlers import RotatingFileHandler
@@ -24,7 +25,7 @@ from mock.mock import Mock
 import pytest
 
 import six
-from six import iteritems
+from six import iteritems, text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
@@ -176,24 +177,14 @@ def create_search_result(monkeypatch):
 def create_file(tmpdir):
     def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
-        content = '\n'.join(lines or [])
-
-        if six.PY3:
-            f.write_binary(content.encode())
-        else:
-            f.write_binary(content)
-
+        content = b'\n'.join(lines or [])
+        f.write_binary(content)
         if size:
             tmp_size = f.size()
             if tmp_size < size:
-                add_size = '\0' * (size - tmp_size)
-                content = content + add_size
-                if six.PY3:
-                    f.write_binary(content.encode())
-                else:
-                    f.write_binary(content)
-
-        return str(f)
+                add_size = b'\0' * (size - tmp_size)
+                f.write_binary(content + add_size)
+        return text_type(f)
 
     return create
 
@@ -202,7 +193,7 @@ def create_file(tmpdir):
 def create_dir(tmpdir):
     def create(dirname):
         f = tmpdir.ensure_dir(dirname)
-        return str(f)
+        return text_type(f)
 
     return create
 
@@ -218,7 +209,7 @@ def create_structure(tmpdir, create_file, create_dir):
                     create(path, values)
             else:
                 create_file(os.path.join(path, element))
-        return str(tmpdir)
+        return text_type(tmpdir)
 
     return create
 
@@ -239,7 +230,7 @@ def commit_hash(monkeypatch):
 
 @pytest.fixture
 def logfile(tmpdir):
-    target = str(tmpdir.ensure('logfile.log'))
+    target = text_type(tmpdir.ensure('logfile.log'))
     instance.log_file = target
     return target
 
@@ -254,7 +245,7 @@ def rotating_file_handler(logfile):
 
 @pytest.fixture
 def logger(rotating_file_handler, commit_hash):
-    print('Using commit_hash {}'.format(commit_hash))
+    print('Using commit_hash {0}'.format(commit_hash))
     target = logging.getLogger('testing_logger')
     target.addFilter(ContextFilter())
     target.addHandler(rotating_file_handler)
@@ -318,7 +309,7 @@ def create_github_issue(monkeypatch):
         }
         raw_data.update(kwargs)
         # Set url to a unique value, because that's how issues are compared
-        raw_data['url'] = str(hash(tuple(raw_data.values())))
+        raw_data['url'] = text_type(hash(tuple(raw_data.values())))
         return Issue(Mock(), Mock(), raw_data, True)
 
     return create

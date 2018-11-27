@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_should_search.py."""
+from __future__ import unicode_literals
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED,
                            SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED)
 from medusa.tv import Series
