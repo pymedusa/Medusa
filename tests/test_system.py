@@ -42,7 +42,6 @@ def test_restart(pid, expected, app_config):
     (123, False),
     (b'123', False),
     (123456, True),
-    (b'123456', True),
 
     # unicode test cases
     (u'0', False),

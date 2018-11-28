@@ -310,7 +310,7 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     expected = p['expected']
 
     monkeypatch_function_return([(
-        b'medusa.scene_exceptions.get_season_scene_exceptions',
+        'medusa.scene_exceptions.get_season_scene_exceptions',
         p['season_scene_name_exceptions']
     )])
 
