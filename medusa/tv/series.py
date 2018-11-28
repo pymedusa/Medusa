@@ -55,6 +55,7 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
+    CantRefreshShowException,
     CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
@@ -370,11 +371,58 @@ class Series(TV):
     @property
     def location(self):
         """Get the show location."""
-        # no directory check needed if missing
-        # show directories are created during post-processing
-        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
-            return self._location
-        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
+        log.debug(
+            u'{indexer} {id}: Setting location: {location}', {
+                'indexer': indexerApi(self.indexer).name,
+                'id': self.series_id,
+                'location': new_location,
+            }
+        )
+
+        if new_location == old_location:
+            return
+
+        # Don't validate directory if user wants to add shows without creating a dir
+        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
+            self._location = new_location
+            return
+
+        changed_location = True
+        log.info('Changing show location to: {new}', {'new': new_location})
+        if not os.path.isdir(new_location):
+            if app.CREATE_MISSING_SHOW_DIRS:
+                log.info(u"Show directory doesn't exist, creating it")
+                try:
+                    os.mkdir(new_location)
+                except OSError as error:
+                    changed_location = False
+                    log.warning(u"Unable to create the show directory '{location}'. Error: {msg}",
+                                {'location': new_location, 'msg': error})
+                else:
+                    log.info(u'New show directory created')
+                    helpers.chmod_as_parent(new_location)
+            else:
+                changed_location = False
+                log.warning("New location '{location}' does not exist. "
+                            "Enable setting '(Config - Postprocessing) Create missing show dirs'", {'location': new_location})
+
+        # Save new location only if we changed it
+        if changed_location:
+            self._location = new_location
+
+        if changed_location and os.path.isdir(new_location):
+            try:
+                app.show_queue_scheduler.action.refreshShow(self)
+            except CantRefreshShowException as error:
+                log.warning("Unable to refresh show '{show}'. Error: {error}",
+                            {'show': self.name, 'error': error.message})
 
     @property
     def indexer_name(self):
@@ -385,21 +433,6 @@ class Series(TV):
     def indexer_slug(self):
         """Return the slug name of the series. Example: tvdb1234."""
         return indexer_id_to_slug(self.indexer, self.series_id)
-
-    @location.setter
-    def location(self, value):
-        log.debug(
-            u'{indexer} {id}: Setting location: {location}', {
-                'indexer': indexerApi(self.indexer).name,
-                'id': self.series_id,
-                'location': value,
-            }
-        )
-        # Don't validate directory if user wants to add shows without creating a dir
-        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
-            self._location = value
-        else:
-            raise ShowDirectoryNotFoundException(u'Invalid show folder!')
 
     @property
     def current_qualities(self):
