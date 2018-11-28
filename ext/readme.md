@@ -57,7 +57,7 @@
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
 :: | `stevedore` | [1.30.0](https://pypi.org/project/stevedore/1.30.0/) | `subliminal` | ext | -
-:: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | ext | -
+:: | `subliminal` | pymedusa/[ad44797](https://github.com/pymedusa/subliminal/tree/ad4479723f3e60de3f544147c9c5d6dd45397f7e) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -
