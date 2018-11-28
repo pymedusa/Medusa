@@ -734,7 +734,7 @@ class CMD_Episode(ApiCall):
         # absolute vs relative vs broken
         show_path = None
         try:
-            show_path = show_obj.location
+            show_path = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             pass
 
@@ -1903,7 +1903,7 @@ class CMD_Show(ApiCall):
         show_dict['quality_details'] = {'initial': any_qualities, 'archive': best_qualities}
 
         try:
-            show_dict['location'] = show_obj.location
+            show_dict['location'] = show_obj.validate_location
         except ShowDirectoryNotFoundException:
             show_dict['location'] = ''
 

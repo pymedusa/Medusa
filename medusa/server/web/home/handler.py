@@ -823,7 +823,7 @@ class Home(WebRoot):
         }]
 
         try:
-            show_loc = (series_obj.location, True)
+            show_loc = (series_obj.validate_location, True)
         except ShowDirectoryNotFoundException:
             show_loc = (series_obj._location, False)  # pylint: disable=protected-access
 
@@ -1146,7 +1146,7 @@ class Home(WebRoot):
         }]
 
         try:
-            show_loc = (series_obj.location, True)
+            show_loc = (series_obj.validate_location, True)
         except ShowDirectoryNotFoundException:
             show_loc = (series_obj._location, False)  # pylint: disable=protected-access
 
@@ -2016,7 +2016,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Show not in show list')
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 
@@ -2051,7 +2051,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', error_message)
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 

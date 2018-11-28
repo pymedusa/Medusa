@@ -369,6 +369,13 @@ class Series(TV):
         return self._location
 
     @property
+    def validate_location(self):
+        """Legacy call to location with a validation when ADD_SHOWS_WO_DIR is set."""
+        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
+            return self._location
+        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+
+    @property
     def location(self):
         """Get the show location."""
         return self._location
@@ -1714,6 +1721,7 @@ class Series(TV):
         # remove entire show folder
         if full:
             try:
+                _ = self.validate_location  # Let's get the exception out of the way asap.
                 log.info(u'{id}: Attempt to {action} show folder {location}',
                          {'id': self.series_id, 'action': action, 'location': self.location})
                 # check first the read-only attribute
