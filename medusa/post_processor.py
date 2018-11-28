@@ -1207,7 +1207,7 @@ class PostProcessor(object):
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.series.location))
 
         self.log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 

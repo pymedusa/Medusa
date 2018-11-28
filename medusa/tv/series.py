@@ -364,11 +364,6 @@ class Series(TV):
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').replace(' ', '-').lower()
 
     @property
-    def raw_location(self):
-        """Get the raw show location, unvalidated."""
-        return self._location
-
-    @property
     def validate_location(self):
         """Legacy call to location with a validation when ADD_SHOWS_WO_DIR is set."""
         if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
@@ -470,7 +465,7 @@ class Series(TV):
     @property
     def size(self):
         """Size of the show on disk."""
-        return helpers.get_size(self.raw_location)
+        return helpers.get_size(self.location)
 
     def show_size(self, pretty=False):
         """
@@ -1742,17 +1737,17 @@ class Series(TV):
                     shutil.rmtree(self.location)
 
                 log.info(u'{id}: {action} show folder {location}',
-                         {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                         {'id': self.series_id, 'action': action, 'location': self.location})
 
             except ShowDirectoryNotFoundException:
                 log.warning(u'{id}: Show folder {location} does not exist. No need to {action}',
-                            {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                            {'id': self.series_id, 'action': action, 'location': self.location})
             except OSError as error:
                 log.warning(
                     u'{id}: Unable to {action} {location}. Error: {error_msg}', {
                         'id': self.series_id,
                         'action': action,
-                        'location': self.raw_location,
+                        'location': self.location,
                         'error_msg': ex(error),
                     }
                 )
@@ -1924,7 +1919,7 @@ class Series(TV):
 
         control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
         new_value_dict = {'show_name': self.name,
-                          'location': self.raw_location,  # skip location validation
+                          'location': self.location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
                           'classification': self.classification,
@@ -1973,7 +1968,7 @@ class Series(TV):
         to_return += 'indexerid: ' + str(self.series_id) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
         to_return += 'name: ' + self.name + '\n'
-        to_return += 'location: ' + self.raw_location + '\n'  # skip location validation
+        to_return += 'location: ' + self.location + '\n'  # skip location validation
         if self.network:
             to_return += 'network: ' + self.network + '\n'
         if self.airs:
@@ -2000,7 +1995,7 @@ class Series(TV):
         to_return += u'indexerid: {0}\n'.format(self.series_id)
         to_return += u'indexer: {0}\n'.format(self.indexer)
         to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
+        to_return += u'location: {0}\n'.format(self.location)  # skip location validation
         if self.network:
             to_return += u'network: {0}\n'.format(self.network)
         if self.airs:
@@ -2060,7 +2055,7 @@ class Series(TV):
         data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
-        data['config']['location'] = self.raw_location
+        data['config']['location'] = self.location
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred

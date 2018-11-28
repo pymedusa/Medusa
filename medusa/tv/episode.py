@@ -864,7 +864,7 @@ class Episode(TV):
                 '{id}: {series} episode statuses unchanged. Location is missing: {location}', {
                     'id': self.series.series_id,
                     'series': self.series.name,
-                    'location': self.series.raw_location,
+                    'location': self.series.location,
                 }
             )
             return
