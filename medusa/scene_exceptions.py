@@ -152,6 +152,7 @@ def get_scene_exceptions_by_name(show_name):
         'FROM scene_exceptions '
         'WHERE show_name = ? ORDER BY season ASC',
         [show_name])
+
     if scene_exceptions:
         # FIXME: Need to add additional layer indexer.
         return [(int(exception['indexer_id']), int(exception['season']), int(exception['indexer']))
@@ -187,7 +188,12 @@ def get_scene_exceptions_by_name(show_name):
 
 def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
     """Update database with all show scene exceptions by indexer_id."""
-    logger.info('Updating scene exceptions...')
+    logger.info('Updating scene exceptions for series {series.name} and '
+                'indexer {series.indexer} with id {series.series_id}',
+                {'series': series_obj})
+
+    if not all([series_obj.indexer, series_obj.series_id]):
+        return
 
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
