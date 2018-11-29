@@ -254,7 +254,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
     actual = sut.find_similar_issues(github_repo, loglines)
 
     # Then
-    assert len(set(issues.values())) == len(issues)  # all issues should be different
+    assert len(list(issues.values())) == len(issues)  # all issues should be different
     assert expected == actual
 
 
