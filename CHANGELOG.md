@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed double absolute numbers for anime shows where thexem sets an absolute which already exists ([#5801](https://github.com/pymedusa/Medusa/pull/5801))
 
 -----
 
