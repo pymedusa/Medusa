@@ -305,7 +305,7 @@ class AppWebServer(threading.Thread):
 
         try:
             self.io_loop = IOLoop.current()
-            IOLoop.current().start()
+            self.io_loop.start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
