@@ -312,7 +312,7 @@ class AppWebServer(threading.Thread):
 
     def shutDown(self):
         self.alive = False
-        IOLoop.current().stop()
+        self.io_loop.stop()
 
     def log_request(self, handler):
         """
