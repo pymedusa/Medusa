@@ -506,7 +506,7 @@ def xem_refresh(series_obj, force=False):
                     cl.append([
                         'UPDATE tv_episodes SET absolute_number = ? '
                         'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0 '
-                        'AND {absolute_number} not in '
+                        'AND {absolute_number} NOT IN '
                         '(SELECT absolute_number '
                         'FROM tv_episodes '
                         'WHERE absolute_number = ? AND indexer = ? AND showid = ?)'.format(
