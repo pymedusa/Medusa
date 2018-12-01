@@ -7,12 +7,12 @@ import base64
 import collections
 import json
 import logging
-import operator
 import traceback
 from builtins import object
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
+from functools import partial
 
 from babelfish.language import Language
 
@@ -350,13 +350,17 @@ class BaseRequestHandler(RequestHandler):
             end = start + arg_limit
             results = data
             if arg_sort:
+                # Compare to earliest datetime instead of None
+                def safe_compare(field, results):
+                    if field == 'airDate' and results[field] is None:
+                        return text_type(datetime.min)
+                    return results[field]
+
                 try:
                     for field, reverse in reversed(arg_sort):
-                        results = sorted(results, key=operator.itemgetter(field), reverse=reverse)
+                        results = sorted(results, key=partial(safe_compare, field), reverse=reverse)
                 except KeyError:
                     return self._bad_request('Invalid sort query parameter')
-                except TypeError:
-                    return self._bad_request('Sort query parameter not available')
 
             count = len(results)
             headers['X-Pagination-Count'] = count
