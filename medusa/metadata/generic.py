@@ -182,10 +182,12 @@ class GenericMetadata(object):
     def get_image_path(self, show_obj, image_type):
         """Based on the image_type (banner, poster, fanart) call the correct method, and return the path."""
         banner_path = {
-            BANNER: self.get_banner_path, POSTER: self.get_poster_path, FANART: self.get_fanart_path
+            BANNER: self.get_banner_path,
+            POSTER: self.get_poster_path,
+            FANART: self.get_fanart_path
         }
         if banner_path.get(image_type):
-            return banner_path.get(image_type)(show_obj)
+            return banner_path[image_type](show_obj)
 
     @staticmethod
     def get_episode_thumb_path(ep_obj):
