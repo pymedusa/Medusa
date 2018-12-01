@@ -355,6 +355,8 @@ class BaseRequestHandler(RequestHandler):
                         results = sorted(results, key=operator.itemgetter(field), reverse=reverse)
                 except KeyError:
                     return self._bad_request('Invalid sort query parameter')
+                except TypeError:
+                    return self._bad_request('Sort query parameter not available')
 
             count = len(results)
             headers['X-Pagination-Count'] = count
