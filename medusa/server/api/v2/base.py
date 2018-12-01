@@ -7,6 +7,7 @@ import base64
 import collections
 import json
 import logging
+import sys
 import traceback
 from builtins import object
 from collections import OrderedDict
@@ -32,7 +33,11 @@ from tornado.web import RequestHandler
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+# Python 3.5 doesn't support thread_name_prefix
+if sys.version_info[:2] == (3, 5):
+    executor = ThreadPoolExecutor()
+else:
+    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
 
 class BaseRequestHandler(RequestHandler):
