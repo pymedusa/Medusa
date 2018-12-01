@@ -44,13 +44,6 @@ from tornado.web import (
 
 from tornroutes import route
 
-# Python 3.5 doesn't support thread_name_prefix
-if sys.version_info[:2] == (3, 5):
-    executor = ThreadPoolExecutor()
-else:
-    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
-
-
 mako_lookup = None
 mako_cache = None
 mako_path = None
@@ -217,7 +210,11 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
-    executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+    # Python 3.5 doesn't support thread_name_prefix
+    if sys.version_info[:2] == (3, 5):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
