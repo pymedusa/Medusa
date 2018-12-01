@@ -6,6 +6,7 @@
 
 #### Fixes
 - Fixed double absolute numbers for anime shows where thexem sets an absolute which already exists ([#5801](https://github.com/pymedusa/Medusa/pull/5801))
+- Fixed image cache not properly created from metadata for images other then posters ([#5810](https://github.com/pymedusa/Medusa/pull/5810))
 
 -----
 
