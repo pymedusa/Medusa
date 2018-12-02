@@ -50,10 +50,10 @@ def set_up_anidb_connection():
 
 def create_key(namespace, fn, **kw):
     def generate_key(*args, **kw):
-        if six.PY3:
-            return namespace + '|' + args[0]
-        else:
-            return namespace + '|' + args[0].encode('utf-8')
+        show_key = namespace + '|' + args[0]
+        if six.PY2:
+            return show_key.encode('utf-8')
+        return show_key
     return generate_key
 
 
