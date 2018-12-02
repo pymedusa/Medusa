@@ -667,7 +667,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     threading.currentThread().name = original_thread_name
 
     for cur_provider in providers:
-        threading.currentThread().name = original_thread_name + u' :: [' + cur_provider.name + u']'
+        threading.currentThread().name = '{original_thread_name} :: [{provider}]'.format(
+            original_thread_name=original_thread_name, provider=cur_provider.name
+        )
 
         if cur_provider.anime_only and not series_obj.is_anime:
             log.debug(u'{0} is not an anime, skipping', series_obj.name)
@@ -694,24 +696,35 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 log.info(u'Performing season pack search for {0}', series_obj.name)
 
             try:
-                search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
-                                                                  down_cur_quality, manual_search, manual_search_type)
+                search_results = []
+                found_candidates_in_cache = False
+                if not manual_search:
+                    search_results = cur_provider.search_results_in_cache(episodes, forced_search, down_cur_quality)
+
+                    if search_results:
+                        # From out providers multi_episode and single_episode results, collect candidates.
+                        found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
+                        multi_results, single_results = get_candidates(found_cache_results, cur_provider, multi_results,
+                                                                       single_results, series_obj, episodes,
+                                                                       down_cur_quality)
+
+                        # check if we got any candidates from cache, and continue to the next provider of
+                        if multi_results or single_results:
+                            found_candidates_in_cache = True
+
+                # For now we only search if we didn't get any results back from cache, but we might wanna check if there
+                # was something usefull in cache.
+                if not search_results and not found_candidates_in_cache:
+                    search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
+                                                                      down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
                 log.error(u'Authentication error: {0}', ex(error))
                 break
 
             if search_results:
                 # make a list of all the results for this provider
-                for cur_ep in search_results:
-                    if cur_ep in found_results[cur_provider.name]:
-                        found_results[cur_provider.name][cur_ep] += search_results[cur_ep]
-                    else:
-                        found_results[cur_provider.name][cur_ep] = search_results[cur_ep]
-
-                    # Sort the list by seeders if possible
-                    if cur_provider.provider_type == u'torrent' or getattr(cur_provider, u'torznab', None):
-                        found_results[cur_provider.name][cur_ep].sort(key=lambda d: int(d.seeders), reverse=True)
-
+                # Update the list found_results
+                found_results = list_results_for_provider(search_results, found_results, cur_provider)
                 break
             elif not cur_provider.search_fallback or search_count == 2:
                 break
@@ -747,16 +760,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # Collect candidates for multi-episode or season results
-        candidates = (candidate for result, candidate in iteritems(found_results[cur_provider.name])
-                      if result in (SEASON_RESULT, MULTI_EP_RESULT))
-        candidates = list(itertools.chain(*candidates))
-        if candidates:
-            multi_results += collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
-
-        # Collect candidates for single-episode results
-        single_results = collect_single_candidates(found_results[cur_provider.name],
-                                                   single_results)
+        # From out providers multi_episode and single_episode results, collect candidates.
+        multi_results, single_results = get_candidates(found_results, cur_provider, multi_results,
+                                                       single_results, series_obj, episodes, down_cur_quality)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -766,6 +772,35 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         return any(manual_search_results)
     else:
         return combine_results(multi_results, single_results)
+
+
+def get_candidates(found_results, provider, multi_results, single_results, series_obj, episodes, down_cur_quality):
+    # Collect candidates for multi-episode or season results
+    candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
+                  if result in (SEASON_RESULT, MULTI_EP_RESULT))
+    candidates = list(itertools.chain(*candidates))
+    if candidates:
+        multi_results += collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
+
+    # Collect candidates for single-episode results
+    single_results = collect_single_candidates(found_results[provider.name], single_results)
+
+    return multi_results, single_results
+
+
+def list_results_for_provider(search_results, found_results, provider):
+    # make a list of all the results for this provider
+    for cur_ep in search_results:
+        if cur_ep in found_results[provider.name]:
+            found_results[provider.name][cur_ep] += search_results[cur_ep]
+        else:
+            found_results[provider.name][cur_ep] = search_results[cur_ep]
+
+        # Sort the list by seeders if possible
+        if provider.provider_type == u'torrent' or getattr(provider, u'torznab', None):
+            found_results[provider.name][cur_ep].sort(key=lambda d: int(d.seeders), reverse=True)
+
+    return found_results
 
 
 def collect_single_candidates(candidates, results):

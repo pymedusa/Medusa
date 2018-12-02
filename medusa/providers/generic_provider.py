@@ -238,6 +238,21 @@ class GenericProvider(object):
             ))
         )
 
+    def search_results_in_cache(self, episodes, forced_search=False, download_current_quality=False):
+        """Search episodes based on param in cache."""
+        results = {}
+        for episode in episodes:
+            cache_results = self.cache.find_needed_episodes(
+                episode, forced_search=forced_search, down_cur_quality=download_current_quality
+            )
+            if cache_results:
+                for episode_no in cache_results:
+                    if episode_no not in results:
+                        results[episode_no] = cache_results[episode_no]
+                    else:
+                        results[episode_no] += cache_results[episode_no]
+        return results
+
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
@@ -249,18 +264,6 @@ class GenericProvider(object):
         season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
 
         for episode in episodes:
-            if not manual_search:
-                cache_results = self.cache.find_needed_episodes(
-                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
-                )
-                if cache_results:
-                    for episode_no in cache_results:
-                        if episode_no not in results:
-                            results[episode_no] = cache_results[episode_no]
-                        else:
-                            results[episode_no] += cache_results[episode_no]
-                    continue
-
             search_strings = []
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
@@ -471,6 +474,7 @@ class GenericProvider(object):
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
+
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:
