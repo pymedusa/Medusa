@@ -557,7 +557,6 @@ paths:
       responses:
         200:
           description: The alias information
-          schema: {}
           x-request:
             path-params:
               id: "${stash['alias-id']}"
