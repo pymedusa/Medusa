@@ -557,6 +557,8 @@ paths:
       responses:
         200:
           description: The alias information
+          schema:
+            $ref: '#/definitions/AliasField'
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -2105,6 +2107,9 @@ definitions:
       lastRefresh:
         type: integer
         description: Last refresh in seconds since Epoch
+  AliasField:
+    type: string
+    example: TheBig
   Alias:
     type: object
     properties:
