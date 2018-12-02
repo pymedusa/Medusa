@@ -704,11 +704,12 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     if search_results:
                         # From out providers multi_episode and single_episode results, collect candidates.
                         found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
-                        multi_results, single_results = get_candidates(found_cache_results, cur_provider, multi_results,
-                                                                       single_results, series_obj, episodes,
-                                                                       down_cur_quality)
+                        multi_results, single_results = collect_candidates(found_cache_results, cur_provider, multi_results,
+                                                                           single_results, series_obj, episodes,
+                                                                           down_cur_quality)
 
-                        # check if we got any candidates from cache, and continue to the next provider of
+                        # check if we got any candidates from cache, and mark found candidates cache.
+                        # If we found candidates in cache, we don't need to search the providers.
                         if multi_results or single_results:
                             found_candidates_in_cache = True
 
@@ -760,9 +761,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # From out providers multi_episode and single_episode results, collect candidates.
-        multi_results, single_results = get_candidates(found_results, cur_provider, multi_results,
-                                                       single_results, series_obj, episodes, down_cur_quality)
+        # From our providers multi_episode and single_episode results, collect candidates.
+        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
+                                                           single_results, series_obj, episodes, down_cur_quality)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -774,8 +775,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         return combine_results(multi_results, single_results)
 
 
-def get_candidates(found_results, provider, multi_results, single_results, series_obj, episodes, down_cur_quality):
-    # Collect candidates for multi-episode or season results
+def collect_candidates(found_results, provider, multi_results, single_results, series_obj, episodes, down_cur_quality):
+    """Collect candidates for multi-episode or season results"""
     candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
                   if result in (SEASON_RESULT, MULTI_EP_RESULT))
     candidates = list(itertools.chain(*candidates))
@@ -789,7 +790,15 @@ def get_candidates(found_results, provider, multi_results, single_results, serie
 
 
 def list_results_for_provider(search_results, found_results, provider):
-    # make a list of all the results for this provider
+    """
+    Add results for this provider to the search_results dict
+
+    The structure is based on [provider_name][episode_number][search_result]
+    :param search_results: New dictionary with search results for this provider.
+    :param found_results: Dictionary with existing per provider search results.
+    :param provider: Provider object.
+    :return: Updated dict found_results.
+    """
     for cur_ep in search_results:
         if cur_ep in found_results[provider.name]:
             found_results[provider.name][cur_ep] += search_results[cur_ep]
