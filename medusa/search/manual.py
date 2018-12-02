@@ -329,8 +329,8 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''
-            i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
-            i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
+            i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > int(i.get('seeders', -1)) >= 0 else ''
+            i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > int(i.get('leechers', -1)) >= 0 else ''
         provider_results['found_items'] = cached_results_total
 
     # Remove provider from thread name before return results
