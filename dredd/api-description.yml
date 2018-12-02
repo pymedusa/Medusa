@@ -557,14 +557,15 @@ paths:
       responses:
         200:
           description: The alias information
-          examples:
-            type: string
+          schema: {}
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
         400:
           $ref: '#/responses/error'
           description: Invalid field
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -587,6 +588,7 @@ paths:
           description: The alias information
           schema:
             $ref: '#/definitions/Alias'
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
