@@ -1,5 +1,5 @@
 """Helper for anidb communications."""
-
+from __future__ import unicode_literals
 
 import logging
 from os.path import join
@@ -12,6 +12,7 @@ from medusa.cache import anidb_cache
 from medusa.helper.exceptions import AnidbAdbaConnectionException
 from medusa.logger.adapters.style import BraceAdapter
 
+import six
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -47,13 +48,16 @@ def set_up_anidb_connection():
     return app.ADBA_CONNECTION.authed()
 
 
-def create_key_encode_utf_8(namespace, fn, **kw):
+def create_key(namespace, fn, **kw):
     def generate_key(*args, **kw):
-        return namespace + '|' + args[0].encode('utf-8')
+        if six.PY3:
+            return namespace + '|' + args[0]
+        else:
+            return namespace + '|' + args[0].encode('utf-8')
     return generate_key
 
 
-@anidb_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_encode_utf_8)
+@anidb_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key)
 def get_release_groups_for_anime(series_name):
     """Get release groups for an anidb anime."""
     groups = []
