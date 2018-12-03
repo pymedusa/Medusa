@@ -61,6 +61,8 @@ class Notifier(object):
         result = self._send_to_kodi(check_command, host, username, password, dest_app)
 
         if result and 'error' not in result:
+            if isinstance(result['result']['version'], dict):
+                return result['result']['version'].get('major')
             return result['result']['version']
         else:
             return False
