@@ -3778,12 +3778,12 @@ eslint-plugin-unicorn@^6.0.1:
     lodash.upperfirst "^4.2.0"
     safe-regex "^1.1.0"
 
-eslint-plugin-vue@5.0.0-beta.4:
-  version "5.0.0-beta.4"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-5.0.0-beta.4.tgz#fdb576b9e723e27140646adab218001dd16a829f"
-  integrity sha512-roXXroqY2AcgF4dk0SG1reeeQz2X3Ef7q9B0GD0+vdc58vApig1hpTReT4Mf0YqTEI80/ldXD1ibV6n4vVUZrw==
+eslint-plugin-vue@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-5.0.0.tgz#4a2cc1c0e71ea45e1bd9c1a60f925bfe68bb5710"
+  integrity sha512-mSv2Ebz3RaPP+XJO/mu7F+SdR9lrMyGISSExnarLFqqf3pF5wTmwWNrhHW1o9zKzKI811UVTIIkWJJvgO6SsUQ==
   dependencies:
-    vue-eslint-parser "^3.2.1"
+    vue-eslint-parser "^4.0.2"
 
 eslint-scope@3.7.1:
   version "3.7.1"
@@ -3914,7 +3914,7 @@ espower-location-detector@^1.0.0:
     source-map "^0.5.0"
     xtend "^4.0.0"
 
-espree@^4.0.0:
+espree@^4.0.0, espree@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/espree/-/espree-4.1.0.tgz#728d5451e0fd156c04384a7ad89ed51ff54eb25f"
   integrity sha512-I5BycZW6FCVIub93TeVY1s7vjhP9CY6cXCznIRfiig7nRviKZYdRnj/sHEWC6A7WE9RDWOFq9+7OsWSYz8qv2w==
@@ -10791,17 +10791,17 @@ vue-async-computed@3.5.0:
   resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.5.0.tgz#30657970618389f30cba4d4b52b119bb1b2976aa"
   integrity sha512-QddDtWshkGeORKiONQ7xnz8YoBwLU1ZejmPTdEnVLXVeGthmmdl2uKt9RRMB3NRyXKkUcT6WYKT/YDnNodzF1w==
 
-vue-eslint-parser@^3.2.1:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-3.2.2.tgz#47c971ee4c39b0ee7d7f5e154cb621beb22f7a34"
-  integrity sha512-dprI6ggKCTwV22r+i8dtUGquiOCn063xyDmb7BV/BjG5Oc/m5EoMNrWevpvTcrlGuFZmYVPs5fgsu8UIxmMKzg==
+vue-eslint-parser@^4.0.2:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-4.0.2.tgz#7d10ec5b67d9b2ef240cac0f0e8b2f03773d810e"
+  integrity sha512-A+teFdsAVtVawd4rtLsv8q6uuj2MYt3Uw+GCodqEkjozB3g20G91hbukz60yWa9IUx/yFz+JzKBu/3Djkod36g==
   dependencies:
-    debug "^3.1.0"
+    debug "^4.1.0"
     eslint-scope "^4.0.0"
     eslint-visitor-keys "^1.0.0"
-    espree "^4.0.0"
+    espree "^4.1.0"
     esquery "^1.0.1"
-    lodash "^4.17.10"
+    lodash "^4.17.11"
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.1"
