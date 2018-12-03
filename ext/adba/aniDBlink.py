@@ -98,7 +98,7 @@ class AniDBLink(threading.Thread):
                 data = self.sock.recv(8192)
             except socket.timeout:
                 self._handle_timeouts()
-                break
+                continue
             except OSError as error:
                 logger.exception('Exception: %s', error)
                 break
