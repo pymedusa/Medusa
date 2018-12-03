@@ -30,6 +30,8 @@ class ResponseResolver:
 
     @staticmethod
     def parse(data):
+        data = data.decode()
+
         resline = data.split('\n', 1)[0]
         lines = data.split('\n')[1:-1]
 
