@@ -109,12 +109,23 @@ class SCGITransport(xmlrpc_client.Transport):
                 if i:
                     raise
 
+    @staticmethod
+    def encode_netstring(input):
+        return str(len(input)).encode() + b':' + input + b','
+
+    @staticmethod
+    def encode_header(key, value):
+        return key + b'\x00' + value + b'\x00'
+
     def single_request(self, host, handler, request_body, verbose=0):
+        """
+        Parts of this file are public domain SCGITransport implementation from:
+        https://github.com/JohnDoee/autotorrent/blob/develop/autotorrent/scgitransport.py
+        """
         # Add SCGI headers to the request.
-        headers = {'CONTENT_LENGTH': str(len(request_body)), 'SCGI': '1'}
-        header = '\x00'.join(('%s\x00%s' % item for item in headers.items())) + '\x00'
-        header = '%d:%s' % (len(header), header)
-        request_body = '%s,%s' % (header, request_body)
+        request = self.encode_header(b'CONTENT_LENGTH', str(len(request_body)).encode())
+        request += self.encode_header(b'SCGI', b'1')
+        request += self.encode_header(b'REQUEST_METHOD', b'POST')
 
         sock = None
 
@@ -127,12 +138,16 @@ class SCGITransport(xmlrpc_client.Transport):
                 sock = socket.socket(*addrinfo[0][:3])
                 sock.connect(addrinfo[0][4])
             else:
+                request += self.encode_header(b'REQUEST_URI', handler.encode())
                 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 sock.connect(handler)
 
+            request = self.encode_netstring(request)
+            request += request_body.encode()
+
             self.verbose = verbose
 
-            sock.send(request_body)
+            sock.send(request)
             return self.parse_response(sock.makefile())
         finally:
             if sock:
@@ -141,16 +156,15 @@ class SCGITransport(xmlrpc_client.Transport):
     def parse_response(self, response):
         p, u = self.getparser()
 
-        response_body = ''
+        r = b''
         while True:
             data = response.read(1024)
             if not data:
                 break
-            response_body += data
+            r += data.encode()
 
         # Remove SCGI headers from the response.
-        response_header, response_body = re.split(r'\n\s*?\n', response_body,
-                                                  maxsplit=1)
+        response_header, response_body = re.split(r'\n\s*?\n', r.decode(), maxsplit=1)
 
         if self.verbose:
             print('body: {0!r}'.format(response_body))
