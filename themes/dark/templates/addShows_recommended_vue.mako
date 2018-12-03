@@ -350,7 +350,7 @@ window.app = new Vue({
         stateShows() {
             const { $store } = this;
             // @omg, I need to use recommended.recommended here, but don't know why?
-            return $store.state.recommended.recommended.shows;
+            return $store.state.recommended.shows;
         },
         filteredShowsByList() {
             const { shows, selectedList, imgLazyLoad } = this;
