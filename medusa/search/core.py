@@ -704,13 +704,13 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     if search_results:
                         # From out providers multi_episode and single_episode results, collect candidates.
                         found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
-                        multi_results, single_results = collect_candidates(found_cache_results, cur_provider, multi_results,
+                        cache_multi_results, cache_single_results = collect_candidates(found_cache_results, cur_provider, multi_results,
                                                                            single_results, series_obj, episodes,
                                                                            down_cur_quality)
 
                         # check if we got any candidates from cache, and mark found candidates cache.
                         # If we found candidates in cache, we don't need to search the providers.
-                        if multi_results or single_results:
+                        if cache_multi_results or cache_single_results :
                             found_candidates_in_cache = True
 
                 # For now we only search if we didn't get any results back from cache, but we might wanna check if there
@@ -762,8 +762,12 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             continue
 
         # From our providers multi_episode and single_episode results, collect candidates.
-        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                           single_results, series_obj, episodes, down_cur_quality)
+        # only collect the candidates if we didn't got any from cache.
+        if not (cache_multi_results or cache_single_results):
+            multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
+                                                               single_results, series_obj, episodes, down_cur_quality)
+        else:
+            multi_results, single_results = cache_multi_results, cache_single_results
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -842,7 +846,7 @@ def collect_single_candidates(candidates, results):
     return single_candidates + new_candidates
 
 
-def collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality):
+def collect_multi_candidates(candidates, series_obj, down_cur_quality):
     """Collect mutli-episode and season result candidates."""
     multi_candidates = []
 
