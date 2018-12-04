@@ -709,7 +709,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                         found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
                         cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, cache_multi,
-                                                                       cache_single, series_obj, episodes, down_cur_quality)
+                                                                       cache_single, series_obj, down_cur_quality)
 
                         # check if we got any candidates from cache add add them to the list.
                         # If we found candidates in cache, we don't need to search the providers.
@@ -770,7 +770,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         # only collect the candidates if we didn't got any from cache.
         if not (cache_multi_results or cache_single_results):
             multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                               single_results, series_obj, episodes, down_cur_quality)
+                                                               single_results, series_obj, down_cur_quality)
         else:
             multi_results, single_results = cache_multi_results, cache_single_results
 
@@ -784,13 +784,13 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         return combine_results(multi_results, single_results)
 
 
-def collect_candidates(found_results, provider, multi_results, single_results, series_obj, episodes, down_cur_quality):
+def collect_candidates(found_results, provider, multi_results, single_results, series_obj, down_cur_quality):
     """Collect candidates for episode, multi-episode or season results."""
     candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
                   if result in (SEASON_RESULT, MULTI_EP_RESULT))
     candidates = list(itertools.chain(*candidates))
     if candidates:
-        multi_results += collect_multi_candidates(candidates, series_obj, episodes, down_cur_quality)
+        multi_results += collect_multi_candidates(candidates, series_obj, down_cur_quality)
 
     # Collect candidates for single-episode results
     single_results = collect_single_candidates(found_results[provider.name], single_results)
