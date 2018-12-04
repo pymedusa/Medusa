@@ -710,8 +710,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
                         # check if we got any candidates from cache add add them to the list.
                         # If we found candidates in cache, we don't need to search the providers.
-                        if cache_multi or cache_single:
+                        if cache_multi:
                             cache_multi_results += cache_multi
+                        if cache_single:
                             cache_single_results += cache_single
 
                 # For now we only search if we didn't get any results back from cache, but we might wanna check if there
