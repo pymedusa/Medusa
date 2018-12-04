@@ -714,8 +714,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                             found_candidates_in_cache = True
 
                 # For now we only search if we didn't get any results back from cache, but we might wanna check if there
-                # was something usefull in cache.
-                if not search_results and not found_candidates_in_cache:
+                # was something useful in cache.
+                if not found_candidates_in_cache:
                     search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
                                                                       down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
@@ -776,7 +776,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
 
 def collect_candidates(found_results, provider, multi_results, single_results, series_obj, episodes, down_cur_quality):
-    """Collect candidates for multi-episode or season results"""
+    """Collect candidates for episode, multi-episode or season results."""
     candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
                   if result in (SEASON_RESULT, MULTI_EP_RESULT))
     candidates = list(itertools.chain(*candidates))
@@ -791,13 +791,13 @@ def collect_candidates(found_results, provider, multi_results, single_results, s
 
 def list_results_for_provider(search_results, found_results, provider):
     """
-    Add results for this provider to the search_results dict
+    Add results for this provider to the search_results dict.
 
     The structure is based on [provider_name][episode_number][search_result]
-    :param search_results: New dictionary with search results for this provider.
-    :param found_results: Dictionary with existing per provider search results.
-    :param provider: Provider object.
-    :return: Updated dict found_results.
+    :param search_results: New dictionary with search results for this provider
+    :param found_results: Dictionary with existing per provider search results
+    :param provider: Provider object
+    :return: Updated dict found_results
     """
     for cur_ep in search_results:
         if cur_ep in found_results[provider.name]:
