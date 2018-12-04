@@ -622,14 +622,9 @@ class Cache(object):
 
         NOTE: This is currently only used by the Backlog/Forced Search. As we determine the candidates there.
         The following checks are performed on the cache results:
-        * Use the episodes current quality / wanted quality to decide if we want it
-        * Filtered on ignored/required words, and non-tv junk
         * Filter out non-anime results on Anime only providers
         * Check if the series is still in our library
-
         :param episode: Single or list of episode object(s)
-        :param forced_search: Flag to mark that this is searched through a forced search
-        :param down_cur_quality: Flag to mark that we want to include the episode(s) current quality
 
         :return list of SearchResult objects.
         """
