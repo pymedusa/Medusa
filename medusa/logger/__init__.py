@@ -230,6 +230,7 @@ def blocks_r(file_obj, size=64 * 1024, reset_offset=True, encoding=None):
 
     Yields:
         block (bytes|str): The data within the blocks.
+
     """
     offset = 0
     if reset_offset:
@@ -268,6 +269,7 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
 
     Yields:
         line (str): The next line.
+
     """
     with io.open(filename, 'r', encoding=encoding) as fo:
         newline = '\n'
