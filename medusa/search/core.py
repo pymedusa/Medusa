@@ -647,6 +647,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     manual_search_results = []
     multi_results = []
     single_results = []
+    cache_multi_results = []
+    cache_single_results = []
 
     # build name cache for show
     name_cache.build_name_cache(series_obj)
@@ -697,25 +699,24 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             try:
                 search_results = []
-                found_candidates_in_cache = False
                 if not manual_search:
                     search_results = cur_provider.search_results_in_cache(episodes, forced_search, down_cur_quality)
 
                     if search_results:
                         # From out providers multi_episode and single_episode results, collect candidates.
                         found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
-                        cache_multi_results, cache_single_results = collect_candidates(found_cache_results, cur_provider, multi_results,
-                                                                           single_results, series_obj, episodes,
-                                                                           down_cur_quality)
+                        cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, multi_results,
+                                                                       single_results, series_obj, episodes, down_cur_quality)
 
-                        # check if we got any candidates from cache, and mark found candidates cache.
+                        # check if we got any candidates from cache add add them to the list.
                         # If we found candidates in cache, we don't need to search the providers.
-                        if cache_multi_results or cache_single_results :
-                            found_candidates_in_cache = True
+                        if cache_multi or cache_single:
+                            cache_multi_results += cache_multi
+                            cache_single_results += cache_single
 
                 # For now we only search if we didn't get any results back from cache, but we might wanna check if there
                 # was something useful in cache.
-                if not found_candidates_in_cache:
+                if not (cache_multi_results or cache_single_results):
                     search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
                                                                       down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
