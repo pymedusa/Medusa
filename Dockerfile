@@ -21,3 +21,7 @@ COPY .docker/root/ /
 # ports and volumes
 EXPOSE 8081
 VOLUME /config /downloads /tv /anime
+
+COPY .git/HEAD .git/HEAD
+COPY .git/refs .git/refs
+RUN cat .git/$(cat .git/HEAD | awk '{print $2}') > git-commit
