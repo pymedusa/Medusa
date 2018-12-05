@@ -721,10 +721,11 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 # For now we only search if we didn't get any results back from cache, but we might wanna check if there
                 # was something useful in cache.
                 if not (cache_multi or cache_single):
+                    log.debug(u'Could not find any candidates in cache, searching provider.')
                     search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
                                                                       down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
-                log.error(u'Authentication error: {0}', ex(error))
+                log.error(u'Authentication error: {0!r}', error)
                 break
 
             if search_results:
