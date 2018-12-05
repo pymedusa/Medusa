@@ -69,7 +69,7 @@
 #### Installation - Docker
  There's a direct build available on [Dockerhub](https://hub.docker.com/r/pymedusa/medusa/) which is updated directly from this repo on every commit to master.
  
- For alternate architectures, you the [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
+ For alternate architectures, the [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms. This is built from an older intermediary Dockerfile.
 
 * X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
 * armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
