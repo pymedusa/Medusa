@@ -585,6 +585,10 @@ class GitUpdateManager(UpdateManager):
             self._cur_commit_hash = cur_commit_hash
             app.CUR_COMMIT_HASH = str(cur_commit_hash)
             return True
+        elif os.path.isfile('/git-commit'):
+            cur_commit_hash = open('/git-commit', 'r').read()
+            self._cur_commit_hash = str(cur_commit_hash)
+            app.CUR_COMMIT_HASH = str(cur_commit_hash)
         else:
             return False
 
