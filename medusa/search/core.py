@@ -698,21 +698,21 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             try:
                 search_results = []
+                cache_search_results = []
                 cache_multi = []
                 cache_single = []
 
                 if not manual_search:
-                    search_results = cur_provider.search_results_in_cache(episodes)
-
-                    if search_results:
-                        # From out providers multi_episode and single_episode results, collect candidates.
-                        found_cache_results = list_results_for_provider(search_results, found_results, cur_provider)
+                    cache_search_results = cur_provider.search_results_in_cache(episodes)
+                    if cache_search_results:
+                        # From our provider multi_episode and single_episode results, collect candidates.
+                        found_cache_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
                         cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, cache_multi,
                                                                        cache_single, series_obj, down_cur_quality)
 
                         # check if we got any candidates from cache add add them to the list.
-                        # If we found candidates in cache, we don't need to search the providers.
+                        # If we found candidates in cache, we don't need to search the provider.
                         if cache_multi:
                             cache_multi_results += cache_multi
                         if cache_single:
@@ -724,14 +724,14 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     log.debug(u'Could not find any candidates in cache, searching provider.')
                     search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
                                                                       down_cur_quality, manual_search, manual_search_type)
+                    # Update the list found_results
+                    found_results = list_results_for_provider(search_results, found_results, cur_provider)
+
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
                 break
 
-            if search_results:
-                # make a list of all the results for this provider
-                # Update the list found_results
-                found_results = list_results_for_provider(search_results, found_results, cur_provider)
+            if search_results or cache_search_results:
                 break
             elif not cur_provider.search_fallback or search_count == 2:
                 break
