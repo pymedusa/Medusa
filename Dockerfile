@@ -1,5 +1,5 @@
 FROM lsiobase/alpine.python:3.8
-MAINTAINER bobbysteel
+MAINTAINER a10kiloham
 
 # set version label
 ARG BUILD_DATE
