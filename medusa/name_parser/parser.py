@@ -218,8 +218,9 @@ class NameParser(object):
                     )
                 else:
                     log.debug(
-                        'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Scene numbering enabled series {name} with season {season} using indexer for absolute {absolute}: {ep}',
+                        {'name': result.series.name, 'season': season, 'absolute': a,
+                         'ep': episode_num(season, episode, 'absolute')}
                     )
 
                 new_absolute_numbers.append(a)
@@ -300,10 +301,12 @@ class NameParser(object):
         elif result.season_number and result.episode_numbers:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
+        # Remove None from the list of seasons, as we can't sort on that
+        new_season_numbers = sorted(set(list(filter(lambda season: season is not None, new_season_numbers))))
+
         # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
         # for the application, so we'd need to flag it.
-        new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
         if len(new_season_numbers) > 1:
             raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
                                        'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
