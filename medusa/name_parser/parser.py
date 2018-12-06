@@ -218,8 +218,8 @@ class NameParser(object):
                     )
                 else:
                     log.debug(
-                        'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Scene numbering enabled series {name} with season {season} using indexer for absolute {absolute}: {ep}',
+                        {'name': result.series.name, 'season': season, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
                     )
 
                 new_absolute_numbers.append(a)
