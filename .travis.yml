@@ -7,6 +7,7 @@ cache:
     - node_modules
 before_install:
   - python .github/check_version.py
+  - sudo rm -f /etc/boto.cfg
 install: false
 script: false
 jobs:
