@@ -105,6 +105,7 @@ class NordicBitsProvider(TorrentProvider):
         :return: A list of items found
         """
         def get_label_title(label):
+            """Get table row header labels."""
             if label.get_text():
                 return label.get_text(strip=True)
             if label.a and label.a.get_text(strip=True):
