@@ -104,6 +104,14 @@ class NordicBitsProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        def get_label_title(label):
+            if label.get_text():
+                return label.get_text(strip=True)
+            if label.a and label.a.get_text(strip=True):
+                return label.a.get_text(strip=True)
+            if label.img:
+                return label.img.get('title')
+
         items = []
         if '<h2>Nothing found!</h2>' in data:
             log.debug('Data returned from provider does not contain any torrents')
@@ -117,14 +125,6 @@ class NordicBitsProvider(TorrentProvider):
             if len(torrent_rows) < 1:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
-
-            def get_label_title(label):
-                if label.get_text():
-                    return label.get_text(strip=True)
-                if label.a and label.a.get_text(strip=True):
-                    return label.a.get_text(strip=True)
-                if label.img:
-                    return label.img.get('title')
 
             # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
             labels = [get_label_title(label) for label in
