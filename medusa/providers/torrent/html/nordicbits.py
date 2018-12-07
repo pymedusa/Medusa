@@ -53,13 +53,11 @@ class NordicBitsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
+    def search(self, search_strings, **kwargs):
         """
         Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
-        :param age: Not used
-        :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
         results = []
@@ -126,7 +124,7 @@ class NordicBitsProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
+            # Cat., Active, Name, Download, Added, Size, Uploader, Seeders, Leechers
             labels = [get_label_title(label) for label in
                       torrent_rows[0]('td')]
 
