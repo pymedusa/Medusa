@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import threading
-from time import time
 from builtins import object
 from datetime import date, datetime, timedelta
 
@@ -23,6 +22,8 @@ from medusa.network_timezones import (
 )
 from medusa.search.queue import DailySearchQueueItem
 from medusa.show.show import Show
+from time import time
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
