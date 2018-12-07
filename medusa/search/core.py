@@ -480,10 +480,11 @@ def wanted_episodes(series_obj, from_date):
     return wanted
 
 
-def search_for_needed_episodes(force=False):
+def search_for_needed_episodes(force=False, daily_search_start_time=None):
     """Search providers for needed episodes.
 
     :param force: run the search even if no episodes are needed
+    :param daily_search_start_time: timestamp of the start of the daily search scheduler
     :return: list of found episodes
     """
     show_list = app.showList
@@ -520,7 +521,7 @@ def search_for_needed_episodes(force=False):
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(
             thread=original_thread_name, provider=cur_provider.name
         )
-        cur_provider.cache.update_cache()
+        cur_provider.cache.update_cache(daily_search_start_time)
 
     single_results = {}
     multi_results = []

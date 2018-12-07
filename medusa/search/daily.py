@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import threading
+from time import time
 from builtins import object
 from datetime import date, datetime, timedelta
 
@@ -41,6 +42,10 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         :param force: Force search
         """
+        # Let's keep track of the exact time the scheduler kicked in, as we need to compare to this time for
+        # each provider.
+        scheduler_start_time = int(time())
+
         if self.amActive:
             log.debug('Daily search is still running, not starting it again')
             return
@@ -110,9 +115,9 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             main_db_con = DBConnection()
             main_db_con.mass_action(new_releases)
 
-        # queue episode for daily search
+        # queue a daily search
         app.search_queue_scheduler.action.add_item(
-            DailySearchQueueItem(force=force)
+            DailySearchQueueItem(force=force, scheduler_start_time=scheduler_start_time)
         )
 
         self.amActive = False
