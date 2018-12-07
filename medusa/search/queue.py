@@ -244,14 +244,14 @@ class SnatchQueue(generic_queue.GenericQueue):
 class DailySearchQueueItem(generic_queue.QueueItem):
     """Daily search queue item class."""
 
-    def __init__(self, force, scheduler_start_time):
+    def __init__(self, scheduler_start_time, force):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
 
         self.success = None
         self.started = None
-        self.force = force
         self.scheduler_start_time = scheduler_start_time
+        self.force = force
 
     def run(self):
         """Run daily search thread."""
@@ -260,7 +260,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning daily search for new episodes')
-            found_results = search_for_needed_episodes(force=self.force, daily_search_start_time=self.scheduler_start_time)
+            found_results = search_for_needed_episodes(self.scheduler_start_time, force=self.force)
 
             if not found_results:
                 log.info('No needed episodes found')

@@ -117,7 +117,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         # queue a daily search
         app.search_queue_scheduler.action.add_item(
-            DailySearchQueueItem(force=force, scheduler_start_time=scheduler_start_time)
+            DailySearchQueueItem(scheduler_start_time, force=force)
         )
 
         self.amActive = False

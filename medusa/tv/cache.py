@@ -362,14 +362,14 @@ class Cache(object):
             {'provider': self.provider_id}
         )
 
-    def should_update(self, daily_search_start_time):
+    def should_update(self, scheduler_start_time):
         """Check if we should update provider cache."""
         # if we've updated recently then skip the update
-        if daily_search_start_time - self.updated < self.minTime * 60:
+        if scheduler_start_time - self.updated < self.minTime * 60:
             log.debug('Last update was too soon, using old cache. '
                       ' Last update ran {0} seconds ago.'
                       ' Updated less than {1} minutes ago',
-                      daily_search_start_time - self.updated, self.minTime)
+                      scheduler_start_time - self.updated, self.minTime)
             return False
         log.debug('Updating providers cache')
 
