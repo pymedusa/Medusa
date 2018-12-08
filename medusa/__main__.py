@@ -76,6 +76,7 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
+from medusa.generic_update_queue import UpdateQueue
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
@@ -1170,6 +1171,10 @@ class Application(object):
                                                            cycleTime=datetime.timedelta(seconds=3),
                                                            threadName='SHOWQUEUE')
 
+            app.generic_update_scheduler = scheduler.Scheduler(UpdateQueue(),
+                                                               cycleTime=datetime.timedelta(seconds=3),
+                                                               threadName='UPDATEQUEUE')
+
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                             cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER')#,
@@ -1303,6 +1308,10 @@ class Application(object):
             app.backlog_search_scheduler.enable = True
             app.backlog_search_scheduler.start()
 
+            # start the generic queue checker
+            app.generic_update_scheduler.enable = True
+            app.generic_update_scheduler.start()
+
             # start the show updater
             app.show_update_scheduler.enable = True
             app.show_update_scheduler.start()
@@ -1384,6 +1393,7 @@ class Application(object):
                 app.backlog_search_scheduler,
                 app.show_update_scheduler,
                 app.version_check_scheduler,
+                app.generic_update_scheduler,
                 app.show_queue_scheduler,
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,

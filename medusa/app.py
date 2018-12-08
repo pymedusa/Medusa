@@ -88,6 +88,7 @@ class MedusaApp(object):
         self.backlog_search_scheduler = None
         self.show_update_scheduler = None
         self.version_check_scheduler = None
+        self.generic_queue_scheduler = None
         self.show_queue_scheduler = None
         self.search_queue_scheduler = None
         self.forced_search_queue_scheduler = None
@@ -668,8 +669,8 @@ class MedusaApp(object):
         self.TVDB_API_KEY = '0629B785CE550C8D'
 
         # show updater recommeded show caching
-        self.CACHE_RECOMMENDED_SHOWS = False
-        self.CACHE_RECOMMENDED_TRAKT = True
+        self.CACHE_RECOMMENDED_SHOWS = True
+        self.CACHE_RECOMMENDED_TRAKT = False
         self.CACHE_RECOMMENDED_IMDB = False
         self.CACHE_RECOMMENDED_ANIDB = True
 
