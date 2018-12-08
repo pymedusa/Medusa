@@ -240,25 +240,14 @@ class GenericProvider(object):
 
     def search_results_in_cache(self, episodes):
         """
-        Search episodes based on param in cache. We're also checking if the quality is wanted.
+        Search episodes based on param in cache.
 
         Search the cache (db) for this provider
         :param episodes: List of Episode objects
-        :param forced_search: Flag if the search was triggered by a forced search
-        :param download_current_quality: Flag if we want to include an already downloaded quality in the new search
 
         :return: A dict of search results, ordered by episode number
         """
-        results = {}
-        for episode in episodes:
-            cache_results = self.cache.find_episodes(episode)
-            if cache_results:
-                for episode_no in cache_results:
-                    if episode_no not in results:
-                        results[episode_no] = cache_results[episode_no]
-                    else:
-                        results[episode_no] += cache_results[episode_no]
-        return results
+        return self.cache.find_episodes(episodes)
 
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):

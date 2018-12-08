@@ -455,7 +455,7 @@ class Cache(object):
             'WHERE url=?'.format(provider=self.provider_id), [url]
         )[0]['count']
 
-    def find_needed_episodes(self, episode, forced_search=False, down_cur_quality=False):
+    def find_needed_episodes(self, episodes, forced_search=False, down_cur_quality=False):
         """
         Search cache for needed episodes.
 
@@ -466,14 +466,14 @@ class Cache(object):
         * Filter out non-anime results on Anime only providers
         * Check if the series is still in our library
 
-        :param episode: Single or list of episode object(s)
+        :param episodes: Single or list of episode object(s)
         :param forced_search: Flag to mark that this is searched through a forced search
         :param down_cur_quality: Flag to mark that we want to include the episode(s) current quality
 
         :return dict(episode: [list of SearchResult objects]).
         """
         results = defaultdict(list)
-        cache_results = self.find_episodes(episode)
+        cache_results = self.find_episodes(episodes)
 
         for episode_number, search_results in viewitems(cache_results):
             for search_result in search_results:
@@ -485,7 +485,7 @@ class Cache(object):
                 all_wanted = True
                 for cur_ep in search_result.actual_episodes:
                     # if the show says we want that episode then add it to the list
-                    if not search_result.series.want_episode(search_result.season, cur_ep, search_result.quality,
+                    if not search_result.series.want_episode(search_result.actual_season, cur_ep, search_result.quality,
                                                              forced_search, down_cur_quality):
                         log.debug('Ignoring {0} because one or more episodes are unwanted', search_result.name)
                         all_wanted = False
@@ -510,12 +510,9 @@ class Cache(object):
                 # add it to the list
                 results[episode_number].append(search_result)
 
-        # datetime stamp this search so cache gets cleared
-        self.searched = time()
-
         return results
 
-    def find_episodes(self, episode):
+    def find_episodes(self, episodes):
         """
         Search cache for episodes.
 
@@ -523,7 +520,7 @@ class Cache(object):
         The following checks are performed on the cache results:
         * Filter out non-anime results on Anime only providers
         * Check if the series is still in our library
-        :param episode: Single or list of episode object(s)
+        :param episodes: Single or list of episode object(s)
 
         :return list of SearchResult objects.
         """
@@ -531,27 +528,27 @@ class Cache(object):
         results = []
 
         cache_db_con = self._get_db()
-        if not episode:
+        if not episodes:
             sql_results = cache_db_con.select(
                 'SELECT * FROM [{name}]'.format(name=self.provider_id))
-        elif not isinstance(episode, list):
+        elif not isinstance(episodes, list):
             sql_results = cache_db_con.select(
                 'SELECT * FROM [{name}] '
-                'WHERE indexer = ? AND'
-                '      indexerid = ? AND'
-                '      season = ? AND'
-                '      episodes LIKE ?'.format(name=self.provider_id),
-                [episode.series.indexer, episode.series.series_id, episode.season,
-                 '%|{0}|%'.format(episode.episode)]
+                'WHERE indexer = ? AND '
+                'indexerid = ? AND '
+                'season = ? AND '
+                'episodes LIKE ?'.format(name=self.provider_id),
+                [episodes.series.indexer, episodes.series.series_id, episodes.season,
+                 '%|{0}|%'.format(episodes.episode)]
             )
         else:
-            for ep_obj in episode:
+            for ep_obj in episodes:
                 results.append([
                     'SELECT * FROM [{name}] '
                     'WHERE indexer = ? AND '
-                    '      indexerid = ? AND'
-                    '      season = ? AND'
-                    '      episodes LIKE ?'.format(
+                    'indexerid = ? AND '
+                    'season = ? AND '
+                    'episodes LIKE ?'.format(
                         name=self.provider_id
                     ),
                     [ep_obj.series.indexer, ep_obj.series.series_id, ep_obj.season,
@@ -566,10 +563,10 @@ class Cache(object):
                 sql_results = []
                 log.debug(
                     '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
-                        'id': episode[0].series.series_id,
+                        'id': episodes[0].series.series_id,
                         'provider': self.provider.name,
-                        'show_name': episode[0].series.name,
-                        'ep': episode_num(episode[0].season, episode[0].episode),
+                        'show_name': episodes[0].series.name,
+                        'ep': episode_num(episodes[0].season, episodes[0].episode),
                     }
                 )
 
@@ -598,24 +595,24 @@ class Cache(object):
             search_result.version = cur_result['version']
             search_result.name = cur_result['name']
             search_result.url = cur_result['url']
-            search_result.season = int(cur_result['season'])
-            search_result.actual_season = search_result.season
+            search_result.actual_season = int(cur_result['season'])
 
+            # TODO: Add support for season results
             sql_episodes = cur_result['episodes'].strip('|')
-
-            # Correct the episodes (episode objects) and actual_episodes (list of the episode numbers) for season and multi-ep.
             # Season result
             if not sql_episodes:
-                ep_objs = series_obj.get_all_episodes(search_result.season)
+                ep_objs = series_obj.get_all_episodes(search_result.actual_season)
                 if not ep_objs:
-                    # We couldn't get any episodes for this season, which is odd, skipp the result.
+                    # We couldn't get any episodes for this season, which is odd, skip the result.
+                    log.debug("We couldn't get any episodes for season {0} of {1}, skipping",
+                              search_result.actual_season, search_result.name)
                     continue
                 actual_episodes = [ep.episode for ep in ep_objs]
                 episode_number = SEASON_RESULT
             # Multi or single episode result
             else:
                 actual_episodes = [int(ep) for ep in sql_episodes.split('|')]
-                ep_objs = [series_obj.get_episode(search_result.season, ep) for ep in actual_episodes]
+                ep_objs = [series_obj.get_episode(search_result.actual_season, ep) for ep in actual_episodes]
                 if len(actual_episodes) == 1:
                     episode_number = actual_episodes[0]
                 else:
