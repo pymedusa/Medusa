@@ -43,10 +43,6 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         :param force: Force search
         """
-        # Let's keep track of the exact time the scheduler kicked in, as we need to compare to this time for
-        # each provider.
-        scheduler_start_time = int(time())
-
         if self.amActive:
             log.debug('Daily search is still running, not starting it again')
             return
@@ -55,6 +51,9 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             return
 
         self.amActive = True
+        # Let's keep track of the exact time the scheduler kicked in,
+        # as we need to compare to this time for each provider.
+        scheduler_start_time = int(time())
 
         if not network_dict:
             update_network_dict()

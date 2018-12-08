@@ -197,10 +197,10 @@ class Cache(object):
         """Check item auth."""
         return True
 
-    def update_cache(self, daily_search_start_time):
+    def update_cache(self, search_start_time):
         """Update provider cache."""
         # check if we should update
-        if not self.should_update(daily_search_start_time):
+        if not self.should_update(search_start_time):
             return
 
         try:
@@ -211,7 +211,7 @@ class Cache(object):
                 self._clear_cache()
 
                 # set updated
-                self.updated = daily_search_start_time
+                self.updated = search_start_time
 
                 # get last 5 rss cache results
                 recent_results = self.provider.recent_results
@@ -367,9 +367,9 @@ class Cache(object):
         """Check if we should update provider cache."""
         # if we've updated recently then skip the update
         if scheduler_start_time - self.updated < self.minTime * 60:
-            log.debug('Last update was too soon, using old cache. '
+            log.debug('Last update was too soon, using old cache.'
                       ' Last update ran {0} seconds ago.'
-                      ' Updated less than {1} minutes ago',
+                      ' Updated less than {1} minutes ago.',
                       scheduler_start_time - self.updated, self.minTime)
             return False
         log.debug('Updating providers cache')

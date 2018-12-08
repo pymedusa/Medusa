@@ -484,7 +484,7 @@ def search_for_needed_episodes(scheduler_start_time, force=False):
     """Search providers for needed episodes.
 
     :param force: run the search even if no episodes are needed
-    :param scheduler_start_time: timestamp of the start of the daily search scheduler
+    :param scheduler_start_time: timestamp of the start of the search scheduler
     :return: list of found episodes
     """
     show_list = app.showList
