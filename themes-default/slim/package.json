@@ -49,7 +49,7 @@
     "cross-env": "5.2.0",
     "css-loader": "1.0.1",
     "date-fns": "1.29.0",
-    "eslint": "5.9.0",
+    "eslint": "5.10.0",
     "eslint-config-xo": "0.25.0",
     "eslint-plugin-vue": "5.0.0-beta.4",
     "esm": "3.0.84",
