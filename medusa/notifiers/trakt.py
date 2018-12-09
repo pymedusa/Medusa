@@ -92,7 +92,7 @@ class Notifier(object):
                 trakt_api.request('sync/collection', data, method='POST')
 
             except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt: {0}', error.message)
+                log.debug('Unable to update Trakt: {0!r}', error)
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
