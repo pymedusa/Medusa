@@ -89,7 +89,7 @@ class DanishbitsProvider(TorrentProvider):
                 except ValueError as e:
                     log.warning(
                         'Could not decode the response as json for the result,'
-                        'searching {provider} with error {err_msg}',
+                        ' searching {provider} with error {err_msg}',
                         provider=self.name,
                         err_msg=e
                     )
