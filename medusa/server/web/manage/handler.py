@@ -335,7 +335,7 @@ class Manage(Home, WebRoot):
                 ep_status = tv_episode.status
                 if ep_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     status = 'snatched'
-                elif ep_status in DOWNLOADED:
+                elif ep_status == DOWNLOADED:
                     status = 'downloaded'
                 else:
                     continue
