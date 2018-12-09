@@ -8,6 +8,7 @@ import logging
 import threading
 from builtins import object
 from datetime import date, datetime, timedelta
+from time import time
 
 from medusa import app, common
 from medusa.db import DBConnection
@@ -22,6 +23,7 @@ from medusa.network_timezones import (
 )
 from medusa.search.queue import DailySearchQueueItem
 from medusa.show.show import Show
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -49,6 +51,9 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             return
 
         self.amActive = True
+        # Let's keep track of the exact time the scheduler kicked in,
+        # as we need to compare to this time for each provider.
+        scheduler_start_time = int(time())
 
         if not network_dict:
             update_network_dict()
@@ -110,9 +115,9 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             main_db_con = DBConnection()
             main_db_con.mass_action(new_releases)
 
-        # queue episode for daily search
+        # queue a daily search
         app.search_queue_scheduler.action.add_item(
-            DailySearchQueueItem(force=force)
+            DailySearchQueueItem(scheduler_start_time, force=force)
         )
 
         self.amActive = False

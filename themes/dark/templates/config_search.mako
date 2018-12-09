@@ -458,8 +458,12 @@ window.app = new Vue({
                                 
                                 <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
                                     
-                                <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.minBacklogFrequency" label="Backlog search frequency" id="backlog_frequency">
+                                <config-textbox-number :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
+                                </config-textbox-number>
+
+                                <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.dailySearchFrequency" label="Daily search interval" id="daily_frequency">
+                                    <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                 </config-textbox-number>
                                 
                                 <config-toggle-slider v-if="clientsConfig.torrent[clients.torrents.method]" v-show="clientsConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
