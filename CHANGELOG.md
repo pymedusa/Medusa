@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added provider nordicbits ([#5854](https://github.com/pymedusa/Medusa/pull/5854))
 
 #### Improvements
 
