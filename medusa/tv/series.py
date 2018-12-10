@@ -2006,7 +2006,6 @@ class Series(TV):
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
-        data['airdateOffset'] = self.airdate_offset
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['akas'] = self.imdb_akas
@@ -2047,6 +2046,7 @@ class Series(TV):
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
+        data['config']['airdateOffset'] = self.airdate_offset
 
         # These are for now considered anime-only options
         if self.is_anime:
