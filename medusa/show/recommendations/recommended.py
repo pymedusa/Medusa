@@ -36,7 +36,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import binary_type
+from six import binary_type, PY2
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -227,7 +227,9 @@ def create_key_from_series(namespace, fn, **kw):
         Following this standard we can cache every object, using this key_generator.
         """
         try:
-            return binary_type(kwargs['storage_key'])
+            if PY2:
+                return kwargs['storage_key'].encode('utf-8')
+            return kwargs['storage_key']
         except KeyError:
             log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key,'
                           ' that is used in the dogpile cache.')
