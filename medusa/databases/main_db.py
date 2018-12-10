@@ -868,7 +868,7 @@ class AddEpisodeWatchedField(ShiftQualities):
 
 
 class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
-    """Add episode watched field."""
+    """Add tv_show airdate_offset field."""
 
     def test(self):
         """Test if the version is at least 44.13"""
