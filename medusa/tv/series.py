@@ -210,6 +210,8 @@ class Series(TV):
         self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self._airs = ''
+        # The offset in ours, for when we want to start searching episodes for this show. -1 is search 1 hour early. 1, 1 hour later.
+        self.airdate_offset = 0
         self.start_year = 0
         self.paused = 0
         self.air_by_date = 0
@@ -1447,6 +1449,8 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
+            self.airdate_offset = int(sql_results[0]['airdate_offset'])
+
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -1906,7 +1910,8 @@ class Series(TV):
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
                           'default_ep_status': self.default_ep_status,
-                          'plot': self.plot}
+                          'plot': self.plot,
+                          'airdate_offset': self.airdate_offset}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
@@ -1937,6 +1942,8 @@ class Series(TV):
             to_return += 'network: ' + self.network + '\n'
         if self.airs:
             to_return += 'airs: ' + self.airs + '\n'
+        if self.airdate_offset != 0:
+            to_return += 'airdate_offset: ' + str(self.airdate_offset) + '\n'
         to_return += 'status: ' + self.status + '\n'
         to_return += 'start_year: ' + str(self.start_year) + '\n'
         if self.genre:
@@ -1964,6 +1971,8 @@ class Series(TV):
             to_return += u'network: {0}\n'.format(self.network)
         if self.airs:
             to_return += u'airs: {0}\n'.format(self.airs)
+        if self.airdate_offset != 0:
+            to_return += 'airdate_offset: {0}\n'.format(self.airdate_offset)
         to_return += u'status: {0}\n'.format(self.status)
         to_return += u'start_year: {0}\n'.format(self.start_year)
         if self.genre:
@@ -1997,6 +2006,7 @@ class Series(TV):
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['airdateOffset'] = self.airdate_offset
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['akas'] = self.imdb_akas

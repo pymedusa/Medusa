@@ -8,6 +8,7 @@ import logging
 import threading
 from builtins import object
 from datetime import date, datetime, timedelta
+from math import ceil
 from time import time
 
 from medusa import app, common
@@ -58,12 +59,24 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if not network_dict:
             update_network_dict()
 
+        # The tvshows airddate_offset field is used to configure a search offset for specific shows.
+        # This way we can search/accept results early or later, depending on the value.
+        main_db_con = DBConnection()
+        min_offset_show = main_db_con.select(
+            'SELECT MIN(airdate_offset) AS min_offset '
+            'FROM tv_shows '
+            'WHERE paused = 0 AND airdate_offset < 0 '
+        )
+        additional_search_offset = 0
+        if len(min_offset_show):
+            additional_search_offset = int(ceil(abs(min_offset_show[0]['min_offset']) / 24.0))
+
         cur_time = datetime.now(app_timezone)
+
         cur_date = (
-            date.today() + timedelta(days=1 if network_dict else 2)
+            date.today() + timedelta(days=1 if network_dict else 2) + timedelta(days=additional_search_offset)
         ).toordinal()
 
-        main_db_con = DBConnection()
         episodes_from_db = main_db_con.select(
             'SELECT indexer, showid, airdate, season, episode '
             'FROM tv_episodes '
@@ -96,7 +109,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
                 end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(series_obj.runtime, 60))
 
                 # filter out any episodes that haven't finished airing yet,
-                if end_time > cur_time:
+                if end_time + timedelta(hours=series_obj.airdate_offset) > cur_time:
                     continue
 
             cur_ep = series_obj.get_episode(db_episode['season'], db_episode['episode'])
