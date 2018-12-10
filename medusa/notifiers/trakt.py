@@ -176,7 +176,7 @@ class Notifier(object):
                 trakt_api.request(trakt_url, data, method='POST')
 
             except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt watchlist: {0}', error.message)
+                log.debug('Unable to update Trakt watchlist: {0!r}', error)
                 return False
 
         return True
@@ -244,5 +244,5 @@ class Notifier(object):
             else:
                 return 'Test notice sent successfully to Trakt'
         except (TokenExpiredException, TraktException, AuthException) as error:
-            log.warning('Unable to test TRAKT: {0}', error.message)
-            return 'Test notice failed to Trakt: {0}'.format(error.message)
+            log.warning('Unable to test TRAKT: {0!r}', error)
+            return 'Test notice failed to Trakt: {0!r}'.format(error)
