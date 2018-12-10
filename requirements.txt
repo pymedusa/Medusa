@@ -33,7 +33,7 @@ python-dateutil==2.7.5
 python-twitter==3.5
 rarfile==3.0
 rebulk==1.0.0
-requests==2.20.1
+requests==2.21.0
 requests-oauthlib==1.0.0
 six==1.11.0
 stevedore==1.30.0
