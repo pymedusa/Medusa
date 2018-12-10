@@ -35,7 +35,7 @@ rarfile==3.0
 rebulk==1.0.0
 requests==2.20.1
 requests-oauthlib==1.0.0
-six==1.11.0
+six==1.12.0
 stevedore==1.30.0
 git+https://github.com/pymedusa/subliminal.git@78687f45d23b1bc47fae0a5493be0198dc1fd5b5#egg=subliminal
 tornado==5.1.1
