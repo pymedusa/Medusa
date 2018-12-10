@@ -188,6 +188,7 @@ class HomeAddShows(Home):
         except Exception as e:
             # print traceback.format_exc()
             error = e
+            error = e
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
                         exception=error, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
