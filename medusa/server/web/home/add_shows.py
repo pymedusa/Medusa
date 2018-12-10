@@ -151,7 +151,7 @@ class HomeAddShows(Home):
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        e = None
+        error = None
         t = PageTemplate(rh=self, filename='addShows_recommended.mako')
         if traktList is None:
             traktList = ''
@@ -186,9 +186,10 @@ class HomeAddShows(Home):
             trakt_blacklist = False
             recommended_shows = None
             removed_from_medusa = None
+            error = e
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
-                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
+                        exception=error, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
 
     def popularShows(self):
         """
