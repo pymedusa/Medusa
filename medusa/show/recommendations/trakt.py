@@ -159,14 +159,13 @@ class TraktPopular(object):
                     if 'show' not in show:
                         show['show'] = show
 
-                    if not_liked_show:
-                        if show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
-                                                           for s in not_liked_show if s['type'] == 'show'):
-                            continue
-                    else:
-                        trending_shows.append(self._create_recommended_show(
-                            show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
-                        ))
+                    if not_liked_show and show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
+                                                                          for s in not_liked_show if s['type'] == 'show'):
+                        continue
+
+                    trending_shows.append(self._create_recommended_show(
+                        show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
+                    ))
 
                 except MultipleShowObjectsException:
                     continue
