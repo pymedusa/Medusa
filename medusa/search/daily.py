@@ -70,6 +70,8 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         additional_search_offset = 0
         if len(min_offset_show):
             additional_search_offset = int(ceil(abs(min_offset_show[0]['min_offset']) / 24.0))
+            log.debug('Using an airdate offset of {min_offset_show} as we found show(s) with an airdate offset configured.',
+                      {'min_offset_show': min_offset_show})
 
         cur_time = datetime.now(app_timezone)
 
@@ -103,16 +105,22 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
                          {'id': series_id})
                 continue
 
+            cur_ep = series_obj.get_episode(db_episode['season'], db_episode['episode'])
+
             if series_obj.airs and series_obj.network:
                 # This is how you assure it is always converted to local time
                 show_air_time = parse_date_time(db_episode['airdate'], series_obj.airs, series_obj.network)
                 end_time = show_air_time.astimezone(app_timezone) + timedelta(minutes=try_int(series_obj.runtime, 60))
 
+                if series_obj.airdate_offset != 0:
+                    log.debug(
+                        '{show}: Applying an airdate offset for the episode: {episode} of {offset!r} hours',
+                        {'show': series_obj.name, 'episode': cur_ep.pretty_name(), 'offset': series_obj.airdate_offset})
+
                 # filter out any episodes that haven't finished airing yet,
                 if end_time + timedelta(hours=series_obj.airdate_offset) > cur_time:
                     continue
 
-            cur_ep = series_obj.get_episode(db_episode['season'], db_episode['episode'])
             with cur_ep.lock:
                 cur_ep.status = series_obj.default_ep_status if cur_ep.season else common.SKIPPED
                 log.info(
