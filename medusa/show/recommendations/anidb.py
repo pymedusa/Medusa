@@ -96,7 +96,4 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
             except Exception:
                 log.warning('Could not parse AniDB show, with exception: {0}', traceback.format_exc())
 
-        # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-        update_recommended_series_cache_index('anidb', [binary_type(s.series_id) for s in result])
-
         return result

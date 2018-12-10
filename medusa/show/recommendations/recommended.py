@@ -113,14 +113,17 @@ class RecommendedShow(object):
         try:
             self.mapped_series_id = int(mapped_series_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
+            raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
 
         self.rating = show_attr.get('rating') or 0
 
         self.votes = show_attr.get('votes')
         if self.votes and not isinstance(self.votes, int):
             trans_mapping = {ord(c): None for c in ['.', ',']}
-            self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+            if PY2:
+                self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+            else:
+                self.votes = int(self.votes.translate(trans_mapping))
 
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
