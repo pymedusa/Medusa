@@ -101,6 +101,11 @@
                                 <td>%XE</td>
                                 <td>3</td>
                             </tr>
+                            <tr class="even">
+                                <td class="align-right"><b>Absolute Episode Number:</b></td>
+                                <td>%AB</td>
+                                <td>003</td>
+                            </tr>
                             <tr>
                                 <td>&nbsp;</td>
                                 <td>%0XE</td>
