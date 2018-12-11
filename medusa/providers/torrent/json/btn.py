@@ -141,8 +141,8 @@ class BTNProvider(TorrentProvider):
             if not all([title, download_url]):
                 continue
 
-            seeders = row.get('Seeders', 1)
-            leechers = row.get('Leechers', 0)
+            seeders = int(row.get('Seeders', 1))
+            leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
