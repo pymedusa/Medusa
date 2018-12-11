@@ -186,7 +186,6 @@ class HomeAddShows(Home):
         try:
             (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
         except Exception as e:
-            # print traceback.format_exc()
             error = e
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
@@ -221,7 +220,6 @@ class HomeAddShows(Home):
         try:
             recommended_shows = AnidbPopular().fetch_popular_shows(list_type)
         except Exception as e:
-            # print traceback.format_exc()
             error = e
 
         return t.render(title='Popular Anime Shows', header='Popular Anime Shows',
