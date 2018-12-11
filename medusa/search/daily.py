@@ -63,15 +63,15 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         # This way we can search/accept results early or later, depending on the value.
         main_db_con = DBConnection()
         min_offset_show = main_db_con.select(
-            'SELECT MIN(airdate_offset) AS min_offset '
+            'SELECT COUNT(*) as offsets, MIN(airdate_offset) AS min_offset '
             'FROM tv_shows '
             'WHERE paused = 0 AND airdate_offset < 0 '
         )
         additional_search_offset = 0
-        if len(min_offset_show):
+        if min_offset_show[0]['offsets'] > 0:
             additional_search_offset = int(ceil(abs(min_offset_show[0]['min_offset']) / 24.0))
             log.debug('Using an airdate offset of {min_offset_show} as we found show(s) with an airdate offset configured.',
-                      {'min_offset_show': min_offset_show})
+                      {'min_offset_show': min_offset_show[0]['min_offset']})
 
         cur_time = datetime.now(app_timezone)
 
