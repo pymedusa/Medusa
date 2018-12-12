@@ -240,7 +240,7 @@ class DelugeAPI(GenericClient):
             'method': 'core.add_torrent_file',
             'params': [
                 '{name}.torrent'.format(name=result.name),
-                b64encode(result.content),
+                b64encode(result.content).decode('utf-8'),
                 {},
             ],
             'id': 2,
