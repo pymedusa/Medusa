@@ -420,7 +420,7 @@ class NameParser(object):
         if len(season_numbers) > 1 and not self.allow_multi_season:
             raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
 
-        return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
+        return ParseResult(guess, original_name=name, series_alias=guess.get('alias'), series_title=guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
                            episode_numbers=helpers.ensure_list(guess.get('episode'))
                            if guess.get('episode') != guess.get('absolute_episode') else [],
@@ -432,12 +432,14 @@ class NameParser(object):
 class ParseResult(object):
     """Represent the release information for a given name."""
 
-    def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
+    def __init__(self, guess, series_alias=None, series_title=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
                  air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
         """Initialize the class.
 
         :param guess:
         :type guess: dict
+        :param series_alias:
+        :type series_alias: list or str
         :param series_name:
         :type series_name: str
         :param season_number:
@@ -458,7 +460,14 @@ class ParseResult(object):
         :type original_name: str
         """
         self.original_name = original_name
-        self.series_name = series_name
+        self.series_alias = series_alias
+
+        # Some logic to build the series_name. As we primary use the series alias, but guessit, can return multiple
+        # aliases in a list.
+        if not isinstance(self.series_alias, list):
+            self.series_alias = [series_alias]
+        # use the last alias from guessits list or the series_title
+        self.series_name = self.series_alias[-1] or series_title
         self.season_number = season_number
         self.episode_numbers = episode_numbers if episode_numbers else []
         self.ab_episode_numbers = ab_episode_numbers if ab_episode_numbers else []
@@ -479,6 +488,7 @@ class ParseResult(object):
         :rtype: bool
         """
         return other and all([
+            self.series_alias == other.series_alias,
             self.series_name == other.series_name,
             self.season_number == other.season_number,
             self.episode_numbers == other.episode_numbers,
