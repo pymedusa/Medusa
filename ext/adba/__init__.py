@@ -18,16 +18,11 @@
 import logging
 import logging.handlers
 import os
-import threading
-
-from datetime import timedelta
-from time import time, sleep
 import sys
-
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import SafeConfigParser as ConfigParser
+import threading
+from configparser import ConfigParser
+from datetime import timedelta
+from time import sleep, time
 
 from six.moves.queue import Queue
 
