@@ -54,10 +54,10 @@
                 <% service = getattr(app, scheduler) %>
             <tr>
                 <td>${schedulerName}</td>
-                % if service.isAlive():
-                <td style="background-color:rgb(0, 128, 0);">${service.isAlive()}</td>
+                % if service.is_alive():
+                <td style="background-color:rgb(0, 128, 0);">${service.is_alive()}</td>
                 % else:
-                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
+                <td style="background-color:rgb(255, 0, 0);">${service.is_alive()}</td>
                 % endif
                 % if scheduler == 'backlog_search_scheduler':
                     <% searchQueue = getattr(app, 'search_queue_scheduler') %>
