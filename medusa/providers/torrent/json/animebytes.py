@@ -246,7 +246,7 @@ class AnimeBytes(TorrentProvider):
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
-                
+
                 size = convert_size(row.get('Size'), default=-1)
 
                 item = {
