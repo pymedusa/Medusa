@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa.helper.common import convert_size
 from medusa import tv
 from medusa.common import USER_AGENT
 from medusa.logger.adapters.style import BraceAdapter
@@ -140,7 +141,7 @@ class XthorProvider(TorrentProvider):
                                   title, seeders)
                     continue
 
-                size = row.get('size') or -1
+                size = convert_size(row.get('size'), default=-1)
 
                 item = {
                     'title': title,

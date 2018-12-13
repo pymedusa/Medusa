@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa.helper.common import convert_size
 from medusa import tv
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -139,7 +140,7 @@ class HDBitsProvider(TorrentProvider):
                     title, seeders)
                 continue
 
-            size = row.get('size') or -1
+            size = convert_size(row.get('size'), default=-1)
 
             pubdate_raw = row.get('added')
             pubdate = self.parse_pubdate(pubdate_raw)

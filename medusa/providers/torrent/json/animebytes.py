@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from medusa.helper.common import convert_size
 from medusa import tv
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -141,7 +142,8 @@ class AnimeBytes(TorrentProvider):
                 # Hack for the h264 10bit stuff
                 properties_string = properties_string.replace('h26410-bit', 'h264|hi10p')
                 properties = properties_string.split('|')
-                if not all(properties):
+                download_url = row.get('Link')
+                if not (download_url or all(properties)):
                     continue
 
                 # Get rid of freeleech from properties
@@ -244,11 +246,13 @@ class AnimeBytes(TorrentProvider):
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
+                
+                size = convert_size(row.get('Size'), default=-1)
 
                 item = {
                     'title': title,
-                    'link': row.get('Link'),
-                    'size': row.get('Size'),
+                    'link': download_url,
+                    'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
