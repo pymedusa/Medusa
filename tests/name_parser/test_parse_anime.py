@@ -173,7 +173,7 @@ import pytest
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
         },
-        'expected': ([12], [1], [38]),
+        'expected': ([12], [2], [38]),
     },
     # Anime show, season scene name with multiple aliases, with scene numbering.
     {
@@ -189,7 +189,7 @@ import pytest
             'name': u"JoJo's Bizarre Adventure",
             'is_scene': True
         },
-        'expected': ([12], [1], [38]),
+        'expected': ([12], [2], [38]),
     },
 
 ])
