@@ -54,6 +54,11 @@
                 <% service = getattr(app, scheduler) %>
             <tr>
                 <td>${schedulerName}</td>
+                <pre>
+                    ${ repr(service) | h}
+                    ${ repr(service.is_alive) | h }
+                    ${ service._is_stopped | h } 
+                </pre>
                 % if service.is_alive():
                 <td style="background-color:rgb(0, 128, 0);">${service.is_alive()}</td>
                 % else:
