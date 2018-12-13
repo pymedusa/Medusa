@@ -4359,3 +4359,16 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+? JoJo's Bizarre Adventure (2012)\Season 01\[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv
+: title: JoJo's Bizarre Adventure
+  year: 2012
+  season: 1
+  episode: 12
+  release_group: HorribleSubs
+  alias: JoJo's Bizarre Adventure - Stardust Crusaders
+  alternative_title: Stardust Crusaders
+  screen_size: 1080p
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
