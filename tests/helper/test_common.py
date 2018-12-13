@@ -315,6 +315,8 @@ def test_convert_size():
     assert sut.convert_size(100, -1) == 100
     # returns integer sizes for floats too
     assert sut.convert_size(1.312, -1) == 1
+    # return integer variant when passed as str
+    assert sut.convert_size('1024', -1) == 1024
 
     # without a default value, failures return None
     assert sut.convert_size('pancakes') is None
