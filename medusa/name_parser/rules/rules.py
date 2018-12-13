@@ -397,7 +397,7 @@ class CreateAliasWithCountryOrYear(Rule):
         :type context: dict
         :return:
         """
-        # Don't add an additional alias if we already have one from the previous rules
+        # Don't add additional alias if we already have one from the previous rules
         if matches.named('alias'):
             return
 
