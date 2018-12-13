@@ -7,8 +7,8 @@ from __future__ import unicode_literals
 import logging
 import re
 
-from medusa.helper.common import convert_size
 from medusa import tv
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
