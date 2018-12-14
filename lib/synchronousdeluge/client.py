@@ -80,7 +80,7 @@ class DelugeClient(object):
         def func(obj, *args, **kwargs):
             return self.remote_call(fullname, *args, **kwargs)
 
-        func.__name__ = method
+        func.__name__ = str(method)
 
         return func
 
@@ -89,9 +89,9 @@ class DelugeClient(object):
 
         methods = self.remote_call("daemon.get_method_list").get()
         methodmap = defaultdict(dict)
-        splitter = lambda v: v.split(".")
+        text_splitter = lambda v: v.decode().split(".")
 
-        for module, method in map(splitter, methods):
+        for module, method in map(text_splitter, methods):
             methodmap[module][method] = self._create_module_method(module, method)
 
         for module, methods in methodmap.items():
