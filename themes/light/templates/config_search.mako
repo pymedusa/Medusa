@@ -47,7 +47,8 @@ window.app = new Vue({
                         labelOption: true,
                         labelAnimeOption: true,
                         seedTimeOption: true,
-                        pausedOption: true
+                        pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     transmission: {
                         title: 'Transmission',
@@ -57,6 +58,7 @@ window.app = new Vue({
                         seedLocationOption: true,
                         seedTimeOption: true,
                         pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     deluge: {
                         title: 'Deluge (via WebUI)',
@@ -68,7 +70,8 @@ window.app = new Vue({
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     deluged: {
                         title: 'Deluge (via Daemon)',
@@ -80,12 +83,14 @@ window.app = new Vue({
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     downloadstation: {
                         title: 'Synology DS',
                         description: 'URL to your Synology DS client (e.g. http://localhost:5000)',
-                        pathOption: true
+                        pathOption: true,
+                        testStatus: 'Click below to test'
                     },
                     rtorrent: {
                         title: 'rTorrent',
@@ -93,19 +98,22 @@ window.app = new Vue({
                         pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     qbittorrent: {
                         title: 'qBittorrent',
                         description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
                         labelOption: true,
                         labelAnimeOption: true,
-                        pausedOption: true
+                        pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     mlnet: {
                         title: 'MLDonkey',
                         description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     }
                 },
                 nzb: {
@@ -591,7 +599,7 @@ window.app = new Vue({
                                         <config-textbox v-model="clients.nzb.sabnzbd.categoryAnimeBacklog" label="Use SABnzbd category for anime (backlog episodes)" id="sab_category_anime_backlog" :explanations="['add anime downloads of old episodes to this category (e.g. anime)']"></config-textbox>
                                         <config-toggle-slider v-model="clients.nzb.sabnzbd.forced" label="Use forced priority" id="sab_forced" :explanations="['enable to change priority from HIGH to FORCED']" ></config-toggle-slider>
                                 
-                                        <div class="testNotification" v-show="clients.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus"></div>
+                                        <div class="testNotification" v-show="clientsConfig.nzb.sabnzbd.testStatus" v-html="clientsConfig.nzb.sabnzbd.testStatus"></div>
                                         <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>
