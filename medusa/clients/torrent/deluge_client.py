@@ -19,6 +19,7 @@ from medusa.helpers import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
+from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from six import viewitems
@@ -54,7 +55,6 @@ def read_torrent_status(torrent_data):
                      {'torrent': details['name']})
             continue
 
-        status = 'busy'
         if details['is_finished']:
             status = 'completed'
         elif details['is_seed']:
@@ -118,7 +118,7 @@ class DelugeAPI(GenericClient):
         """
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
         self.session.headers.update({'Content-Type': 'application/json'})
-        self.url = '{host}json'.format(host=self.host)
+        self.url = urljoin(self.host, 'json')
 
     def _get_auth(self):
         post_data = json.dumps({
