@@ -1112,10 +1112,6 @@ class Application(object):
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
 
-            if not app.PYTHON_VERSION:
-                app.PYTHON_VERSION = sys.version_info.major
-                self.save_config()
-
             # initialize metadata_providers
             app.metadata_provider_dict = metadata.get_metadata_generator_dict()
             for cur_metadata_tuple in [(app.METADATA_KODI, metadata.kodi),
