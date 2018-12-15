@@ -647,4 +647,4 @@ class Tmdb(BaseIndexer):
                         return externals
             return {}
         except RequestException as error:
-            raise IndexerException("Could not get external id's. Cause: {cause!r}".format(cause=error))
+            raise IndexerException("Could not get external id's. Cause: {cause}".format(cause=error))
