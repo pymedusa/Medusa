@@ -141,9 +141,9 @@ class ApiHandler(RequestHandler):
         try:
             out_dict = _call_dispatcher(args, kwargs)
         except Exception as error:  # real internal error oohhh nooo :(
-            log.exception(u'API :: {0!r}', error.message)
+            log.exception(u'API :: {0!r}', error)
             error_data = {
-                'error_msg': error.message,
+                'error_msg': text_type(error),
                 'args': args,
                 'kwargs': kwargs
             }
@@ -174,7 +174,7 @@ class ApiHandler(RequestHandler):
         except Exception as error:  # if we fail to generate the output fake an error
             log.exception(u'API :: Traceback')
             out = '{{"result": "{0}", "message": "error while composing output: {1!r}"}}'.format(
-                result_type_map[RESULT_ERROR], error.message
+                result_type_map[RESULT_ERROR], error
             )
         return out
 
@@ -215,7 +215,7 @@ class ApiHandler(RequestHandler):
                         else:
                             cur_out_dict = _responds(RESULT_ERROR, 'No such cmd: {0!r}'.format(cmd))
                     except ApiError as error:  # Api errors that we raised, they are harmless
-                        cur_out_dict = _responds(RESULT_ERROR, msg=error.message)
+                        cur_out_dict = _responds(RESULT_ERROR, msg=text_type(error))
                 else:  # if someone chained one of the forbidden commands they will get an error for this one cmd
                     cur_out_dict = _responds(RESULT_ERROR, msg='The cmd {0!r} is not supported while chaining'.format(cmd))
 
@@ -2770,7 +2770,7 @@ class CMD_ShowUpdate(ApiCall):
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg='{0} has queued to be updated'.format(show_obj.name))
         except CantUpdateShowException as error:
-            log.debug(u'API::Unable to update show: {0}', error.message)
+            log.debug(u'API::Unable to update show: {0!r}', error)
             return _responds(RESULT_FAILURE, msg='Unable to update {0}'.format(show_obj.name))
 
 

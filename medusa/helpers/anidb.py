@@ -66,7 +66,7 @@ def get_release_groups_for_anime(series_name):
             anime = adba.Anime(app.ADBA_CONNECTION, name=series_name, cache_path=join(app.CACHE_DIR, 'adba'))
             groups = anime.get_groups()
         except Exception as error:
-            log.warning(u'Unable to retrieve Fansub Groups from AniDB. Error: {error}', {'error': error.message})
+            log.warning(u'Unable to retrieve Fansub Groups from AniDB. Error: {error!r}', {'error': error})
             raise AnidbAdbaConnectionException(error)
 
     return groups
