@@ -1078,9 +1078,15 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = False
 
+            python_up_down_graded = False
+            # run some sanitation when switching from python versions
+            if app.PYTHON_VERSION and app.PYTHON_VERSION != sys.version_info.major:
+                self.migrate_python_version(new_version=app.PYTHON_VERSION)
+                python_up_down_graded = True
+
             # Check if we need to perform a restore of the cache folder
             Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR)
+            cache.configure(app.CACHE_DIR, replace=python_up_down_graded)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
@@ -1108,15 +1114,6 @@ class Application(object):
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
-
-            if sys.version_info.major == 3 and sys.version_info.minor <= 4:
-                logger.error(u'Medusa support python version from 2.7.13 > 2.7.x and python 3 from version 3.5.x\n'
-                             u'Exiting!')
-                raise Exception('Incorrect python version. Shutting down!')
-
-            # run some sanitation when switching from python versions
-            if app.PYTHON_VERSION and app.PYTHON_VERSION != sys.version_info.major:
-                self.migrate_python_version(new_version=app.PYTHON_VERSION)
 
             if not app.PYTHON_VERSION:
                 app.PYTHON_VERSION = sys.version_info.major
