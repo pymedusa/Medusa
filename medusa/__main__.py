@@ -425,7 +425,7 @@ class Application(object):
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
             app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
-            app.PYTHON_VERSION = check_setting_int(app.CFG, 'General', 'python_version', 0)
+            app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
 
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
@@ -1078,15 +1078,12 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = False
 
-            python_up_down_graded = False
-            # run some sanitation when switching from python versions
-            if app.PYTHON_VERSION and app.PYTHON_VERSION != sys.version_info.major:
-                self.migrate_python_version(new_version=app.PYTHON_VERSION)
-                python_up_down_graded = True
+            # Check if we start with a different python version since last start
+            python_version_changed = self.migrate_python_version()
 
             # Check if we need to perform a restore of the cache folder
             Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR, replace=python_up_down_graded)
+            cache.configure(app.CACHE_DIR, replace=python_version_changed)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
@@ -1258,26 +1255,29 @@ class Application(object):
                 folder_path = os.path.join(cache_folder, name)
                 helpers.remove_folder(folder_path)
 
-    def migrate_python_version(self, new_version):
+    @staticmethod
+    def migrate_python_version():
         """
         Perform some cleanup in case we switch from python version.
 
         It's possible to switch from python version 2 to 3 or visa versa.
         In that case we might wanna run some sanitary actions, to make sure everything keeps working.
-        :param new_version: currently started python version
-        :type new_version: int
+        :return: True if the major python version has changed since last start
+        :return type: Boolean
         """
-        # TODO: Leaving this here as a template for when we upgrade merge the python3 changes.
-        if new_version == 3:
-            pass
+        # TODO: Leaving this here as a marking for when we merge the python3 changes.
+        old_version = app.PYTHON_VERSION
+        new_version = sys.version_info
+
+        # run some sanitation when switching from python versions
+        if old_version and old_version[0] != sys.version_info.major:
+            version_changed = True
         else:
-            pass
+            version_changed = False
 
-        app.PYTHON_VERSION = new_version
+        app.PYTHON_VERSION = list(new_version)[:3]
 
-        # save config
-        logger.info(u'Saving config file to disk')
-        self.save_config()
+        return version_changed
 
     @staticmethod
     def start_threads():
@@ -1577,7 +1577,7 @@ class Application(object):
         new_config['General']['calendar_icons'] = int(app.CALENDAR_ICONS)
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
-        new_config['General']['python_version'] = int(app.PYTHON_VERSION)
+        new_config['General']['python_version'] = app.PYTHON_VERSION
         new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
