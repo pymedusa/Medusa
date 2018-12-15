@@ -425,6 +425,7 @@ class Application(object):
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
             app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
+            app.PYTHON_VERSION = check_setting_int(app.CFG, 'General', 'python_version', 0)
 
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
@@ -1108,6 +1109,19 @@ class Application(object):
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
 
+            if sys.version_info.major == 3 and sys.version_info.minor <= 4:
+                logger.error(u'Medusa support python version from 2.7.13 > 2.7.x and python 3 from version 3.5.x\n'
+                             u'Exiting!')
+                raise Exception('Incorrect python version. Shutting down!')
+
+            # run some sanitation when switching from python versions
+            if app.PYTHON_VERSION and app.PYTHON_VERSION != sys.version_info.major:
+                self.migrate_python_version(new_version=app.PYTHON_VERSION)
+
+            if not app.PYTHON_VERSION:
+                app.PYTHON_VERSION = sys.version_info.major
+                self.save_config()
+
             # initialize metadata_providers
             app.metadata_provider_dict = metadata.get_metadata_generator_dict()
             for cur_metadata_tuple in [(app.METADATA_KODI, metadata.kodi),
@@ -1246,6 +1260,27 @@ class Application(object):
             for name in ('mako', 'sessions', 'indexers', 'rss'):
                 folder_path = os.path.join(cache_folder, name)
                 helpers.remove_folder(folder_path)
+
+    def migrate_python_version(self, new_version):
+        """
+        Perform some cleanup in case we switch from python version.
+
+        It's possible to switch from python version 2 to 3 or visa versa.
+        In that case we might wanna run some sanitary actions, to make sure everything keeps working.
+        :param new_version: currently started python version
+        :type new_version: int
+        """
+        # TODO: Leaving this here as a template for when we upgrade merge the python3 changes.
+        if new_version == 3:
+            pass
+        else:
+            pass
+
+        app.PYTHON_VERSION = new_version
+
+        # save config
+        logger.info(u'Saving config file to disk')
+        self.save_config()
 
     @staticmethod
     def start_threads():
@@ -1545,6 +1580,7 @@ class Application(object):
         new_config['General']['calendar_icons'] = int(app.CALENDAR_ICONS)
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
+        new_config['General']['python_version'] = int(app.PYTHON_VERSION)
         new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS

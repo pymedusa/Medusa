@@ -52,6 +52,7 @@ class MedusaApp(object):
         # static configuration
         self.LOCALE = None, None
         self.OS_USER = None
+        self.PYTHON_VERSION = None
         self.OPENSSL_VERSION = None
         self.APP_VERSION = None
         self.MAJOR_DB_VERSION = None
