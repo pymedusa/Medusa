@@ -365,6 +365,11 @@ class CheckVersion(object):
 
 
 class UpdateManager(object):
+    def __init__(self):
+        """Update manager initialization."""
+        # Initialize the app.RUNS_IN_DOCKER variable
+        self.runs_in_docker()
+
     @staticmethod
     def get_github_org():
         return app.GIT_ORG
@@ -377,9 +382,52 @@ class UpdateManager(object):
     def get_update_url():
         return app.WEB_ROOT + '/home/update/?pid=' + str(app.PID)
 
+    @staticmethod
+    def runs_in_docker():
+        """
+        Check if Medusa is run in a docker container.
+
+        If run in a container, we don't want to use the auto update feature, but just want to inform the user
+        there is an update available. The user can update through getting the latest docker tag.
+        """
+        if app.RUNS_IN_DOCKER is not None:
+            return app.RUNS_IN_DOCKER
+
+        path = '/proc/{pid}/cgroup'.format(pid=os.getpid())
+        try:
+            if not os.path.isfile(path):
+                return False
+
+            with open(path) as f:
+                for line in f:
+                    if re.match(r'\d+:[\w=]+:/docker(-[ce]e)?/\w+', line):
+                        log.debug(u'Running in a docker container')
+                        app.RUNS_IN_DOCKER = True
+                        return True
+                return False
+        except (EnvironmentError, OSError) as error:
+            log.info(u'Tried to check the path {path} if we are running in a docker container, '
+                     u'but an error occurred: {error}', {'path': path, 'error': error})
+            return False
+
+    def set_newest_text_docker(self):
+        """
+        Set an alternative update text, when running in a docker container.
+
+        This method is used by the GitUpdateMananager and the SourceUpdateManager. Both should not auto update from
+        within the container.
+        """
+        if app.RUNS_IN_DOCKER and (not self._cur_commit_hash or self._num_commits_behind > 0):
+            log.debug(u'There is an update available, Medusa is running in a docker container, so auto updating is disabled.')
+            app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
+                                        'and rebuild your container to update'
+            return True
+        return False
+
 
 class GitUpdateManager(UpdateManager):
     def __init__(self):
+        super(GitUpdateManager, self).__init__()
         self._git_path = self._find_working_git()
         self.github_org = self.get_github_org()
         self.github_repo = self.get_github_repo()
@@ -603,6 +651,9 @@ class GitUpdateManager(UpdateManager):
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
 
+        if self.set_newest_text_docker():
+            return
+
         if self._num_commits_behind > 0 or self._is_hard_reset_allowed():
 
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
@@ -754,6 +805,7 @@ class GitUpdateManager(UpdateManager):
 
 class SourceUpdateManager(UpdateManager):
     def __init__(self):
+        super(SourceUpdateManager, self).__init__()
         self.github_org = self.get_github_org()
         self.github_repo = self.get_github_repo()
 
@@ -864,6 +916,9 @@ class SourceUpdateManager(UpdateManager):
 
         # if we're up to date then don't set this
         app.NEWEST_VERSION_STRING = None
+
+        if self.set_newest_text_docker():
+            return
 
         if not self._cur_commit_hash:
             log.debug(u"Unknown current version number, don't know if we should update or not")

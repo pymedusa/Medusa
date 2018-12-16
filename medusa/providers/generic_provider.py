@@ -76,12 +76,12 @@ class GenericProvider(object):
         self.anime_only = False
         self.bt_cache_urls = [
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
             'https://cache.torrentgalaxy.org/get/{info_hash}',
+            'https://www.seedpeer.me/torrent/{info_hash}',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -238,9 +238,33 @@ class GenericProvider(object):
             ))
         )
 
+    def search_results_in_cache(self, episodes):
+        """
+        Search episodes based on param in cache.
+
+        Search the cache (db) for this provider
+        :param episodes: List of Episode objects
+
+        :return: A dict of search results, ordered by episode number
+        """
+        return self.cache.find_episodes(episodes)
+
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
-        """Search episodes based on param."""
+        """
+        Search episodes based on param.
+
+        Search the provider using http queries.
+        :param series: Series object
+        :param episodes: List of Episode objects
+        :param search_mode: 'eponly' or 'sponly'
+        :param forced_search: Flag if the search was triggered by a forced search
+        :param download_current_quality: Flag if we want to include an already downloaded quality in the new search
+        :param manual_search: Flag if the search was triggered by a manual search
+        :param manual_search_type: How the manual search was started: For example an 'episode' or 'season'
+
+        :return: A dict of search results, ordered by episode number.
+        """
         self._check_auth()
         self.series = series
 
@@ -249,18 +273,6 @@ class GenericProvider(object):
         season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
 
         for episode in episodes:
-            if not manual_search:
-                cache_results = self.cache.find_needed_episodes(
-                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
-                )
-                if cache_results:
-                    for episode_no in cache_results:
-                        if episode_no not in results:
-                            results[episode_no] = cache_results[episode_no]
-                        else:
-                            results[episode_no] += cache_results[episode_no]
-                    continue
-
             search_strings = []
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
@@ -471,6 +483,7 @@ class GenericProvider(object):
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
+
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:

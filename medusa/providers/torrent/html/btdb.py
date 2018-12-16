@@ -112,7 +112,7 @@ class BTDBProvider(TorrentProvider):
                 try:
 
                     title = row.find('h2').find('a').get('title')
-                    download_url = row.find('div').find('a').get('href')
+                    download_url = row.find('div').find('a').get('href') + self._custom_trackers
                     if not all([title, download_url]):
                         continue
 

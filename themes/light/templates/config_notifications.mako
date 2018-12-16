@@ -1041,7 +1041,7 @@ window.app = new Vue({
                             <fieldset class="component-group-list">
                                 <!-- All form components here for plex media server -->
 
-                                <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send KODI commands?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.plex.server.enabled" label="Enable" id="use_plex_server" :explanations="['Send Plex server notifications?']" @change="save()" ></config-toggle-slider>
 
                                 <div v-show="notifiers.plex.server.enabled" id="content-use-plex-server"> <!-- show based on notifiers.plex.server.enabled -->
                                     <config-textbox v-model="notifiers.plex.server.token" label="Plex Media Server Auth Token" id="plex_server_token" @change="save()" >
@@ -1292,7 +1292,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.growl.notifyOnDownload" label="Notify on download" id="growl_notify_ondownload" :explanations="['send a notification when a download finishes?']" @change="save()" ></config-toggle-slider>
                                     <config-toggle-slider v-model="notifiers.growl.notifyOnSubtitleDownload" label="Notify on subtitle download" id="growl_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.growl.host" label="Growl IP:Port" id="growl_host" :explanations="['host running Growl (eg. 192.168.1.100:23053)']" @change="save()" ></config-textbox>
-                                    <config-textbox v-model="notifiers.growl.password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.growl.password" type="password" label="Password" id="growl_password" :explanations="['may leave blank if Medusa is on the same host.', 'otherwise Growl requires a password to be used.']" @change="save()" ></config-textbox>
 
                                     <div class="testNotification" id="testGrowl-result">Click below to register and test Growl, this is required for Growl notifications to work.</div>
                                     <input  class="btn-medusa" type="button" value="Register Growl" id="testGrowl" @click="testGrowl"/>
@@ -1738,7 +1738,7 @@ window.app = new Vue({
                                     <config-textbox v-model="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()" ></config-textbox>
                                     <config-toggle-slider v-model="notifiers.email.tls" label="Use TLS" id="email_tls" :explanations="['check to use TLS encryption.']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.email.username" label="SMTP username" id="email_username" :explanations="['(optional) your SMTP server username.']" @change="save()" ></config-textbox>
-                                    <config-textbox v-model="notifiers.email.password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()" ></config-textbox>
+                                    <config-textbox v-model="notifiers.email.password" type="password" label="SMTP password" id="email_password" :explanations="['(optional) your SMTP server password.']" @change="save()" ></config-textbox>
 
                                     <config-template label-for="email_list" label="Global email list">
                                         <select-list name="email_list" id="email_list" :list-items="notifiers.email.addressList" @change="emailUpdateAddressList"></select-list>

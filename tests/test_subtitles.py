@@ -370,6 +370,28 @@ def test_merge_subtitles__with_multi_disabled_and_single_new_language(monkeypatc
     assert ['eng', 'pob', 'und'] == actual
 
 
+def test_get_min_score__with_perfect_match_enabled(monkeypatch):
+    # Given
+    monkeypatch.setattr(app, 'SUBTITLES_PERFECT_MATCH', True)
+
+    # When
+    actual = sut.get_min_score()
+
+    # Then
+    assert 345 == actual
+
+
+def test_get_min_score__with_perfect_match_disabled(monkeypatch):
+    # Given
+    monkeypatch.setattr(app, 'SUBTITLES_PERFECT_MATCH', False)
+
+    # When
+    actual = sut.get_min_score()
+
+    # Then
+    assert 330 == actual
+
+
 def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
     # Given
     monkeypatch.setattr(app, 'SUBTITLES_DIR', '')

@@ -2213,6 +2213,10 @@ select .selected {
     background-position: -299px 0;
 }
 
+.icon16-config-docker {
+    background-position: -318px 0;
+}
+
 [class^="add-client-icon-"],
 [class*=" add-client-icon-"] {
     background: url("../images/32x_sprite_colored_clients.png");

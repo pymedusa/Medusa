@@ -404,7 +404,7 @@ def move_and_symlink_file(src_file, dest_file):
                 u'Failed to create symlink of {source} at {destination}.'
                 u' Error: {error!r}', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
@@ -413,7 +413,7 @@ def move_and_symlink_file(src_file, dest_file):
                 u'Failed to create symlink of {source} at {destination}.'
                 u' Error: {error!r}. Copying instead', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )

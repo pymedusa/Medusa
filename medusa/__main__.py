@@ -96,34 +96,6 @@ from medusa.tv import Series
 logger = logging.getLogger(__name__)
 
 
-def fix_incorrect_list_values(data):
-    """
-    @TODO: Remove this in a future version.
-
-    Due to a bug introduced in v0.2.9, the value might be a string representing a Python dict.
-    See: https://github.com/pymedusa/Medusa/issues/5155
-
-    Example: `"{u'id': 0, u'value': u'!sync'}"` to `"!sync"`
-    """
-    import ast
-
-    result = []
-    for item in data:
-        if not item:
-            continue
-        if not (item.startswith('{') and item.endswith('}')):
-            # Simple value, don't do anything to it
-            result.append(item)
-            continue
-        try:
-            # Get the value: `{u'id': 0, u'value': u'!sync'}` => `!sync`
-            result.append(ast.literal_eval(item)['value'])
-        except (SyntaxError, KeyError):
-            pass
-
-    return result
-
-
 class Application(object):
     """Main application module."""
 
@@ -607,7 +579,7 @@ class Application(object):
             app.NZB_METHOD = check_setting_str(app.CFG, 'General', 'nzb_method', 'blackhole', valid_values=('blackhole', 'sabnzbd', 'nzbget'))
             app.TORRENT_METHOD = check_setting_str(app.CFG, 'General', 'torrent_method', 'blackhole',
                                                    valid_values=('blackhole', 'utorrent', 'transmission', 'deluge',
-                                                                 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'))
+                                                                 'deluged', 'downloadstation', 'rtorrent', 'qbittorrent', 'mlnet'))
 
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
@@ -617,11 +589,7 @@ class Application(object):
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
             app.ALLOW_HIGH_PRIORITY = bool(check_setting_int(app.CFG, 'General', 'allow_high_priority', 1))
             app.SKIP_REMOVED_FILES = bool(check_setting_int(app.CFG, 'General', 'skip_removed_files', 0))
-
             app.ALLOWED_EXTENSIONS = check_setting_list(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
-            # @TODO: Remove this in a future version.
-            app.ALLOWED_EXTENSIONS = fix_incorrect_list_values(app.ALLOWED_EXTENSIONS)
-
             app.USENET_RETENTION = check_setting_int(app.CFG, 'General', 'usenet_retention', 500)
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
@@ -662,11 +630,7 @@ class Application(object):
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
-
             app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
-            # @TODO: Remove this in a future version.
-            app.SYNC_FILES = fix_incorrect_list_values(app.SYNC_FILES)
-
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
@@ -877,7 +841,7 @@ class Application(object):
             app.PUSHBULLET_API = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_api', '', censor_log='low')
             app.PUSHBULLET_DEVICE = check_setting_str(app.CFG, 'Pushbullet', 'pushbullet_device', '')
 
-            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Pushbullet', 'use_join', 0))
+            app.USE_JOIN = bool(check_setting_int(app.CFG, 'Join', 'use_join', 0))
             app.JOIN_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsnatch', 0))
             app.JOIN_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_ondownload', 0))
             app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Join', 'join_notify_onsubtitledownload', 0))
@@ -947,8 +911,6 @@ class Application(object):
             app.NO_RESTART = bool(check_setting_int(app.CFG, 'General', 'no_restart', 0))
 
             app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'General', 'extra_scripts')]
-            # @TODO: Remove this in a future version.
-            app.EXTRA_SCRIPTS = fix_incorrect_list_values(app.EXTRA_SCRIPTS)
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 

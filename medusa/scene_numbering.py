@@ -506,11 +506,15 @@ def xem_refresh(series_obj, force=False):
                     cl.append([
                         'UPDATE tv_episodes SET absolute_number = ? '
                         'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND absolute_number = 0 '
-                        'AND ? not in (SELECT absolute_number FROM tv_episodes WHERE absolute_number = ? AND indexer = ? AND showid = ?)',
+                        'AND {absolute_number} NOT IN '
+                        '(SELECT absolute_number '
+                        'FROM tv_episodes '
+                        'WHERE absolute_number = ? AND indexer = ? AND showid = ?)'.format(
+                            absolute_number=entry[indexerApi(indexer_id).config['xem_origin']]['absolute']
+                        ),
                         [entry[indexerApi(indexer_id).config['xem_origin']]['absolute'], indexer_id, series_id,
                          entry[indexerApi(indexer_id).config['xem_origin']]['season'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['episode'],
-                         entry[indexerApi(indexer_id).config['xem_origin']]['absolute'],
                          entry[indexerApi(indexer_id).config['xem_origin']]['absolute'],
                          indexer_id, series_id]
                     ])

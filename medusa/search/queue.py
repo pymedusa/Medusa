@@ -242,14 +242,15 @@ class SnatchQueue(generic_queue.GenericQueue):
 
 
 class DailySearchQueueItem(generic_queue.QueueItem):
-    """Daily searche queue item class."""
+    """Daily search queue item class."""
 
-    def __init__(self, force):
+    def __init__(self, scheduler_start_time, force):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
 
         self.success = None
         self.started = None
+        self.scheduler_start_time = scheduler_start_time
         self.force = force
 
     def run(self):
@@ -259,7 +260,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning daily search for new episodes')
-            found_results = search_for_needed_episodes(force=self.force)
+            found_results = search_for_needed_episodes(self.scheduler_start_time, force=self.force)
 
             if not found_results:
                 log.info('No needed episodes found')
@@ -296,7 +297,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
 
                     self.success = False
-                    while snatch_queue_item.success is not False:
+                    while snatch_queue_item.success is False:
                         if snatch_queue_item.started and snatch_queue_item.success:
                             self.success = True
                         time.sleep(1)
@@ -397,7 +398,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                     app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
 
                     self.success = False
-                    while snatch_queue_item.success is not False:
+                    while snatch_queue_item.success is False:
                         if snatch_queue_item.started and snatch_queue_item.success:
                             self.success = True
                         time.sleep(1)
@@ -578,7 +579,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                         app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
 
                         self.success = False
-                        while snatch_queue_item.success is not False:
+                        while snatch_queue_item.success is False:
                             if snatch_queue_item.started and snatch_queue_item.success:
                                 self.success = True
                             time.sleep(1)
@@ -675,7 +676,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                     app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
 
                     self.success = False
-                    while snatch_queue_item.success is not False:
+                    while snatch_queue_item.success is False:
                         if snatch_queue_item.started and snatch_queue_item.success:
                             self.success = True
                         time.sleep(1)

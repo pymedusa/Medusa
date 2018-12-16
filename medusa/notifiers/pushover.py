@@ -13,8 +13,6 @@ from medusa.common import (
     NOTIFY_GIT_UPDATE_TEXT,
     NOTIFY_LOGIN,
     NOTIFY_LOGIN_TEXT,
-    NOTIFY_SNATCH,
-    NOTIFY_SNATCH_PROPER,
     NOTIFY_SUBTITLE_DOWNLOAD,
     notifyStrings,
 )
@@ -92,7 +90,7 @@ class Notifier(object):
             args['device'] = ','.join(app.PUSHOVER_DEVICE)
 
         log.debug('PUSHOVER: Sending notice with details: title="{0}" message="{1}", priority={2}, sound={3}',
-                  args['title'], args['message'], priority, sound)
+                  title, msg, priority, sound)
 
         conn = HTTPSConnection('api.pushover.net:443')
         conn.request('POST', '/1/messages.json',
@@ -133,16 +131,15 @@ class Notifier(object):
             log.error('Pushover notification failed. HTTP response code: {0}', conn_resp.status)
             return False
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
-        :param ep_name: The name of the episode snatched
+        :param ep_obj: The object of the episode snatched
         :param is_proper: Boolean. If snatch is proper or not
         """
-        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.PUSHOVER_NOTIFY_ONSNATCH:
-            self._notify_pushover(title, ep_name)
+            self._notify_pushover(title, message)
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         """

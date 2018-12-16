@@ -68,6 +68,7 @@ def config_main(monkeypatch, app_config):
     config_data['logDir'] = app.LOG_DIR
     config_data['appArgs'] = app.MY_ARGS
     config_data['webRoot'] = app.WEB_ROOT
+    config_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
     config_data['githubUrl'] = app.GITHUB_IO_URL
     config_data['wikiUrl'] = app.WIKI_URL
     config_data['donationsUrl'] = app.DONATIONS_URL
@@ -101,46 +102,6 @@ def config_main(monkeypatch, app_config):
     config_data['failedDownloads'] = NonEmptyDict()
     config_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
     config_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
-
-    config_data['torrents'] = NonEmptyDict()
-    config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
-    config_data['torrents']['dir'] = app.TORRENT_DIR
-    config_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
-    config_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
-    config_data['torrents']['host'] = app.TORRENT_HOST
-    config_data['torrents']['label'] = app.TORRENT_LABEL
-    config_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
-    config_data['torrents']['method'] = app.TORRENT_METHOD
-    config_data['torrents']['path'] = app.TORRENT_PATH
-    config_data['torrents']['paused'] = bool(app.TORRENT_PAUSED)
-    config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
-    config_data['torrents']['seedLocation'] = app.TORRENT_SEED_LOCATION
-    config_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
-    config_data['torrents']['username'] = app.TORRENT_USERNAME
-    config_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
-
-    config_data['nzb'] = NonEmptyDict()
-    config_data['nzb']['enabled'] = bool(app.USE_NZBS)
-    config_data['nzb']['dir'] = app.NZB_DIR
-    config_data['nzb']['method'] = app.NZB_METHOD
-    config_data['nzb']['nzbget'] = NonEmptyDict()
-    config_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
-    config_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
-    config_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
-    config_data['nzb']['nzbget']['categoryBacklog'] = app.NZBGET_CATEGORY_BACKLOG
-    config_data['nzb']['nzbget']['host'] = app.NZBGET_HOST
-    config_data['nzb']['nzbget']['priority'] = app.NZBGET_PRIORITY
-    config_data['nzb']['nzbget']['useHttps'] = bool(app.NZBGET_USE_HTTPS)
-    config_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
-
-    config_data['nzb']['sabnzbd'] = NonEmptyDict()
-    config_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
-    config_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
-    config_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG
-    config_data['nzb']['sabnzbd']['categoryBacklog'] = app.SAB_CATEGORY_BACKLOG
-    config_data['nzb']['sabnzbd']['forced'] = bool(app.SAB_FORCED)
-    config_data['nzb']['sabnzbd']['host'] = app.SAB_HOST
-    config_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
 
     config_data['layout'] = NonEmptyDict()
     config_data['layout']['schedule'] = app.COMING_EPS_LAYOUT

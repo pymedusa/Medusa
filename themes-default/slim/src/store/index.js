@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
+    clients,
     config,
     defaults,
     metadata,
@@ -10,6 +11,7 @@ import {
     notifiers,
     qualities,
     recommended,
+    search,
     shows,
     socket,
     statuses
@@ -30,6 +32,7 @@ Vue.use(Vuex);
 const store = new Store({
     modules: {
         auth,
+        clients,
         config,
         defaults,
         metadata,
@@ -37,6 +40,7 @@ const store = new Store({
         notifiers,
         qualities,
         recommended,
+        search,
         shows,
         socket,
         statuses

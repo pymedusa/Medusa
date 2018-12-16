@@ -335,7 +335,7 @@ class Manage(Home, WebRoot):
                 ep_status = tv_episode.status
                 if ep_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     status = 'snatched'
-                elif ep_status in DOWNLOADED:
+                elif ep_status == DOWNLOADED:
                     status = 'downloaded'
                 else:
                     continue
@@ -791,7 +791,7 @@ class Manage(Home, WebRoot):
 
         if app.TORRENT_METHOD == 'utorrent':
             webui_url = '/'.join(s.strip('/') for s in (webui_url, 'gui/'))
-        if app.TORRENT_METHOD == 'download_station':
+        if app.TORRENT_METHOD == 'downloadstation':
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
