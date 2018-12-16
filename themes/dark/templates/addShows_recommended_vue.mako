@@ -432,9 +432,8 @@ window.app = new Vue({
 
         },
         updateOptions(options) {
-            debugger;
             // Update seleted options from add-show-options.vue @change event.
-            const { anime, blacklist, scene, status, subtitles, statusAfter, seasonFolder, release, quality } = options;
+            const { anime, scene, seasonFolders, status, subtitles, statusAfter, seasonFolder, release, quality } = options;
             const { blacklist, whitelist } = release;
             const { allowed, preferred } = quality;
 
