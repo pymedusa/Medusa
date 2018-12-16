@@ -264,7 +264,6 @@ export default {
                 enableAnimeOptions,
                 defaultConfig,
                 namingForceFolders,
-
                 selectedStatus,
                 selectedStatusAfter,
                 combinedQualities,

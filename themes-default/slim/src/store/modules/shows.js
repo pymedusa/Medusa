@@ -98,6 +98,20 @@ const actions = {
         }
 
         return shows.forEach(show => dispatch('getShow', show));
+    },
+    /**
+     * Add a new show to the API and commit it to the store.
+     *
+     * @param {*} context - The store context.
+     * @param {ShowParameteres} show - Show to add.
+     * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
+     */
+    addShow(context, show) {
+        const { commit } = context;
+        debugger;
+        return api.post('/series', show).then(res => {
+            commit(ADD_SHOW, show);
+        });
     }
 };
 

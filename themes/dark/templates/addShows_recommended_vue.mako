@@ -19,7 +19,23 @@ window.app = new Vue({
             externals,
             configLoaded: false,
             rootDirs: [],
-            
+            enableShowOptions: false,
+            selectedShowOptions: {
+                subtitles: null,
+                status: null,
+                statusAfter: null,
+                seasonFolders: null,
+                anime: null,
+                scene: null,
+                release: {
+                    blacklist: [],
+                    whitelist: []
+                },
+                quality: {
+                    allowed: [],
+                    preferred: []
+                }
+            },
             options: [
                 { text: 'Anidb', value: externals.ANIDB },
                 { text: 'IMDB', value: externals.IMDB },
@@ -384,6 +400,54 @@ window.app = new Vue({
             console.log('isotope Layout loaded');
             imgLazyLoad.update();
             imgLazyLoad.handleScroll();
+        },
+        addShowById(show) {
+            console.log('adding show by id');
+            const { enableShowOptions, selectedShowOptions, $store } = this;
+            const { mappedIndexerName, mappedSeriesId } = show
+            
+            options = {
+                id: {
+                    [mappedIndexerName]: mappedSeriesId,
+                }
+            }
+
+            if (enableShowOptions) {
+                options = Object.assign({}, options, { options: selectedShowOptions });
+            }
+
+            $store.dispatch('addShow', options).then(() => {
+                this.$snotify.success(
+                    'Added new show to library',
+                    'Saved',
+                    { timeout: 20000 }
+                );
+                debugger;
+            }).catch(() => {
+                this.$snotify.error(
+                    'Error while trying to add new show',
+                    'Error'
+                );
+            });
+
+        },
+        updateOptions(options) {
+            debugger;
+            // Update seleted options from add-show-options.vue @change event.
+            const { anime, blacklist, scene, status, subtitles, statusAfter, seasonFolder, release, quality } = options;
+            const { blacklist, whitelist } = release;
+            const { allowed, preferred } = quality;
+
+            this.selectedShowOptions.subtitles = subtitles;
+            this.selectedShowOptions.status = status;
+            this.selectedShowOptions.statusAfter = statusAfter;
+            this.selectedShowOptions.seasonFolders = seasonFolders;
+            this.selectedShowOptions.anime = anime;
+            this.selectedShowOptions.scene = scene;
+            this.selectedShowOptions.release.blacklist = blacklist;
+            this.selectedShowOptions.release.whitelist = whitelist;
+            this.selectedShowOptions.quality.allowed = allowed;
+            this.selectedShowOptions.quality.preferred = preferred;
         }
     }
 });
@@ -407,37 +471,9 @@ window.app = new Vue({
 
 <div id="recommended-shows-options" class="row">
     <div class="col-md-12">
-        <div id="tabs">
-            <fieldset class="component-group-list">
-                <div class="field-pair">
-                    <label class="clearfix" for="content_configure_show_options">
-                        <span class="component-title">Configure Show Options</span>
-                        <span class="component-desc">
-                            <input type="checkbox" class="enabler" name="configure_show_options" id="configure_show_options" />
-                            <p>Recommended shows will be added using your default options. Use this option if you want to change the options for that show.</p>
-                        </span>
-                    </label>
-                </div>
-                <div id="content_configure_show_options">
-                    <div class="field-pair">
-                        <label class="clearfix" for="configure_show_options">
-                            <ul>
-                                <li><app-link href="#tabs-1">Manage Directories</app-link></li>
-                                <li><app-link href="#tabs-2">Customize Options</app-link></li>
-                            </ul>
-                            <div id="tabs-1" class="existingtabs">
-                                <root-dirs @update="rootDirs = $event"></root-dirs>
-                                <br/>
-                            </div>
-                            <div id="tabs-2" class="existingtabs">
-                                <!-- <include file="/inc_addShowOptions.mako"/> -->
-                            </div>
-                        </label>
-                    </div>
-                </div>
-            </fieldset>
-        </div>  <!-- tabs-->
+        <config-toggle-slider v-model="enableShowOptions" label="Pass Default show options" id="default_show_options" ></config-toggle-slider>
 
+        <add-show-options v-show="enableShowOptions" enable-anime-options @change="updateOptions"></add-show-options>
 
         <div class="show-option">
             <span>Sort By:</span>
@@ -499,16 +535,15 @@ window.app = new Vue({
 
                     <div class="recommendedShowTitleIcons">
                         <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">In List</app-link>
+                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">In List</app-link>
                         </button>
                         
-                        <button v-if="!show.showInLibrary" class="btn-medusa btn-xs" data-isanime="1" :data-indexer="show.mappedIndexer"
-                            :data-indexer-id="show.mappedSeriesId" :data-show-name="show.title || 'u'" data-add-show>
+                        <button v-if="!show.showInLibrary" class="btn-medusa btn-xs" @click="addShowById(show)">
                             Add
                         </button>
 
                         <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
-                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexer + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
+                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
                         </button>
                         <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
                         <button v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
