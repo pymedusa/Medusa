@@ -47,7 +47,7 @@ recommended_series_cache = make_region()
 anidb_cache = make_region()
 
 
-def configure(cache_dir):
+def configure(cache_dir, replace=False):
     """Configure caches."""
     # memory cache
     from subliminal.cache import region as subliminal_cache
@@ -55,26 +55,26 @@ def configure(cache_dir):
     memory_cache.configure('dogpile.cache.memory', expiration_time=timedelta(hours=1))
 
     # subliminal cache
-    subliminal_cache.configure('dogpile.cache.dbm',
+    subliminal_cache.configure('dogpile.cache.dbm', replace_existing_backend=replace,
                                expiration_time=timedelta(days=30),
                                arguments={
                                    'filename': os.path.join(cache_dir, 'subliminal.dbm'),
                                    'lock_factory': MutexLock})
 
     # application cache
-    cache.configure('dogpile.cache.dbm',
+    cache.configure('dogpile.cache.dbm', replace_existing_backend=replace,
                     expiration_time=timedelta(days=1),
                     arguments={'filename': os.path.join(cache_dir, 'application.dbm'),
                                'lock_factory': MutexLock})
 
     # recommended series cache
-    recommended_series_cache.configure('dogpile.cache.dbm',
+    recommended_series_cache.configure('dogpile.cache.dbm', replace_existing_backend=replace,
                                        expiration_time=timedelta(days=7),
                                        arguments={'filename': os.path.join(cache_dir, 'recommended.dbm'),
                                                   'lock_factory': MutexLock})
 
     # anidb (adba) series cache
-    anidb_cache.configure('dogpile.cache.dbm',
+    anidb_cache.configure('dogpile.cache.dbm', replace_existing_backend=replace,
                           expiration_time=timedelta(days=3),
                           arguments={'filename': os.path.join(cache_dir, 'anidb.dbm'),
                                      'lock_factory': MutexLock})
