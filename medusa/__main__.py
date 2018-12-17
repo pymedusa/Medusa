@@ -1078,7 +1078,7 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = False
 
-            # Check if we start with a different python version since last start
+            # Check if we start with a different Python version since last start
             python_version_changed = self.migrate_python_version()
 
             # Check if we need to perform a restore of the cache folder
@@ -1254,26 +1254,23 @@ class Application(object):
     @staticmethod
     def migrate_python_version():
         """
-        Perform some cleanup in case we switch from python version.
+        Perform some cleanups in case we switch between major Python versions.
 
-        It's possible to switch from python version 2 to 3 or visa versa.
-        In that case we might wanna run some sanitary actions, to make sure everything keeps working.
-        :return: True if the major python version has changed since last start
+        It's possible to switch from Python version 2 to 3 or vice versa.
+        In that case we might wanna run some sanity actions, to make sure everything keeps working.
+
+        :return: True if the major Python version has changed since last start
         :return type: Boolean
         """
         # TODO: Leaving this here as a marking for when we merge the python3 changes.
-        old_version = app.PYTHON_VERSION
-        new_version = sys.version_info
+        current_version = app.PYTHON_VERSION
+        app.PYTHON_VERSION = list(sys.version_info)[:3]
 
-        # run some sanitation when switching from python versions
-        if old_version and old_version[0] != sys.version_info.major:
-            version_changed = True
-        else:
-            version_changed = False
+        # run some sanitation when switching between Python versions
+        if current_version and current_version[0] != app.PYTHON_VERSION[0]:
+            return True
 
-        app.PYTHON_VERSION = list(new_version)[:3]
-
-        return version_changed
+        return False
 
     @staticmethod
     def start_threads():
