@@ -1266,7 +1266,7 @@ class Application(object):
         current_version = app.PYTHON_VERSION
         app.PYTHON_VERSION = list(sys.version_info)[:3]
 
-        # run some sanitation when switching between Python versions
+        # Run some sanitation when switching between Python versions
         if current_version and current_version[0] != app.PYTHON_VERSION[0]:
             return True
 
