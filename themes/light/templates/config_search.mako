@@ -264,7 +264,7 @@ window.app = new Vue({
             const { clients } = this;
             const { torrents } = clients;
             const { host, method } = torrents;
-            let torrentHost = host || ''
+            let torrentHost = host || '';
             if (!['rtorrent', 'deluge'].includes(method) || method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
                 return false;
             }
