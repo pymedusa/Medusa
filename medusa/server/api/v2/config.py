@@ -193,7 +193,7 @@ class ConfigHandler(BaseRequestHandler):
         'search.filters.ignoreUnknownSubs': BooleanField(app, 'IGNORE_UND_SUBS'),
 
         'notifiers.kodi.enabled': BooleanField(app, 'USE_KODI'),
-        'notifiers.kodi.alwaysOn': BooleanField(app, 'USE_KODI'),
+        'notifiers.kodi.alwaysOn': BooleanField(app, 'KODI_ALWAYS_ON'),
         'notifiers.kodi.notifyOnSnatch': BooleanField(app, 'KODI_NOTIFY_ONSNATCH'),
         'notifiers.kodi.notifyOnDownload': BooleanField(app, 'KODI_NOTIFY_ONDOWNLOAD'),
         'notifiers.kodi.notifyOnSubtitleDownload': BooleanField(app, 'KODI_NOTIFY_ONSUBTITLEDOWNLOAD'),

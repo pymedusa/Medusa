@@ -112,7 +112,7 @@ class AniDexProvider(TorrentProvider):
                 cells = row.find_all('td')
 
                 try:
-                    title = cells[labels.index('Filename')].span.get_text()
+                    title = cells[labels.index('Filename')].span.get('title')
                     download_url = cells[labels.index('Torrent')].a.get('href')
                     if not all([title, download_url]):
                         continue
