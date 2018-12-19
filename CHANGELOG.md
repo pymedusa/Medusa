@@ -1,3 +1,13 @@
+## Unreleased
+
+#### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
 ## 0.2.14 (2018-12-19)
 
 #### New Features
@@ -17,7 +27,7 @@
 - Fixed mis-mapped proper search interval config option of 24 hours, added 30 minutes ([#5896](https://github.com/pymedusa/Medusa/pull/5896))
 - Fixed config - search settings, test nzb client connectivity ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
 - Fixed adding an episode to the my anidb list on post processing when enabled ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
-- Fixed creating banner and fanart from metadata. Any metadata images in the shows folder other then the poster, will now also become visible in medusa ([#5808](https://github.com/pymedusa/Medusa/pull/5808))
+- Fixed creating banner and fanart from metadata. Any metadata images in the shows folder other then the poster, will now also become visible in Medusa ([#5808](https://github.com/pymedusa/Medusa/pull/5808))
 
 -----
 
