@@ -3,14 +3,13 @@
 #### New Features
 - Added provider nordicbits ([#5854](https://github.com/pymedusa/Medusa/pull/5854))
 
-#### Improvements
-
 #### Fixes
 - Fixed double absolute numbers for anime shows where thexem sets an absolute which already exists ([#5801](https://github.com/pymedusa/Medusa/pull/5801))
 - Fixed image cache not properly created from metadata for images other then posters ([#5810](https://github.com/pymedusa/Medusa/pull/5810))
 - Fixed episode status comparison in subtitleMissedPP ([#5813](https://github.com/pymedusa/Medusa/pull/5813))
 - Fixed anidex title parsing ([#5837](https://github.com/pymedusa/Medusa/pull/5837))
-- Fixed config - search settings, test nzb client connectivity ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
+- Fixed notifications - kodi, 'allways on' config option ([#5871](https://github.com/pymedusa/Medusa/pull/5871))
+- Fixed mis-mapped proper search interval config option of 24 hours, added 30 minutes ([#5896](https://github.com/pymedusa/Medusa/pull/5896))
 - Fixed config - search settings, test nzb client connectivity ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
 - Fixed adding an episode to the my anidb list on post processing when enabled ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
 
