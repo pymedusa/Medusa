@@ -23,7 +23,8 @@ window.app = new Vue({
                 { text: '4 hours', value: '4h' },
                 { text: '90 mins', value: '90m' },
                 { text: '45 mins', value: '45m' },
-                { text: '24 hours', value: '15m' }
+                { text: '30 mins', value: '30m' },
+                { text: '15 mins', value: '15m' }
             ],
             nzbGetPriorityOptions: [
                 { text: 'Very low', value: -100 },
@@ -265,13 +266,13 @@ window.app = new Vue({
             return this.$store.state.search;
         },
         stateClients() {
-            return this.$store.state.clients;            
+            return this.$store.state.clients;
         },
         torrentUsernameIsDisabled() {
             const { clients } = this;
             const { torrents } = clients;
             const { host, method } = torrents;
-            let torrentHost = host || '' 
+            let torrentHost = host || '';
             if (!['rtorrent', 'deluge'].includes(method) || method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
                 return false;
             }
@@ -281,7 +282,7 @@ window.app = new Vue({
             const { clients } = this;
             const { torrents } = clients;
             const { host, method } = torrents;
-            let torrentHost = host || '' 
+            let torrentHost = host || '';
             if (method !== 'rtorrent' || method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
                 return false;
             }
@@ -291,7 +292,7 @@ window.app = new Vue({
             const { clients } = this;
             const { torrents } = clients;
             const { host, method } = torrents;
-            let torrentHost = host || '' 
+            let torrentHost = host || '';
             if (method === 'rtorrent' && !torrentHost.startsWith('scgi://')) {
                 return false;
             }
@@ -445,12 +446,12 @@ window.app = new Vue({
                             <h3>General Search Settings</h3>
                             <p>How to manage searching with <app-link href="config/providers">providers</app-link>.</p>
                         </div>
-                    
+
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <config-toggle-slider v-model="search.general.randomizeProviders" label="Randomize Providers" id="randomize_providers" :explanations="['randomize the provider search order instead of going in order of placement']" ></config-toggle-slider>
                                 <config-toggle-slider v-model="search.general.downloadPropers" label="Download propers" id="download_propers" :explanations="['replace original download with \'Proper\' or \'Repack\' if nuked']" ></config-toggle-slider>
-                                
+
                                 <div v-show="search.general.downloadPropers">
                                     <config-template label="Check propers every" label-for="check_propers_interval">
                                         <select id="check_propers_interval" name="check_propers_interval" v-model="search.general.checkPropersInterval" class="form-control input-sm">
@@ -461,11 +462,11 @@ window.app = new Vue({
                                     </config-template>
 
                                     <config-textbox-number :min="2" :max="7" :step="1" v-model.number="search.general.propersSearchDays" label="Proper search days" id="propers_search_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
-                                    
+
                                 </div><!-- check propers -->
-                                
+
                                 <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
-                                    
+
                                 <config-textbox-number :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                 </config-textbox-number>
@@ -473,12 +474,12 @@ window.app = new Vue({
                                 <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.dailySearchFrequency" label="Daily search interval" id="daily_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                 </config-textbox-number>
-                                
+
                                 <config-toggle-slider v-if="clientsConfig.torrent[clients.torrents.method]" v-show="clientsConfig.torrent[clients.torrents.method].removeFromClientOption" v-model="search.general.removeFromClient" label="Remove torrents from client" id="remove_from_client">
                                     <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
                                     <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                 </config-toggle-slider>
-                                    
+
                                 <config-textbox-number v-show="search.general.removeFromClient" :min="search.general.minTorrentCheckerFrequency" :step="1" v-model.number="search.general.torrentCheckerFrequency" label="Frequency to check torrents ratio" id="torrent_checker_frequency" :explanations="['Frequency in minutes to check torrent\'s ratio (default: 60)']"></config-textbox-number>
 
 
@@ -491,13 +492,13 @@ window.app = new Vue({
                                 </config-template>
 
                                 <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" ></config-toggle-slider>
-                                
-                                
+
+
                                 <config-toggle-slider v-model="search.general.useFailedDownloads" label="Use Failed Downloads" id="use_failed_downloads" :explanations="['Use Failed Download Handling?',
                                     'Will only work with snatched/downloaded episodes after enabling this']" >
                                 </config-toggle-slider>
-                                
-                                
+
+
                                 <config-toggle-slider v-show="search.general.useFailedDownloads" v-model="search.general.deleteFailed" label="Delete Failed" id="delete_failed">
                                     Delete files left over from a failed download?<br>
                                     <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
@@ -505,7 +506,7 @@ window.app = new Vue({
 
 
                                 <config-toggle-slider v-model="search.general.cacheTrimming" label="Cache Trimming" id="cache_trimming" :explanations="['Enable trimming of provider cache']" ></config-toggle-slider>
-                                
+
                                 <config-textbox-number v-show="search.general.cacheTrimming" :min="1" :step="1" v-model.number="search.general.maxCacheAge" label="Cache Retention" id="max_cache_age" :explanations="['Number of days to retain results in cache.  Results older than this will be removed if cache trimming is enabled.']"></config-textbox-number>
 
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
@@ -552,9 +553,9 @@ window.app = new Vue({
                                 <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                             </fieldset>
                         </div><!-- /col //-->
-                    </div><!-- /row //-->   
+                    </div><!-- /row //-->
                 </div><!-- /#episode-search //-->
-                
+
 
                 <div id="nzb-search">
                     <div class="row component-group">
@@ -573,23 +574,23 @@ window.app = new Vue({
                                             <option v-for="(client, name) in clientsConfig.nzb" :value="name">{{client.title}}</option>
                                         </select>
                                     </config-template>
-                                    
+
                                     <config-template v-show="clients.nzb.method === 'blackhole'" id="blackhole_settings" label-for="nzb_dir" label="Black hole folder location">
                                         <file-browser name="nzb_dir" title="Select .nzb black hole location" :initial-dir="clients.nzb.dir" @update="clients.nzb.dir = $event"></file-browser>
                                         <div class="clear-left">
                                             <p><b>.nzb</b> files are stored at this location for external software to find and use</p>
                                         </div>
                                     </config-template>
-                                    
-                                    
+
+
                                     <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
-                                        
+
                                         <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
                                             <div class="clear-left">
                                                 <p v-html="clientsConfig.nzb[clients.nzb.method].description"></p>
                                             </div>
                                         </config-textbox>
-                                        
+
                                         <config-textbox v-model="clients.nzb.sabnzbd.username" label="SABnzbd username" id="sab_username" :explanations="['(blank for none)']"></config-textbox>
                                         <config-textbox v-model="clients.nzb.sabnzbd.password" type="password" label="SABnzbd password" id="sab_password" :explanations="['(blank for none)']"></config-textbox>
                                         <config-textbox v-model="clients.nzb.sabnzbd.apiKey" label="SABnzbd API key" id="sab_apikey" :explanations="['locate at... SABnzbd Config -> General -> API Key']"></config-textbox>
@@ -603,9 +604,9 @@ window.app = new Vue({
                                         <input @click="testSabnzbd" type="button" value="Test SABnzbd" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
                                     </div>
-                                    
+
                                     <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
-                                        
+
                                         <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTP" id="nzbget_use_https">
                                             <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                         </config-toggle-slider>
@@ -620,14 +621,14 @@ window.app = new Vue({
                                         <config-textbox v-model="clients.nzb.nzbget.categoryBacklog" label="Use NZBget category (backlog episodes)" id="nzbget_category_backlog" :explanations="['send downloads of old episodes marked this category (e.g. TV)']"></config-textbox>
                                         <config-textbox v-model="clients.nzb.nzbget.categoryAnime" label="Use NZBget category for anime" id="nzbget_category_anime" :explanations="['send anime downloads marked this category (e.g. anime)']"></config-textbox>
                                         <config-textbox v-model="clients.nzb.nzbget.categoryAnimeBacklog" label="Use NZBget category for anime (backlog episodes)" id="nzbget_category_anime_backlog" :explanations="['send anime downloads of old episodes marked this category (e.g. anime)']"></config-textbox>
-                                        
+
                                         <config-template label-for="nzbget_priority" label="NZBget priority">
                                             <select name="nzbget_priority" id="nzbget_priority" v-model="clients.nzb.nzbget.priority" class="form-control input-sm">
                                                 <option v-for="option in nzbGetPriorityOptions" :value="option.value">{{option.text}}</option>
                                             </select>
                                             <span>priority for daily snatches (no backlog)</span>
                                         </config-template>
-                                        
+
                                         <div class="testNotification" v-show="clientsConfig.nzb.nzbget.testStatus" v-html="clientsConfig.nzb.nzbget.testStatus"></div>
                                         <input @click="testNzbget" type="button" value="Test NZBget" class="btn-medusa test-button"/>
                                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>
@@ -637,7 +638,7 @@ window.app = new Vue({
                         </div>
                     </div> <!-- /row -->
                 </div><!-- /#nzb-search //-->
-                
+
                 <div id="torrent-search">
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
@@ -647,16 +648,16 @@ window.app = new Vue({
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
-                                
+
                                 <config-toggle-slider v-model="clients.torrents.enabled" label="Search torrents" id="use_torrents" :explanations="['enable torrent search providers']"></config-toggle-slider>
                                 <div v-show="clients.torrents.enabled">
-                                    
+
                                     <config-template label-for="torrent_method" label="Send .torrent files to">
                                         <select v-model="clients.torrents.method" name="torrent_method" id="torrent_method" class="form-control input-sm">
                                             <option v-for="(client, name) in clientsConfig.torrent" :value="name">{{client.title}}</option>
                                         </select>
                                     </config-template>
-                                    
+
                                     <div v-if="clients.torrents.method" v-show="clients.torrents.method === 'blackhole'">
                                         <config-template label-for="torrent_dir" label="Black hole folder location">
                                             <file-browser name="torrent_dir" title="Select .torrent black hole location" :initial-dir="clients.torrents.dir" @update="clients.torrents.dir = $event"></file-browser>
@@ -666,11 +667,11 @@ window.app = new Vue({
                                     </div>
 
                                     <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
-                                        
+
                                         <config-textbox v-model="clients.torrents.host" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
                                             <p v-html="clientsConfig.torrent[clients.torrents.method].description"></p>
                                         </config-textbox>
-                                        
+
                                         <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
                                             <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                         </config-textbox>
@@ -686,14 +687,14 @@ window.app = new Vue({
                                             <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                         </config-toggle-slider>
 
-                                        <config-textbox v-show="!torrentUsernameIsDisabled" 
+                                        <config-textbox v-show="!torrentUsernameIsDisabled"
                                             v-model="clients.torrents.username" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' username'" id="torrent_username" :explanations="['(blank for none)']">
                                         </config-textbox>
-                                        
-                                        <config-textbox type="password" v-show="!torrentPasswordIsDisabled" 
+
+                                        <config-textbox type="password" v-show="!torrentPasswordIsDisabled"
                                             v-model="clients.torrents.password" :label="(clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title) + ' password'" id="torrent_password" :explanations="['(blank for none)']">
                                         </config-textbox>
-                                        
+
                                         <div v-show="clientsConfig.torrent[clients.torrents.method].labelOption" id="torrent_label_option">
                                             <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
                                                 <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
@@ -731,7 +732,7 @@ window.app = new Vue({
                                                     <span v-show="clients.torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span>
                                                 </p>
                                         </config-template>
-                                        
+
                                         <config-template v-show="clientsConfig.torrent[clients.torrents.method].seedLocationOption" label-for="torrent_seed_location" label="Post-Processed seeding torrents location">
                                                 <file-browser name="torrent_seed_location" title="Select torrent seed location" :initial-dir="clients.torrents.seedLocation" @update="clients.torrents.seedLocation = $event"></file-browser>
                                                 <p>
