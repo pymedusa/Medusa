@@ -550,7 +550,7 @@ class PostProcessor(object):
 
             self.log(u'Adding the file to the anidb mylist', logger.DEBUG)
             try:
-                self.anidbEpisode.add_to_mylist(status=1)  # status = 1 sets the status of the file to "internal HDD"
+                self.anidbEpisode.add_to_mylist(state=1)  # state = 1 sets the state of the file to "internal HDD"
             except Exception as e:
                 self.log(u'Exception message: {0!r}'.format(e))
 
