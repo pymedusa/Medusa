@@ -404,13 +404,14 @@ class Episode(TV):
         if self.airdate == date.min:
             return None
 
-        return sbdatetime.convert_to_setting(
+        date_parsed = sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
                 self.series.airs,
-                self.series.network
-            )
-        ).isoformat(b'T')
+                self.series.network)
+        )
+
+        return date_parsed.isoformat()
 
     @property
     def status_name(self):

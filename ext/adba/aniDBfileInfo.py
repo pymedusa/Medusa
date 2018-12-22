@@ -19,8 +19,8 @@
 
 import hashlib
 import logging
-import pickle
 import os
+import pickle
 import requests
 import sys
 import time
@@ -132,8 +132,7 @@ def read_xml_into_etree(filePath):
             if not get_anime_titles_xml(filePath):
                 return
 
-    f = open(filePath, "r")
-    xml_a_setree = etree.ElementTree(file=f)
+    xml_a_setree = etree.ElementTree().parse(filePath)
     return xml_a_setree
 
 

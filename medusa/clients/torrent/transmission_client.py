@@ -109,7 +109,7 @@ class TransmissionAPI(GenericClient):
     def _add_torrent_file(self, result):
 
         arguments = {
-            'metainfo': b64encode(result.content),
+            'metainfo': b64encode(result.content).decode('utf-8'),
             'paused': 1 if app.TORRENT_PAUSED else 0
         }
 

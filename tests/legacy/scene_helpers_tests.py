@@ -1,5 +1,6 @@
 # coding=utf-8
 """Test scene helpers."""
+from __future__ import unicode_literals
 
 import unittest
 
