@@ -22,6 +22,8 @@ from medusa.helper.common import try_int
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
+from six import ensure_text
+
 from tornroutes import route
 
 
@@ -106,7 +108,8 @@ class ConfigGeneral(Config):
         app.GIT_PASSWORD = git_password
         app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
-        app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
+        app.GIT_RESET_BRANCHES = [ensure_text(branch) for branch in
+                                  helpers.ensure_list(git_reset_branches)]
         if app.GIT_PATH != git_path:
             app.GIT_PATH = git_path
             config.change_GIT_PATH()
