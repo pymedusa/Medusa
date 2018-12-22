@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
 
 #### Improvements
 
