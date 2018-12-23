@@ -167,15 +167,17 @@ class TraktPopular(BasePopular):
                     if 'show' not in show:
                         show['show'] = show
 
-                    if not_liked_show and show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
-                                                           for s in not_liked_show if s['type'] == 'show'):
-                            continue
+                    if not_liked_show and show['show']['ids']['tvdb'] in (
+                        s['show']['ids']['tvdb']
+                        for s in not_liked_show if s['type'] == 'show'
+                    ):
+                        continue
 
-                        recommended_show = self._create_recommended_show(
-                            show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
-                        )
-                        recommended_show.save_to_db()
-                        trending_shows.append(recommended_show)
+                    recommended_show = self._create_recommended_show(
+                        show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
+                    )
+                    recommended_show.save_to_db()
+                    trending_shows.append(recommended_show)
                 except MultipleShowObjectsException:
                     continue
 
