@@ -1732,8 +1732,8 @@ def title_to_imdb(title, start_year, imdb_api=None):
         titles = imdb_api.search_for_title(title)
     except ValueError as error:
         # FIXME: Putting an error here, as this is a known error with the lib imdbpie. And should be fix.
-        log.error('Could not get a result from imdbpie for the title {title}, error: {error}',
-                  {'title': title, 'error': error})
+        log.warning('Could not get a result from imdbpie for the title {title}, error: {error}',
+                    {'title': title, 'error': error})
         return None
 
     if len(titles) == 1:
