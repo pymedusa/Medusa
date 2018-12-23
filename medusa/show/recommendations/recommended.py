@@ -96,7 +96,7 @@ class BasePopular(object):
         self.default_img_src = 'poster.png'
 
 
-class RecommendedShow(object):
+class RecommendedShow(BasePopular):
     """Base class for show recommendations."""
 
     def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
@@ -128,7 +128,7 @@ class RecommendedShow(object):
             try:
                 self.mapped_series_id = int(self.mapped_series_id)
             except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
+                raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
 
         self.rating = float(show_attr.get('rating') or 0)
 
@@ -136,7 +136,7 @@ class RecommendedShow(object):
         if self.votes and not isinstance(self.votes, int):
             trans_mapping = {ord(c): None for c in ['.', ',']}
             if PY2:
-            self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+                self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
             else:
                 self.votes = int(self.votes.translate(trans_mapping))
 
