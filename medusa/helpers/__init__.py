@@ -54,7 +54,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import string_types, text_type, viewitems
+from six import binary_type, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -1609,6 +1609,25 @@ def unicodify(value):
         return text_type(value, 'utf-8', 'replace')
 
     return value
+
+
+def to_text(s, encoding='utf-8', errors='strict'):
+    """Coerce *s* to six.text_type.
+
+    This code is part of the six library.
+    For Python 2:
+      - `unicode` -> `unicode`
+      - `str` -> `unicode`
+    For Python 3:
+      - `str` -> `str`
+      - `bytes` -> decoded to `str`
+    """
+    if isinstance(s, binary_type):
+        return s.decode(encoding, errors)
+    elif isinstance(s, text_type):
+        return s
+    else:
+        raise TypeError("not expecting type '%s'" % type(s))
 
 
 def single_or_list(value, allow_multi=False):
