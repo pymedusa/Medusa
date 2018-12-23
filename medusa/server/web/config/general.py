@@ -22,8 +22,6 @@ from medusa.helper.common import try_int
 from medusa.server.web.config.handler import Config
 from medusa.server.web.core import PageTemplate
 
-from six import ensure_text
-
 from tornroutes import route
 
 
