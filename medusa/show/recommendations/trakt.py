@@ -17,7 +17,7 @@ from medusa.show.recommendations.recommended import (
     BasePopular, RecommendedShow, create_key_from_series
 )
 
-from six import text_type, iteritems
+from six import text_type
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 
@@ -167,11 +167,10 @@ class TraktPopular(BasePopular):
                     if 'show' not in show:
                         show['show'] = show
 
-                    if not_liked_show:
-                        if show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
+                    if not_liked_show and show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
                                                            for s in not_liked_show if s['type'] == 'show'):
                             continue
-                    else:
+
                         recommended_show = self._create_recommended_show(
                             show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
                         )

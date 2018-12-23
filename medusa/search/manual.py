@@ -308,6 +308,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
             i['pubdate'] = parser.parse(i['pubdate']).astimezone(app_timezone) if i['pubdate'] else ''
             i['date_added'] = datetime.fromtimestamp(float(i['date_added']), tz=app_timezone) if i['date_added'] else ''
+
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'
@@ -329,8 +330,15 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''
-            i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
-            i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
+
+            i['seed_highlight'] = 'ignored'
+            if i['seeders'] == '-' or i['provider_minseed'] <= i['seeders']:
+                i['seed_highlight'] = ''
+
+            i['leech_highlight'] = 'ignored'
+            if i['leechers'] == '-' or i['provider_minleech'] <= i['leechers']:
+                i['leech_highlight'] = ''
+
         provider_results['found_items'] = cached_results_total
 
     # Remove provider from thread name before return results

@@ -177,7 +177,7 @@ window.app = new Vue({
                                 <span style="vertical-align:middle;"><i>Unknown</i></span>
                             % endif
                         % else:
-                            % if hItem.provider > 0:
+                            % if hItem.provider:
                                 % if hItem.action in [SNATCHED, FAILED]:
                                     <% provider = providers.get_provider_class(GenericProvider.make_id(hItem.provider)) %>
                                     % if provider is not None:

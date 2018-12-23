@@ -13,34 +13,34 @@ import pytest
 @pytest.mark.parametrize('p', [
     {  # p0: bytes with *allowed* extra data
         'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {'hello': b'world', 'numbers': [1, 2]},
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': True,
         'raises_exc': None,
         'exc_message': r''
     },
     {  # p1: bytes with *disallowed* extra data
         'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {'hello': b'world', 'numbers': [1, 2]},
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': False,
         'raises_exc': bencode.BencodeDecodeError,
         'exc_message': r'.+\(data after valid prefix\)'
     },
     {  # p2: unicode with *allowed* extra data
-        'value': 'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {'hello': b'world', 'numbers': [1, 2]},
+        'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': True,
         'raises_exc': None,
         'exc_message': r''
     },
     {  # p3: unicode with *disallowed* extra data
-        'value': 'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
-        'expected': {'hello': b'world', 'numbers': [1, 2]},
+        'value': b'd5:hello5:world7:numbersli1ei2eeeEXTRA_DATA_HERE',
+        'expected': {'hello': 'world', 'numbers': [1, 2]},
         'allow_extra_data': False,
         'raises_exc': bencode.BencodeDecodeError,
         'exc_message': r'.+\(data after valid prefix\)'
     },
     {  # p4: invalid data
-        'value': b'Heythere',
+        'value': 'Heythere',
         'expected': None,
         'allow_extra_data': False,
         'raises_exc': bencode.BencodeDecodeError,

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.system module."""
+from __future__ import unicode_literals
 
 from medusa.event_queue import Events
 from medusa.system.restart import Restart
@@ -15,7 +16,6 @@ import pytest
     (123, False),
     (b'123', False),
     (123456, True),
-    (b'123456', True),
 
     # unicode test cases
     (u'0', False),
@@ -42,7 +42,6 @@ def test_restart(pid, expected, app_config):
     (123, False),
     (b'123', False),
     (123456, True),
-    (b'123456', True),
 
     # unicode test cases
     (u'0', False),

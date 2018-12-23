@@ -38,7 +38,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import binary_type
+from six import PY2, binary_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -128,14 +128,17 @@ class RecommendedShow(object):
             try:
                 self.mapped_series_id = int(self.mapped_series_id)
             except ValueError:
-                raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
+            raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
 
         self.rating = float(show_attr.get('rating') or 0)
 
         self.votes = show_attr.get('votes')
         if self.votes and not isinstance(self.votes, int):
             trans_mapping = {ord(c): None for c in ['.', ',']}
+            if PY2:
             self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+            else:
+                self.votes = int(self.votes.translate(trans_mapping))
 
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
@@ -355,7 +358,9 @@ def create_key_from_series(namespace, fn, **kw):
         Following this standard we can cache every object, using this key_generator.
         """
         try:
-            return binary_type(kwargs['storage_key'])
+            if PY2:
+                return kwargs['storage_key'].encode('utf-8')
+            return kwargs['storage_key']
         except KeyError:
             log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key,'
                           ' that is used in the dogpile cache.')

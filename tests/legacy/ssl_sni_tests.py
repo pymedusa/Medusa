@@ -16,14 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """SSL SNI Tests."""
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
-
 import certifi
 import medusa.providers as providers
 from medusa.helper.exceptions import ex
 import requests
+
+from six import text_type
 
 
 def generator(_provider):
@@ -45,7 +46,7 @@ def generator(_provider):
         try:
             requests.head(_provider.url, verify=certifi.where(), timeout=10)
         except requests.exceptions.SSLError as error:
-            if 'certificate verify failed' in str(error):
+            if 'certificate verify failed' in text_type(error):
                 print('Cannot verify certificate for %s' % _provider.name)
             else:
                 print('SSLError on %s: %s' % (_provider.name, ex(error.message)))

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import re
+import sys
 import time
 import traceback
 from builtins import str
@@ -42,7 +43,6 @@ from tornado.web import (
 )
 
 from tornroutes import route
-
 
 mako_lookup = None
 mako_cache = None
@@ -210,7 +210,11 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
-    executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+    # Python 3.5 doesn't support thread_name_prefix
+    if sys.version_info[:2] == (3, 5):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
