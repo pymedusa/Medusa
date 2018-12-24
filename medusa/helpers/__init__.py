@@ -54,7 +54,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import binary_type, string_types, text_type, viewitems
+from six import ensure_binary, ensure_text, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -953,24 +953,19 @@ unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
 
 
 def encrypt(data, encryption_version=0, _decrypt=False):
-    # Version 1: Simple XOR encryption (this is not very secure, but works)
-    if encryption_version == 1:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
-    # Version 2: Simple XOR encryption (this is not very secure, but works)
-    elif encryption_version == 2:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
-                                                                  cycle(app.ENCRYPTION_SECRET)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
-    else:
+    if encryption_version == 0:
         return data
+    else:
+        # Simple XOR encryption, Base64 encoded
+        # Version 1: unique_key1; Version 2: app.ENCRYPTION_SECRET
+        key = unique_key1 if encryption_version == 1 else app.ENCRYPTION_SECRET
+        if _decrypt:
+            data = ensure_text(base64.decodestring(ensure_binary(data)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+        else:
+            data = ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+            return ensure_text(base64.encodestring(ensure_binary(data))).strip()
 
 
 def decrypt(data, encryption_version=0):
