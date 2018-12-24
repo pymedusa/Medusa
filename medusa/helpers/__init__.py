@@ -54,7 +54,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import ensure_binary, ensure_text, string_types, text_type, viewitems
+from six import binary_type, ensure_binary, ensure_text, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
