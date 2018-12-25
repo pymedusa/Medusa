@@ -405,6 +405,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
                     # Give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
+                    break
 
             elif self.manual_search and search_result:
                 self.results = search_result
@@ -586,6 +587,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
                         # give the CPU a break
                         time.sleep(common.cpu_presets[app.CPU_PRESET])
+                        break
                 else:
                     log.info('No needed episodes found during backlog search for: {name}',
                              {'name': self.show.name})
