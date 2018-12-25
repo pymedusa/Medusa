@@ -959,7 +959,7 @@ window.app = new Vue({
                             <label for="${cur_newznab_provider.get_id()}_api_key">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="password" id="${cur_newznab_provider.get_id()}_api_key" value="${cur_newznab_provider.api_key}" newznab_name="${cur_newznab_provider.get_id()}_api_key" class="newznab_api_key form-control input-sm input350"/>
+                                    <input type="password" id="${cur_newznab_provider.get_id()}_api_key" name="${cur_newznab_provider.get_id()}_api_key" value="${cur_newznab_provider.api_key}" newznab_name="${cur_newznab_provider.get_id()}" class="newznab_api_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
