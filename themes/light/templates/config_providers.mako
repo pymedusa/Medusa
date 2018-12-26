@@ -1058,18 +1058,6 @@ window.app = new Vue({
                             </label>
                         </div>
                         % endif
-                        % if hasattr(cur_newznab_provider, 'enable_search_offset'):
-                        <div class="field-pair">
-                            <label for="${cur_newznab_provider.get_id()}_enable_search_offset">
-                                <span class="component-title">Enable daily search offset</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="${cur_newznab_provider.get_id()}_enable_search_offset" id="${cur_newznab_provider.get_id()}_enable_search_offset" ${'checked="checked"' if cur_newznab_provider.enable_search_offset else ''}/>
-                                    <p>Enable to allow the provider to search early/later compared to the episodes release date.</p>
-                                    <p>For certain untrusworthy providers, you might want to disable this option.</p>
-                                </span>
-                            </label>
-                        </div>
-                        % endif
                     </div>
                     % endfor
                     % for cur_nzb_provider in [cur_provider for cur_provider in sorted_provider_list() if cur_provider.provider_type == GenericProvider.NZB and cur_provider not in app.newznabProviderList]:
@@ -1185,18 +1173,6 @@ window.app = new Vue({
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
                                     <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
-                                </span>
-                            </label>
-                        </div>
-                        % endif
-                        % if hasattr(cur_nzb_provider, 'enable_search_offset'):
-                        <div class="field-pair">
-                            <label for="${cur_nzb_provider.get_id()}_enable_search_offset">
-                                <span class="component-title">Enable daily search offset</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="${cur_nzb_provider.get_id()}_enable_search_offset" id="${cur_nzb_provider.get_id()}_enable_search_offset" ${'checked="checked"' if cur_nzb_provider.enable_search_offset else ''}/>
-                                    <p>Enable to allow the provider to search early/later compared to the episodes release date.</p>
-                                    <p>For certain untrusworthy providers, you might want to disable this option.</p>
                                 </span>
                             </label>
                         </div>
@@ -1532,18 +1508,6 @@ window.app = new Vue({
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
                                     <p>Amount of hours to wait for downloading a result compared to the first result for a specific episode.</p>
-                                </span>
-                            </label>
-                        </div>
-                        % endif
-                        % if hasattr(cur_torrent_provider, 'enable_search_offset'):
-                        <div class="field-pair">
-                            <label for="${cur_torrent_provider.get_id()}_enable_search_offset">
-                                <span class="component-title">Enable daily search offset</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="${cur_torrent_provider.get_id()}_enable_search_offset" id="${cur_torrent_provider.get_id()}_enable_search_offset" ${'checked="checked"' if cur_torrent_provider.enable_search_offset else ''}/>
-                                    <p>Enable to allow the provider to search early/later compared to the episodes release date.</p>
-                                    <p>For certain untrusworthy providers, you might want to disable this option.</p>
                                 </span>
                             </label>
                         </div>
