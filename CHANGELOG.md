@@ -10,6 +10,7 @@
 - Fixed image cache not properly created from metadata for images other then posters ([#5810](https://github.com/pymedusa/Medusa/pull/5810))
 - Fixed episode status comparison in subtitleMissedPP ([#5813](https://github.com/pymedusa/Medusa/pull/5813))
 - Fixed anidex title parsing ([#5837](https://github.com/pymedusa/Medusa/pull/5837))
+- Fixed saving newznab provider api key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
 
 -----
 
