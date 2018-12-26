@@ -906,6 +906,15 @@ def combine_results(multi_results, single_results):
     """Combine single and multi-episode results, filtering out overlapping results."""
     log.debug(u'Combining single and multi-episode results')
     result_candidates = []
+    return_single_results = []
+    return_multi_results = []
+
+    # Only return one result per episode for the single results and multi-result result_candidates
+    if single_results:
+        return_single_results = []
+        for result in sort_results(single_results):
+            if result.episodes not in [r.episodes for r in return_single_results]:
+                return_single_results.append(result)
 
     multi_results = sort_results(multi_results)
     for candidate in multi_results:
@@ -938,8 +947,8 @@ def combine_results(multi_results, single_results):
         # see how many of the eps that this result covers aren't covered by single results
         needed_eps = []
         not_needed_eps = []
-        for result in single_results:
-            if result in multi_result.episodes:
+        for result in return_single_results:
+            if result.episodes[0] in multi_result.episodes:
                 not_needed_eps.append(result.actual_episode)
             else:
                 needed_eps.append(result.actual_episode)
@@ -951,16 +960,18 @@ def combine_results(multi_results, single_results):
             log.debug(u'All of these episodes were covered by single-episode results,'
                       u' ignoring this multi-episode result')
             continue
+        else:
+            return_multi_results.append(multi_result)
 
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
-            for i, result in enumerate(single_results):
+            for i, result in enumerate(return_single_results):
                 if ep_obj in result.episodes:
                     log.debug(
                         u'A needed multi-episode result overlaps with a single-episode result'
                         u' for episode {0}, removing the single-episode results from the list',
                         ep_obj.episode,
                     )
-                    del single_results[i]
+                    del return_single_results[i]
 
-    return single_results + result_candidates
+    return return_single_results + return_multi_results
