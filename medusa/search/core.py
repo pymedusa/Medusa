@@ -780,7 +780,6 @@ def collect_candidates(found_results, provider, multi_results, single_results, s
                   if result in (SEASON_RESULT, MULTI_EP_RESULT))
     candidates = list(itertools.chain(*candidates))
     if candidates:
-        # FIXME: collect_multi_candidates can potentially result in downloading multiple multi-ep results.
         multi_results += collect_multi_candidates(candidates, series_obj, down_cur_quality)
 
     # Collect candidates for single-episode results
