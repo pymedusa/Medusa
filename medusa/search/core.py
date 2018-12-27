@@ -648,8 +648,6 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     manual_search_results = []
     multi_results = []
     single_results = []
-    cache_multi_results = []
-    cache_single_results = []
 
     # build name cache for show
     name_cache.build_name_cache(series_obj)
@@ -711,13 +709,6 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                         # We're passing the empty lists, because we don't want to include previous candidates
                         cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, [],
                                                                        [], series_obj, down_cur_quality)
-
-                        # # Check if we got any candidates from cache add add them to the list.
-                        # # If we found candidates in cache, we don't need to search the provider.
-                        # if cache_multi:
-                        #     cache_multi_results = cache_multi
-                        # if cache_single:
-                        #     cache_single_results = cache_single
 
                 # For now we only search if we didn't get any results back from cache,
                 # but we might wanna check if there was something useful in cache.
