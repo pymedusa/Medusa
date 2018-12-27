@@ -705,9 +705,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     cache_search_results = cur_provider.search_results_in_cache(episodes)
                     if cache_search_results:
                         # From our provider multi_episode and single_episode results, collect candidates.
-                        found_cache_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
+                        cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, [],
+                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [],
                                                                        [], series_obj, down_cur_quality)
 
                 # For now we only search if we didn't get any results back from cache,
@@ -718,6 +718,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                                                                       down_cur_quality, manual_search, manual_search_type)
                     # Update the list found_results
                     found_results = list_results_for_provider(search_results, found_results, cur_provider)
+                else:
+                    found_results = cache_found_results
 
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
@@ -899,7 +901,6 @@ def combine_results(multi_results, single_results):
     """Combine single and multi-episode results, filtering out overlapping results."""
     log.debug(u'Combining single and multi-episode results')
     result_candidates = []
-    return_multi_results = []
 
     multi_results = sort_results(multi_results)
     for candidate in multi_results:
@@ -928,6 +929,7 @@ def combine_results(multi_results, single_results):
         log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
         result_candidates.append(candidate)
 
+    return_multi_results = []
     for multi_result in result_candidates:
         # see how many of the eps that this result covers aren't covered by single results
         needed_eps = []
@@ -941,12 +943,12 @@ def combine_results(multi_results, single_results):
         log.debug(u'Single-ep check result is needed_eps: {0}, not_needed_eps: {1}',
                   needed_eps, not_needed_eps)
 
-        if not needed_eps:
+        if needed_eps:
+            return_multi_results.append(multi_result)
+        else:
             log.debug(u'All of these episodes were covered by single-episode results,'
                       u' ignoring this multi-episode result')
             continue
-
-        return_multi_results.append(multi_result)
 
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
