@@ -2059,3 +2059,9 @@ class Episode(TV):
                     'filepath': filepath,
                 }
             )
+
+    def __eq__(self, other):
+        """Override default equalize implementation."""
+        return all([self.series.identifier == other.series.identifier,
+                    self.season == other.season,
+                    self.episode == other.episode])
