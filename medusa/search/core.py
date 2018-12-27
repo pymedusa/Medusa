@@ -759,14 +759,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # From our providers multi_episode and single_episode results, collect candidates.
-        # Only collect the candidates if we didn't get any from cache.
-        if not (cache_multi or cache_single):
-            multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                               single_results, series_obj, down_cur_quality)
-        else:
-            multi_results, single_results = collect_candidates(found_results, cur_provider, cache_multi,
-                                                               cache_single, series_obj, down_cur_quality)
+        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
+                                                           single_results, series_obj, down_cur_quality)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -951,8 +945,8 @@ def combine_results(multi_results, single_results):
             log.debug(u'All of these episodes were covered by single-episode results,'
                       u' ignoring this multi-episode result')
             continue
-        else:
-            return_multi_results.append(multi_result)
+
+        return_multi_results.append(multi_result)
 
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
