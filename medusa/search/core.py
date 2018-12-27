@@ -709,15 +709,15 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                         # From our provider multi_episode and single_episode results, collect candidates.
                         found_cache_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, cache_multi,
-                                                                       cache_single, series_obj, down_cur_quality)
+                        cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, [],
+                                                                       [], series_obj, down_cur_quality)
 
-                        # Check if we got any candidates from cache add add them to the list.
-                        # If we found candidates in cache, we don't need to search the provider.
-                        if cache_multi:
-                            cache_multi_results += cache_multi
-                        if cache_single:
-                            cache_single_results += cache_single
+                        # # Check if we got any candidates from cache add add them to the list.
+                        # # If we found candidates in cache, we don't need to search the provider.
+                        # if cache_multi:
+                        #     cache_multi_results = cache_multi
+                        # if cache_single:
+                        #     cache_single_results = cache_single
 
                 # For now we only search if we didn't get any results back from cache,
                 # but we might wanna check if there was something useful in cache.
@@ -770,11 +770,12 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
         # From our providers multi_episode and single_episode results, collect candidates.
         # Only collect the candidates if we didn't get any from cache.
-        if not (cache_multi_results or cache_single_results):
+        if not (cache_multi or cache_single):
             multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
                                                                single_results, series_obj, down_cur_quality)
         else:
-            multi_results, single_results = cache_multi_results, cache_single_results
+            multi_results, single_results = collect_candidates(found_results, cur_provider, cache_multi,
+                                                               cache_single, series_obj, down_cur_quality)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -824,7 +825,13 @@ def list_results_for_provider(search_results, found_results, provider):
 
 
 def collect_single_candidates(candidates, results):
-    """Collect single-episode result candidates."""
+    """
+    Collect single-episode result candidates.
+
+    :param candidates: A list of SearchResult objects we just parsed, which we want to evaluate against the already
+    collected list of results.
+    :param results: The existing list of valid results.
+    """
     single_candidates = list(results)
     new_candidates = []
 
@@ -906,15 +913,6 @@ def combine_results(multi_results, single_results):
     """Combine single and multi-episode results, filtering out overlapping results."""
     log.debug(u'Combining single and multi-episode results')
     result_candidates = []
-    return_single_results = []
-    return_multi_results = []
-
-    # Only return one result per episode for the single results and multi-result result_candidates
-    if single_results:
-        return_single_results = []
-        for result in sort_results(single_results):
-            if result.episodes not in [r.episodes for r in return_single_results]:
-                return_single_results.append(result)
 
     multi_results = sort_results(multi_results)
     for candidate in multi_results:
@@ -947,7 +945,7 @@ def combine_results(multi_results, single_results):
         # see how many of the eps that this result covers aren't covered by single results
         needed_eps = []
         not_needed_eps = []
-        for result in return_single_results:
+        for result in single_results:
             if result.episodes[0] in multi_result.episodes:
                 not_needed_eps.append(result.actual_episode)
             else:
@@ -961,17 +959,17 @@ def combine_results(multi_results, single_results):
                       u' ignoring this multi-episode result')
             continue
         else:
-            return_multi_results.append(multi_result)
+            multi_results.append(multi_result)
 
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
-            for i, result in enumerate(return_single_results):
+            for i, result in enumerate(single_results):
                 if ep_obj in result.episodes:
                     log.debug(
                         u'A needed multi-episode result overlaps with a single-episode result'
                         u' for episode {0}, removing the single-episode results from the list',
                         ep_obj.episode,
                     )
-                    del return_single_results[i]
+                    del single_results[i]
 
-    return return_single_results + return_multi_results
+    return single_results + multi_results
