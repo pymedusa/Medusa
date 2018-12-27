@@ -905,6 +905,7 @@ def combine_results(multi_results, single_results):
     """Combine single and multi-episode results, filtering out overlapping results."""
     log.debug(u'Combining single and multi-episode results')
     result_candidates = []
+    return_multi_results = []
 
     multi_results = sort_results(multi_results)
     for candidate in multi_results:
@@ -951,7 +952,7 @@ def combine_results(multi_results, single_results):
                       u' ignoring this multi-episode result')
             continue
         else:
-            multi_results.append(multi_result)
+            return_multi_results.append(multi_result)
 
         # remove the single result if we're going to get it with a multi-result
         for ep_obj in multi_result.episodes:
@@ -964,4 +965,4 @@ def combine_results(multi_results, single_results):
                     )
                     del single_results[i]
 
-    return single_results + multi_results
+    return single_results + return_multi_results
