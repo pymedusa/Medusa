@@ -6,6 +6,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed saving newznab provider api key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
 
 -----
 
