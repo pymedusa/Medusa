@@ -146,7 +146,7 @@ window.app = new Vue({
                     method: null,
                     path: null,
                     paused: null,
-                    rpcurl: null,
+                    rpcUrl: null,
                     seedLocation: null,
                     seedTime: null,
                     username: null,
@@ -673,7 +673,7 @@ window.app = new Vue({
                                         </config-textbox>
 
                                         <config-textbox v-show="clients.torrents.method === 'transmission'" v-model="clients.torrents.rpcUrl" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' RPC URL'" id="rpcurl_title">
-                                            <p id="rpcurl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
+                                            <p id="rpcUrl_desc_">The path without leading and trailing slashes (e.g. transmission)</p>
                                         </config-textbox>
 
                                         <config-template v-show="!authTypeIsDisabled" label-for="torrent_auth_type" label="Http Authentication">
