@@ -1,6 +1,7 @@
 # coding=utf-8
 
 """Test if a string contains specific words."""
+from __future__ import unicode_literals
 
 
 from medusa.show.naming import contains_words

@@ -20,7 +20,9 @@ def get_win_drives():
 
     drives = []
     bitmask = windll.kernel32.GetLogicalDrives()  # @UndefinedVariable
-    for letter in string.uppercase:
+
+    drive_leters = string.ascii_uppercase
+    for letter in drive_leters:
         if bitmask & 1:
             drives.append(letter)
         bitmask >>= 1

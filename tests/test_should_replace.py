@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
+from __future__ import unicode_literals
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
@@ -538,5 +539,5 @@ def test_should_replace(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual
