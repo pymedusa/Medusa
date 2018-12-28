@@ -146,7 +146,7 @@ window.app = new Vue({
                     method: null,
                     path: null,
                     paused: null,
-                    rpcurl: null,
+                    rpcUrl: null,
                     seedLocation: null,
                     seedTime: null,
                     username: null,
