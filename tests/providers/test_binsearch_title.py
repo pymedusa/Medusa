@@ -1,5 +1,6 @@
 # coding=utf-8
 """Title parse test code for Binsearch Provider."""
+from __future__ import unicode_literals
 
 from medusa.providers.nzb.binsearch import BinSearchProvider
 import pytest

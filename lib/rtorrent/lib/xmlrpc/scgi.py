@@ -28,12 +28,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -81,51 +81,73 @@
 # ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 # OF THIS SOFTWARE.
 
-import httplib
+try:
+    import xmlrpc.client as xmlrpc_client
+    import http.client as http_client
+    from urllib.parse import urlparse
+except ImportError:
+    import xmlrpclib as xmlrpc_client
+    import httplib as http_client
+    from urlparse import urlparse
+
 import re
 import socket
-import urllib
-import xmlrpclib
 import errno
 
 
-class SCGITransport(xmlrpclib.Transport):
+class SCGITransport(xmlrpc_client.Transport):
     # Added request() from Python 2.7 xmlrpclib here to backport to Python 2.6
     def request(self, host, handler, request_body, verbose=0):
-        #retry request once if cached connection has gone cold
+        # retry request once if cached connection has gone cold
         for i in (0, 1):
             try:
                 return self.single_request(host, handler, request_body, verbose)
-            except socket.error, e:
+            except socket.error as e:
                 if i or e.errno not in (errno.ECONNRESET, errno.ECONNABORTED, errno.EPIPE):
                     raise
-            except httplib.BadStatusLine: #close after we sent request
+            except http_client.BadStatusLine:  # close after we sent request
                 if i:
                     raise
 
+    @staticmethod
+    def encode_netstring(input):
+        return str(len(input)).encode() + b':' + input + b','
+
+    @staticmethod
+    def encode_header(key, value):
+        return key + b'\x00' + value + b'\x00'
+
     def single_request(self, host, handler, request_body, verbose=0):
+        """
+        Parts of this file are public domain SCGITransport implementation from:
+        https://github.com/JohnDoee/autotorrent/blob/develop/autotorrent/scgitransport.py
+        """
         # Add SCGI headers to the request.
-        headers = {'CONTENT_LENGTH': str(len(request_body)), 'SCGI': '1'}
-        header = '\x00'.join(('%s\x00%s' % item for item in headers.iteritems())) + '\x00'
-        header = '%d:%s' % (len(header), header)
-        request_body = '%s,%s' % (header, request_body)
+        request = self.encode_header(b'CONTENT_LENGTH', str(len(request_body)).encode())
+        request += self.encode_header(b'SCGI', b'1')
+        request += self.encode_header(b'REQUEST_METHOD', b'POST')
 
         sock = None
 
         try:
             if host:
-                host, port = urllib.splitport(host)
+                parsed_host = urlparse('//' + host)
+                host, port = parsed_host.hostname, parsed_host.port
                 addrinfo = socket.getaddrinfo(host, int(port), socket.AF_INET,
                                               socket.SOCK_STREAM)
                 sock = socket.socket(*addrinfo[0][:3])
                 sock.connect(addrinfo[0][4])
             else:
+                request += self.encode_header(b'REQUEST_URI', handler.encode())
                 sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 sock.connect(handler)
 
+            request = self.encode_netstring(request)
+            request += request_body.encode()
+
             self.verbose = verbose
 
-            sock.send(request_body)
+            sock.send(request)
             return self.parse_response(sock.makefile())
         finally:
             if sock:
@@ -134,19 +156,18 @@ class SCGITransport(xmlrpclib.Transport):
     def parse_response(self, response):
         p, u = self.getparser()
 
-        response_body = ''
+        r = b''
         while True:
             data = response.read(1024)
             if not data:
                 break
-            response_body += data
+            r += data.encode()
 
         # Remove SCGI headers from the response.
-        response_header, response_body = re.split(r'\n\s*?\n', response_body,
-                                                  maxsplit=1)
+        response_header, response_body = re.split(r'\n\s*?\n', r.decode(), maxsplit=1)
 
         if self.verbose:
-            print 'body:', repr(response_body)
+            print('body: {0!r}'.format(response_body))
 
         p.feed(response_body)
         p.close()
@@ -154,13 +175,13 @@ class SCGITransport(xmlrpclib.Transport):
         return u.close()
 
 
-class SCGIServerProxy(xmlrpclib.ServerProxy):
+class SCGIServerProxy(xmlrpc_client.ServerProxy):
     def __init__(self, uri, transport=None, encoding=None, verbose=False,
                  allow_none=False, use_datetime=False):
-        type, uri = urllib.splittype(uri)
-        if type not in ('scgi'):
+        parsed_url = urlparse(uri)
+        if parsed_url.scheme != 'scgi':
             raise IOError('unsupported XML-RPC protocol')
-        self.__host, self.__handler = urllib.splithost(uri)
+        self.__host, self.__handler = parsed_url.netloc, parsed_url.path
         if not self.__handler:
             self.__handler = '/'
 
@@ -178,8 +199,8 @@ class SCGIServerProxy(xmlrpclib.ServerProxy):
     def __request(self, methodname, params):
         # call a method on the remote server
 
-        request = xmlrpclib.dumps(params, methodname, encoding=self.__encoding,
-                                  allow_none=self.__allow_none)
+        request = xmlrpc_client.dumps(params, methodname, encoding=self.__encoding,
+                                      allow_none=self.__allow_none)
 
         response = self.__transport.request(
             self.__host,
@@ -203,7 +224,7 @@ class SCGIServerProxy(xmlrpclib.ServerProxy):
 
     def __getattr__(self, name):
         # magic method dispatcher
-        return xmlrpclib._Method(self.__request, name)
+        return xmlrpc_client._Method(self.__request, name)
 
     # note: to call a remote object with an non-standard name, use
     # result getattr(server, "strange-python-name")(args)
