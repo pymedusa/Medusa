@@ -1119,10 +1119,10 @@ class Series(TV):
                     cached_seasons[cur_season] = cached_show[cur_season]
                 except IndexerSeasonNotFound as error:
                     log.debug(
-                        u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}.'
+                        u'{id}: {error_msg!r} (unaired/deleted) in the indexer {indexer} for {show}.'
                         u' Removing existing records from database', {
                             'id': cur_show_id,
-                            'error_msg': error.message,
+                            'error_msg': error,
                             'indexer': indexerApi(self.indexer).name,
                             'show': cur_show_name,
                         }

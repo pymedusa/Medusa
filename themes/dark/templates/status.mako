@@ -5,6 +5,7 @@
     from medusa.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat
     from random import choice
+    from six import iteritems
 %>
 <%block name="scripts">
 <script type="text/x-template" id="status-template">
@@ -49,14 +50,14 @@
                 </tr>
             </thead>
             <tbody>
-                % for schedulerName, scheduler in schedulerList.iteritems():
+                % for schedulerName, scheduler in iteritems(schedulerList):
                 <% service = getattr(app, scheduler) %>
             <tr>
                 <td>${schedulerName}</td>
-                % if service.isAlive():
-                <td style="background-color:rgb(0, 128, 0);">${service.isAlive()}</td>
+                % if service.is_alive():
+                <td style="background-color:rgb(0, 128, 0);">${service.is_alive()}</td>
                 % else:
-                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
+                <td style="background-color:rgb(255, 0, 0);">${service.is_alive()}</td>
                 % endif
                 % if scheduler == 'backlog_search_scheduler':
                     <% searchQueue = getattr(app, 'search_queue_scheduler') %>
@@ -105,7 +106,7 @@
                 % else:
                 <td></td>
                 % endif
-                <td>${service.lastRun.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
+                <td>${service.lastRun.strftime(dateTimeFormat)}</td>
                 <td>${service.silent}</td>
             </tr>
             <% del service %>
@@ -153,7 +154,7 @@
                         % else:
                             <td>app.show_queue_scheduler.action.currentItem.priority</td>
                         % endif
-                        <td>${app.show_queue_scheduler.action.currentItem.added.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
+                        <td>${app.show_queue_scheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
                         <td>${ShowQueueActions.names[app.show_queue_scheduler.action.currentItem.action_id]}</td>
                     </tr>
                 % endif
@@ -185,7 +186,7 @@
                         % else:
                             <td>${item.priority}</td>
                         % endif
-                        <td>${item.added.strftime(dateTimeFormat).decode(app.SYS_ENCODING)}</td>
+                        <td>${item.added.strftime(dateTimeFormat)}</td>
                         <td>${ShowQueueActions.names[item.action_id]}</td>
                     </tr>
                 % endfor

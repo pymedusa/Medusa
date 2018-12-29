@@ -15,10 +15,10 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
-    RecommendedShow, create_key_from_series, update_recommended_series_cache_index
+    RecommendedShow, create_key_from_series
 )
 
-from six import binary_type, text_type
+from six import text_type
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 
@@ -159,20 +159,18 @@ class TraktPopular(object):
                     if 'show' not in show:
                         show['show'] = show
 
-                    if not_liked_show:
-                        if show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
-                                                           for s in not_liked_show if s['type'] == 'show'):
-                            continue
-                    else:
-                        trending_shows.append(self._create_recommended_show(
-                            show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
-                        ))
+                    if not_liked_show and show['show']['ids']['tvdb'] in (s['show']['ids']['tvdb']
+                                                                          for s in not_liked_show if s['type'] == 'show'):
+                        continue
+
+                    trending_shows.append(self._create_recommended_show(
+                        show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
+                    ))
 
                 except MultipleShowObjectsException:
                     continue
 
             # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-            update_recommended_series_cache_index('trakt', [binary_type(s.series_id) for s in trending_shows])
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
         except TraktException as error:

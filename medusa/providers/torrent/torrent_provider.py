@@ -61,10 +61,6 @@ class TorrentProvider(GenericProvider):
         else:
             size = -1
 
-        # Make sure we didn't select seeds/leechers by accident
-        if not size or size < 1024 * 1024:
-            size = -1
-
         return try_int(size, -1)
 
     def _get_storage_dir(self):

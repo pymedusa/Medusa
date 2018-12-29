@@ -424,7 +424,7 @@ class GenericMetadata(object):
             try:
                 indexer_episode = indexer_series[ep.season][ep.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound) as error:
-                log.debug(u'Unable to find season or episode. Reason: {0!r}', error.message)
+                log.debug(u'Unable to find season or episode. Reason: {0!r}', error)
                 continue
 
             thumb_url = getattr(indexer_episode, 'filename', None)

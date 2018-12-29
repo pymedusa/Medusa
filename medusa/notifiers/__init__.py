@@ -99,7 +99,7 @@ def notify_download(ep_obj):
         try:
             n.notify_download(ep_obj)
         except (RequestException, socket.gaierror, socket.timeout) as error:
-            log.debug(u'Unable to send download notification. Error: {0}', error.message)
+            log.debug(u'Unable to send download notification. Error: {0!r}', error)
 
 
 def notify_subtitle_download(ep_obj, lang):
@@ -107,7 +107,7 @@ def notify_subtitle_download(ep_obj, lang):
         try:
             n.notify_subtitle_download(ep_obj, lang)
         except (RequestException, socket.gaierror, socket.timeout) as error:
-            log.debug(u'Unable to send subtitle download notification. Error: {0}', error.message)
+            log.debug(u'Unable to send subtitle download notification. Error: {0!r}', error)
 
 
 def notify_snatch(ep_obj, result):
@@ -126,7 +126,7 @@ def notify_snatch(ep_obj, result):
         try:
             n.notify_snatch(title, message)
         except (RequestException, socket.gaierror, socket.timeout) as error:
-            log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
+            log.debug(u'Unable to send snatch notification. Error: {0!r}', error)
 
 
 def notify_git_update(new_version=''):
@@ -135,7 +135,7 @@ def notify_git_update(new_version=''):
             try:
                 n.notify_git_update(new_version)
             except (RequestException, socket.gaierror, socket.timeout) as error:
-                log.debug(u'Unable to send new update notification. Error: {0}', error.message)
+                log.debug(u'Unable to send new update notification. Error: {0!r}', error)
 
 
 def notify_login(ipaddress):
@@ -144,4 +144,4 @@ def notify_login(ipaddress):
             try:
                 n.notify_login(ipaddress)
             except (RequestException, socket.gaierror, socket.timeout) as error:
-                log.debug(u'Unable to new login notification. Error: {0}', error.message)
+                log.debug(u'Unable to new login notification. Error: {0!r}', error)

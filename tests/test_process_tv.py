@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/process_tv.py."""
+from __future__ import unicode_literals
 import os
 
 from medusa import app
@@ -155,7 +156,7 @@ def test_paths(monkeypatch, p, create_structure):
         'resource_name': 'show.name.s02e01.webrip.x264-kovalski.nzb',
         'failed': False,
         'expected': [('media/postprocess',
-                      ['sample.mkv', 'show.name.s02e01.webrip.x264-kovalski.mkv']),
+                      ['show.name.s02e01.webrip.x264-kovalski.mkv', 'sample.mkv']),
                      ('media/postprocess/subfolder', ['readme.txt'])
                      ],
         'structure': (
