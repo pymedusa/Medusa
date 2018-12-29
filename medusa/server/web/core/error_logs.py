@@ -141,9 +141,9 @@ class ErrorLogs(WebRoot):
         period = log_periods.get(log_period)
         modification_time = datetime.now() - period if period else None
         data = (html_escape(line) for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
-                                               predicate=lambda l: filter_logline(l, min_level=min_level,
-                                                                                  thread_name=thread_names.get(log_filter, log_filter),
-                                                                                  search_query=log_search)))
+                                                            predicate=lambda l: filter_logline(l, min_level=min_level,
+                                                                                               thread_name=thread_names.get(log_filter, log_filter),
+                                                                                               search_query=log_search)))
 
         if not text_view:
             return t.render(log_lines='\n'.join(data),
