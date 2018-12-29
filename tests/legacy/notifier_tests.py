@@ -20,8 +20,7 @@
 # classes in order to test those classes.  Therefore we will be pylint disable protected-access
 
 """Test notifiers."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 from medusa import db
 from medusa.helper.encoding import ss
@@ -30,6 +29,8 @@ from medusa.notifiers.prowl import Notifier as ProwlNotifier
 from medusa.server.web import Home
 from medusa.tv import Episode, Series
 from tests.legacy import test_lib as test
+
+from six import text_type
 
 
 class NotifierTests(test.AppTestDBCase):
@@ -50,25 +51,25 @@ class NotifierTests(test.AppTestDBCase):
         # one of the DB columns.  Therefore, to test properly, we must create some shows that
         # store emails in the old method (legacy method) and then other shows that will use
         # the new method.
-        for show_counter in range(100, 100 + num_legacy_shows):
+        for show_counter in list(range(100, 100 + num_legacy_shows)):
             show = Series(1, show_counter)
-            show.name = "Show " + str(show_counter)
+            show.name = "Show " + text_type(show_counter)
             show.episodes = []
-            for episode_counter in range(0, num_episodes_per_show):
+            for episode_counter in list(range(0, num_episodes_per_show)):
                 episode = Episode(show, test.SEASON, episode_counter)
-                episode.name = "Episode " + str(episode_counter + 1)
+                episode.name = "Episode " + text_type(episode_counter + 1)
                 episode.quality = "SDTV"
                 show.episodes.append(episode)
             show.save_to_db()
             cls.legacy_shows.append(show)
 
-        for show_counter in range(200, 200 + num_shows):
+        for show_counter in list(range(200, 200 + num_shows)):
             show = Series(1, show_counter)
-            show.name = "Show " + str(show_counter)
+            show.name = "Show " + text_type(show_counter)
             show.episodes = []
-            for episode_counter in range(0, num_episodes_per_show):
+            for episode_counter in list(range(0, num_episodes_per_show)):
                 episode = Episode(show, test.SEASON, episode_counter)
-                episode.name = "Episode " + str(episode_counter + 1)
+                episode.name = "Episode " + text_type(episode_counter + 1)
                 episode.quality = "SDTV"
                 show.episodes.append(episode)
             show.save_to_db()

@@ -8,7 +8,7 @@ import logging
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import try_int
+from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
@@ -83,7 +83,7 @@ class Anizb(NZBProvider):
                                     continue
 
                                 # description = item.find('description')
-                                size = try_int(item.enclosure.get('length', -1))
+                                size = convert_size(item.enclosure.get('length'), default=-1)
 
                                 item = {
                                     'title': title,

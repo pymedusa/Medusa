@@ -17,8 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test snatching."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 
@@ -27,6 +26,9 @@ from medusa.search.core import search_providers
 from medusa.tv import Episode, Series
 
 from tests.legacy import test_lib as test
+
+from six import iteritems
+
 
 TESTS = {
     "Dexter": {"a": 1, "q": common.HD, "s": 5, "e": [7], "b": 'Dexter.S05E07.720p.BluRay.X264-REWARD',
@@ -126,7 +128,7 @@ if __name__ == '__main__':
     # create the test methods
     cur_tvdb_id = 1
     for forceSearch in (True, False):
-        for name, data in TESTS.items():
+        for name, data in iteritems(TESTS):
             if not data["a"]:
                 continue
             filename = name.replace(' ', '_')
