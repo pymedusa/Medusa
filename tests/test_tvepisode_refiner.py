@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.refiners.tv_episode.py."""
+from __future__ import unicode_literals
 
 from medusa.common import DOWNLOADED, Quality
 from medusa.refiners import tv_episode as sut

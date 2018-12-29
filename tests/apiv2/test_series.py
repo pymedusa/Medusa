@@ -1,5 +1,6 @@
 # coding=utf-8
 """Test /show route."""
+from __future__ import unicode_literals
 import json
 
 import pytest

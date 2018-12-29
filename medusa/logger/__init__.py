@@ -80,7 +80,9 @@ def rebuild_censored_list():
     for value in itervalues(censored_items):
         if not value:
             continue
-        if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
+
+        if isinstance(value, collections.Iterable) and not isinstance(
+                value, (string_types, bytes, bytearray)):
             for item in value:
                 if item and item != '0':
                     results.add(item)
@@ -202,53 +204,91 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
-    """A generator that returns the lines of a file in reverse order.
-
-    Thanks to Andomar: http://stackoverflow.com/a/23646049
-
-    :param filename:
-    :type filename: str
-    :param encoding:
-    :type encoding: str
-    :param buf_size:
-    :return:
-    :rtype: collections.Iterable of str
+def blocks_r(file_obj, size=64 * 1024, reset_offset=True, encoding=None):
     """
-    new_line = '\n'
-    with io.open(filename, 'rb') as fh:
-        segment = None
-        offset = 0
-        fh.seek(0, os.SEEK_END)
-        file_size = remaining_size = fh.tell()
-        while remaining_size > 0:
-            offset = min(file_size, offset + buf_size)
-            fh.seek(file_size - offset)
-            buf = fh.read(min(remaining_size, buf_size))
-            if os.name == 'nt':
-                buf = buf.decode(encoding, errors='replace')
-            if not isinstance(buf, text_type):
-                buf = text_type(buf, errors='replace')
-            remaining_size -= buf_size
-            lines = buf.split(new_line)
-            # the first line of the buffer is probably not a complete line so
-            # we'll save it and append it to the last line of the next buffer
-            # we read
-            if segment is not None:
-                # if the previous chunk starts right from the beginning of line
-                # do not concact the segment to the last line of new chunk
-                # instead, yield the segment first
-                if buf[-1] is not new_line:
-                    lines[-1] += segment
-                else:
-                    yield segment
-            segment = lines[0]
-            for index in range(len(lines) - 1, 0, -1):
-                if len(lines[index]):
-                    yield lines[index]
-        # Don't yield None if the file was empty
-        if segment is not None:
-            yield segment
+    Yields the data within a file in reverse-ordered blocks of given size.
+
+    This code is part of the flyingcircus package: https://pypi.org/project/flyingcircus/
+    All credits go to the original author.
+
+    Note that:
+     - the content of the block is NOT reversed.
+     - if the file is open in text mode, the actual size of the block may be
+       shorter for multi-byte encodings (such as `utf8`, which is the default).
+
+    Args:
+        file_obj (file): The input file.
+        size (int|None): The block size.
+            If int, the file is yielded in blocks of the specified size.
+            If None, the file is yielded at once.
+        reset_offset (bool): Reset the file offset.
+            If True, starts reading from the end of the file.
+            Otherwise, starts reading from where the file current position is.
+        encoding (str|None): The encoding for correct block size computation.
+            If `str`, must be a valid string encoding.
+            If None, the default encoding is used.
+
+    Yields:
+        block (bytes|str): The data within the blocks.
+
+    """
+    offset = 0
+    if reset_offset:
+        file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
+    else:
+        file_size = remaining_size = file_obj.tell()
+    rounding = 0
+    while remaining_size > 0:
+        offset = min(file_size, offset + size)
+        file_obj.seek(file_size - offset)
+        block = file_obj.read(min(remaining_size, size))
+        if not isinstance(block, bytes):
+            real_size = len(
+                block.encode(encoding) if encoding else block.encode())
+            rounding = len(block) - real_size
+        remaining_size -= size
+        yield block[:len(block) + rounding] if rounding else block
+
+
+def reverse_readlines(filename, skip_empty=True, append_newline=False, block_size=512 * 1024,
+                      reset_offset=True, encoding=default_encoding):
+    """
+    Flexible function for reversing read lines incrementally.
+
+    This code is part of the flyingcircus package: https://pypi.org/project/flyingcircus/
+    The code was adapted for our use case.
+    All credits go to the original author.
+
+    Args:
+        filename (str): The input file name.
+        skip_empty (bool): Skip empty lines.
+        append_newline (bool):
+        block_size (int|None): The block size.
+            If int, the file is processed in blocks of the specified size.
+            If None, the file is processed at once.
+
+    Yields:
+        line (str): The next line.
+
+    """
+    with io.open(filename, 'r', encoding=encoding) as fo:
+        newline = '\n'
+        empty = ''
+        remainder = empty
+        block_generator_kws = dict(size=block_size, reset_offset=reset_offset)
+        block_generator = blocks_r
+        block_generator_kws.update(dict(encoding=encoding))
+        for block in block_generator(fo, **block_generator_kws):
+            lines = block.split(newline)
+            if remainder:
+                lines[-1] = lines[-1] + remainder
+            remainder = lines[0]
+            mask = slice(-1, 0, -1)
+            for line in lines[mask]:
+                if line or not skip_empty:
+                    yield line + (newline if append_newline else empty)
+        if remainder or not skip_empty:
+            yield remainder + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):

@@ -17,8 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test show database functionality."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import threading
 
@@ -51,6 +50,6 @@ class DBMultiTests(test.AppTestDBCase):
 
     def test_threaded(self):
         """Test multi-threaded selection from the database."""
-        for _ in range(4):
+        for _ in list(range(4)):
             thread = threading.Thread(target=self.select)
             thread.start()
