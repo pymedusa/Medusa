@@ -23,6 +23,8 @@ const setCsstheme = theme => {
 /**
  * Compressing and copying images to their destinations.
  * Should save up to 50% of total filesize.
+ *
+ * @returns {NodeJS.ReadWriteStream} stream
  */
 const moveImages = () => {
     const dest = `${buildDest}/assets/img`;
