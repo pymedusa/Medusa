@@ -210,7 +210,7 @@ class Series(TV):
         self.season_folders = season_folders or int(app.SEASON_FOLDERS_DEFAULT)
         self.status = 'Unknown'
         self._airs = ''
-        # The offset in ours, for when we want to start searching episodes for this show. -1 is search 1 hour early. 1, 1 hour later.
+        # Amount of hours we want to start searching early (-1) or late (1) for new episodes
         self.airdate_offset = 0
         self.start_year = 0
         self.paused = 0

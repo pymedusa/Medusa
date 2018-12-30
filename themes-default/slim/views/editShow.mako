@@ -351,8 +351,8 @@ window.app = new Vue({
                             </div>
                         </div>
 
-                        <config-textbox-number :min.number="-168" :max.number="168" :step.number="1" v-model="series.config.airdateOffset" 
-                            label="Airdate Offset" id="airdate_offset" :explanations="['Amount of hours we want to start searching early (-1) or later (1) for new episodes.',
+                        <config-textbox-number :min.number="-168" :max.number="168" :step.number="1" v-model="series.config.airdateOffset"
+                            label="Airdate offset" id="airdate_offset" :explanations="['Amount of hours we want to start searching early (-1) or late (1) for new episodes.',
                              'This only applies to daily searches.']">
                         </config-textbox-number>
 

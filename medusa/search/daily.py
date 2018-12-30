@@ -30,7 +30,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class DailySearcher(object):  # pylint:disable=too-few-public-methods
+class DailySearcher(object):
     """Daily search class."""
 
     def __init__(self):
@@ -38,7 +38,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         self.lock = threading.Lock()
         self.amActive = False
 
-    def run(self, force=False):  # pylint:disable=too-many-branches
+    def run(self, force=False):
         """
         Run the daily searcher, queuing selected episodes for search.
 
@@ -59,19 +59,19 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if not network_dict:
             update_network_dict()
 
-        # The tvshows airddate_offset field is used to configure a search offset for specific shows.
-        # This way we can search/accept results early or later, depending on the value.
+        # The tvshows airdate_offset field is used to configure a search offset for specific shows.
+        # This way we can search/accept results early or late, depending on the value.
         main_db_con = DBConnection()
         min_offset_show = main_db_con.select(
             'SELECT COUNT(*) as offsets, MIN(airdate_offset) AS min_offset '
             'FROM tv_shows '
-            'WHERE paused = 0 AND airdate_offset < 0 '
+            'WHERE paused = 0 AND airdate_offset < 0'
         )
         additional_search_offset = 0
-        if min_offset_show[0]['offsets'] > 0:
+        if min_offset_show and min_offset_show[0]['offsets'] > 0:
             additional_search_offset = int(ceil(abs(min_offset_show[0]['min_offset']) / 24.0))
-            log.debug('Using an airdate offset of {min_offset_show} as we found show(s) with an airdate offset configured.',
-                      {'min_offset_show': min_offset_show[0]['min_offset']})
+            log.debug('Using an airdate offset of {min_offset_show} as we found show(s) with an airdate'
+                      ' offset configured.', {'min_offset_show': min_offset_show[0]['min_offset']})
 
         cur_time = datetime.now(app_timezone)
 
@@ -114,10 +114,10 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
                 if series_obj.airdate_offset != 0:
                     log.debug(
-                        '{show}: Applying an airdate offset for the episode: {episode} of {offset!r} hours',
+                        '{show}: Applying an airdate offset for the episode: {episode} of {offset} hours',
                         {'show': series_obj.name, 'episode': cur_ep.pretty_name(), 'offset': series_obj.airdate_offset})
 
-                # filter out any episodes that haven't finished airing yet,
+                # filter out any episodes that haven't finished airing yet
                 if end_time + timedelta(hours=series_obj.airdate_offset) > cur_time:
                     continue
 
