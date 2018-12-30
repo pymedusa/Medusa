@@ -4,7 +4,7 @@ git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f
 beautifulsoup4==4.6.3
 bencode.py==2.0.0
 CacheControl==0.12.5
-certifi==2018.10.15
+certifi==2018.11.29
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
@@ -35,9 +35,9 @@ rarfile==3.0
 rebulk==1.0.0
 requests==2.21.0
 requests-oauthlib==1.0.0
-six==1.11.0
+six==1.12.0
 stevedore==1.30.0
-git+https://github.com/pymedusa/subliminal.git@78687f45d23b1bc47fae0a5493be0198dc1fd5b5#egg=subliminal
+git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
 validators==0.12.3

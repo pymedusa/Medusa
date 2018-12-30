@@ -19,8 +19,7 @@
 # pylint: disable=line-too-long
 
 """Create a test database for testing."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import os.path
 import shutil
@@ -33,6 +32,8 @@ from medusa.databases import cache_db, failed_db, main_db
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.tv import Episode, cache
 
+from six import text_type
+
 # =================
 #  test globals
 # =================
@@ -44,7 +45,7 @@ TEST_FAILED_DB_NAME = "failed.db"
 SHOW_NAME = u"show name"
 SEASON = 4
 EPISODE = 2
-FILENAME = u"show name - s0" + str(SEASON) + "e0" + str(EPISODE) + ".mkv"
+FILENAME = u"show name - s0" + text_type(SEASON) + "e0" + text_type(EPISODE) + ".mkv"
 FILE_DIR = os.path.join(TEST_DIR, SHOW_NAME)
 FILE_PATH = os.path.join(FILE_DIR, FILENAME)
 SHOW_DIR = os.path.join(TEST_DIR, SHOW_NAME + " final")
@@ -169,7 +170,7 @@ class TestCacheDBConnection(TestDBConnection, object):
         # pylint: disable=broad-except
         # Catching too general exception
         except Exception as error:
-            if str(error) != "table [" + provider_name + "] already exists":
+            if text_type(error) != "table [" + provider_name + "] already exists":
                 raise
 
             # add version column to table if missing
@@ -184,7 +185,7 @@ class TestCacheDBConnection(TestDBConnection, object):
         # pylint: disable=broad-except
         # Catching too general exception
         except Exception as error:
-            if str(error) != "table lastUpdate already exists":
+            if text_type(error) != "table lastUpdate already exists":
                 raise
 
 
@@ -217,16 +218,6 @@ def teardown_test_db():
     from medusa.db import db_cons
     for connection in db_cons:
         db_cons[connection].commit()
-    #     db_cons[connection].close()
-    #
-    # for current_db in [ TEST_DB_NAME, TEST_CACHE_DB_NAME, TEST_FAILED_DB_NAME ]:
-    #    file_name = os.path.join(TEST_DIR, current_db)
-    #    if os.path.exists(file_name):
-    #        try:
-    #            os.remove(file_name)
-    #        except Exception as e:
-    #            print('ERROR: Failed to remove ' + file_name)
-    #            print(exception(e))
 
 
 def setup_test_episode_file():
@@ -236,12 +227,11 @@ def setup_test_episode_file():
 
     try:
         with open(FILE_PATH, 'wb') as ep_file:
-            ep_file.write("foo bar")
+            ep_file.write('foo bar')
             ep_file.flush()
-    # pylint: disable=broad-except
     # Catching too general exception
     except Exception:
-        print("Unable to set up test episode")
+        print('Unable to set up test episode')
         raise
 
 

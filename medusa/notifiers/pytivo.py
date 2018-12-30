@@ -7,13 +7,10 @@ import os
 from builtins import object
 
 from medusa import app
-from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
-from requests.compat import urlencode
-
-from six.moves.urllib.error import HTTPError
-from six.moves.urllib.request import Request, urlopen
+import requests
+from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -75,24 +72,23 @@ class Notifier(object):
         filename = '/' + absPath.replace(root, '')
 
         # Finally create the url and make request
-        requestUrl = 'http://' + host + '/TiVoConnect?' + urlencode(
-            {'Command': 'Push', 'Container': container, 'File': filename, 'tsn': tsn})
+        request_url = 'http://{host}/TiVoConnect'.format(host=host)
+        params = {'Command': 'Push', 'Container': container, 'File': filename, 'tsn': tsn}
 
-        log.debug(u'pyTivo notification: Requesting {0}', requestUrl)
-
-        request = Request(requestUrl)
+        log.debug(u'pyTivo notification: Requesting {0}', request_url)
 
         try:
-            urlopen(request)
-        except HTTPError as e:
-            if hasattr(e, 'reason'):
-                log.error(u'pyTivo notification: Error, failed to reach a server - {0}', e.reason)
+            r = requests.get(request_url, params=params)
+            r.raise_for_status()
+        except RequestException as error:
+            if hasattr(error, 'response'):
+                if hasattr(error.response, 'reason'):
+                    log.error(u'pyTivo notification: Error, failed to reach a server - {0}', error.response.reason)
+                elif hasattr(error.response, 'status_code'):
+                    log.error(u'pyTivo notification: Error, the server could not fulfill the request - {0}', error.response.status_code)
                 return False
-            elif hasattr(e, 'code'):
-                log.error(u'pyTivo notification: Error, the server could not fulfill the request - {0}', e.code)
-            return False
-        except Exception as e:
-            log.error(u'PYTIVO: Unknown exception: {0}', ex(e))
+        except Exception as error:
+            log.error(u'PYTIVO: Unknown exception: {0!r}', error)
             return False
         else:
             log.info(u'pyTivo notification: Successfully requested transfer of file')
