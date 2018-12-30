@@ -34,7 +34,7 @@
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | ext | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.2](https://pypi.org/project/jsonrpclib-pelix/0.3.2/) | **`medusa`** | ext | Module: `jsonrpclib`
-:: | `PyJWT` | [1.6.4](https://pypi.org/project/pyjwt/1.6.4/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
+:: | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
 :: | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | ext | -
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
 :: | `Mako` | [1.0.7](https://pypi.org/project/mako/1.0.7/) | **`medusa`** | ext | Module: `mako`
