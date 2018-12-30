@@ -36,7 +36,7 @@ class LimeTorrentsProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://www.limetorrents.cc'
+        self.url = 'https://www.limetorrents.info'
         self.urls = {
             'update': urljoin(self.url, '/post/updatestats.php'),
             'search': urljoin(self.url, '/search/tv/{query}/'),

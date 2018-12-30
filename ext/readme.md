@@ -14,7 +14,7 @@
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | ext | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | ext | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
-:: | <code><b>configparser</b>.py</code><br>`configparser.pth`<br>`backports.configparser` | [3.5.0](https://pypi.org/project/configparser/3.5.0/) | `adba` | ext | `configparser.pth` was renamed from `configparser-3.5.0-py2.7-nspkg.pth`
+:: | <code><b>configparser</b>.py</code><br>`configparser.pth`<br>`backports.configparser` | [3.5.0](https://pypi.org/project/configparser/3.5.0/) | `adba` | **ext2** | `configparser.pth` was renamed from `configparser-3.5.0-py2.7-nspkg.pth`
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `validators` | ext | -
 :: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | ext | -
@@ -55,9 +55,9 @@
 :: | `requests-oauthlib` | [1.0.0](https://pypi.org/project/requests-oauthlib/1.0.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
-:: | <code><b>six</b>.py</code> | [1.11.0](https://pypi.org/project/six/1.11.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
+:: | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
 :: | `stevedore` | [1.30.0](https://pypi.org/project/stevedore/1.30.0/) | `subliminal` | ext | -
-:: | `subliminal` | pymedusa/[78687f4](https://github.com/pymedusa/subliminal/tree/78687f45d23b1bc47fae0a5493be0198dc1fd5b5) | **`medusa`** | ext | -
+:: | `subliminal` | pymedusa/[ad44797](https://github.com/pymedusa/subliminal/tree/ad4479723f3e60de3f544147c9c5d6dd45397f7e) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -

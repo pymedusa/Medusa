@@ -7,12 +7,13 @@ import base64
 import collections
 import json
 import logging
-import operator
+import sys
 import traceback
 from builtins import object
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
+from functools import partial
 
 from babelfish.language import Language
 
@@ -32,7 +33,11 @@ from tornado.web import RequestHandler
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+# Python 3.5 doesn't support thread_name_prefix
+if sys.version_info[:2] == (3, 5):
+    executor = ThreadPoolExecutor()
+else:
+    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
 
 class BaseRequestHandler(RequestHandler):
@@ -330,8 +335,11 @@ class BaseRequestHandler(RequestHandler):
             self._raise_bad_request_error('Invalid limit parameter')
 
     def _paginate(self, data=None, data_generator=None, sort=None):
-        arg_page = self._get_page()
-        arg_limit = self._get_limit()
+        try:
+            arg_page = self._get_page()
+            arg_limit = self._get_limit()
+        except HTTPError as error:
+            return self._bad_request(error.message)
 
         headers = {
             'X-Pagination-Page': arg_page,
@@ -350,9 +358,15 @@ class BaseRequestHandler(RequestHandler):
             end = start + arg_limit
             results = data
             if arg_sort:
+                # Compare to earliest datetime instead of None
+                def safe_compare(field, results):
+                    if field == 'airDate' and results[field] is None:
+                        return text_type(datetime.min)
+                    return results[field]
+
                 try:
                     for field, reverse in reversed(arg_sort):
-                        results = sorted(results, key=operator.itemgetter(field), reverse=reverse)
+                        results = sorted(results, key=partial(safe_compare, field), reverse=reverse)
                 except KeyError:
                     return self._bad_request('Invalid sort query parameter')
 

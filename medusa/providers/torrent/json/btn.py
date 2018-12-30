@@ -16,7 +16,7 @@ from medusa import (
     tv,
 )
 from medusa.common import cpu_presets
-from medusa.helper.common import episode_num
+from medusa.helper.common import convert_size, episode_num
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -141,8 +141,8 @@ class BTNProvider(TorrentProvider):
             if not all([title, download_url]):
                 continue
 
-            seeders = row.get('Seeders', 1)
-            leechers = row.get('Leechers', 0)
+            seeders = int(row.get('Seeders', 1))
+            leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
@@ -151,7 +151,7 @@ class BTNProvider(TorrentProvider):
                           title, seeders)
                 continue
 
-            size = row.get('Size') or -1
+            size = convert_size(row.get('Size'), default=-1)
 
             pubdate_raw = row.get('Time')
             pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)

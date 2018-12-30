@@ -2,7 +2,11 @@ import os
 import platform
 
 from collections import defaultdict
-from itertools import imap
+
+try:
+    import itertools.imap as map
+except ImportError:
+    pass
 
 from synchronousdeluge.exceptions import DelugeRPCError
 from synchronousdeluge.protocol import DelugeRPCRequest, DelugeRPCResponse
@@ -29,20 +33,23 @@ class DelugeClient(object):
         if platform.system() in ('Windows', 'Microsoft'):
             appDataPath = os.environ.get("APPDATA")
             if not appDataPath:
-                import _winreg
-                hkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders")
-                appDataReg = _winreg.QueryValueEx(hkey, "AppData")
+                try:
+                    import winreg
+                except ImportError:
+                    import _winreg as winreg
+
+                hkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders")
+                appDataReg = winreg.QueryValueEx(hkey, "AppData")
                 appDataPath = appDataReg[0]
-                _winreg.CloseKey(hkey)
+                winreg.CloseKey(hkey)
 
             auth_file = os.path.join(appDataPath, "deluge", "auth")
         else:
             from xdg.BaseDirectory import save_config_path
             try:
                 auth_file = os.path.join(save_config_path("deluge"), "auth")
-            except OSError, e:
+            except OSError:
                 return username, password
-
 
         if os.path.exists(auth_file):
             for line in open(auth_file):
@@ -52,7 +59,7 @@ class DelugeClient(object):
                 line = line.strip()
                 try:
                     lsplit = line.split(":")
-                except Exception, e:
+                except Exception:
                     continue
 
                 if len(lsplit) == 2:
@@ -73,7 +80,7 @@ class DelugeClient(object):
         def func(obj, *args, **kwargs):
             return self.remote_call(fullname, *args, **kwargs)
 
-        func.__name__ = method
+        func.__name__ = str(method)
 
         return func
 
@@ -82,9 +89,9 @@ class DelugeClient(object):
 
         methods = self.remote_call("daemon.get_method_list").get()
         methodmap = defaultdict(dict)
-        splitter = lambda v: v.split(".")
+        text_splitter = lambda v: v.decode().split(".")
 
-        for module, method in imap(splitter, methods):
+        for module, method in map(text_splitter, methods):
             methodmap[module][method] = self._create_module_method(module, method)
 
         for module, methods in methodmap.items():
@@ -120,7 +127,7 @@ class DelugeClient(object):
             request_id = message[1]
             value = message[2]
 
-            if request_id == self._request_counter :
+            if request_id == self._request_counter:
                 if message_type == RPC_RESPONSE:
                     response.set(value)
                 elif message_type == RPC_ERROR:
@@ -159,4 +166,3 @@ class DelugeClient(object):
     def disconnect(self):
         """Disconnects from the daemon."""
         self.transfer.disconnect()
-

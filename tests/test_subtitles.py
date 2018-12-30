@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.subtitles.py."""
+from __future__ import unicode_literals
 import os
 import subprocess
 import sys
@@ -12,6 +13,8 @@ import pytest
 
 from subliminal.core import ProviderPool
 from subliminal.subtitle import Subtitle
+
+from six import text_type
 
 
 def test_sorted_service_list(monkeypatch):
@@ -407,7 +410,7 @@ def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):
 
 def test_get_subtitles_dir__absolute_subtitles_dir(monkeypatch, tmpdir):
     # Given
-    expected = str(tmpdir.ensure('subtitles'))
+    expected = text_type(tmpdir.ensure('subtitles'))
     monkeypatch.setattr(app, 'SUBTITLES_DIR', expected)
     video_path = '/somefolder/subfolder/video.mkv'
 
@@ -423,8 +426,8 @@ def test_get_subtitles_dir__relative_subtitles_dir(monkeypatch, tmpdir):
     relative_folder = 'subtitles'
     monkeypatch.setattr(app, 'SYS_ENCODING', sys.getdefaultencoding())
     monkeypatch.setattr(app, 'SUBTITLES_DIR', relative_folder)
-    video_path = str(tmpdir.ensure('video.mkv'))
-    expected = os.path.join(str(tmpdir), 'subtitles')
+    video_path = text_type(tmpdir.ensure('video.mkv'))
+    expected = os.path.join(text_type(tmpdir), 'subtitles')
 
     # When
     actual = sut.get_subtitles_dir(video_path)
@@ -439,15 +442,15 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', True)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', True)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_eng = str(tmpdir.ensure('video.en.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
-    some_file = str(tmpdir.ensure('video.fr.nfo'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_eng = text_type(tmpdir.ensure('video.en.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
+    some_file = text_type(tmpdir.ensure('video.fr.nfo'))
 
     # When
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_pob)
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_eng)
-    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_fre)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_pob)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_eng)
+    sut.delete_unwanted_subtitles(text_type(tmpdir), subtitle_fre)
 
     # Then
     assert os.path.exists(subtitle_pob)
@@ -461,8 +464,8 @@ def test_delete_unwanted_subtitles__multi_disabled(monkeypatch, tmpdir):
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', False)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', True)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
 
     # When
     sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
@@ -478,8 +481,8 @@ def test_delete_unwanted_subtitles__keep_only_wanted_disabled(monkeypatch, tmpdi
     monkeypatch.setattr(app, 'SUBTITLES_MULTI', True)
     monkeypatch.setattr(app, 'SUBTITLES_KEEP_ONLY_WANTED', False)
     monkeypatch.setattr(app, 'SUBTITLES_LANGUAGES', ['pob', 'eng'])
-    subtitle_pob = str(tmpdir.ensure('video.pt-BR.srt'))
-    subtitle_fre = str(tmpdir.ensure('video.fr.srt'))
+    subtitle_pob = text_type(tmpdir.ensure('video.pt-BR.srt'))
+    subtitle_fre = text_type(tmpdir.ensure('video.fr.srt'))
 
     # When
     sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
@@ -561,7 +564,7 @@ def test_download_subtitles(monkeypatch, tmpdir, video, tvshow, create_sub, crea
     # Given
     subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['list_subtitles']]
     best_subtitles = [create_sub(language=code, id=sid, content=content) for sid, code, content in p['best_subtitles']]
-    video_path = str(tmpdir.ensure(video.name))
+    video_path = text_type(tmpdir.ensure(video.name))
     tvepisode = create_tvepisode(series=tvshow, season=3, episode=4, subtitles=p['existing_subtitles'])
     external_subtitles = p['external_subtitles']
     embedded_subtitles = p['embedded_subtitles'] if p['embedded_subtitles'] is not None else True
