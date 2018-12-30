@@ -14,7 +14,6 @@ from collections import Mapping
 
 import dredd_hooks as hooks
 
-import six
 from six import string_types
 from six.moves.configparser import RawConfigParser
 from six.moves.urllib.parse import parse_qs, urlencode, urlparse
@@ -172,7 +171,7 @@ def start():
     config.set('General', 'web_username', stash['web-username'])
     config.set('General', 'web_password', stash['web-password'])
     config.set('General', 'api_key', stash['api-key'])
-    with io.open('config.ini', 'w' if six.PY3 else 'wb') as configfile:
+    with io.open('config.ini', 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
     sys.path.insert(1, app_dir)
