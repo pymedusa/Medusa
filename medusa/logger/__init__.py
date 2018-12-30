@@ -68,7 +68,6 @@ LOGGING_LEVELS = {
 }
 
 FORMATTER_PATTERN = '%(asctime)s %(levelname)-8s %(threadName)s :: [%(curhash)s] %(message)s'
-default_encoding = 'utf-8'
 censored_items = {}
 censored = []
 
@@ -92,13 +91,13 @@ def rebuild_censored_list():
     def quote_unicode(value):
         """Quote a unicode value by encoding it to bytes first."""
         if isinstance(value, text_type):
-            return quote(value.encode(default_encoding, 'replace'))
+            return quote(value.encode('utf-8', 'replace'))
         return quote(value)
 
     # set of censored items and urlencoded counterparts
     results |= {quote_unicode(item) for item in results}
     # convert set items to unicode and typecast to list
-    results = list({item.decode(default_encoding, 'replace')
+    results = list({item.decode('utf-8', 'replace')
                     if not isinstance(item, text_type) else item for item in results})
     # sort the list in order of descending length so that entire item is censored
     # e.g. password and password_1 both get censored instead of getting ********_1
@@ -204,54 +203,47 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(file_obj, size=64 * 1024, reset_offset=True, encoding=None):
+def blocks_r(filename, size=64 * 1024, reset_offset=True):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
     This code is part of the flyingcircus package: https://pypi.org/project/flyingcircus/
+    The code was adapted for our use case.
     All credits go to the original author.
 
     Note that:
      - the content of the block is NOT reversed.
-     - if the file is open in text mode, the actual size of the block may be
-       shorter for multi-byte encodings (such as `utf8`, which is the default).
 
     Args:
-        file_obj (file): The input file.
+        filename (str): The input file name.
         size (int|None): The block size.
             If int, the file is yielded in blocks of the specified size.
             If None, the file is yielded at once.
         reset_offset (bool): Reset the file offset.
             If True, starts reading from the end of the file.
             Otherwise, starts reading from where the file current position is.
-        encoding (str|None): The encoding for correct block size computation.
-            If `str`, must be a valid string encoding.
-            If None, the default encoding is used.
 
     Yields:
-        block (bytes|str): The data within the blocks.
+        block (bytes): The data within the blocks.
 
     """
-    offset = 0
-    if reset_offset:
-        file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
-    else:
-        file_size = remaining_size = file_obj.tell()
-    rounding = 0
-    while remaining_size > 0:
-        offset = min(file_size, offset + size)
-        file_obj.seek(file_size - offset)
-        block = file_obj.read(min(remaining_size, size))
-        if not isinstance(block, bytes):
-            real_size = len(
-                block.encode(encoding) if encoding else block.encode())
-            rounding = len(block) - real_size
-        remaining_size -= size
-        yield block[:len(block) + rounding] if rounding else block
+    with io.open(filename, 'rb') as file_obj:
+        offset = 0
+        if reset_offset:
+            file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
+        else:
+            file_size = remaining_size = file_obj.tell()
+        rounding = 0
+        while remaining_size > 0:
+            offset = min(file_size, offset + size)
+            file_obj.seek(file_size - offset)
+            block = file_obj.read(min(remaining_size, size))
+            remaining_size -= size
+            yield block[:len(block) + rounding] if rounding else block
 
 
 def reverse_readlines(filename, skip_empty=True, append_newline=False, block_size=512 * 1024,
-                      reset_offset=True, encoding=default_encoding):
+                      reset_offset=True, encoding='utf-8'):
     """
     Flexible function for reversing read lines incrementally.
 
@@ -266,29 +258,33 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
         block_size (int|None): The block size.
             If int, the file is processed in blocks of the specified size.
             If None, the file is processed at once.
+        reset_offset (bool): Reset the file offset.
+            If True, starts reading from the end of the file.
+            Otherwise, starts reading from where the file current position is.
+        encoding (str|None): The encoding for correct block size computation.
+            If `str`, must be a valid string encoding.
+            If None, the default encoding is used.
 
     Yields:
         line (str): The next line.
 
     """
-    with io.open(filename, 'r', encoding=encoding) as fo:
-        newline = '\n'
-        empty = ''
-        remainder = empty
-        block_generator_kws = dict(size=block_size, reset_offset=reset_offset)
-        block_generator = blocks_r
-        block_generator_kws.update(dict(encoding=encoding))
-        for block in block_generator(fo, **block_generator_kws):
-            lines = block.split(newline)
-            if remainder:
-                lines[-1] = lines[-1] + remainder
-            remainder = lines[0]
-            mask = slice(-1, 0, -1)
-            for line in lines[mask]:
-                if line or not skip_empty:
-                    yield line + (newline if append_newline else empty)
-        if remainder or not skip_empty:
-            yield remainder + (newline if append_newline else empty)
+    newline = '\n'
+    empty = ''
+    remainder = empty
+    block_generator_kws = dict(size=block_size, reset_offset=reset_offset)
+    block_generator = blocks_r
+    for block in block_generator(filename, **block_generator_kws):
+        lines = block.decode(encoding).split(newline)
+        if remainder:
+            lines[-1] = lines[-1] + remainder
+        remainder = lines[0]
+        mask = slice(-1, 0, -1)
+        for line in lines[mask]:
+            if line or not skip_empty:
+                yield line + (newline if append_newline else empty)
+    if remainder or not skip_empty:
+        yield remainder + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
@@ -579,7 +575,7 @@ class CensoredFormatter(logging.Formatter, object):
     # Needed because Newznab apikey isn't stored as key=value in a section.
     apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
 
-    def __init__(self, fmt=None, datefmt=None, encoding=default_encoding):
+    def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
         """Constructor."""
         super(CensoredFormatter, self).__init__(fmt, datefmt)
         self.encoding = encoding
@@ -687,7 +683,7 @@ class Logger(object):
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
         if not self.file_handler or self.log_file != target_file or self.file_handler.backupCount != target_number or self.file_handler.maxBytes != target_size:
-            file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding=default_encoding)
+            file_handler = RotatingFileHandler(target_file, maxBytes=target_size, backupCount=target_number, encoding='utf-8')
             file_handler.setFormatter(CensoredFormatter(FORMATTER_PATTERN, dateTimeFormat))
             file_handler.setLevel(self.log_level)
 

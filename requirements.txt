@@ -4,14 +4,14 @@ git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f
 beautifulsoup4==4.6.3
 bencode.py==2.0.0
 CacheControl==0.12.5
-certifi==2018.10.15
+certifi==2018.11.29
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
 configparser==3.5.0
 contextlib2==0.5.5 ; python_version < '3.5'
 dirtyjson==1.0.7
-dogpile.cache==0.6.7
+dogpile.cache==0.7.1
 git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
 git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
 future==0.17.1
@@ -24,11 +24,11 @@ jsonrpclib-pelix==0.3.2
 knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
-markdown2==2.3.6
+markdown2==2.3.7
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
-PyGithub==1.43.3
-PyJWT==1.6.4
+PyGithub==1.43.4
+PyJWT==1.7.1
 python-dateutil==2.7.5
 python-twitter==3.5
 rarfile==3.0
