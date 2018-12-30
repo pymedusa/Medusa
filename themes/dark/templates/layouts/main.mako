@@ -172,7 +172,6 @@
                 });
 
                 // Global components
-                Vue.use(ToggleButton);
                 Vue.use(Snotify);
                 Vue.component('truncate', Truncate);
             }

@@ -446,7 +446,7 @@ def wanted_episodes(series_obj, from_date):
         'WHERE indexer = ? '
         ' AND showid = ?'
         ' AND season > 0'
-        ' and airdate > ?',
+        ' AND airdate > ?',
         [series_obj.indexer, series_obj.series_id, from_date.toordinal()]
     )
 
