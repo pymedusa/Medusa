@@ -38,7 +38,7 @@
 :: | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | ext | -
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
 :: | `Mako` | [1.0.7](https://pypi.org/project/mako/1.0.7/) | **`medusa`** | ext | Module: `mako`
-:: | <code><b>markdown2</b>.py</code> | [2.3.6](https://pypi.org/project/markdown2/2.3.6/) | **`medusa`** | ext | -
+:: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
 :: | `oauthlib` | [2.1.0](https://pypi.org/project/oauthlib/2.1.0/) | `requests-oauthlib` | ext | -
