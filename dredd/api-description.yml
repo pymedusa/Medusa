@@ -558,12 +558,14 @@ paths:
         200:
           description: The alias information
           schema: {}
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
         400:
           $ref: '#/responses/error'
           description: Invalid field
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -586,6 +588,7 @@ paths:
           description: The alias information
           schema:
             $ref: '#/definitions/Alias'
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -1091,6 +1094,9 @@ definitions:
                 description: Required release words
                 items:
                   type: string
+          airdateOffset:
+            type: integer
+            description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
       seasons:
         type: array
         description: Episodes grouped by season. Available in detailed view.

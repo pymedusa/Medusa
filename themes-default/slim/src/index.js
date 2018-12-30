@@ -12,7 +12,7 @@ import VueMeta from 'vue-meta';
 import VueRouter from 'vue-router';
 import VueNativeSock from 'vue-native-websocket';
 import AsyncComputed from 'vue-async-computed';
-import ToggleButton from 'vue-js-toggle-button';
+import { ToggleButton } from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import Truncate from 'vue-truncate-collapsed';
 import axios from 'axios';

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.server.web.core.error_logs.py."""
+from __future__ import unicode_literals
 
 import logging
 
@@ -11,6 +12,7 @@ from medusa.logger import LogLine
 from mock.mock import Mock
 import pytest
 
+from six import itervalues
 
 sut = IssueSubmitter()
 
@@ -220,7 +222,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         4: 'Missing time zone for network: USA Network',
         5: "AttributeError: 'NoneType' object has no attribute 'findall'",
     }
-    for line in lines.values():
+    for line in itervalues(lines):
         logger.warning(line)
     loglines = list(read_loglines)
 
@@ -238,7 +240,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         kwargs = {} if not pull_request else {'pull_request': 'mock'}
         issues[number] = create_github_issue(title=title, number=number, **kwargs)
 
-    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: issues.values())
+    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: itervalues(issues))
 
     expected = {
         lines[1]: issues[2],
@@ -252,7 +254,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
     actual = sut.find_similar_issues(github_repo, loglines)
 
     # Then
-    assert len(set(issues.values())) == len(issues)  # all issues should be different
+    assert len(list(issues.values())) == len(issues)  # all issues should be different
     assert expected == actual
 
 

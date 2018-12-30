@@ -124,16 +124,16 @@ class AniDBLink(threading.Thread):
                 cmd = self._cmd_dequeue(resp)
                 resp = resp.resolve(cmd)
                 resp.parse()
-                if resp.rescode in (b'200', b'201'):
-                    self.session = resp.attrs[b'sesskey']
-                if resp.rescode in (b'209',):
+                if resp.rescode in ('200', '201'):
+                    self.session = resp.attrs['sesskey']
+                if resp.rescode in ('209',):
                     logger.error("sorry encryption is not supported")
                     raise AniDBError()
                     # self.crypt=aes(md5(resp.req.apipassword+resp.attrs['salt']).digest())
-                if resp.rescode in (b'203', b'403', b'500', b'501', b'503', b'506'):
+                if resp.rescode in ('203', '403', '500', '501', '503', '506'):
                     self.session = None
                     self.crypt = None
-                if resp.rescode in (b'504', b'555'):
+                if resp.rescode in ('504', '555'):
                     self.banned = True
                     logger.critical(("AniDB API informs that user or client is banned:", resp.resstr))
                 resp.handle()
@@ -213,20 +213,20 @@ class AniDBLink(threading.Thread):
         command.started = time()
         data = command.raw_data()
 
-        self.sock.sendto(bytes(data, b"ASCII"), self.target)
-        if command.command == b'AUTH':
+        self.sock.sendto(bytes(data, "ASCII"), self.target)
+        if command.command == 'AUTH':
             logger.debug("NetIO > sensitive data is not logged!")
 
     def new_tag(self):
         if not len(self.tags):
-            maxtag = b"T000"
+            maxtag = "T000"
         else:
             maxtag = max(self.tags)
-        newtag = b"T%03d" % (int(maxtag[1:]) + 1)
+        newtag = "T%03d" % (int(maxtag[1:]) + 1)
         return newtag
 
     def request(self, command):
-        if not (self.session and command.session) and command.command not in (b'AUTH', b'PING', b'ENCRYPT'):
+        if not (self.session and command.session) and command.command not in ('AUTH', 'PING', 'ENCRYPT'):
             raise AniDBMustAuthError("You must be authed to execute commands besides AUTH and PING")
         command.started = time()
         self._cmd_queue(command)
