@@ -865,3 +865,20 @@ class AddEpisodeWatchedField(ShiftQualities):
 
         self.connection.action('DROP TABLE tmp_tv_episodes;')
         self.inc_minor_version()
+
+
+class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
+    """Add tv_show airdate_offset field."""
+
+    def test(self):
+        """Test if the version is at least 44.13"""
+        return self.connection.version >= (44, 13)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new airdate_offset field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'airdate_offset'):
+            self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
+
+        self.inc_minor_version()

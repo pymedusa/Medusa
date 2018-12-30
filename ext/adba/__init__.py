@@ -18,13 +18,12 @@
 import logging
 import logging.handlers
 import os
-import threading
-
-from datetime import timedelta
-from time import time, sleep
 import sys
-
+import threading
 from configparser import ConfigParser
+from datetime import timedelta
+from time import sleep, time
+
 from six.moves.queue import Queue
 
 from .aniDBlink import AniDBLink
@@ -154,7 +153,7 @@ class Connection(threading.Thread):
             if callback:
                 callback(resp)
 
-        logger.debug("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
+        logger.debug("handling({counter}-{delay}) command {command}".format(counter=self.counter, delay=self.link.delay, command=command.command))
 
         # make live request
         command.authorize(self.mode, self.link.new_tag(), self.link.session, callback_wrapper)
@@ -177,10 +176,10 @@ class Connection(threading.Thread):
 
     def authed(self, reAuthenticate=False):
         self.lock.acquire()
-        authed = (self.link.session is not None)
+        authed = (self.link.session not in (None, ''))
         if not authed and (reAuthenticate or self.keepAlive):
             self._reAuthenticate()
-            authed = (self.link.session is not None)
+            authed = (self.link.session not in (None, ''))
         self.lock.release()
         return authed
 
@@ -256,6 +255,8 @@ class Connection(threading.Thread):
                 if timeelapsed < timeoutduration:
                     # we are logged in and within timeout so set up session key and assume valid
                     self.link.session = config.get('DEFAULT', 'sessionkey')
+                    if not self.link.session:
+                        needauth = True
                 else:
                     needauth = True
             else:
@@ -268,16 +269,16 @@ class Connection(threading.Thread):
             logger.debug('No valid session, so authenticating')
             try:
                 self.handle(AuthCommand(username, password, 3, self.clientname, self.clientver, nat, 1, 'utf8', mtu), callback)
-            except Exception as e:
-                logger.debug('Auth command with exception %s', e)
+            except Exception as error:
+                logger.debug('Auth command with exception %r', error)
                 # we force a config file with logged out to ensure a known state if an exception occurs, forcing us to log in again
-                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'exception': str(e),
+                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': str(self.link.session or ''), 'exception': str(error),
                                      'lastcommandtime': repr(time())}
                 with open(self.SessionFile, 'w') as configfile:
                     config.write(configfile)
-                return e
+                return error
             logger.debug('Successfully authenticated and recording session details')
-            config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'lastcommandtime': repr(time())}
+            config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': str(self.link.session or ''), 'lastcommandtime': repr(time())}
             with open(self.SessionFile, 'w') as configfile:
                 config.write(configfile)
         return

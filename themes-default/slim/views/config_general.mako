@@ -381,7 +381,7 @@ window.app = new Vue({
                                     <select class="form-control input-sm ${'' if not app.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not app.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not app.FUZZY_DATING else '_na'}">
                                         <option value="%x" ${'selected="selected"' if app.DATE_PRESET == '%x' else ''}>Use System Default</option>
                                         % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset).decode(app.SYS_ENCODING)}</option>
+                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${sbdatetime.now().sbfdate(d_preset=cur_preset)}</option>
                                         % endfor
                                     </select>
                                 </span>
