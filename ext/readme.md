@@ -30,7 +30,7 @@
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
 :: | `guessit` | [3.0.3](https://pypi.org/project/guessit/3.0.3/) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
-:: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | ext | -
+:: | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | ext | -
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | ext | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.2](https://pypi.org/project/jsonrpclib-pelix/0.3.2/) | **`medusa`** | ext | Module: `jsonrpclib`
