@@ -6,6 +6,7 @@
     import re
     from medusa import app
     from medusa.helper.common import pretty_file_size
+    from medusa.sbdatetime import sbdatetime
     from medusa.show.show import Show
 
     mem_usage = None
@@ -50,7 +51,7 @@
             % endif
                 Load time: <span class="footerhighlight">${"%.4f" % (time() - sbStartTime)}s</span> / Mako: <span class="footerhighlight">${"%.4f" % (time() - makoStartTime)}s</span> |
                 Branch: <span class="footerhighlight">${app.BRANCH}</span> |
-                Now: <span class="footerhighlight">${datetime.now().strftime(app.DATE_PRESET+" "+app.TIME_PRESET).decode(app.SYS_ENCODING)}</span>
+                Now: <span class="footerhighlight">${sbdatetime.now().sbfdatetime(d_preset=app.DATE_PRESET, t_preset=app.TIME_PRESET)}</span>
             </div>
         </div>
     </footer>

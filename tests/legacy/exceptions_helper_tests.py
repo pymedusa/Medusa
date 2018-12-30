@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """Test exceptions helpers."""
+from __future__ import unicode_literals
 
 import unittest
 

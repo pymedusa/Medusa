@@ -203,6 +203,11 @@
                                     <td>${', '.join(bwl.blacklist)}</td>
                                 </tr>
                             % endif
+                            
+                            <tr v-if="show.config.airdateOffset !== 0">
+                                <td class="showLegend">Daily search offset:</td>
+                                <td>{{show.config.airdateOffset}} hours</td>
+                            </tr>
                             <tr><td class="showLegend">Size:</td><td>${pretty_file_size(helpers.get_size(showLoc[0]))}</td></tr>
                         </table><!-- Option table right -->
                     </div>

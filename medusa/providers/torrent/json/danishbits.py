@@ -80,7 +80,7 @@ class DanishbitsProvider(TorrentProvider):
                     search_params['search'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
-                if not response:
+                if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
 
@@ -89,7 +89,7 @@ class DanishbitsProvider(TorrentProvider):
                 except ValueError as e:
                     log.warning(
                         'Could not decode the response as json for the result,'
-                        'searching {provider} with error {err_msg}',
+                        ' searching {provider} with error {err_msg}',
                         provider=self.name,
                         err_msg=e
                     )

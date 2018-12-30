@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
 """Dredd hook."""
-from __future__ import absolute_import
-from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
 import json
+import os
+import sys
+
+sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext')))
+
 from collections import Mapping
 
 import dredd_hooks as hooks

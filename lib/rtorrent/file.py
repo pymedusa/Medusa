@@ -25,14 +25,14 @@ from rtorrent.common import safe_repr
 Method = rtorrent.rpc.Method
 
 
-class File:
+class File(object):
     """Represents an individual file within a L{Torrent} instance."""
 
     def __init__(self, _rt_obj, info_hash, index, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent the file is associated with
         self.index = index  # : The position of the file within the file list
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         self.rpc_id = '{0}:f{1}'.format(

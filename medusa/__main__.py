@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
 # Author: Nic Wolfe <nic@wolfeden.ca>
 #
@@ -425,6 +425,7 @@ class Application(object):
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
             app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low', encrypted=True)
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
+            app.PYTHON_VERSION = check_setting_list(app.CFG, 'General', 'python_version', [], transform=int)
 
             # debugging
             app.DEBUG = bool(check_setting_int(app.CFG, 'General', 'debug', 0))
@@ -951,8 +952,8 @@ class Application(object):
             app.GIT_REMOTE_BRANCHES = []
             app.KODI_LIBRARY_CLEAN_PENDING = False
             app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
-            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
-            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
+            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'General', 'backlog_period', 'all')
+            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
 
@@ -1077,9 +1078,12 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = False
 
+            # Check if we start with a different Python version since last start
+            python_version_changed = self.migrate_python_version()
+
             # Check if we need to perform a restore of the cache folder
             Application.restore_cache_folder(app.CACHE_DIR)
-            cache.configure(app.CACHE_DIR)
+            cache.configure(app.CACHE_DIR, replace=python_version_changed)
 
             # Rebuild the censored list
             app_logger.rebuild_censored_list()
@@ -1246,6 +1250,27 @@ class Application(object):
             for name in ('mako', 'sessions', 'indexers', 'rss'):
                 folder_path = os.path.join(cache_folder, name)
                 helpers.remove_folder(folder_path)
+
+    @staticmethod
+    def migrate_python_version():
+        """
+        Perform some cleanups in case we switch between major Python versions.
+
+        It's possible to switch from Python version 2 to 3 or vice versa.
+        In that case we might wanna run some sanity actions, to make sure everything keeps working.
+
+        :return: True if the major Python version has changed since last start
+        :return type: Boolean
+        """
+        # TODO: Leaving this here as a marking for when we merge the python3 changes.
+        current_version = app.PYTHON_VERSION
+        app.PYTHON_VERSION = list(sys.version_info)[:3]
+
+        # Run some sanitation when switching between Python versions
+        if current_version and current_version[0] != app.PYTHON_VERSION[0]:
+            return True
+
+        return False
 
     @staticmethod
     def start_threads():
@@ -1545,6 +1570,7 @@ class Application(object):
         new_config['General']['calendar_icons'] = int(app.CALENDAR_ICONS)
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
+        new_config['General']['python_version'] = app.PYTHON_VERSION
         new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
@@ -2024,9 +2050,9 @@ class Application(object):
         sys.stderr.flush()
 
         devnull = getattr(os, 'devnull', '/dev/null')
-        stdin = file(devnull)
-        stdout = file(devnull, 'a+')
-        stderr = file(devnull, 'a+')
+        stdin = open(devnull)
+        stdout = open(devnull, 'a+')
+        stderr = open(devnull, 'a+')
 
         os.dup2(stdin.fileno(), getattr(sys.stdin, 'device', sys.stdin).fileno())
         os.dup2(stdout.fileno(), getattr(sys.stdout, 'device', sys.stdout).fileno())

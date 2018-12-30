@@ -114,12 +114,12 @@ class PlexFallback(object):
         except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete,
                 IndexerShowNotFound, IndexerShowNotFoundInLanguage):
             raise
-        except ApiException as e:
-            logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
-        except IndexerUnavailable as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
-        except Exception as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
+        except ApiException as error:
+            logger.warning("could not connect to TheTvdb.com, reason '%s'", error.reason)
+        except IndexerUnavailable as error:
+            logger.warning("could not connect to TheTvdb.com, with reason '%r'", error)
+        except Exception as error:
+            logger.warning("could not connect to TheTvdb.com, with reason '%r'", error)
 
         # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
         session.api_client.host = fallback_config['api_base_url'] = app.FALLBACK_PLEX_API_URL

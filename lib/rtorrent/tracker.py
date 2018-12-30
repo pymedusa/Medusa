@@ -18,20 +18,19 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# from rtorrent.rpc import Method
 import rtorrent.rpc
 from rtorrent.common import safe_repr
 
 Method = rtorrent.rpc.Method
 
 
-class Tracker:
+class Tracker(object):
     """Represents an individual tracker within a L{Torrent} instance."""
 
     def __init__(self, _rt_obj, info_hash, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent using this tracker
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         # for clarity's sake...
