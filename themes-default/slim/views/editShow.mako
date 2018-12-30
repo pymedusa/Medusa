@@ -6,6 +6,9 @@ window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
+    components: {
+        ToggleButton
+    },
     metaInfo() {
         const { title } = this.series;
         if (!title) {
