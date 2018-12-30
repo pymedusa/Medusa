@@ -10937,10 +10937,10 @@ vue-native-websocket@2.0.12:
   resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.12.tgz#a60d424d28b277a47702a6f874785407f6a884ef"
   integrity sha512-6f5B2O/0H6XrUIOJwChiZk4t0XpFvjmHlWFUJrk9O0kU31E3MFPlWkC8VpsiFWQMPz7oB8XSwUhDmBbLxuvWDw==
 
-vue-router@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.1.tgz#d9b05ad9c7420ba0f626d6500d693e60092cc1e9"
-  integrity sha512-vLLoY452L+JBpALMP5UHum9+7nzR9PeIBCghU9ZtJ1eWm6ieUI8Zb/DI3MYxH32bxkjzYV1LRjNv4qr8d+uX/w==
+vue-router@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
+  integrity sha512-opKtsxjp9eOcFWdp6xLQPLmRGgfM932Tl56U9chYTnoWqKxQ8M20N7AkdEbM5beUh6wICoFGYugAX9vQjyJLFg==
 
 vue-scrollto@2.13.0:
   version "2.13.0"
