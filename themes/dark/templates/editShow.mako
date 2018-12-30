@@ -46,7 +46,8 @@ window.app = new Vue({
                     qualities: {
                         preferred: [],
                         allowed: []
-                    }
+                    },
+                    airdateOffset: 0
                 },
                 language: 'en'
             },
@@ -107,7 +108,8 @@ window.app = new Vue({
                     qualities: {
                         preferred: this.series.config.qualities.preferred,
                         allowed: this.series.config.qualities.allowed
-                    }
+                    },
+                    airdateOffset: this.series.config.airdateOffset
                 },
                 language: this.series.language
             };
@@ -348,6 +350,11 @@ window.app = new Vue({
                                 </div>
                             </div>
                         </div>
+
+                        <config-textbox-number :min.number="-168" :max.number="168" :step.number="1" v-model="series.config.airdateOffset"
+                            label="Airdate offset" id="airdate_offset" :explanations="['Amount of hours we want to start searching early (-1) or late (1) for new episodes.',
+                             'This only applies to daily searches.']">
+                        </config-textbox-number>
 
                     </fieldset>
                 </div>
