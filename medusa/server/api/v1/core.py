@@ -112,7 +112,7 @@ class ApiHandler(RequestHandler):
     #     self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
     def get(self, *args, **kwargs):
-        kwargs = self.request.arguments
+        kwargs = {k: self.get_arguments(k) for k in self.request.arguments}
         for arg, value in iteritems(kwargs):
             if len(value) == 1:
                 kwargs[arg] = value[0]
@@ -141,9 +141,9 @@ class ApiHandler(RequestHandler):
         try:
             out_dict = _call_dispatcher(args, kwargs)
         except Exception as error:  # real internal error oohhh nooo :(
-            log.exception(u'API :: {0!r}', error.message)
+            log.exception(u'API :: {0!r}', error)
             error_data = {
-                'error_msg': error.message,
+                'error_msg': text_type(error),
                 'args': args,
                 'kwargs': kwargs
             }
@@ -174,7 +174,7 @@ class ApiHandler(RequestHandler):
         except Exception as error:  # if we fail to generate the output fake an error
             log.exception(u'API :: Traceback')
             out = '{{"result": "{0}", "message": "error while composing output: {1!r}"}}'.format(
-                result_type_map[RESULT_ERROR], error.message
+                result_type_map[RESULT_ERROR], error
             )
         return out
 
@@ -215,7 +215,7 @@ class ApiHandler(RequestHandler):
                         else:
                             cur_out_dict = _responds(RESULT_ERROR, 'No such cmd: {0!r}'.format(cmd))
                     except ApiError as error:  # Api errors that we raised, they are harmless
-                        cur_out_dict = _responds(RESULT_ERROR, msg=error.message)
+                        cur_out_dict = _responds(RESULT_ERROR, msg=text_type(error))
                 else:  # if someone chained one of the forbidden commands they will get an error for this one cmd
                     cur_out_dict = _responds(RESULT_ERROR, msg='The cmd {0!r} is not supported while chaining'.format(cmd))
 
@@ -1442,9 +1442,9 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select('SELECT last_backlog FROM info')
 
-        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat)
 
         data = {'backlog_is_paused': int(backlog_paused), 'backlog_is_running': int(backlog_running),
                 'last_backlog': _ordinal_to_date_form(sql_results[0]['last_backlog']),
@@ -2770,7 +2770,7 @@ class CMD_ShowUpdate(ApiCall):
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg='{0} has queued to be updated'.format(show_obj.name))
         except CantUpdateShowException as error:
-            log.debug(u'API::Unable to update show: {0}', error.message)
+            log.debug(u'API::Unable to update show: {0!r}', error)
             return _responds(RESULT_FAILURE, msg='Unable to update {0}'.format(show_obj.name))
 
 

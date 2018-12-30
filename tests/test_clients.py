@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.clients.torrent module."""
+from __future__ import unicode_literals
 
 import medusa.clients.torrent as sut
 from medusa.clients.torrent import (

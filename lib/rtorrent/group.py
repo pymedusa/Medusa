@@ -23,7 +23,7 @@ import rtorrent.rpc
 Method = rtorrent.rpc.Method
 
 
-class Group:
+class Group(object):
     __name__ = 'Group'
 
     def __init__(self, _rt_obj, name):

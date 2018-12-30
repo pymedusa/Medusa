@@ -13,14 +13,11 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series,
-    update_recommended_series_cache_index
+    MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series
 )
 
 from simpleanidb import Anidb, REQUEST_HOT
 from simpleanidb.exceptions import GeneralError
-
-from six import binary_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -95,8 +92,5 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                 log.info('Could not parse AniDB show {0}, missing tvdb mapping', show.title)
             except Exception:
                 log.warning('Could not parse AniDB show, with exception: {0}', traceback.format_exc())
-
-        # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-        update_recommended_series_cache_index('anidb', [binary_type(s.series_id) for s in result])
 
         return result
