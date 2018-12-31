@@ -62,7 +62,7 @@
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | ext | -
-:: | `urllib3` | [1.23](https://pypi.org/project/urllib3/1.23/) | `requests`, `CacheControl` | ext | -
+:: | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests`, `CacheControl` | ext | -
 :: | `validators` | [0.12.3](https://pypi.org/project/validators/0.12.3/) | **`medusa`** | ext | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | ext | -
 :: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | ext | -
