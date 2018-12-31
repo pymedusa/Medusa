@@ -61,6 +61,8 @@ class Notifier(object):
         result = self._send_to_kodi(check_command, host, username, password, dest_app)
 
         if result and 'error' not in result:
+            if isinstance(result['result']['version'], dict):
+                return result['result']['version'].get('major')
             return result['result']['version']
         else:
             return False
@@ -127,8 +129,8 @@ class Notifier(object):
                         'id': '1',
                     }
                     notify_result = self._send_to_kodi(command, curHost, username, password, dest_app)
-                    if notify_result and notify_result.get('result'):  # pylint: disable=no-member
-                        result += curHost + ':' + notify_result['result'].decode(app.SYS_ENCODING)
+                    if notify_result and notify_result.get('result'):
+                        result += curHost + ':' + notify_result['result'].decode('utf-8')
             else:
                 if app.KODI_ALWAYS_ON or force:
                     log.warning(

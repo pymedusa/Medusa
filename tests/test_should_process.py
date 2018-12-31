@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_should_process.py."""
+from __future__ import unicode_literals
 from medusa.common import Quality
 from medusa.post_processor import PostProcessor
 
@@ -79,5 +80,5 @@ def test_should_process(p):
 
     # Then
     if expected != actual:
-        print msg
+        print(msg)
     assert expected == actual
