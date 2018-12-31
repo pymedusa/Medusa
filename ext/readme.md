@@ -6,7 +6,7 @@
 :: | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | ext | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | ext | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | ext | Markers: `python_version < '3.5'`
-:: | `beautifulsoup4` | [4.6.3](https://pypi.org/project/beautifulsoup4/4.6.3/) | **`medusa`**, `subliminal` | **ext2 ext3** | Module: `bs4`
+:: | `beautifulsoup4` | [4.7.0](https://pypi.org/project/beautifulsoup4/4.7.0/) | **`medusa`**, `subliminal` | **ext2 ext3** | Module: `bs4`
 :: | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`medusa`** | ext | Module: `bencode`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | ext | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | ext | Module: `cachecontrol`
