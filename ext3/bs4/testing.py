@@ -1,8 +1,7 @@
 # encoding: utf-8
 """Helper classes for tests."""
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 import pickle
@@ -17,10 +16,47 @@ from bs4.element import (
     ContentMetaAttributeValue,
     Doctype,
     SoupStrainer,
+    Tag
 )
 
 from bs4.builder import HTMLParserTreeBuilder
 default_builder = HTMLParserTreeBuilder
+
+BAD_DOCUMENT = """A bare string
+<!DOCTYPE xsl:stylesheet SYSTEM "htmlent.dtd">
+<!DOCTYPE xsl:stylesheet PUBLIC "htmlent.dtd">
+<div><![CDATA[A CDATA section where it doesn't belong]]></div>
+<div><svg><![CDATA[HTML5 does allow CDATA sections in SVG]]></svg></div>
+<div>A <meta> tag</div>
+<div>A <br> tag that supposedly has contents.</br></div>
+<div>AT&T</div>
+<div><textarea>Within a textarea, markup like <b> tags and <&<&amp; should be treated as literal</textarea></div>
+<div><script>if (i < 2) { alert("<b>Markup within script tags should be treated as literal.</b>"); }</script></div>
+<div>This numeric entity is missing the final semicolon: <x t="pi&#241ata"></div>
+<div><a href="http://example.com/</a> that attribute value never got closed</div>
+<div><a href="foo</a>, </a><a href="bar">that attribute value was closed by the subsequent tag</a></div>
+<! This document starts with a bogus declaration ><div>a</div>
+<div>This document contains <!an incomplete declaration <div>(do you see it?)</div>
+<div>This document ends with <!an incomplete declaration
+<div><a style={height:21px;}>That attribute value was bogus</a></div>
+<! DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">The doctype is invalid because it contains extra whitespace
+<div><table><td nowrap>That boolean attribute had no value</td></table></div>
+<div>Here's a nonexistent entity: &#foo; (do you see it?)</div>
+<div>This document ends before the entity finishes: &gt
+<div><p>Paragraphs shouldn't contain block display elements, but this one does: <dl><dt>you see?</dt></p>
+<b b="20" a="1" b="10" a="2" a="3" a="4">Multiple values for the same attribute.</b>
+<div><table><tr><td>Here's a table</td></tr></table></div>
+<div><table id="1"><tr><td>Here's a nested table:<table id="2"><tr><td>foo</td></tr></table></td></div>
+<div>This tag contains nothing but whitespace: <b>    </b></div>
+<div><blockquote><p><b>This p tag is cut off by</blockquote></p>the end of the blockquote tag</div>
+<div><table><div>This table contains bare markup</div></table></div>
+<div><div id="1">\n <a href="link1">This link is never closed.\n</div>\n<div id="2">\n <div id="3">\n   <a href="link2">This link is closed.</a>\n  </div>\n</div></div>
+<div>This document contains a <!DOCTYPE surprise>surprise doctype</div>
+<div><a><B><Cd><EFG>Mixed case tags are folded to lowercase</efg></CD></b></A></div>
+<div><our\u2603>Tag name contains Unicode characters</our\u2603></div>
+<div><a \u2603="snowman">Attribute name contains Unicode characters</a></div>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+"""
 
 
 class SoupTest(unittest.TestCase):
@@ -59,6 +95,121 @@ class SoupTest(unittest.TestCase):
                 self.assertEqual(e, earlier.next_element)
                 self.assertEqual(earlier, e.previous_element)
             earlier = e
+
+    def linkage_validator(self, el, _recursive_call=False):
+        """Ensure proper linkage throughout the document."""
+        descendant = None
+        # Document element should have no previous element or previous sibling.
+        # It also shouldn't have a next sibling.
+        if el.parent is None:
+            assert el.previous_element is None,\
+                "Bad previous_element\nNODE: {}\nPREV: {}\nEXPECTED: {}".format(
+                    el, el.previous_element, None
+                )
+            assert el.previous_sibling is None,\
+                "Bad previous_sibling\nNODE: {}\nPREV: {}\nEXPECTED: {}".format(
+                    el, el.previous_sibling, None
+                )
+            assert el.next_sibling is None,\
+                "Bad next_sibling\nNODE: {}\nNEXT: {}\nEXPECTED: {}".format(
+                    el, el.next_sibling, None
+                )
+
+        idx = 0
+        child = None
+        last_child = None
+        last_idx = len(el.contents) - 1
+        for child in el.contents:
+            descendant = None
+
+            # Parent should link next element to their first child
+            # That child should have no previous sibling
+            if idx == 0:
+                if el.parent is not None:
+                    assert el.next_element is child,\
+                       "Bad next_element\nNODE: {}\nNEXT: {}\nEXPECTED: {}".format(
+                            el, el.next_element, child
+                        )
+                    assert child.previous_element is el,\
+                       "Bad previous_element\nNODE: {}\nPREV: {}\nEXPECTED: {}".format(
+                            child, child.previous_element, el
+                        )
+                    assert child.previous_sibling is None,\
+                       "Bad previous_sibling\nNODE: {}\nPREV {}\nEXPECTED: {}".format(
+                            child, child.previous_sibling, None
+                        )
+
+            # If not the first child, previous index should link as sibling to this index
+            # Previous element should match the last index or the last bubbled up descendant
+            else:
+                assert child.previous_sibling is el.contents[idx - 1],\
+                    "Bad previous_sibling\nNODE: {}\nPREV {}\nEXPECTED {}".format(
+                        child, child.previous_sibling, el.contents[idx - 1]
+                    )
+                assert el.contents[idx - 1].next_sibling is child,\
+                    "Bad next_sibling\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                        el.contents[idx - 1], el.contents[idx - 1].next_sibling, child
+                    )
+
+                if last_child is not None:
+                    assert child.previous_element is last_child,\
+                        "Bad previous_element\nNODE: {}\nPREV {}\nEXPECTED {}\nCONTENTS {}".format(
+                            child, child.previous_element, last_child, child.parent.contents
+                        )
+                    assert last_child.next_element is child,\
+                        "Bad next_element\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                            last_child, last_child.next_element, child
+                        )
+
+            if isinstance(child, Tag) and child.contents:
+                descendant = self.linkage_validator(child, True)
+                # A bubbled up descendant should have no next siblings
+                assert descendant.next_sibling is None,\
+                    "Bad next_sibling\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                        descendant, descendant.next_sibling, None
+                    )
+
+            # Mark last child as either the bubbled up descendant or the current child
+            if descendant is not None:
+                last_child = descendant
+            else:
+                last_child = child
+
+            # If last child, there are non next siblings
+            if idx == last_idx:
+                assert child.next_sibling is None,\
+                    "Bad next_sibling\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                        child, child.next_sibling, None
+                    )
+            idx += 1
+
+        child = descendant if descendant is not None else child
+        if child is None:
+            child = el
+
+        if not _recursive_call and child is not None:
+            target = el
+            while True:
+                if target is None:
+                    assert child.next_element is None, \
+                        "Bad next_element\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                            child, child.next_element, None
+                        )
+                    break
+                elif target.next_sibling is not None:
+                    assert child.next_element is target.next_sibling, \
+                        "Bad next_element\nNODE: {}\nNEXT {}\nEXPECTED {}".format(
+                            child, child.next_element, target.next_sibling
+                        )
+                    break
+                target = target.parent
+
+            # We are done, so nothing to return
+            return None
+        else:
+            # Return the child to the recursive caller
+            return child
+
 
 class HTMLTreeBuilderSmokeTest(object):
 
@@ -301,6 +452,18 @@ Hello, world!
             "<tbody><tr><td>Bar</td></tr></tbody>"
             "<tfoot><tr><td>Baz</td></tr></tfoot></table>")
 
+    def test_multivalued_attribute_with_whitespace(self):
+        # Whitespace separating the values of a multi-valued attribute
+        # should be ignored.
+
+        markup = '<div class=" foo bar	 "></a>'
+        soup = self.soup(markup)
+        self.assertEqual(['foo', 'bar'], soup.div['class'])
+
+        # If you search by the literal name of the class it's like the whitespace
+        # wasn't there.
+        self.assertEqual(soup.div, soup.find('div', class_="foo bar"))
+        
     def test_deeply_nested_multivalued_attribute(self):
         # html5lib can set the attributes of the same tag many times
         # as it rearranges the tree. This has caused problems with
@@ -615,6 +778,13 @@ Hello, world!
         data.a['foo'] = 'bar'
         self.assertEqual('<a foo="bar">text</a>', data.a.decode())
 
+    def test_worst_case(self):
+        """Test the worst case (currently) for linking issues."""
+
+        soup = self.soup(BAD_DOCUMENT)
+        self.linkage_validator(soup)
+
+
 class XMLTreeBuilderSmokeTest(object):
 
     def test_pickle_and_unpickle_identity(self):
@@ -760,6 +930,12 @@ class XMLTreeBuilderSmokeTest(object):
 
         # The two tags have the same namespace prefix.
         self.assertEqual(tag.prefix, duplicate.prefix)
+
+    def test_worst_case(self):
+        """Test the worst case (currently) for linking issues."""
+
+        soup = self.soup(BAD_DOCUMENT)
+        self.linkage_validator(soup)
 
 
 class HTML5TreeBuilderSmokeTest(HTMLTreeBuilderSmokeTest):
