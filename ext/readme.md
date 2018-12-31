@@ -30,7 +30,7 @@
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
 :: | `guessit` | [3.0.3](https://pypi.org/project/guessit/3.0.3/) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
-:: | `idna` | [2.7](https://pypi.org/project/idna/2.7/) | `requests` | ext | -
+:: | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | ext | -
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -
 :: | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | ext | Module: `js2py`
 :: | `jsonrpclib-pelix` | [0.3.2](https://pypi.org/project/jsonrpclib-pelix/0.3.2/) | **`medusa`** | ext | Module: `jsonrpclib`
@@ -51,7 +51,7 @@
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
 :: | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | ext | -
-:: | `requests` | [2.20.1](https://pypi.org/project/requests/2.20.1/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | ext | -
+:: | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | ext | -
 :: | `requests-oauthlib` | [1.0.0](https://pypi.org/project/requests-oauthlib/1.0.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
