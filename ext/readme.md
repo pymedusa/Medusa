@@ -1,7 +1,7 @@
 ## ext
  Status  |  Package  |  Version / Commit  | Usage | Folder | Notes
 :------: | :-------: | :----------------: | :---- | :--: | :----
-:: | `adba` | pymedusa/[fcb4bf4](https://github.com/pymedusa/adba/tree/fcb4bf43f10ca53f3beb915707c877581b1bf2a5) | **`medusa`** | ext | -
+:: | `adba` | pymedusa/[6502307](https://github.com/pymedusa/adba/tree/6502307ae34286e44b28234cfbacee6df1eadf07) | **`medusa`** | ext | -
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | ext | -
 :: | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | ext | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | ext | -
@@ -58,7 +58,7 @@
 :: | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
 :: | `soupsieve` | [1.6](https://pypi.org/project/soupsieve/1.6/) | `beautifulsoup4` | ext | -
 :: | `stevedore` | [1.30.0](https://pypi.org/project/stevedore/1.30.0/) | `subliminal` | ext | -
-:: | `subliminal` | pymedusa/[ad44797](https://github.com/pymedusa/subliminal/tree/ad4479723f3e60de3f544147c9c5d6dd45397f7e) | **`medusa`** | ext | -
+:: | `subliminal` | [6ac2fa23](https://github.com/Diaoul/subliminal/tree/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
 :: | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | ext | -
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -

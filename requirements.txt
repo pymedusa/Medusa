@@ -1,5 +1,5 @@
 # No setup.py, unable to install using pip
-# git+https://github.com/pymedusa/adba.git@119b9d30a30feb97bcea5e1dc742c82340300091#egg=adba
+# git+https://github.com/pymedusa/adba.git@6502307ae34286e44b28234cfbacee6df1eadf07#egg=adba
 git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.7.0
 bencode.py==2.0.0
