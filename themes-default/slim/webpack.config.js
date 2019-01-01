@@ -5,6 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+require('babel-polyfill');
 
 const pkg = require('./package.json');
 
@@ -60,7 +61,10 @@ const webpackConfig = (env, mode) => ({
     devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
         // Exports all window. objects for mako files
-        index: path.resolve(__dirname, 'src/index.js'),
+        index: [
+            'babel-polyfill',
+            path.resolve(__dirname, 'src/index.js')
+        ],
         // Main Vue app
         app: path.resolve(__dirname, 'src/app.js')
     },

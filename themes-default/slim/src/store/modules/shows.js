@@ -81,20 +81,32 @@ const actions = {
      * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 10k shows.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    getShows(context, shows) {
+    async getShows(context, shows) {
         const { commit, dispatch } = context;
 
-        // If no shows are provided get the first 10k
+        // If no shows are provided get the first 10000
         if (!shows) {
+            const limit = 10;
+            const page = 1;
+
             const params = {
-                limit: 10000
+                limit,
+                page
             };
-            return api.get('/series', { params }).then(res => {
-                const shows = res.data;
-                return shows.forEach(show => {
-                    commit(ADD_SHOW, show);
-                });
-            });
+
+            const records = [];
+            let keepGoing = true;
+            while (keepGoing) {
+                const response = await api.get('/series', { params });
+                records.push(...response.data);
+                if (response.data.length < limit) {
+                    keepGoing = false;
+                    return records.forEach(show => {
+                        commit(ADD_SHOW, show);
+                    });
+                }
+                params.page += 1;
+            }
         }
 
         return shows.forEach(show => dispatch('getShow', show));

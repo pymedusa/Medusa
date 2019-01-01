@@ -646,6 +646,7 @@ class Episode(TV):
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
 
+            # FIXME: This shouldn't be part of a possible apiv2 episodes request
             xem_refresh(self.series)
 
             self.scene_season = try_int(sql_results[0]['scene_season'], 0)
