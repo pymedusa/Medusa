@@ -86,7 +86,7 @@ const actions = {
 
         // If no shows are provided get the first 10000
         if (!shows) {
-            const limit = 10;
+            const limit = 1000;
             const page = 1;
 
             const params = {
