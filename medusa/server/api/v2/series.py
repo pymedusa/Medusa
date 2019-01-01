@@ -50,11 +50,9 @@ class SeriesHandler(BaseRequestHandler):
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
             fetch = self._parse_boolean(self.get_argument('fetch', default=False))
-            page = self._get_page()
-            limit = self._get_limit()
             data = [
                 s.to_json(detailed=detailed, fetch=fetch)
-                for s in Series.find_series(predicate=filter_series)[(page - 1) * limit:(page - 1) * limit + limit]
+                for s in Series.find_series(predicate=filter_series)
             ]
             return self._paginate(data, sort='title')
 
