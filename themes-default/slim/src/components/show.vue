@@ -72,7 +72,7 @@ export default {
 
             // Not detailed
             if (!show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: true });
+                $store.dispatch('getShow', { id, indexer, detailed: false });
                 return getShowById({ indexer, id });
             }
 
