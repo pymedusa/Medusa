@@ -345,6 +345,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
              'lang': subtitle.language.opensubtitles,
              'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
              'sub_score': score,
+             'hearing_impaired': subtitle.hearing_impaired,
              'max_score': max_score,
              'min_score': get_min_score(),
              'filename': get_subtitle_description(subtitle)}
