@@ -224,7 +224,7 @@ class Episode(TV):
         'show': 'series',
     }
 
-    def __init__(self, series, season, episode, filepath=''):
+    def __init__(self, series, season, episode, filepath=None):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
             int(series.indexer) if series else 0,
@@ -256,7 +256,7 @@ class Episode(TV):
         self.is_proper = False
         self.version = 0
         self.release_group = ''
-        self._location = filepath
+        self._location = filepath or ''
         self._file_size = 0
         self.scene_season = 0
         self.scene_episode = 0
@@ -2033,9 +2033,11 @@ class Episode(TV):
         same_name = old_location and os.path.normpath(old_location) == os.path.normpath(filepath)
 
         old_size = self.file_size
-        # Setting a location to episode, will get the size of the filepath
+
         with self.lock:
             self.location = filepath
+            self.file_size = None
+
         # If size from given filepath is 0 it means we couldn't determine file size
         same_size = old_size > 0 and self.file_size > 0 and self.file_size == old_size
 
