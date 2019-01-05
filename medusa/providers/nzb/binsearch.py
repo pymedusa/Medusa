@@ -150,7 +150,6 @@ class BinSearchProvider(NZBProvider):
                 if size_field:
                     size_field = size_field.group(1)
                 size = convert_size(size_field, sep='\xa0') or -1
-                size = int(size)
 
                 download_url = urljoin(self.url, '{post_url}|nzb_id={nzb_id}'.format(post_url=post_url, nzb_id=nzb_id))
 

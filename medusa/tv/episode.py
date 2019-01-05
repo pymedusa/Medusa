@@ -252,12 +252,12 @@ class Episode(TV):
         self.hastbn = False
         self.status = UNSET
         self.quality = Quality.NA
-        self.file_size = 0
         self.release_name = ''
         self.is_proper = False
         self.version = 0
         self.release_group = ''
         self._location = filepath
+        self._file_size = 0
         self.scene_season = 0
         self.scene_episode = 0
         self.scene_absolute_number = 0
@@ -302,6 +302,12 @@ class Episode(TV):
                     DeprecationWarning
                 )
                 return super(Episode, self).__getattribute__(refactor)
+
+    def __eq__(self, other):
+        """Override default equalize implementation."""
+        return all([self.series.identifier == other.series.identifier,
+                    self.season == other.season,
+                    self.episode == other.episode])
 
     @classmethod
     def find_by_series_and_episode(cls, series, episode_number):
@@ -382,16 +388,35 @@ class Episode(TV):
         """Return the location.
 
         :return:
-        :rtype: location
+        :rtype: text_type
         """
         return self._location
 
     @location.setter
     def location(self, value):
-        log.debug('{id}: Setter sets location to {location}',
-                  {'id': self.series.series_id, 'location': value})
+        log.debug('{id}: Setting location for {episode} to {location}',
+                  {'id': self.series.series_id, 'episode': self.identifier, 'location': value})
         self._location = value
-        self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
+
+    @property
+    def file_size(self):
+        """Return the file size.
+
+        :return:
+        :rtype: int
+        """
+        return self._file_size
+
+    @file_size.setter
+    def file_size(self, size=None):
+        if size is not None:
+            self._file_size = int(size)
+        elif self.is_location_valid():
+            self._file_size = os.path.getsize(self.location)
+        else:
+            log.debug('{id}: No valid location found for {episode}, setting size to 0',
+                      {'id': self.series.series_id, 'episode': self.identifier})
+            self._file_size = 0
 
     @property
     def indexer_name(self):
@@ -431,7 +456,7 @@ class Episode(TV):
         :return:
         :rtype: bool
         """
-        return os.path.isfile(location or self._location)
+        return os.path.isfile(location or self.location)
 
     def metadata(self):
         """Return the video metadata."""
@@ -2059,9 +2084,3 @@ class Episode(TV):
                     'filepath': filepath,
                 }
             )
-
-    def __eq__(self, other):
-        """Override default equalize implementation."""
-        return all([self.series.identifier == other.series.identifier,
-                    self.season == other.season,
-                    self.episode == other.episode])

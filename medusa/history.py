@@ -87,8 +87,6 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
     :param release_group: Release group
     :param version: Version of file (defaults to -1)
     """
-    size = int(ep_obj.file_size)
-
     # store the release group as the provider if possible
     if release_group:
         provider = release_group
@@ -96,6 +94,7 @@ def log_download(ep_obj, filename, new_ep_quality, release_group=None, version=-
         provider = -1
 
     action = ep_obj.status
+    size = ep_obj.file_size
 
     _log_history_item(action, ep_obj, filename, provider, version, size=size)
 
