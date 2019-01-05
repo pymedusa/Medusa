@@ -51,6 +51,7 @@ setup(
         'PyYAML>=3.13,<4',
         'vcrpy>=1.13.0',
         'mock>=2.0.0',
+        'six>=1.12.0',
     ],
     extras_require={
         'system-stats': ['psutil'],

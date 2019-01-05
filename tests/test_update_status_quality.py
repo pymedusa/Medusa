@@ -13,6 +13,7 @@ def create_episode(tvshow, create_tvepisode, create_file):
         path = create_file(filepath, size=size) if filepath else ''
         episode = create_tvepisode(tvshow, 2, 14, filepath=path)
         episode.location = path
+        episode.file_size = size
         if status:
             episode.status = status
         if quality:

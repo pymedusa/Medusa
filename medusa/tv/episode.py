@@ -980,6 +980,7 @@ class Episode(TV):
                   {'id': self.series.series_id, 'location': location})
 
         self.location = location
+        self.file_size = None
 
         if self.location != '':
 
@@ -1939,8 +1940,10 @@ class Episode(TV):
         with self.lock:
             if result:
                 self.location = absolute_proper_path + file_ext
+                self.file_size = None
                 for rel_ep in self.related_episodes:
                     rel_ep.location = absolute_proper_path + file_ext
+                    rel_ep.file_size = None
 
         # in case something changed with the metadata just do a quick check
         for cur_ep in [self] + self.related_episodes:

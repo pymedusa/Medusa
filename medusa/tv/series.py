@@ -1809,6 +1809,7 @@ class Series(TV):
                             cur_ep.subtitles_searchcount = 0
                             cur_ep.subtitles_lastsearch = ''
                         cur_ep.location = ''
+                        cur_ep.file_size = 0
                         cur_ep.hasnfo = False
                         cur_ep.hastbn = False
                         cur_ep.release_name = ''

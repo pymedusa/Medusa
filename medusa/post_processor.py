@@ -1253,6 +1253,7 @@ class PostProcessor(object):
             for cur_ep in [ep_obj] + ep_obj.related_episodes:
                 with cur_ep.lock:
                     cur_ep.location = os.path.join(dest_path, new_file_name)
+                    cur_ep.file_size = None
                     cur_ep.refresh_subtitles()
                     cur_ep.download_subtitles()
 
@@ -1267,6 +1268,7 @@ class PostProcessor(object):
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
             with cur_ep.lock:
                 cur_ep.location = os.path.join(dest_path, new_file_name)
+                cur_ep.file_size = None
                 sql_l.append(cur_ep.get_sql())
 
         if sql_l:
