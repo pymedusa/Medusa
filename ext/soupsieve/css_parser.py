@@ -89,11 +89,11 @@ WSC = r'(?:{ws}|{comments})'.format(ws=WS, comments=COMMENTS)
 # CSS escapes
 CSS_ESCAPES = r'(?:\\[a-f0-9]{{1,6}}{ws}?|\\[^\r\n\f])'.format(ws=WS)
 # CSS Identifier
-IDENTIFIER = r'(?:(?!-?\d|--)(?:[^\x00-\x2c\x2e\x2f\x3A-\x40\x5B-\x5E\x60\x7B-\x9f]|{esc})+)'.format(esc=CSS_ESCAPES)
+IDENTIFIER = r'(?:(?!-?[0-9]|--)(?:[^\x00-\x2c\x2e\x2f\x3A-\x40\x5B-\x5E\x60\x7B-\x9f]|{esc})+)'.format(esc=CSS_ESCAPES)
 # `nth` content
-NTH = r'(?:[-+])?(?:\d+n?|n)(?:(?<=n){ws}*(?:[-+]){ws}*(?:\d+))?'.format(ws=WSC)
+NTH = r'(?:[-+])?(?:[0-9]+n?|n)(?:(?<=n){ws}*(?:[-+]){ws}*(?:[0-9]+))?'.format(ws=WSC)
 # Value: quoted string or identifier
-VALUE = r'''(?:"(?:\\.|[^\\"]*)*?"|'(?:\\.|[^\\']*)*?'|{ident}+)'''.format(ident=IDENTIFIER)
+VALUE = r'''(?:"(?:\\.|[^\\"]+)*?"|'(?:\\.|[^\\']+)*?'|{ident}+)'''.format(ident=IDENTIFIER)
 # Attribute value comparison. `!=` is handled special as it is non-standard.
 ATTR = r'''
 (?:{ws}*(?P<cmp>[!~^|*$]?=){ws}*(?P<value>{value})(?:{ws}+(?P<case>[is]))?)?{ws}*\]
@@ -139,7 +139,10 @@ PAT_PSEUDO_CONTAINS = r':contains\({ws}*(?P<value>{value}){ws}*\)'.format(ws=WSC
 # CSS escape pattern
 RE_CSS_ESC = re.compile(r'(?:(\\[a-f0-9]{{1,6}}{ws}?)|(\\[^\r\n\f]))'.format(ws=WSC), re.I)
 # Pattern to break up `nth` specifiers
-RE_NTH = re.compile(r'(?P<s1>[-+])?(?P<a>\d+n?|n)(?:(?<=n){ws}*(?P<s2>[-+]){ws}*(?P<b>\d+))?'.format(ws=WSC), re.I)
+RE_NTH = re.compile(
+    r'(?P<s1>[-+])?(?P<a>[0-9]+n?|n)(?:(?<=n){ws}*(?P<s2>[-+]){ws}*(?P<b>[0-9]+))?'.format(ws=WSC),
+    re.I
+)
 # Pattern to iterate multiple languages.
 RE_LANG = re.compile(r'(?:(?P<value>{value})|(?P<split>{ws}*,{ws}*))'.format(ws=WSC, value=VALUE), re.X)
 # Whitespace checks
@@ -156,7 +159,7 @@ REL_HAS_CHILD = ": "
 # Parse flags
 FLG_PSEUDO = 0x01
 FLG_NOT = 0x02
-FLG_HAS = 0x04
+FLG_RELATIVE = 0x04
 FLG_DEFAULT = 0x08
 FLG_HTML = 0x10
 FLG_INDETERMINATE = 0x20
@@ -533,7 +536,7 @@ class CSSParser(object):
         if name == ':not':
             flags |= FLG_NOT
         if name == ':has':
-            flags |= FLG_HAS
+            flags |= FLG_RELATIVE
 
         sel.selectors.append(self.parse_selectors(iselector, index, flags))
         has_selector = True
@@ -655,7 +658,7 @@ class CSSParser(object):
         split_last = False
         is_open = flags & FLG_OPEN
         is_pseudo = flags & FLG_PSEUDO
-        is_has = flags & FLG_HAS
+        is_relative = flags & FLG_RELATIVE
         is_not = flags & FLG_NOT
         is_html = flags & FLG_HTML
         is_default = flags & FLG_DEFAULT
@@ -666,8 +669,8 @@ class CSSParser(object):
                 print('    is_pseudo: True')
             if is_open:
                 print('    is_open: True')
-            if is_has:
-                print('    is_has: True')
+            if is_relative:
+                print('    is_relative: True')
             if is_not:
                 print('    is_not: True')
             if is_html:
@@ -677,7 +680,7 @@ class CSSParser(object):
             if is_indeterminate:
                 print('    is_indeterminate: True')
 
-        if is_has:
+        if is_relative:
             selectors.append(_Selector())
 
         try:
@@ -712,7 +715,7 @@ class CSSParser(object):
                 elif key == 'combine':
                     if split_last:
                         raise SyntaxError("Unexpected combining character at position {}".format(m.start(0)))
-                    if is_has:
+                    if is_relative:
                         has_selector, sel, rel_type = self.parse_has_split(
                             sel, m, has_selector, selectors, rel_type
                         )
@@ -744,14 +747,14 @@ class CSSParser(object):
             if not sel.tag and not is_pseudo:
                 # Implied `*`
                 sel.tag = ct.SelectorTag('*', None)
-            if is_has:
+            if is_relative:
                 sel.rel_type = rel_type
                 selectors[-1].relations.append(sel)
             else:
                 sel.relations.extend(relations)
                 del relations[:]
                 selectors.append(sel)
-        elif is_has:
+        elif is_relative:
             # We will always need to finish a selector when `:has()` is used as it leads with combining.
             raise SyntaxError('Missing selectors after combining type.')
 
