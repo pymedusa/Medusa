@@ -10,7 +10,7 @@ PY3 = sys.version_info >= (3, 0)
 if PY3:
     from functools import lru_cache  # noqa F401
     import copyreg  # noqa F401
-    from collections.abc import Hashable  # noqa F401
+    from collections.abc import Hashable, Mapping  # noqa F401
 
     ustr = str  # noqa
     bstr = bytes  # noqa
@@ -19,7 +19,7 @@ if PY3:
 else:
     from backports.functools_lru_cache import lru_cache  # noqa F401
     import copy_reg as copyreg  # noqa F401
-    from collections import Hashable  # noqa F401
+    from collections import Hashable, Mapping  # noqa F401
 
     ustr = unicode  # noqa
     bstr = str  # noqa
