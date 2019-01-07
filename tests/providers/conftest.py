@@ -20,9 +20,7 @@ def get_providers():
     return (anidex, horriblesubs, limetorrents, newpct, nyaa, rarbg, shanaproject,
             thepiratebay, tokyotoshokan, torrent9, torrentz2, yggtorrent, zooqle)
 
-
-@pytest.fixture(scope='session')
-def providers():
+def get_provider_data():
     Provider = namedtuple('Provider', 'name type klass data')
     providers = [Provider(name=provider.__name__.rpartition('.')[2],
                           type=provider.__name__.split('.', 3)[2],
@@ -41,3 +39,7 @@ def providers():
         provider.data.update(test_data)
 
     return providers
+
+@pytest.fixture(scope='session')
+def providers():
+    return get_provider_data()
