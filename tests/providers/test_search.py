@@ -6,7 +6,7 @@ import datetime
 import functools
 import os
 
-from .conftest import get_provider_data
+from tests.providers.conftest import get_provider_data
 
 import vcr
 
