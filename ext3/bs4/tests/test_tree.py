@@ -971,6 +971,10 @@ class TestTreeModification(SoupTest):
         # Can't insert before if an element has no parent.
         b.extract()
         self.assertRaises(ValueError, b.insert_before, "nope")
+
+        # Can insert an identical element
+        soup = self.soup("<a>")
+        soup.a.insert_before(soup.new_tag("a"))
         
     def test_insert_multiple_before(self):
         soup = self.soup("<a>foo</a><b>bar</b>")
@@ -1000,6 +1004,10 @@ class TestTreeModification(SoupTest):
         # Can't insert after if an element has no parent.
         b.extract()
         self.assertRaises(ValueError, b.insert_after, "nope")
+
+        # Can insert an identical element
+        soup = self.soup("<a>")
+        soup.a.insert_before(soup.new_tag("a"))
         
     def test_insert_multiple_after(self):
         soup = self.soup("<a>foo</a><b>bar</b>")
