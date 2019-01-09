@@ -61,6 +61,9 @@ export default {
             const { indexer, id, getShowById, shows, $store } = this;
             const { defaults } = $store.state;
 
+            // Added the log, to see when this computed is accessed.
+            console.log(`getting show info for: ${id}`);
+
             if (shows.length === 0 || !indexer || !id) {
                 return defaults.show;
             }
@@ -70,11 +73,12 @@ export default {
                 return defaults.show;
             }
 
+            // With the current mako there is no reason to enable this IMO.
             // Not detailed
-            if (!show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: false });
-                return getShowById({ indexer, id });
-            }
+            // if (!show.seasons) {
+            //     $store.dispatch('getShow', { id, indexer, detailed: false });
+            //     return getShowById({ indexer, id });
+            // }
 
             return show;
         },

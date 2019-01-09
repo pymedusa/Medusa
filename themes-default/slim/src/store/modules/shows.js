@@ -70,6 +70,7 @@ const actions = {
         if (fetch !== undefined) {
             params.fetch = Boolean(fetch);
         }
+
         return api.get('/series/' + indexer + id, { params }).then(res => {
             commit(ADD_SHOW, res.data);
         });
@@ -81,32 +82,43 @@ const actions = {
      * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 10k shows.
      * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
      */
-    async getShows(context, shows) {
+    getShows(context, shows) {
         const { commit, dispatch } = context;
 
         // If no shows are provided get the first 10000
         if (!shows) {
-            const limit = 1000;
-            const page = 1;
+            return (async() => {
+                const limit = 1000;
+                const page = 1;
+                const params = {
+                    limit,
+                    page
+                };
 
-            const params = {
-                limit,
-                page
-            };
+                // Get first page
+                try {
+                    const response = await api.get('/series', { params });
+                } catch {
+                    console.log(
+                        'Could not retrieve a list of shows'
+                    );
+                    return;
+                }
+                const totalPages = Number(response.headers['x-pagination-total']);
+                response.data.forEach(show => {
+                    commit(ADD_SHOW, show);
+                });
 
-            const records = [];
-            let keepGoing = true;
-            while (keepGoing) {
-                const response = await api.get('/series', { params });
-                records.push(...response.data);
-                if (response.data.length < limit) {
-                    keepGoing = false;
-                    return records.forEach(show => {
-                        commit(ADD_SHOW, show);
+                // Optionally get additional pages
+                for (let x = 2; x <= totalPages; x++) {
+                    params.page = x;
+                    api.get('/series', { params }).then(response => {
+                        response.data.forEach(show => {
+                            commit(ADD_SHOW, show);
+                        });
                     });
                 }
-                params.page += 1;
-            }
+            })();
         }
 
         return shows.forEach(show => dispatch('getShow', show));
