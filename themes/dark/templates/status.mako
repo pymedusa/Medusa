@@ -54,10 +54,10 @@
                 <% service = getattr(app, scheduler) %>
             <tr>
                 <td>${schedulerName}</td>
-                % if service.is_alive():
+                % if service and service.is_alive():
                 <td style="background-color:rgb(0, 128, 0);">${service.is_alive()}</td>
                 % else:
-                <td style="background-color:rgb(255, 0, 0);">${service.is_alive()}</td>
+                <td style="background-color:rgb(255, 0, 0);">False</td>
                 % endif
                 % if scheduler == 'backlog_search_scheduler':
                     <% searchQueue = getattr(app, 'search_queue_scheduler') %>
@@ -65,11 +65,13 @@
                     <% del searchQueue %>
                     % if BLSpaused:
                 <td>Paused</td>
+                    % elif service:
+                    <td>${service.enable}</td>
                     % else:
-                <td>${service.enable}</td>
+                    <td>False</td>
                     % endif
                 % else:
-                <td>${service.enable}</td>
+                <td>${service.enable if service else 'False'}</td>
                 % endif
                 % if scheduler == 'backlog_search_scheduler':
                     <% searchQueue = getattr(app, 'search_queue_scheduler') %>
@@ -93,21 +95,25 @@
                 <td>N/A</td>
                     % endtry
                 % endif
-                % if service.start_time:
+                % if service and service.start_time:
                 <td align="right">${service.start_time}</td>
                 % else:
                 <td align="right"></td>
                 % endif
-                <% cycleTime = (service.cycleTime.microseconds + (service.cycleTime.seconds + service.cycleTime.days * 24 * 3600) * 10**6) / 10**6 %>
-                <td align="right" data-seconds="${cycleTime}">${helpers.pretty_time_delta(cycleTime)}</td>
-                % if service.enable:
+                % if service:
+                    <% cycleTime = (service.cycleTime.microseconds + (service.cycleTime.seconds + service.cycleTime.days * 24 * 3600) * 10**6) / 10**6 %>
+                    <td align="right" data-seconds="${cycleTime}">${helpers.pretty_time_delta(cycleTime)}</td>
+                % else:
+                    <td align="right" data-seconds="${cycleTime}">unavailable</td>
+                % endif
+                % if service and service.enable:
                     <% timeLeft = (service.timeLeft().microseconds + (service.timeLeft().seconds + service.timeLeft().days * 24 * 3600) * 10**6) / 10**6 %>
                 <td align="right" data-seconds="${timeLeft}">${helpers.pretty_time_delta(timeLeft)}</td>
                 % else:
                 <td></td>
                 % endif
-                <td>${service.lastRun.strftime(dateTimeFormat)}</td>
-                <td>${service.silent}</td>
+                <td>${service.lastRun.strftime(dateTimeFormat) if service else 'unavailable'}</td>
+                <td>${service.silent if service else 'unavailable'}</td>
             </tr>
             <% del service %>
             % endfor

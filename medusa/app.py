@@ -2,9 +2,13 @@
 """First module to initialize."""
 from __future__ import unicode_literals
 
+import datetime
+import logging
 import random
 import sys
 from threading import Lock
+
+logger = logging.getLogger(__name__)
 
 
 class MedusaApp(object):
@@ -236,6 +240,7 @@ class MedusaApp(object):
 
         self.USE_NZBS = False
         self.USE_TORRENTS = False
+        self.DISABLE_NO_CLIENT_WARNING = False
 
         self.NZB_METHOD = None
         self.NZB_DIR = None
@@ -244,6 +249,8 @@ class MedusaApp(object):
         self.MAX_CACHE_AGE = None
         self.TORRENT_METHOD = None
         self.TORRENT_DIR = None
+        self._ENABLE_DAILY_SEARCH = True
+        self._ENABLE_BACKLOG_SEARCH = True
         self.DOWNLOAD_PROPERS = False
         self.CHECK_PROPERS_INTERVAL = None
         self.PROPERS_SEARCH_DAYS = 2
@@ -252,10 +259,10 @@ class MedusaApp(object):
         self.SAB_FORCED = False
         self.RANDOMIZE_PROVIDERS = False
 
-        self.AUTOPOSTPROCESSOR_FREQUENCY = 10
-        self.DAILYSEARCH_FREQUENCY = None
+        self._AUTOPOSTPROCESSOR_FREQUENCY = 10
+        self._DAILYSEARCH_FREQUENCY = None
         self.UPDATE_FREQUENCY = None
-        self.BACKLOG_FREQUENCY = None
+        self._BACKLOG_FREQUENCY = None
         self.SHOWUPDATE_HOUR = None
 
         self.DEFAULT_TORRENT_CHECKER_FREQUENCY = 60
@@ -277,7 +284,7 @@ class MedusaApp(object):
         self.RENAME_EPISODES = False
         self.AIRDATE_EPISODES = False
         self.FILE_TIMESTAMP_TIMEZONE = None
-        self.PROCESS_AUTOMATICALLY = False
+        self._PROCESS_AUTOMATICALLY = False
         self.NO_DELETE = False
         self.KEEP_PROCESSED_DIR = False
         self.PROCESS_METHOD = None
@@ -668,6 +675,127 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_TIMEOUT = 3
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = '0629B785CE550C8D'
+
+    @property
+    def DAILYSEARCH_FREQUENCY(self):
+        return self._DAILYSEARCH_FREQUENCY
+
+    def start_stop_daily_scheduler(self, restart=False):
+        """Check if we need to start or stop the daily scheduler thread."""
+        from medusa import scheduler
+        from medusa.search.daily import DailySearcher
+        if self._ENABLE_DAILY_SEARCH and (not app.daily_search_scheduler or not app.daily_search_scheduler.is_alive() or restart):
+            update_interval = datetime.timedelta(minutes=self._DAILYSEARCH_FREQUENCY)
+            self.daily_search_scheduler = scheduler.Scheduler(
+                DailySearcher(),
+                cycleTime=update_interval,
+                threadName='DAILYSEARCHER',
+                run_delay=update_interval
+            )
+            self.daily_search_scheduler.start()
+        elif app.daily_search_scheduler and app.daily_search_scheduler.is_alive():
+            self.daily_search_scheduler.stop.set()
+            logger.info('Daily search background process stopped')
+
+    @DAILYSEARCH_FREQUENCY.setter
+    def DAILYSEARCH_FREQUENCY(self, value):
+        old_value = self._DAILYSEARCH_FREQUENCY
+        self._DAILYSEARCH_FREQUENCY = value
+
+        if not value == old_value:
+            self.start_stop_daily_scheduler(restart=True)
+
+    @property
+    def ENABLE_DAILY_SEARCH(self):
+        return self._ENABLE_DAILY_SEARCH
+
+    @ENABLE_DAILY_SEARCH.setter
+    def ENABLE_DAILY_SEARCH(self, value):
+        old_value = self._ENABLE_DAILY_SEARCH
+        self._ENABLE_DAILY_SEARCH = value
+
+        if not value == old_value:
+            self.start_stop_daily_scheduler()
+
+    def start_stop_backlog_scheduler(self, restart=False):
+        """Check if we need to start or stop the backlog scheduler thread."""
+        from medusa.search.backlog import BacklogSearcher, BacklogSearchScheduler
+
+        if self._ENABLE_BACKLOG_SEARCH and (not app.backlog_search_scheduler or not app.backlog_search_scheduler.is_alive() or restart):
+            update_interval = datetime.timedelta(minutes=self._BACKLOG_FREQUENCY)
+            app.backlog_search_scheduler = BacklogSearchScheduler(
+                BacklogSearcher(),
+                cycleTime=update_interval,
+                threadName='BACKLOG',
+                run_delay=update_interval
+            )
+            self.backlog_search_scheduler.start()
+        elif app.backlog_search_scheduler and app.backlog_search_scheduler.is_alive():
+            self.backlog_search_scheduler.stop.set()
+            logger.info('Backlog search background process stopped')
+
+    @property
+    def BACKLOG_FREQUENCY(self):
+        return self._BACKLOG_FREQUENCY
+
+    @BACKLOG_FREQUENCY.setter
+    def BACKLOG_FREQUENCY(self, value):
+        old_value = self._BACKLOG_FREQUENCY
+        self._BACKLOG_FREQUENCY = value
+
+        if not value == old_value:
+            self.start_stop_backlog_scheduler(restart=True)
+
+    @property
+    def ENABLE_BACKLOG_SEARCH(self):
+        return self._ENABLE_BACKLOG_SEARCH
+
+    @ENABLE_BACKLOG_SEARCH.setter
+    def ENABLE_BACKLOG_SEARCH(self, value):
+        old_value = self._ENABLE_BACKLOG_SEARCH
+        self._ENABLE_BACKLOG_SEARCH = value
+
+        if not value == old_value:
+            self.start_stop_backlog_scheduler()
+
+    def start_stop_auto_post_processing(self, restart=False):
+        """Start or stop the automatic post processor."""
+        from medusa import auto_post_processor, scheduler
+
+        if self._PROCESS_AUTOMATICALLY and (not self.auto_post_processor_scheduler or not self.auto_post_processor_scheduler.is_alive() or restart):
+            update_interval = datetime.timedelta(minutes=self._AUTOPOSTPROCESSOR_FREQUENCY)
+            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
+                                                                    cycleTime=update_interval,
+                                                                    threadName='POSTPROCESSOR',
+                                                                    run_delay=update_interval)
+            self.auto_post_processor_scheduler.start()
+        elif self.auto_post_processor_scheduler and self.auto_post_processor_scheduler.is_alive():
+            self.auto_post_processor_scheduler.stop.set()
+            logger.info('Auto postprocessor background process stopped')
+
+    @property
+    def AUTOPOSTPROCESSOR_FREQUENCY(self):
+        return self._AUTOPOSTPROCESSOR_FREQUENCY
+
+    @AUTOPOSTPROCESSOR_FREQUENCY.setter
+    def AUTOPOSTPROCESSOR_FREQUENCY(self, value):
+        old_value = self._AUTOPOSTPROCESSOR_FREQUENCY
+        self._AUTOPOSTPROCESSOR_FREQUENCY = value
+
+        if not value == old_value:
+            self.start_stop_auto_post_processing(restart=True)
+
+    @property
+    def PROCESS_AUTOMATICALLY(self):
+        return self._PROCESS_AUTOMATICALLY
+
+    @PROCESS_AUTOMATICALLY.setter
+    def PROCESS_AUTOMATICALLY(self, value):
+        old_value = self._PROCESS_AUTOMATICALLY
+        self._PROCESS_AUTOMATICALLY = value
+
+        if not value == old_value:
+            self.start_stop_auto_post_processing()
 
 
 app = MedusaApp()

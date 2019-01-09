@@ -37,8 +37,8 @@
             <span class="footerhighlight"><app-link href="manage/episodeStatuses?whichStatus=2" title="View overview of snatched episodes">+${ep_snatched}</app-link></span> Snatched
             % endif
             &nbsp;/&nbsp;<span class="footerhighlight">${ep_total}</span> Episodes Downloaded ${ep_percentage}
-            | Daily Search: <span class="footerhighlight">${str(app.daily_search_scheduler.timeLeft()).split('.')[0]}</span>
-            | Backlog Search: <span class="footerhighlight">${str(app.backlog_search_scheduler.timeLeft()).split('.')[0]}</span>
+            | Daily Search: <span class="footerhighlight">${str(app.daily_search_scheduler.timeLeft()).split('.')[0] if app.daily_search_scheduler else "<font color='#FF0000'><b>(disabled)</b></font>"}</span>
+            | Backlog Search: <span class="footerhighlight">${str(app.backlog_search_scheduler.timeLeft()).split('.')[0] if app.backlog_search_scheduler else "<font color='#FF0000'><b>(disabled)</b></font>"}</span>
             <div>
             % if mem_usage:
                 Memory used: <span class="footerhighlight">

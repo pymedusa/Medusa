@@ -65,10 +65,11 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler,
+    app, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
+from medusa.app import app as app_config
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
@@ -599,10 +600,20 @@ class Application(object):
             app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
                                                 check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
                                                                   app.DEFAULT_TORRENT_CHECKER_FREQUENCY))
-            app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
-                                            check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
+            app.ENABLE_DAILY_SEARCH = bool(check_setting_bool(app.CFG, 'General', 'enable_daily_search', 1))
+            app_config.DAILYSEARCH_FREQUENCY = max(
+                app.MIN_DAILYSEARCH_FREQUENCY,
+                check_setting_int(app.CFG, 'General', 'dailysearch_frequency',
+                                  app.DEFAULT_DAILYSEARCH_FREQUENCY)
+            )
+            app.ENABLE_BACKLOG_SEARCH = bool(check_setting_bool(app.CFG, 'General', 'enable_backlog_search', 1))
+            app_config.BACKLOG_FREQUENCY = max(
+                app.MIN_BACKLOG_FREQUENCY,
+                check_setting_int(app.CFG, 'General', 'backlog_frequency',
+                                  app.DEFAULT_BACKLOG_FREQUENCY)
+            )
             app.MIN_BACKLOG_FREQUENCY = Application.get_backlog_cycle_time()
-            app.BACKLOG_FREQUENCY = max(app.MIN_BACKLOG_FREQUENCY, check_setting_int(app.CFG, 'General', 'backlog_frequency', app.DEFAULT_BACKLOG_FREQUENCY))
+
             app.UPDATE_FREQUENCY = max(app.MIN_UPDATE_FREQUENCY, check_setting_int(app.CFG, 'General', 'update_frequency', app.DEFAULT_UPDATE_FREQUENCY))
             app.SHOWUPDATE_HOUR = max(0, min(23, check_setting_int(app.CFG, 'General', 'showupdate_hour', app.DEFAULT_SHOWUPDATE_HOUR)))
 
@@ -1128,6 +1139,8 @@ class Application(object):
 
             # initialize schedulers
             # updaters
+            # TODO: These should all be moved as @propery/@property.setters to medusa.app.py
+            # Already moved: app.daily_search_scheduler, app.backlog_search_scheduler
             app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
@@ -1155,19 +1168,6 @@ class Application(object):
                                                                     cycleTime=datetime.timedelta(seconds=3),
                                                                     threadName='FORCEDSEARCHQUEUE')
 
-            # TODO: update_interval should take last daily/backlog times into account!
-            update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
-            app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
-                                                             cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
-
-            update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
-            app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
-                                                                  cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
-
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
                 update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
                 run_at = None
@@ -1182,12 +1182,6 @@ class Application(object):
                                                               run_delay=update_interval)
 
             # processors
-            update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
-                                                                    cycleTime=update_interval,
-                                                                    threadName='POSTPROCESSOR',
-                                                                    silent=not app.PROCESS_AUTOMATICALLY,
-                                                                    run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
@@ -1214,7 +1208,7 @@ class Application(object):
     @staticmethod
     def get_backlog_cycle_time():
         """Return backlog cycle frequency."""
-        cycletime = app.DAILYSEARCH_FREQUENCY * 2 + 7
+        cycletime = app.DAILYSEARCH_FREQUENCY * 2 + 7 if app.DAILYSEARCH_FREQUENCY else 10
         return max([cycletime, 720])
 
     @staticmethod
@@ -1282,13 +1276,13 @@ class Application(object):
             # start system events queue
             app.events.start()
 
-            # start the daily search scheduler
-            app.daily_search_scheduler.enable = True
-            app.daily_search_scheduler.start()
+            # # start the daily search scheduler
+            # app.daily_search_scheduler.enable = True
+            # app.daily_search_scheduler.start()
 
-            # start the backlog scheduler
-            app.backlog_search_scheduler.enable = True
-            app.backlog_search_scheduler.start()
+            # # start the backlog scheduler
+            # app.backlog_search_scheduler.enable = True
+            # app.backlog_search_scheduler.start()
 
             # start the show updater
             app.show_update_scheduler.enable = True
@@ -1322,15 +1316,6 @@ class Application(object):
                 app.proper_finder_scheduler.enable = False
                 app.proper_finder_scheduler.silent = True
             app.proper_finder_scheduler.start()
-
-            # start the post processor
-            if app.PROCESS_AUTOMATICALLY:
-                app.auto_post_processor_scheduler.silent = False
-                app.auto_post_processor_scheduler.enable = True
-            else:
-                app.auto_post_processor_scheduler.enable = False
-                app.auto_post_processor_scheduler.silent = True
-            app.auto_post_processor_scheduler.start()
 
             # start the subtitles finder
             if app.USE_SUBTITLES:
@@ -1479,7 +1464,9 @@ class Application(object):
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
         new_config['General']['torrent_checker_frequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        new_config['General']['enable_daily_search'] = int(app.ENABLE_DAILY_SEARCH)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        new_config['General']['enable_backlog_search'] = int(app.ENABLE_BACKLOG_SEARCH)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)
         new_config['General']['showupdate_hour'] = int(app.SHOWUPDATE_HOUR)

@@ -169,9 +169,11 @@ class ConfigHandler(BaseRequestHandler):
         'search.general.checkPropersInterval': StringField(app, 'CHECK_PROPERS_INTERVAL'),
         # 'search.general.propersIntervalLabels': IntegerField(app, 'PROPERS_INTERVAL_LABELS'),
         'search.general.propersSearchDays': IntegerField(app, 'PROPERS_SEARCH_DAYS'),
+        'search.general.enableBacklogSearch': BooleanField(app, 'ENABLE_BACKLOG_SEARCH'),
         'search.general.backlogDays': IntegerField(app, 'BACKLOG_DAYS'),
         'search.general.backlogFrequency': IntegerField(app, 'BACKLOG_FREQUENCY'),
         'search.general.minBacklogFrequency': IntegerField(app, 'MIN_BACKLOG_FREQUENCY'),
+        'search.general.enableDailySearch': BooleanField(app, 'ENABLE_DAILY_SEARCH'),
         'search.general.dailySearchFrequency': IntegerField(app, 'DAILYSEARCH_FREQUENCY'),
         'search.general.minDailySearchFrequency': IntegerField(app, 'MIN_DAILYSEARCH_FREQUENCY'),
         'search.general.removeFromClient': BooleanField(app, 'REMOVE_FROM_CLIENT'),
@@ -685,9 +687,11 @@ class DataGenerator(object):
         # {u'45m': u'45 mins', u'15m': u'15 mins', u'4h': u'4 hours', u'daily': u'24 hours', u'90m': u'90 mins'}
         # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
         section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
+        section_data['general']['enableBacklogSearch'] = bool(app.ENABLE_BACKLOG_SEARCH)
         section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
         section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
+        section_data['general']['enableDailySearch'] = bool(app.ENABLE_DAILY_SEARCH)
         section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
         section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)

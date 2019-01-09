@@ -465,13 +465,17 @@ window.app = new Vue({
 
                                 </div><!-- check propers -->
 
-                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+                                <config-toggle-slider v-model="search.general.enableBacklogSearch" label="Enable backlog search" id="enable_backlog_search" :explanations="['Enable/Disable backlog search']" ></config-toggle-slider>
 
-                                <config-textbox-number :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
+                                <config-textbox-number v-show="search.general.enableBacklogSearch" :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+
+                                <config-textbox-number v-show="search.general.enableBacklogSearch" :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
                                 </config-textbox-number>
 
-                                <config-textbox-number :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.dailySearchFrequency" label="Daily search interval" id="daily_frequency">
+                                <config-toggle-slider v-model="search.general.enableDailySearch" label="Enable daily search" id="enable_daily_search" :explanations="['Enable/Disable daily search']" ></config-toggle-slider>
+
+                                <config-textbox-number v-show="search.general.enableDailySearch" :min="search.general.minDailySearchFrequency" :step="1" v-model.number="search.general.dailySearchFrequency" label="Daily search interval" id="daily_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minDailySearchFrequency}})</p>
                                 </config-textbox-number>
 
