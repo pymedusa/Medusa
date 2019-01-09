@@ -85,7 +85,7 @@ const actions = {
     getShows(context, shows) {
         const { commit, dispatch } = context;
 
-        // If no shows are provided get the first 10000
+        // If no shows are provided get the first 1000
         if (!shows) {
             return (async() => {
                 const limit = 1000;
