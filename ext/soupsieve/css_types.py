@@ -1,6 +1,5 @@
 """CSS selector structure items."""
 from __future__ import unicode_literals
-from collections import Mapping
 from . import util
 
 __all__ = ('Selector', 'SelectorTag', 'SelectorAttribute', 'SelectorNth', 'SelectorList', 'Namespaces')
@@ -72,7 +71,7 @@ class Immutable(object):
     __str__ = __repr__
 
 
-class ImmutableDict(Mapping):
+class ImmutableDict(util.Mapping):
     """Hashable, immutable dictionary."""
 
     def __init__(self, *args, **kwargs):

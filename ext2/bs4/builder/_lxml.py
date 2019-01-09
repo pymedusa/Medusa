@@ -71,12 +71,12 @@ class LXMLTreeBuilderForXML(TreeBuilder):
         This might be useful later on when creating CSS selectors.
         """
         for key, value in mapping.items():
-            if key not in self.soup._namespaces:
-                    # Let the BeautifulSoup object know about a new namespace.
-                    # If there are multiple namespaces defined with the same
-                    # prefix, the first one in the document takes precedence.
-                    self.soup._namespaces[key] = value
-        
+            if key and key not in self.soup._namespaces:
+                # Let the BeautifulSoup object know about a new namespace.
+                # If there are multiple namespaces defined with the same
+                # prefix, the first one in the document takes precedence.
+                self.soup._namespaces[key] = value
+
     def default_parser(self, encoding):
         # This can either return a parser object or a class, which
         # will be instantiated with default arguments.

@@ -18,7 +18,7 @@ http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 """
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "4.7.0"
+__version__ = "4.7.1"
 __copyright__ = "Copyright (c) 2004-2019 Leonard Richardson"
 # Use of this source code is governed by the MIT license.
 __license__ = "MIT"
@@ -435,113 +435,56 @@ class BeautifulSoup(Tag):
             if previous_element is None:
                 previous_element = o.previous_element
 
+        fix = parent.next_element is not None
+
         o.setup(parent, previous_element, next_element, previous_sibling, next_sibling)
 
         self._most_recent_element = o
         parent.contents.append(o)
 
         # Check if we are inserting into an already parsed node.
-        if parent.next_element is not None:
+        if fix:
+            self._linkage_fixer(parent)
 
-            # Check that links are proper across tag parent boundaries
-            child = self._linkage_fixer(parent)
-
-    def _linkage_fixer(self, el, _recursive_call=False):
+    def _linkage_fixer(self, el):
         """Make sure linkage of this fragment is sound."""
-        descendant = None
 
-        # If element is document element,
-        # it should have no previous element, previous sibling, or next sibling.
-        if el.parent is None:
-            if el.previous_element is not None:
-                el.previous_element = None
-            if el.previous_sibling is not None:
-                el.previous_element = None
-            if el.next_sibling is not None:
-                el.next_sibling = None
+        first = el.contents[0]
+        child = el.contents[-1]
+        descendant = child
 
-        idx = 0
-        child = None
-        last_child = None
-        last_idx = len(el.contents) - 1
-        for child in el.contents:
-            descendant = None
+        if child is first and el.parent is not None:
+            # Parent should be linked to first child
+            el.next_element = child
+            # We are no longer linked to whatever this element is
+            prev_el = child.previous_element
+            if prev_el is not None and prev_el is not el:
+                prev_el.next_element = None
+            # First child should be linked to the parent, and no previous siblings.
+            child.previous_element = el
+            child.previous_sibling = None
 
-            # Parent should link next element to their first child
-            # That child should have no previous sibling
-            if idx == 0:
-                if el.parent is not None:
-                    if el.next_element is not child:
-                        el.next_element = child
+        # We have no sibling as we've been appended as the last.
+        child.next_sibling = None
 
-                    if child.previous_element is not el:
-                        child.previous_element = el
+        # This index is a tag, dig deeper for a "last descendant"
+        if isinstance(child, Tag) and child.contents:
+            descendant = child._last_descendant(False)
 
-                    if child.previous_sibling is not None:
-                        child.previous_sibling = None
-
-            # If not the first child, previous index should link as sibling to last index.
-            # Previous element should match the last index or the last bubbled up descendant (of a Tag sibling).
-            else:
-                if child.previous_sibling is not el.contents[idx - 1]:
-                    child.previous_sibling = el.contents[idx - 1]
-                if el.contents[idx - 1].next_sibling is not child:
-                    el.contents[idx - 1].next_sibling = child
-
-                if last_child is not None:
-                    if child.previous_element is not last_child:
-                        child.previous_element = last_child
-                    if last_child.next_element is not child:
-                        last_child.next_element = child
-
-            # This index is a tag, dig deeper for a "last descendant" fixing linkage along the way
-            if isinstance(child, Tag) and child.contents:
-                descendant = self._linkage_fixer(child, True)
-                # A bubbled up descendant should have no next siblings
-                # as it is last in its content list.
-                if descendant.next_sibling is not None:
-                    descendant.next_sibling = None
-
-            # Mark last child as either the bubbled up descendant or the current child
-            if descendant is not None:
-                last_child = descendant
-            else:
-                last_child = child
-
-            # If last child in list, there are no next siblings
-            if idx == last_idx:
-                if child.next_sibling is not None:
-                    child.next_sibling = None
-            idx += 1
-
-        # The child to return is either the last descendant (if available)
-        # or the last processed child (if any). If neither is available,
-        # the parent element is its own last descendant.
-        child = descendant if descendant is not None else child
-        if child is None:
-            child = el
-
-        # If not a recursive call, we are done processing this element.
         # As the final step, link last descendant. It should be linked
         # to the parent's next sibling (if found), else walk up the chain
-        # and find a parent with a sibling.
-        if not _recursive_call and child is not None:
-            child.next_element = None
-            target = el
-            while True:
-                if target is None:
-                    break
-                elif target.next_sibling is not None:
-                    child.next_element = target.next_sibling
-                    target.next_sibling.previous_element = child
-                    break
-                target = target.parent
-
-            # We are done, so nothing to return
-            return None
-        else:
-            # Return the child to the recursive caller
-            return child
+        # and find a parent with a sibling. It should have no next sibling.
+        descendant.next_element = None
+        descendant.next_sibling = None
+        target = el
+        while True:
+            if target is None:
+                break
+            elif target.next_sibling is not None:
+                descendant.next_element = target.next_sibling
+                target.next_sibling.previous_element = child
+                break
+            target = target.parent
 
     def _popToTag(self, name, nsprefix=None, inclusivePop=True):
         """Pops the tag stack up to and including the most recent
