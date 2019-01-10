@@ -17,13 +17,13 @@ from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
     RecommendedShow,
     cached_get_imdb_series_details,
-    update_recommended_series_cache_index,
     create_key_from_series,
+    update_recommended_series_cache_index,
 )
 
-from six import binary_type
-
 from requests import RequestException
+
+from six import binary_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
