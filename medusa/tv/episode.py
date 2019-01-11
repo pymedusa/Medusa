@@ -677,7 +677,7 @@ class Episode(TV):
             if sql_results[0]['release_group'] is not None:
                 self.release_group = sql_results[0]['release_group']
 
-            self.preferred_words_score = int(sql_results[0]['release_group'] or 0)
+            self.preferred_words_score = int(sql_results[0]['preferred_words_score'] or 0)
 
             self.loaded = True
             self.reset_dirty()
@@ -1225,7 +1225,7 @@ class Episode(TV):
                         '  version = ?, '
                         '  release_group = ?, '
                         '  manually_searched = ?, '
-                        '  watched = ?'
+                        '  watched = ?, '
                         '  preferred_words_score = ? '
                         'WHERE '
                         '  episode_id = ?',
@@ -1263,7 +1263,7 @@ class Episode(TV):
                         '  version = ?, '
                         '  release_group = ?, '
                         '  manually_searched = ?, '
-                        '  watched = ? '
+                        '  watched = ?, '
                         '  preferred_words_score = ? '
                         'WHERE '
                         '  episode_id = ?',
