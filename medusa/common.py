@@ -540,7 +540,8 @@ class Quality(object):
 
     @staticmethod
     def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
-                       download_current_quality=False, force=False, manually_searched=False, search_type=None):
+                       download_current_quality=False, force=False, manually_searched=False, search_type=None,
+                       upgrade_preferred_words=None):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
@@ -588,6 +589,8 @@ class Quality(object):
         if preferred_qualities:
             # Don't replace because old quality is already best quality.
             if old_quality in preferred_qualities:
+                if upgrade_preferred_words:
+                    return True, 'Old quality is already best, but we got a preferred words upgrade'
                 return False, 'Existing quality is already a preferred quality. Ignoring new quality'
 
             # Replace if preferred quality
@@ -600,6 +603,9 @@ class Quality(object):
                 return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
+            # Allowed quality can only be replaced in case of a upgrade based on preferred words
+            if upgrade_preferred_words:
+                return True, 'Old quality is already best, but we got a preferred words upgrade'
             # Allowed quality should never be replaced
             return False, 'Existing quality is already final (allowed only). Ignoring new quality'
 
