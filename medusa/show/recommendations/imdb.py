@@ -18,12 +18,9 @@ from medusa.show.recommendations.recommended import (
     RecommendedShow,
     cached_get_imdb_series_details,
     create_key_from_series,
-    update_recommended_series_cache_index,
 )
 
 from requests import RequestException
-
-from six import binary_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -100,7 +97,7 @@ class ImdbPopular(object):
         result = []
         for series in popular_shows:
             try:
-                recommended_show = self._create_recommended_show(storage_key='imdb_{0}'.format(series['imdb_tt']),
+                recommended_show = self._create_recommended_show(storage_key=series['imdb_tt'],
                                                                  series=series)
                 if recommended_show:
                     result.append(recommended_show)
@@ -110,9 +107,6 @@ class ImdbPopular(object):
                     u' this show in your library: {show} ({year})',
                     {'show': series['name'], 'year': series['name']}
                 )
-
-        # Update the dogpile index. This will allow us to retrieve all stored dogpile shows from the dbm.
-        update_recommended_series_cache_index('imdb', [binary_type(s.series_id, 'utf-8') for s in result])
 
         return result
 

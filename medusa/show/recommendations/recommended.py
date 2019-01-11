@@ -36,8 +36,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, binary_type
-
+from six import ensure_str, PY2, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -221,24 +220,13 @@ def cached_get_imdb_series_details(imdb_id):
 
 
 def create_key_from_series(namespace, fn, **kw):
+    """Create a key made of indexer name and show ID."""
     def generate_key(*args, **kw):
-        show_key = namespace + '|' + args[1]
+        show_key = namespace + '_' + text_type(args[1])
         if PY2:
             return show_key.encode('utf-8')
         return show_key
     return generate_key
-
-
-def update_recommended_series_cache_index(indexer, new_index):
-    """
-    Create a key that's used to store an index with all shows saved in cache for a specific indexer. For example 'imdb'.
-
-    :param indexer: Indexer in the form of a string. For example: 'imdb', 'trakt', 'anidb'.
-    :new_index: Iterable with series id's.
-    """
-    index = recommended_series_cache.get(binary_type(indexer)) or set()
-    index.update(set(new_index))
-    recommended_series_cache.set(binary_type(indexer), index)
 
 
 def get_all_recommended_series_from_cache(indexers):
@@ -254,13 +242,13 @@ def get_all_recommended_series_from_cache(indexers):
     indexers = ensure_list(indexers)
     all_series = []
     for indexer in indexers:
-        index = recommended_series_cache.get(binary_type(indexer))
+        index = recommended_series_cache.get(ensure_str(indexer))
         if not index:
             continue
 
         for index_item in index:
             key = '{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
-            series = recommended_series_cache.get(binary_type(key))
+            series = recommended_series_cache.get(key)
             if series:
                 all_series.append(series)
 
