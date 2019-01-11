@@ -36,7 +36,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import ensure_str, PY2, text_type
+from six import PY2, ensure_str, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
