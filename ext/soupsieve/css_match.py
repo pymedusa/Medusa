@@ -1,5 +1,6 @@
 """CSS matcher."""
 from __future__ import unicode_literals
+from datetime import datetime
 from . import util
 import re
 from .import css_types as ct
@@ -7,6 +8,8 @@ import unicodedata
 
 # Empty tag pattern (whitespace okay)
 RE_NOT_EMPTY = re.compile('[^ \t\r\n\f]')
+
+RE_NOT_WS = re.compile('[^ \t\r\n\f]+')
 
 # Relationships
 REL_PARENT = ' '
@@ -23,12 +26,30 @@ REL_HAS_CLOSE_SIBLING = ':+'
 NS_XHTML = 'http://www.w3.org/1999/xhtml'
 
 DIR_FLAGS = ct.SEL_DIR_LTR | ct.SEL_DIR_RTL
+RANGES = ct.SEL_IN_RANGE | ct.SEL_OUT_OF_RANGE
 
 DIR_MAP = {
     'ltr': ct.SEL_DIR_LTR,
     'rtl': ct.SEL_DIR_RTL,
     'auto': 0
 }
+
+RE_NUM = re.compile(r"^(?P<value>-?(?:[0-9]{1,}(\.[0-9]+)?|\.[0-9]+))$")
+RE_TIME = re.compile(r'^(?P<hour>[0-9]{2}):(?P<minutes>[0-9]{2})$')
+RE_MONTH = re.compile(r'^(?P<year>[0-9]{4,})-(?P<month>[0-9]{2})$')
+RE_WEEK = re.compile(r'^(?P<year>[0-9]{4,})-W(?P<week>[0-9]{2})$')
+RE_DATE = re.compile(r'^(?P<year>[0-9]{4,})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2})$')
+RE_DATETIME = re.compile(
+    r'^(?P<year>[0-9]{4,})-(?P<month>[0-9]{2})-(?P<day>[0-9]{2})T(?P<hour>[0-9]{2}):(?P<minutes>[0-9]{2})$'
+)
+
+MONTHS_30 = (4, 6, 9, 11)  # April, June, September, and November
+FEB = 2
+SHORT_MONTH = 30
+LONG_MONTH = 31
+FEB_MONTH = 28
+FEB_LEAP_MONTH = 29
+DAYS_IN_WEEK = 7
 
 
 def assert_valid_input(tag):
@@ -163,24 +184,22 @@ class CSSMatch(object):
         if self.supports_namespaces():
             value = None
             # If we have not defined namespaces, we can't very well find them, so don't bother trying.
-            if prefix and prefix not in self.namespaces and prefix != '*':
-                return None
+            if prefix:
+                ns = self.namespaces.get(prefix)
+                if ns is None and prefix != '*':
+                    return None
+            else:
+                ns = None
 
             for k, v in el.attrs.items():
-                parts = k.split(':', 1)
-                if len(parts) > 1:
-                    if not parts[0]:
-                        a = k
-                        p = ''
-                    else:
-                        p = parts[0]
-                        a = parts[1]
-                else:
-                    p = ''
-                    a = k
+
+                # Get attribute parts
+                namespace = getattr(k, 'namespace', None)
+                name = getattr(k, 'name', None)
+
                 # Can't match a prefix attribute as we haven't specified one to match
                 # Try to match it normally as a whole `p:a` as selector may be trying `p\:a`.
-                if not prefix and p:
+                if ns is None:
                     if (self.is_xml and attr == k) or (not self.is_xml and util.lower(attr) == util.lower(k)):
                         value = v
                         break
@@ -188,22 +207,18 @@ class CSSMatch(object):
                     # Adding a print statement before this (and erasing coverage) causes coverage to find the line.
                     # Ignore the false positive message.
                     continue  # pragma: no cover
+
                 # We can't match our desired prefix attribute as the attribute doesn't have a prefix
-                if prefix and not p and prefix != '*':
+                if namespace is None or ns != namespace and prefix != '*':
                     continue
+
                 if self.is_xml:
-                    # The prefix doesn't match
-                    if prefix and p and prefix != '*' and prefix != p:
-                        continue
                     # The attribute doesn't match.
-                    if attr != a:
+                    if attr != name:
                         continue
                 else:
-                    # The prefix doesn't match
-                    if prefix and p and prefix != '*' and util.lower(prefix) != util.lower(p):
-                        continue
                     # The attribute doesn't match.
-                    if util.lower(attr) != util.lower(a):
+                    if util.lower(attr) != util.lower(name):
                         continue
                 value = v
                 break
@@ -220,7 +235,7 @@ class CSSMatch(object):
 
         classes = el.attrs.get('class', [])
         if isinstance(classes, util.ustr):
-            classes = [c for c in classes.strip().split(' ') if c]
+            classes = RE_NOT_WS.findall(classes)
         return classes
 
     def get_attribute_by_name(self, el, name, default=None):
@@ -232,6 +247,96 @@ class CSSMatch(object):
                 value = v
                 break
         return value
+
+    def validate_day(self, year, month, day):
+        """Validate day."""
+
+        max_days = LONG_MONTH
+        if month == FEB:
+            max_days = FEB_LEAP_MONTH if ((year % 4 == 0) and (year % 100 != 0)) or (year % 400 == 0) else FEB_MONTH
+        elif month in MONTHS_30:
+            max_days = SHORT_MONTH
+        return 1 <= day <= max_days
+
+    def validate_week(self, year, week):
+        """Validate week."""
+
+        max_week = datetime.strptime("{}-{}-{}".format(12, 31, year), "%m-%d-%Y").isocalendar()[1]
+        if max_week == 1:
+            max_week = 53
+        return 1 <= week <= max_week
+
+    def validate_month(self, month):
+        """Validate month."""
+
+        return 1 <= month <= 12
+
+    def validate_year(self, year):
+        """Validate year."""
+
+        return 1 <= year
+
+    def validate_hour(self, hour):
+        """Validate hour."""
+
+        return 0 <= hour <= 23
+
+    def validate_minutes(self, minutes):
+        """Validate minutes."""
+
+        return 0 <= minutes <= 59
+
+    def parse_input_value(self, itype, value):
+        """Parse the input value."""
+
+        parsed = None
+        if itype == "date":
+            m = RE_DATE.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                day = int(m.group('day'), 10)
+                if self.validate_year(year) and self.validate_month(month) and self.validate_day(year, month, day):
+                    parsed = (year, month, day)
+        elif itype == "month":
+            m = RE_MONTH.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                if self.validate_year(year) and self.validate_month(month):
+                    parsed = (year, month)
+        elif itype == "week":
+            m = RE_WEEK.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                week = int(m.group('week'), 10)
+                if self.validate_year(year) and self.validate_week(year, week):
+                    parsed = (year, week)
+        elif itype == "time":
+            m = RE_TIME.match(value)
+            if m:
+                hour = int(m.group('hour'), 10)
+                minutes = int(m.group('minutes'), 10)
+                if self.validate_hour(hour) and self.validate_minutes(minutes):
+                    parsed = (hour, minutes)
+        elif itype == "datetime-local":
+            m = RE_DATETIME.match(value)
+            if m:
+                year = int(m.group('year'), 10)
+                month = int(m.group('month'), 10)
+                day = int(m.group('day'), 10)
+                hour = int(m.group('hour'), 10)
+                minutes = int(m.group('minutes'), 10)
+                if (
+                    self.validate_year(year) and self.validate_month(month) and self.validate_day(year, month, day) and
+                    self.validate_hour(hour) and self.validate_minutes(minutes)
+                ):
+                    parsed = (year, month, day, hour, minutes)
+        elif itype in ("number", "range"):
+            m = RE_NUM.match(value)
+            if m:
+                parsed = float(m.group('value'))
+        return parsed
 
     def match_namespace(self, el, tag):
         """Match the namespace of the element."""
@@ -789,6 +894,73 @@ class CSSMatch(object):
         # Match parents direction
         return self.match_dir(el.parent, directionality)
 
+    def match_range(self, el, condition):
+        """
+        Match range.
+
+        Behavior is modeled after what we see in browsers. Browsers seem to evaluate
+        if the value is out of range, and if not, it is in range. So a missing value
+        will not evaluate out of range; therefore, value is in range. Personally, I
+        feel like this should evaluate as neither in or out of range.
+        """
+
+        out_of_range = False
+
+        itype = self.get_attribute_by_name(el, 'type').lower()
+        mn = self.get_attribute_by_name(el, 'min', None)
+        if mn is not None:
+            mn = self.parse_input_value(itype, mn)
+        mx = self.get_attribute_by_name(el, 'max', None)
+        if mx is not None:
+            mx = self.parse_input_value(itype, mx)
+
+        # There is no valid min or max, so we cannot evaluate a range
+        if mn is None and mx is None:
+            return False
+
+        value = self.get_attribute_by_name(el, 'value', None)
+        if value is not None:
+            value = self.parse_input_value(itype, value)
+        if value is not None:
+            if itype in ("date", "datetime-local", "month", "week", "number", "range"):
+                if mn is not None and value < mn:
+                    out_of_range = True
+                if not out_of_range and mx is not None and value > mx:
+                    out_of_range = True
+            elif itype == "time":
+                if mn is not None and mx is not None and mn > mx:
+                    # Time is periodic, so this is a reversed/discontinuous range
+                    if value < mn and value > mx:
+                        out_of_range = True
+                else:
+                    if mn is not None and value < mn:
+                        out_of_range = True
+                    if not out_of_range and mx is not None and value > mx:
+                        out_of_range = True
+
+        return not out_of_range if condition & ct.SEL_IN_RANGE else out_of_range
+
+    def match_defined(self, el):
+        """
+        Match defined.
+
+        `:defined` is related to custom elements in a browser.
+
+        - If the document is XML (not XHTML), all tags will match.
+        - Tags that are not custom (don't have a hyphen) are marked defined.
+        - If the tag has a prefix (without or without a namespace), it will not match.
+
+        This is of course requires the parser to provide us with the proper prefix and namespace info,
+        if it doesn't, there is nothing we can do.
+        """
+
+        return (
+            self.is_xml or
+            el.name.find('-') == -1 or
+            el.name.find(':') != -1 or
+            el.prefix is not None
+        )
+
     def match_selectors(self, el, selectors):
         """Check if element matches one of the selectors."""
 
@@ -803,6 +975,9 @@ class CSSMatch(object):
                     continue
                 # Verify tag matches
                 if not self.match_tag(el, selector.tag):
+                    continue
+                # Verify tag is defined
+                if selector.flags & ct.SEL_DEFINED and not self.match_defined(el):
                     continue
                 # Verify element is root
                 if selector.flags & ct.SEL_ROOT and not self.match_root(el):
@@ -823,6 +998,9 @@ class CSSMatch(object):
                     continue
                 # Verify attribute(s) match
                 if not self.match_attributes(el, selector.attributes):
+                    continue
+                # Verify ranges
+                if selector.flags & RANGES and not self.match_range(el, selector.flags & RANGES):
                     continue
                 # Verify language patterns
                 if selector.lang and not self.match_lang(el, selector.lang):
