@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Collection of generic used classes."""
-from __future__ import division, unicode_literals
+from __future__ import unicode_literals
 
 import logging
 
