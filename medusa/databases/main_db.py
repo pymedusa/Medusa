@@ -882,3 +882,26 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
             self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
 
         self.inc_minor_version()
+
+
+class AddPreferredWordsUpgradeFields(AddTvshowStartSearchOffset):
+    """Add tv_show / tv_episodes preferred words upgrade fields."""
+
+    def test(self):
+        """Test if the version is at least 44.14"""
+        return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new preferred words upgrade field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'upgrade_preferred_words'):
+            self.addColumn('tv_shows', 'upgrade_preferred_words', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'preferred_words_score'):
+            self.addColumn('tv_shows', 'preferred_words_score', 'NUMERIC', 0)
+
+        log.info(u'Adding new preferred words upgrade field in the tv_episodes table')
+        if not self.hasColumn('tv_episodes', 'preferred_words_score'):
+            self.addColumn('tv_episodes', 'preferred_words_score', 'NUMERIC', 0)
+
+        self.inc_minor_version()
