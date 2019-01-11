@@ -5596,14 +5596,15 @@ imagemin-optipng@^6.0.0:
     is-png "^1.0.0"
     optipng-bin "^5.0.0"
 
-imagemin-pngquant@6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/imagemin-pngquant/-/imagemin-pngquant-6.0.1.tgz#07b4c80e327ac60ef5246758029b1e8aecd879b9"
-  integrity sha512-Stk+fZCLxZznV8MFNA/T3AY/VRKevsiP9uZOLV0RCXoi0vUUFriySYuz/83IGp9D254EW8miGyyQ69zKouFr7w==
+imagemin-pngquant@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/imagemin-pngquant/-/imagemin-pngquant-7.0.0.tgz#bbf70d6f3eefc86ef1e79075d6bb67426f583f48"
+  integrity sha512-FXBz8lfvI+noraZbNCE0AUDUng/2+Cv5W0F/nUGGjKdzb8AnN1f0JzVxH2aYj7SQxOdYYatvfNbITIZpaFATZg==
   dependencies:
-    execa "^0.10.0"
+    execa "^1.0.0"
     is-png "^1.0.0"
     is-stream "^1.1.0"
+    ow "^0.8.0"
     pngquant-bin "^5.0.0"
 
 imagemin-svgo@^7.0.0:
@@ -8051,6 +8052,11 @@ osenv@^0.1.4:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
+
+ow@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/ow/-/ow-0.8.0.tgz#d360d779c996f4132941a596c87f86ce8e812e62"
+  integrity sha512-hYgYZNcRfIZ2JppSTqh6mxdU1zkUXsGlwy4eBsRG91R6CiZk7cB+AfHl+SVKBdynQvAnNHNfu0ZrtJN1jj7Mow==
 
 p-cancelable@^0.3.0:
   version "0.3.0"
