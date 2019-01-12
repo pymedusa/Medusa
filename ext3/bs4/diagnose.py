@@ -1,7 +1,6 @@
 """Diagnostic functions, mainly for use when doing tech support."""
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 import cProfile
@@ -155,7 +154,7 @@ def rword(length=5):
 
 def rsentence(length=4):
     "Generate a random sentence-like string."
-    return " ".join(rword(random.randint(4,9)) for i in range(length))
+    return " ".join(rword(random.randint(4,9)) for i in list(range(length)))
         
 def rdoc(num_elements=1000):
     """Randomly generate an invalid HTML document."""

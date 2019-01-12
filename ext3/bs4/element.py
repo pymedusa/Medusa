@@ -1,5 +1,4 @@
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 try:
@@ -7,14 +6,25 @@ try:
 except ImportError as e:
     from collections import Callable
 import re
-import shlex
 import sys
 import warnings
+try:
+    import soupsieve
+except ImportError as e:
+    soupsieve = None
+    warnings.warn(
+        'The soupsieve package is not installed. CSS selectors cannot be used.'
+    )
+
 from bs4.dammit import EntitySubstitution
 
 DEFAULT_OUTPUT_ENCODING = "utf-8"
 PY3K = (sys.version_info[0] > 2)
 
+nonwhitespace_re = re.compile(r"\S+")
+
+# NOTE: This isn't used as of 4.7.0. I'm leaving it for a little bit on
+# the off chance someone imported it for their own use.
 whitespace_re = re.compile(r"\s+")
 
 def _alias(attr):
@@ -207,7 +217,7 @@ class PageElement(object):
         if formatter is None:
             output = s
         else:
-            if callable(formatter):
+            if isinstance(formatter, Callable):
                 # Backwards compatibility -- you used to pass in a formatting method.
                 output = formatter(s)
             else:
@@ -256,26 +266,26 @@ class PageElement(object):
             self.previous_element.next_element = self
 
         self.next_element = next_element
-        if self.next_element:
+        if self.next_element is not None:
             self.next_element.previous_element = self
 
         self.next_sibling = next_sibling
-        if self.next_sibling:
+        if self.next_sibling is not None:
             self.next_sibling.previous_sibling = self
 
-        if (not previous_sibling
+        if (previous_sibling is None
             and self.parent is not None and self.parent.contents):
             previous_sibling = self.parent.contents[-1]
 
         self.previous_sibling = previous_sibling
-        if previous_sibling:
+        if previous_sibling is not None:
             self.previous_sibling.next_sibling = self
 
     nextSibling = _alias("next_sibling")  # BS3
     previousSibling = _alias("previous_sibling")  # BS3
 
     def replace_with(self, replace_with):
-        if not self.parent:
+        if self.parent is None:
             raise ValueError(
                 "Cannot replace one element with another when the"
                 "element to be replaced is not part of a tree.")
@@ -292,7 +302,7 @@ class PageElement(object):
 
     def unwrap(self):
         my_parent = self.parent
-        if not self.parent:
+        if self.parent is None:
             raise ValueError(
                 "Cannot replace an element with its contents when that"
                 "element is not part of a tree.")
@@ -340,7 +350,7 @@ class PageElement(object):
 
     def _last_descendant(self, is_initialized=True, accept_self=True):
         "Finds the last element beneath this object to be parsed."
-        if is_initialized and self.next_sibling:
+        if is_initialized and self.next_sibling is not None:
             last_child = self.next_sibling.previous_element
         else:
             last_child = self
@@ -430,43 +440,54 @@ class PageElement(object):
         """Appends the given tag to the contents of this tag."""
         self.insert(len(self.contents), tag)
 
-    def insert_before(self, predecessor):
-        """Makes the given element the immediate predecessor of this one.
+    def extend(self, tags):
+        """Appends the given tags to the contents of this tag."""
+        for tag in tags:
+            self.append(tag)
 
-        The two elements will have the same parent, and the given element
+    def insert_before(self, *args):
+        """Makes the given element(s) the immediate predecessor of this one.
+
+        The elements will have the same parent, and the given elements
         will be immediately before this one.
         """
-        if self is predecessor:
-            raise ValueError("Can't insert an element before itself.")
         parent = self.parent
         if parent is None:
             raise ValueError(
                 "Element has no parent, so 'before' has no meaning.")
-        # Extract first so that the index won't be screwed up if they
-        # are siblings.
-        if isinstance(predecessor, PageElement):
-            predecessor.extract()
-        index = parent.index(self)
-        parent.insert(index, predecessor)
+        if any(x is self for x in args):
+                raise ValueError("Can't insert an element before itself.")
+        for predecessor in args:
+            # Extract first so that the index won't be screwed up if they
+            # are siblings.
+            if isinstance(predecessor, PageElement):
+                predecessor.extract()
+            index = parent.index(self)
+            parent.insert(index, predecessor)
 
-    def insert_after(self, successor):
-        """Makes the given element the immediate successor of this one.
+    def insert_after(self, *args):
+        """Makes the given element(s) the immediate successor of this one.
 
-        The two elements will have the same parent, and the given element
+        The elements will have the same parent, and the given elements
         will be immediately after this one.
         """
-        if self is successor:
-            raise ValueError("Can't insert an element after itself.")
+        # Do all error checking before modifying the tree.
         parent = self.parent
         if parent is None:
             raise ValueError(
                 "Element has no parent, so 'after' has no meaning.")
-        # Extract first so that the index won't be screwed up if they
-        # are siblings.
-        if isinstance(successor, PageElement):
-            successor.extract()
-        index = parent.index(self)
-        parent.insert(index+1, successor)
+        if any(x is self for x in args):
+            raise ValueError("Can't insert an element after itself.")
+        
+        offset = 0
+        for successor in args:
+            # Extract first so that the index won't be screwed up if they
+            # are siblings.
+            if isinstance(successor, PageElement):
+                successor.extract()
+            index = parent.index(self)
+            parent.insert(index+1+offset, successor)
+            offset += 1
 
     def find_next(self, name=None, attrs={}, text=None, **kwargs):
         """Returns the first item that matches the given criteria and
@@ -656,82 +677,6 @@ class PageElement(object):
         while i is not None:
             yield i
             i = i.parent
-
-    # Methods for supporting CSS selectors.
-
-    tag_name_re = re.compile('^[a-zA-Z0-9][-.a-zA-Z0-9:_]*$')
-
-    # /^([a-zA-Z0-9][-.a-zA-Z0-9:_]*)\[(\w+)([=~\|\^\$\*]?)=?"?([^\]"]*)"?\]$/
-    #   \---------------------------/  \---/\-------------/    \-------/
-    #     |                              |         |               |
-    #     |                              |         |           The value
-    #     |                              |    ~,|,^,$,* or =
-    #     |                           Attribute
-    #    Tag
-    attribselect_re = re.compile(
-        r'^(?P<tag>[a-zA-Z0-9][-.a-zA-Z0-9:_]*)?\[(?P<attribute>[\w-]+)(?P<operator>[=~\|\^\$\*]?)' +
-        r'=?"?(?P<value>[^\]"]*)"?\]$'
-        )
-
-    def _attr_value_as_string(self, value, default=None):
-        """Force an attribute value into a string representation.
-
-        A multi-valued attribute will be converted into a
-        space-separated stirng.
-        """
-        value = self.get(value, default)
-        if isinstance(value, list) or isinstance(value, tuple):
-            value =" ".join(value)
-        return value
-
-    def _tag_name_matches_and(self, function, tag_name):
-        if not tag_name:
-            return function
-        else:
-            def _match(tag):
-                return tag.name == tag_name and function(tag)
-            return _match
-
-    def _attribute_checker(self, operator, attribute, value=''):
-        """Create a function that performs a CSS selector operation.
-
-        Takes an operator, attribute and optional value. Returns a
-        function that will return True for elements that match that
-        combination.
-        """
-        if operator == '=':
-            # string representation of `attribute` is equal to `value`
-            return lambda el: el._attr_value_as_string(attribute) == value
-        elif operator == '~':
-            # space-separated list representation of `attribute`
-            # contains `value`
-            def _includes_value(element):
-                attribute_value = element.get(attribute, [])
-                if not isinstance(attribute_value, list):
-                    attribute_value = attribute_value.split()
-                return value in attribute_value
-            return _includes_value
-        elif operator == '^':
-            # string representation of `attribute` starts with `value`
-            return lambda el: el._attr_value_as_string(
-                attribute, '').startswith(value)
-        elif operator == '$':
-            # string representation of `attribute` ends with `value`
-            return lambda el: el._attr_value_as_string(
-                attribute, '').endswith(value)
-        elif operator == '*':
-            # string representation of `attribute` contains `value`
-            return lambda el: value in el._attr_value_as_string(attribute, '')
-        elif operator == '|':
-            # string representation of `attribute` is either exactly
-            # `value` or starts with `value` and then a dash.
-            def _is_or_starts_with_dash(element):
-                attribute_value = element._attr_value_as_string(attribute, '')
-                return (attribute_value == value or attribute_value.startswith(
-                        value + '-'))
-            return _is_or_starts_with_dash
-        else:
-            return lambda el: el.has_attr(attribute)
 
     # Old non-property versions of the generators, for backwards
     # compatibility with BS3.
@@ -1193,7 +1138,7 @@ class Tag(PageElement):
 
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not callable(formatter):
+        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
             formatter = self._formatter_for_name(formatter)
         attrs = []
         if self.attrs:
@@ -1298,7 +1243,7 @@ class Tag(PageElement):
         """
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not callable(formatter):
+        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
             formatter = self._formatter_for_name(formatter)
 
         pretty_print = (indent_level is not None)
@@ -1394,250 +1339,41 @@ class Tag(PageElement):
             current = current.next_element
 
     # CSS selector code
-
-    _selector_combinators = ['>', '+', '~']
-    _select_debug = False
-    quoted_colon = re.compile('"[^"]*:[^"]*"')
-    def select_one(self, selector):
+    def select_one(self, selector, namespaces=None, **kwargs):
         """Perform a CSS selection operation on the current element."""
-        value = self.select(selector, limit=1)
+        value = self.select(selector, namespaces, 1, **kwargs)
         if value:
             return value[0]
         return None
 
-    def select(self, selector, _candidate_generator=None, limit=None):
-        """Perform a CSS selection operation on the current element."""
+    def select(self, selector, namespaces=None, limit=None, **kwargs):
+        """Perform a CSS selection operation on the current element.
 
-        # Handle grouping selectors if ',' exists, ie: p,a
-        if ',' in selector:
-            context = []
-            selectors = [x.strip() for x in selector.split(",")]
+        This uses the SoupSieve library.
 
-            # If a selector is mentioned multiple times we don't want
-            # to use it more than once.
-            used_selectors = set()
+        :param selector: A string containing a CSS selector.
 
-            # We also don't want to select the same element more than once,
-            # if it's matched by multiple selectors.
-            selected_object_ids = set()
-            for partial_selector in selectors:
-                if partial_selector == '':
-                    raise ValueError('Invalid group selection syntax: %s' % selector)
-                if partial_selector in used_selectors:
-                    continue
-                used_selectors.add(partial_selector)
-                candidates = self.select(partial_selector, limit=limit)
-                for candidate in candidates:
-                    # This lets us distinguish between distinct tags that
-                    # represent the same markup.
-                    object_id = id(candidate)
-                    if object_id not in selected_object_ids:
-                        context.append(candidate)
-                        selected_object_ids.add(object_id)
-                if limit and len(context) >= limit:
-                    break
-            return context
-        tokens = shlex.split(selector)
-        current_context = [self]
+        :param namespaces: A dictionary mapping namespace prefixes
+        used in the CSS selector to namespace URIs. By default,
+        Beautiful Soup will use the prefixes it encountered while
+        parsing the document.
 
-        if tokens[-1] in self._selector_combinators:
-            raise ValueError(
-                'Final combinator "%s" is missing an argument.' % tokens[-1])
+        :param limit: After finding this number of results, stop looking.
 
-        if self._select_debug:
-            print('Running CSS selector "%s"' % selector)
-
-        for index, token in enumerate(tokens):
-            new_context = []
-            new_context_ids = set([])
-
-            if tokens[index-1] in self._selector_combinators:
-                # This token was consumed by the previous combinator. Skip it.
-                if self._select_debug:
-                    print('  Token was consumed by the previous combinator.')
-                continue
-
-            if self._select_debug:
-                print(' Considering token "%s"' % token)
-            recursive_candidate_generator = None
-            tag_name = None
-
-            # Each operation corresponds to a checker function, a rule
-            # for determining whether a candidate matches the
-            # selector. Candidates are generated by the active
-            # iterator.
-            checker = None
-
-            m = self.attribselect_re.match(token)
-            if m is not None:
-                # Attribute selector
-                tag_name, attribute, operator, value = m.groups()
-                checker = self._attribute_checker(operator, attribute, value)
-
-            elif '#' in token:
-                # ID selector
-                tag_name, tag_id = token.split('#', 1)
-                def id_matches(tag):
-                    return tag.get('id', None) == tag_id
-                checker = id_matches
-
-            elif '.' in token:
-                # Class selector
-                tag_name, klass = token.split('.', 1)
-                classes = set(klass.split('.'))
-                def classes_match(candidate):
-                    return classes.issubset(candidate.get('class', []))
-                checker = classes_match
-
-            elif ':' in token and not self.quoted_colon.search(token):
-                # Pseudo-class
-                tag_name, pseudo = token.split(':', 1)
-                if tag_name == '':
-                    raise ValueError(
-                        "A pseudo-class must be prefixed with a tag name.")
-                pseudo_attributes = re.match(r'([a-zA-Z\d-]+)\(([a-zA-Z\d]+)\)', pseudo)
-                found = []
-                if pseudo_attributes is None:
-                    pseudo_type = pseudo
-                    pseudo_value = None
-                else:
-                    pseudo_type, pseudo_value = pseudo_attributes.groups()
-                if pseudo_type == 'nth-of-type':
-                    try:
-                        pseudo_value = int(pseudo_value)
-                    except:
-                        raise NotImplementedError(
-                            'Only numeric values are currently supported for the nth-of-type pseudo-class.')
-                    if pseudo_value < 1:
-                        raise ValueError(
-                            'nth-of-type pseudo-class value must be at least 1.')
-                    class Counter(object):
-                        def __init__(self, destination):
-                            self.count = 0
-                            self.destination = destination
-
-                        def nth_child_of_type(self, tag):
-                            self.count += 1
-                            if self.count == self.destination:
-                                return True
-                            else:
-                                return False
-                    checker = Counter(pseudo_value).nth_child_of_type
-                else:
-                    raise NotImplementedError(
-                        'Only the following pseudo-classes are implemented: nth-of-type.')
-
-            elif token == '*':
-                # Star selector -- matches everything
-                pass
-            elif token == '>':
-                # Run the next token as a CSS selector against the
-                # direct children of each tag in the current context.
-                recursive_candidate_generator = lambda tag: tag.children
-            elif token == '~':
-                # Run the next token as a CSS selector against the
-                # siblings of each tag in the current context.
-                recursive_candidate_generator = lambda tag: tag.next_siblings
-            elif token == '+':
-                # For each tag in the current context, run the next
-                # token as a CSS selector against the tag's next
-                # sibling that's a tag.
-                def next_tag_sibling(tag):
-                    yield tag.find_next_sibling(True)
-                recursive_candidate_generator = next_tag_sibling
-
-            elif self.tag_name_re.match(token):
-                # Just a tag name.
-                tag_name = token
-            else:
-                raise ValueError(
-                    'Unsupported or invalid CSS selector: "%s"' % token)
-            if recursive_candidate_generator:
-                # This happens when the selector looks like  "> foo".
-                #
-                # The generator calls select() recursively on every
-                # member of the current context, passing in a different
-                # candidate generator and a different selector.
-                #
-                # In the case of "> foo", the candidate generator is
-                # one that yields a tag's direct children (">"), and
-                # the selector is "foo".
-                next_token = tokens[index+1]
-                def recursive_select(tag):
-                    if self._select_debug:
-                        print('    Calling select("%s") recursively on %s %s' % (next_token, tag.name, tag.attrs))
-                        print('-' * 40)
-                    for i in tag.select(next_token, recursive_candidate_generator):
-                        if self._select_debug:
-                            print('(Recursive select picked up candidate %s %s)' % (i.name, i.attrs))
-                        yield i
-                    if self._select_debug:
-                        print('-' * 40)
-                _use_candidate_generator = recursive_select
-            elif _candidate_generator is None:
-                # By default, a tag's candidates are all of its
-                # children. If tag_name is defined, only yield tags
-                # with that name.
-                if self._select_debug:
-                    if tag_name:
-                        check = "[any]"
-                    else:
-                        check = tag_name
-                    print('   Default candidate generator, tag name="%s"' % check)
-                if self._select_debug:
-                    # This is redundant with later code, but it stops
-                    # a bunch of bogus tags from cluttering up the
-                    # debug log.
-                    def default_candidate_generator(tag):
-                        for child in tag.descendants:
-                            if not isinstance(child, Tag):
-                                continue
-                            if tag_name and not child.name == tag_name:
-                                continue
-                            yield child
-                    _use_candidate_generator = default_candidate_generator
-                else:
-                    _use_candidate_generator = lambda tag: tag.descendants
-            else:
-                _use_candidate_generator = _candidate_generator
-
-            count = 0
-            for tag in current_context:
-                if self._select_debug:
-                    print("    Running candidate generator on %s %s" % (
-                        tag.name, repr(tag.attrs)))
-                for candidate in _use_candidate_generator(tag):
-                    if not isinstance(candidate, Tag):
-                        continue
-                    if tag_name and candidate.name != tag_name:
-                        continue
-                    if checker is not None:
-                        try:
-                            result = checker(candidate)
-                        except StopIteration:
-                            # The checker has decided we should no longer
-                            # run the generator.
-                            break
-                    if checker is None or result:
-                        if self._select_debug:
-                            print("     SUCCESS %s %s" % (candidate.name, repr(candidate.attrs)))
-                        if id(candidate) not in new_context_ids:
-                            # If a tag matches a selector more than once,
-                            # don't include it in the context more than once.
-                            new_context.append(candidate)
-                            new_context_ids.add(id(candidate))
-                    elif self._select_debug:
-                        print("     FAILURE %s %s" % (candidate.name, repr(candidate.attrs)))
-
-            current_context = new_context
-        if limit and len(current_context) >= limit:
-            current_context = current_context[:limit]
-
-        if self._select_debug:
-            print("Final verdict:")
-            for i in current_context:
-                print(" %s %s" % (i.name, i.attrs))
-        return current_context
+        :param kwargs: Any extra arguments you'd like to pass in to
+        soupsieve.select().
+        """
+        if namespaces is None:
+            namespaces = self._namespaces
+        
+        if limit is None:
+            limit = 0
+        if soupsieve is None:
+            raise NotImplementedError(
+                "Cannot execute CSS selectors because the soupsieve package is not installed."
+            )
+            
+        return soupsieve.select(selector, self, namespaces, limit, **kwargs)
 
     # Old names for backwards compatibility
     def childGenerator(self):
@@ -1689,7 +1425,7 @@ class SoupStrainer(object):
     def _normalize_search_value(self, value):
         # Leave it alone if it's a Unicode string, a callable, a
         # regular expression, a boolean, or None.
-        if (isinstance(value, str) or callable(value) or hasattr(value, 'match')
+        if (isinstance(value, str) or isinstance(value, Callable) or hasattr(value, 'match')
             or isinstance(value, bool) or value is None):
             return value
 

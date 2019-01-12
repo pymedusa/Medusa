@@ -17,7 +17,8 @@ const state = {
             scene: null,
             seasonFolders: null,
             sports: null,
-            subtitlesEnabled: null
+            subtitlesEnabled: null,
+            airdateOffset: null
         },
         countries: null,
         country_codes: null, // eslint-disable-line camelcase

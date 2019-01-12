@@ -107,6 +107,16 @@
                                 <td>03</td>
                             </tr>
                             <tr class="even">
+                                <td class="align-right"><b>Absolute Episode Number:</b></td>
+                                <td>%AB</td>
+                                <td>003</td>
+                            </tr>
+                            <tr>
+                                <td class="align-right"><b>Xem Absolute Episode Number:</b></td>
+                                <td>%XAB</td>
+                                <td>003</td>
+                            </tr>
+                            <tr class="even">
                                 <td class="align-right"><b>Episode Name:</b></td>
                                 <td>%EN</td>
                                 <td>Episode Name</td>
@@ -265,10 +275,14 @@
 
 <script>
 import formatDate from 'date-fns/format';
+import { ToggleButton } from 'vue-js-toggle-button';
 import { apiRoute } from '../../api';
 
 export default {
     name: 'name-pattern',
+    components: {
+        ToggleButton
+    },
     props: {
         /**
          * Current naming pattern.

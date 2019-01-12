@@ -1466,11 +1466,11 @@ class Home(WebRoot):
             except IndexerShowNotFoundInLanguage:
                 errors += 1
                 status = 'Could not change language to'
-            except IndexerException as e:
+            except IndexerException as error:
                 errors += 1
                 status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {error}'.format(
-                    error=e.message,
+                msg += u' Please try again later. Error: {error!r}'.format(
+                    error=error,
                 )
             else:
                 language = indexer_lang
@@ -1535,10 +1535,10 @@ class Home(WebRoot):
                 series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
-                except CantRefreshShowException as e:
+                except CantRefreshShowException as error:
                     errors += 1
-                    logger.log("Unable to refresh show '{show}': {error}".format
-                               (show=series_obj.name, error=e.message), logger.WARNING)
+                    logger.log("Unable to refresh show '{show}': {error!r}".format
+                               (show=series_obj.name, error=error), logger.WARNING)
 
             # Check if we should erase parsed cached results for that show
             do_erase_parsed_cache = False
@@ -1595,10 +1595,10 @@ class Home(WebRoot):
                 if (do_update or changed_location) and os.path.isdir(new_location):
                     try:
                         app.show_queue_scheduler.action.refreshShow(series_obj)
-                    except CantRefreshShowException as e:
+                    except CantRefreshShowException as error:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
-                                   (show=series_obj.name, error=e.message), logger.WARNING)
+                        logger.log("Unable to refresh show '{show}'. Error: {error!r}".format
+                                   (show=series_obj.name, error=error), logger.WARNING)
 
             # Save all settings changed while in series_obj.lock
             series_obj.save_to_db()
@@ -1608,29 +1608,29 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as e:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to update show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to update show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(series_obj, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
                 name_cache.build_name_cache(series_obj)
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene exceptions for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
             self.erase_cache(series_obj)
@@ -1642,10 +1642,10 @@ class Home(WebRoot):
             # Need to refresh show as we updated scene numbering or changed show format
             try:
                 app.show_queue_scheduler.action.refreshShow(series_obj)
-            except CantRefreshShowException as e:
+            except CantRefreshShowException as error:
                 errors += 1
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           'Error: {error}'.format(show=series_obj.name, error=e.message), logger.WARNING)
+                           'Error: {error!r}'.format(show=series_obj.name, error=error), logger.WARNING)
 
         if directCall:
             return errors

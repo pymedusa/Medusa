@@ -36,8 +36,7 @@ from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import binary_type
-
+from six import PY2, ensure_str, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -113,14 +112,17 @@ class RecommendedShow(object):
         try:
             self.mapped_series_id = int(mapped_series_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % mapped_series_id)
+            raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
 
         self.rating = show_attr.get('rating') or 0
 
         self.votes = show_attr.get('votes')
         if self.votes and not isinstance(self.votes, int):
             trans_mapping = {ord(c): None for c in ['.', ',']}
-            self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+            if PY2:
+                self.votes = int(self.votes.decode('utf-8').translate(trans_mapping))
+            else:
+                self.votes = int(self.votes.translate(trans_mapping))
 
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
@@ -218,33 +220,13 @@ def cached_get_imdb_series_details(imdb_id):
 
 
 def create_key_from_series(namespace, fn, **kw):
-    """Generate a key limiting the amount of dictionaries keys that are allowed to be used."""
-    def generate_key(*arg, **kwargs):
-        """
-        Generate the key.
-
-        The key is passed to the decorated function using the kwargs `storage_key`.
-        Following this standard we can cache every object, using this key_generator.
-        """
-        try:
-            return binary_type(kwargs['storage_key'])
-        except KeyError:
-            log.exception('Make sure you pass kwargs parameter `storage_key` to configure the key,'
-                          ' that is used in the dogpile cache.')
-
+    """Create a key made of indexer name and show ID."""
+    def generate_key(*args, **kw):
+        show_key = namespace + '_' + text_type(args[1])
+        if PY2:
+            return show_key.encode('utf-8')
+        return show_key
     return generate_key
-
-
-def update_recommended_series_cache_index(indexer, new_index):
-    """
-    Create a key that's used to store an index with all shows saved in cache for a specific indexer. For example 'imdb'.
-
-    :param indexer: Indexer in the form of a string. For example: 'imdb', 'trakt', 'anidb'.
-    :new_index: Iterable with series id's.
-    """
-    index = recommended_series_cache.get(binary_type(indexer)) or set()
-    index.update(set(new_index))
-    recommended_series_cache.set(binary_type(indexer), index)
 
 
 def get_all_recommended_series_from_cache(indexers):
@@ -260,13 +242,13 @@ def get_all_recommended_series_from_cache(indexers):
     indexers = ensure_list(indexers)
     all_series = []
     for indexer in indexers:
-        index = recommended_series_cache.get(binary_type(indexer))
+        index = recommended_series_cache.get(ensure_str(indexer))
         if not index:
             continue
 
         for index_item in index:
             key = '{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
-            series = recommended_series_cache.get(binary_type(key))
+            series = recommended_series_cache.get(key)
             if series:
                 all_series.append(series)
 

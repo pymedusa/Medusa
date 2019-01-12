@@ -315,13 +315,13 @@ class CheckVersion(object):
         log.debug(u'Checking GitHub for latest news.')
         response = self.session.get(app.NEWS_URL)
         if not response or not response.text:
-            log.debug(u'Could not load news from URL: %s', app.NEWS_URL)
+            log.debug(u'Could not load news from URL: {0}', app.NEWS_URL)
             return
 
         try:
             last_read = datetime.datetime.strptime(app.NEWS_LAST_READ, '%Y-%m-%d')
         except ValueError:
-            log.warning(u'Invalid news last read date: %s', app.NEWS_LAST_READ)
+            log.warning(u'Invalid news last read date: {0}', app.NEWS_LAST_READ)
             last_read = 0
 
         news = response.text
@@ -336,7 +336,7 @@ class CheckVersion(object):
                 if datetime.datetime.strptime(match.group(1), '%Y-%m-%d') > last_read:
                     app.NEWS_UNREAD += 1
             except ValueError:
-                log.warning(u'Unable to match latest news date. Repository news date: %s', match.group(1))
+                log.warning(u'Unable to match latest news date. Repository news date: {0}', match.group(1))
                 pass
 
         return news
@@ -536,6 +536,10 @@ class GitUpdateManager(UpdateManager):
                                  shell=True, cwd=app.PROG_DIR)
             output, err = p.communicate()
             exit_status = p.returncode
+
+            # Convert bytes to string in python3
+            if isinstance(output, (bytes, bytearray)):
+                output = output.decode('utf-8')
 
             if output:
                 output = output.strip()

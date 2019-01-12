@@ -23,15 +23,14 @@ import os.path
 import re
 
 import rtorrent.lib.bencode as bencode
-from rtorrent.compat import is_py3
 
-if is_py3():
-    from urllib.request import urlopen  # @UnresolvedImport @UnusedImport
-else:
-    from urllib2 import urlopen  # @UnresolvedImport @Reimport
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 
 
-class TorrentParser():
+class TorrentParser(object):
     def __init__(self, torrent):
         """Decode and parse given torrent.
 
@@ -78,7 +77,7 @@ class TorrentParser():
             self.file_type = "file"
             self._raw_torrent = open(self.torrent, "rb").read()
         # url?
-        elif re.search("^(http|ftp):\/\/", self.torrent, re.I):
+        elif re.search(r"^(http|ftp):\/\/", self.torrent, re.I):
             self.file_type = "url"
             self._raw_torrent = urlopen(self.torrent).read()
 
@@ -90,7 +89,7 @@ class TorrentParser():
 
     def _calc_info_hash(self):
         self.info_hash = None
-        if "info" in self._torrent_decoded.keys():
+        if "info" in self._torrent_decoded:
                 info_encoded = bencode.encode(self._torrent_decoded["info"])
 
                 if info_encoded:

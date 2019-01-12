@@ -35,6 +35,12 @@ except ImportError:
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+BANNER = 1
+POSTER = 2
+BANNER_THUMB = 3
+POSTER_THUMB = 4
+FANART = 5
+
 
 class GenericMetadata(object):
     """
@@ -172,6 +178,16 @@ class GenericMetadata(object):
 
     def get_banner_path(self, show_obj):
         return os.path.join(show_obj.validate_location, self.banner_name)
+
+    def get_image_path(self, show_obj, image_type):
+        """Based on the image_type (banner, poster, fanart) call the correct method, and return the path."""
+        banner_path = {
+            BANNER: self.get_banner_path,
+            POSTER: self.get_poster_path,
+            FANART: self.get_fanart_path
+        }
+        if banner_path.get(image_type):
+            return banner_path[image_type](show_obj)
 
     @staticmethod
     def get_episode_thumb_path(ep_obj):
@@ -408,7 +424,7 @@ class GenericMetadata(object):
             try:
                 indexer_episode = indexer_series[ep.season][ep.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound) as error:
-                log.debug(u'Unable to find season or episode. Reason: {0!r}', error.message)
+                log.debug(u'Unable to find season or episode. Reason: {0!r}', error)
                 continue
 
             thumb_url = getattr(indexer_episode, 'filename', None)

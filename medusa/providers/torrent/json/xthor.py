@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
-from medusa.common import USER_AGENT
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -34,7 +34,6 @@ class XthorProvider(TorrentProvider):
         # Proper Strings
 
         # Miscellaneous Options
-        self.headers.update({'User-Agent': USER_AGENT})
         self.subcategories = [433, 637, 455, 639]
 
         # Torrent Stats
@@ -140,7 +139,7 @@ class XthorProvider(TorrentProvider):
                                   title, seeders)
                     continue
 
-                size = row.get('size') or -1
+                size = convert_size(row.get('size'), default=-1)
 
                 item = {
                     'title': title,

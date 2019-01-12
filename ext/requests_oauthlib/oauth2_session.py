@@ -111,7 +111,7 @@ class OAuth2Session(requests.Session):
     @token.setter
     def token(self, value):
         self._client.token = value
-        self._client._populate_attributes(value)
+        self._client.populate_token_attributes(value)
 
     @property
     def access_token(self):
