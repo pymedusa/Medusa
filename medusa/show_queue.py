@@ -716,7 +716,7 @@ class QueueItemRename(ShowQueueItem):
         )
 
         try:
-            self.show.location
+            self.show.validate_location
         except ShowDirectoryNotFoundException:
             log.warning(
                 "Can't perform rename on {series_name} when the show dir is missing.",
