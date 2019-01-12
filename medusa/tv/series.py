@@ -1720,7 +1720,7 @@ class Series(TV):
         # remove entire show folder
         if full:
             try:
-                _ = self.validate_location  # Let's get the exception out of the way asap.
+                self.validate_location  # Let's get the exception out of the way asap.
                 log.info(u'{id}: Attempt to {action} show folder {location}',
                          {'id': self.series_id, 'action': action, 'location': self.location})
                 # check first the read-only attribute
