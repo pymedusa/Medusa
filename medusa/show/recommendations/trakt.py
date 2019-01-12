@@ -14,7 +14,9 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
-    BasePopular, RecommendedShow, create_key_from_series
+    BasePopular,    
+    RecommendedShow,
+    create_key_from_series,
 )
 
 from six import text_type
@@ -52,7 +54,7 @@ class TraktPopular(BasePopular):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_key=None):
+    def _create_recommended_show(self, storage_key, series):
         """Create the RecommendedShow object from the returned showobj."""
         externals_mapping = {u'tmdb': 'tmdb_id', u'tvdb': 'tvdb_id', u'imdb': u'imdb_id'}
         rec_show = RecommendedShow(
@@ -174,7 +176,8 @@ class TraktPopular(BasePopular):
                         continue
 
                     recommended_show = self._create_recommended_show(
-                        show, storage_key='trakt_{0}'.format(show['show']['ids']['trakt'])
+                        storage_key=show['show']['ids']['trakt'],
+                        series=show
                     )
                     recommended_show.save_to_db()
                     trending_shows.append(recommended_show)

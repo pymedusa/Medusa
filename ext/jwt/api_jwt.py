@@ -1,7 +1,6 @@
 import json
 import warnings
 from calendar import timegm
-from collections import Iterable, Mapping
 from datetime import datetime, timedelta
 try:
     # import required by mypy to perform type checking, not used for normal execution
@@ -11,7 +10,7 @@ except ImportError:
 
 from .api_jws import PyJWS
 from .algorithms import Algorithm, get_default_algorithms  # NOQA
-from .compat import string_types
+from .compat import Iterable, Mapping, string_types
 from .exceptions import (
     DecodeError, ExpiredSignatureError, ImmatureSignatureError,
     InvalidAudienceError, InvalidIssuedAtError,

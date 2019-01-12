@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Vuex, { mapState } from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
-import ToggleButton from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
 import Truncate from 'vue-truncate-collapsed';
 import isotope from 'vueisotope';
@@ -34,7 +33,6 @@ Vue.config.performance = true;
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
-Vue.use(ToggleButton);
 Vue.use(Snotify);
 
 Vue.component('isotope', isotope);

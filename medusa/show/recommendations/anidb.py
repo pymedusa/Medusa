@@ -13,7 +13,11 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_ANIDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    BasePopular, MissingTvdbMapping, RecommendedShow, cached_aid_to_tvdb, create_key_from_series
+    BasePopular,
+    MissingTvdbMapping,
+    RecommendedShow,
+    cached_aid_to_tvdb,
+    create_key_from_series,
 )
 
 from simpleanidb import Anidb, REQUEST_HOT
@@ -42,7 +46,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         self.base_url = AnidbPopular.BASE_URL
 
     @recommended_series_cache.cache_on_arguments(namespace='anidb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_key=None):
+    def _create_recommended_show(self, storage_key, series):
         """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = cached_aid_to_tvdb(series.aid)
@@ -89,7 +93,8 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
 
         for show in series:
             try:
-                recommended_show = self._create_recommended_show(show, storage_key='anidb_{0}'.format(show.aid))
+                recommended_show = self._create_recommended_show(storage_key=show.aid,
+                                                                 series=show)
                 if recommended_show:
                     recommended_show.save_to_db()
                     result.append(recommended_show)

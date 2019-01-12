@@ -112,7 +112,7 @@ class ApiHandler(RequestHandler):
     #     self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
     def get(self, *args, **kwargs):
-        kwargs = self.request.arguments
+        kwargs = {k: self.get_arguments(k) for k in self.request.arguments}
         for arg, value in iteritems(kwargs):
             if len(value) == 1:
                 kwargs[arg] = value[0]

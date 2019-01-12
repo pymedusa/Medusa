@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 """Tests for Beautiful Soup's tree traversal methods.
 
@@ -932,6 +931,13 @@ class TestTreeModification(SoupTest):
         soup.a.append(soup.b)
         self.assertEqual(data, soup.decode())
 
+    def test_extend(self):
+        data = "<a><b><c><d><e><f><g></g></f></e></d></c></b></a>"
+        soup = self.soup(data)
+        l = [soup.g, soup.f, soup.e, soup.d, soup.c, soup.b]
+        soup.a.extend(l)
+        self.assertEqual("<a><g></g><f></f><e></e><d></d><c></c><b></b></a>", soup.decode())
+
     def test_move_tag_to_beginning_of_parent(self):
         data = "<a><b></b><c></c><d></d></a>"
         soup = self.soup(data)
@@ -958,6 +964,29 @@ class TestTreeModification(SoupTest):
         self.assertEqual(
             soup.decode(), self.document_for("QUUX<b>bar</b><a>foo</a>BAZ"))
 
+        # Can't insert an element before itself.
+        b = soup.b
+        self.assertRaises(ValueError, b.insert_before, b)
+
+        # Can't insert before if an element has no parent.
+        b.extract()
+        self.assertRaises(ValueError, b.insert_before, "nope")
+
+        # Can insert an identical element
+        soup = self.soup("<a>")
+        soup.a.insert_before(soup.new_tag("a"))
+        
+    def test_insert_multiple_before(self):
+        soup = self.soup("<a>foo</a><b>bar</b>")
+        soup.b.insert_before("BAZ", " ", "QUUX")
+        soup.a.insert_before("QUUX", " ", "BAZ")
+        self.assertEqual(
+            soup.decode(), self.document_for("QUUX BAZ<a>foo</a>BAZ QUUX<b>bar</b>"))
+
+        soup.a.insert_before(soup.b, "FOO")
+        self.assertEqual(
+            soup.decode(), self.document_for("QUUX BAZ<b>bar</b>FOO<a>foo</a>BAZ QUUX"))
+
     def test_insert_after(self):
         soup = self.soup("<a>foo</a><b>bar</b>")
         soup.b.insert_after("BAZ")
@@ -967,6 +996,28 @@ class TestTreeModification(SoupTest):
         soup.b.insert_after(soup.a)
         self.assertEqual(
             soup.decode(), self.document_for("QUUX<b>bar</b><a>foo</a>BAZ"))
+
+        # Can't insert an element after itself.
+        b = soup.b
+        self.assertRaises(ValueError, b.insert_after, b)
+
+        # Can't insert after if an element has no parent.
+        b.extract()
+        self.assertRaises(ValueError, b.insert_after, "nope")
+
+        # Can insert an identical element
+        soup = self.soup("<a>")
+        soup.a.insert_before(soup.new_tag("a"))
+        
+    def test_insert_multiple_after(self):
+        soup = self.soup("<a>foo</a><b>bar</b>")
+        soup.b.insert_after("BAZ", " ", "QUUX")
+        soup.a.insert_after("QUUX", " ", "BAZ")
+        self.assertEqual(
+            soup.decode(), self.document_for("<a>foo</a>QUUX BAZ<b>bar</b>BAZ QUUX"))
+        soup.b.insert_after(soup.a, "FOO ")
+        self.assertEqual(
+            soup.decode(), self.document_for("QUUX BAZ<b>bar</b><a>foo</a>FOO BAZ QUUX"))
 
     def test_insert_after_raises_exception_if_after_has_no_meaning(self):
         soup = self.soup("")
@@ -1783,7 +1834,7 @@ class TestSoupSelector(TreeTest):
         self.assertEqual(len(self.soup.select('del')), 0)
 
     def test_invalid_tag(self):
-        self.assertRaises(ValueError, self.soup.select, 'tag%t')
+        self.assertRaises(SyntaxError, self.soup.select, 'tag%t')
 
     def test_select_dashed_tag_ids(self):
         self.assertSelects('custom-dashed-tag', ['dash1', 'dash2'])
@@ -1974,8 +2025,7 @@ class TestSoupSelector(TreeTest):
             NotImplementedError, self.soup.select, "a:no-such-pseudoclass")
 
         self.assertRaises(
-            NotImplementedError, self.soup.select, "a:nth-of-type(a)")
-
+            SyntaxError, self.soup.select, "a:nth-of-type(a)")
 
     def test_nth_of_type(self):
         # Try to select first paragraph
@@ -1992,9 +2042,9 @@ class TestSoupSelector(TreeTest):
         els = self.soup.select('div#inner p:nth-of-type(4)')
         self.assertEqual(len(els), 0)
 
-        # Pass in an invalid value.
-        self.assertRaises(
-            ValueError, self.soup.select, 'div p:nth-of-type(0)')
+        # Zero will select no tags.
+        els = self.soup.select('div p:nth-of-type(0)')
+        self.assertEqual(len(els), 0)
 
     def test_nth_of_type_direct_descendant(self):
         els = self.soup.select('div#inner > p:nth-of-type(1)')
@@ -2031,7 +2081,7 @@ class TestSoupSelector(TreeTest):
         self.assertEqual([], self.soup.select('#inner ~ h2'))
 
     def test_dangling_combinator(self):
-        self.assertRaises(ValueError, self.soup.select, 'h1 >')
+        self.assertRaises(SyntaxError, self.soup.select, 'h1 >')
 
     def test_sibling_combinator_wont_select_same_tag_twice(self):
         self.assertSelects('p[lang] ~ p', ['lang-en-gb', 'lang-en-us', 'lang-fr'])
@@ -2062,8 +2112,8 @@ class TestSoupSelector(TreeTest):
         self.assertSelects('div x,y,  z', ['xid', 'yid', 'zida', 'zidb', 'zidab', 'zidac'])
 
     def test_invalid_multiple_select(self):
-        self.assertRaises(ValueError, self.soup.select, ',x, y')
-        self.assertRaises(ValueError, self.soup.select, 'x,,y')
+        self.assertRaises(SyntaxError, self.soup.select, ',x, y')
+        self.assertRaises(SyntaxError, self.soup.select, 'x,,y')
 
     def test_multiple_select_attrs(self):
         self.assertSelects('p[lang=en], p[lang=en-gb]', ['lang-en', 'lang-en-gb'])
@@ -2087,4 +2137,3 @@ class TestSoupSelector(TreeTest):
         # order.
         for element in soup.find_all(class_=['c1', 'c2']):
             assert element in selected
-

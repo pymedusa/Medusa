@@ -9,7 +9,7 @@ export const state = {
     tls: null,
     username: null,
     password: null,
-    addressList: null,
+    addressList: [],
     subject: null
 };
 

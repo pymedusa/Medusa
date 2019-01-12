@@ -140,17 +140,17 @@ class ErrorLogs(WebRoot):
 
         period = log_periods.get(log_period)
         modification_time = datetime.now() - period if period else None
-        data = [line for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
-                                               predicate=lambda l: filter_logline(l, min_level=min_level,
-                                                                                  thread_name=thread_names.get(log_filter, log_filter),
-                                                                                  search_query=log_search))]
+        data = (html_escape(line) for line in read_loglines(modification_time=modification_time, formatter=text_type, max_lines=max_lines,
+                                                            predicate=lambda l: filter_logline(l, min_level=min_level,
+                                                                                               thread_name=thread_names.get(log_filter, log_filter),
+                                                                                               search_query=log_search)))
 
         if not text_view:
-            return t.render(log_lines='\n'.join([html_escape(line) for line in data]),
+            return t.render(log_lines='\n'.join(data),
                             min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
                             controller='errorlogs', action='viewlogs')
         else:
-            return '<br/>'.join([html_escape(line) for line in data])
+            return '<br/>'.join(data)
 
     def submit_errors(self):
         """Create an issue in medusa issue tracker."""

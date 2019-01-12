@@ -14,13 +14,13 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_IMDB
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
-    BasePopular, RecommendedShow, cached_get_imdb_series_details, create_key_from_series,
-    update_recommended_series_cache_index
+    BasePopular,
+    RecommendedShow,
+    cached_get_imdb_series_details,
+    create_key_from_series,
 )
 
 from requests import RequestException
-
-from six import binary_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -42,7 +42,7 @@ class ImdbPopular(BasePopular):
         self.source = EXTERNAL_IMDB
 
     @recommended_series_cache.cache_on_arguments(namespace='imdb', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, series, storage_key=None):
+    def _create_recommended_show(self, storage_key, series):
         """Create the RecommendedShow object from the returned showobj."""
         tvdb_id = helpers.get_tvdb_from_id(series.get('imdb_tt'), 'IMDB')
 
@@ -94,27 +94,25 @@ class ImdbPopular(BasePopular):
                         series['votes'] = show_details['ratings'].get('ratingCount', 0)
                         series['outline'] = show_details['plot'].get('outline', {}).get('text')
                         series['rating'] = show_details['ratings'].get('rating', 0)
-
-                        if all([series['year'], series['name'], series['imdb_tt']]):
-                            try:
-                                recommended_show = self._create_recommended_show(series, storage_key='imdb_{0}'.format(
-                                    series['imdb_tt']
-                                ))
-                                if recommended_show:
-                                    recommended_show.save_to_db()
-                                    result.append(recommended_show)
-                            except RequestException:
-                                log.warning(
-                                    u'Could not connect to indexers to check if you already have'
-                                    u' this show in your library: {show} ({year})',
-                                    {'show': series['name'], 'year': series['name']}
-                                )
-
                     except Exception as error:
                         log.warning('Could not parse show {imdb_id} with error: {error!r}',
                                     {'imdb_id': imdb_id, 'error': error})
                 else:
                     continue
+
+            if all([series['year'], series['name'], series['imdb_tt']]):
+                try:
+                    recommended_show = self._create_recommended_show(storage_key=series['imdb_tt'],
+                                                                     series=series)
+                    if recommended_show:
+                        recommended_show.save_to_db()
+                        result.append(recommended_show)
+                except RequestException:
+                    log.warning(
+                        u'Could not connect to indexers to check if you already have'
+                        u' this show in your library: {show} ({year})',
+                        {'show': series['name'], 'year': series['name']}
+                    )
 
         return result
 

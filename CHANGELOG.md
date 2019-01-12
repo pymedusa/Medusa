@@ -2,10 +2,12 @@
 
 #### New Features
 - Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
+- Added feature to search episodes early or late compared to their scheduled airdate ([#5874](https://github.com/pymedusa/Medusa/pull/5874))
 
 #### Improvements
 
 #### Fixes
+- Fixed saving newznab provider api key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
 
 -----
 
