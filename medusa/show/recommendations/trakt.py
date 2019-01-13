@@ -120,6 +120,28 @@ class TraktPopular(BasePopular):
 
         return library_shows
 
+    def get_trakt_api(self):
+        """Create trakt api."""
+        # Create a trakt settings dict
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                          'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
+
+        return TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
+
+    def get_removed_from_medusa(self, trakt_api=None):
+        """Retrieve trakt watched shows, check if there are shows in the list that are not in medusa's library."""
+        trakt_api = trakt_api or self.get_trakt_api()
+        library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
+            self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
+
+        medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
+        return [
+            lshow['show']['ids']['tvdb'] for lshow in library_shows if
+            lshow['show']['ids']['tvdb'] not in medusa_shows
+        ]
+
     def fetch_popular_shows(self, page_url=None, trakt_list=None):
         """Get a list of popular shows from different Trakt lists based on a provided trakt_list.
 
@@ -131,23 +153,13 @@ class TraktPopular(BasePopular):
         trending_shows = []
         removed_from_medusa = []
 
-        # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
-                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
-
-        trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
+        trakt_api = self.get_trakt_api()
 
         try:
             not_liked_show = ''
             if app.TRAKT_ACCESS_TOKEN != '':
-                library_shows = self.fetch_and_refresh_token(trakt_api, 'sync/watched/shows?extended=noseasons') + \
-                    self.fetch_and_refresh_token(trakt_api, 'sync/collection/shows?extended=full')
 
-                medusa_shows = [show.indexerid for show in app.showList if show.indexerid]
-                removed_from_medusa = [lshow['show']['ids']['tvdb'] for lshow in library_shows if lshow['show']['ids']['tvdb'] not in medusa_shows]
-
+                removed_from_medusa = self.get_removed_from_medusa(trakt_api)
                 if app.TRAKT_BLACKLIST_NAME is not None and app.TRAKT_BLACKLIST_NAME:
                     not_liked_show = trakt_api.request('users/' + app.TRAKT_USERNAME + '/lists/' +
                                                        app.TRAKT_BLACKLIST_NAME + '/items') or []

@@ -4,28 +4,14 @@ from __future__ import unicode_literals
 
 import logging
 
-
+from medusa import app
 from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_ANIDB, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
-    BaseRequestHandler,
-    BooleanField,
-    IntegerField,
-    ListField,
-    StringField,
-    iter_nested_items,
-    set_nested_value
+    BaseRequestHandler
 )
 from medusa.show.recommendations.recommended import get_recommended_shows
-from medusa.show.recommendations.anidb import AnidbPopular
-from medusa.show.recommendations.imdb import ImdbPopular
 from medusa.show.recommendations.trakt import TraktPopular
-from simpleanidb import REQUEST_HOT
-from medusa.tv.series import Series, SeriesIdentifier
-
-from six import itervalues, viewitems
-
-from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -54,6 +40,10 @@ class RecommendedHandler(BaseRequestHandler):
         shows = get_recommended_shows(source=recommended_mappings.get(identifier))
 
         if shows:
-            data = [show.to_json() for show in shows]
+            data['shows'] = [show.to_json() for show in shows]
+
+        data['trakt'] = {}
+        data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
+        data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
 
         return self._ok(data)

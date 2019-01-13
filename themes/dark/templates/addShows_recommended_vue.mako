@@ -26,12 +26,15 @@ window.app = new Vue({
             { text: 'Ascending', value: 'asc'},
             { text: 'Descending', value: 'desc'},
         ]
+        const filterShows = '';
         return {
             externals,
             sortOptions,
             sortDirectionOptions,
             sortOptionsValue: 'original',
             sortDirectionOptionsValue: 'desc',
+            filterOption: null,
+            filterShows,
             configLoaded: false,
             rootDirs: [],
             enableShowOptions: false,
@@ -59,19 +62,28 @@ window.app = new Vue({
             ],
             selectedList: 11,
             shows: [],
+
             // trakt thing
-            removedFromMedusa: [],
+            trakt: {
+                removedFromMedusa: [],
+                blacklistEnabled: []
+            },
             
             // Isotope stuff
             selected: null,
             option: {
                 getSortData: {
                     id: 'seriesId',
-                    title: function(itemElem) {
+                    title: itemElem => {
                         return itemElem.title.toLowerCase();
                     },
                     rating: 'rating',
                     votes: 'votes'
+                },
+                getFilterData: {
+                    filterByText: itemElem => {
+                        return itemElem.title.toLowerCase().includes(this.filterShows.toLowerCase());
+                    }
                 },
                 sortBy : 'votes',
                 layoutMode: 'fitRows',
@@ -330,10 +342,13 @@ window.app = new Vue({
         // The real vue stuff
         // This is used to wait for the config to be loaded by the store.
         this.$once('loaded', () => {
-            const { stateShows, shows } = this;
+            const { stateShows, stateTrakt, shows } = this;
+            const { blacklistEnabled, removedFromMedusa } = stateTrakt;
 
             // Map the state values to local data.
             this.shows = stateShows;
+            this.trakt.blacklistEnabled = blacklistEnabled;
+            this.trakt.removedFromMedusa = removedFromMedusa;
             this.configLoaded = true;
         });
 
@@ -342,9 +357,13 @@ window.app = new Vue({
     computed: {
         stateShows() {
             const { $store } = this;
-            // @omg, I need to use recommended.recommended here, but don't know why?
             return $store.state.recommended.shows;
         },
+        stateTrakt() {
+            const { $store } = this;
+            return $store.state.recommended.trakt;
+        },
+
         filteredShowsByList() {
             const { shows, selectedList, imgLazyLoad } = this;
 
@@ -363,12 +382,11 @@ window.app = new Vue({
     methods: {
         changeRecommendedList() {
             const { $store, shows } = this;
-
         },
         containerClass(show) {
             let classes = 'recommended-container default-poster show-row';
-            const { removedFromMedusa } = this;
-            if (show.showInLibrary || removedFromMedusa.includes(show.mappedSeriesId)) {
+            const { removedFromMedusa } = this.trakt;
+            if (show.showInLibrary) {
                 classes += ' show-in-list';
             }
             return classes;
@@ -440,6 +458,15 @@ window.app = new Vue({
             this.option.sortBy = mapped[sortOptionsValue];
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
+        filter: function(key) {
+            const { option: isotopeOptions } = this;
+            if (this.filterOption == key) {
+                key = null;
+            }
+            // this.$refs.filteredShows.arrange(isotopeOptions);
+            this.$refs.filteredShows.filter(key);
+            this.filterOption = key;
+        },
         sortDirection() {
             const { option: isotopeOptions, sortDirectionOptionsValue } = this;
             this.option.sortAscending = sortDirectionOptionsValue === 'asc';
@@ -447,7 +474,7 @@ window.app = new Vue({
         },
         addByExternalIndexer(show) {
             const { externals } = show;
-            if (show.source === 11) {
+            if (show.isAnime) {
                 return [{text: 'Tvdb', value: 'tvdb_id'}]
             }
             
@@ -460,6 +487,11 @@ window.app = new Vue({
             }
 
             return options;
+        },
+        blacklistTrakt(show) {
+            debugger;
+            show.trakt.blacklisted = true;
+            apiRoute('addShows/addShowToBlacklist?seriesid=' + show.externals.tvdb_id);
         }
     }
 });
@@ -500,6 +532,12 @@ window.app = new Vue({
                 <option v-for="option in sortDirectionOptions" :value="option.value">{{option.text}}</option>
             </select>
         </div>
+
+        <div class="show-option">
+            <span style="margin-left:12px">Filter:</span>
+            <input type="text" v-model="filterShows" placeholder="no filter" class="form-control form-control-inline input-sm" @input="filter('filterByText')">
+        </div>
+
     </div>
 </div> <!-- row -->
 
@@ -556,23 +594,23 @@ window.app = new Vue({
                                 <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">In List</app-link>
                             </button>
                             
-                            <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
+                            <button v-if="trakt.removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
                                 <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
                             </button>
                             <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
-                            <button v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
+                            <button :disabled="show.trakt.blacklisted" v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" @click="blacklistTrakt(show)">Blacklist</button>
                         </div>
                     </div>
                 </div>
                 <div class="row" v-if="!show.showInLibrary">
-                        <div class="col-md-12" name="addshowoptions">
-                                <select :ref="String(show.source) + '-' + String(show.seriesId)" name="addshow" class="rec-show-select">
-                                    <option v-for="option in addByExternalIndexer(show)" :value="option.value">{{option.text}}</option>
-                                </select>
-                                <button class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, String(show.source) + '-' + String(show.seriesId))">
-                                    Add
-                                </button>
-                        </div>
+                    <div class="col-md-12" name="addshowoptions">
+                            <select :ref="String(show.source) + '-' + String(show.seriesId)" name="addshow" class="rec-show-select">
+                                <option v-for="option in addByExternalIndexer(show)" :value="option.value">{{option.text}}</option>
+                            </select>
+                            <button :disabled="show.trakt.blacklisted" class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, String(show.source) + '-' + String(show.seriesId))">
+                                Add
+                            </button>
+                    </div>
                 </div>
             </div>
         </isotope>

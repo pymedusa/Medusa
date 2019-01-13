@@ -3,7 +3,11 @@ import { api } from '../../api';
 import { ADD_RECOMMENDED_SHOW } from '../mutation-types';
 
 const state = {
-    shows: []
+    shows: [],
+    trakt: {
+        removedFromMedusa: [],
+        blacklistEnabled: false
+    }
 };
 
 const mutations = {
@@ -48,8 +52,10 @@ const actions = {
 
         identifier = identifier ? identifier : '';
         return api.get('/recommended/' + identifier, { params }).then(res => {
-            const shows = res.data;
-            return shows.forEach(show => {
+            const { data } = res;
+            state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
+            state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
+            return data.shows.forEach(show => {
                 commit(ADD_RECOMMENDED_SHOW, show);
             });
         });

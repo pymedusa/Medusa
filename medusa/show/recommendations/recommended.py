@@ -248,6 +248,9 @@ class RecommendedShow(BasePopular):
         data['externals'] = self.ids
         data['isAnime'] = self.is_anime
         data['showInLibrary'] = self.show_in_list
+        data['trakt'] = {
+            'blacklisted': False
+        }
 
         return data
 
