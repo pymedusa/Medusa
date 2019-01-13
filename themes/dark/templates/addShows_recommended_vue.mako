@@ -378,16 +378,18 @@ window.app = new Vue({
             imgLazyLoad.update();
             imgLazyLoad.handleScroll();
         },
-        addShowById(show) {
+        addShowById(show, indexer) {
             console.log('adding show by id');
             const { enableShowOptions, selectedShowOptions, $store } = this;
             const { mappedIndexerName, mappedSeriesId } = show
-            
-            options = {
-                id: {
-                    [mappedIndexerName]: mappedSeriesId,
-                }
+            const selectedIndexer = this.$refs[indexer][0].selectedOptions[0].value;            
+            debugger;
+            let showId = { [mappedIndexerName]: mappedSeriesId };
+            if (Object.keys(show.externals).length !== 0 && show.externals[selectedIndexer + '_id']) {
+                showId = { [selectedIndexer]: show.externals[selectedIndexer + '_id'] };
             }
+            
+            options = { id: showId };
 
             if (enableShowOptions) {
                 options = Object.assign({}, options, { options: selectedShowOptions });
@@ -426,7 +428,7 @@ window.app = new Vue({
             this.selectedShowOptions.quality.allowed = allowed;
             this.selectedShowOptions.quality.preferred = preferred;
         },
-        sort: function() {
+        sort() {
             const mapped = {
                 original: 'original-order',
                 rating: 'rating',
@@ -438,11 +440,27 @@ window.app = new Vue({
             this.option.sortBy = mapped[sortOptionsValue];
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
-        sortDirection: function() {
+        sortDirection() {
             const { option: isotopeOptions, sortDirectionOptionsValue } = this;
             this.option.sortAscending = sortDirectionOptionsValue === 'asc';
             this.$refs.filteredShows.arrange(isotopeOptions);
         },
+        addByExternalIndexer(show) {
+            const { externals } = show;
+            if (show.source === 11) {
+                return [{text: 'Tvdb', value: 'tvdb_id'}]
+            }
+            
+            let options = [];
+            for (external in externals) {
+                if (['tvdb_id', 'tmdb_id', 'tvmaze_id'].includes(external)) {
+                    const externalName = external.split('_')[0];
+                    options.push({text: externalName, value: externalName})
+                }
+            }
+
+            return options;
+        }
     }
 });
 </script>
@@ -507,36 +525,54 @@ window.app = new Vue({
                     {{show.title}}
                 </div>
 
-                <div class="clearfix show-attributes">
-                    <p>{{show.rating}} <img src="images/heart.png">
-                        <div v-if="show.isAnime" id="linkAnime">
-                            <app-link class="recommended-show-url" :href="'https://anidb.net/a' + show.externals.aid">
-                                <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt=""/>
-                            </app-link>
-                        </div>
-                        <div v-if="show.recommender === 'Trakt Popular'" id="linkAnime">
-                            <a class="recommended-show-url" href="'https://trakt.tv/shows/' + show.seriesId">
-                                <img src="images/trakt.png" class="recommended-show-link-inline" alt=""/>
-                            </a>
-                        </div>
-                    </p>
-                    <i>{{show.votes}} votes</i>
+                <div class="row">
 
-                    <div class="recommendedShowTitleIcons">
-                        <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
-                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">In List</app-link>
-                        </button>
+                    <div name="left" class="col-md-6 col-xs-12">
+                        <div class="show-rating">
+                            <p>{{show.rating}} <img src="images/heart.png">
+                                <div v-if="show.isAnime" id="linkAnime">
+                                    <app-link class="recommended-show-url" :href="'https://anidb.net/a' + show.externals.aid">
+                                        <img src="images/anidb_inline_refl.png" class="recommended-show-link-inline" alt=""/>
+                                    </app-link>
+                                </div>
+                                <div v-if="show.recommender === 'Trakt Popular'" id="linkAnime">
+                                    <a class="recommended-show-url" href="'https://trakt.tv/shows/' + show.seriesId">
+                                        <img src="images/trakt.png" class="recommended-show-link-inline" alt=""/>
+                                    </a>
+                                </div>
+                            </p>
+                        </div>
                         
-                        <button v-if="!show.showInLibrary" class="btn-medusa btn-xs" @click="addShowById(show)">
-                            Add
-                        </button>
+                        <div class="show-votes">
+                            <i>{{show.votes}} votes</i>
+                        </div>
 
-                        <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
-                            <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
-                        </button>
-                        <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
-                        <button v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
+                        
                     </div>
+                    
+                    <div name="right" class="col-md-6 col-xs-12">
+                        <div class="recommendedShowTitleIcons">
+                            <button v-if="show.showInLibrary" class="btn-medusa btn-xs">
+                                <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">In List</app-link>
+                            </button>
+                            
+                            <button v-if="removedFromMedusa.includes(show.mappedSeriesId)" class="btn-medusa btn-xs">
+                                <app-link :href="'home/displayShow?indexername=' + show.mappedIndexerName + '&seriesid=' + show.mappedSeriesId">Watched</app-link>
+                            </button>
+                            <!-- if trakt_b and not (cur_show.show_in_list or cur_show.mapped_series_id in removed_from_medusa): -->
+                            <button v-if="show.source === externals.TRAKT" :data-indexer-id="show.mappedSeriesId" class="btn-medusa btn-xs" data-blacklist-show>Blacklist</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" v-if="!show.showInLibrary">
+                        <div class="col-md-12" name="addshowoptions">
+                                <select :ref="String(show.source) + '-' + String(show.seriesId)" name="addshow" class="rec-show-select">
+                                    <option v-for="option in addByExternalIndexer(show)" :value="option.value">{{option.text}}</option>
+                                </select>
+                                <button class="btn-medusa btn-xs rec-show-button" @click="addShowById(show, String(show.source) + '-' + String(show.seriesId))">
+                                    Add
+                                </button>
+                        </div>
                 </div>
             </div>
         </isotope>

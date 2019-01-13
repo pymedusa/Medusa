@@ -266,6 +266,7 @@ def get_recommended_shows(source=None, series_id=None):
     where = []
     params = []
 
+    # Query filter options
     if source:
         where.append('source = ?')
         params.append(source)

@@ -890,6 +890,20 @@ home_newShow.mako
     font-size: 13px;
 }
 
+.show-rating, .show-votes {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+select.rec-show-select {
+    font-size: 12px;
+    margin: 2px 2px 2px 6px;
+}
+
+button.rec-show-button {
+    margin: 0px 2px 2px 2px;
+}
+
 #addShowForm > div {
     width: 100% !important;
 }
@@ -1059,7 +1073,7 @@ div.recommended-image {
     white-space: nowrap;
     font-size: 12px;
     overflow: hidden;
-    margin: 0;
+    margin: 2px;
     text-decoration: none;
     color: rgb(255, 255, 255);
 }
@@ -4313,4 +4327,14 @@ CSS helper classes
 /* These classes should be natively available in bootstrap 4 */
 .d-block {
     display: block;
+}
+
+/** Bootstrap fix to get rows without padding **/
+.row-no-padding {
+    margin-left: 0;
+    margin-right: 0;
+    [class*="col-"] {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
 }
