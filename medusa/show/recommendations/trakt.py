@@ -54,21 +54,20 @@ class TraktPopular(BasePopular):
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
     @recommended_series_cache.cache_on_arguments(namespace='trakt', function_key_generator=create_key_from_series)
-    def _create_recommended_show(self, storage_key, series):
+    def _create_recommended_show(self, storage_key, series, subcat=None):
         """Create the RecommendedShow object from the returned showobj."""
         externals_mapping = {u'tmdb': 'tmdb_id', u'tvdb': 'tvdb_id', u'imdb': u'imdb_id'}
         rec_show = RecommendedShow(
             self,
             series['show']['ids']['trakt'],
             series['show']['title'],
-            INDEXER_TVDBV2,  # indexer
-            series['show']['ids']['tvdb'],
             **{'rating': series['show']['rating'],
                 'votes': try_int(series['show']['votes'], '0'),
                 'image_href': self.base_url.format(series['show']['ids']['slug']),
                 # Adds like: {'tmdb': 62126, 'tvdb': 304219, 'trakt': 79382, 'imdb': 'tt3322314',
                 # 'tvrage': None, 'slug': 'marvel-s-luke-cage'}
-                'ids': {externals_mapping[k]: v for k, v in iteritems(series['show']['ids']) if externals_mapping.get(k)}
+                'ids': {externals_mapping[k]: v for k, v in iteritems(series['show']['ids']) if externals_mapping.get(k)},
+                'subcat': subcat
                }
         )
 
@@ -189,7 +188,8 @@ class TraktPopular(BasePopular):
 
                     recommended_show = self._create_recommended_show(
                         storage_key=show['show']['ids']['trakt'],
-                        series=show
+                        series=show,
+                        subcat=page_url
                     )
                     recommended_show.save_to_db()
                     trending_shows.append(recommended_show)

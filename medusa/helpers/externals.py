@@ -133,6 +133,7 @@ def check_existing_shows(indexed_show, indexer):
     mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
     other_indexers = [mapped_indexer for mapped_indexer in mappings if mapped_indexer != indexer]
 
+    # This will query other indexer api's.
     new_show_externals = get_externals(indexer=indexer, indexed_show=indexed_show)
 
     # Iterate through all shows in library, and see if one of our externals matches it's indexer_id
@@ -221,3 +222,21 @@ def load_externals_from_db(indexer=None, indexer_id=None):
             log.error(u'Indexer not supported in current mappings: {id!r}', {'id': error})
 
     return externals
+
+
+def show_in_library(indexer=None, indexer_id=None):
+    """
+    Use the load_externals_from_db method and compare it with the app.showList (library) for existing shows.
+    :param indexer: Optional pass indexer id, else use the current shows indexer.
+    :type indexer: int
+    :param indexer_id: Optional pass indexer id, else use the current shows indexer.
+    :type indexer_id: int
+
+    :return: True if found in library
+    """
+    externals = load_externals_from_db(indexer, indexer_id)
+    if externals:
+        for show in app.showList:
+            for indexer, series_id in viewitems(externals):
+                if reverse_mappings[indexer] == show.indexer and series_id == show.series_id:
+                    return True

@@ -62,8 +62,6 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
             self,
             series.aid,
             unicode(series.title),
-            INDEXER_TVDBV2,
-            tvdb_id,
             **{'rating': series.rating_permanent,
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),

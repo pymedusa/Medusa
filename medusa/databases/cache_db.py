@@ -208,7 +208,7 @@ class AddRecommendedTable(ClearProviderTables):
 
     def execute(self):
         self.connection.action(
-            """CREATE TABLE "recommended" (
+            '''CREATE TABLE "recommended" (
                 `recommended_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
                 `source`	INTEGER NOT NULL,
                 `series_id`	INTEGER NOT NULL,
@@ -219,6 +219,7 @@ class AddRecommendedTable(ClearProviderTables):
                 `votes`	INTEGER,
                 `is_anime`	INTEGER DEFAULT 0,
                 `image_href`	TEXT,
-                `image_src`	TEXT
-            )"""
+                `image_src`	TEXT,
+                `subcat` TEXT
+            )'''
         )

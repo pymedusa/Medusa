@@ -53,11 +53,12 @@ class ImdbPopular(BasePopular):
             self,
             series.get('imdb_tt'),
             series.get('name'),
-            INDEXER_TVDBV2,
-            int(tvdb_id),
-            **{'rating': series.get('rating'),
-               'votes': series.get('votes'),
-               'image_href': series.get('imdb_url')}
+            **{
+                'rating': series.get('rating'),
+                'votes': series.get('votes'),
+                'image_href': series.get('imdb_url'),
+                'ids': {'tvdb_id': int(tvdb_id)}
+            }
         )
 
         if series.get('image_url'):

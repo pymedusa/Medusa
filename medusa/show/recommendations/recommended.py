@@ -28,17 +28,17 @@ from medusa import (
     helpers,
 )
 from medusa.cache import recommended_series_cache
-from medusa.helpers import ensure_list
-from medusa.helpers.externals import load_externals_from_db, save_externals_to_db
+from medusa.helpers.externals import load_externals_from_db, save_externals_to_db, show_in_library
 from medusa.imdb import Imdb
 from medusa.indexers.utils import indexer_id_to_name
-from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT
+from medusa.indexers.indexer_config import EXTERNAL_ANIDB, EXTERNAL_IMDB, EXTERNAL_TRAKT, INDEXER_TVDBV2
+from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
 from simpleanidb import Anidb
 
-from six import PY2, ensure_str, text_type
+from six import PY2, text_type, viewitems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -93,12 +93,15 @@ class BasePopular(object):
         self.source = source
         self.cache_subfolder = 'recommended'
         self.default_img_src = 'poster.png'
+        self.mapped_indexer = None
+        self.mapped_series_id = None
+        self.mapped_indexer_name = None
 
 
 class RecommendedShow(BasePopular):
     """Base class for show recommendations."""
 
-    def __init__(self, rec_show_prov, series_id, title, mapped_indexer, mapped_series_id, **show_attr):
+    def __init__(self, rec_show_prov, series_id, title, **show_attr):
         """Create a show recommendation.
 
         :param rec_show_prov: Recommended shows provider. Used to keep track of the provider,
@@ -112,22 +115,23 @@ class RecommendedShow(BasePopular):
         :param image_href: the href when clicked on the show image (poster)
         :param image_src: the local url to the "cached" image (poster)
         :param default_img_src: a default image when no poster available
+        :param
         """
-        self.source = rec_show_prov.source
-        self.recommender = rec_show_prov.recommender
+        super(RecommendedShow, self).__init__(rec_show_prov, rec_show_prov.source)
         self.cache_subfolder = rec_show_prov.cache_subfolder or 'recommended'
         self.default_img_src = getattr(rec_show_prov, 'default_img_src', '')
 
         self.series_id = series_id
         self.title = title
-        self.mapped_indexer = int(mapped_indexer)
-        self.mapped_indexer_name = indexer_id_to_name(mapped_indexer)
-        self.mapped_series_id = mapped_series_id
-        if self.mapped_series_id:
+        if show_attr.get('mapped_indexer'):
+            self.mapped_indexer = int(show_attr.get('mapped_indexer'))
+            self.mapped_indexer_name = indexer_id_to_name(show_attr.get('mapped_indexer'))
+
+        if show_attr.get('apped_series_id'):
             try:
-                self.mapped_series_id = int(self.mapped_series_id)
+                self.mapped_series_id = int(show_attr.get('mapped_series_id'))
             except ValueError:
-                raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(mapped_series_id))
+                raise MissingTvdbMapping('Could not parse the indexer_id [{0}]'.format(self.mapped_series_id))
 
         self.rating = float(show_attr.get('rating') or 0)
 
@@ -143,13 +147,14 @@ class RecommendedShow(BasePopular):
         self.image_src = show_attr.get('image_src')
         self.ids = show_attr.get('ids', {})
         self.is_anime = show_attr.get('is_anime', False)
+        self.subcat = show_attr.get('subcat')
 
-        self.show_in_list = None
-        if self.mapped_series_id:
-            # Check if the show is currently already in the db
-            self.show_in_list = bool([show.indexerid for show in app.showList
-                                     if show.series_id == self.mapped_series_id and
-                                     show.indexer == self.mapped_indexer])
+        self.show_in_list = show_in_library(self.source, self.series_id)
+        # if self.mapped_series_id:
+        #     # Check if the show is currently already in the db by the tvdb id
+        #     self.show_in_list = bool([show.indexerid for show in app.showList
+        #                              if show.series_id == self.ids['tvdb_id'] and
+        #                              show.indexer == INDEXER_TVDBV2])
         self.session = session
 
     def cache_image(self, image_url, default=None):
@@ -212,18 +217,28 @@ class RecommendedShow(BasePopular):
         if not existing_show:
             cache_db_con.action(
                 'INSERT INTO recommended '
-                '    (source, series_id, mapped_indexer, mapped_series_id, title, rating, votes, is_anime, image_href, image_src) '
-                'VALUES (?,?,?,?,?,?,?,?,?,?)',
+                '    (source, series_id, mapped_indexer, '
+                '     mapped_series_id, title, rating, '
+                '     votes, is_anime, image_href, '
+                '     image_src, subcat) '
+                'VALUES (?,?,?,?,?,?,?,?,?,?,?)',
                 [self.source, self.series_id, self.mapped_indexer, self.mapped_series_id, self.title, self.rating, self.votes,
-                 int(self.is_anime), self.image_href, self.image_src]
+                 int(self.is_anime), self.image_href, self.image_src, self.subcat]
             )
         else:
-            cache_db_con.action('UPDATE recommended SET mapped_indexer = ?, mapped_series_id = ?, title = ?, rating = ?, votes = ?, '
-                                'is_anime = ?, image_href = ?, image_src = ? '
-                                'WHERE recommended_id = ?',
-                                [self.mapped_indexer, self.mapped_series_id, self.title, self.rating,
-                                 self.votes, int(self.is_anime), self.image_href, self.image_src, existing_show[0]['recommended_id']])
+            query = '''UPDATE recommended SET title = ?, rating = ?, votes = ?, 
+                    is_anime = ?, image_href = ?, image_src = ?, subcat = ? {mapped_indexer_and_id}
+                    WHERE recommended_id = ?'''
+            params_set = [self.title, self.rating, self.votes, int(self.is_anime), self.image_href, self.image_src, self.subcat]
+            params_where = [existing_show[0]['recommended_id']]
 
+            if self.mapped_indexer and self.mapped_series_id:
+                query = query.format(mapped_indexer_and_id=', mapped_indexer = ?, mapped_series_id = ?')
+                params_set += [self.mapped_indexer, self.mapped_series_id]
+            else:
+                query = query.format(mapped_indexer_and_id='')
+
+            cache_db_con.action(query, params_set + params_where)
         # If there are any external id's, save them to main/indexer_mappings
         if self.ids:
             save_externals_to_db(self.source, self.series_id, self.ids)
@@ -250,7 +265,8 @@ class RecommendedShow(BasePopular):
         data['showInLibrary'] = self.show_in_list
         data['trakt'] = {
             'blacklisted': False
-        }
+        },
+        data['subcat'] = self.subcat
 
         return data
 
@@ -302,14 +318,15 @@ def get_recommended_shows(source=None, series_id=None):
                     ),
                     show[b'series_id'],
                     show[b'title'],
-                    show[b'mapped_indexer'],
-                    show[b'mapped_series_id'],
                     **{
                         'rating': show[b'rating'],
                         'votes': show[b'votes'],
                         'image_href': show[b'image_href'],
                         'image_src': show[b'image_src'],
-                        'ids': externals
+                        'ids': externals,
+                        'subcat': show[b'subcat'],
+                        'mapped_indexer': show[b'mapped_indexer'],
+                        'mapped_series_id': show[b'mapped_series_id']
                     }
                 )
             )
@@ -359,29 +376,3 @@ def create_key_from_series(namespace, fn, **kw):
             return show_key.encode('utf-8')
         return show_key
     return generate_key
-
-
-def get_all_recommended_series_from_cache(indexers):
-    """
-    Retrieve all recommended show objects from the dogpile cache for a specific indexer or a number of indexers.
-
-    For example: `get_all_recommended_series_from_cache(['imdb', 'anidb'])` will return all recommended show objects, for the
-    indexers imdb and anidb.
-
-    :param indexers: indexer or list of indexers. Indexers need to be passed as a string. For example: 'imdb', 'anidb' or 'trakt'.
-    :return: List of recommended show objects.
-    """
-    indexers = ensure_list(indexers)
-    all_series = []
-    for indexer in indexers:
-        index = recommended_series_cache.get(ensure_str(indexer))
-        if not index:
-            continue
-
-        for index_item in index:
-            key = '{indexer}_{series_id}'.format(indexer=indexer, series_id=index_item)
-            series = recommended_series_cache.get(key)
-            if series:
-                all_series.append(series)
-
-    return all_series
