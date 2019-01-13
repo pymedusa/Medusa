@@ -14,12 +14,12 @@ from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_TRAKT
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
-    BasePopular,    
+    BasePopular,
     RecommendedShow,
     create_key_from_series,
 )
 
-from six import text_type
+from six import iteritems, text_type
 
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 

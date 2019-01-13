@@ -54,6 +54,7 @@ const globalComponents = [
     Backstretch,
     Config,
     FileBrowser,
+    isotope,
     LanguageSelect,
     NamePattern,
     PlotInfo,
@@ -73,7 +74,8 @@ const app = new Vue({
     store,
     router,
     components: {
-        Truncate
+        Truncate,
+        isotope
     },
     data() {
         return {

@@ -672,7 +672,7 @@ class MedusaApp(object):
 
         # show updater recommeded show caching
         self.CACHE_RECOMMENDED_SHOWS = True
-        self.CACHE_RECOMMENDED_TRAKT = False
+        self.CACHE_RECOMMENDED_TRAKT = True
         self.CACHE_RECOMMENDED_IMDB = False
         self.CACHE_RECOMMENDED_ANIDB = True
 

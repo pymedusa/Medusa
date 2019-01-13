@@ -15,8 +15,23 @@ window.app = new Vue({
             ANIDB: 11,
             TRAKT: 12
         };
+        const sortOptions = [
+            { text: 'Name', value: 'name' },
+            { text: 'Original', value: 'original' },
+            { text: 'Votes', value: 'votes' },
+            { text: '% Rating', value: 'rating' },
+            { text: '% Rating > Votes', value: 'rating_votes' },
+        ]
+        const sortDirectionOptions = [
+            { text: 'Ascending', value: 'asc'},
+            { text: 'Descending', value: 'desc'},
+        ]
         return {
             externals,
+            sortOptions,
+            sortDirectionOptions,
+            sortOptionsValue: 'original',
+            sortDirectionOptionsValue: 'desc',
             configLoaded: false,
             rootDirs: [],
             enableShowOptions: false,
@@ -40,7 +55,7 @@ window.app = new Vue({
                 { text: 'Anidb', value: externals.ANIDB },
                 { text: 'IMDB', value: externals.IMDB },
                 { text: 'Trakt', value: externals.TRAKT },
-                { text: 'all', value: -1}
+                { text: 'all', value: -1 }
             ],
             selectedList: 11,
             shows: [],
@@ -51,15 +66,22 @@ window.app = new Vue({
             selected: null,
             option: {
                 getSortData: {
-                    id: "seriesId"
+                    id: 'seriesId',
+                    title: function(itemElem) {
+                        return itemElem.title.toLowerCase();
+                    },
+                    rating: 'rating',
+                    votes: 'votes'
                 },
-                sortBy : "seriesId",
-                layoutMode: 'fitRows'
+                sortBy : 'votes',
+                layoutMode: 'fitRows',
+                sortAscending: false
             },
             imgLazyLoad: new LazyLoad({
                 // Example of options object -> see options section
                 threshold: 500
-            })
+            }),
+            
         };
     },
     created() {
@@ -162,51 +184,6 @@ window.app = new Vue({
                 $(this).parent().find('button[data-add-show]').prop('disabled', true);
 
                 $.get('addShows/addShowToBlacklist?seriesid=' + $(this).attr('data-indexer-id'));
-                return false;
-            });
-        };
-
-        /*
-        * Adds show by indexer and indexer_id with a number of optional parameters
-        * The show can be added as an anime show by providing the data attribute: data-isanime="1"
-        * @TODO: move to vue method. Eventually you want to have this go through the store.
-        */
-        $.initAddShowById = function() {
-            $(document.body).on('click', 'button[data-add-show]', function(e) {
-                e.preventDefault();
-
-                if ($(this).is(':disabled')) {
-                    return false;
-                }
-
-                $(this).html('Added').prop('disabled', true);
-                $(this).parent().find('button[data-blacklist-show]').prop('disabled', true);
-
-                const anyQualArray = [];
-                const bestQualArray = [];
-                $('select[name="allowed_qualities"] option:selected').each((i, d) => {
-                    anyQualArray.push($(d).val());
-                });
-                $('select[name="preferred_qualities"] option:selected').each((i, d) => {
-                    bestQualArray.push($(d).val());
-                });
-
-                const configureShowOptions = $('#configure_show_options').prop('checked');
-
-                $.get('addShows/addShowByID?indexername=' + $(this).attr('data-indexer') + '&seriesid=' + $(this).attr('data-indexer-id'), {
-                    root_dir: $('#rootDirs option:selected').val(), // eslint-disable-line camelcase
-                    configure_show_options: configureShowOptions, // eslint-disable-line camelcase
-                    show_name: $(this).attr('data-show-name'), // eslint-disable-line camelcase
-                    quality_preset: $('select[name="quality_preset"]').val(), // eslint-disable-line camelcase
-                    default_status: $('#statusSelect').val(), // eslint-disable-line camelcase
-                    any_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
-                    best_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
-                    season_folders: $('#season_folders').prop('checked'), // eslint-disable-line camelcase
-                    subtitles: $('#subtitles').prop('checked'),
-                    anime: $('#anime').prop('checked'),
-                    scene: $('#scene').prop('checked'),
-                    default_status_after: $('#statusSelectAfter').val() // eslint-disable-line camelcase
-                });
                 return false;
             });
         };
@@ -422,6 +399,7 @@ window.app = new Vue({
                     'Saved',
                     { timeout: 20000 }
                 );
+                show.showInLibrary = true;
                 debugger;
             }).catch(() => {
                 this.$snotify.error(
@@ -447,7 +425,24 @@ window.app = new Vue({
             this.selectedShowOptions.release.whitelist = whitelist;
             this.selectedShowOptions.quality.allowed = allowed;
             this.selectedShowOptions.quality.preferred = preferred;
-        }
+        },
+        sort: function() {
+            const mapped = {
+                original: 'original-order',
+                rating: 'rating',
+                votes: 'votes',
+                name: 'title',
+                rating_votes: ['rating', 'votes']
+            }
+            const { option: isotopeOptions, sortOptionsValue } = this;
+            this.option.sortBy = mapped[sortOptionsValue];
+            this.$refs.filteredShows.arrange(isotopeOptions);
+        },
+        sortDirection: function() {
+            const { option: isotopeOptions, sortDirectionOptionsValue } = this;
+            this.option.sortAscending = sortDirectionOptionsValue === 'asc';
+            this.$refs.filteredShows.arrange(isotopeOptions);
+        },
     }
 });
 </script>
@@ -476,20 +471,15 @@ window.app = new Vue({
 
         <div class="show-option">
             <span>Sort By:</span>
-            <select id="showsort" class="form-control form-control-inline input-sm">
-                <option value="name">Name</option>
-                <option value="original">Original</option>
-                <option value="votes">Votes</option>
-                <option value="rating">% Rating</option>
-                <option value="rating_votes" selected="true" >% Rating > Votes</option>
+            <select name="showsort" id="showsort" v-model="sortOptionsValue" class="form-control form-control-inline input-sm" @change="sort">
+                <option v-for="option in sortOptions" :value="option.value">{{option.text}}</option>
             </select>
         </div>
 
         <div class="show-option">
             <span style="margin-left:12px">Sort Order:</span>
-            <select id="showsortdirection" class="form-control form-control-inline input-sm">
-                <option value="asc">Asc</option>
-                <option value="desc" selected="true" >Desc</option>
+            <select name="showsortdirection" id="showsortdirection" v-model="sortDirectionOptionsValue" class="form-control form-control-inline input-sm" @change="sortDirection">
+                <option v-for="option in sortDirectionOptions" :value="option.value">{{option.text}}</option>
             </select>
         </div>
     </div>
@@ -504,7 +494,7 @@ window.app = new Vue({
             <p>###Exception here###??</p>
         </div>
 
-        <isotope :list="filteredShowsByList" id="container" class="isoDefault" :options='option' @layout="isotopeLayout($event)">
+        <isotope ref="filteredShows" :list="filteredShowsByList" id="container" class="isoDefault" :options='option' @layout="isotopeLayout($event)">
             <div v-for="show in filteredShowsByList" :key="show.seriesId" :class="containerClass(show)" :data-name="show.title" :data-rating="show.rating" :data-votes="show.votes" :data-anime="show.isAnime">
                 <div class="recommended-image">
                     <app-link :href="show.imageHref">

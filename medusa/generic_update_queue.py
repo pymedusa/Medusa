@@ -97,8 +97,8 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                         try:
                             TraktPopular().fetch_popular_shows(page_url=page_url)
                         except Exception as error:
-                            log.info(u'Could not get trakt recommended shows for %s because of error: %s', page_url,
-                                        error)
+                            log.info(u'Could not get trakt recommended shows for {page_url} because of error: {error}',
+                                     {'page_url': page_url, 'error': error})
                             log.debug(u'Not bothering getting the other trakt lists')
 
                 if self.recommended_list in (
@@ -108,7 +108,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     try:
                         ImdbPopular().fetch_popular_shows()
                     except (RequestException, Exception) as error:
-                        log.info(u'Could not get imdb recommended shows because of error: %s', error)
+                        log.info(u'Could not get imdb recommended shows because of error: {error}', {'error': error})
 
                 if self.recommended_list in (
                     UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ANIDB, UpdateQueueActions.UPDATE_RECOMMENDED_LIST_ALL
@@ -117,7 +117,7 @@ class RecommendedShowQueueItem(generic_queue.QueueItem):
                     try:
                         AnidbPopular().fetch_popular_shows(REQUEST_HOT)
                     except Exception as error:
-                        log.info(u'Could not get anidb recommended shows because of error: %s', error)
+                        log.info(u'Could not get anidb recommended shows because of error: {error}', {'error': error})
 
                 log.info(u'Finished caching recommended shows')
 
