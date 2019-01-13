@@ -43,7 +43,11 @@ class RecommendedHandler(BaseRequestHandler):
             data['shows'] = [show.to_json() for show in shows]
 
         data['trakt'] = {}
-        data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
+        data['trakt']['removedFromMedusa'] = []
+        try:
+            data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
+        except Exception:
+            log.warning('Could not get the `removed from medusa` list')
         data['trakt']['blacklistEnabled'] = app.TRAKT_BLACKLIST_NAME != ''
 
         return self._ok(data)
