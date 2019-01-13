@@ -168,7 +168,7 @@ class GenericMetadata(object):
         return os.path.join(show_obj.validate_location, self._show_metadata_filename)
 
     def get_episode_file_path(self, ep_obj):
-        return replace_extension(ep_obj.validate_location, self._ep_nfo_extension)
+        return replace_extension(ep_obj.location, self._ep_nfo_extension)
 
     def get_fanart_path(self, show_obj):
         return os.path.join(show_obj.validate_location, self.fanart_name)
