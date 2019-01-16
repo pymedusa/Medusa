@@ -32,7 +32,7 @@ from medusa import app, common, db, helpers, logger, naming, scheduler
 from medusa.helper.common import try_int
 from medusa.helpers.utils import split_and_strip
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import urlsplit
 

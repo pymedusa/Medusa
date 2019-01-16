@@ -59,7 +59,7 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 
