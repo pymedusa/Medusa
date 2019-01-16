@@ -7,7 +7,7 @@ $.tablesorter.addParser({
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (MEDUSA.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, '')); // eslint-disable-line no-undef
+        return (MEDUSA.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
     },
     type: 'text'
 });
