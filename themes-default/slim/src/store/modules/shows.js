@@ -87,8 +87,8 @@ const actions = {
 
         // If no shows are provided get the first 1000
         if (!shows) {
-            return (async() => {
-                const limit = 1000;
+            return (() => {
+                const limit = 5;
                 const page = 1;
                 const params = {
                     limit,
@@ -96,28 +96,29 @@ const actions = {
                 };
 
                 // Get first page
-                try {
-                    const response = await api.get('/series', { params });
-                } catch {
-                    console.log(
-                        'Could not retrieve a list of shows'
-                    );
-                    return;
-                }
-                const totalPages = Number(response.headers['x-pagination-total']);
-                response.data.forEach(show => {
-                    commit(ADD_SHOW, show);
-                });
-
-                // Optionally get additional pages
-                for (let x = 2; x <= totalPages; x++) {
-                    params.page = x;
-                    api.get('/series', { params }).then(response => {
+                api.get('/series', { params })
+                    .then(response => {
+                        const totalPages = Number(response.headers['x-pagination-total']);
                         response.data.forEach(show => {
                             commit(ADD_SHOW, show);
                         });
+
+                        // Optionally get additional pages
+                        const pageRequests = [];
+                        for (let page = 2; page <= totalPages; page++) {
+                            const newPage = { page };
+                            newPage.limit = params.limit;
+                            pageRequests.push(api.get('/series', { params: newPage }).then(response => {
+                                response.data.forEach(show => {
+                                    commit(ADD_SHOW, show);
+                                });
+                            }));
+                        }
+                        return Promise.all(pageRequests);
+                    })
+                    .catch(error => {
+                        console.log('Could not retrieve a list of shows');
                     });
-                }
             })();
         }
 

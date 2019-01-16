@@ -62,7 +62,6 @@ const webpackConfig = (env, mode) => ({
     entry: {
         // Exports all window. objects for mako files
         index: [
-            'babel-polyfill',
             path.resolve(__dirname, 'src/index.js')
         ],
         // Main Vue app
