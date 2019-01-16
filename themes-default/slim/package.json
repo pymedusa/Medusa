@@ -113,7 +113,8 @@
       ],
       "valid-jsdoc": [
         "error"
-      ]
+      ],
+      "padding-line-between-statements": "off"
     },
     "envs": [
       "browser"
