@@ -73,6 +73,11 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
     def create_token_response(self, request, token_handler):
         """Return token or error in json format.
 
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+        :param token_handler: A token handler instance, for example of type
+                              oauthlib.oauth2.BearerToken.
+
         If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
         token as described in `Section 5.1`_.  If the request failed client
@@ -82,11 +87,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
         .. _`Section 5.1`: https://tools.ietf.org/html/rfc6749#section-5.1
         .. _`Section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
         """
-        headers = {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-store',
-            'Pragma': 'no-cache',
-        }
+        headers = self._get_default_headers()
         try:
             if self.request_validator.client_authentication_required(request):
                 log.debug('Authenticating client, %r.', request)
@@ -100,6 +101,7 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
             self.validate_token_request(request)
         except errors.OAuth2Error as e:
             log.debug('Client error in token request, %s.', e)
+            headers.update(e.headers)
             return headers, e.json, e.status_code
 
         token = token_handler.create_token(request, self.refresh_token, save_token=False)
@@ -114,6 +116,9 @@ class ResourceOwnerPasswordCredentialsGrant(GrantTypeBase):
 
     def validate_token_request(self, request):
         """
+        :param request: OAuthlib request.
+        :type request: oauthlib.common.Request
+
         The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP

@@ -42,7 +42,7 @@
 :: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
-:: | `oauthlib` | [2.1.0](https://pypi.org/project/oauthlib/2.1.0/) | `requests-oauthlib` | ext | -
+:: | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | ext | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | ext | Module: `pint`
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
@@ -53,7 +53,7 @@
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
 :: | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | ext | -
 :: | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | ext | -
-:: | `requests-oauthlib` | [1.1.0](https://pypi.org/project/requests-oauthlib/1.1.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
+:: | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
