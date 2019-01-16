@@ -8,7 +8,6 @@ except ImportError as e:
 import re
 import sys
 import warnings
-import collections
 try:
     import soupsieve
 except ImportError as e:
@@ -218,7 +217,7 @@ class PageElement(object):
         if formatter is None:
             output = s
         else:
-            if isinstance(formatter, collections.Callable):
+            if isinstance(formatter, Callable):
                 # Backwards compatibility -- you used to pass in a formatting method.
                 output = formatter(s)
             else:
@@ -456,7 +455,7 @@ class PageElement(object):
         if parent is None:
             raise ValueError(
                 "Element has no parent, so 'before' has no meaning.")
-        if self in args:
+        if any(x is self for x in args):
                 raise ValueError("Can't insert an element before itself.")
         for predecessor in args:
             # Extract first so that the index won't be screwed up if they
@@ -477,7 +476,7 @@ class PageElement(object):
         if parent is None:
             raise ValueError(
                 "Element has no parent, so 'after' has no meaning.")
-        if self in args:
+        if any(x is self for x in args):
             raise ValueError("Can't insert an element after itself.")
         
         offset = 0
@@ -1139,7 +1138,7 @@ class Tag(PageElement):
 
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not isinstance(formatter, collections.Callable):
+        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
             formatter = self._formatter_for_name(formatter)
         attrs = []
         if self.attrs:
@@ -1244,7 +1243,7 @@ class Tag(PageElement):
         """
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not isinstance(formatter, collections.Callable):
+        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
             formatter = self._formatter_for_name(formatter)
 
         pretty_print = (indent_level is not None)
@@ -1426,7 +1425,7 @@ class SoupStrainer(object):
     def _normalize_search_value(self, value):
         # Leave it alone if it's a Unicode string, a callable, a
         # regular expression, a boolean, or None.
-        if (isinstance(value, str) or isinstance(value, collections.Callable) or hasattr(value, 'match')
+        if (isinstance(value, str) or isinstance(value, Callable) or hasattr(value, 'match')
             or isinstance(value, bool) or value is None):
             return value
 

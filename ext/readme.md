@@ -5,8 +5,9 @@
 :: | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `subliminal` (cli only), `simpleanidb` | ext | -
 :: | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | ext | Module: `attr`
 :: | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | ext | -
+:: | `backports.functools_lru_cache` | [1.5](https://pypi.org/project/backports.functools_lru_cache/1.5/) | `soupsieve` | **ext2** | -
 :: | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | ext | Markers: `python_version < '3.5'`
-:: | `beautifulsoup4` | [4.7.0](https://pypi.org/project/beautifulsoup4/4.7.0/) | **`medusa`**, `subliminal` | **ext2 ext3** | Module: `bs4`
+:: | `beautifulsoup4` | [4.7.1](https://pypi.org/project/beautifulsoup4/4.7.1/) | **`medusa`**, `subliminal` | **ext2 ext3** | Module: `bs4`
 :: | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`medusa`** | ext | Module: `bencode`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | ext | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | ext | Module: `cachecontrol`
@@ -52,11 +53,11 @@
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
 :: | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | ext | -
 :: | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | ext | -
-:: | `requests-oauthlib` | [1.0.0](https://pypi.org/project/requests-oauthlib/1.0.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
+:: | `requests-oauthlib` | [1.1.0](https://pypi.org/project/requests-oauthlib/1.1.0/) | **`medusa`**, `python-twitter` | ext | Module: `requests_oauthlib`
 :: | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | **ext3** | File: `sgmllib.py`
 :: | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | ext | Markers: `python_version < '3.4'`
 :: | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | ext | -
-:: | `soupsieve` | [1.6](https://pypi.org/project/soupsieve/1.6/) | `beautifulsoup4` | ext | -
+:: | `soupsieve` | [1.7](https://pypi.org/project/soupsieve/1.7/) | `beautifulsoup4` | ext | -
 :: | `stevedore` | [1.30.0](https://pypi.org/project/stevedore/1.30.0/) | `subliminal` | ext | -
 :: | `subliminal` | [6ac2fa23](https://github.com/Diaoul/subliminal/tree/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a) | **`medusa`** | ext | -
 :: | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | ext | -
@@ -64,7 +65,7 @@
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | ext | -
 :: | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests`, `CacheControl` | ext | -
-:: | `validators` | [0.12.3](https://pypi.org/project/validators/0.12.3/) | **`medusa`** | ext | -
+:: | `validators` | [0.12.4](https://pypi.org/project/validators/0.12.4/) | **`medusa`** | ext | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | ext | -
 :: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | ext | -
 :: | `PyYAML` | [3.13](https://pypi.org/project/PyYAML/3.13/) | `knowit` | **ext2 ext3** | Module: `yaml`

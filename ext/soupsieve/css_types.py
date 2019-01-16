@@ -1,9 +1,17 @@
 """CSS selector structure items."""
 from __future__ import unicode_literals
-from collections import Mapping
 from . import util
 
-__all__ = ('Selector', 'SelectorTag', 'SelectorAttribute', 'SelectorNth', 'SelectorList', 'Namespaces')
+__all__ = (
+    'Selector',
+    'NullSelector',
+    'SelectorTag',
+    'SelectorAttribute',
+    'SelectorNth',
+    'SelectorLang',
+    'SelectorList',
+    'Namespaces'
+)
 
 
 SEL_EMPTY = 0x1
@@ -13,6 +21,9 @@ SEL_INDETERMINATE = 0x8
 SEL_SCOPE = 0x10
 SEL_DIR_LTR = 0x20
 SEL_DIR_RTL = 0x40
+SEL_IN_RANGE = 0x80
+SEL_OUT_OF_RANGE = 0x100
+SEL_DEFINED = 0x200
 
 
 class Immutable(object):
@@ -72,7 +83,7 @@ class Immutable(object):
     __str__ = __repr__
 
 
-class ImmutableDict(Mapping):
+class ImmutableDict(util.Mapping):
     """Hashable, immutable dictionary."""
 
     def __init__(self, *args, **kwargs):
@@ -290,8 +301,9 @@ def pickle_register(obj):
 
 
 pickle_register(Selector)
+pickle_register(NullSelector)
 pickle_register(SelectorTag)
 pickle_register(SelectorAttribute)
 pickle_register(SelectorNth)
-pickle_register(SelectorList)
 pickle_register(SelectorLang)
+pickle_register(SelectorList)

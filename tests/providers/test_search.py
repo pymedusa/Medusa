@@ -6,7 +6,7 @@ import datetime
 import functools
 import os
 
-from tests.providers.conftest import providers
+from tests.providers.conftest import get_provider_data
 
 import vcr
 
@@ -48,7 +48,7 @@ def search(search_type, provider):
 
 
 def generate_test_cases():
-    for provider in providers():
+    for provider in get_provider_data():
         for search_type in ('daily', 'backlog'):
             test_name = 'test_{0}_{1}_search'.format(provider.name, search_type)
             generated_test = functools.partial(search, search_type, provider)
