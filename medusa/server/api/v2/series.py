@@ -130,7 +130,7 @@ class SeriesHandler(BaseRequestHandler):
             'config.scene': BooleanField(series, 'scene'),
             'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
-            'config.location': StringField(series, '_location'),
+            'config.location': StringField(series, 'location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
             'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
             'config.release.requiredWords': ListField(series, 'release_required_words'),
