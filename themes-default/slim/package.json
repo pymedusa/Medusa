@@ -59,7 +59,7 @@
     "gulp": "4.0.0",
     "gulp-changed": "3.2.0",
     "gulp-imagemin": "5.0.3",
-    "imagemin-pngquant": "6.0.1",
+    "imagemin-pngquant": "7.0.0",
     "is-visible": "2.2.0",
     "jquery": "3.3.1",
     "lodash": "4.17.11",
