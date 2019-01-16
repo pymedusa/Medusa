@@ -39,13 +39,16 @@ export default {
         }
     },
     data() {
+        const { id, indexer } = this;
         return {
-            jumpToSeason: 'jump'
+            jumpToSeason: 'jump',
+            show: null,
+            shows: []
         };
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows,
+            stateShows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers
         }),
         ...mapGetters([
@@ -57,33 +60,11 @@ export default {
         id() {
             return this.showId || this.$route.query.seriesid;
         },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            // Added the log, to see when this computed is accessed.
-            console.log(`getting show info for: ${id}`);
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            // With the current mako there is no reason to enable this IMO.
-            // Not detailed
-            // if (!show.seasons) {
-            //     $store.dispatch('getShow', { id, indexer, detailed: false });
-            //     return getShowById({ indexer, id });
-            // }
-
-            return show;
-        },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
+            if (!show) {
+                return
+            }
 
             if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
                 return undefined;
@@ -353,13 +334,16 @@ export default {
          * Adjust the summary background position and size on page load and resize
          */
         moveSummaryBackground() {
+            if (!$('#summary').height()) return;
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
+            
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
         },
         movecheckboxControlsBackground() {
+            if (!$('#checkboxControls').height()) return;
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;
             $('#checkboxControlsBackground').height(height);
@@ -556,6 +540,31 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
+        },
+        getShow() {
+            const { indexer, id, getShowById, shows, $store } = this;
+            const { defaults } = $store.state;
+
+            // Added the log, to see when this computed is accessed.
+            console.log(`getting show info for: ${id}`);
+
+            if (shows.length === 0 || !indexer || !id) {
+                return defaults.show;
+            }
+
+            const show = getShowById({ indexer, id });
+            if (!show) {
+                return defaults.show;
+            }
+
+            // Not detailed
+            // Retreive episode and season summary information
+            if (!show.seasons) {
+                $store.dispatch('getShow', { id, indexer, detailed: true });
+                return getShowById({ indexer, id });
+            }
+
+            this.show = show;
         }
     },
     watch: {
@@ -576,6 +585,24 @@ export default {
                 // Reset jump
                 this.jumpToSeason = 'jump';
             }
+        },
+        stateShows: {
+            handler: function (after, before) {
+                // Return the object that changed
+                let changed = after.filter( function( p, idx ) {
+                    return Object.keys(p).some( function( prop ) {
+                        return p[prop] !== before[idx][prop];
+                    })
+                })
+                this.shows = after;
+                console.log(changed)
+                
+                if (!this.show && after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
+                    this.getShow();
+                }
+                
+            },
+            deep: true
         }
     }
 };

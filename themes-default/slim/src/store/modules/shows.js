@@ -64,6 +64,7 @@ const actions = {
     getShow(context, { indexer, id, detailed, fetch }) {
         const { commit } = context;
         const params = {};
+
         if (detailed !== undefined) {
             params.detailed = Boolean(detailed);
         }
@@ -88,7 +89,7 @@ const actions = {
         // If no shows are provided get the first 1000
         if (!shows) {
             return (() => {
-                const limit = 5;
+                const limit = 1000;
                 const page = 1;
                 const params = {
                     limit,

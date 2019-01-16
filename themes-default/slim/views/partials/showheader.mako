@@ -11,7 +11,7 @@
 <div class="row">
     ## @TODO: Remove data attributes
     ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436
-    <div id="showtitle" class="col-lg-12" :data-showname="show.title">
+    <div v-if="show" id="showtitle" class="col-lg-12" :data-showname="show.title">
         <div>
             ## @TODO: Remove data attributes
             ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142
@@ -233,7 +233,7 @@
     </div> <!-- end of col -->
 </div> <!-- end of row row-show-summary-->
 
-<div id="row-show-episodes-controls" class="row">
+<div v-if="show" id="row-show-episodes-controls" class="row">
     <div id="col-show-episodes-controls" class="col-md-12">
         <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
