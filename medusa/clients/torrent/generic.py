@@ -80,24 +80,16 @@ class GenericClient(object):
         try:
             self.response = self.session.request(method, self.url, params=params, data=data, files=files,
                                                  cookies=cookies, timeout=120, verify=False)
-        except requests.exceptions.ConnectionError as msg:
-            log.error('{name}: Unable to connect {error}',
-                      {'name': self.name, 'error': msg})
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL) as error:
+            log.warning('{name}: Invalid Host: {error}', {'name': self.name, 'error': error})
             return False
-        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
-            log.error('{name}: Invalid Host', {'name': self.name})
+        except requests.exceptions.RequestException as error:
+            log.warning('{name}: Error occurred during request: {error}',
+                        {'name': self.name, 'error': error})
             return False
-        except requests.exceptions.HTTPError as msg:
-            log.error('{name}: Invalid HTTP Request {error}',
-                      {'name': self.name, 'error': msg})
-            return False
-        except requests.exceptions.Timeout as msg:
-            log.warning('{name}: Connection Timeout {error}',
-                        {'name': self.name, 'error': msg})
-            return False
-        except Exception as msg:
-            log.error('{name}: Unknown exception raised when send torrent to'
-                      ' {name} : {error}', {'name': self.name, 'error': msg})
+        except Exception as error:
+            log.error('{name}: Unknown exception raised when sending torrent to'
+                      ' {name}: {error}', {'name': self.name, 'error': error})
             return False
 
         if self.response.status_code == 401:

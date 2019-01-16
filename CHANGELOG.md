@@ -45,6 +45,7 @@
 - Fixed adding anime release group when adding show ([#5749](https://github.com/pymedusa/Medusa/pull/5749))
 - Fixed Pushover debug log causing BraceException ([#5759](https://github.com/pymedusa/Medusa/pull/5759))
 - Fixed torrent method Downloadstation not selected after restart ([#5761](https://github.com/pymedusa/Medusa/pull/5761))
+- Fixed changing show location, should now also utilise the option 'CREATE_MISSING_SHOW_DIRS' ([#5795](https://github.com/pymedusa/Medusa/pull/5795))
 
 -----
 

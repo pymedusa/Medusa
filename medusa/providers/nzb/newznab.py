@@ -508,11 +508,19 @@ class NewznabProvider(NZBProvider):
                 return Capabilities(True, categories, params, message)
 
             for category in html('category'):
-                if 'TV' in category.get('name', '') and category.get('id'):
+                category_name = category.get('name', '')
+                if 'TV' in category_name and category.get('id'):
                     categories.append({'id': category['id'], 'name': category['name']})
                     for subcat in category('subcat'):
                         if subcat.get('name', '') and subcat.get('id'):
                             categories.append({'id': subcat['id'], 'name': subcat['name']})
+
+                # Some providers have the subcat `Anime` in the `Other` category
+                elif category_name == 'Other' and category.get('id'):
+                    for subcat in category('subcat'):
+                        if subcat.get('name', '') == 'Anime' and subcat.get('id'):
+                            categories.append({'id': subcat['id'], 'name': subcat['name']})
+                            break
 
             message = 'Success getting categories and params for: {0}'.format(self.name)
             return Capabilities(True, categories, params, message)
