@@ -68,7 +68,7 @@
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
     "require-extension-hooks-vue": "2.0.0",
-    "stylelint": "9.9.0",
+    "stylelint": "9.10.0",
     "stylelint-config-standard": "18.2.0",
     "tablesorter": "2.31.1",
     "vue": "2.5.21",
@@ -83,7 +83,7 @@
     "vue-template-compiler": "2.5.21",
     "vue-truncate-collapsed": "2.1.0",
     "vuex": "3.0.1",
-    "webpack": "4.28.3",
+    "webpack": "4.28.4",
     "webpack-cli": "3.2.1",
     "xo": "0.24.0"
   },
