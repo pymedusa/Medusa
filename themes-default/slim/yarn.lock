@@ -11169,10 +11169,10 @@ vm-browserify@0.0.4:
   dependencies:
     indexof "0.0.1"
 
-vue-async-computed@3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.5.0.tgz#30657970618389f30cba4d4b52b119bb1b2976aa"
-  integrity sha512-QddDtWshkGeORKiONQ7xnz8YoBwLU1ZejmPTdEnVLXVeGthmmdl2uKt9RRMB3NRyXKkUcT6WYKT/YDnNodzF1w==
+vue-async-computed@3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.5.1.tgz#bfb4f6f1788bd13dd1f170641e20ba10dbd26c6c"
+  integrity sha512-69BVyTQavguFcBVU7tDgujyTUIXrJdAAZ5LlB4bLwj9Ghd65TZYGsGl/CWZ3HY3u14uPvgmQ4dKIwl3matw+fQ==
 
 vue-eslint-parser@^4.0.2:
   version "4.0.2"
