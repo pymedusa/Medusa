@@ -42,7 +42,7 @@
 :: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
-:: | `oauthlib` | [2.1.0](https://pypi.org/project/oauthlib/2.1.0/) | `requests-oauthlib` | ext | -
+:: | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | ext | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | ext | Module: `pint`
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
