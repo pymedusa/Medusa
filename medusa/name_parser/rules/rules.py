@@ -1095,7 +1095,7 @@ class FixParentFolderReplacingTitle(Rule):
 
                 if second_part.startswith(title[0].value):
                     season = matches.named('season')
-                    if season and not second_part.endswith(season[-1].initiator.value):
+                    if season and not second_part.endswith(str(season[-1].initiator.value)):
                         episode_title[0].name = 'title'
                         to_append = episode_title
                         to_remove = title
