@@ -47,3 +47,62 @@ def has_words_lazy(item, words):
     """Test if item contains words lazily."""
     found_words = any(contains_words(item, words))
     assert found_words, (item, words)
+
+
+@pytest.mark.parametrize('p', [
+    # The regular Show uses xem data. To map scene S06E29 to indexer S06E28
+    {
+        'series_info': {
+            'name': u'Regular Show',
+            'is_scene': False
+        },
+        'global': {
+            'ignored': ['pref1', 'pref2', 'pref3'],
+            'required': ['req1', 'req2', 'req3']
+        },
+        'series': {
+            'ignored': 'pref1,pref2',
+            'required': 'req1,req2',
+            'exclude_ignored': False,
+            'exclude_required': False,
+        },
+        'expected_ignored': [u'pref1', u'pref2', u'pref3'],
+        'expected_required': [u'req1', u'req2'],
+    },
+    {
+        'series_info': {
+            'name': u'Regular Show',
+            'is_scene': False
+        },
+        'global': {
+            'ignored': ['pref1', 'pref2', 'pref3'],
+            'required': ['req1', 'req2', 'req3']
+        },
+        'series': {
+            'ignored': 'pref1,pref2',
+            'required': 'req2',
+            'exclude_ignored': True,
+            'exclude_required': True,
+        },
+        'expected_ignored': [u'pref3'],
+        'expected_required': [u'req1', u'req3'],
+    },
+
+])
+def test_combine_ignored_words(p, create_tvshow, app_config):
+    app_config('IGNORE_WORDS', p['global']['ignored'])
+
+    # confirm passed in show object indexer id matches result show object indexer id
+    series = create_tvshow(name=p['series_info']['name'])
+    series.rls_ignore_words = p['series']['ignored']
+    series.rls_require_words = p['series']['required']
+    series.rls_ignore_exclude = p['series']['exclude_ignored']
+    series.rls_require_exclude = p['series']['exclude_required']
+
+    actual = series.show_words()
+
+    expected_ign = p['expected_ignored']
+    expected_req = p['expected_required']
+
+    assert expected_ign == actual.ignored_words
+    assert expected_req == actual.required_words
