@@ -11,7 +11,7 @@ browserEnv({
 // Setup document variables
 const baseElement = document.createElement('base');
 baseElement.setAttribute('href', 'http://localhost:8081');
-document.head.appendChild(baseElement);
+document.head.append(baseElement);
 
 // Setup jQuery
 global.$ = jQuery(window);

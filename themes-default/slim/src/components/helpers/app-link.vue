@@ -40,7 +40,7 @@ export default {
             return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
         },
         computedBase() {
-            return document.getElementsByTagName('base')[0].getAttribute('href');
+            return document.querySelectorAll('base')[0].getAttribute('href');
         },
         computedHref() {
             const { href, indexerId, placeholder, indexerName } = this;
