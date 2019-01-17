@@ -593,7 +593,7 @@ class PostProcessor(object):
                     continue
 
             if counter < (len(self.item_resources) - 1):
-                if Quality.qualityStrings[cur_quality] == 'Unknown':
+                if Quality.qualityStrings[cur_quality] == 'Unknown' or cur_season is None:
                     continue
             quality = cur_quality
 
