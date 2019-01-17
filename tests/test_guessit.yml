@@ -4378,8 +4378,8 @@
   season: 1
   episode: 15
   audio_codec: AC3
-  audio_channels: 2.0
+  audio_channels: '2.0'
   episode_title: warrior princess
+  source: DVD
   container: mkv
-  mimetype: video/x-matroska
   type: episode
