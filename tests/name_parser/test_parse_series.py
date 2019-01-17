@@ -62,6 +62,20 @@ import pytest
         },
         'expected': ([1], [15], []),
     },
+    {
+        'name': u'Xena.Warrior.Princess.S01.PAL.DVD.DD2.0.X264Hi10-LiGHTSPEED\\xena.e015.warrior.princess.pal.dvd.dd2.0.x264hi10-lightspeed.mkv',
+        'indexer_id': 1,
+        'indexer': 188401,
+        'mocks': [
+            ('medusa.scene_numbering.get_indexer_numbering', (1, 15))
+        ],
+        'series_info': {
+            'name': u'Regular Show',
+            'is_scene': False
+        },
+        'expected': ([15], [1], []),
+    },
+
 ])
 def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
 

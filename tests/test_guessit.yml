@@ -4372,3 +4372,14 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+? Xena.Warrior.Princess.S01.PAL.DVD.DD2.0.X264Hi10-LiGHTSPEED\xena.e015.warrior.princess.pal.dvd.dd2.0.x264hi10-lightspeed.mkv
+: title: xena
+  season: 1
+  episode: 15
+  audio_codec: AC3
+  audio_channels: 2.0
+  episode_title: warrior princess
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
