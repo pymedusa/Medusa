@@ -61,13 +61,13 @@ def has_words_lazy(item, words):
             'required': ['req1', 'req2', 'req3']
         },
         'series': {
-            'ignored': 'pref1,pref2',
-            'required': 'req1,req2',
+            'ignored': 'pref1,pref5,pref6',
+            'required': 'req1,req2,req4',
             'exclude_ignored': False,
             'exclude_required': False,
         },
-        'expected_ignored': [u'pref1', u'pref2', u'pref3'],
-        'expected_required': [u'req1', u'req2'],
+        'expected_ignored': [u'pref1', u'pref5', u'pref6', u'pref2', u'pref3'],
+        'expected_required': [u'req1', u'req2', u'req4', u'req3'],
     },
     {
         'series_info': {
@@ -91,6 +91,7 @@ def has_words_lazy(item, words):
 ])
 def test_combine_ignored_words(p, create_tvshow, app_config):
     app_config('IGNORE_WORDS', p['global']['ignored'])
+    app_config('REQUIRE_WORDS', p['global']['required'])
 
     # confirm passed in show object indexer id matches result show object indexer id
     series = create_tvshow(name=p['series_info']['name'])
