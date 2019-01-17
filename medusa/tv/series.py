@@ -226,6 +226,8 @@ class Series(TV):
         self.scene = 0
         self.rls_ignore_words = ''
         self.rls_require_words = ''
+        self.rls_ignore_exclude = 0
+        self.rls_require_exclude = 0
         self.default_ep_status = SKIPPED
         self._location = ''
         self.episodes = {}
@@ -936,8 +938,8 @@ class Series(TV):
         # Join new global required with show require
         final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
 
-        ignored_words = final_ignore
-        required_words = final_require
+        ignored_words = list(set(final_ignore))
+        required_words = list(set(final_require))
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
@@ -1471,6 +1473,8 @@ class Series(TV):
 
             self.rls_ignore_words = sql_results[0]['rls_ignore_words']
             self.rls_require_words = sql_results[0]['rls_require_words']
+            self.rls_ignore_exclude = sql_results[0]['rls_ignore_exclude']
+            self.rls_require_exclude = sql_results[0]['rls_require_exclude']
 
             self.default_ep_status = int(sql_results[0]['default_ep_status'] or SKIPPED)
 
