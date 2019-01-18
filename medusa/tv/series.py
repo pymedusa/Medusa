@@ -2093,6 +2093,8 @@ class Series(TV):
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
+        data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
+        data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
 
         # These are for now considered anime-only options
