@@ -17,6 +17,9 @@ class DockerUpdateManager(SourceUpdateManager):
     def __init__(self):
         super(DockerUpdateManager, self).__init__()
 
+    def __str__(self):
+        return 'Docker Updater'
+
     def can_update(self):
         """Whether or not the update can be performed.
 

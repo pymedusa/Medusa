@@ -41,6 +41,9 @@ class SourceUpdateManager(UpdateManager):
 
         self.session = MedusaSafeSession()
 
+    def __str__(self):
+        return 'Source Updater'
+
     @staticmethod
     def _find_installed_branch():
         return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else 'master'

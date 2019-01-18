@@ -254,7 +254,7 @@ class CheckVersion(object):
 
         # checking for updates
         if not app.AUTO_UPDATE:
-            log.info(u'Checking for updates using {0}', 'Secret!!')
+            log.info(u'Checking for updates using {0}', self.updater)
 
         if not self.updater.need_update():
             app.NEWEST_VERSION_STRING = None

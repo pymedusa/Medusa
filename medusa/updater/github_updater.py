@@ -36,6 +36,9 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
+    def __str__(self):
+        return 'GitHub Updater'
+
     @property
     def current_commit_hash(self):
         return self._cur_commit_hash
