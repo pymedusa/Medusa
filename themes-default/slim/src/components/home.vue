@@ -142,7 +142,7 @@ export default {
             // This needs to be refined to work a little faster.
             $('.progressbar').each(function() {
                 const percentage = $(this).data('progress-percentage');
-                const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20; // eslint-disable-line no-nested-ternary
+                const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
                 $(this).progressbar({
                     value: percentage
                 });
@@ -448,5 +448,5 @@ export default {
 </script>
 
 <style>
-/* placeholder */
+
 </style>

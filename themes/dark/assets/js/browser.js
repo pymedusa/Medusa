@@ -125,7 +125,7 @@
         // Set up the browser and launch the dialog
         let initialDir = '';
         if (options.initialDir) {
-            initialDir = options.initialDir; // eslint-disable-line prefer-destructuring
+            initialDir = options.initialDir;
         }
 
         browse(initialDir, options.url, options.includeFiles);

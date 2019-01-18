@@ -25,7 +25,10 @@
           "vue-template-compiler",
           "@vue/test-utils"
         ],
-        "groupName": "vue-base"
+        "groupName": "vue-base",
+        "prBodyNotes": [
+          "### If tests fail, try running `yarn upgrade require-extension-hooks-babel require-extension-hooks-vue`"
+        ]
       }
     ]
   },

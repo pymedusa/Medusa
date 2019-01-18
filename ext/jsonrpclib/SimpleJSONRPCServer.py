@@ -5,13 +5,13 @@ Defines a request dispatcher, a HTTP request handler, a HTTP server and a
 CGI request handler.
 
 :authors: Josh Marshall, Thomas Calmant
-:copyright: Copyright 2018, Thomas Calmant
+:copyright: Copyright 2019, Thomas Calmant
 :license: Apache License 2.0
-:version: 0.3.2
+:version: 0.4.0
 
 ..
 
-    Copyright 2018 Thomas Calmant
+    Copyright 2019 Thomas Calmant
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ CGI request handler.
     See the License for the specific language governing permissions and
     limitations under the License.
 """
+
+# We use print() in the CGI request handler
+from __future__ import print_function
 
 # Standard library
 import logging
@@ -41,6 +44,7 @@ try:
     # variant of this package.
     SimpleXMLRPCDispatcher = xmlrpcserver.SimpleXMLRPCDispatcher
     SimpleXMLRPCRequestHandler = xmlrpcserver.SimpleXMLRPCRequestHandler
+    CGIXMLRPCRequestHandler = xmlrpcserver.CGIXMLRPCRequestHandler
     resolve_dotted_attribute = xmlrpcserver.resolve_dotted_attribute
     import socketserver
 except (ImportError, AttributeError):
@@ -49,6 +53,7 @@ except (ImportError, AttributeError):
     import SimpleXMLRPCServer as xmlrpcserver
     SimpleXMLRPCDispatcher = xmlrpcserver.SimpleXMLRPCDispatcher
     SimpleXMLRPCRequestHandler = xmlrpcserver.SimpleXMLRPCRequestHandler
+    CGIXMLRPCRequestHandler = xmlrpcserver.CGIXMLRPCRequestHandler
     resolve_dotted_attribute = xmlrpcserver.resolve_dotted_attribute
     import SocketServer as socketserver
 
@@ -60,6 +65,13 @@ except ImportError:
     # pylint: disable=C0103
     fcntl = None
 
+try:
+    # Python with support for Unix socket
+    _AF_UNIX = socket.AF_UNIX
+except AttributeError:
+    # Unix sockets are not supported, use a dummy value
+    _AF_UNIX = -1
+
 # Local modules
 from jsonrpclib import Fault
 import jsonrpclib.config
@@ -69,7 +81,7 @@ import jsonrpclib.threadpool
 # ------------------------------------------------------------------------------
 
 # Module version
-__version_info__ = (0, 3, 2)
+__version_info__ = (0, 4, 0)
 __version__ = ".".join(str(x) for x in __version_info__)
 
 # Documentation strings format
@@ -385,8 +397,9 @@ class SimpleJSONRPCDispatcher(SimpleXMLRPCDispatcher, object):
             except:
                 # Method exception
                 err_lines = traceback.format_exception(*sys.exc_info())
-                trace_string = '{0} | {1}'.format(err_lines[-2].splitlines()[0].strip(), err_lines[-1])
-                fault = Fault(-32603, 'Server error: {0}'.format(trace_string),
+                trace_string = "{0} | {1}".format(
+                    err_lines[-2].splitlines()[0].strip(), err_lines[-1])
+                fault = Fault(-32603, "Server error: {0}".format(trace_string),
                               config=config)
                 _logger.exception("Server-side exception: %s", fault)
                 return fault
@@ -452,8 +465,9 @@ class SimpleJSONRPCRequestHandler(SimpleXMLRPCRequestHandler):
             # Exception: send 500 Server Error
             self.send_response(500)
             err_lines = traceback.format_exception(*sys.exc_info())
-            trace_string = '{0} | {1}'.format(err_lines[-2].splitlines()[0].strip(), err_lines[-1])
-            fault = jsonrpclib.Fault(-32603, 'Server error: {0}'
+            trace_string = "{0} | {1}".format(
+                err_lines[-2].splitlines()[0].strip(), err_lines[-1])
+            fault = jsonrpclib.Fault(-32603, "Server error: {0}"
                                      .format(trace_string), config=config)
             _logger.exception("Server-side error: %s", fault)
             response = fault.response()
@@ -501,11 +515,21 @@ class SimpleJSONRPCServer(socketserver.TCPServer, SimpleJSONRPCDispatcher):
         # Set up the dispatcher fields
         SimpleJSONRPCDispatcher.__init__(self, encoding, config)
 
+        # Flag to ease handling of Unix socket mode
+        unix_socket = address_family == _AF_UNIX
+
+        # Disable the reuse address flag when in Unix socket mode, or an
+        # exception will raise when binding the socket
+        self.allow_reuse_address = self.allow_reuse_address and not unix_socket
+
         # Prepare the server configuration
-        # logRequests is used by SimpleXMLRPCRequestHandler
-        self.logRequests = logRequests
         self.address_family = address_family
         self.json_config = config
+
+        # logRequests is used by SimpleXMLRPCRequestHandler
+        # This must be disabled in Unix socket mode (or an exception will raise
+        # at each connection)
+        self.logRequests = logRequests and not unix_socket
 
         # Work on the request handler
         class RequestHandlerWrapper(requestHandler, object):
@@ -517,10 +541,16 @@ class SimpleJSONRPCServer(socketserver.TCPServer, SimpleJSONRPCDispatcher):
                 Constructs the wrapper after having stored the configuration
                 """
                 self.config = config
+
+                if unix_socket:
+                    # Disable TCP features over Unix socket, or an
+                    # "invalid argument" error will raise
+                    self.disable_nagle_algorithm = False
+
                 super(RequestHandlerWrapper, self).__init__(*args, **kwargs)
 
         # Set up the server
-        socketserver.TCPServer.__init__(self, addr, requestHandler,
+        socketserver.TCPServer.__init__(self, addr, RequestHandlerWrapper,
                                         bind_and_activate)
 
         # Windows-specific
@@ -585,11 +615,11 @@ class PooledJSONRPCServer(SimpleJSONRPCServer, socketserver.ThreadingMixIn):
 # ------------------------------------------------------------------------------
 
 
-class CGIJSONRPCRequestHandler(SimpleJSONRPCDispatcher):
+class CGIJSONRPCRequestHandler(SimpleJSONRPCDispatcher, CGIXMLRPCRequestHandler):
     """
     JSON-RPC CGI handler (and dispatcher)
     """
-    def __init__(self, encoding=None, config=jsonrpclib.config.DEFAULT):
+    def __init__(self, encoding="UTF-8", config=jsonrpclib.config.DEFAULT):
         """
         Sets up the dispatcher
 
@@ -597,17 +627,25 @@ class CGIJSONRPCRequestHandler(SimpleJSONRPCDispatcher):
         :param config: A JSONRPClib Config instance
         """
         SimpleJSONRPCDispatcher.__init__(self, encoding, config)
+        CGIXMLRPCRequestHandler.__init__(self, encoding=encoding)
 
     def handle_jsonrpc(self, request_text):
         """
         Handle a JSON-RPC request
         """
+        try:
+            writer = sys.stdout.buffer
+        except AttributeError:
+            writer = sys.stdout
+
         response = self._marshaled_dispatch(request_text)
-        sys.stdout.write('Content-Type: {0}\r\n'
-                         .format(self.json_config.content_type))
-        sys.stdout.write('Content-Length: {0:d}\r\n'.format(len(response)))
-        sys.stdout.write('\r\n')
-        sys.stdout.write(response)
+        response = response.encode(self.encoding)
+        print("Content-Type:", self.json_config.content_type)
+        print("Content-Length:", len(response))
+        print()
+        sys.stdout.flush()
+        writer.write(response)
+        writer.flush()
 
     # XML-RPC alias
     handle_xmlrpc = handle_jsonrpc
