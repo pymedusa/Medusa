@@ -990,7 +990,7 @@ class Application(object):
             if app.VERSION_NOTIFY:
                 updater = CheckVersion().updater
                 if updater:
-                    app.APP_VERSION = updater.get_cur_version()
+                    app.APP_VERSION = updater.current_version
 
             app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 

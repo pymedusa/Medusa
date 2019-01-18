@@ -267,7 +267,6 @@ class CheckVersion(object):
             return False
 
         # found updates
-        self.updater.set_newest_text()
         return self.updater.can_update()
 
     def check_for_new_news(self, force=False):

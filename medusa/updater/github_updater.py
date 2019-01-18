@@ -7,11 +7,12 @@ import os
 import platform
 import re
 import subprocess
-from builtins import str
 
 from medusa import app, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.updater.update_manager import UpdateManager
+
+from six import text_type
 
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
@@ -34,30 +35,35 @@ class GitUpdateManager(UpdateManager):
         self._newest_commit_hash = None
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
-        self._cur_version = ''
 
-    def get_cur_commit_hash(self):
+    @property
+    def current_commit_hash(self):
         return self._cur_commit_hash
 
-    def get_newest_commit_hash(self):
+    @property
+    def newest_commit_hash(self):
         return self._newest_commit_hash
 
-    def get_cur_version(self):
-        if self._cur_commit_hash or self._find_installed_version():
-            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(self._cur_commit_hash))[0]
-        return self._cur_version
+    @property
+    def current_version(self):
+        if self._cur_commit_hash or self._set_commit_hash():
+            cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
+                self._cur_commit_hash))[0]
+            return cur_version.lstrip('v')
 
-    def get_newest_version(self):
+    @property
+    def newest_version(self):
         if self._newest_commit_hash:
-            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 ' + self._newest_commit_hash)[0]
-        else:
-            self._cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 ' + self._cur_commit_hash)[0]
-        return self._cur_version
+            new_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
+                self._newest_commit_hash))[0]
+            return new_version.lstrip('v')
 
-    def get_num_commits_behind(self):
+    @property
+    def commits_behind(self):
         return self._num_commits_behind
 
-    def get_num_commits_ahead(self):
+    @property
+    def commits_ahead(self):
         return self._num_commits_ahead
 
     def _find_working_git(self):
@@ -78,7 +84,6 @@ class GitUpdateManager(UpdateManager):
             log.debug(u'Not using: {0}', main_git)
 
         # trying alternatives
-
         alternative_git = []
 
         # osx people who start sr from launchd have a broken path, so try a hail-mary attempt for them
@@ -107,11 +112,8 @@ class GitUpdateManager(UpdateManager):
         if app.VERSION_NOTIFY:
             app.NEWEST_VERSION_STRING = ERROR_MESSAGE
 
-        return None
-
     @staticmethod
     def _run_git(git_path, args):
-
         output = err = exit_status = None
 
         if not git_path:
@@ -123,7 +125,6 @@ class GitUpdateManager(UpdateManager):
         # If we have a valid git remove the git warning
         # String will be updated as soon we check github
         app.NEWEST_VERSION_STRING = None
-
         cmd = git_path + ' ' + args
 
         try:
@@ -168,28 +169,27 @@ class GitUpdateManager(UpdateManager):
 
         return output, err, exit_status
 
-    def _find_installed_version(self):
-        """Attempt to find the currently installed version of the application.
+    def _set_commit_hash(self):
+        """Attempt to set the hash of the currently installed version of the application.
 
-        Uses git show to get commit version.
-
-        :return: True for success or False for failure
+        Uses git to get commit version.
         """
-        output, _, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
+        output, _, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')
 
         if exit_status == 0 and output:
             cur_commit_hash = output.strip()
             if not re.match('^[a-z0-9]+$', cur_commit_hash):
                 log.warning(u"Output doesn't look like a hash, not using it")
                 return False
+
             self._cur_commit_hash = cur_commit_hash
-            app.CUR_COMMIT_HASH = str(cur_commit_hash)
+            app.CUR_COMMIT_HASH = cur_commit_hash
             return True
-        else:
-            return False
+
+        return False
 
     def _find_installed_branch(self):
-        branch_info, _, exit_status = self._run_git(self._git_path, 'symbolic-ref -q HEAD')  # @UnusedVariable
+        branch_info, _, exit_status = self._run_git(self._git_path, 'symbolic-ref -q HEAD')
         if exit_status == 0 and branch_info:
             branch = branch_info.strip().replace('refs/heads/', '', 1)
             if branch:
@@ -202,7 +202,6 @@ class GitUpdateManager(UpdateManager):
         Uses git commands to check if there is a newer version that the provided
         commit hash. If there is a newer version it sets _num_commits_behind.
         """
-
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
@@ -246,12 +245,26 @@ class GitUpdateManager(UpdateManager):
         log.debug(u'cur_commit = {0}, newest_commit = {1}, num_commits_behind = {2}, num_commits_ahead = {3}',
                   self._cur_commit_hash, self._newest_commit_hash, self._num_commits_behind, self._num_commits_ahead)
 
-    def set_newest_text(self):
-        # if we're up to date then don't set this
-        app.NEWEST_VERSION_STRING = None
+    def need_update(self):
+        if self.branch != self._find_installed_branch():
+            log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
+            return True
 
+        try:
+            self._set_commit_hash()
+            self._check_github_for_update()
+        except Exception as e:
+            log.warning(u"Unable to contact github, can't check for update: {0!r}", e)
+            return False
+
+        if self._num_commits_behind > 0 or self._num_commits_ahead > 0:
+            self._set_update_text()
+            return True
+
+        return False
+
+    def _set_update_text(self):
         if self._num_commits_behind > 0 or self._is_hard_reset_allowed():
-
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
             if self._newest_commit_hash:
                 url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
@@ -259,7 +272,7 @@ class GitUpdateManager(UpdateManager):
                 url = base_url + '/commits/'
 
             newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a> '
-            newest_text += " (you're " + str(self._num_commits_behind) + ' commit'
+            newest_text += " (you're " + text_type(self._num_commits_behind) + ' commit'
             if self._num_commits_behind > 1:
                 newest_text += 's'
             newest_text += ' behind'
@@ -276,27 +289,6 @@ class GitUpdateManager(UpdateManager):
             return
 
         app.NEWEST_VERSION_STRING = newest_text
-
-    def need_update(self):
-
-        if self.branch != self._find_installed_branch():
-            log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
-            return True
-
-        self._find_installed_version()
-        if not self._cur_commit_hash:
-            return True
-        else:
-            try:
-                self._check_github_for_update()
-            except Exception as e:
-                log.warning(u"Unable to contact github, can't check for update: {0!r}", e)
-                return False
-
-            if self._num_commits_behind > 0 or self._num_commits_ahead > 0:
-                return True
-
-        return False
 
     def can_update(self):
         """Return whether update can be executed.
@@ -322,15 +314,15 @@ class GitUpdateManager(UpdateManager):
         self.clean()
 
         if self.branch == self._find_installed_branch():
-            _, _, exit_status = self._run_git(self._git_path, 'pull -f %s %s' % (app.GIT_REMOTE, self.branch))  # @UnusedVariable
+            _, _, exit_status = self._run_git(self._git_path, 'pull -f %s %s' % (app.GIT_REMOTE, self.branch))
         else:
-            _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)  # @UnusedVariable
+            _, _, exit_status = self._run_git(self._git_path, 'checkout -f ' + self.branch)
 
         # Executing git clean after updating
         self.clean()
 
         if exit_status == 0:
-            self._find_installed_version()
+            self._set_commit_hash()
             # Notify update successful
             if app.NOTIFY_ON_UPDATE:
                 try:
@@ -339,8 +331,7 @@ class GitUpdateManager(UpdateManager):
                     log.debug(u'Unable to send update notification. Continuing the update process')
             return True
 
-        else:
-            return False
+        return False
 
     @staticmethod
     def _is_hard_reset_allowed():
@@ -378,8 +369,7 @@ class GitUpdateManager(UpdateManager):
         Calls git reset --hard to perform a hard reset. Returns a bool depending
         on the call's success.
         """
-        _, _, exit_status = self._run_git(self._git_path, 'reset --hard {0}/{1}'.format
-                                          (app.GIT_REMOTE, app.BRANCH))  # @UnusedVariable
+        _, _, exit_status = self._run_git(self._git_path, 'reset --hard {0}/{1}'.format(app.GIT_REMOTE, app.BRANCH))
         if exit_status == 0:
             return True
 
@@ -388,7 +378,7 @@ class GitUpdateManager(UpdateManager):
         self.update_remote_origin()
         app.BRANCH = self._find_installed_branch()
 
-        branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads %s' % app.GIT_REMOTE)  # @UnusedVariable
+        branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads %s' % app.GIT_REMOTE)
         if exit_status == 0 and branches:
             if branches:
                 return re.findall(r'refs/heads/(.*)', branches)

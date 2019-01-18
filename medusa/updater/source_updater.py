@@ -7,15 +7,17 @@ import os
 import shutil
 import stat
 import tarfile
-from builtins import str
 
 from github import GithubException
 
 from medusa import app, helpers, notifiers
-from medusa.github_client import get_github_repo
+from medusa.common import VERSION
+from medusa.github_client import get_github_repo, get_latest_release
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 from medusa.updater.update_manager import UpdateManager
+
+from six import text_type
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -43,27 +45,36 @@ class SourceUpdateManager(UpdateManager):
     def _find_installed_branch():
         return app.CUR_COMMIT_BRANCH if app.CUR_COMMIT_BRANCH else 'master'
 
-    def get_cur_commit_hash(self):
+    @property
+    def current_commit_hash(self):
         return self._cur_commit_hash
 
-    def get_newest_commit_hash(self):
+    @property
+    def newest_commit_hash(self):
         return self._newest_commit_hash
 
-    @staticmethod
-    def get_cur_version():
-        return ''
+    @property
+    def current_version(self):
+        return VERSION
 
-    @staticmethod
-    def get_newest_version():
-        return ''
+    @property
+    def newest_version(self):
+        latest_release = get_latest_release(self.github_org, self.github_repo)
+        return latest_release.tag_name.lstrip('v')
 
-    def get_num_commits_behind(self):
+    @property
+    def commits_behind(self):
         return self._num_commits_behind
 
-    def get_num_commits_ahead(self):
+    @property
+    def commits_ahead(self):
         return self._num_commits_ahead
 
     def need_update(self):
+        if self.branch != self._find_installed_branch():
+            log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
+            return True
+
         # need this to run first to set self._newest_commit_hash
         try:
             self._check_github_for_update()
@@ -71,11 +82,17 @@ class SourceUpdateManager(UpdateManager):
             log.warning(u"Unable to contact github, can't check for update: {0!r}", error)
             return False
 
-        if self.branch != self._find_installed_branch():
-            log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
-            return True
+        if not self._cur_commit_hash:
+            if self.is_latest_version():
+                app.CUR_COMMIT_HASH = self.get_newest_commit_hash()
+                app.CUR_COMMIT_BRANCH = self.branch
+                return False
+            else:
+                self._set_update_text()
+                return True
 
-        if not self._cur_commit_hash or self._num_commits_behind > 0 or self._num_commits_ahead > 0:
+        elif self._num_commits_behind > 0 or self._num_commits_ahead > 0:
+            self._set_update_text()
             return True
 
         return False
@@ -95,19 +112,18 @@ class SourceUpdateManager(UpdateManager):
 
         commit_hash: hash that we're checking against
         """
-
         self._num_commits_behind = 0
         self._newest_commit_hash = None
-
         gh = get_github_repo(app.GIT_ORG, app.GIT_REPO)
-        # try to get newest commit hash and commits behind directly by comparing branch and current commit
+
+        # try to get the newest commit hash and commits by comparing branch and current commit
         if self._cur_commit_hash:
             try:
                 branch_compared = gh.compare(base=self.branch, head=self._cur_commit_hash)
                 self._newest_commit_hash = branch_compared.base_commit.sha
                 self._num_commits_behind = branch_compared.behind_by
                 self._num_commits_ahead = branch_compared.ahead_by
-            except Exception:  # UnknownObjectException
+            except Exception:
                 self._newest_commit_hash = ''
                 self._num_commits_behind = 0
                 self._num_commits_ahead = 0
@@ -115,7 +131,6 @@ class SourceUpdateManager(UpdateManager):
 
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
-
             for curCommit in gh.get_commits():
                 if not self._newest_commit_hash:
                     self._newest_commit_hash = curCommit.sha
@@ -131,18 +146,8 @@ class SourceUpdateManager(UpdateManager):
         log.debug(u'cur_commit = {0}, newest_commit = {1}, num_commits_behind = {2}',
                   self._cur_commit_hash, self._newest_commit_hash, self._num_commits_behind)
 
-    def set_newest_text(self):
-        # if we're up to date then don't set this
-        app.NEWEST_VERSION_STRING = None
-
-        if not self._cur_commit_hash:
-            log.debug(u"Unknown current version number, don't know if we should update or not")
-
-            newest_text = "Unknown current version number: If you've never used the application " \
-                          'upgrade system before then current version is not set. ' \
-                          '&mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
-
-        elif self._num_commits_behind > 0:
+    def _set_update_text(self):
+        if self._num_commits_behind > 0:
             base_url = 'http://github.com/' + self.github_org + '/' + self.github_repo
             if self._newest_commit_hash:
                 url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
@@ -150,12 +155,14 @@ class SourceUpdateManager(UpdateManager):
                 url = base_url + '/commits/'
 
             newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a>'
-            newest_text += " (you're " + str(self._num_commits_behind) + ' commit'
+            newest_text += " (you're " + text_type(self._num_commits_behind) + ' commit'
             if self._num_commits_behind > 1:
                 newest_text += 's'
             newest_text += ' behind) &mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
         else:
-            return
+            url = 'http://github.com/' + self.github_org + '/' + self.github_repo + '/releases'
+            newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a>'
+            newest_text += ' (' + self.newest_version + ') &mdash; <a href="' + self.get_update_url() + '">Update Now</a>'
 
         app.NEWEST_VERSION_STRING = newest_text
 
@@ -163,7 +170,6 @@ class SourceUpdateManager(UpdateManager):
         """
         Downloads the latest source tarball from github and installs it over the existing version.
         """
-
         tar_download_url = 'http://github.com/' + self.github_org + '/' + self.github_repo + '/tarball/' + self.branch
 
         try:

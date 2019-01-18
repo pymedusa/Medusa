@@ -1421,7 +1421,7 @@ class CMD_CheckVersion(ApiCall):
                 'commit': check_version.updater.get_newest_commit_hash(),
                 'version': check_version.updater.get_newest_version(),
             },
-            'commits_offset': check_version.updater.get_num_commits_behind(),
+            'commits_offset': check_version.updater.commits_behind,
             'needs_update': needs_update,
         }
 
