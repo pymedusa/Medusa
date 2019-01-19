@@ -81,16 +81,16 @@
                 <td>True</td>
                     % else:
                         % try:
-                        <% amActive = service.action.amActive %>
-                <td>${amActive}</td>
+                        <% am_active = service.action.am_active %>
+                <td>${am_active}</td>
                         % except Exception:
                 <td>N/A</td>
                         % endtry
                     % endif
                 % else:
                     % try:
-                    <% amActive = service.action.amActive %>
-                <td>${amActive}</td>
+                    <% am_active = service.action.am_active %>
+                <td>${am_active}</td>
                     % except Exception:
                 <td>N/A</td>
                     % endtry

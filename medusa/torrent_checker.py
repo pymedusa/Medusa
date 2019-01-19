@@ -34,11 +34,11 @@ class TorrentChecker(object):
 
     def __init__(self):
         """Initialize the class."""
-        self.amActive = False
+        self.am_active = False
 
     def run(self, force=False):
         """Start the Torrent Checker Thread."""
-        self.amActive = True
+        self.am_active = True
 
         try:
             client = torrent.get_client_class(app.TORRENT_METHOD)()
@@ -52,4 +52,4 @@ class TorrentChecker(object):
         except Exception:
             logger.exception('Exception while checking torrent status.')
         finally:
-            self.amActive = False
+            self.am_active = False

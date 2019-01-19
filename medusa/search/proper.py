@@ -33,7 +33,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
     def __init__(self):
         """Initialize the class."""
-        self.amActive = False
+        self.am_active = False
         self.processed_propers = []
         self.ignore_processed_propers = False
 
@@ -45,7 +45,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         """
         log.info('Beginning the search for new propers')
 
-        if self.amActive:
+        if self.am_active:
             log.debug('Find propers is still running, not starting it again')
             return
 
@@ -53,7 +53,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             log.warning("Manual search is running. Can't start Find propers")
             return
 
-        self.amActive = True
+        self.am_active = True
 
         # If force we should ignore existing processed propers
         self.ignore_processed_propers = False
@@ -81,7 +81,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         log.info('Completed the search for new propers{run_at}', {'run_at': run_at})
 
-        self.amActive = False
+        self.am_active = False
 
     def _get_proper_results(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Retrieve a list of recently aired episodes, and search for these episodes in the different providers."""

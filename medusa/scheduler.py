@@ -44,7 +44,7 @@ class Scheduler(threading.Thread):
                       'alive': super(Scheduler, self).is_alive(),
                       'stop': self.stop.is_set()
                   })
-        return super(Scheduler, self).is_alive()
+        return self._Thread__initialized and not self._Thread__stopped
 
     def timeLeft(self):
         """
@@ -67,7 +67,7 @@ class Scheduler(threading.Thread):
             return datetime.timedelta(seconds=0)
 
     def forceRun(self):
-        if not self.action.amActive:
+        if not self.action.am_active:
             self.force = True
             return True
         return False

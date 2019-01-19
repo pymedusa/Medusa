@@ -52,7 +52,7 @@ class CheckVersion(object):
     def __init__(self):
         self.updater = None
         self.install_type = None
-        self.amActive = False
+        self.am_active = False
         self.install_type = self.find_install_type()
         if self.install_type == 'git':
             self.updater = GitUpdateManager()
@@ -63,7 +63,7 @@ class CheckVersion(object):
 
     def run(self, force=False):
 
-        self.amActive = True
+        self.am_active = True
 
         # Update remote branches and store in app.GIT_REMOTE_BRANCHES
         self.list_remote_branches()
@@ -87,7 +87,7 @@ class CheckVersion(object):
 
             self.check_for_new_news(force)
 
-        self.amActive = False
+        self.am_active = False
 
     def run_backup_if_safe(self):
         return self.safe_to_update() is True and self._runbackup() is True
@@ -185,7 +185,7 @@ class CheckVersion(object):
                 return False
 
         def postprocessor_safe():
-            if not app.auto_post_processor_scheduler.action.amActive:
+            if not app.auto_post_processor_scheduler.action.am_active:
                 log.debug(u'We can proceed with the update. Post-Processor is not running')
                 return True
             else:
@@ -193,7 +193,7 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.show_update_scheduler.action.amActive:
+            if not app.show_update_scheduler.action.am_active:
                 log.debug(u'We can proceed with the update. Shows are not being updated')
                 return True
             else:

@@ -760,6 +760,9 @@ class MedusaApp(object):
             self.start_stop_backlog_scheduler()
 
     def initialize_auto_post_processing_scheduler(self, restart=False):
+        if self._PROCESS_AUTOMATICALLY:
+            restart = True if self.auto_post_processor_scheduler and \
+                              not self.auto_post_processor_scheduler.is_alive() else restart
         if not self.auto_post_processor_scheduler or restart:
             logger.info('Auto postprocessor background process initialized')
             from medusa import auto_post_processor, scheduler
@@ -776,8 +779,9 @@ class MedusaApp(object):
         logger.info('Auto postprocessor is_alive: %s', self.auto_post_processor_scheduler.is_alive())
 
         if self._PROCESS_AUTOMATICALLY:
-            self.auto_post_processor_scheduler.start()
             self.auto_post_processor_scheduler.enable = True
+            self.auto_post_processor_scheduler.alive = True
+            self.auto_post_processor_scheduler.start()
             logger.info('Auto postprocessor background process started')
         elif self.auto_post_processor_scheduler.is_alive():
             self.auto_post_processor_scheduler.stop.set()

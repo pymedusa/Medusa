@@ -70,11 +70,11 @@ class TraktChecker(object):
         self.show_watchlist = {}
         self.episode_watchlist = {}
         self.collection_list = {}
-        self.amActive = False
+        self.am_active = False
 
     def run(self, force=False):
         """Run Trakt Checker."""
-        self.amActive = True
+        self.am_active = True
 
         # add shows from Trakt watchlist
         if app.TRAKT_SYNC_WATCHLIST:
@@ -89,7 +89,7 @@ class TraktChecker(object):
             self.sync_watchlist()
             self.sync_library()
 
-        self.amActive = False
+        self.am_active = False
 
     def _request(self, path, data=None, method='GET'):
         """Fetch shows from trakt and store the refresh token when needed."""
