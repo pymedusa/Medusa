@@ -168,9 +168,7 @@ class SourceUpdateManager(UpdateManager):
         app.NEWEST_VERSION_STRING = newest_text
 
     def update(self):
-        """
-        Downloads the latest source tarball from github and installs it over the existing version.
-        """
+        """Download the latest source tarball from github and installs it over the existing version."""
         tar_download_url = 'http://github.com/' + self.github_org + '/' + self.github_repo + '/tarball/' + self.branch
 
         try:

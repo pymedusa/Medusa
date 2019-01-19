@@ -47,7 +47,5 @@ class DockerUpdateManager(SourceUpdateManager):
                                     'and rebuild your container to update'
 
     def update(self):
-        """
-        Downloads the latest version.
-        """
+        """Download the latest version."""
         return False

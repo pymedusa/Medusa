@@ -225,10 +225,7 @@ class GitUpdateManager(UpdateManager):
         return ''
 
     def check_for_update(self):
-        """
-        Uses git commands to check if there is a newer version that the provided
-        commit hash. If there is a newer version it sets _num_commits_behind.
-        """
+        """Use git commands to check if there is a newer version that the provided commit hash."""
         self.update_commit_hash()
         self.update_newest_commit_hash()
 
@@ -363,10 +360,7 @@ class GitUpdateManager(UpdateManager):
         return exit_status
 
     def reset(self):
-        """
-        Calls git reset --hard to perform a hard reset. Returns a bool depending
-        on the call's success.
-        """
+        """Call git reset --hard to perform a hard reset."""
         _, _, exit_status = self._run_git(self._git_path, 'reset --hard {0}/{1}'.format(app.GIT_REMOTE, app.BRANCH))
         if exit_status == 0:
             return True

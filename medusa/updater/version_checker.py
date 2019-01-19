@@ -226,7 +226,7 @@ class CheckVersion(object):
 
     def find_install_type(self):
         """
-        Determines how this copy of sr was installed.
+        Determine how this copy of Medusa was installed.
 
         :return: type of installation. Possible values are:
             'docker': any docker build
