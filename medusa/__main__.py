@@ -83,8 +83,6 @@ from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
 from medusa.providers.torrent.torznab.torznab import TorznabProvider
-from medusa.search.backlog import BacklogSearchScheduler, BacklogSearcher
-from medusa.search.daily import DailySearcher
 from medusa.search.proper import ProperFinder
 from medusa.search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from medusa.server.core import AppWebServer
@@ -406,6 +404,7 @@ class Application(object):
             if app.__INITIALIZED__:
                 return False
 
+            logger.info('Start to load medusa config from %s', app.CONFIG_FILE)
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
                 'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'Pushalot', 'Pushbullet', 'Join',

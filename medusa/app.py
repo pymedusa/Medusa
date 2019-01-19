@@ -775,11 +775,11 @@ class MedusaApp(object):
     def start_stop_auto_post_processing(self, restart=False):
         """Start or stop the automatic post processor."""
         self.initialize_auto_post_processing_scheduler(restart=restart)
+        self.auto_post_processor_scheduler.enable = self._PROCESS_AUTOMATICALLY
 
         logger.info('Auto postprocessor is_alive: %s', self.auto_post_processor_scheduler.is_alive())
 
         if self._PROCESS_AUTOMATICALLY:
-            self.auto_post_processor_scheduler.enable = True
             self.auto_post_processor_scheduler.alive = True
             self.auto_post_processor_scheduler.start()
             logger.info('Auto postprocessor background process started')
@@ -797,7 +797,7 @@ class MedusaApp(object):
         self._AUTOPOSTPROCESSOR_FREQUENCY = value
 
         if not value == old_value:
-            self.start_stop_auto_post_processing(restart=True)
+            self.initialize_auto_post_processing_scheduler(restart=True)
 
     @property
     def PROCESS_AUTOMATICALLY(self):
@@ -806,7 +806,7 @@ class MedusaApp(object):
     @PROCESS_AUTOMATICALLY.setter
     def PROCESS_AUTOMATICALLY(self, value):
         old_value = self._PROCESS_AUTOMATICALLY
-        self._PROCESS_AUTOMATICALLY = value
+        self._PROCESS_AUTOMATICALLY = bool(value)
 
         if not value == old_value:
             self.start_stop_auto_post_processing()
