@@ -9,6 +9,7 @@ import sys
 from threading import Lock
 
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 class MedusaApp(object):
@@ -758,18 +759,26 @@ class MedusaApp(object):
         if not value == old_value:
             self.start_stop_backlog_scheduler()
 
-    def start_stop_auto_post_processing(self, restart=False):
-        """Start or stop the automatic post processor."""
-        from medusa import auto_post_processor, scheduler
-
-        if self._PROCESS_AUTOMATICALLY and (not self.auto_post_processor_scheduler or not self.auto_post_processor_scheduler.is_alive() or restart):
+    def initialize_auto_post_processing_scheduler(self, restart=False):
+        if not self.auto_post_processor_scheduler or restart:
+            logger.info('Auto postprocessor background process initialized')
+            from medusa import auto_post_processor, scheduler
             update_interval = datetime.timedelta(minutes=self._AUTOPOSTPROCESSOR_FREQUENCY)
             app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
                                                                     cycleTime=update_interval,
                                                                     threadName='POSTPROCESSOR',
                                                                     run_delay=update_interval)
+
+    def start_stop_auto_post_processing(self, restart=False):
+        """Start or stop the automatic post processor."""
+        self.initialize_auto_post_processing_scheduler(restart=restart)
+
+        logger.info('Auto postprocessor is_alive: %s', self.auto_post_processor_scheduler.is_alive())
+
+        if self._PROCESS_AUTOMATICALLY:
             self.auto_post_processor_scheduler.start()
-        elif self.auto_post_processor_scheduler and self.auto_post_processor_scheduler.is_alive():
+            logger.info('Auto postprocessor background process started')
+        elif self.auto_post_processor_scheduler.is_alive():
             self.auto_post_processor_scheduler.stop.set()
             logger.info('Auto postprocessor background process stopped')
 

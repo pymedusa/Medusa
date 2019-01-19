@@ -13,13 +13,13 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var jque
 /***/ }),
 
 /***/ 0:
-/*!*******************************************!*\
-  !*** multi babel-polyfill ./src/index.js ***!
-  \*******************************************/
+/*!****************************!*\
+  !*** multi ./src/index.js ***!
+  \****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("__webpack_require__(/*! babel-polyfill */\"./node_modules/babel-polyfill/lib/index.js\");\nmodule.exports = __webpack_require__(/*! D:\\Development\\Medusa2\\themes-default\\slim\\src\\index.js */\"./src/index.js\");\n\n\n//# sourceURL=webpack:///multi_babel-polyfill_./src/index.js?");
+eval("module.exports = __webpack_require__(/*! D:\\Development\\Medusa2\\themes-default\\slim\\src\\index.js */\"./src/index.js\");\n\n\n//# sourceURL=webpack:///multi_./src/index.js?");
 
 /***/ })
 
