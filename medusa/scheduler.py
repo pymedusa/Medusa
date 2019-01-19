@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import threading
+import six
 import time
 
 from medusa import exception_handler
@@ -44,6 +45,8 @@ class Scheduler(threading.Thread):
                       'alive': super(Scheduler, self).is_alive(),
                       'stop': self.stop.is_set()
                   })
+        if six.PY3:
+            return self._initialized and not self._is_stopped
         return self._Thread__initialized and not self._Thread__stopped
 
     def timeLeft(self):
