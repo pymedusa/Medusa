@@ -37,6 +37,15 @@ class Scheduler(threading.Thread):
         self.force = False
         self.enable = False
 
+    def is_alive(self):
+        log.debug(u'Checking of thread {name} is still alive, \nalive: {alive}\n stop_is_set: {stop}',
+                  {
+                      'name': self.name,
+                      'alive': super(Scheduler, self).is_alive(),
+                      'stop': self.stop.is_set()
+                  })
+        return super(Scheduler, self).is_alive()
+
     def timeLeft(self):
         """
         Check how long we have until we run again.

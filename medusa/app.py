@@ -777,6 +777,7 @@ class MedusaApp(object):
 
         if self._PROCESS_AUTOMATICALLY:
             self.auto_post_processor_scheduler.start()
+            self.auto_post_processor_scheduler.enable = True
             logger.info('Auto postprocessor background process started')
         elif self.auto_post_processor_scheduler.is_alive():
             self.auto_post_processor_scheduler.stop.set()
