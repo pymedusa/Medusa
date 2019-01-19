@@ -39,15 +39,16 @@ class Scheduler(threading.Thread):
         self.enable = False
 
     def is_alive(self):
-        log.debug(u'Checking of thread {name} is still alive, \nalive: {alive}\n stop_is_set: {stop}',
+        init = self._initialized if six.PY3 else self._Thread__initialized
+        stopped = self._is_stopped if six.PY3 else self._Thread__stopped
+        log.debug(u'Checking of thread {name} is still alive, \nalive: {alive}\n stop_is_set: {stop}\ninitialized: {init}',
                   {
                       'name': self.name,
                       'alive': super(Scheduler, self).is_alive(),
-                      'stop': self.stop.is_set()
+                      'stop': stopped,
+                      'init': init
                   })
-        if six.PY3:
-            return self._initialized and not self._is_stopped
-        return self._Thread__initialized and not self._Thread__stopped
+        return init and not stopped
 
     def timeLeft(self):
         """

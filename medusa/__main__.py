@@ -1140,6 +1140,8 @@ class Application(object):
             # updaters
             # TODO: These should all be moved as @propery/@property.setters to medusa.app.py
             # Already moved: app.daily_search_scheduler, app.backlog_search_scheduler
+            app.initialize_auto_post_processing_scheduler()
+
             app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
