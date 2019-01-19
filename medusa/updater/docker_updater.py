@@ -20,6 +20,17 @@ class DockerUpdateManager(SourceUpdateManager):
     def __str__(self):
         return 'Docker Updater'
 
+    def need_update(self):
+        if self.branch != self._find_installed_branch():
+            log.debug(u'Branch checkout: {0}->{1}', self._find_installed_branch(), self.branch)
+            return True
+
+        if not self.is_latest_version():
+            self._set_update_text()
+            return True
+
+        return False
+
     def can_update(self):
         """Whether or not the update can be performed.
 

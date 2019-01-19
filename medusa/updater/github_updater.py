@@ -28,8 +28,7 @@ class GitUpdateManager(UpdateManager):
         self._git_path = self._find_working_git()
         self.github_org = self.get_github_org()
         self.github_repo = self.get_github_repo()
-
-        self.branch = app.BRANCH = self._find_installed_branch()
+        self.branch = self._find_installed_branch()
 
         self._cur_commit_hash = None
         self._newest_commit_hash = None
@@ -49,17 +48,17 @@ class GitUpdateManager(UpdateManager):
 
     @property
     def current_version(self):
-        if self._cur_commit_hash or self._set_commit_hash():
-            cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
-                self._cur_commit_hash))[0]
-            return cur_version.lstrip('v')
+        self.update_commit_hash()
+        cur_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
+            self._cur_commit_hash))[0]
+        return cur_version.lstrip('v')
 
     @property
     def newest_version(self):
-        if self._newest_commit_hash:
-            new_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
-                self._newest_commit_hash))[0]
-            return new_version.lstrip('v')
+        self.update_newest_commit_hash()
+        new_version = self._run_git(self._git_path, 'describe --tags --abbrev=0 {0}'.format(
+            self._newest_commit_hash))[0]
+        return new_version.lstrip('v')
 
     @property
     def commits_behind(self):
@@ -172,7 +171,7 @@ class GitUpdateManager(UpdateManager):
 
         return output, err, exit_status
 
-    def _set_commit_hash(self):
+    def update_commit_hash(self):
         """Attempt to set the hash of the currently installed version of the application.
 
         Uses git to get commit version.
@@ -191,6 +190,31 @@ class GitUpdateManager(UpdateManager):
 
         return False
 
+    def update_newest_commit_hash(self):
+        # update remote origin url
+        self.update_remote_origin()
+
+        # get all new info from github
+        output, _, exit_status = self._run_git(self._git_path, 'fetch --prune %s' % app.GIT_REMOTE)
+        if not exit_status == 0:
+            log.warning(u"Unable to contact github, can't check for update")
+            return False
+
+        # get latest commit_hash from remote
+        output, _, exit_status = self._run_git(self._git_path, 'rev-parse --verify --quiet "@{upstream}"')
+
+        if exit_status == 0 and output:
+            cur_commit_hash = output.strip()
+            if not re.match('^[a-z0-9]+$', cur_commit_hash):
+                log.debug(u"Output doesn't look like a hash, not using it")
+                return False
+            else:
+                self._newest_commit_hash = cur_commit_hash
+                return True
+        else:
+            log.debug(u"git didn't return newest commit hash")
+            return False
+
     def _find_installed_branch(self):
         branch_info, _, exit_status = self._run_git(self._git_path, 'symbolic-ref -q HEAD')
         if exit_status == 0 and branch_info:
@@ -200,50 +224,23 @@ class GitUpdateManager(UpdateManager):
                 return branch
         return ''
 
-    def _check_github_for_update(self):
+    def check_for_update(self):
         """
         Uses git commands to check if there is a newer version that the provided
         commit hash. If there is a newer version it sets _num_commits_behind.
         """
-        self._num_commits_behind = 0
-        self._num_commits_ahead = 0
-
-        # update remote origin url
-        self.update_remote_origin()
-
-        # get all new info from github
-        output, _, exit_status = self._run_git(self._git_path, 'fetch --prune %s' % app.GIT_REMOTE)
-        if not exit_status == 0:
-            log.warning(u"Unable to contact github, can't check for update")
-            return
-
-        # get latest commit_hash from remote
-        output, _, exit_status = self._run_git(self._git_path, 'rev-parse --verify --quiet "@{upstream}"')
-
-        if exit_status == 0 and output:
-            cur_commit_hash = output.strip()
-
-            if not re.match('^[a-z0-9]+$', cur_commit_hash):
-                log.debug(u"Output doesn't look like a hash, not using it")
-                return
-
-            else:
-                self._newest_commit_hash = cur_commit_hash
-        else:
-            log.debug(u"git didn't return newest commit hash")
-            return
+        self.update_commit_hash()
+        self.update_newest_commit_hash()
 
         # get number of commits behind and ahead (option --count not supported git < 1.7.2)
         output, _, exit_status = self._run_git(self._git_path, 'rev-list --left-right "@{upstream}"...HEAD')
         if exit_status == 0 and output:
-
             try:
                 self._num_commits_behind = int(output.count('<'))
                 self._num_commits_ahead = int(output.count('>'))
-
             except Exception:
                 log.debug(u"git didn't return numbers for behind and ahead, not using it")
-                return
+                return False
 
         log.debug(u'cur_commit = {0}, newest_commit = {1}, num_commits_behind = {2}, num_commits_ahead = {3}',
                   self._cur_commit_hash, self._newest_commit_hash, self._num_commits_behind, self._num_commits_ahead)
@@ -254,8 +251,7 @@ class GitUpdateManager(UpdateManager):
             return True
 
         try:
-            self._set_commit_hash()
-            self._check_github_for_update()
+            self.check_for_update()
         except Exception as e:
             log.warning(u"Unable to contact github, can't check for update: {0!r}", e)
             return False
@@ -287,7 +283,6 @@ class GitUpdateManager(UpdateManager):
         elif self._num_commits_ahead > 0:
             newest_text = u'Local branch is ahead of {0}. Automatic update not possible'.format(self.branch)
             log.warning(newest_text)
-
         else:
             return
 
@@ -325,7 +320,7 @@ class GitUpdateManager(UpdateManager):
         self.clean()
 
         if exit_status == 0:
-            self._set_commit_hash()
+            self.update_commit_hash()
             # Notify update successful
             if app.NOTIFY_ON_UPDATE:
                 try:

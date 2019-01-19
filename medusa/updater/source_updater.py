@@ -80,14 +80,15 @@ class SourceUpdateManager(UpdateManager):
 
         # need this to run first to set self._newest_commit_hash
         try:
-            self._check_github_for_update()
+            self.check_for_update()
         except Exception as error:
             log.warning(u"Unable to contact github, can't check for update: {0!r}", error)
             return False
 
+        # This will be used until the first update
         if not self._cur_commit_hash:
             if self.is_latest_version():
-                app.CUR_COMMIT_HASH = self.get_newest_commit_hash()
+                app.CUR_COMMIT_HASH = self._newest_commit_hash
                 app.CUR_COMMIT_BRANCH = self.branch
                 return False
             else:
@@ -108,15 +109,13 @@ class SourceUpdateManager(UpdateManager):
         """
         return True
 
-    def _check_github_for_update(self):
+    def check_for_update(self):
         """Use pygithub to ask github if there is a newer version..
 
         If there is a newer version it sets application's version text.
 
         commit_hash: hash that we're checking against
         """
-        self._num_commits_behind = 0
-        self._newest_commit_hash = None
         gh = get_github_repo(app.GIT_ORG, app.GIT_REPO)
 
         # try to get the newest commit hash and commits by comparing branch and current commit
@@ -127,10 +126,9 @@ class SourceUpdateManager(UpdateManager):
                 self._num_commits_behind = branch_compared.behind_by
                 self._num_commits_ahead = branch_compared.ahead_by
             except Exception:
-                self._newest_commit_hash = ''
+                self._newest_commit_hash = None
                 self._num_commits_behind = 0
                 self._num_commits_ahead = 0
-                self._cur_commit_hash = ''
 
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
