@@ -2,6 +2,7 @@
 import $ from 'jquery';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'vue-snotify/styles/material.css';
 import '../vendor/js/tablesorter';
 import '../vendor/css/open-sans.css';
 /* eslint-enable import/no-unassigned-import */

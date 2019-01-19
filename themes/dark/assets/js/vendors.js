@@ -1230,6 +1230,17 @@ eval("(function (global, factory) {\n   true ? module.exports = factory() : unde
 
 /***/ }),
 
+/***/ "./node_modules/vue-snotify/styles/material.css":
+/*!******************************************************!*\
+  !*** ./node_modules/vue-snotify/styles/material.css ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./node_modules/vue-snotify/styles/material.css?");
+
+/***/ }),
+
 /***/ "./node_modules/vue-snotify/vue-snotify.esm.js":
 /*!*****************************************************!*\
   !*** ./node_modules/vue-snotify/vue-snotify.esm.js ***!
