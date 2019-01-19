@@ -109,20 +109,20 @@ class GitUpdateManager(UpdateManager):
                 else:
                     log.debug(u'Not using: {0}', cur_git)
 
-        # Still haven't found a working git
-        # Warn user only if he has version check enabled
-        if app.VERSION_NOTIFY:
-            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
-
-    @staticmethod
-    def _run_git(git_path, args):
+    def _run_git(self, git_path, args):
         output = err = exit_status = None
 
         if not git_path:
-            log.warning(u"No git specified, can't use git commands")
-            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
-            exit_status = 1
-            return output, err, exit_status
+            git_path = self._find_working_git()
+            if git_path:
+                self._git_path = git_path
+            else:
+                # Warn user only if he has version check enabled
+                if app.VERSION_NOTIFY:
+                    log.warning(u"No git specified, can't use git commands")
+                    app.NEWEST_VERSION_STRING = ERROR_MESSAGE
+                exit_status = 1
+                return output, err, exit_status
 
         # If we have a valid git remove the git warning
         # String will be updated as soon we check github
