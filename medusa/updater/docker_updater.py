@@ -40,11 +40,14 @@ class DockerUpdateManager(SourceUpdateManager):
         return False
 
     def _set_update_text(self):
-        """Set an update text, when running in a docker container."""
-        log.debug('There is an update available, Medusa is running in a docker container,'
+        """Set an update text, when running in a Docker container."""
+        log.debug('There is an update available, Medusa is running in a Docker container,'
                   ' so auto updating is disabled.')
-        app.NEWEST_VERSION_STRING = 'There is an update available: please pull the latest docker image, ' \
-                                    'and rebuild your container to update'
+
+        url = 'http://github.com/' + self.github_org + '/' + self.github_repo + '/releases'
+        newest_text = 'There is a <a href="' + url + '" onclick="window.open(this.href); return false;">newer version available</a>'
+        newest_text += ' (' + self.newest_version + ') &mdash; Pull the latest Docker image and rebuild your container to update'
+        app.NEWEST_VERSION_STRING = newest_text
 
     def update(self):
         """Download the latest version."""
