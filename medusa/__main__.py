@@ -315,9 +315,6 @@ class Application(object):
         # Initialize the config and our threads
         self.initialize(console_logging=self.console_logging)
 
-        if self.run_as_daemon:
-            self.daemonize()
-
         # Get PID
         app.PID = os.getpid()
 
@@ -2168,8 +2165,17 @@ class Application(object):
 def main():
     """Application entry point."""
     # start application
-    application = Application()
-    application.start(sys.argv[1:])
+    import platform
+
+    run_as_daemon = [option for option in sys.argv[1:] if option in ('-d', '--daemon')]
+    if (not sys.platform == 'win32' and not sys.platform == 'darwin') and run_as_daemon:
+        import daemon
+        with daemon.DaemonContext():
+            application = Application()
+            application.start(sys.argv[1:])
+    else:
+        application = Application()
+        application.start(sys.argv[1:])
 
 
 if __name__ == '__main__':
