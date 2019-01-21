@@ -368,7 +368,9 @@ class GitUpdateManager(UpdateManager):
     def list_remote_branches(self):
         # update remote origin url
         self.update_remote_origin()
-        app.BRANCH = self._find_installed_branch()
+        branch = self._find_installed_branch()
+        self.branch = branch
+        app.BRANCH = branch
 
         branches, _, exit_status = self._run_git(self._git_path, 'ls-remote --heads %s' % app.GIT_REMOTE)
         if exit_status == 0 and branches:

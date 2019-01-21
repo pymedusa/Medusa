@@ -86,7 +86,7 @@ class SourceUpdateManager(UpdateManager):
             return False
 
         # This will be used until the first update
-        if not self._cur_commit_hash:
+        if self.branch == 'master' and not self._cur_commit_hash:
             if self.is_latest_version():
                 app.CUR_COMMIT_HASH = self._newest_commit_hash
                 app.CUR_COMMIT_BRANCH = self.branch
