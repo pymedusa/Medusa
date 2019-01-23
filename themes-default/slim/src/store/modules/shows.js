@@ -68,6 +68,7 @@ const actions = {
         if (detailed !== undefined) {
             params.detailed = Boolean(detailed);
         }
+
         if (fetch !== undefined) {
             params.fetch = Boolean(fetch);
         }
@@ -115,9 +116,10 @@ const actions = {
                                 });
                             }));
                         }
+
                         return Promise.all(pageRequests);
                     })
-                    .catch(error => {
+                    .catch(() => {
                         console.log('Could not retrieve a list of shows');
                     });
             })();

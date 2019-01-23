@@ -39,10 +39,54 @@ export default {
         }
     },
     data() {
-        const { id, indexer } = this;
         return {
             jumpToSeason: 'jump',
-            show: null,
+            show: {
+                airs: null,
+                akas: null,
+                cache: null,
+                classification: null,
+                config: {
+                    airByDate: null,
+                    aliases: null,
+                    anime: null,
+                    defaultEpisodeStatus: null,
+                    dvdOrder: null,
+                    location: null,
+                    paused: null,
+                    qualities: null,
+                    release: null,
+                    scene: null,
+                    seasonFolders: null,
+                    sports: null,
+                    subtitlesEnabled: null,
+                    airdateOffset: null
+                },
+                countries: null,
+                country_codes: null, // eslint-disable-line camelcase
+                genres: null,
+                id: {
+                    tvdb: null,
+                    slug: null
+                },
+                indexer: null,
+                language: null,
+                network: null,
+                nextAirDate: null,
+                plot: null,
+                rating: {
+                    imdb: {
+                        rating: null,
+                        votes: null
+                    }
+                },
+                runtime: null,
+                showType: null,
+                status: null,
+                title: null,
+                type: null,
+                year: {}
+            },
             shows: []
         };
     },
@@ -63,7 +107,7 @@ export default {
         showIndexerUrl() {
             const { show, indexerConfig } = this;
             if (!show) {
-                return
+                return;
             }
 
             if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
@@ -334,18 +378,24 @@ export default {
          * Adjust the summary background position and size on page load and resize
          */
         moveSummaryBackground() {
-            if (!$('#summary').height()) return;
+            if (!$('#summary').height()) {
+                return;
+            }
+
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
-            
+
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
         },
         movecheckboxControlsBackground() {
-            if (!$('#checkboxControls').height()) return;
+            if (!$('#checkboxControls').height()) {
+                return;
+            }
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;
+
             $('#checkboxControlsBackground').height(height);
             $('#checkboxControlsBackground').offset({ top, left: 0 });
             $('#checkboxControlsBackground').show();
@@ -587,20 +637,19 @@ export default {
             }
         },
         stateShows: {
-            handler: function (after, before) {
+            handler: function(after, before) { // eslint-disable-line object-shorthand
                 // Return the object that changed
-                let changed = after.filter( function( p, idx ) {
-                    return Object.keys(p).some( function( prop ) {
+                const changed = after.filter((p, idx) => {
+                    return Object.keys(p).some(prop => {
                         return p[prop] !== before[idx][prop];
-                    })
-                })
+                    });
+                });
                 this.shows = after;
-                console.log(changed)
-                
-                if (!this.show && after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
+                console.log(changed);
+
+                if (after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
                     this.getShow();
                 }
-                
             },
             deep: true
         }
