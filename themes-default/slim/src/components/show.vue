@@ -371,10 +371,6 @@ export default {
          * Adjust the summary background position and size on page load and resize
          */
         moveSummaryBackground() {
-            if (!$('#summary').height()) {
-                return;
-            }
-
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
 
@@ -383,9 +379,6 @@ export default {
             $('#summaryBackground').show();
         },
         movecheckboxControlsBackground() {
-            if (!$('#checkboxControls').height()) {
-                return;
-            }
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;
 
@@ -638,7 +631,6 @@ export default {
                     });
                 });
                 this.shows = after;
-                console.log(changed);
 
                 if (after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
                     this.getShow();
