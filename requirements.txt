@@ -20,7 +20,7 @@ gntp==1.0.3
 guessit==3.0.3
 html5lib==1.0.1
 imdbpie==5.6.3
-jsonrpclib-pelix==0.3.2
+jsonrpclib-pelix==0.4.0
 knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
@@ -34,10 +34,10 @@ python-twitter==3.5
 rarfile==3.0
 rebulk==1.0.0
 requests==2.21.0
-requests-oauthlib==1.0.0
+requests-oauthlib==1.2.0
 six==1.12.0
 stevedore==1.30.0
 git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
-validators==0.12.3
+validators==0.12.4

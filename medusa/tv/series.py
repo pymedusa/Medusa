@@ -55,6 +55,7 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
+    CantRefreshShowException,
     CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
@@ -365,18 +366,67 @@ class Series(TV):
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').replace(' ', '-').lower()
 
     @property
-    def raw_location(self):
-        """Get the raw show location, unvalidated."""
-        return self._location
+    def validate_location(self):
+        """Legacy call to location with a validation when ADD_SHOWS_WO_DIR is set."""
+        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
+            return self._location
+        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
 
     @property
     def location(self):
         """Get the show location."""
-        # no directory check needed if missing
-        # show directories are created during post-processing
-        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
-            return self._location
-        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+        return self._location
+
+    @location.setter
+    def location(self, value):
+        old_location = os.path.normpath(self._location)
+        new_location = os.path.normpath(value)
+
+        log.debug(
+            u'{indexer} {id}: Setting location: {location}', {
+                'indexer': indexerApi(self.indexer).name,
+                'id': self.series_id,
+                'location': new_location,
+            }
+        )
+
+        if new_location == old_location:
+            return
+
+        # Don't validate directory if user wants to add shows without creating a dir
+        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
+            self._location = new_location
+            return
+
+        changed_location = True
+        log.info('Changing show location to: {new}', {'new': new_location})
+        if not os.path.isdir(new_location):
+            if app.CREATE_MISSING_SHOW_DIRS:
+                log.info(u"Show directory doesn't exist, creating it")
+                try:
+                    os.mkdir(new_location)
+                except OSError as error:
+                    changed_location = False
+                    log.warning(u"Unable to create the show directory '{location}'. Error: {msg}",
+                                {'location': new_location, 'msg': error})
+                else:
+                    log.info(u'New show directory created')
+                    helpers.chmod_as_parent(new_location)
+            else:
+                changed_location = False
+                log.warning("New location '{location}' does not exist. "
+                            "Enable setting '(Config - Postprocessing) Create missing show dirs'", {'location': new_location})
+
+        # Save new location only if we changed it
+        if changed_location:
+            self._location = new_location
+
+        if changed_location and os.path.isdir(new_location):
+            try:
+                app.show_queue_scheduler.action.refreshShow(self)
+            except CantRefreshShowException as error:
+                log.warning("Unable to refresh show '{show}'. Error: {error}",
+                            {'show': self.name, 'error': error.message})
 
     @property
     def indexer_name(self):
@@ -387,21 +437,6 @@ class Series(TV):
     def indexer_slug(self):
         """Return the slug name of the series. Example: tvdb1234."""
         return indexer_id_to_slug(self.indexer, self.series_id)
-
-    @location.setter
-    def location(self, value):
-        log.debug(
-            u'{indexer} {id}: Setting location: {location}', {
-                'indexer': indexerApi(self.indexer).name,
-                'id': self.series_id,
-                'location': value,
-            }
-        )
-        # Don't validate directory if user wants to add shows without creating a dir
-        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
-            self._location = value
-        else:
-            raise ShowDirectoryNotFoundException(u'Invalid show folder!')
 
     @property
     def current_qualities(self):
@@ -432,7 +467,7 @@ class Series(TV):
     @property
     def size(self):
         """Size of the show on disk."""
-        return helpers.get_size(self.raw_location)
+        return helpers.get_size(self.location)
 
     def show_size(self, pretty=False):
         """
@@ -1685,6 +1720,7 @@ class Series(TV):
         # remove entire show folder
         if full:
             try:
+                self.validate_location  # Let's get the exception out of the way asap.
                 log.info(u'{id}: Attempt to {action} show folder {location}',
                          {'id': self.series_id, 'action': action, 'location': self.location})
                 # check first the read-only attribute
@@ -1705,17 +1741,17 @@ class Series(TV):
                     shutil.rmtree(self.location)
 
                 log.info(u'{id}: {action} show folder {location}',
-                         {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                         {'id': self.series_id, 'action': action, 'location': self.location})
 
             except ShowDirectoryNotFoundException:
                 log.warning(u'{id}: Show folder {location} does not exist. No need to {action}',
-                            {'id': self.series_id, 'action': action, 'location': self.raw_location})
+                            {'id': self.series_id, 'action': action, 'location': self.location})
             except OSError as error:
                 log.warning(
                     u'{id}: Unable to {action} {location}. Error: {error_msg}', {
                         'id': self.series_id,
                         'action': action,
-                        'location': self.raw_location,
+                        'location': self.location,
                         'error_msg': ex(error),
                     }
                 )
@@ -1887,7 +1923,7 @@ class Series(TV):
 
         control_value_dict = {'indexer': self.indexer, 'indexer_id': self.series_id}
         new_value_dict = {'show_name': self.name,
-                          'location': self.raw_location,  # skip location validation
+                          'location': self.location,  # skip location validation
                           'network': self.network,
                           'genre': self.genre,
                           'classification': self.classification,
@@ -1937,7 +1973,7 @@ class Series(TV):
         to_return += 'indexerid: ' + str(self.series_id) + '\n'
         to_return += 'indexer: ' + str(self.indexer) + '\n'
         to_return += 'name: ' + self.name + '\n'
-        to_return += 'location: ' + self.raw_location + '\n'  # skip location validation
+        to_return += 'location: ' + self.location + '\n'  # skip location validation
         if self.network:
             to_return += 'network: ' + self.network + '\n'
         if self.airs:
@@ -1966,7 +2002,7 @@ class Series(TV):
         to_return += u'indexerid: {0}\n'.format(self.series_id)
         to_return += u'indexer: {0}\n'.format(self.indexer)
         to_return += u'name: {0}\n'.format(self.name)
-        to_return += u'location: {0}\n'.format(self.raw_location)  # skip location validation
+        to_return += u'location: {0}\n'.format(self.location)  # skip location validation
         if self.network:
             to_return += u'network: {0}\n'.format(self.network)
         if self.airs:
@@ -2028,7 +2064,7 @@ class Series(TV):
         data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
-        data['config']['location'] = self.raw_location
+        data['config']['location'] = self.location
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
