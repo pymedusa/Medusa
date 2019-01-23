@@ -106,16 +106,9 @@ export default {
         },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
-            if (!show) {
-                return;
-            }
-
-            if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
-                return undefined;
-            }
-
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
+
             return `${indexerUrl}${id}`;
         }
     },
