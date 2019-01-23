@@ -2165,8 +2165,6 @@ class Application(object):
 def main():
     """Application entry point."""
     # start application
-    import platform
-
     run_as_daemon = [option for option in sys.argv[1:] if option in ('-d', '--daemon')]
     if (not sys.platform == 'win32' and not sys.platform == 'darwin') and run_as_daemon:
         import daemon
