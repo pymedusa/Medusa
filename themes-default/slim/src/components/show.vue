@@ -624,12 +624,6 @@ export default {
         },
         stateShows: {
             handler: function(after, before) { // eslint-disable-line object-shorthand
-                // Return the object that changed
-                const changed = after.filter((p, idx) => {
-                    return Object.keys(p).some(prop => {
-                        return p[prop] !== before[idx][prop];
-                    });
-                });
                 this.shows = after;
 
                 if (after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
