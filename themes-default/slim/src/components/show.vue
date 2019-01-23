@@ -106,6 +106,9 @@ export default {
         },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
+            if (!show.indexer) {
+                return;
+            }
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
