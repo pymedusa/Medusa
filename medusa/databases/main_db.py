@@ -888,7 +888,7 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
     """Add release ignore and require exclude option flags."""
 
     def test(self):
-        """Test if the version is at least 44.13"""
+        """Test if the version is at least 44.14"""
         return self.connection.version >= (44, 14)
 
     def execute(self):
