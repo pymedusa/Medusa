@@ -623,7 +623,7 @@ export default {
             }
         },
         stateShows: {
-            handler: function(after, before) { // eslint-disable-line object-shorthand
+            handler: function(after, before) { // eslint-disable-line object-shorthand, no-unused-vars
                 this.shows = after;
 
                 if (after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
