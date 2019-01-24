@@ -67,7 +67,7 @@ from configobj import ConfigObj
 from medusa import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
+    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker
 )
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
@@ -90,6 +90,7 @@ from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
+from medusa.updater.version_checker import CheckVersion
 
 
 logger = logging.getLogger(__name__)
@@ -987,9 +988,9 @@ class Application(object):
                 pass
 
             if app.VERSION_NOTIFY:
-                updater = version_checker.CheckVersion().updater
+                updater = CheckVersion().updater
                 if updater:
-                    app.APP_VERSION = updater.get_cur_version()
+                    app.APP_VERSION = updater.current_version
 
             app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
@@ -1128,7 +1129,7 @@ class Application(object):
 
             # initialize schedulers
             # updaters
-            app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
+            app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
 

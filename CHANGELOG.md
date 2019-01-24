@@ -8,7 +8,8 @@
 #### Improvements
 
 #### Fixes
-- Fixed saving newznab provider api key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
+- Fixed saving newznab provider API key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
+- Fixed permanent Docker update message ([#6018](https://github.com/pymedusa/Medusa/pull/6018))
 
 -----
 

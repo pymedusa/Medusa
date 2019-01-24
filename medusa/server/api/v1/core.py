@@ -59,7 +59,7 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 
@@ -1421,7 +1421,7 @@ class CMD_CheckVersion(ApiCall):
                 'commit': check_version.updater.get_newest_commit_hash(),
                 'version': check_version.updater.get_newest_version(),
             },
-            'commits_offset': check_version.updater.get_num_commits_behind(),
+            'commits_offset': check_version.updater.commits_behind,
             'needs_update': needs_update,
         }
 
