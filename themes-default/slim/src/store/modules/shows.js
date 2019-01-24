@@ -8,6 +8,7 @@ const state = {
 
 const mutations = {
     [ADD_SHOW](state, show) {
+        console.log(`show id: ${show.id}`);
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
 
         if (!existingShow) {
@@ -90,7 +91,7 @@ const actions = {
         // If no shows are provided get the first 1000
         if (!shows) {
             return (() => {
-                const limit = 1000;
+                const limit = 6;
                 const page = 1;
                 const params = {
                     limit,

@@ -40,6 +40,7 @@ export default {
     },
     data() {
         return {
+            showLoaded: false,
             jumpToSeason: 'jump',
             show: {
                 airs: null,
@@ -596,14 +597,19 @@ export default {
                 return defaults.show;
             }
 
+            this.show = show;
+
             // Not detailed
             // Retreive episode and season summary information
-            if (!show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: true });
-                return getShowById({ indexer, id });
+            if (!this.show.seasons) {
+                $store.dispatch('getShow', { id, indexer, detailed: true })
+                    .then(() => {
+                        this.show = getShowById({ indexer, id });
+                        return this.show;
+                    })
+            } else {
+                return this.show;
             }
-
-            this.show = show;
         }
     },
     watch: {
@@ -628,9 +634,11 @@ export default {
         stateShows: {
             handler: function(after, before) { // eslint-disable-line object-shorthand, no-unused-vars
                 this.shows = after;
+                const { showLoaded } = this;
 
-                if (after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
-                    this.getShow();
+                if (!showLoaded && after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
+                    this.showLoaded = true;
+                    this.show = this.getShow();
                 }
             },
             deep: true
