@@ -1091,6 +1091,12 @@ definitions:
                 description: Required release words
                 items:
                   type: string
+              requiredWordsExclude:
+                type: boolean
+                description: Exclude required words from global required words list
+              ignoredWordsExclude:
+                type: boolean
+                description: Exclude ignored words from global ignored words list
           airdateOffset:
             type: integer
             description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
