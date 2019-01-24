@@ -16,10 +16,6 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class UpdateManager(object):
-    def __init__(self):
-        """Update manager initialization."""
-        # Initialize the app.RUNS_IN_DOCKER variable
-        # self.runs_in_docker()
 
     @staticmethod
     def get_github_org():
@@ -32,6 +28,14 @@ class UpdateManager(object):
     @staticmethod
     def get_update_url():
         return app.WEB_ROOT + '/home/update/?pid=' + text_type(app.PID)
+
+    def current_version(self):
+        """Get the current verion of the app."""
+        raise NotImplementedError
+
+    def newest_version(self):
+        """Get the newest verion of the app."""
+        raise NotImplementedError
 
     def is_latest_version(self):
         """Compare the current installed version with the remote version."""
