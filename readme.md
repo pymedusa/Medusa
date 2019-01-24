@@ -30,6 +30,7 @@
  - Supports TVMaze and TMDB indexers
  - Manual search episodes (you choose what to snatch based on all kind of info: provider, seeds, release group)
  - Manual search for subtitles (useful when subtitle has low score because of typo in filename or alternative title)
+ - Support for Python 3
  - Uses 'guessit' library to parse and enrich existing info (more precise than regexes)
  - Improved Anime shows support
  - Faster DailySearcher|Backlog|Find propers as we only process new items. Already processed items are discarded.
@@ -61,7 +62,9 @@
  - Real SSL certificate validation
 
 #### Dependencies
- To run Medusa from source you will need Python 2.7.10
+ To run Medusa from source you will need one of these Python versions:  
+ * **Python 2** – 2.7.10 and above
+ * **Python 3** – 3.5.0 and above
  
 #### Installation - direct
  Start [here](https://github.com/pymedusa/Medusa/wiki/Installation-&-Configuration-Guides) to read the installation guides for different setups.
