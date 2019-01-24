@@ -16,7 +16,7 @@ import warnings
 from builtins import map
 from builtins import str
 from collections import (
-    namedtuple,
+    OrderedDict, namedtuple
 )
 from itertools import groupby
 
@@ -226,6 +226,8 @@ class Series(TV):
         self.scene = 0
         self.rls_ignore_words = ''
         self.rls_require_words = ''
+        self.rls_ignore_exclude = 0
+        self.rls_require_exclude = 0
         self.default_ep_status = SKIPPED
         self._location = ''
         self.episodes = {}
@@ -931,13 +933,21 @@ class Series(TV):
 
         # If word is in global ignore and also in show require, then remove it from global ignore
         # Join new global ignore with show ignore
-        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
-        # If word is in global require and also in show ignore, then remove it from global require
+        if not self.rls_ignore_exclude:
+            final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+        else:
+            final_ignore = [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require] and
+                            i.lower() not in [sh_i.lower() for sh_i in show_ignore]]
+        # If word is in global require and also in show ignore, then remove it from global requires
         # Join new global required with show require
-        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+        if not self.rls_require_exclude:
+            final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+        else:
+            final_require = [gl_r for gl_r in global_require if gl_r.lower() not in [r.lower() for r in show_ignore] and
+                             gl_r.lower() not in [sh_r.lower() for sh_r in show_require]]
 
-        ignored_words = final_ignore
-        required_words = final_require
+        ignored_words = list(OrderedDict.fromkeys(final_ignore))
+        required_words = list(OrderedDict.fromkeys(final_require))
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
@@ -1471,6 +1481,8 @@ class Series(TV):
 
             self.rls_ignore_words = sql_results[0]['rls_ignore_words']
             self.rls_require_words = sql_results[0]['rls_require_words']
+            self.rls_ignore_exclude = sql_results[0]['rls_ignore_exclude']
+            self.rls_require_exclude = sql_results[0]['rls_require_exclude']
 
             self.default_ep_status = int(sql_results[0]['default_ep_status'] or SKIPPED)
 
@@ -2082,6 +2094,8 @@ class Series(TV):
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
+        data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
+        data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
 
         # These are for now considered anime-only options

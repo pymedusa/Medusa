@@ -882,3 +882,22 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
             self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
 
         self.inc_minor_version()
+
+
+class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+    """Add release ignore and require exclude option flags."""
+
+    def test(self):
+        """Test if the version is at least 44.14"""
+        return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding release ignore and require exclude option flags to the tv_shows table')
+        if not self.hasColumn('tv_shows', 'rls_require_exclude'):
+            self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
+            self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
