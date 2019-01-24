@@ -824,7 +824,7 @@ class SubtitlesFinder(object):
 
     def __init__(self):
         """Initialize class with the default constructor."""
-        self.amActive = False
+        self.am_active = False
 
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
@@ -926,7 +926,7 @@ class SubtitlesFinder(object):
         :param force: True if a force search needs to be executed
         :type force: bool
         """
-        if self.amActive:
+        if self.am_active:
             logger.debug(u'Subtitle finder is still running, not starting it again')
             return
 
@@ -939,7 +939,7 @@ class SubtitlesFinder(object):
                            u'background')
             return
 
-        self.amActive = True
+        self.am_active = True
 
         def dhm(td):
             """Create the string for subtitles delay."""
@@ -1003,7 +1003,7 @@ class SubtitlesFinder(object):
 
         if not sql_results:
             logger.info('No subtitles to download')
-            self.amActive = False
+            self.am_active = False
             return
 
         for ep_to_sub in sql_results:
@@ -1062,7 +1062,7 @@ class SubtitlesFinder(object):
             episode_object.download_subtitles()
 
         logger.info('Finished checking for missed subtitles')
-        self.amActive = False
+        self.am_active = False
 
 
 def run_subs_pre_scripts(video_path):

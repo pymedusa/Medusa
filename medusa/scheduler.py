@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import threading
+import six
 import time
 
 from medusa import exception_handler
@@ -37,6 +38,18 @@ class Scheduler(threading.Thread):
         self.force = False
         self.enable = False
 
+    def is_alive(self):
+        init = self._initialized if six.PY3 else self._Thread__initialized
+        stopped = self._is_stopped if six.PY3 else self._Thread__stopped
+        log.debug(u'Checking of thread {name} is still alive, \nalive: {alive}\n stop_is_set: {stop}\ninitialized: {init}',
+                  {
+                      'name': self.name,
+                      'alive': super(Scheduler, self).is_alive(),
+                      'stop': stopped,
+                      'init': init
+                  })
+        return init and not stopped
+
     def timeLeft(self):
         """
         Check how long we have until we run again.
@@ -58,7 +71,7 @@ class Scheduler(threading.Thread):
             return datetime.timedelta(seconds=0)
 
     def forceRun(self):
-        if not self.action.amActive:
+        if not self.action.am_active:
             self.force = True
             return True
         return False

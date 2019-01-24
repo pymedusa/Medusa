@@ -98,7 +98,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def force_daily(self):
         """Force daily searched."""
-        if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
+        if not self.is_dailysearch_in_progress and not self.currentItem.am_active:
             self.force = True
             return True
         return False

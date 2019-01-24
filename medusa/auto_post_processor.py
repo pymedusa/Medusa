@@ -33,7 +33,7 @@ class PostProcessor(object):
 
     def __init__(self):
         """Init method."""
-        self.amActive = False
+        self.am_active = False
 
     def run(self, force=False):
         """Run the postprocessor.
@@ -42,7 +42,7 @@ class PostProcessor(object):
         :type force: bool
         """
         from medusa import process_tv
-        self.amActive = True
+        self.am_active = True
         try:
             if not os.path.isdir(app.TV_DOWNLOAD_DIR):
                 logger.error(u"Automatic post-processing attempted but directory doesn't exist: {folder}",
@@ -57,4 +57,4 @@ class PostProcessor(object):
 
             process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process(force=force)
         finally:
-            self.amActive = False
+            self.am_active = False

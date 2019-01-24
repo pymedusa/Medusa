@@ -31,8 +31,10 @@ const state = {
         preferred: []
     },
     general: {
+        enableBacklogSearch: true,
         minDailySearchFrequency: 10,
         minBacklogFrequency: 720,
+        enableDailySearch: true,
         dailySearchFrequency: 40,
         checkPropersInterval: '4h',
         usenetRetention: 500,

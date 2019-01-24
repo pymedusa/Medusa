@@ -20,11 +20,11 @@ class ManageSearches(Manage):
 
         return t.render(backlogPaused=app.search_queue_scheduler.action.is_backlog_paused(),
                         backlogRunning=app.search_queue_scheduler.action.is_backlog_in_progress(),
-                        dailySearchStatus=app.daily_search_scheduler.action.amActive,
-                        findPropersStatus=app.proper_finder_scheduler.action.amActive,
+                        dailySearchStatus=app.daily_search_scheduler.action.am_active,
+                        findPropersStatus=app.proper_finder_scheduler.action.am_active,
                         searchQueueLength=app.search_queue_scheduler.action.queue_length(),
                         forcedSearchQueueLength=app.forced_search_queue_scheduler.action.queue_length(),
-                        subtitlesFinderStatus=app.subtitles_finder_scheduler.action.amActive,
+                        subtitlesFinderStatus=app.subtitles_finder_scheduler.action.am_active,
                         controller='manage', action='manageSearches')
 
     def forceBacklog(self):

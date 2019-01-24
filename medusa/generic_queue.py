@@ -24,7 +24,7 @@ class GenericQueue(object):
         self.queue_name = 'QUEUE'
         self.min_priority = 0
         self.lock = threading.Lock()
-        self.amActive = False
+        self.am_active = False
 
     def pause(self):
         """Pauses this queue."""
@@ -96,7 +96,7 @@ class GenericQueue(object):
                     )
                     self.currentItem.start()
 
-        self.amActive = False
+        self.am_active = False
 
 
 class QueueItem(threading.Thread):
