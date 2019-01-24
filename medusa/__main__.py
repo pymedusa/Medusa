@@ -2074,16 +2074,9 @@ class Application(object):
     @staticmethod
     def restart():
         """Restart application."""
-        install_type = app.version_check_scheduler.action.install_type
+        popen_list = [sys.executable, app.MY_FULLNAME]
 
-        popen_list = []
-
-        if install_type in ('git', 'source'):
-            popen_list = [sys.executable, app.MY_FULLNAME]
-        elif install_type == 'win':
-            logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
-
-        if popen_list and not app.NO_RESTART:
+        if not app.NO_RESTART:
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
