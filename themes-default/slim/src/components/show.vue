@@ -1,7 +1,7 @@
 <script>
 import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { api, apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 
@@ -42,52 +42,52 @@ export default {
         return {
             showLoaded: false,
             jumpToSeason: 'jump',
-            show: {
-                airs: null,
-                akas: null,
-                cache: null,
-                classification: null,
-                config: {
-                    airByDate: null,
-                    aliases: null,
-                    anime: null,
-                    defaultEpisodeStatus: null,
-                    dvdOrder: null,
-                    location: null,
-                    paused: null,
-                    qualities: null,
-                    release: null,
-                    scene: null,
-                    seasonFolders: null,
-                    sports: null,
-                    subtitlesEnabled: null,
-                    airdateOffset: null
-                },
-                countries: null,
-                country_codes: null, // eslint-disable-line camelcase
-                genres: null,
-                id: {
-                    tvdb: null,
-                    slug: null
-                },
-                indexer: null,
-                language: null,
-                network: null,
-                nextAirDate: null,
-                plot: null,
-                rating: {
-                    imdb: {
-                        rating: null,
-                        votes: null
-                    }
-                },
-                runtime: null,
-                showType: null,
-                status: null,
-                title: null,
-                type: null,
-                year: {}
-            },
+            // show: {
+            //     airs: null,
+            //     akas: null,
+            //     cache: null,
+            //     classification: null,
+            //     config: {
+            //         airByDate: null,
+            //         aliases: null,
+            //         anime: null,
+            //         defaultEpisodeStatus: null,
+            //         dvdOrder: null,
+            //         location: null,
+            //         paused: null,
+            //         qualities: null,
+            //         release: null,
+            //         scene: null,
+            //         seasonFolders: null,
+            //         sports: null,
+            //         subtitlesEnabled: null,
+            //         airdateOffset: null
+            //     },
+            //     countries: null,
+            //     country_codes: null, // eslint-disable-line camelcase
+            //     genres: null,
+            //     id: {
+            //         tvdb: null,
+            //         slug: null
+            //     },
+            //     indexer: null,
+            //     language: null,
+            //     network: null,
+            //     nextAirDate: null,
+            //     plot: null,
+            //     rating: {
+            //         imdb: {
+            //             rating: null,
+            //             votes: null
+            //         }
+            //     },
+            //     runtime: null,
+            //     showType: null,
+            //     status: null,
+            //     title: null,
+            //     type: null,
+            //     year: {}
+            // },
             shows: []
         };
     },
@@ -114,6 +114,21 @@ export default {
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
             return `${indexerUrl}${id}`;
+        },
+        show() {
+            const { $store, addShow, indexer, id, getShow, getShowById } = this;
+
+            // Try to get an existing show, using getter.
+            let show = getShowById({ indexer, id });
+
+            if (!show || !show.seasons) {
+                getShow({ id, indexer, detailed: true })
+                    .then((result) => {
+                        show = result;
+                    })
+            }
+
+            return show || $store.state.defaults.show;
         }
     },
     mounted() {
@@ -357,6 +372,9 @@ export default {
         });
     },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // map `this.add()` to `this.$store.dispatch('increment')`
+        }),
         /**
          * Attaches imdb tool tip,
          * moves summary background and checkbox controls
@@ -580,36 +598,6 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        },
-        getShow() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            // Added the log, to see when this computed is accessed.
-            console.log(`getting show info for: ${id}`);
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            this.show = show;
-
-            // Not detailed
-            // Retreive episode and season summary information
-            if (!this.show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: true })
-                    .then(() => {
-                        this.show = getShowById({ indexer, id });
-                        return this.show;
-                    })
-            } else {
-                return this.show;
-            }
         }
     },
     watch: {
@@ -630,18 +618,6 @@ export default {
                 // Reset jump
                 this.jumpToSeason = 'jump';
             }
-        },
-        stateShows: {
-            handler: function(after, before) { // eslint-disable-line object-shorthand, no-unused-vars
-                this.shows = after;
-                const { showLoaded } = this;
-
-                if (!showLoaded && after.filter(show => show.id[this.indexer] === Number(this.id)).length > 0) {
-                    this.showLoaded = true;
-                    this.show = this.getShow();
-                }
-            },
-            deep: true
         }
     }
 };

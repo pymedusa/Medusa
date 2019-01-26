@@ -63,19 +63,26 @@ const actions = {
      * @returns {Promise} The API response.
      */
     getShow(context, { indexer, id, detailed, fetch }) {
-        const { commit } = context;
-        const params = {};
+        return new Promise((resolve, reject) => {
+            const { commit } = context;
+            const params = {};
 
-        if (detailed !== undefined) {
-            params.detailed = Boolean(detailed);
-        }
+            if (detailed !== undefined) {
+                params.detailed = Boolean(detailed);
+            }
 
-        if (fetch !== undefined) {
-            params.fetch = Boolean(fetch);
-        }
+            if (fetch !== undefined) {
+                params.fetch = Boolean(fetch);
+            }
 
-        return api.get('/series/' + indexer + id, { params }).then(res => {
-            commit(ADD_SHOW, res.data);
+            api.get('/series/' + indexer + id, { params })
+                .then(res => {
+                    commit(ADD_SHOW, res.data);
+                    resolve(res.data);
+                })
+                .catch(error => {
+                    reject(error);
+                });
         });
     },
     /**
@@ -91,7 +98,7 @@ const actions = {
         // If no shows are provided get the first 1000
         if (!shows) {
             return (() => {
-                const limit = 6;
+                const limit = 1000;
                 const page = 1;
                 const params = {
                     limit,
