@@ -68,23 +68,6 @@ export default {
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
             return `${indexerUrl}${id}`;
-        },
-        show() {
-            const { $store, addShow, indexer, id, getShow, getShowById } = this;
-
-            // Try to get an existing show, using getter.
-            let show = getShowById({ indexer, id });
-
-            if (!this.showLoaded && (!show || !show.seasons)) {
-                // Because this is an async operation, we need to prevent it from accessing the getShow action multiple times.
-                this.showLoaded = true;
-                getShow({ id, indexer, detailed: true })
-                    .then((result) => {
-                        show = result;
-                    })
-            }
-
-            return show || $store.state.defaults.show;
         }
     },
     mounted() {
@@ -329,7 +312,7 @@ export default {
     },
     methods: {
         ...mapActions({
-            getShow: 'getShow' // map `this.add()` to `this.$store.dispatch('increment')`
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
         }),
         /**
          * Attaches imdb tool tip,
@@ -554,6 +537,25 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
+        },
+        show() {
+            const { $store, indexer, id, getShow, getShowById } = this;
+
+            // If we don't have any indexer/id bail early.
+            if (!indexer || !id) {
+                return $store.state.defaults.show;
+            }
+
+            // Try to get an existing show, using getter.
+            const show = getShowById({ indexer, id });
+
+            if (!this.showLoaded && (!show || !show.seasons)) {
+                // Because this is an async operation, we need to prevent it from accessing the getShow action multiple times.
+                this.showLoaded = true;
+                getShow({ id, indexer, detailed: true });
+            }
+
+            return show || $store.state.defaults.show;
         }
     },
     watch: {
