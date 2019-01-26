@@ -3,7 +3,11 @@ import { api } from '../../api';
 import { ADD_SHOW } from '../mutation-types';
 
 const state = {
-    shows: []
+    shows: [],
+    currentShow: {
+        indexer: null,
+        id: null
+    }
 };
 
 const mutations = {
@@ -29,6 +33,10 @@ const mutations = {
         // Update state
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
+    },
+    currentShow(state, { indexer, id }) {
+        state.currentShow.indexer = indexer;
+        state.currentShow.id = id;
     }
 };
 
@@ -42,6 +50,9 @@ const getters = {
     getEpisode: state => ({ id, indexer, season, episode }) => {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
         return show && show.seasons && show.seasons[season] ? show.seasons[season][episode] : undefined;
+    },
+    getCurrentShow: (state, getters, rootState) => {
+        return state.shows.find(show => Number(show.id[state.currentShow.indexer]) === Number(state.currentShow.id)) || rootState.defaults.show;
     }
 };
 

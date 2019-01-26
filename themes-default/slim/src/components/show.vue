@@ -41,18 +41,18 @@ export default {
     data() {
         return {
             showLoaded: false,
-            jumpToSeason: 'jump',
-            shows: []
+            jumpToSeason: 'jump'
         };
     },
     computed: {
         ...mapState({
-            stateShows: state => state.shows.shows,
+            shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers
         }),
-        ...mapGetters([
-            'getShowById'
-        ]),
+        ...mapGetters({
+            getShowById: 'getShowById',
+            show: 'getCurrentShow'
+        }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
@@ -72,13 +72,29 @@ export default {
     },
     mounted() {
         const {
+            id,
+            indexer,
+            getShow,
             setQuality,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows
+            showHideRows,
+            $store,
+            show
         } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer: this.indexer,
+            id: this.id
+        });
+
+        // We need detailed info for the seasons, so let's get it.
+        if (!show || !show.seasons) {
+            getShow({ id, indexer, detailed: true });
+        }
 
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
@@ -537,25 +553,6 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        },
-        show() {
-            const { $store, indexer, id, getShow, getShowById } = this;
-
-            // If we don't have any indexer/id bail early.
-            if (!indexer || !id) {
-                return $store.state.defaults.show;
-            }
-
-            // Try to get an existing show, using getter.
-            const show = getShowById({ indexer, id });
-
-            if (!this.showLoaded && (!show || !show.seasons)) {
-                // Because this is an async operation, we need to prevent it from accessing the getShow action multiple times.
-                this.showLoaded = true;
-                getShow({ id, indexer, detailed: true });
-            }
-
-            return show || $store.state.defaults.show;
         }
     },
     watch: {
