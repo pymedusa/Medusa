@@ -1,7 +1,7 @@
 <script>
 import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { api, apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 
@@ -40,6 +40,7 @@ export default {
     },
     data() {
         return {
+            showLoaded: false,
             jumpToSeason: 'jump'
         };
     },
@@ -48,57 +49,52 @@ export default {
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers
         }),
-        ...mapGetters([
-            'getShowById'
-        ]),
+        ...mapGetters({
+            getShowById: 'getShowById',
+            show: 'getCurrentShow'
+        }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
         id() {
             return this.showId || this.$route.query.seriesid;
         },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            // Not detailed
-            if (!show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: true });
-                return getShowById({ indexer, id });
-            }
-
-            return show;
-        },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
-
-            if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
-                return undefined;
+            if (!show.indexer) {
+                return;
             }
-
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
+
             return `${indexerUrl}${id}`;
         }
     },
     mounted() {
         const {
+            id,
+            indexer,
+            getShow,
             setQuality,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows
+            showHideRows,
+            $store,
+            show
         } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer: this.indexer,
+            id: this.id
+        });
+
+        // We need detailed info for the seasons, so let's get it.
+        if (!show || !show.seasons) {
+            getShow({ id, indexer, detailed: true });
+        }
 
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
@@ -331,6 +327,9 @@ export default {
         });
     },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+        }),
         /**
          * Attaches imdb tool tip,
          * moves summary background and checkbox controls
@@ -351,6 +350,7 @@ export default {
         moveSummaryBackground() {
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
+
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
@@ -358,6 +358,7 @@ export default {
         movecheckboxControlsBackground() {
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;
+
             $('#checkboxControlsBackground').height(height);
             $('#checkboxControlsBackground').offset({ top, left: 0 });
             $('#checkboxControlsBackground').show();
