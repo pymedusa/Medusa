@@ -13,7 +13,15 @@ const state = {
             location: null,
             paused: null,
             qualities: null,
-            release: null,
+            release: {
+                requiredWords: [],
+                ignoredWords: [],
+                blacklist: [],
+                whitelist: [],
+                allgroups: [],
+                requiredWordsExclude: null,
+                ignoredWordsExclude: null
+            },
             scene: null,
             seasonFolders: null,
             sports: null,

@@ -105,7 +105,7 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.tv.series import Series, SeriesIdentifier
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import (
     quote_plus,

@@ -13,7 +13,7 @@ from medusa.classes import ErrorViewer, WarningViewer
 from medusa.issue_submitter import IssueSubmitter
 from medusa.logger import filter_logline, read_loglines
 from medusa.server.web.core.base import PageTemplate, WebRoot
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from six import text_type
 

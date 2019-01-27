@@ -137,6 +137,8 @@ class SeriesHandler(BaseRequestHandler):
             'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
+            'config.release.requiredWordsExclude': BooleanField(series, 'rls_require_exclude'),
+            'config.release.ignoredWordsExclude': BooleanField(series, 'rls_ignore_exclude'),
             'language': StringField(series, 'lang'),
             'config.qualities.allowed': ListField(series, 'qualities_allowed'),
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
