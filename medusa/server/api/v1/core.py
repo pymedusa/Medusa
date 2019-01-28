@@ -1413,13 +1413,13 @@ class CMD_CheckVersion(ApiCall):
         data = {
             'current_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_cur_commit_hash(),
-                'version': check_version.updater.get_cur_version(),
+                'commit': check_version.updater.current_commit_hash,
+                'version': check_version.updater.current_version,
             },
             'latest_version': {
                 'branch': check_version.get_branch(),
-                'commit': check_version.updater.get_newest_commit_hash(),
-                'version': check_version.updater.get_newest_version(),
+                'commit': check_version.updater.newest_commit_hash,
+                'version': check_version.updater.newest_version,
             },
             'commits_offset': check_version.updater.commits_behind,
             'needs_update': needs_update,
