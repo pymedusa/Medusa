@@ -38,7 +38,7 @@ setup(
     install_requires=['tornado==5.1.1', 'six', 'profilehooks', 'contextlib2', ],
     cmdclass={'test': PyTest},
     tests_require=[
-        'flake8>=3.5.0',
+        'flake8>=3.5.0,<3.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
