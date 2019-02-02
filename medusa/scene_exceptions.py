@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import threading
 import time
 from collections import defaultdict
 from os.path import join
@@ -24,8 +23,6 @@ logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
-exceptionLock = threading.Lock()
-
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
