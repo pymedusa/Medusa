@@ -23,13 +23,13 @@ import struct
 import time
 import traceback
 import uuid
-import xml.etree.ElementTree as ET
 import zipfile
 from builtins import chr
 from builtins import hex
 from builtins import str
 from builtins import zip
 from itertools import cycle
+from xml.etree import ElementTree
 
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
@@ -1462,7 +1462,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 
@@ -1476,7 +1476,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 

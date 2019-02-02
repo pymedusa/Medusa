@@ -115,10 +115,10 @@ def notify_snatch(ep_obj, result):
     is_proper = bool(result.proper_tags)
     title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
 
-    if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
-            result.leechers not in (-1, None)]):
-            message = u'{0} with {1} seeders and {2} leechers from {3}'.format(
-                ep_name, result.seeders, result.leechers, result.provider.name)
+    has_peers = result.seeders not in (-1, None) and result.leechers not in (-1, None)
+    if app.SEEDERS_LEECHERS_IN_NOTIFY and has_peers:
+        message = u'{0} with {1} seeders and {2} leechers from {3}'.format(
+            ep_name, result.seeders, result.leechers, result.provider.name)
     else:
         message = u'{0} from {1}'.format(ep_name, result.provider.name)
 

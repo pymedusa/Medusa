@@ -7,7 +7,7 @@ from builtins import object
 
 from medusa import app
 from medusa.helper.common import try_int
-from medusa.indexers.indexer_config import indexerConfig, initConfig
+from medusa.indexers.indexer_config import indexerConfig, init_config
 from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 from six import itervalues
@@ -33,8 +33,8 @@ class indexerApi(object):
         if self.indexer_id:
             return indexerConfig[self.indexer_id]
         # Sort and put the default language first
-        initConfig['valid_languages'].sort(key=lambda i: '\0' if i == app.INDEXER_DEFAULT_LANGUAGE else i)
-        return initConfig
+        init_config['valid_languages'].sort(key=lambda i: '\0' if i == app.INDEXER_DEFAULT_LANGUAGE else i)
+        return init_config
 
     @property
     def name(self):
