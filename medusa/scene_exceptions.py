@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import threading
 import time
 from collections import defaultdict
 from os.path import join
