@@ -132,13 +132,13 @@ class SourceUpdateManager(UpdateManager):
 
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
-            for curCommit in gh.get_commits():
+            for cur_commit in gh.get_commits():
                 if not self._newest_commit_hash:
-                    self._newest_commit_hash = curCommit.sha
+                    self._newest_commit_hash = cur_commit.sha
                     if not self._cur_commit_hash:
                         break
 
-                if curCommit.sha == self._cur_commit_hash:
+                if cur_commit.sha == self._cur_commit_hash:
                     break
 
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100

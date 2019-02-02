@@ -107,7 +107,7 @@ class static_or_instance(object):
 # subclass datetime.datetime to add function to display custom date and time formats
 class sbdatetime(datetime.datetime):
     has_locale = True
-    en_US_norm = locale.normalize('en_US.utf-8')
+    en_us_norm = locale.normalize('en_US.utf-8')
 
     @static_or_instance
     def convert_to_setting(self, dt=None):
@@ -143,7 +143,7 @@ class sbdatetime(datetime.datetime):
         except Exception:
             try:
                 if sbdatetime.has_locale:
-                    locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                    locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
             except Exception:
                 sbdatetime.has_locale = False
 
@@ -251,7 +251,7 @@ class sbdatetime(datetime.datetime):
                     except Exception:
                         try:
                             if sbdatetime.has_locale:
-                                locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                                locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
                         except Exception:
                             sbdatetime.has_locale = False
 
@@ -273,7 +273,7 @@ class sbdatetime(datetime.datetime):
                 except Exception:
                     try:
                         if sbdatetime.has_locale:
-                            locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                            locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
                     except Exception:
                         sbdatetime.has_locale = False
 
