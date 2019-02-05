@@ -1348,10 +1348,10 @@ autoprefixer@^9.0.0:
     postcss "^7.0.5"
     postcss-value-parser "^3.3.1"
 
-ava@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/ava/-/ava-1.2.0.tgz#dbd087623199f985fcf2c2a52f83c402cc9ab628"
-  integrity sha512-lLfHKB2CRTKdo6OJ2HQ92w5c7EE+Fa1q3XfVbxiCQCHsraypbwAJS9X1zKHtY7yr+uqjnJba4l+VbtU5/9I7yA==
+ava@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ava/-/ava-1.2.1.tgz#c9b55fda5663fbfad88df37d5cdac56f29347c1b"
+  integrity sha512-EHqbPGdd8aNvlvRNL7liD1J9Auf9kByHj5Zi7zF7Z5ukn2ZStZgVBf7LSqirKIOWScB3XZzFQbO59SnTvzD5kA==
   dependencies:
     "@ava/babel-preset-stage-4" "^2.0.0"
     "@ava/babel-preset-transform-test-files" "^4.0.1"
@@ -1490,15 +1490,7 @@ babel-plugin-istanbul@5.1.0:
     istanbul-lib-instrument "^3.0.0"
     test-exclude "^5.0.0"
 
-babel-polyfill@6.26.0:
-  version "6.26.0"
-  resolved "https://registry.yarnpkg.com/babel-polyfill/-/babel-polyfill-6.26.0.tgz#379937abc67d7895970adc621f284cd966cf2153"
-  dependencies:
-    babel-runtime "^6.26.0"
-    core-js "^2.5.0"
-    regenerator-runtime "^0.10.5"
-
-babel-runtime@^6.26.0, babel-runtime@^6.9.2:
+babel-runtime@^6.9.2:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
   dependencies:
@@ -2579,10 +2571,6 @@ core-js@2.5.3:
 core-js@^2.0.0, core-js@^2.4.0, core-js@^2.5.7:
   version "2.5.7"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.7.tgz#f972608ff0cead68b841a16a932d0b183791814e"
-
-core-js@^2.5.0:
-  version "2.6.3"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.3.tgz#4b70938bdffdaf64931e66e2db158f0892289c49"
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -8521,10 +8509,6 @@ regenerate-unicode-properties@^7.0.0:
 regenerate@^1.2.1, regenerate@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/regenerate/-/regenerate-1.4.0.tgz#4a856ec4b56e4077c557589cae85e7a4c8869a11"
-
-regenerator-runtime@^0.10.5:
-  version "0.10.5"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#336c3efc1220adcedda2c9fab67b5a7955a33658"
 
 regenerator-runtime@^0.11.0:
   version "0.11.1"
