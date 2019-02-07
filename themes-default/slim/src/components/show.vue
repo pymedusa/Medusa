@@ -47,11 +47,15 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers
+            indexerConfig: state => state.config.indexers.config.indexers,
+            qualities: state => state.qualities,
+            search: state => state.search
         }),
         ...mapGetters({
             getShowById: 'getShowById',
-            show: 'getCurrentShow'
+            show: 'getCurrentShow',
+            getPreset: 'getPreset',
+            combineQualities: 'combineQualities'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -68,6 +72,31 @@ export default {
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
             return `${indexerUrl}${id}`;
+        },
+        showGenres() {
+            const { show, dedupeGenres } = this;
+            const { imdbInfo } = show; 
+            const { genres } = imdbInfo;
+            let result = [];
+
+            if (genres) {
+                result = dedupeGenres(genres.split('|'));
+            }
+            return result;
+        },
+        preferredWords() {
+            const { preferred } = this.search.filters;
+            if (preferred.length > 0) {
+                return preferred;
+            }
+            return [];
+        },
+        undesiredWords() {
+            const { undesired } = this.search.filters;
+            if (undesired.length > 0) {
+                return undesired;
+            }
+            return [];
         }
     },
     mounted() {
@@ -554,6 +583,17 @@ export default {
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
         }
+        // getPreset(quality) {
+        //     return Object.keys(this.qualities.presets)
+        //         .filter(key => { return this.qualities.presets[key] === quality })
+        //         .map(key => {
+        //             return {[key]: this.qualities.presets[key] } 
+        //         });
+        // },
+        // combineQualities(qualities) {
+        //     const reducer = (accumulator, currentValue) => accumulator | currentValue;
+        //     return this.show.config.qualities.allowed.reduce(reducer, 0);
+        // }
     },
     watch: {
         jumpToSeason(season) {
@@ -574,6 +614,12 @@ export default {
                 this.jumpToSeason = 'jump';
             }
         }
+        // qualities: {
+        //     handler: function (val, oldVal) {
+        //         debugger;
+        //     },
+        //     deep: true
+        // }
     }
 };
 </script>

@@ -39,9 +39,7 @@
                     <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                         <option value="jump">Jump to Season</option>
                         <option v-for="season in show.seasons" :value="'#season-' + season[0].season" :data-season="season[0].season">
-                        <%text>
-                            {{ season[0].season === 0 ? 'Specials' : `Season ${season[0].season}` }}
-                        </%text>
+                            {{ season[0].season === 0 ? 'Specials' : 'Season ' + season[0].season }}
                         </option>
                     </select>
                     <template v-else-if="show.seasons.length >= 1">
@@ -58,13 +56,11 @@
     </div> <!-- end show title -->
 </div> <!-- end row showtitle-->
 
-% if show_message:
-<div class="row">
-    <div class="alert alert-info">
-        ${show_message}
+<div v-if="show.showQueueStatus && show.showQueueStatus.filter(x => x.active === true)" class="row">
+    <div v-for="queueItem of show.showQueueStatus" v-if="queueItem.active" class="alert alert-info">
+        {{ queueItem.message }}
     </div>
 </div>
-% endif
 
 <div id="row-show-summary" class="row">
     <div id="col-show-summary" class="col-md-12">
@@ -95,11 +91,11 @@
                     </template>
                     <template v-else>
                         <img v-for="country in show.country_codes" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                        <span v-if="show.imdbInfo.year">
+                            ({{ show.imdbInfo.year }}) - 
+                        </span>
                         <span>
-                        % if show.imdb_info.get('year'):
-                            (${show.imdb_info['year']}) -
-                        % endif
-                            ${show.imdb_info.get('runtimes') or show.runtime} minutes
+                            {{ show.imdbInfo.runtimes ? show.imdbInfo.runtimes : show.runtime }} minutes
                         </span>
                         <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
@@ -111,23 +107,18 @@
                     <app-link v-if="showIndexerUrl" :href="showIndexerUrl" :title="showIndexerUrl">
                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
                     </app-link>
-                 % if xem_numbering or xem_absolute_numbering:
-                     <app-link href="http://thexem.de/search?q=${show.name | h}" title="http://thexem.de/search?q-${show.name | h}">
-                         <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
-                     </app-link>
-                 % endif
+
+                    <app-link v-if="show.xemNumbering" :href="'http://thexem.de/search?q=' + show.name" :title="'http://thexem.de/search?q-' + show.name">
+                        <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                    </app-link>
+
                     <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                  </div>
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
-                         %if show.genre:
-                            <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv.'"><li>{{ genre }}</li></app-link>
-                         % elif show.imdb_info.get('genres'):
-                             % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi', 'Science-Fiction').split('|'):
-                                 <app-link href="https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${imdbgenre.lower()}" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></app-link>
-                             % endfor
-                         % endif
-                     </ul>
+                        <app-link v-if="show.genres" v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
+                        <app-link v-if="!show.genres" v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>                     
+                    </ul>
                  </div>
             </div>
 
@@ -142,56 +133,44 @@
                                 </td>
                             </tr>
 
-                            <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
-                                <tr><td class="showLegend">Quality: </td><td>
-                            % if show.quality in qualityPresets:
-                                <quality-pill :quality="${show.quality}"></quality-pill>
-                            % else:
-                                % if allowed_qualities:
-                                    <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
-                                    <i>Allowed:</i>
-                                    <template v-for="(curQuality, $index) in ${allowed_as_json}">
-                                        <template v-if="$index > 0">&comma;</template>
-                                        <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
-                                    </template>
-                                    ${'<br>' if preferred_qualities else ''}
-                                % endif
-                                % if preferred_qualities:
-                                    <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
-                                    <i>Preferred:</i>
-                                    <template v-for="(curQuality, $index) in ${preferred_as_json}">
-                                        <template v-if="$index > 0">&comma;</template>
-                                        <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
-                                    </template>
-                                % endif
-                            % endif
-                                </td></tr>
-                                <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on {{ show.network }}</td></tr>
-                                <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
-                                <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
-                                <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
-                                <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                            % if showLoc[1]:
-                                <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
-                            % else:
-                                <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
-                            % endif
-                            % if all_scene_exceptions:
-                                <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
-                            % endif
-                            % if show.show_words().required_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'required'}">${', '.join(show.show_words().required_words)}</span></td></tr>
-                            % endif
-                            % if show.show_words().ignored_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'ignored'}">${', '.join(show.show_words().ignored_words)}</span></td></tr>
-                            % endif
-                            % if show.show_words().preferred_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'preferred'}">${', '.join(show.show_words().preferred_words)}</span></td></tr>
-                            % endif
-                            % if show.show_words().undesired_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'undesired'}">${', '.join(show.show_words().undesired_words)}</span></td></tr>
-                            % endif
-                            % if bwl and bwl.whitelist:
+                            <tr v-if="getPreset(combineQualities(show.config.qualities.allowed)).length > 0">
+                            <td class="showLegend">Quality: </td><td>
+                            <quality-pill :quality="combineQualities(show.config.qualities.allowed)"></quality-pill>
+                            </td></tr>
+
+                            <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && show.config.qualities.allowed"><td class="showLegend">Allowed: </td>
+                            <td class="showLegend">Quality allowed:</td><td>
+                                <template v-for="(curQuality, $index) in show.config.qualities.allowed">
+                                    <template v-if="$index > 0">&comma;</template>
+                                    <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
+                                </template>
+                            </td></tr>
+
+                            <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && show.config.qualities.preferred"><td class="showLegend">Preferred: </td>
+                                <td class="showLegend">Quality allowed:</td><td>
+                                    <template v-for="(curQuality, $index) in show.config.qualities.preferred">
+                                    <template v-if="$index > 0">&comma;</template>
+                                    <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
+                                </template>
+                            </td></tr>
+
+                            <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on {{ show.network }}</td></tr>
+                            <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
+                            <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
+                            <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
+                            <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
+                            <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{'' ? how.config.locationValid : ' (Missing)'}}</td></tr>
+                            
+                            <tr v-if="show.config.aliases"><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>{{show.config.aliases.join(',')}}</td></tr>
+                            
+                            <tr v-if="show.config.release.requiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">{{show.config.release.requiredWords.join(',')}}</span></td></tr>
+                            <tr v-if="show.config.release.ignoredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">{{show.config.release.ignoredWords.join(',')}}</span></td></tr>
+                            
+                            <tr v-if="preferredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">{{preferredWords.join(',')}}</span></td></tr>
+                            <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: !$route.path.includes('displayShow')}">{{undesiredWords.join(',')}}</span></td></tr>
+
+
+                                % if bwl and bwl.whitelist:
                                 <tr>
                                     <td class="showLegend">Wanted Group${"s" if len(bwl.whitelist) > 1 else ""}:</td>
                                     <td>${', '.join(bwl.whitelist)}</td>

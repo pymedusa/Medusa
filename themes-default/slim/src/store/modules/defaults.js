@@ -11,8 +11,12 @@ const state = {
             defaultEpisodeStatus: null,
             dvdOrder: null,
             location: null,
+            locationValid: null,
             paused: null,
-            qualities: null,
+            qualities: {
+                allowed: [],
+                preferred: []
+            },
             release: {
                 requiredWords: [],
                 ignoredWords: [],
@@ -30,12 +34,13 @@ const state = {
         },
         countries: null,
         country_codes: null, // eslint-disable-line camelcase
-        genres: null,
+        genres: [],
         id: {
             tvdb: null,
             slug: null
         },
         indexer: null,
+        imdbInfo: {},
         language: null,
         network: null,
         nextAirDate: null,
@@ -51,7 +56,8 @@ const state = {
         status: null,
         title: null,
         type: null,
-        year: {}
+        year: {},
+        showQueueStatus: []
     }
 };
 
