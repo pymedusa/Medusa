@@ -1,4 +1,4 @@
-FROM lsiobase/alpine.python:3.8
+FROM lsiobase/alpine.python:3.9
 MAINTAINER a10kiloham
 
 # set version label
