@@ -944,10 +944,8 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
-            show=series_obj, sql_results=sql_results, season_results=season_results,
-            bwl=bwl, ep_counts=ep_counts,
-            ep_cats=ep_cats, all_scene_exceptions=' | '.join(series_obj.exceptions),
+            submenu=submenu[::-1], show_message=show_message,
+            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),

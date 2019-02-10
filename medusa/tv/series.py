@@ -16,10 +16,9 @@ import warnings
 from builtins import map
 from builtins import str
 from collections import (
-    OrderedDict, namedtuple
+    OrderedDict, defaultdict, namedtuple
 )
 from itertools import groupby
-
 from medusa import (
     app,
     db,
@@ -2081,6 +2080,7 @@ class Series(TV):
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['imdbInfo'] = self.imdb_info
@@ -2101,11 +2101,12 @@ class Series(TV):
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
-        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
+        data['countryCodes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
         data['config']['location'] = self.location
         data['config']['locationValid'] = self.is_location_valid()
+        data['config']['locationSize'] = helpers.get_size(self.location)
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
@@ -2147,9 +2148,44 @@ class Series(TV):
                     )
 
         if detailed:
+            # data['statusSummary'] = {
+            #     'overview': {
+            #         str(Overview.SKIPPED): 0,
+            #         str(Overview.WANTED): 0,
+            #         str(Overview.QUAL): 0,
+            #         str(Overview.GOOD): 0,
+            #         str(Overview.UNAIRED): 0,
+            #         str(Overview.SNATCHED): 0,
+            #         str(Overview.SNATCHED_PROPER): 0,
+            #         str(Overview.SNATCHED_BEST): 0
+            #     },
+            #     'categories': {}
+            # }
+            # episodes = self.get_all_episodes()
+            # data['seasons'] = []
+            #
+            # collect_seasons = OrderedDict()
+            #
+            # for episode in episodes:
+            #     cur_ep_cat = self.get_overview(episode.status, episode.quality,
+            #                                    manually_searched=episode.manually_searched)
+            #     if cur_ep_cat:
+            #         data['statusSummary']['categories']['s{season}e{episode}'.format(
+            #             season=episode.season,
+            #             episode=episode.episode
+            #         )] = cur_ep_cat
+            #         data['statusSummary']['overview'][str(cur_ep_cat)] += 1
+            #
+            #     if episode.season not in collect_seasons:
+            #         collect_seasons[episode.season] = []
+            #     collect_seasons[str(episode.season)].append(episode.to_json())
+            #
+            # for _, collected_episodes in viewitems(collect_seasons):
+            #     data['seasons'].append(collected_episodes)
             episodes = self.get_all_episodes()
             data['seasons'] = [list(v) for _, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+
             data['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:

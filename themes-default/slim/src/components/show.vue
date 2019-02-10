@@ -5,6 +5,8 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { api, apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 
+const CountryLanguage = require('country-language');
+
 export default {
     name: 'show',
     template: '#show-template',
@@ -48,6 +50,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
+            failedDownlaods: state => state.config.failedDownloads,
             qualities: state => state.qualities,
             search: state => state.search
         }),
@@ -97,6 +100,61 @@ export default {
                 return undesired;
             }
             return [];
+        },
+        episodeSummary() {
+            const { show } = this;
+            const { seasons } = show;
+            let summary = {
+                Skipped: 0,
+                Wanted: 0,
+                Allowed: 0,
+                Preferred: 0,
+                Unaired: 0,
+                Snatched: 0,
+                'Snatched (Proper)': 0,
+                'Snatched (Best)': 0,
+                Unset: 0,
+                Archived: 0
+            };
+            seasons.forEach((episodes, index) => {
+                episodes.forEach(episode => {
+                    summary[episode.status] += 1;
+                });
+            });
+            return summary;
+        },
+        changeStatusOptions() {
+            const { failedDownlaods } = this;
+            
+            let defaultOptions = [
+                { text: 'Change status to:', value: null },
+                { text: 'Wanted', value: 3 },
+                { text: 'Skipped', value: 5 },
+                { text: 'Ignored', value: 7 },
+                { text: 'Downloaded', value: 4 },
+                { text: 'Archived', value: 6 }         
+            ];
+            
+            if (failedDownlaods.enabled) {
+                defaultOptions.push({ text: 'Failed', value: 11 });
+            }
+
+            return defaultOptions;
+        },
+        changeQualityOptions() {
+            const { qualities } = this;
+            
+            let defaultOptions = [
+                { text: 'Change quality to:', value: null }
+            ];
+            
+            if (qualities.strings) {
+                Object.keys(qualities.strings.values).map(key => {
+                    defaultOptions.push({text: qualities.strings.values[key], value: key});
+                });
+            }
+
+            return defaultOptions;
         }
     },
     mounted() {
@@ -582,18 +640,28 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
+        },
+        humanFileSize(bytes, decimal) {
+            if (bytes === undefined) {
+                return;
+            }
+            const thresh = decimal ? 1000 : 1024;
+            if (Math.abs(bytes) < thresh) {
+                return bytes + ' B';
+            }
+            const units = decimal
+                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+            let u = -1;
+            do {
+                bytes /= thresh;
+                ++u;
+            } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+            return `${bytes.toFixed(1)} ${units[u]}`;
+        },
+        getCountryISO2ToISO3(country) {
+            return CountryLanguage.getLanguage(country).iso639_2en;
         }
-        // getPreset(quality) {
-        //     return Object.keys(this.qualities.presets)
-        //         .filter(key => { return this.qualities.presets[key] === quality })
-        //         .map(key => {
-        //             return {[key]: this.qualities.presets[key] } 
-        //         });
-        // },
-        // combineQualities(qualities) {
-        //     const reducer = (accumulator, currentValue) => accumulator | currentValue;
-        //     return this.show.config.qualities.allowed.reduce(reducer, 0);
-        // }
     },
     watch: {
         jumpToSeason(season) {

@@ -1,6 +1,7 @@
 const state = {
     show: {
         airs: null,
+        airsFormatValid: null,
         akas: null,
         cache: null,
         classification: null,
