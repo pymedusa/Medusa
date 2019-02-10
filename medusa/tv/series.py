@@ -2148,40 +2148,6 @@ class Series(TV):
                     )
 
         if detailed:
-            # data['statusSummary'] = {
-            #     'overview': {
-            #         str(Overview.SKIPPED): 0,
-            #         str(Overview.WANTED): 0,
-            #         str(Overview.QUAL): 0,
-            #         str(Overview.GOOD): 0,
-            #         str(Overview.UNAIRED): 0,
-            #         str(Overview.SNATCHED): 0,
-            #         str(Overview.SNATCHED_PROPER): 0,
-            #         str(Overview.SNATCHED_BEST): 0
-            #     },
-            #     'categories': {}
-            # }
-            # episodes = self.get_all_episodes()
-            # data['seasons'] = []
-            #
-            # collect_seasons = OrderedDict()
-            #
-            # for episode in episodes:
-            #     cur_ep_cat = self.get_overview(episode.status, episode.quality,
-            #                                    manually_searched=episode.manually_searched)
-            #     if cur_ep_cat:
-            #         data['statusSummary']['categories']['s{season}e{episode}'.format(
-            #             season=episode.season,
-            #             episode=episode.episode
-            #         )] = cur_ep_cat
-            #         data['statusSummary']['overview'][str(cur_ep_cat)] += 1
-            #
-            #     if episode.season not in collect_seasons:
-            #         collect_seasons[episode.season] = []
-            #     collect_seasons[str(episode.season)].append(episode.to_json())
-            #
-            # for _, collected_episodes in viewitems(collect_seasons):
-            #     data['seasons'].append(collected_episodes)
             episodes = self.get_all_episodes()
             data['seasons'] = [list(v) for _, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
