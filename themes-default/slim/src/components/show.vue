@@ -682,12 +682,6 @@ export default {
                 this.jumpToSeason = 'jump';
             }
         }
-        // qualities: {
-        //     handler: function (val, oldVal) {
-        //         debugger;
-        //     },
-        //     deep: true
-        // }
     }
 };
 </script>
