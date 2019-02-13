@@ -23,7 +23,7 @@
                 </div>
                 <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
-                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ config.layout.show.specials ? 'Hide' : 'Show' }}</a>
+                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
@@ -287,6 +287,7 @@ export default {
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
             failedDownloads: state => state.config.failedDownloads,
+            displaySpecials: state => state.config.layout.show.specials,
             qualities: state => state.qualities,
             search: state => state.search
         }),
@@ -488,12 +489,18 @@ export default {
             });
         },
         toggleSpecials() {
-            this.$store.dispatch('setConfig', {
-                layout: {
-                    show: {
-                        specials: !this.config.layout.show.specials
+            const config = {
+                section: 'main',
+                config: {
+                    layout: {
+                        show: {
+                            specials: !this.displaySpecials
+                        }
                     }
                 }
+            };
+            this.$store.dispatch('setConfig', config).then(() => {
+                window.location.reload();
             });
         },
         reverse(array) {
