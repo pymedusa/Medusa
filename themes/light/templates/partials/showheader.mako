@@ -94,7 +94,7 @@
                     <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
                         <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </app-link>
-                    <app-link v-if="showIndexerUrl" :href="showIndexerUrl" :title="showIndexerUrl">
+                    <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
                         <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
                     </app-link>
 
