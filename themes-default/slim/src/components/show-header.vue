@@ -48,8 +48,8 @@
             </div> <!-- end show title -->
         </div> <!-- end row showtitle-->
 
-        <div v-if="activeShowQueueStatuses.length > 0" class="row">
-            <div v-for="queueItem of activeShowQueueStatuses" :key="queueItem.action" class="alert alert-info">
+        <div v-for="queueItem of activeShowQueueStatuses" :key="queueItem.action" class="row">
+            <div class="alert alert-info">
                 {{ queueItem.message }}
             </div>
         </div>
