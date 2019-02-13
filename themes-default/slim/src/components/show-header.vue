@@ -39,8 +39,7 @@
                                 <template v-for="(season, $index) in reverse(show.seasons)">
                                     <app-link :href="'#season-' + season[0].season" :key="`jumpToSeason-${season[0].season}`">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
                                     <slot> </slot>
-                                    <!-- eslint-disable-next-line vue/valid-v-for -->
-                                    <span v-if="$index !== (show.seasons.length - 1)" :key="'separator'" class="separator">| </span>
+                                    <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
