@@ -123,7 +123,7 @@
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
-                                            <truncate @toggle="reflowLayout()" :length="250" clamp="show more..." less="show less..." :text="show.plot"></truncate>
+                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot"></truncate>
                                         </td>
                                     </tr>
 

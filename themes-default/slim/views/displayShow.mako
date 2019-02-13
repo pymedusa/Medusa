@@ -14,7 +14,7 @@
     <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
     <input type="hidden" id="series-slug" value="${show.slug}" />
 
-    <show-header :show-id="id" :show-indexer="indexer"></show-header>
+    <show-header @reflow="reflowLayout" :show-id="id" :show-indexer="indexer"></show-header>
 
     <div class="row">
         <div class="col-md-12 horizontal-scroll" style="top: 12px">
