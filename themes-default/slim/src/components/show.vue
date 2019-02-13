@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { api, apiRoute } from '../api';
+import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import ShowHeader from './show-header.vue';
 
@@ -65,7 +65,6 @@ export default {
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows,
             $store,
             show
         } = this;
