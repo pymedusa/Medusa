@@ -1,3 +1,5 @@
+<template>
+    <div class="show-header-container">
 <div class="row">
     ## @TODO: Remove data attributes
     ## @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436
@@ -103,13 +105,13 @@
                     </app-link>
 
                     <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
-                 </div>
-                 <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                     <ul class="tags">
+                </div>
+                <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <ul class="tags">
                         <app-link v-if="show.genres" v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
                         <app-link v-if="!show.genres" v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
                     </ul>
-                 </div>
+                </div>
             </div>
 
             <div class="row">
@@ -195,7 +197,7 @@
                             <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder"></state-switch></td></tr>
                             <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene"></state-switch></td></tr>
                         </table>
-                     </div> <!-- end of show-status -->
+                    </div> <!-- end of show-status -->
                 </div> <!-- end of summary -->
             </div> <!-- end of row -->
         </div> <!-- show-info-container -->
@@ -226,7 +228,7 @@
 
                     <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                         <option v-for="option in changeQualityOptions" :value="option.value">
-                                {{option.text}}
+                            {{option.text}}
                         </option>
                     </select>
                     <input type="hidden" id="series-slug" :value="show.id.slug" />
@@ -239,3 +241,41 @@
         <div v-else></div>
     </div> <!-- end of col -->
 </div> <!-- end of row -->
+    </div>
+</template>
+
+<script>
+import Truncate from 'vue-truncate-collapsed';
+import { getLanguage } from 'country-language';
+import { mapState, mapGetters, mapActions } from 'vuex';
+import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
+
+export default {
+    name: 'show-header',
+    components: {
+        AppLink,
+        Asset,
+        QualityPill,
+        StateSwitch,
+        Truncate
+    },
+    props: {
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
+        },
+        /**
+         * Show indexer
+         */
+        showIndexer: {
+            type: String
+        }
+    },
+};
+</script>
+
+<style>
+
+</style>
