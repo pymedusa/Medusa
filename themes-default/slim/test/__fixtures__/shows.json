@@ -60,7 +60,7 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [
+            "countryCodes": [
                 "gb"
             ],
             "runtime": 60,
@@ -125,7 +125,7 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [],
+            "countryCodes": [],
             "runtime": 25,
             "type": "Scripted",
             "id": {
@@ -194,7 +194,7 @@
                 "subtitlesEnabled": true,
                 "anime": false
             },
-            "country_codes": [
+            "countryCodes": [
                 "gb"
             ],
             "runtime": 25,

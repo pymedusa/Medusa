@@ -34,7 +34,7 @@ const state = {
             airdateOffset: null
         },
         countries: null,
-        country_codes: null, // eslint-disable-line camelcase
+        countryCodes: null,
         genres: [],
         id: {
             tvdb: null,

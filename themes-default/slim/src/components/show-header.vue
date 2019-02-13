@@ -30,16 +30,17 @@
                         <span>
                             <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :value="'#season-' + season[0].season" :data-season="season[0].season">
+                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season[0].season" :value="'#season-' + season[0].season" :data-season="season[0].season">
                                     {{ season[0].season === 0 ? 'Specials' : 'Season ' + season[0].season }}
                                 </option>
                             </select>
                             <template v-else-if="show.seasons.length >= 1">
                                 Season:
                                 <template v-for="(season, $index) in reverse(show.seasons)">
-                                    <app-link :href="'#season-' + season[0].season">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
+                                    <app-link :href="'#season-' + season[0].season" :key="`jumpToSeason-${season[0].season}`">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
                                     <slot> </slot>
-                                    <span v-if="$index !== (show.seasons.length - 1)" class="separator">| </span>
+                                    <!-- eslint-disable-next-line vue/valid-v-for -->
+                                    <span v-if="$index !== (show.seasons.length - 1)" :key="'separator'" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -82,9 +83,9 @@
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                             </template>
                             <template v-else>
-                                <img v-for="country in show.country_codes" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
                                 <span v-if="show.imdbInfo.year">
-                                    ({{ show.imdbInfo.year }}) - 
+                                    ({{ show.imdbInfo.year }}) -
                                 </span>
                                 <span>
                                     {{ show.imdbInfo.runtimes || show.runtime }} minutes
@@ -165,7 +166,6 @@
                                     <tr v-if="preferredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">{{preferredWords.join(',')}}</span></td></tr>
                                     <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: !$route.path.includes('displayShow')}">{{undesiredWords.join(',')}}</span></td></tr>
 
-
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
                                         <td>{{show.config.release.whitelist.join(',')}}</td>
@@ -223,13 +223,13 @@
                         <div class="pull-lg-right top-5">
 
                             <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option v-for="option in changeStatusOptions" :value="option.value">
+                                <option v-for="option in changeStatusOptions" :key="option.value" :value="option.value">
                                     {{option.text}}
                                 </option>
                             </select>
 
                             <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option v-for="option in changeQualityOptions" :value="option.value">
+                                <option v-for="option in changeQualityOptions" :key="option.value" :value="option.value">
                                     {{option.text}}
                                 </option>
                             </select>
@@ -252,6 +252,7 @@ import { getLanguage } from 'country-language';
 import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
+import { api } from '../api';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -353,7 +354,7 @@ export default {
         episodeSummary() {
             const { show } = this;
             const { seasons } = show;
-            let summary = {
+            const summary = {
                 Skipped: 0,
                 Wanted: 0,
                 Allowed: 0,
@@ -365,7 +366,7 @@ export default {
                 Unset: 0,
                 Archived: 0
             };
-            seasons.forEach((episodes, index) => {
+            seasons.forEach(episodes => {
                 episodes.forEach(episode => {
                     summary[episode.status] += 1;
                 });
@@ -375,7 +376,7 @@ export default {
         changeStatusOptions() {
             const { failedDownloads } = this;
 
-            let defaultOptions = [
+            const defaultOptions = [
                 { text: 'Change status to:', value: null },
                 { text: 'Wanted', value: 3 },
                 { text: 'Skipped', value: 5 },
@@ -393,13 +394,16 @@ export default {
         changeQualityOptions() {
             const { qualities } = this;
 
-            let defaultOptions = [
+            const defaultOptions = [
                 { text: 'Change quality to:', value: null }
             ];
 
             if (qualities.strings) {
-                Object.keys(qualities.strings.values).map(key => {
-                    defaultOptions.push({text: qualities.strings.values[key], value: key});
+                Object.keys(qualities.strings.values).forEach(key => {
+                    defaultOptions.push({
+                        text: qualities.strings.values[key],
+                        value: key
+                    });
                 });
             }
 
@@ -482,7 +486,7 @@ export default {
                 element.checked = true;
             });
         },
-        clearEpisodeSelectionClicked(event) {
+        clearEpisodeSelectionClicked() {
             // Clears all visible episode checkboxes and the season selectors
             [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
                 element.checked = false;
@@ -517,14 +521,14 @@ export default {
             if (Math.abs(bytes) < thresh) {
                 return bytes + ' B';
             }
-            const units = decimal
-                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
-                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+            const units = decimal ?
+                ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] :
+                ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
             let u = -1;
             do {
                 bytes /= thresh;
                 ++u;
-            } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+            } while (Math.abs(bytes) >= thresh && u < units.length - 1);
             return `${bytes.toFixed(1)} ${units[u]}`;
         },
         getCountryISO2ToISO3(country) {
