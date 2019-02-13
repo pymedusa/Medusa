@@ -85,7 +85,7 @@
                             ({{ show.imdbInfo.year }}) - 
                         </span>
                         <span>
-                            {{ show.imdbInfo.runtimes ? show.imdbInfo.runtimes : show.runtime }} minutes
+                            {{ show.imdbInfo.runtimes || show.runtime }} minutes
                         </span>
                         <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
@@ -151,9 +151,9 @@
                             <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font></td></tr>
                             <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
                             <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                            <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{'' ? how.config.locationValid : ' (Missing)'}}</td></tr>
+                            <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
-                            <tr v-if="show.config.aliases"><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>{{show.config.aliases.join(',')}}</td></tr>
+                            <tr v-if="show.config.aliases.length > 0"><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>{{show.config.aliases.join(',')}}</td></tr>
 
                             <tr v-if="show.config.release.requiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">{{show.config.release.requiredWords.join(',')}}</span></td></tr>
                             <tr v-if="show.config.release.ignoredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">{{show.config.release.ignoredWords.join(',')}}</span></td></tr>

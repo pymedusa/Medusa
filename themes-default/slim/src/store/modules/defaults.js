@@ -7,7 +7,7 @@ const state = {
         classification: null,
         config: {
             airByDate: null,
-            aliases: null,
+            aliases: [],
             anime: null,
             defaultEpisodeStatus: null,
             dvdOrder: null,
