@@ -1,11 +1,10 @@
 <script>
+import { getLanguage } from 'country-language';
 import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { api, apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
-
-const CountryLanguage = require('country-language');
 
 export default {
     name: 'show',
@@ -50,7 +49,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownlaods: state => state.config.failedDownloads,
+            failedDownloads: state => state.config.failedDownloads,
             qualities: state => state.qualities,
             search: state => state.search
         }),
@@ -124,7 +123,7 @@ export default {
             return summary;
         },
         changeStatusOptions() {
-            const { failedDownlaods } = this;
+            const { failedDownloads } = this;
 
             let defaultOptions = [
                 { text: 'Change status to:', value: null },
@@ -135,7 +134,7 @@ export default {
                 { text: 'Archived', value: 6 }
             ];
 
-            if (failedDownlaods.enabled) {
+            if (failedDownloads.enabled) {
                 defaultOptions.push({ text: 'Failed', value: 11 });
             }
 
@@ -660,7 +659,7 @@ export default {
             return `${bytes.toFixed(1)} ${units[u]}`;
         },
         getCountryISO2ToISO3(country) {
-            return CountryLanguage.getLanguage(country).iso639_2en;
+            return getLanguage(country).iso639_2en;
         }
     },
     watch: {
