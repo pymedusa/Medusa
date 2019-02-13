@@ -107,7 +107,7 @@
                  <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                      <ul class="tags">
                         <app-link v-if="show.genres" v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
-                        <app-link v-if="!show.genres" v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>                     
+                        <app-link v-if="!show.genres" v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
                     </ul>
                  </div>
             </div>
@@ -152,12 +152,12 @@
                             <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
                             <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
                             <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{'' ? how.config.locationValid : ' (Missing)'}}</td></tr>
-                            
+
                             <tr v-if="show.config.aliases"><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>{{show.config.aliases.join(',')}}</td></tr>
-                            
+
                             <tr v-if="show.config.release.requiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">{{show.config.release.requiredWords.join(',')}}</span></td></tr>
                             <tr v-if="show.config.release.ignoredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">{{show.config.release.ignoredWords.join(',')}}</span></td></tr>
-                            
+
                             <tr v-if="preferredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">{{preferredWords.join(',')}}</span></td></tr>
                             <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: !$route.path.includes('displayShow')}">{{undesiredWords.join(',')}}</span></td></tr>
 
@@ -166,12 +166,12 @@
                                 <td class="showLegend">Wanted Groups:</td>
                                 <td>{{show.config.release.whitelist.join(',')}}</td>
                             </tr>
-                            
+
                             <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
                                 <td class="showLegend">Unwanted Groups:</td>
                                 <td>{{show.config.release.blacklist.join(',')}}</td>
                             </tr>
-                            
+
                             <tr v-if="show.config.airdateOffset !== 0">
                                 <td class="showLegend">Daily search offset:</td>
                                 <td>{{show.config.airdateOffset}} hours</td>
@@ -207,7 +207,7 @@
         <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
                 <div id="key-padding" class="pull-left top-5">
-                    
+
                     <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
                     <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
                     <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
@@ -223,7 +223,7 @@
                             {{option.text}}
                         </option>
                     </select>
-                    
+
                     <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                         <option v-for="option in changeQualityOptions" :value="option.value">
                                 {{option.text}}

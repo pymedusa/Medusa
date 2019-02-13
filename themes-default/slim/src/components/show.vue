@@ -78,7 +78,7 @@ export default {
         },
         showGenres() {
             const { show, dedupeGenres } = this;
-            const { imdbInfo } = show; 
+            const { imdbInfo } = show;
             const { genres } = imdbInfo;
             let result = [];
 
@@ -125,16 +125,16 @@ export default {
         },
         changeStatusOptions() {
             const { failedDownlaods } = this;
-            
+
             let defaultOptions = [
                 { text: 'Change status to:', value: null },
                 { text: 'Wanted', value: 3 },
                 { text: 'Skipped', value: 5 },
                 { text: 'Ignored', value: 7 },
                 { text: 'Downloaded', value: 4 },
-                { text: 'Archived', value: 6 }         
+                { text: 'Archived', value: 6 }
             ];
-            
+
             if (failedDownlaods.enabled) {
                 defaultOptions.push({ text: 'Failed', value: 11 });
             }
@@ -143,11 +143,11 @@ export default {
         },
         changeQualityOptions() {
             const { qualities } = this;
-            
+
             let defaultOptions = [
                 { text: 'Change quality to:', value: null }
             ];
-            
+
             if (qualities.strings) {
                 Object.keys(qualities.strings.values).map(key => {
                     defaultOptions.push({text: qualities.strings.values[key], value: key});
