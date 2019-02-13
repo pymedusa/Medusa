@@ -1,13 +1,14 @@
 <script>
-import { getLanguage } from 'country-language';
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink } from './helpers';
+import ShowHeader from './show-header.vue';
 
 export default {
     name: 'snatchSelection',
     template: '#snatch-selection-template',
     components: {
-        AppLink
+        AppLink,
+        ShowHeader
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -23,140 +24,34 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownloads: state => state.config.failedDownloads,
-            qualities: state => state.qualities,
-            search: state => state.search
+            shows: state => state.shows.shows
         }),
         ...mapGetters({
             getShowById: 'getShowById',
-            show: 'getCurrentShow',
-            getPreset: 'getPreset',
-            combineQualities: 'combineQualities'
+            show: 'getCurrentShow'
         }),
         indexer() {
             return this.$route.query.indexername;
         },
         id() {
-            return this.$route.query.seriesid;
+            return Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.$route.query.season;
+            return Number(this.$route.query.season) || undefined;
         },
         episode() {
-            return this.$route.query.episode;
-        },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            return show;
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-
-            if (!show.indexer || !indexerConfig) {
-                return undefined;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-            return `${indexerUrl}${id}`;
-        },
-        showGenres() {
-            const { show, dedupeGenres } = this;
-            const { imdbInfo } = show;
-            const { genres } = imdbInfo;
-            let result = [];
-            if (genres) {
-                result = dedupeGenres(genres.split('|'));
-            }
-            return result;
-        },
-        preferredWords() {
-            const { preferred } = this.search.filters;
-            if (preferred.length > 0) {
-                return preferred;
-            }
-            return [];
-        },
-        undesiredWords() {
-            const { undesired } = this.search.filters;
-            if (undesired.length > 0) {
-                return undesired;
-            }
-            return [];
-        },
-        episodeSummary() {
-            const { show } = this;
-            const { seasons } = show;
-            let summary = {
-                Skipped: 0,
-                Wanted: 0,
-                Allowed: 0,
-                Preferred: 0,
-                Unaired: 0,
-                Snatched: 0,
-                'Snatched (Proper)': 0,
-                'Snatched (Best)': 0,
-                Unset: 0,
-                Archived: 0
-            };
-            seasons.forEach((episodes, index) => {
-                episodes.forEach(episode => {
-                    summary[episode.status] += 1;
-                });
-            });
-            return summary;
-        },
-        changeStatusOptions() {
-            const { failedDownloads } = this;
-
-            let defaultOptions = [
-                { text: 'Change status to:', value: null },
-                { text: 'Wanted', value: 3 },
-                { text: 'Skipped', value: 5 },
-                { text: 'Ignored', value: 7 },
-                { text: 'Downloaded', value: 4 },
-                { text: 'Archived', value: 6 }
-            ];
-
-            if (failedDownloads.enabled) {
-                defaultOptions.push({ text: 'Failed', value: 11 });
-            }
-            return defaultOptions;
-        },
-        changeQualityOptions() {
-            const { qualities } = this;
-
-            let defaultOptions = [
-                { text: 'Change quality to:', value: null }
-            ];
-
-            if (qualities.strings) {
-                Object.keys(qualities.strings.values).map(key => {
-                    defaultOptions.push({text: qualities.strings.values[key], value: key});
-                });
-            }
-            return defaultOptions;
+            return Number(this.$route.query.episode) || undefined;
         }
     },
     created() {
         const { indexer, id, $store } = this;
-        // Needed for the title
+        // Needed for ShowHeader
         $store.dispatch('getShow', { indexer, id });
     },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+        }),
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
@@ -173,36 +68,28 @@ export default {
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
-        },
-        reverse(array) {
-            return array ? array.slice().reverse() : [];
-        },
-        dedupeGenres(genres) {
-            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        },
-        humanFileSize(bytes, decimal) {
-            if (bytes === undefined) {
-                return;
-            }
-            const thresh = decimal ? 1000 : 1024;
-            if (Math.abs(bytes) < thresh) {
-                return bytes + ' B';
-            }
-            const units = decimal
-                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
-                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
-            let u = -1;
-            do {
-                bytes /= thresh;
-                ++u;
-            } while(Math.abs(bytes) >= thresh && u < units.length - 1);
-            return `${bytes.toFixed(1)} ${units[u]}`;
-        },
-        getCountryISO2ToISO3(country) {
-            return getLanguage(country).iso639_2en;
         }
     },
     mounted() {
+        const {
+            indexer,
+            id,
+            show,
+            getShow,
+            $store
+        } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer: this.indexer,
+            id: this.id
+        });
+
+        // We need the show info, so let's get it.
+        if (!show) {
+            getShow({ id, indexer, detailed: false });
+        }
+
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
         });

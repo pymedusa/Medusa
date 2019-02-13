@@ -172,7 +172,6 @@
 
                 // Global components
                 Vue.use(Snotify);
-                Vue.component('truncate', Truncate);
             }
         </script>
         <%block name="scripts" />

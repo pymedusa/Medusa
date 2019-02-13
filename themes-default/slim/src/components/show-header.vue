@@ -48,8 +48,8 @@
             </div> <!-- end show title -->
         </div> <!-- end row showtitle-->
 
-        <div v-if="show.showQueueStatus && show.showQueueStatus.filter(x => x.active === true)" class="row">
-            <div v-for="queueItem of show.showQueueStatus" v-if="queueItem.active" class="alert alert-info">
+        <div v-if="activeShowQueueStatuses.length > 0" class="row">
+            <div v-for="queueItem of activeShowQueueStatuses" :key="queueItem.action" class="alert alert-info">
                 {{ queueItem.message }}
             </div>
         </div>
@@ -107,9 +107,11 @@
                             <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                            <ul class="tags">
-                                <app-link v-if="show.genres" v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
-                                <app-link v-if="!show.genres" v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
+                            <ul class="tags" v-if="show.genres">
+                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
+                            </ul>
+                            <ul class="tags" v-else>
+                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
                             </ul>
                         </div>
                     </div>
@@ -210,13 +212,13 @@
                     <div class="col-lg-12" id="checkboxControls">
                         <div id="key-padding" class="pull-left top-5">
 
-                            <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                            <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                            <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                            <label v-if="show.seasons"for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                            <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
-                            <button class="btn-medusa seriesCheck">Select Episodes</button>
-                            <button class="btn-medusa clearAll">Clear</button>
+                            <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
+                            <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
+                            <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
+                            <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
+                            <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                            <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
+                            <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
                         </div>
                         <div class="pull-lg-right top-5">
 
@@ -234,7 +236,7 @@
                             <input type="hidden" id="series-slug" :value="show.id.slug" />
                             <input type="hidden" id="series-id" :value="show.id[show.indexer]" />
                             <input type="hidden" id="indexer" :value="show.indexer" />
-                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" />
+                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked" />
                         </div>
                     </div> <!-- checkboxControls -->
                 </div> <!-- end of row -->
@@ -247,7 +249,9 @@
 <script>
 import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { isVisible } from 'is-visible';
+import { scrollTo } from 'vue-scrollto';
+import { mapState, mapGetters } from 'vuex';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -273,6 +277,273 @@ export default {
             type: String
         }
     },
+    data() {
+        return {
+            jumpToSeason: 'jump'
+        };
+    },
+    computed: {
+        ...mapState({
+            shows: state => state.shows.shows,
+            indexerConfig: state => state.config.indexers.config.indexers,
+            failedDownloads: state => state.config.failedDownloads,
+            qualities: state => state.qualities,
+            search: state => state.search
+        }),
+        ...mapGetters({
+            show: 'getCurrentShow',
+            getPreset: 'getPreset',
+            combineQualities: 'combineQualities'
+        }),
+        indexer() {
+            return this.showIndexer || this.$route.query.indexername;
+        },
+        id() {
+            return this.showId || this.$route.query.seriesid;
+        },
+        season() {
+            return this.showSeason || Number(this.$route.query.season) || undefined;
+        },
+        episode() {
+            return this.showEpisode || Number(this.$route.query.episode) || undefined;
+        },
+        showIndexerUrl() {
+            const { show, indexerConfig } = this;
+            if (!show.indexer) {
+                return;
+            }
+            const id = show.id[show.indexer];
+            const indexerUrl = indexerConfig[show.indexer].showUrl;
+
+            return `${indexerUrl}${id}`;
+        },
+        activeShowQueueStatuses() {
+            const { showQueueStatus } = this.show;
+            if (!showQueueStatus) {
+                return [];
+            }
+            return showQueueStatus.filter(status => status.active === true);
+        },
+        showGenres() {
+            const { show, dedupeGenres } = this;
+            const { imdbInfo } = show;
+            const { genres } = imdbInfo;
+            let result = [];
+
+            if (genres) {
+                result = dedupeGenres(genres.split('|'));
+            }
+            return result;
+        },
+        preferredWords() {
+            const { preferred } = this.search.filters;
+            if (preferred.length > 0) {
+                return preferred;
+            }
+            return [];
+        },
+        undesiredWords() {
+            const { undesired } = this.search.filters;
+            if (undesired.length > 0) {
+                return undesired;
+            }
+            return [];
+        },
+        episodeSummary() {
+            const { show } = this;
+            const { seasons } = show;
+            let summary = {
+                Skipped: 0,
+                Wanted: 0,
+                Allowed: 0,
+                Preferred: 0,
+                Unaired: 0,
+                Snatched: 0,
+                'Snatched (Proper)': 0,
+                'Snatched (Best)': 0,
+                Unset: 0,
+                Archived: 0
+            };
+            seasons.forEach((episodes, index) => {
+                episodes.forEach(episode => {
+                    summary[episode.status] += 1;
+                });
+            });
+            return summary;
+        },
+        changeStatusOptions() {
+            const { failedDownloads } = this;
+
+            let defaultOptions = [
+                { text: 'Change status to:', value: null },
+                { text: 'Wanted', value: 3 },
+                { text: 'Skipped', value: 5 },
+                { text: 'Ignored', value: 7 },
+                { text: 'Downloaded', value: 4 },
+                { text: 'Archived', value: 6 }
+            ];
+
+            if (failedDownloads.enabled) {
+                defaultOptions.push({ text: 'Failed', value: 11 });
+            }
+
+            return defaultOptions;
+        },
+        changeQualityOptions() {
+            const { qualities } = this;
+
+            let defaultOptions = [
+                { text: 'Change quality to:', value: null }
+            ];
+
+            if (qualities.strings) {
+                Object.keys(qualities.strings.values).map(key => {
+                    defaultOptions.push({text: qualities.strings.values[key], value: key});
+                });
+            }
+
+            return defaultOptions;
+        }
+    },
+    methods: {
+        setQuality(quality, showSlug, episodes) {
+            const patchData = {};
+            episodes.forEach(episode => {
+                patchData[episode] = { quality: parseInt(quality, 10) };
+            });
+
+            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
+                console.info(response.data);
+                window.location.reload();
+            }).catch(error => {
+                console.error(error.data);
+            });
+        },
+        changeStatusClicked() {
+            const { setQuality } = this;
+
+            const epArr = [];
+            const status = $('#statusSelect').val();
+            const quality = $('#qualitySelect').val();
+            const showSlug = $('#series-slug').val();
+
+            $('.epCheck').each((index, element) => {
+                if (element.checked === true) {
+                    epArr.push($(element).attr('id'));
+                }
+            });
+
+            if (epArr.length === 0) {
+                return false;
+            }
+
+            if (quality) {
+                setQuality(quality, showSlug, epArr);
+            }
+
+            if (status) {
+                window.location.href = $('base').attr('href') + 'home/setStatus?' +
+                    'indexername=' + $('#indexer-name').attr('value') +
+                    '&seriesid=' + $('#series-id').attr('value') +
+                    '&eps=' + epArr.join('|') +
+                    '&status=' + status;
+            }
+        },
+        showHideRows(whichClass) {
+            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
+            $('tr.' + whichClass).each((index, element) => {
+                if (status) {
+                    $(element).show();
+                } else {
+                    $(element).hide();
+                }
+            });
+
+            // Hide season headers with no episodes under them
+            $('tr.seasonheader').each((index, element) => {
+                let numRows = 0;
+                const seasonNo = $(element).attr('id');
+                $('tr.' + seasonNo + ' :visible').each(() => {
+                    numRows++;
+                });
+                if (numRows === 0) {
+                    $(element).hide();
+                    $('#' + seasonNo + '-cols').hide();
+                } else {
+                    $(element).show();
+                    $('#' + seasonNo + '-cols').show();
+                }
+            });
+        },
+        selectEpisodesClicked() {
+            // Selects all visible episode checkboxes
+            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
+                element.checked = true;
+            });
+        },
+        clearEpisodeSelectionClicked(event) {
+            // Clears all visible episode checkboxes and the season selectors
+            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
+                element.checked = false;
+            });
+        },
+        toggleSpecials() {
+            this.$store.dispatch('setConfig', {
+                layout: {
+                    show: {
+                        specials: !this.config.layout.show.specials
+                    }
+                }
+            });
+        },
+        reverse(array) {
+            return array ? array.slice().reverse() : [];
+        },
+        dedupeGenres(genres) {
+            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
+        },
+        humanFileSize(bytes, decimal) {
+            if (bytes === undefined) {
+                return;
+            }
+            const thresh = decimal ? 1000 : 1024;
+            if (Math.abs(bytes) < thresh) {
+                return bytes + ' B';
+            }
+            const units = decimal
+                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
+                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
+            let u = -1;
+            do {
+                bytes /= thresh;
+                ++u;
+            } while(Math.abs(bytes) >= thresh && u < units.length - 1);
+            return `${bytes.toFixed(1)} ${units[u]}`;
+        },
+        getCountryISO2ToISO3(country) {
+            return getLanguage(country).iso639_2en;
+        }
+    },
+    watch: {
+        jumpToSeason(season) {
+            // Don't jump until an option is selected
+            if (season !== 'jump') {
+                console.debug(`Jumping to ${season}`);
+
+                scrollTo(season, 100, {
+                    container: 'body',
+                    easing: 'ease-in',
+                    offset: -100
+                });
+
+                // Update URL hash
+                location.hash = season;
+
+                // Reset jump
+                this.jumpToSeason = 'jump';
+            }
+        }
+    }
 };
 </script>
 

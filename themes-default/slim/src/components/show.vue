@@ -1,17 +1,16 @@
 <script>
-import { getLanguage } from 'country-language';
-import { isVisible } from 'is-visible';
-import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { api, apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
+import ShowHeader from './show-header.vue';
 
 export default {
     name: 'show',
     template: '#show-template',
     components: {
         AppLink,
-        PlotInfo
+        PlotInfo,
+        ShowHeader
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -40,120 +39,21 @@ export default {
         }
     },
     data() {
-        return {
-            showLoaded: false,
-            jumpToSeason: 'jump'
-        };
+        return {};
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownloads: state => state.config.failedDownloads,
-            qualities: state => state.qualities,
-            search: state => state.search
+            shows: state => state.shows.shows
         }),
         ...mapGetters({
             getShowById: 'getShowById',
-            show: 'getCurrentShow',
-            getPreset: 'getPreset',
-            combineQualities: 'combineQualities'
+            show: 'getCurrentShow'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
         id() {
-            return this.showId || this.$route.query.seriesid;
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-            if (!show.indexer) {
-                return;
-            }
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-
-            return `${indexerUrl}${id}`;
-        },
-        showGenres() {
-            const { show, dedupeGenres } = this;
-            const { imdbInfo } = show;
-            const { genres } = imdbInfo;
-            let result = [];
-
-            if (genres) {
-                result = dedupeGenres(genres.split('|'));
-            }
-            return result;
-        },
-        preferredWords() {
-            const { preferred } = this.search.filters;
-            if (preferred.length > 0) {
-                return preferred;
-            }
-            return [];
-        },
-        undesiredWords() {
-            const { undesired } = this.search.filters;
-            if (undesired.length > 0) {
-                return undesired;
-            }
-            return [];
-        },
-        episodeSummary() {
-            const { show } = this;
-            const { seasons } = show;
-            let summary = {
-                Skipped: 0,
-                Wanted: 0,
-                Allowed: 0,
-                Preferred: 0,
-                Unaired: 0,
-                Snatched: 0,
-                'Snatched (Proper)': 0,
-                'Snatched (Best)': 0,
-                Unset: 0,
-                Archived: 0
-            };
-            seasons.forEach((episodes, index) => {
-                episodes.forEach(episode => {
-                    summary[episode.status] += 1;
-                });
-            });
-            return summary;
-        },
-        changeStatusOptions() {
-            const { failedDownloads } = this;
-
-            let defaultOptions = [
-                { text: 'Change status to:', value: null },
-                { text: 'Wanted', value: 3 },
-                { text: 'Skipped', value: 5 },
-                { text: 'Ignored', value: 7 },
-                { text: 'Downloaded', value: 4 },
-                { text: 'Archived', value: 6 }
-            ];
-
-            if (failedDownloads.enabled) {
-                defaultOptions.push({ text: 'Failed', value: 11 });
-            }
-
-            return defaultOptions;
-        },
-        changeQualityOptions() {
-            const { qualities } = this;
-
-            let defaultOptions = [
-                { text: 'Change quality to:', value: null }
-            ];
-
-            if (qualities.strings) {
-                Object.keys(qualities.strings.values).map(key => {
-                    defaultOptions.push({text: qualities.strings.values[key], value: key});
-                });
-            }
-
-            return defaultOptions;
+            return this.showId || Number(this.$route.query.seriesid) || undefined;
         }
     },
     mounted() {
@@ -161,7 +61,6 @@ export default {
             id,
             indexer,
             getShow,
-            setQuality,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
@@ -202,35 +101,6 @@ export default {
             $.ajaxEpRedownloadSubtitle();
         });
 
-        $(document.body).on('click', '#changeStatus', () => {
-            const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
-
-            $('.epCheck').each((index, element) => {
-                if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
-                }
-            });
-
-            if (epArr.length === 0) {
-                return false;
-            }
-
-            if (quality) {
-                setQuality(quality, showSlug, epArr);
-            }
-
-            if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
-            }
-        });
-
         $(document.body).on('click', '.seasonCheck', event => {
             const seasCheck = event.currentTarget;
             const seasNo = $(seasCheck).attr('id');
@@ -269,30 +139,6 @@ export default {
                     found++;
                 }
             });
-        });
-
-        // Selects all visible episode checkboxes
-        document.addEventListener('click', event => {
-            if (event.target && event.target.className.includes('seriesCheck')) {
-                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                    element.checked = true;
-                });
-            }
-        });
-
-        // Clears all visible episode checkboxes and the season selectors
-        document.addEventListener('click', event => {
-            if (event.target && event.target.className.includes('clearAll')) {
-                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                    element.checked = false;
-                });
-            }
-        });
-
-        // Show/hide different types of rows when the checkboxes are changed
-        $(document.body).on('change', '#checkboxControls input', event => {
-            const whichClass = $(event.currentTarget).attr('id');
-            showHideRows(whichClass);
         });
 
         // Initially show/hide all the rows according to the checkboxes
@@ -396,21 +242,6 @@ export default {
 
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions();
-
-        $(document.body).on('click', '.display-specials a', event => {
-            api.patch('config/main', {
-                layout: {
-                    show: {
-                        specials: $(event.currentTarget).text() !== 'Hide'
-                    }
-                }
-            }).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
-        });
     },
     methods: {
         ...mapActions({
@@ -448,19 +279,6 @@ export default {
             $('#checkboxControlsBackground').height(height);
             $('#checkboxControlsBackground').offset({ top, left: 0 });
             $('#checkboxControlsBackground').show();
-        },
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
-            });
-
-            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const indexerName = $('#indexer-name').val();
@@ -598,88 +416,6 @@ export default {
                     }
                 }
             });
-        },
-        showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
-                if (status) {
-                    $(element).show();
-                } else {
-                    $(element).hide();
-                }
-            });
-
-            // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
-                let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
-                    numRows++;
-                });
-                if (numRows === 0) {
-                    $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
-                } else {
-                    $(element).show();
-                    $('#' + seasonNo + '-cols').show();
-                }
-            });
-        },
-        toggleSpecials() {
-            this.$store.dispatch('setConfig', {
-                layout: {
-                    show: {
-                        specials: !this.config.layout.show.specials
-                    }
-                }
-            });
-        },
-        reverse(array) {
-            return array ? array.slice().reverse() : [];
-        },
-        dedupeGenres(genres) {
-            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        },
-        humanFileSize(bytes, decimal) {
-            if (bytes === undefined) {
-                return;
-            }
-            const thresh = decimal ? 1000 : 1024;
-            if (Math.abs(bytes) < thresh) {
-                return bytes + ' B';
-            }
-            const units = decimal
-                ? ['kB','MB','GB','TB','PB','EB','ZB','YB']
-                : ['KiB','MiB','GiB','TiB','PiB','EiB','ZiB','YiB'];
-            let u = -1;
-            do {
-                bytes /= thresh;
-                ++u;
-            } while(Math.abs(bytes) >= thresh && u < units.length - 1);
-            return `${bytes.toFixed(1)} ${units[u]}`;
-        },
-        getCountryISO2ToISO3(country) {
-            return getLanguage(country).iso639_2en;
-        }
-    },
-    watch: {
-        jumpToSeason(season) {
-            // Don't jump until an option is selected
-            if (season !== 'jump') {
-                console.debug(`Jumping to ${season}`);
-
-                scrollTo(season, 100, {
-                    container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
-                });
-
-                // Update URL hash
-                location.hash = season;
-
-                // Reset jump
-                this.jumpToSeason = 'jump';
-            }
         }
     }
 };
