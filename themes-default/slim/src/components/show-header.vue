@@ -194,8 +194,9 @@
                                         <td class="showLegend">Daily search offset:</td>
                                         <td>{{show.config.airdateOffset}} hours</td>
                                     </tr>
-                                    <tr v-if="show.locationValid && show.locationSize > -1">
-                                        <td class="showLegend">Size:</td><td>{{humanFileSize(show.locationSize)}}</td>
+                                    <tr v-if="show.config.locationValid && show.config.locationSize > -1">
+                                        <td class="showLegend">Size:</td>
+                                        <td>{{humanFileSize(show.config.locationSize)}}</td>
                                     </tr>
                                 </table><!-- Option table right -->
                             </div>
