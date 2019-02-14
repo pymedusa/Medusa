@@ -16,9 +16,10 @@ import warnings
 from builtins import map
 from builtins import str
 from collections import (
-    OrderedDict, defaultdict, namedtuple
+    OrderedDict, namedtuple
 )
 from itertools import groupby
+
 from medusa import (
     app,
     db,
