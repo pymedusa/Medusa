@@ -104,7 +104,9 @@
                                 <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                             </app-link>
 
-                            <app-link :href="'https://fanart.tv/series/' + show.id[show.indexer]" :title="'https://fanart.tv/series/' + show.id[show.indexer]"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></app-link>
+                            <app-link v-if="show.id.tvdb" :href="'https://fanart.tv/series/' + show.id.tvdb" :title="'https://fanart.tv/series/' + show.id[show.indexer]">
+                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/>
+                            </app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                             <ul class="tags" v-if="show.genres">
