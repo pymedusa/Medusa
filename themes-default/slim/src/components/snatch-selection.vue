@@ -52,12 +52,16 @@ export default {
         ...mapActions({
             getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
         }),
+        /**
+         * Attaches IMDB tooltip,
+         * Moves summary and checkbox controls backgrounds
+         */
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
-
-                attachImdbTooltip(); // eslint-disable-line no-undef
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the summary background position and size on page load and resize
@@ -81,8 +85,8 @@ export default {
 
         // Let's tell the store which show we currently want as current.
         $store.commit('currentShow', {
-            indexer: this.indexer,
-            id: this.id
+            indexer,
+            id
         });
 
         // We need the show info, so let's get it.

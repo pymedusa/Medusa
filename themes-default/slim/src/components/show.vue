@@ -26,16 +26,16 @@ export default {
     },
     props: {
         /**
-         * Show id
-         */
-        showId: {
-            type: Number
-        },
-        /**
          * Show indexer
          */
         showIndexer: {
             type: String
+        },
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
         }
     },
     data() {
@@ -71,8 +71,8 @@ export default {
 
         // Let's tell the store which show we currently want as current.
         $store.commit('currentShow', {
-            indexer: this.indexer,
-            id: this.id
+            indexer,
+            id
         });
 
         // We need detailed info for the seasons, so let's get it.
@@ -247,8 +247,8 @@ export default {
             getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
         }),
         /**
-         * Attaches imdb tool tip,
-         * moves summary background and checkbox controls
+         * Attaches IMDB tooltip,
+         * Moves summary and checkbox controls backgrounds
          */
         reflowLayout() {
             console.debug('Reflowing layout');
@@ -271,6 +271,9 @@ export default {
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
         },
+        /**
+         * Adjust the checkbox controls (episode filter) background position
+         */
         movecheckboxControlsBackground() {
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;

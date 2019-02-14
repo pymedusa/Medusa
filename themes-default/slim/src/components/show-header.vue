@@ -265,16 +265,16 @@ export default {
     },
     props: {
         /**
-         * Show id
-         */
-        showId: {
-            type: Number
-        },
-        /**
          * Show indexer
          */
         showIndexer: {
             type: String
+        },
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
         }
     },
     data() {
@@ -300,7 +300,7 @@ export default {
             return this.showIndexer || this.$route.query.indexername;
         },
         id() {
-            return this.showId || this.$route.query.seriesid;
+            return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         season() {
             return this.showSeason || Number(this.$route.query.season) || undefined;
