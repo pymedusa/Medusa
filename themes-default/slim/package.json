@@ -31,9 +31,7 @@
     "@babel/core": "7.2.2",
     "@babel/plugin-proposal-object-rest-spread": "7.2.0",
     "@babel/plugin-syntax-dynamic-import": "7.2.0",
-    "@babel/polyfill": "7.2.5",
     "@babel/preset-env": "7.2.3",
-    "@babel/register": "7.0.0",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
     "@vue/test-utils": "1.0.0-beta.28",
     "ava": "1.2.1",
@@ -184,8 +182,6 @@
   },
   "ava": {
     "require": [
-      "@babel/register",
-      "@babel/polyfill",
       "./test/helpers/setup.js"
     ],
     "files": [
@@ -200,10 +196,6 @@
     "powerAssert": true
   },
   "nyc": {
-    "require": [
-      "@babel/register",
-      "@babel/polyfill"
-    ],
     "sourceMap": false,
     "instrument": false,
     "extension": [
