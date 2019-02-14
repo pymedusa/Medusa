@@ -941,6 +941,9 @@ definitions:
         type: string
         description: "Air time"
         example: "Thursday 8:00 PM"
+      airsFormatValid:
+        type: boolean
+        description: "Tests the airs format"
       language:
         type: string
         description: Language code
@@ -948,11 +951,11 @@ definitions:
       showType:
         type: string
         enum: [series, anime, sports]
-      akas:
+      imdbInfo:
         type: object
-        description: Also known as
-        additionalProperties:
-          type: string
+        description: "Object with additional show information retrieved from imdb"
+        properties:
+
       year:
         type: object
         properties:
