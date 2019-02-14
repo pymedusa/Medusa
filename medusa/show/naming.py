@@ -19,17 +19,17 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-resultFilters = [
+result_filters = [
     '(sub|nfo)fix',
     '(?<!shomin.)sample',
     '(dvd)?extras',
 ]
 
 if hasattr('General', 'ignore_und_subs') and app.IGNORE_UND_SUBS:
-    resultFilters.append('sub(bed|ed|pack|s)')
+    result_filters.append('sub(bed|ed|pack|s)')
 
 if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
-    resultFilters.append('(' + app.IGNORED_SUBS_LIST.replace(',', '|') + ')sub(bed|ed|s)?')
+    result_filters.append('(' + app.IGNORED_SUBS_LIST.replace(',', '|') + ')sub(bed|ed|s)?')
 
 
 def contains_words(item, words, strict=True):
@@ -84,7 +84,7 @@ def contains_at_least_one_word(name, words):
             subs_word = regexp.search(name).group(0)
             # If word is a regex like 'dub(bed)?' or 'sub(bed|ed|pack|s)'
             # then return just the matched word: 'dub' and not full regex
-            if word in resultFilters:
+            if word in result_filters:
                 return subs_word.replace('.', '')
             else:
                 return word
@@ -94,7 +94,7 @@ def contains_at_least_one_word(name, words):
 
 def filter_bad_releases(name, parse=True):
     """
-    Filter out non-english and invalid releases by comparing them to the resultFilters contents.
+    Filter out non-english and invalid releases by comparing them to the result_filters contents.
 
     :param parse: parse the name
     :param name: the release name to check
@@ -110,7 +110,7 @@ def filter_bad_releases(name, parse=True):
         pass
 
     # if any of the bad strings are in the name then say no
-    word = contains_at_least_one_word(name, resultFilters)
+    word = contains_at_least_one_word(name, result_filters)
     if word:
         log.debug('Unwanted scene release: {0}. Contains unwanted word: {1}.'
                   ' Ignoring it', name, word)

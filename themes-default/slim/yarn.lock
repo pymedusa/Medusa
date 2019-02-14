@@ -1346,9 +1346,10 @@ autoprefixer@^9.0.0:
     postcss "^7.0.5"
     postcss-value-parser "^3.3.1"
 
-ava@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/ava/-/ava-1.2.0.tgz#dbd087623199f985fcf2c2a52f83c402cc9ab628"
+ava@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ava/-/ava-1.2.1.tgz#c9b55fda5663fbfad88df37d5cdac56f29347c1b"
+  integrity sha512-EHqbPGdd8aNvlvRNL7liD1J9Auf9kByHj5Zi7zF7Z5ukn2ZStZgVBf7LSqirKIOWScB3XZzFQbO59SnTvzD5kA==
   dependencies:
     "@ava/babel-preset-stage-4" "^2.0.0"
     "@ava/babel-preset-transform-test-files" "^4.0.1"
