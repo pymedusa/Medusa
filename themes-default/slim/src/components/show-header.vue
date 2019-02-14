@@ -157,13 +157,28 @@
                                     <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
                                     <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
-                                    <tr v-if="show.config.aliases.length > 0"><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>{{show.config.aliases.join(',')}}</td></tr>
+                                    <tr v-if="show.config.aliases.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
+                                        <td>{{show.config.aliases.join(',')}}</td>
+                                    </tr>
 
-                                    <tr v-if="show.config.release.requiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">{{show.config.release.requiredWords.join(',')}}</span></td></tr>
-                                    <tr v-if="show.config.release.ignoredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">{{show.config.release.ignoredWords.join(',')}}</span></td></tr>
+                                    <tr v-if="show.config.release.requiredWords.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">Required Words: </td>
+                                        <td><span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span></td>
+                                    </tr>
+                                    <tr v-if="show.config.release.ignoredWords.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
+                                        <td><span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span></td>
+                                    </tr>
 
-                                    <tr v-if="preferredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">{{preferredWords.join(',')}}</span></td></tr>
-                                    <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td></tr>
+                                    <tr v-if="preferredWords.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
+                                        <td><span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{preferredWords.join(',')}}</span></td>
+                                    </tr>
+                                    <tr v-if="undesiredWords.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
+                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td>
+                                    </tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
