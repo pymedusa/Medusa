@@ -3662,11 +3662,12 @@ eslint-plugin-unicorn@^7.0.0:
     lodash.upperfirst "^4.2.0"
     safe-regex "^2.0.1"
 
-eslint-plugin-vue@5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-5.1.0.tgz#d0d373334be8140d698ec4e1fb83f09faa48081b"
+eslint-plugin-vue@5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-vue/-/eslint-plugin-vue-5.2.1.tgz#89795895c08da56fe3a201955bd645ae67e01918"
+  integrity sha512-KPrv7Yau1B7PUB+TiEh0bw1lyzQjLp0npfAn7WbkQQFobgwXv4LqmQFBhYXEdXmxSBU/oZ46yBHoTo70RRivUA==
   dependencies:
-    vue-eslint-parser "^4.0.2"
+    vue-eslint-parser "^5.0.0"
 
 eslint-rule-docs@^1.1.5:
   version "1.1.44"
@@ -10362,9 +10363,10 @@ vue-async-computed@3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.5.1.tgz#bfb4f6f1788bd13dd1f170641e20ba10dbd26c6c"
 
-vue-eslint-parser@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-4.0.2.tgz#7d10ec5b67d9b2ef240cac0f0e8b2f03773d810e"
+vue-eslint-parser@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-5.0.0.tgz#00f4e4da94ec974b821a26ff0ed0f7a78402b8a1"
+  integrity sha512-JlHVZwBBTNVvzmifwjpZYn0oPWH2SgWv5dojlZBsrhablDu95VFD+hriB1rQGwbD+bms6g+rAFhQHk6+NyiS6g==
   dependencies:
     debug "^4.1.0"
     eslint-scope "^4.0.0"
