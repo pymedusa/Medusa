@@ -588,6 +588,107 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.summaryTable {
+    overflow: hidden;
+}
 
+.summaryTable tr td {
+    word-break: break-all;
+}
+
+.ver-spacer {
+    width: 15px;
+}
+
+#show-specials-and-seasons {
+    margin-bottom: 15px;
+}
+
+span.required {
+    color: green;
+}
+
+span.preferred {
+    color: blue;
+}
+
+span.undesired {
+    color: orange;
+}
+
+span.ignored {
+    color: red;
+}
+
+div#col-show-summary {
+    display: table;
+}
+
+#col-show-summary img.show-image {
+    max-width: 180px;
+}
+
+.show-poster-container {
+    margin-right: 10px;
+    display: table-cell;
+    width: 180px;
+}
+
+.show-info-container {
+    overflow: hidden;
+    display: table-cell;
+}
+
+@media (min-width: 768px) {
+    .display-specials,
+    .display-seasons {
+        top: -60px;
+    }
+
+    #show-specials-and-seasons {
+        bottom: 5px;
+        right: 15px;
+        position: absolute;
+    }
+}
+
+@media (max-width: 767px) {
+    .show-poster-container {
+        display: inline-block;
+        width: 100%;
+        margin: 0 auto;
+        border-style: none;
+    }
+
+    .show-poster-container img {
+        display: block;
+        margin: 0 auto;
+        max-width: 280px !important;
+    }
+
+    .show-info-container {
+        display: block;
+        padding-top: 5px;
+        width: 100%;
+    }
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .show-poster-container {
+        float: left;
+        display: inline-block;
+        width: 100%;
+        border-style: none;
+    }
+
+    .show-info-container {
+        display: block;
+        width: 100%;
+    }
+
+    #col-show-summary img.show-image {
+        max-width: 280px;
+    }
+}
 </style>
