@@ -33,7 +33,6 @@ from medusa.common import (
     DOWNLOADED,
     FAILED,
     IGNORED,
-    Overview,
     Quality,
     SKIPPED,
     SNATCHED,
