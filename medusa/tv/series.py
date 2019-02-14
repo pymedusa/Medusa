@@ -2158,7 +2158,9 @@ class Series(TV):
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
             data['showQueueStatus'] = self.show_queue_status
-            data['xemNumbering'] = self.xem_numbering
+            data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
+                                     'destination': {'season': dest[0], 'episode': dest[1]}}
+                                    for src, dest in viewitems(self.xem_numbering)]
 
         return data
 
