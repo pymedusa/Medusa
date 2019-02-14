@@ -955,7 +955,36 @@ definitions:
         type: object
         description: "Object with additional show information retrieved from imdb"
         properties:
-
+          akas:
+            type: string
+          certificates:
+            type: string
+          countries:
+            type: string
+          countryCodes:
+            type: string
+          genres:
+            type: string
+          imdbId:
+            type: string
+          imdbInfoId:
+            type: integer
+          indexer:
+            type: integer
+          indexerId:
+            type: integer
+          lastUpdate:
+            type: integer
+          plot:
+            type: string
+          rating:
+            type: string
+          runtimes:
+            type: integer
+          title:
+            type: string
+          votes:
+            type: integer
       year:
         type: object
         properties:
