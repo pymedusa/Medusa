@@ -1225,49 +1225,11 @@ class Home(WebRoot):
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
-
-        sql_results = main_db_con.select(
-            'SELECT * '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season >= ? '
-            'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'],
-                                                 manually_searched=cur_result['manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result['season'],
-                                                     episode=cur_result['episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
-
         return t.render(
-            submenu=submenu[::-1],
-            show=series_obj, provider_results=provider_results, episode=episode,
-            season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=' | '.join(series_obj.exceptions),
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            controller='home', action='snatchSelection',
-            episode_history=episode_history, sql_results=sql_results,
-            ep_counts=ep_counts, ep_cats=ep_cats
+            submenu=submenu[::-1], show=series_obj,
+            provider_results=provider_results, episode_history=episode_history,
+            season=season, episode=episode, manual_search_type=manual_search_type,
+            controller='home', action='snatchSelection'
         )
 
     @staticmethod
