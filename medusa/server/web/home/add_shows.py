@@ -96,6 +96,11 @@ class HomeAddShows(Home):
         elif not isinstance(other_shows, list):
             other_shows = [other_shows]
 
+        other_shows = [
+            x.decode('utf-8') if not isinstance(x, text_type) else x
+            for x in other_shows
+        ]
+
         provided_indexer_id = int(indexer_id or 0)
         provided_indexer_name = show_name
 
@@ -537,7 +542,10 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [text_type(x, 'utf-8') if not isinstance(x, text_type) else x for x in shows_to_add]
+        shows_to_add = [
+            x.decode('utf-8') if not isinstance(x, text_type) else x
+            for x in shows_to_add
+        ]
 
         prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 

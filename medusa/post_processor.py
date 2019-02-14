@@ -304,7 +304,7 @@ class PostProcessor(object):
             pattern = new_pattern + pattern
 
         files = []
-        for root, __, filenames in os.walk(directory):
+        for root, _, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
                 files.append(os.path.join(root, filename))
             if not subfolders:

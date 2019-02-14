@@ -694,7 +694,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
                     index=0,
                     predicate=lambda match: match.name == 'episode_title' and match.value.isdigit(),
                 )
-                if episode_title:
+                if episode_title and to_append:
                     if matches.input_string[episode.end:episode_title.start + 1] in range_separator:
                         end_value = int(episode_title.value)
                         for i in range(absolute_episode.value + 1, end_value + 1):
