@@ -796,17 +796,9 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            'SELECT DISTINCT season '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT * '
             'FROM tv_episodes '
@@ -821,11 +813,6 @@ class Home(WebRoot):
             'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil',
         }]
-
-        try:
-            show_loc = (series_obj.validate_location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
 
         show_message = ''
 
@@ -917,10 +904,6 @@ class Home(WebRoot):
             if cur_ep_cat:
                 ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
