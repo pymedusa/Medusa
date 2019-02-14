@@ -814,29 +814,6 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil',
         }]
 
-        show_message = ''
-
-        if app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
-
-        elif app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-            show_message = 'The information on this page is in the process of being updated.'
-
-        elif app.show_queue_scheduler.action.isBeingRefreshed(series_obj):
-            show_message = 'The episodes below are currently being refreshed from disk'
-
-        elif app.show_queue_scheduler.action.isBeingSubtitled(series_obj):
-            show_message = 'Currently downloading subtitles for this show'
-
-        elif app.show_queue_scheduler.action.isInRefreshQueue(series_obj):
-            show_message = 'This show is queued to be refreshed.'
-
-        elif app.show_queue_scheduler.action.isInUpdateQueue(series_obj):
-            show_message = 'This show is queued and awaiting an update.'
-
-        elif app.show_queue_scheduler.action.isInSubtitleQueue(series_obj):
-            show_message = 'This show is queued and awaiting subtitles download.'
-
         if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
@@ -887,23 +864,12 @@ class Home(WebRoot):
                         'icon': 'menu-icon-backlog',
                     })
 
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
         ep_cats = {}
 
         for cur_result in sql_results:
             cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
             if cur_ep_cat:
                 ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -927,13 +893,13 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1], show_message=show_message,
+            submenu=submenu[::-1],
             show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='displayShow',
+            controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None):
@@ -1126,13 +1092,6 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
-        try:
-            show_loc = (series_obj.validate_location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
-
-        show_message = app.show_queue_scheduler.action.getQueueActionMessage(series_obj)
-
         if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
@@ -1182,10 +1141,6 @@ class Home(WebRoot):
                         'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                         'icon': 'ui-icon ui-icon-comment',
                     })
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -1270,16 +1225,6 @@ class Home(WebRoot):
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        # There is some logic for this in the partials/showheader.mako page.
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            'SELECT DISTINCT season '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
         sql_results = main_db_con.select(
@@ -1312,16 +1257,16 @@ class Home(WebRoot):
                 ep_counts[cur_ep_cat] += 1
 
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
+            submenu=submenu[::-1],
             show=series_obj, provider_results=provider_results, episode=episode,
-            bwl=bwl, season=season, manual_search_type=manual_search_type,
+            season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=' | '.join(series_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='snatchSelection',
-            episode_history=episode_history, season_results=season_results, sql_results=sql_results,
+            controller='home', action='snatchSelection',
+            episode_history=episode_history, sql_results=sql_results,
             ep_counts=ep_counts, ep_cats=ep_cats
         )
 
