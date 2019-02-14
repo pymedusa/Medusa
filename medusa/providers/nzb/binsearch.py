@@ -272,7 +272,7 @@ class BinSearchProvider(NZBProvider):
             return None
 
         # Validate that the result has the content of a valid nzb.
-        if not BinSearchProvider.nzb_check_segment.search(response.content):
+        if not BinSearchProvider.nzb_check_segment.search(response.text):
             log.warning('Result returned from BinSearch was not a valid NZB')
             return None
 
