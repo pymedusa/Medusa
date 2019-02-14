@@ -12,7 +12,11 @@
     <input type="hidden" id="series-slug" value="${show.slug}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
 
-    <show-header @reflow="reflowLayout" :show-id="id" :show-indexer="indexer" :show-season="season" :show-episode="episode"></show-header>
+    <show-header @reflow="reflowLayout" type="snatch-selection"
+        :show-id="id" :show-indexer="indexer"
+        :show-season="season" :show-episode="episode"
+        manual-search-type="${manual_search_type}"
+    ></show-header>
 
     <div class="row">
         <div class="col-md-12 horizontal-scroll">

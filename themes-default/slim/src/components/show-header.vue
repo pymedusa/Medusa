@@ -12,16 +12,16 @@
                     </h1>
                 </div>
 
-                <div v-if="$route.name === 'snatchSelection'" id="show-specials-and-seasons" class="pull-right">
+                <div v-if="type === 'snatch-selection'" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials">
                         Manual search for:<br>
                         <app-link
                             :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                             class="snatchTitle"
-                            >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && !$route.query.manual_search_type"> Episode {{ episode }}</template>
+                            >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="$route.name !== 'snatchSelection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
+                <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
@@ -163,7 +163,7 @@
                                     <tr v-if="show.config.release.ignoredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">{{show.config.release.ignoredWords.join(',')}}</span></td></tr>
 
                                     <tr v-if="preferredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">{{preferredWords.join(',')}}</span></td></tr>
-                                    <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: !$route.path.includes('displayShow')}">{{undesiredWords.join(',')}}</span></td></tr>
+                                    <tr v-if="undesiredWords.length > 0"><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td></tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
@@ -207,7 +207,7 @@
 
         <div v-if="show" id="row-show-episodes-controls" class="row">
             <div id="col-show-episodes-controls" class="col-md-12">
-                <div v-if="$route.name === 'show'" class="row key"> <!-- Checkbox filter controls -->
+                <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
                         <div id="key-padding" class="pull-left top-5">
 
@@ -265,6 +265,17 @@ export default {
     },
     props: {
         /**
+         * Page type: show or snatch-selection
+         */
+        type: {
+            type: String,
+            default: 'show',
+            validator: value => [
+                'show',
+                'snatch-selection'
+            ].includes(value)
+        },
+        /**
          * Show indexer
          */
         showIndexer: {
@@ -275,6 +286,24 @@ export default {
          */
         showId: {
             type: Number
+        },
+        /**
+         * Season
+         */
+        showSeason: {
+            type: Number
+        },
+        /**
+         * Episode
+         */
+        showEpisode: {
+            type: Number
+        },
+        /**
+         * Manual Search Type (snatch-selection)
+         */
+        manualSearchType: {
+            type: String
         }
     },
     data() {
