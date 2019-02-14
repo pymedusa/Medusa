@@ -69,7 +69,7 @@
     "require-extension-hooks": "0.3.3",
     "require-extension-hooks-babel": "1.0.0-beta.1",
     "require-extension-hooks-vue": "2.0.0",
-    "stylelint": "9.10.0",
+    "stylelint": "9.10.1",
     "stylelint-config-standard": "18.2.0",
     "tablesorter": "2.31.1",
     "vue": "2.5.22",
