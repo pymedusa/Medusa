@@ -268,6 +268,7 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
+import { humanFileSize } from '../utils';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -455,6 +456,7 @@ export default {
         }
     },
     methods: {
+        humanFileSize,
         setQuality(quality, showSlug, episodes) {
             const patchData = {};
             episodes.forEach(episode => {
@@ -556,24 +558,6 @@ export default {
         },
         dedupeGenres(genres) {
             return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        },
-        humanFileSize(bytes, decimal) {
-            if (bytes === undefined) {
-                return;
-            }
-            const thresh = decimal ? 1000 : 1024;
-            if (Math.abs(bytes) < thresh) {
-                return bytes + ' B';
-            }
-            const units = decimal ?
-                ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'] :
-                ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
-            let u = -1;
-            do {
-                bytes /= thresh;
-                ++u;
-            } while (Math.abs(bytes) >= thresh && u < units.length - 1);
-            return `${bytes.toFixed(1)} ${units[u]}`;
         },
         getCountryISO2ToISO3(country) {
             return getLanguage(country).iso639_2en;
