@@ -1159,10 +1159,10 @@ definitions:
           type: object
       xemNumbering:
         type: array
-          description: Array of objects with xem indexer to scene mappings
-          items:
-            type: object
-            example: '"xemNumbering": [{"source": {"season": 6, "episode": 34}, "destination": {"season": 2, "episode": 16}}'
+        description: Array of objects with xem indexer to scene mappings
+        items:
+          type: object
+          example: '"xemNumbering": [{"source": {"season": 6, "episode": 34}, "destination": {"season": 2, "episode": 16}}'
   Episode:
     type: object
     properties:
