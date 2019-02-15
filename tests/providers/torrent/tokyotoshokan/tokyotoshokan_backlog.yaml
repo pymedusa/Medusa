@@ -83,4 +83,89 @@ interactions:
       server: [cloudflare-nginx]
       vary: [Accept-Encoding]
     status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      Cookie: [lastvisit_session=1550245785; lastvisit=1550245785; __cfduid=db61c1aaf9c7cd8715667d580b2525f6e1550245809]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 416ead1e-3139-11e9-bb74-1c1b0d9d2a41)]
+    method: GET
+    uri: http://tokyotosho.info/search.php?type=1&terms=Yu-Gi-Oh%21+VRAINS+27
+  response:
+    body:
+      string: !!binary |
+        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
+        vfprJc5/AYatpU0sMwAA
+    headers:
+      cache-control: [max-age=1800]
+      cf-ray: [4a98eea5ba42c49c-DUS]
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-length: ['3378']
+      content-type: [text/html; charset=UTF-8]
+      date: ['Fri, 15 Feb 2019 15:50:48 GMT']
+      expires: ['Fri, 15 Feb 2019 16:20:23 GMT']
+      server: [cloudflare]
+      vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
 version: 1

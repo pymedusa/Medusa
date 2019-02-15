@@ -23,7 +23,6 @@ from medusa.providers.torrent.html import (
     limetorrents,
     morethantv,
     nebulance,
-    newpct,
     nordicbits,
     pretome,
     privatehd,
@@ -34,7 +33,6 @@ from medusa.providers.torrent.html import (
     thepiratebay,
     tntvillage,
     tokyotoshokan,
-    torrent9,
     torrentbytes,
     torrenting,
     tvchaosuk,
@@ -66,8 +64,8 @@ from medusa.providers.torrent.xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits',
-    'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv', 'torznab', 'newpct', 'nordicbits',
+    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'danishbits',
+    'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv', 'torznab', 'nordicbits',
     'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',

@@ -2,38 +2,38 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 1
+    - seeders: 5
       pubdate: 2017-11-08 00:00:00
-      title: Homes Under The Hammer S20E19 720p HDTV x264-NORiTE[rartv]
-      leechers: 0
-      link: magnet:?xt=urn:btih:60C628C2BBA16D83E0451983C0973F8DC02DEF11
-      size: -1
-    - seeders: 2
+      title: Who Wants to Be a Millionaire 2019 02 13 HDTV x264-W4F [eztv]
+      leechers: 5
+      link: magnet:?xt=urn:btih:E76339618C12CA6DD84009289D020297951D7F6E
+      size: 164626432
+    - seeders: 20
       pubdate: 2017-11-08 00:00:00
-      title: Squidbillies S11E04 720p HDTV x264-MiNDTHEGAP[rartv]
-      leechers: 0
-      link: magnet:?xt=urn:btih:1801088BAAF2801E21F2526213F61B26FD0553A6
-      size: -1
-    - seeders: 1
+      title: Doom Patrol S01E01 720p WEB x265-MiNX [eztv]
+      leechers: 41
+      link: magnet:?xt=urn:btih:1847439F8319DC510A17AE9B1893F4C171003CB6
+      size: 332398592
+    - seeders: 3
       pubdate: 2017-11-08 00:00:00
-      title: Squidbillies S11E04 HDTV x264-MiNDTHEGAP[rartv]
+      title: Show Me The Movie S02E02 HDTV x264-CCT
       leechers: 0
-      link: magnet:?xt=urn:btih:9D6D689B06FEC9EF14F08C69D9BC31A9368DC242
-      size: -1
+      link: magnet:?xt=urn:btih:0880F7ADC99E861C78F7369C47660EEA8F565A88
+      size: 319815680
 
 backlog:
   search_strings:
     Episode: ['Chance S02E03']
   results:
-    - seeders: 63
-      pubdate: 2017-10-09 00:00:00
-      title: Chance S02E03 WEB h264-TBS[ettv]
-      leechers: 5
-      link: magnet:?xt=urn:btih:029AD775FD366536F19CE4F526958C1BFB1F1CFE
-      size: 255852544
-    - seeders: 59
+    - seeders: 33
       pubdate: 2017-10-09 00:00:00
       title: Chance S02E03 WEB h264-TBS [eztv]
       leechers: 46
       link: magnet:?xt=urn:btih:3E0044197C6FFD4B410FD924D7ED8467E01812D9
       size: 255852544
+    - seeders: 16
+      pubdate: 2017-10-09 00:00:00
+      title: Chance S02E03 720p WEB h264-TBS [eztv]
+      leechers: 18
+      link: magnet:?xt=urn:btih:5ED81FEECA5BAB5193D260185B4BF863D02B14FD
+      size: 740294656
