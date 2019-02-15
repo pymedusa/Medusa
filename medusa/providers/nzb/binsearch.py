@@ -51,7 +51,7 @@ class BinSearchProvider(NZBProvider):
         # Miscellaneous Options
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, **kwargs):
         """

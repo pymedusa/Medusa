@@ -77,7 +77,7 @@ class BTNProvider(TorrentProvider):
         self.supports_absolute_numbering = True
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """

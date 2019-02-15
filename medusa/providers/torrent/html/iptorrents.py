@@ -44,7 +44,7 @@ class IPTorrentsProvider(TorrentProvider):
         self.categories = '73=&60='
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
