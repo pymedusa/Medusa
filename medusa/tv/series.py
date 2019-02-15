@@ -2106,7 +2106,6 @@ class Series(TV):
         data['config'] = {}
         data['config']['location'] = self.location
         data['config']['locationValid'] = self.is_location_valid()
-        data['config']['locationSize'] = helpers.get_size(self.location)
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
@@ -2149,6 +2148,7 @@ class Series(TV):
 
         if detailed:
             episodes = self.get_all_episodes()
+            data['size'] = self.size
             data['seasons'] = [list(v) for _, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
 
