@@ -5,22 +5,22 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: [!!python/unicode 'gzip,deflate']
       Connection: [keep-alive]
-      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 364e1a9e-314a-11e9-837f-1c1b0d9d2a41)]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 8f8dca51-315b-11e9-a5d0-1c1b0d9d2a41)]
     method: GET
-    uri: http://torrentapi.org/pubapi_v2.php?get_token=get_token&format=json&app_id=medusa
+    uri: http://torrentapi.org/pubapi_v2.php?format=json&app_id=medusa&get_token=get_token
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA6tWKsnPTs1TslIqyMk1t6zMz8yyUKoFAP73yn4WAAAA
+        H4sIAAAAAAAAA6tWKsnPTs1TslJKTUs3KyowTEm2UKoFAMjI9FoWAAAA
     headers:
-      cf-ray: [4a999e6b5f53c4d3-DUS]
+      cf-ray: [4a9a549bd8d3c4dd-DUS]
       connection: [keep-alive]
       content-encoding: [gzip]
       content-type: [application/json]
-      date: ['Fri, 15 Feb 2019 17:50:47 GMT']
+      date: ['Fri, 15 Feb 2019 19:55:10 GMT']
       server: [cloudflare]
-      set-cookie: ['__cfduid=dbfb3bbd9319b1d2986257f1d0ccdfbfc1550253047; expires=Sat,
-          15-Feb-20 17:50:47 GMT; path=/; domain=.torrentapi.org; HttpOnly']
+      set-cookie: ['__cfduid=daa5e61212e03caa3a593fc663d3e767f1550260510; expires=Sat,
+          15-Feb-20 19:55:10 GMT; path=/; domain=.torrentapi.org; HttpOnly']
       transfer-encoding: [chunked]
       vary: [Accept-Encoding]
     status: {code: 200, message: OK}
@@ -30,39 +30,39 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: [!!python/unicode 'gzip,deflate']
       Connection: [keep-alive]
-      Cookie: [__cfduid=dbfb3bbd9319b1d2986257f1d0ccdfbfc1550253047]
-      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 364e1a9e-314a-11e9-837f-1c1b0d9d2a41)]
+      Cookie: [__cfduid=daa5e61212e03caa3a593fc663d3e767f1550260510]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 8f8dca51-315b-11e9-a5d0-1c1b0d9d2a41)]
     method: GET
-    uri: http://torrentapi.org/pubapi_v2.php?format=json_extended&min_seeders=0&limit=100&min_leechers=0&mode=search&search_string=Lethal+Weapon+S02E05&category=tv&ranked=0&sort=seeders&app_id=medusa&token=plm79yoij8
+    uri: http://torrentapi.org/pubapi_v2.php?app_id=medusa&min_seeders=0&category=tv&search_string=Lethal+Weapon+S02E05&limit=100&mode=search&sort=seeders&format=json_extended&token=efg6rp1dc8&ranked=0&min_leechers=0
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA+2Y7U/bRhjA/xVkCb4MzHPvd5ZQBSNbp1I2pVErrVTWvRk8EttyLowO8b/vYijJ
-        WgxEaz+AYjk+3ftj3+95y1US6rb1VchbP52NwzTJPl4loQxjn2TJkQ9nepx+8Lqpq/Qd4AGw9PXh
-        6H16iTndefPb0dFg+O5jq9tw8SnZTqwO/rRuP8epo/cbg6ac1s5PY4er/67GtXaxY6JPKx+yV5dh
-        b9ZWmQnlWQYFRdQpbbSkhfUSvLYOjLKagNCWKC+otIZsuWrvaTJtsoNOqk12uBXavbMQmk2yv4l/
-        iXdotT33bXpbFuVlautJ7JYQe3VV1bPK+vm0mVvMUmlc0JymEx+bsEDQNyDUPQPqxlep85O6Ksvb
-        HREhYmnP+KWm3jvfxmNAfDsZe2/PuhrEnvKfeCYEIRAMEbSdNDPj4geP3xQDEjsI7YDcAJyBzJjY
-        +AniFRf0N6eQl1VRJ9lVUk6ciVNCYIhTpHgcEi5afRrXqWbj8bzWDYgbCTVfIJxFkS9K37VygdB8
-        ii7br/cW3WbVbBIbWfcmelpXN3U8X2cB1UYZNoal88n1dtLq6txHMOILzUXMm06UZH5i0+xk92T3
-        FlDdlGndnp7stt6VrbchD3X3Umlz1rwK9bmv9prxRKjPdfmX3Gr2UE5zyGUu4pPl+YKxuOsjiCOQ
-        0KQfBgc3TI0Oehl/fbgC5tKwAgnphDaYGCSExlQW1kCBqceYAmK+ECB7Mf9WrufPubgXc8Qx5sAl
-        sD7OUcZohtec33HOcxWf+QKyxzl/CuErWHGukPSOI4Zl4Yx2xAFRXHBFCqkxMlgZHA+2F++XBTa9
-        335zDkhh3mu/I9eQYbrmepnruf2+o+tJXA/L5oal4f7w4Nf/QbWAeF5WCqUpBeniRR2WnmppMcNa
-        I+O4woV+iOr/CvNMeSbLPKM7nhWlnElFenhGPMKcwZrnW55VjmOJ8nzB1eM8C/wjwhEkPKVGMUCx
-        tMRwr7xBlBYxKGGFlsbMD9b4XrK/Eev5G218L+Qx5pZIckHVA1YbZViuKV+22jzPF4w9kfInZ5cr
-        oS6shEJgo8ATAtgxRjl30iminRSgPbcYC9pvxO+X7YXxvoi+McVUMIz6rPo8y+QxSF/zvpxlkmjV
-        70B7nPfYmJYhnYt4m9ntv/3z+Eu8cHj4R0z4bnA7HpnvogbKC61VARaERrYovCcaURxvkNRibZUv
-        PFjeqwYrifzCtOPOG2AulJKCKdof8wDL6NobLMU8JJb5gr/VtKOzvj9aOQrEDBApjSTAkWGaAzjF
-        LFCJdEGIBm0sK/rDoVUkfmG6sfAcLLpXSjCGHt3A0XPgmOKudeOLbpDuly/we1w3yuPRYHi8f7T0
-        h+DrOVhvB6Offz/+LtpgPEjFkbWaGqI9MpwCMTFkslR4ial1mjnD+yOmh2V8/vzD/ZkCUwRxBvxr
-        3yB3gO4g3OXDZO0bOv5ZlwvTGD1F37AALrn+dP0vPMQbLZgaAAA=
+        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
     headers:
-      cf-ray: [4a999e8bfebbc4d3-DUS]
+      cf-ray: [4a9a54bb8db7c4dd-DUS]
       connection: [keep-alive]
       content-encoding: [gzip]
       content-type: [application/json]
-      date: ['Fri, 15 Feb 2019 17:50:52 GMT']
+      date: ['Fri, 15 Feb 2019 19:55:15 GMT']
       server: [cloudflare]
       transfer-encoding: [chunked]
       vary: [Accept-Encoding]
