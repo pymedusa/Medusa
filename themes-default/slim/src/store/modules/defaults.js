@@ -34,14 +34,29 @@ const state = {
             airdateOffset: null
         },
         countries: null,
-        countryCodes: null,
         genres: [],
         id: {
             tvdb: null,
             slug: null
         },
         indexer: null,
-        imdbInfo: {},
+        imdbInfo: {
+            akas: null,
+            certificates: null,
+            countries: null,
+            countryCodes: null,
+            genres: null,
+            imdbId: null,
+            imdbInfoId: null,
+            indexer: null,
+            indexerId: null,
+            lastUpdate: null,
+            plot: null,
+            rating: null,
+            runtimes: null,
+            title: null,
+            votes: null
+        },
         language: null,
         network: null,
         nextAirDate: null,
@@ -58,7 +73,9 @@ const state = {
         title: null,
         type: null,
         year: {},
-        showQueueStatus: []
+        size: null,
+        showQueueStatus: [],
+        xemNumbering: []
     }
 };
 
