@@ -45,7 +45,7 @@ setup(
         'pep8-naming>=0.7.0',
         'pycodestyle>=2.4.0',
         'pytest>=4.1.0',
-        'pytest-cov>=2.6.0',
+        'pytest-cov>=2.6.1',
         'pytest-flake8>=1.0.2',
         'pytest-tornado5>=2.0.0',
         'PyYAML>=3.13,<4',
