@@ -44,10 +44,8 @@ class CinemaZProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = False
 
-        # Torrent Stats
-
         # Cache
-        self.cache = tv.Cache(self)  # only poll CinemaZ every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """

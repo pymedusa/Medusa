@@ -42,10 +42,6 @@ class ZooqleProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=15)
 
@@ -99,8 +95,11 @@ class ZooqleProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('div', class_='panel-body')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+            torrent_table = html('div', class_='panel-body', limit=2)
+            if mode != 'RSS':
+                torrent_rows = torrent_table[1]('tr') if torrent_table else []
+            else:
+                torrent_rows = torrent_table[0]('tr') if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -131,7 +130,7 @@ class ZooqleProvider(TorrentProvider):
                             leechers = try_int(peers[1][10:])
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

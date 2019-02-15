@@ -42,10 +42,6 @@ class DanishbitsProvider(TorrentProvider):
         self.freeleech = True
         self.session.headers['User-Agent'] = USER_AGENT
 
-        # Torrent Stats
-        self.minseed = 0
-        self.minleech = 0
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -131,7 +127,7 @@ class DanishbitsProvider(TorrentProvider):
                 leechers = row.get('leechers')
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',

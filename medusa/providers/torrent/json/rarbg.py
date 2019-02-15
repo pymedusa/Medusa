@@ -45,10 +45,6 @@ class RarbgProvider(TorrentProvider):
         self.ranked = None
         self.sorting = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=15)
 
@@ -69,8 +65,8 @@ class RarbgProvider(TorrentProvider):
         search_params = {
             'app_id': app.RARBG_APPID,
             'category': 'tv',
-            'min_seeders': try_int(self.minseed),
-            'min_leechers': try_int(self.minleech),
+            'min_seeders': self.minseed,
+            'min_leechers': self.minleech,
             'limit': 100,
             'format': 'json_extended',
             'ranked': try_int(self.ranked),
@@ -168,7 +164,7 @@ class RarbgProvider(TorrentProvider):
                 leechers = row.pop('leechers', 0)
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',

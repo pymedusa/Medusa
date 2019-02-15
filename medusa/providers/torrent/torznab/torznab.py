@@ -46,10 +46,6 @@ class TorznabProvider(TorrentProvider):
         self.cat_ids = cat_ids or ['5010', '5030', '5040']
         self.cap_tv_search = cap_tv_search or []
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
         # construction.
@@ -182,7 +178,7 @@ class TorznabProvider(TorrentProvider):
                     leechers = int(peers_attr.get('value', 0)) if peers_attr else 0
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

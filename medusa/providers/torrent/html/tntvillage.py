@@ -53,10 +53,6 @@ class TNTVillageProvider(TorrentProvider):
         self.engrelease = None
         self.subtitle = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
@@ -145,7 +141,7 @@ class TNTVillageProvider(TorrentProvider):
                     seeders = try_int(seeders, 1)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

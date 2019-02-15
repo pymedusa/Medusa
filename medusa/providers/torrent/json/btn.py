@@ -76,10 +76,6 @@ class BTNProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
@@ -145,7 +141,7 @@ class BTNProvider(TorrentProvider):
             leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
+            if seeders < self.minseed:
                 log.debug("Discarding torrent because it doesn't meet the"
                           ' minimum seeders: {0}. Seeders: {1}',
                           title, seeders)

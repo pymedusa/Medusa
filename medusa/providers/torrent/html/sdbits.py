@@ -47,10 +47,6 @@ class SDBitsProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
@@ -140,7 +136,7 @@ class SDBitsProvider(TorrentProvider):
                     leechers = try_int(cells[8].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
