@@ -6,6 +6,7 @@
 - Added per show required/preferred words exclude option ([#4982](https://github.com/pymedusa/Medusa/pull/6033))
 
 #### Improvements
+- Vueified the partial mako template showheader.mako into show-header.vue ([#6189](https://github.com/pymedusa/Medusa/pull/6189))
 
 #### Fixes
 - Fixed saving newznab provider API key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
