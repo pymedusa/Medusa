@@ -22,7 +22,7 @@
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
-                    <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
+                    <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season.season === 0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
@@ -30,14 +30,14 @@
                         <span>
                             <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season[0].season" :value="'#season-' + season[0].season" :data-season="season[0].season">
-                                    {{ season[0].season === 0 ? 'Specials' : 'Season ' + season[0].season }}
+                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season.season" :value="'#season-' + season.season" :data-season="season.season">
+                                    {{ season.season === 0 ? 'Specials' : 'Season ' + season.season }}
                                 </option>
                             </select>
                             <template v-else-if="show.seasons.length >= 1">
                                 Season:
                                 <template v-for="(season, $index) in reverse(show.seasons)">
-                                    <app-link :href="'#season-' + season[0].season" :key="`jumpToSeason-${season[0].season}`">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
+                                    <app-link :href="'#season-' + season.season" :key="`jumpToSeason-${season.season}`">{{ season.season === 0 ? 'Specials' : season.season }}</app-link>
                                     <slot> </slot>
                                     <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
@@ -413,8 +413,8 @@ export default {
                 Unset: 0,
                 Archived: 0
             };
-            seasons.forEach(episodes => {
-                episodes.forEach(episode => {
+            seasons.forEach(function (season) {
+                season.episodes.forEach(function (episode) {
                     summary[episode.status] += 1;
                 });
             });
@@ -461,6 +461,7 @@ export default {
         humanFileSize,
         setQuality(quality, showSlug, episodes) {
             const patchData = {};
+
             episodes.forEach(episode => {
                 patchData[episode] = { quality: parseInt(quality, 10) };
             });
