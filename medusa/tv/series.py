@@ -99,7 +99,7 @@ from medusa.name_parser.parser import (
 )
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
-from medusa.scene_numbering import get_xem_numbering_for_show
+from medusa.scene_numbering import get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -601,6 +601,16 @@ class Series(TV):
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self)
+
+    @property
+    def xem_absolute_numbering(self):
+        """Return series xem absolute numbering."""
+        return get_xem_absolute_numbering_for_show(self)
+
+    @property
+    def scene_absolute_numbering(self):
+        """Return series scene absolute numbering."""
+        return get_scene_absolute_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -2149,10 +2159,11 @@ class Series(TV):
         if detailed:
             episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [list(v) for _, v in
+            data['seasons'] = [{'episodes': list(v), 'season': season} for season, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
 
             data['episodeCount'] = len(episodes)
+            data['seasonCount'] = len(data['seasons'])
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
@@ -2160,6 +2171,8 @@ class Series(TV):
             data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
                                      'destination': {'season': dest[0], 'episode': dest[1]}}
                                     for src, dest in viewitems(self.xem_numbering)]
+            data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
+            data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
 
         return data
 
