@@ -32,7 +32,6 @@ from medusa.providers.torrent import (
     hdspace,
     hdtorrents,
     hebits,
-    horriblesubs,
     iptorrents,
     limetorrents,
     morethantv,
@@ -68,7 +67,7 @@ __all__ = [
     'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor',
     'abnormal', 'scenetime', 'nebulance', 'tvchaosuk', 'bitcannon', 'torrentz2', 'pretome', 'anizb',
     'hdspace', 'nordicbits', 'danishbits', 'limetorrents', 'norbits', 'bithdtv',
-    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting',
+    'zooqle', 'animebytes', 'animetorrents', 'anidex', 'shanaproject', 'torrenting',
     'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz', 'avistaz', 'bjshare'
 ]
 
