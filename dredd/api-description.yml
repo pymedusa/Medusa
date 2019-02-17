@@ -941,6 +941,9 @@ definitions:
         type: string
         description: "Air time"
         example: "Thursday 8:00 PM"
+      airsFormatValid:
+        type: boolean
+        description: "Tests the airs format"
       language:
         type: string
         description: Language code
@@ -948,11 +951,40 @@ definitions:
       showType:
         type: string
         enum: [series, anime, sports]
-      akas:
+      imdbInfo:
         type: object
-        description: Also known as
-        additionalProperties:
-          type: string
+        description: "Object with additional show information retrieved from imdb"
+        properties:
+          akas:
+            type: string
+          certificates:
+            type: string
+          countries:
+            type: string
+          countryCodes:
+            type: string
+          genres:
+            type: string
+          imdbId:
+            type: string
+          imdbInfoId:
+            type: integer
+          indexer:
+            type: integer
+          indexerId:
+            type: integer
+          lastUpdate:
+            type: integer
+          plot:
+            type: string
+          rating:
+            type: string
+          runtimes:
+            type: integer
+          title:
+            type: string
+          votes:
+            type: integer
       year:
         type: object
         properties:
@@ -1028,6 +1060,9 @@ definitions:
             type: string
             description: Series home folder
             example: "/library/My Series"
+          locationValid:
+            type: boolean
+            description: Result of a stat on the configured location
           qualities:
             type: object
             description: Qualities settings
@@ -1114,6 +1149,20 @@ definitions:
         minimum: 0
         maximum: 10000
         description: Total number of episodes. Available in detailed view
+      size:
+        type: integer
+        description: Show size on disk calculated from the shows configured location
+      showQueueStatus:
+        type: array
+        description: Array of objects with information on the different queues used for operations on a show.
+        items:
+          type: object
+      xemNumbering:
+        type: array
+        description: Array of objects with xem indexer to scene mappings
+        items:
+          type: object
+          example: '"xemNumbering": [{"source": {"season": 6, "episode": 34}, "destination": {"season": 2, "episode": 16}}'
   Episode:
     type: object
     properties:

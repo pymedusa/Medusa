@@ -12,7 +12,6 @@ const state = {
 
 const mutations = {
     [ADD_SHOW](state, show) {
-        console.log(`show id: ${show.id}`);
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
 
         if (!existingShow) {

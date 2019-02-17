@@ -66,7 +66,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
-from medusa.helpers.utils import safe_get
+from medusa.helpers.utils import safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -1925,6 +1925,33 @@ class Series(TV):
         for episode in episodes:
             episode.download_subtitles()
 
+    @property
+    def show_queue_status(self):
+        """Return a status the show checking the queue scheduler if there is currently an action queued or active."""
+        return [
+            {'action': 'isBeingAdded',
+             'active': app.show_queue_scheduler.action.isBeingAdded(self),
+             'message': 'This show is in the process of being downloaded - the info below is incomplete'},
+            {'action': 'isBeingUpdated',
+             'active': app.show_queue_scheduler.action.isBeingUpdated(self),
+             'message': 'The information on this page is in the process of being updated'},
+            {'action': 'isBeingRefreshed',
+             'active': app.show_queue_scheduler.action.isBeingRefreshed(self),
+             'message': 'The episodes below are currently being refreshed from disk'},
+            {'action': 'isBeingSubtitled',
+             'active': app.show_queue_scheduler.action.isBeingSubtitled(self),
+             'message': 'Currently downloading subtitles for this show'},
+            {'action': 'isInRefreshQueue',
+             'active': app.show_queue_scheduler.action.isInRefreshQueue(self),
+             'message': 'This show is queued to be refreshed'},
+            {'action': 'isInUpdateQueue',
+             'active': app.show_queue_scheduler.action.isInUpdateQueue(self),
+             'message': 'This show is queued and awaiting an update'},
+            {'action': 'isInSubtitleQueue',
+             'active': app.show_queue_scheduler.action.isInSubtitleQueue(self),
+             'message': 'This show is queued and awaiting subtitles download'},
+        ]
+
     def save_to_db(self):
         """Save to database."""
         if not self.dirty:
@@ -2054,9 +2081,10 @@ class Series(TV):
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
-        data['akas'] = self.imdb_akas
+        data['imdbInfo'] = {to_camel_case(k): v for k, v in viewitems(self.imdb_info)}
         data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
@@ -2073,10 +2101,11 @@ class Series(TV):
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
-        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
+        data['countryCodes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.plot or self.imdb_plot
         data['config'] = {}
         data['config']['location'] = self.location
+        data['config']['locationValid'] = self.is_location_valid()
         data['config']['qualities'] = {}
         data['config']['qualities']['allowed'] = self.qualities_allowed
         data['config']['qualities']['preferred'] = self.qualities_preferred
@@ -2119,12 +2148,18 @@ class Series(TV):
 
         if detailed:
             episodes = self.get_all_episodes()
+            data['size'] = self.size
             data['seasons'] = [list(v) for _, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+
             data['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
+            data['showQueueStatus'] = self.show_queue_status
+            data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
+                                     'destination': {'season': dest[0], 'episode': dest[1]}}
+                                    for src, dest in viewitems(self.xem_numbering)]
 
         return data
 

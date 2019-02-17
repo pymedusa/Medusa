@@ -79,3 +79,9 @@ def to_timestamp(dt):
         dt_utc = dt.astimezone(tz.gettz('UTC'))
 
     return (dt_utc - epoch).total_seconds()
+
+
+def to_camel_case(snake_str):
+    """Convert a snake formatted string to camel case."""
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
