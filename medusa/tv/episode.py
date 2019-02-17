@@ -1076,6 +1076,8 @@ class Episode(TV):
         data['scene'] = {}
         data['scene']['season'] = self.scene_season
         data['scene']['episode'] = self.scene_episode
+        data['hasNfo'] = self.hasnfo
+        data['hasTbn'] = self.hastbn
 
         if self.scene_absolute_number:
             data['scene']['absoluteNumber'] = self.scene_absolute_number
