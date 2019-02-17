@@ -75,7 +75,9 @@ const state = {
         year: {},
         size: null,
         showQueueStatus: [],
-        xemNumbering: []
+        xemNumbering: [],
+        xemAbsoluteNumbering: [],
+        sceneAbsoluteNumbering: []
     }
 };
 
