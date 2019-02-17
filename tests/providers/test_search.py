@@ -32,7 +32,8 @@ def search(search_type, provider):
         actual = provider.klass.search(test_case['search_strings'])
 
     # Check if we got any results
-    assert actual != []
+    if record_cassettes:
+        assert actual != []
 
     for i, result in enumerate(actual):
         # Only compare up to the info hash if we have magnets

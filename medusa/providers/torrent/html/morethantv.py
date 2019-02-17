@@ -37,8 +37,6 @@ class MoreThanTVProvider(TorrentProvider):
         # Credentials
         self.username = None
         self.password = None
-        self._uid = None
-        self._hash = None
 
         # URLs
         self.url = 'https://www.morethan.tv/'
