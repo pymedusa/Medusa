@@ -1383,6 +1383,10 @@ ul.tags li a {
     background-color: rgb(195, 227, 200);
 }
 
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
 .qual {
     background-color: rgb(255, 218, 138);
 }
@@ -1437,7 +1441,7 @@ span.snatched b {
     font-weight: 800;
 }
 
-.displayShowTable {
+.displayShowTable > table {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1452,7 +1456,7 @@ span.snatched b {
     clear: both;
 }
 
-.displayShowTable th.row-seasonheader {
+.displayShowTable > table th.row-seasonheader {
     border: none !important;
     background-color: rgb(34, 34, 34) !important;
     color: rgb(255, 255, 255) !important;
@@ -1460,11 +1464,11 @@ span.snatched b {
     text-align: left !important;
 }
 
-.displayShowTable td.col-search {
+.displayShowTable > table td.col-search {
     text-align: center;
 }
 
-.displayShowTableFanArt {
+.displayShowTableFanArt > table {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1484,7 +1488,7 @@ span.snatched b {
     opacity: 0.9;
 }
 
-.displayShowTableFanArt th.row-seasonheader {
+.displayShowTableFanArt > table th.row-seasonheader {
     border: none !important;
     background-color: transparent !important;
     color: rgb(255, 255, 255) !important;
@@ -1492,7 +1496,7 @@ span.snatched b {
     text-align: left !important;
 }
 
-.displayShowTableFanArt td.col-search {
+.displayShowTableFanArt > table td.col-search {
     text-align: center;
 }
 
@@ -1500,7 +1504,7 @@ span.snatched b {
     color: rgb(255, 255, 255) !important;
 }
 
-.tablesorterFanArt {
+.tablesorterFanArt > table {
     background-color: transparent !important;
 }
 
