@@ -2,24 +2,24 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 0
+    - seeders: 1
       pubdate: 2017-11-17 00:00:00
-      title: The.Young.and.the.Restless.2019.02.14.1080p.CBS.WEBRip.AAC2.0.x264-SOAP[rartv]
-      leechers: 0
-      link: magnet:?xt=urn:btih:6ce612737f9f4669973e5a88d79cc452c47cb21f
-      size: 1272633278
-    - seeders: 12
+      title: The.Voice.UK.S08E05.WEBRip.x264-ION10
+      leechers: 17
+      link: magnet:?xt=urn:btih:e40b39d3ff9301f18ddeef3e6ae5c0de1d7d219d
+      size: 675478909
+    - seeders: 14
       pubdate: 2017-11-17 00:00:00
-      title: Show.Me.The.Movie.S02E02.1080p.HDTV.x264-CCT[rartv]
-      leechers: 4
-      link: magnet:?xt=urn:btih:2d657ff7f2c65f2a864d0c62661c240f50703ee8
-      size: 1988038054
-    - seeders: 12
+      title: BBC.Williams.Formula.1.in.the.Blood.1080p.HDTV.x264.AAC.MVGroup.org.mkv
+      leechers: 55
+      link: magnet:?xt=urn:btih:a8a153c0390e6357b49a41d28e7b04150be9078d
+      size: 3586064806
+    - seeders: 16
       pubdate: 2017-11-17 00:00:00
-      title: Show.Me.The.Movie.S02E02.720p.HDTV.x264-CCT[rartv]
-      leechers: 3
-      link: magnet:?xt=urn:btih:e30a73f5e815856d82f11f97c42260c4ce7bf90e
-      size: 994381508
+      title: BBC.Williams.Formula.1.in.the.Blood.720p.HDTV.x265.AAC.MVGroup.org.mkv
+      leechers: 42
+      link: magnet:?xt=urn:btih:ead53a320f5c6dd012f8b4cb3cd70f5e70b8bc31
+      size: 1225778158
 
 backlog:
   search_strings:

@@ -2,38 +2,38 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 0
+    - seeders: 4
       pubdate: 2017-11-17 00:00:00
-      title: '[Sick-Fansubs] Boruto - Naruto Next Generations 33 [720p][EA92D113].mp4'
-      leechers: 4
-      link: https://nyaa.si/download/979570.torrent
-      size: 364275302
-    - seeders: 10
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [720p][1FB3C050].mkv'
+      leechers: 15
+      link: https://nyaa.si/download/1119253.torrent
+      size: 392481996
+    - seeders: 2
       pubdate: 2017-11-17 00:00:00
-      title: '[PuyaSubs!] Net-Juu no Susume - 07 [720p][073ED4B2].mkv'
-      leechers: 25
-      link: https://nyaa.si/download/979569.torrent
-      size: 337536614
-    - seeders: 8
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [1080p][5AF71C7D].mkv'
+      leechers: 8
+      link: https://nyaa.si/download/1119252.torrent
+      size: 878811545
+    - seeders: 1
       pubdate: 2017-11-17 00:00:00
-      title: '[PuyaSubs!] Net-Juu no Susume - 07 [1080p][CB41FA09].mkv'
-      leechers: 17
-      link: https://nyaa.si/download/979568.torrent
-      size: 567594188
+      title: '[AniDUB]_Yakusoku_no_Neverland_[06]_[1080p]'
+      leechers: 2
+      link: https://nyaa.si/download/1119251.torrent
+      size: 454557696
 
 backlog:
   search_strings:
     Episode: ['Dragon Ball Super 115']
   results:
-    - seeders: 18
+    - seeders: 0
       pubdate: 2017-11-14 00:00:00
-      title: '[SOFCJ-Raws] Dragon Ball Super - 115 (THK 1280x720 x264 AAC).mp4'
-      leechers: 5
-      link: https://nyaa.si/download/978757.torrent
-      size: 678323814
-    - seeders: 27
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [x264] [pseudo].mkv'
+      leechers: 0
+      link: https://nyaa.si/download/980046.torrent
+      size: 227331276
+    - seeders: 0
       pubdate: 2017-11-14 00:00:00
-      title: '[SOFCJ-Raws] Dragon Ball Super - 115 (CX 1280x720 x264 AAC).mp4'
-      leechers: 8
-      link: https://nyaa.si/download/978756.torrent
-      size: 620442419
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [HEVC] [x265] [pseudo].mkv'
+      leechers: 0
+      link: https://nyaa.si/download/980045.torrent
+      size: 178362777

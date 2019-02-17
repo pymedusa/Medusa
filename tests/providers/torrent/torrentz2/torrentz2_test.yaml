@@ -2,24 +2,24 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 68
+    - seeders: 4
       pubdate: 2017-11-12 00:00:00
-      title: '[.GkTorrent.tv.].The.Walking.Dead.S09E09.SUBFRENCH.WEBRip.XviD-ZT.avi'
-      leechers: 6
-      link: magnet:?xt=urn:btih:077ca7fea2515ed60219b0a8662372a1a39bc4c6
-      size: 367001600
-    - seeders: 23
+      title: Marvels.The.Punisher.2017.S02.2160p.NF.WEBRip.H.264.RUS.LF.DDP5.1-EniaHD
+      leechers: 4
+      link: magnet:?xt=urn:btih:863bcf64fd3873ed7ae62559c497b51f9f0c799c
+      size: 34603008
+    - seeders: 0
       pubdate: 2017-11-12 00:00:00
-      title: Suits.S08E14.720p.HDTV.x264-AVS[ArenaBG]
+      title: Saturday.Night.Live.S44E13.Don.Cheadle.Gary.Clark.Jr.1080p.HULU.WEBRip.AAC2.0.H264-monkee[rarbg]
       leechers: 0
-      link: magnet:?xt=urn:btih:16be539759118599961497f5e50d655cd36815c8
-      size: 691011584
-    - seeders: 190
+      link: magnet:?xt=urn:btih:2db802cc4ba5a720941454e9b09a0c4be9c8ee0b
+      size: 3027238912
+    - seeders: 3
       pubdate: 2017-11-12 00:00:00
-      title: Homecoming.-.Temporada.1.[HDTV.720p][Cap.101_105][AC3.5.1.Castellano][www.pctnew.com]
-      leechers: 130
-      link: magnet:?xt=urn:btih:16bad86fd8790480ac2f804fd5b4f2e57f33c1eb
-      size: 11534336
+      title: World.Cup.2018.Semi-final.Croatia-England.HDTV.1080i.ts
+      leechers: 0
+      link: magnet:?xt=urn:btih:743015de447c2a28ecd48ec31211a9e40501f44d
+      size: 13631488
 
 backlog:
   search_strings:
@@ -34,6 +34,6 @@ backlog:
     - seeders: 2
       pubdate: 2017-11-12 00:00:00
       title: Lethal.Weapon..Season.3.(WEB-DL.l.720p.l.Jaskier)
-      leechers: 5
+      leechers: 23
       link: magnet:?xt=urn:btih:1a36685aa7468edfc2b05590bc19034d4c7c402e
       size: 13631488

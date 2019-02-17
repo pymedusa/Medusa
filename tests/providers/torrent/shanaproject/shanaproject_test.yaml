@@ -4,22 +4,22 @@ daily:
   results:
     - seeders: 1
       pubdate: 2017-11-16 00:00:00
-      title: '[HorribleSubs] Inuyashiki - 06 [1080p].mkv'
+      title: '[Erai-raws] Mahou Shoujo Tokushusen Asuka - 06 [1080p][Multiple Subtitle].mkv'
       leechers: 0
-      link: https://www.shanaproject.com/download/162660/
-      size:  621165936
+      link: https://www.shanaproject.com/download/188184/
+      size:  878916403
     - seeders: 1
       pubdate: 2017-11-16 00:00:00
-      title: '[HorribleSubs] Inuyashiki - 06 [720p].mkv'
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [1080p].mkv'
       leechers: 0
-      link: https://www.shanaproject.com/download/162659/
-      size: 251333181
+      link: https://www.shanaproject.com/download/188183/
+      size: 879199518
     - seeders: 1
       pubdate: 2017-11-16 00:00:00
-      title: '[HorribleSubs] Inuyashiki - 06 [480p].mkv'
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [720p].mkv'
       leechers: 0
-      link: https://www.shanaproject.com/download/162658/
-      size: 99530833
+      link: https://www.shanaproject.com/download/188182/
+      size: 392828026
 
 backlog:
   search_strings:
@@ -27,13 +27,13 @@ backlog:
   results:
     - seeders: 1
       pubdate: 2017-11-16 00:00:00
-      title: Yu-Gi-Oh! VRAINS - 27 (1280x720 HEVC2 AAC).mkv
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 89 [1080p].mkv'
       leechers: 0
-      link: https://www.shanaproject.com/download/162646/
-      size: 179914670
+      link: https://www.shanaproject.com/download/188069/
+      size: 1428076625
     - seeders: 1
       pubdate: 2017-11-15 00:00:00
-      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 27 [1080p].mkv'
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 89 [720p].mkv'
       leechers: 0
-      link: https://www.shanaproject.com/download/162593/
-      size: 578289664
+      link: https://www.shanaproject.com/download/188068/
+      size: 566807756

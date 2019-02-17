@@ -2,24 +2,24 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 5
+    - seeders: 10
       pubdate: 2017-11-08 00:00:00
-      title: Who Wants to Be a Millionaire 2019 02 13 HDTV x264-W4F [eztv]
+      title: Beat Bobby Flay S19E06 Choc O Love 480p x264-mSD [eztv]
       leechers: 5
-      link: magnet:?xt=urn:btih:E76339618C12CA6DD84009289D020297951D7F6E
-      size: 164626432
-    - seeders: 20
+      link: magnet:?xt=urn:btih:7D0358FC19C33367196F67FA11D74D88AB5EBC3D
+      size: 131072000
+    - seeders: 2
       pubdate: 2017-11-08 00:00:00
-      title: Doom Patrol S01E01 720p WEB x265-MiNX [eztv]
-      leechers: 41
-      link: magnet:?xt=urn:btih:1847439F8319DC510A17AE9B1893F4C171003CB6
-      size: 332398592
+      title: Beat Bobby Flay S19E06 Choc O Love 480p x264-mSD
+      leechers: 2
+      link: magnet:?xt=urn:btih:8529C50A64665EF8B82B579F7C6195612C6ABEA0
+      size: -1
     - seeders: 3
       pubdate: 2017-11-08 00:00:00
-      title: Show Me The Movie S02E02 HDTV x264-CCT
-      leechers: 0
-      link: magnet:?xt=urn:btih:0880F7ADC99E861C78F7369C47660EEA8F565A88
-      size: 319815680
+      title: Beat Bobby Flay S19E06 Choc O Love XviD-AFG
+      leechers: 1
+      link: magnet:?xt=urn:btih:7B9FA4071A993775F9F5430B33B83F015E8D5591
+      size: 337641472
 
 backlog:
   search_strings:
