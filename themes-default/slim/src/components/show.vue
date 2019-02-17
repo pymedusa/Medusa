@@ -2,6 +2,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
+import { humanFileSize } from '../utils';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -39,7 +40,9 @@ export default {
         }
     },
     data() {
-        return {};
+        return {
+            invertTable: true
+        };
     },
     computed: {
         ...mapState({
@@ -54,6 +57,19 @@ export default {
         },
         id() {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
+        },
+        seasonsInverse() {
+            const { invertTable, show } = this;
+            const { seasons } = show;
+            if (!seasons) {
+                return [];
+            }
+            
+            if (invertTable) {
+                return this.show.seasons.slice().reverse();
+            } else {
+                return this.show.seasons;
+            }
         }
     },
     mounted() {
@@ -243,6 +259,7 @@ export default {
         getSeasonSceneExceptions();
     },
     methods: {
+        humanFileSize,
         ...mapActions({
             getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
         }),
@@ -418,6 +435,64 @@ export default {
                     }
                 }
             });
+        },
+        /**
+         * Check if any of the episodes in this season does not have the status "unaired".
+         * If that's the case we want to manual season search icon.
+         */
+        anyEpisodeNotUnaired(season) {
+            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
+        },
+        episodesInverse(season) {
+            const { invertTable } = this;
+            if (!season.episodes) {
+                return [];
+            }
+            if (invertTable) {
+                return season.episodes.slice().reverse();
+            } else {
+                return season.episodes;
+            }
+        },
+        /**
+         * Check if the season/episode combination exists in the scene numbering.
+         */
+        getSceneNumbering(episode) {
+            const { show } = this;
+            const { xemNumbering } = show;
+
+            if (xemNumbering.length !== 0) {
+                const mapped = xemNumbering.filter(x => {
+                    return x.source.season === episode.season && x.source.episode === episode.episode;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].destination;
+                }
+            }
+            return { season: 0, episode: 0 };
+        },
+        getSceneAbsoluteNumbering(episode) {
+            const { show } = this;
+            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;  
+            const xemAbsolute = xemAbsoluteNumbering[episode.absoluteNumber];
+
+            if (Object.keys(sceneAbsoluteNumbering).length > 0) {
+                return sceneAbsoluteNumbering[episode.absoluteNumber];
+            } else if (xemAbsolute) {
+                return xemAbsolute;
+            }
+            return 0;
+        },
+        retryDownload(episode) {
+            const { config } = this;
+            return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        showSubtitleButton(episode) {
+            const { config, show } = this;
+            return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        totalSeasonEpisodeSize(season) {
+            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
         }
     }
 };
