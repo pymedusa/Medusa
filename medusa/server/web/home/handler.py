@@ -795,17 +795,6 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
-
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(
-            'SELECT * '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season >= ? '
-            'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
         t = PageTemplate(rh=self, filename='displayShow.mako')
         submenu = [{
             'title': 'Edit',
@@ -813,91 +802,8 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil',
         }]
 
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'menu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'menu-icon-emby',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'menu-icon-backlog',
-                    })
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
-
         return t.render(
             submenu=submenu[::-1],
-            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
             controller='home', action='displayShow',
         )
 
