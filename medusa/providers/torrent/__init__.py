@@ -12,7 +12,6 @@ from medusa.providers.torrent.html import (
     avistaz,
     bithdtv,
     bjshare,
-    btdb,
     cinemaz,
     elitetracker,
     hdspace,
@@ -70,5 +69,5 @@ __all__ = [
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare', 'btdb'
+    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare'
 ]

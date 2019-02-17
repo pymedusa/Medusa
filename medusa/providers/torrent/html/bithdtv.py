@@ -128,7 +128,7 @@ class BithdtvProvider(TorrentProvider):
                     leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 9 else 0
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
