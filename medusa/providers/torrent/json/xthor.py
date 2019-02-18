@@ -132,7 +132,7 @@ class XthorProvider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < self.minseed:
                     if mode != 'RSS':
-                        log.debug('Discarding torrent because it doesn\'t meet the'
+                        log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue

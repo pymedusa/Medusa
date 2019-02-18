@@ -154,7 +154,8 @@ class TorrentLeechProvider(TorrentProvider):
                 if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  ' minimum seeders: {0}. Seeders: {1}', title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 size = convert_size(torrent['size']) or -1

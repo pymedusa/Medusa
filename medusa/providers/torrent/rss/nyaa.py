@@ -115,7 +115,8 @@ class NyaaProvider(TorrentProvider):
                 if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  ' minimum seeders: {0}. Seeders: {1}', title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 size = convert_size(item['nyaa_size'], default=-1, units=units)
