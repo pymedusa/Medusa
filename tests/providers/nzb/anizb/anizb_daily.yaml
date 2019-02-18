@@ -1,0 +1,738 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; d26d37e1-3389-11e9-8d14-1c1b0d9d2a41)]
+    method: GET
+    uri: https://anizb.org/api?q=
+  response:
+    body: {string: !!python/unicode '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+        <title>Redirecting...</title>
+
+        <h1>Redirecting...</h1>
+
+        <p>You should be redirected automatically to target URL: <a href="http://anizb.org/api/?q=">http://anizb.org/api/?q=</a>.  If
+        not click the link.'}
+    headers:
+      connection: [keep-alive]
+      content-length: ['255']
+      content-type: [text/html; charset=utf-8]
+      date: ['Mon, 18 Feb 2019 14:31:10 GMT']
+      location: ['http://anizb.org/api/?q=']
+      server: [nginx/1.14.0 (Ubuntu)]
+    status: {code: 301, message: MOVED PERMANENTLY}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; d26d37e1-3389-11e9-8d14-1c1b0d9d2a41)]
+    method: GET
+    uri: http://anizb.org/api/?q=
+  response:
+    body: {string: !!python/unicode "<html>\r\n<head><title>301 Moved Permanently</title></head>\r\n<body
+        bgcolor=\"white\">\r\n<center><h1>301 Moved Permanently</h1></center>\r\n<hr><center>nginx/1.14.0
+        (Ubuntu)</center>\r\n</body>\r\n</html>\r\n"}
+    headers:
+      connection: [keep-alive]
+      content-length: ['194']
+      content-type: [text/html]
+      date: ['Mon, 18 Feb 2019 14:31:10 GMT']
+      location: ['https://anizb.org/api/?q=']
+      server: [nginx/1.14.0 (Ubuntu)]
+    status: {code: 301, message: Moved Permanently}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; d26d37e1-3389-11e9-8d14-1c1b0d9d2a41)]
+    method: GET
+    uri: https://anizb.org/api/?q=
+  response:
+    body: {string: "<?xml version='1.0' encoding='UTF-8'?>\n<rss xmlns:atom=\"http://www.w3.org/2005/Atom\"
+        xmlns:content=\"http://purl.org/rss/1.0/modules/content/\" version=\"2.0\">\n
+        \ <channel>\n    <title>anizb</title>\n    <link>https://anizb.org/</link>\n
+        \   <description>highspeed anime indexer</description>\n    <atom:link href=\"https://anizb.org/\"
+        rel=\"self\"/>\n    <docs>http://www.rssboard.org/rss-specification</docs>\n
+        \   <generator>python-feedgen</generator>\n    <language>en</language>\n    <lastBuildDate>Mon,
+        18 Feb 2019 14:31:11 +0000</lastBuildDate>\n    <item>\n      <title>[Leeson]
+        Kimagure Orange Road - 48</title>\n      <link>https://anizb.org/dl/65437/</link>\n
+        \     <description>[Leeson] Kimagure Orange Road (720p Web AC3) [1/7] - \"[Leeson]
+        Kimagure Orange Road - 48.mkv\" yEnc (1/809) 579781131</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65437/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65437/\" length=\"629944360\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 05:52:05 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>[GJM] To Aru Majutsu no Index III - 19 [6B11483D]</title>\n      <link>https://anizb.org/dl/65439/</link>\n
+        \     <description>[GJM] To Aru Majutsu no Index III - 19 [6B11483D].mkv [1/8]
+        - \"[GJM] To Aru Majutsu no Index III - 19 [6B11483D].mkv\" yEnc (1/1367)
+        979664014</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65439/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65439/\" length=\"1063848607\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 06:18:01 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>A Silent Voice - Koe no Katachi 1036p
+        V1 [jhl]</title>\n      <link>https://anizb.org/dl/65440/</link>\n      <description>A
+        Silent Voice - Koe no Katachi 1036p V1 [jhl][H265][EN51,JP51,CNT51,INS51,HX,COM]
+        [1/9] - \"A Silent Voice - Koe no Katachi 1036p V1 [jhl].mkv\" yEnc (1/3826)
+        2742068162</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65440/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65440/\" length=\"2974523554\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 08:36:01 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Boku no Hero Academia All Might - Rising
+        The Animation [ENG SUB][OVA].mp4-480</title>\n      <link>https://anizb.org/dl/65444/</link>\n
+        \     <description>My Hero Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65444/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65444/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Boku no Hero Academia All Might - Rising The Animation [ENG SUB][OVA].mp4-480</title>\n
+        \     <link>https://anizb.org/dl/65443/</link>\n      <description>My Hero
+        Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65443/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65443/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Boku no Hero Academia All Might - Rising The Animation [ENG SUB][OVA].mp4-480</title>\n
+        \     <link>https://anizb.org/dl/65442/</link>\n      <description>My Hero
+        Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65442/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65442/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Boku no Hero Academia All Might - Rising The Animation [ENG SUB][OVA].mp4-480</title>\n
+        \     <link>https://anizb.org/dl/65451/</link>\n      <description>My Hero
+        Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65451/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65451/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Boku no Hero Academia All Might - Rising The Animation [ENG SUB][OVA].mp4-480</title>\n
+        \     <link>https://anizb.org/dl/65441/</link>\n      <description>My Hero
+        Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65441/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65441/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Boku no Hero Academia All Might - Rising The Animation [ENG SUB][OVA].mp4-480</title>\n
+        \     <link>https://anizb.org/dl/65445/</link>\n      <description>My Hero
+        Academia - All Might Rising [1/2] - \"Boku_no_Hero_Academia_All_Might_-_Rising_The_Animation__[ENG_SUB][OVA].mp4-480.mp4\"
+        yEnc (1/26) 18386002</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65445/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65445/\" length=\"20466923\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 09:54:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory01 - The Brave Hero of the Universe - Star
+        Saber</title>\n      <link>https://anizb.org/dl/65452/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory01 - The Brave
+        Hero of the Universe - Star Saber.mp4\" yEnc (1/549) 393114715</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65452/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65452/\" length=\"426783192\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:46:02 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory02 - Surprise Attack! Dinoking</title>\n
+        \     <link>https://anizb.org/dl/65450/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory02 - Surprise
+        Attack! Dinoking.mp4\" yEnc (1/538) 385192239</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65450/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65450/\" length=\"418588987\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:46:45 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory03 - Attack! Leozack</title>\n
+        \     <link>https://anizb.org/dl/65448/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory03 - Attack! Leozack.mp4\"
+        yEnc (1/500) 357959476</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65448/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65448/\" length=\"388962564\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:47:24 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory04 - Unite!! Multiforce</title>\n
+        \     <link>https://anizb.org/dl/65449/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory04 - Unite!! Multiforce.mp4\"
+        yEnc (1/510) 365265021</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65449/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65449/\" length=\"396510856\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:48:08 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory05 - Move Out! Rescue
+        Team</title>\n      <link>https://anizb.org/dl/65446/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory05 - Move Out!
+        Rescue Team.mp4\" yEnc (1/494) 353452858</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65446/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65446/\" length=\"384315323\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:48:51 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory06 - Infiltration...Uranium
+        Mine</title>\n      <link>https://anizb.org/dl/65447/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory06 - Infiltration...Uranium
+        Mine.mp4\" yEnc (1/505) 361933691</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65447/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65447/\" length=\"393080870\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:49:29 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory07 - Explosion!!
+        Energy Base</title>\n      <link>https://anizb.org/dl/65465/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory07 - Explosion!!
+        Energy Base.mp4\" yEnc (1/523) 374669673</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65465/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65465/\" length=\"407713494\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:50:08 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory08 - Big City -
+        Underground Terror</title>\n      <link>https://anizb.org/dl/65466/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory08 - Big City - Underground Terror.mp4\" yEnc (1/505) 361575320</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65466/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65466/\" length=\"392707061\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:50:46 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory09 - Clash!! Two Great Heroes</title>\n      <link>https://anizb.org/dl/65464/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory09 - Clash!! Two Great Heroes.mp4\" yEnc (1/538) 385304743</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65464/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65464/\" length=\"418698495\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:51:30 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory10 - The New Warrior - Hellbat</title>\n
+        \     <link>https://anizb.org/dl/65462/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory10 - The New Warrior
+        - Hellbat.mp4\" yEnc (1/492) 351974055</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65462/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65462/\" length=\"382792083\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:52:16 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory11 - Attack the
+        Shuttle Base!!</title>\n      <link>https://anizb.org/dl/65463/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory11 - Attack the
+        Shuttle Base!!.mp4\" yEnc (1/467) 334736838</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65463/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65463/\" length=\"363505898\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:52:57 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory12 - Tanker Robbing
+        Operation</title>\n      <link>https://anizb.org/dl/65460/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory12 - Tanker Robbing
+        Operation.mp4\" yEnc (1/522) 373803541</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65460/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65460/\" length=\"406842122\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:53:39 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory13 - Move Out!!
+        Breastforce</title>\n      <link>https://anizb.org/dl/65461/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory13 - Move Out!!
+        Breastforce.mp4\" yEnc (1/577) 413396551</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65461/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65461/\" length=\"449214333\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:54:24 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory14 - Rescue Jean!!</title>\n
+        \     <link>https://anizb.org/dl/65458/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory14 - Rescue Jean!!.mp4\"
+        yEnc (1/536) 383770871</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65458/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65458/\" length=\"417124832\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:55:08 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory15 - Mach and Tackle</title>\n
+        \     <link>https://anizb.org/dl/65459/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory15 - Mach and
+        Tackle.mp4\" yEnc (1/527) 377608108</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65459/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65459/\" length=\"410759152\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:55:51 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory16 - Fierce Battle!!
+        Asteroid</title>\n      <link>https://anizb.org/dl/65456/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory16 - Fierce Battle!!
+        Asteroid.mp4\" yEnc (1/524) 375438507</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65456/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65456/\" length=\"408524450\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:56:37 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory17 - Planet Micro
+        - The Mysterious Warrior</title>\n      <link>https://anizb.org/dl/65457/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory17 - Planet Micro - The Mysterious Warrior.mp4\" yEnc (1/516) 369834840</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65457/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65457/\" length=\"401268999\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:57:19 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory18 - Rescue! Gaihawk</title>\n      <link>https://anizb.org/dl/65454/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory18 - Rescue! Gaihawk.mp4\" yEnc (1/493) 353280653</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65454/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65454/\" length=\"384148219\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:57:58 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory19 - Unite! Liokaiser</title>\n      <link>https://anizb.org/dl/65455/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory19 - Unite! Liokaiser.mp4\" yEnc (1/483) 346012062</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65455/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65455/\" length=\"376641035\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 10:58:39 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory20 - Assemble! Warrior Combiner</title>\n
+        \     <link>https://anizb.org/dl/65453/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory20 - Assemble!
+        Warrior Combiner.mp4\" yEnc (1/596) 426555029</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65453/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65453/\" length=\"462817085\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 10:59:18 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory21 - Resurrection!
+        The Destron Fortress</title>\n      <link>https://anizb.org/dl/65480/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory21 - Resurrection! The Destron Fortress.mp4\" yEnc (1/510) 364990702</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65480/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65480/\" length=\"396261692\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:00:04 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory22 - Battle Up of Anger!!</title>\n      <link>https://anizb.org/dl/65481/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory22 - Battle Up of Anger!!.mp4\" yEnc (1/510) 364891430</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65481/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65481/\" length=\"396139107\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:00:43 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory23 - Fight to the Death!! Antarctic Battle</title>\n
+        \     <link>https://anizb.org/dl/65478/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory23 - Fight to
+        the Death!! Antarctic Battle.mp4\" yEnc (1/558) 399603506</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65478/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65478/\" length=\"433497066\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:01:24 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory24 - Crisis! Desert Ambush</title>\n      <link>https://anizb.org/dl/65479/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory24 - Crisis! Desert Ambush.mp4\" yEnc (1/512) 366380982</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65479/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65479/\" length=\"397681751\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:02:10 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory25 - A Deadly Battle Bet</title>\n      <link>https://anizb.org/dl/65476/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory25 - A Deadly Battle Bet.mp4\" yEnc (1/507) 362924341</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65476/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65476/\" length=\"394114942\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:02:52 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory26 - Ginrai Dies!!</title>\n      <link>https://anizb.org/dl/65477/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory26 - Ginrai Dies!!.mp4\" yEnc (1/467) 334615573</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65477/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65477/\" length=\"363385001\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:03:33 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory27 - Fight!! Victory Leo</title>\n      <link>https://anizb.org/dl/65474/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory27 - Fight!! Victory Leo.mp4\" yEnc (1/592) 423707067</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65474/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65474/\" length=\"459858506\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:04:11 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory28 - Desperate Situation!! Cybertron</title>\n
+        \     <link>https://anizb.org/dl/65475/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory28 - Desperate
+        Situation!! Cybertron.mp4\" yEnc (1/565) 404290984</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65475/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65475/\" length=\"439825254\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:04:54 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory29 - Awaken! Victory Leo</title>\n      <link>https://anizb.org/dl/65473/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory29 - Awaken! Victory Leo.mp4\" yEnc (1/520) 372735725</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65473/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65473/\" length=\"404245543\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:05:36 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory30 - Turnaround! Deadly Victory Unity</title>\n
+        \     <link>https://anizb.org/dl/65471/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory30 - Turnaround!
+        Deadly Victory Unity.mp4\" yEnc (1/508) 364107834</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65471/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65471/\" length=\"395346612\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:06:16 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory31 - Jan - Defend the School!!</title>\n
+        \     <link>https://anizb.org/dl/65472/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory31 - Jan - Defend
+        the School!!.mp4\" yEnc (1/536) 383639376</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65472/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65472/\" length=\"416996619\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 11:06:56 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory32 - Mysterious!
+        The Base Explosion Trap</title>\n      <link>https://anizb.org/dl/65469/</link>\n
+        \     <description>Transformers Victory (Sub) - 1-37 Complete [1/6] - \"Transformers
+        Victory32 - Mysterious! The Base Explosion Trap.mp4\" yEnc (1/443) 317070466</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65469/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65469/\" length=\"345286764\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:07:40 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory33 - The Death-Bringing Space Insects!!</title>\n
+        \     <link>https://anizb.org/dl/65470/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory33 - The Death-Bringing
+        Space Insects!!.mp4\" yEnc (1/576) 412785066</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65470/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65470/\" length=\"448595055\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 11:08:18 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory34 - The Strongest!
+        Victory Saber</title>\n      <link>https://anizb.org/dl/65467/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/7] - \"Transformers Victory34 - The Strongest!
+        Victory Saber.mp4\" yEnc (1/602) 431411749</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65467/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65467/\" length=\"469323973\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 11:09:05 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory35 - Terror of the
+        Giant Tsuanami</title>\n      <link>https://anizb.org/dl/65468/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory35 - Terror of
+        the Giant Tsuanami.mp4\" yEnc (1/541) 387469978</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65468/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65468/\" length=\"420957612\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:09:50 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory36 -The Wrath of the Resurrected Giant Fortress!</title>\n
+        \     <link>https://anizb.org/dl/65483/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory36 -The Wrath
+        of the Resurrected Giant Fortress!.mp4\" yEnc (1/489) 350183163</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65483/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65483/\" length=\"380969951\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 11:10:30 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory37 - Clash! Fortress vs Victory Unity</title>\n
+        \     <link>https://anizb.org/dl/65482/</link>\n      <description>Transformers
+        Victory (Sub) - 1-37 Complete [1/6] - \"Transformers Victory37 - Clash! Fortress
+        vs Victory Unity.mp4\" yEnc (1/584) 418138129</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65482/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65482/\" length=\"454122016\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 11:11:06 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[U3-Web] Dororo 2019 - EP06 [WEB 1080p
+        AVC E-AC-3] [Multi-Subs] [6A45FE84]</title>\n      <link>https://anizb.org/dl/65484/</link>\n
+        \     <description>[U3-Web] Dororo / \u3069\u308D\u308D / \u591A\u7F85\u7F85
+        2019 [EP06] [Multi-Subs] [AMZN WEB-DL 1080p AVC E-AC-3] [1/8] - \"[U3-Web]
+        Dororo 2019 - EP06 [WEB 1080p AVC E-AC-3] [Multi-Subs] [6A45FE84].mkv\" yEnc
+        (1/2065) 1479762899</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65484/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65484/\" length=\"1605819027\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 11:50:02 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Saint Seiya - Saintia
+        Shou - 10 [480p]</title>\n      <link>https://anizb.org/dl/65486/</link>\n
+        \     <description>[HorribleSubs] Saint Seiya - Saintia Shou - 10 [480p].mkv
+        [1/6] - \"[HorribleSubs] Saint Seiya - Saintia Shou - 10 [480p].mkv\" yEnc
+        (1/425) 304448809</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65486/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65486/\" length=\"330748697\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 12:06:07 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Saint Seiya - Saintia
+        Shou - 10 [720p]</title>\n      <link>https://anizb.org/dl/65485/</link>\n
+        \     <description>[HorribleSubs] Saint Seiya - Saintia Shou - 10 [720p].mkv
+        [1/7] - \"[HorribleSubs] Saint Seiya - Saintia Shou - 10 [720p].mkv\" yEnc
+        (1/889) 636929866</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65485/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65485/\" length=\"691989967\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 12:08:23 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Saint Seiya - Saintia
+        Shou - 10 [1080p]</title>\n      <link>https://anizb.org/dl/65488/</link>\n
+        \     <description>[HorribleSubs] Saint Seiya - Saintia Shou - 10 [1080p].mkv
+        [1/8] - \"[HorribleSubs] Saint Seiya - Saintia Shou - 10 [1080p].mkv\" yEnc
+        (1/1821) 1304657581</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65488/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65488/\" length=\"1415926135\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 12:10:02 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[Erai-raws] Saint Seiya - Saintia Shou
+        - 10 [720p][Multiple Subtitle]</title>\n      <link>https://anizb.org/dl/65487/</link>\n
+        \     <description>[Erai-raws] Saint Seiya - Saintia Shou - 10 [720p][Multiple
+        Subtitle].mkv [1/7] - \"[Erai-raws] Saint Seiya - Saintia Shou - 10 [720p][Multiple
+        Subtitle].mkv\" yEnc (1/889) 636527575</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65487/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65487/\" length=\"691623100\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 12:14:07 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[Erai-raws] Saint Seiya - Saintia Shou
+        - 10 [1080p][Multiple Subtitle]</title>\n      <link>https://anizb.org/dl/65489/</link>\n
+        \     <description>[Erai-raws] Saint Seiya - Saintia Shou - 10 [1080p][Multiple
+        Subtitle].mkv [1/8] - \"[Erai-raws] Saint Seiya - Saintia Shou - 10 [1080p][Multiple
+        Subtitle].mkv\" yEnc (1/1820) 1304255295</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65489/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65489/\" length=\"1415602585\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 12:20:01 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[Erai-raws] Virtual-san wa Miteiru -
+        06 [720p HEVC][Multiple Subtitle]</title>\n      <link>https://anizb.org/dl/65492/</link>\n
+        \     <description>[Erai-raws] Virtual-san wa Miteiru - 06 [720p HEVC][Multiple
+        Subtitle].mkv [1/7] - \"[Erai-raws] Virtual-san wa Miteiru - 06 [720p HEVC][Multiple
+        Subtitle].mkv\" yEnc (1/753) 539280338</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65492/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65492/\" length=\"585236003\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:00:07 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[Erai-raws] Virtual-san wa Miteiru -
+        06 [1080p HEVC][Multiple Subtitle]</title>\n      <link>https://anizb.org/dl/65490/</link>\n
+        \     <description>[Erai-raws] Virtual-san wa Miteiru - 06 [1080p HEVC][Multiple
+        Subtitle].mkv [1/8] - \"[Erai-raws] Virtual-san wa Miteiru - 06 [1080p HEVC][Multiple
+        Subtitle].mkv\" yEnc (1/1825) 1307797651</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65490/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65490/\" length=\"1419263845\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:06:01 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[U3-Web] Dororo 2019 - EP05 [WEB 1080p
+        AVC E-AC-3] [Multi-Subs] [CD0B6408]</title>\n      <link>https://anizb.org/dl/65491/</link>\n
+        \     <description>[U3-Web] Dororo / \u3069\u308D\u308D / \u591A\u7F85\u7F85
+        2019 [EP05] [Multi-Subs] [AMZN WEB-DL 1080p AVC E-AC-3] [1/7] - \"[U3-Web]
+        Dororo 2019 - EP05 [WEB 1080p AVC E-AC-3] [Multi-Subs] [CD0B6408].mkv\" yEnc
+        (1/787) 564112856</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65491/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65491/\" length=\"612314978\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:06:06 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 01 - The Brave
+        Hero of the Universe - Star Saber</title>\n      <link>https://anizb.org/dl/65508/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 01 - The Brave Hero
+        of the Universe - Star Saber.mp4\" yEnc (1/549) 393114715</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65508/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65508/\" length=\"426810658\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:20:01 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 02 - Surprise Attack! Dinoking</title>\n
+        \     <link>https://anizb.org/dl/65506/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 02 - Surprise Attack! Dinoking.mp4\" yEnc (1/538)
+        385192239</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65506/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65506/\" length=\"418613001\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:20:35 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 03 - Attack! Leozack</title>\n
+        \     <link>https://anizb.org/dl/65507/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 03 - Attack! Leozack.mp4\" yEnc (1/500) 357959476</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65507/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65507/\" length=\"388983460\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:21:20 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 04 - Unite!! Multiforce</title>\n      <link>https://anizb.org/dl/65504/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 04 - Unite!! Multiforce.mp4\"
+        yEnc (1/510) 365265021</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65504/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65504/\" length=\"396532573\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:21:59 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 05 - Move Out!
+        Rescue Team</title>\n      <link>https://anizb.org/dl/65505/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 05 - Move Out! Rescue Team.mp4\" yEnc (1/494)
+        353452858</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65505/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65505/\" length=\"384336275\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:22:38 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 06 - Infiltration...Uranium
+        Mine</title>\n      <link>https://anizb.org/dl/65502/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 06 - Infiltration...Uranium Mine.mp4\" yEnc
+        (1/505) 361933691</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65502/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65502/\" length=\"393100175\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:23:16 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 07 - Explosion!!
+        Energy Base</title>\n      <link>https://anizb.org/dl/65503/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 07 - Explosion!! Energy Base.mp4\" yEnc (1/523)
+        374669673</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65503/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65503/\" length=\"407731931\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:23:57 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 08 - Big City -
+        Underground Terror</title>\n      <link>https://anizb.org/dl/65501/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 08 - Big City - Underground
+        Terror.mp4\" yEnc (1/505) 361575320</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65501/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65501/\" length=\"392729770\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:24:38 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 09 - Clash!! Two
+        Great Heroes</title>\n      <link>https://anizb.org/dl/65499/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 09 - Clash!! Two Great Heroes.mp4\" yEnc (1/538)
+        385304743</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65499/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65499/\" length=\"418722408\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:25:19 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 10 - The New Warrior
+        - Hellbat</title>\n      <link>https://anizb.org/dl/65500/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 10 - The New Warrior - Hellbat.mp4\" yEnc (1/492)
+        351974055</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65500/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65500/\" length=\"382812467\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:26:03 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 11 - Attack the
+        Shuttle Base!!</title>\n      <link>https://anizb.org/dl/65497/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 11 - Attack the Shuttle Base!!.mp4\" yEnc (1/467)
+        334736838</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65497/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65497/\" length=\"363525519\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:26:39 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 12 - Tanker Robbing
+        Operation</title>\n      <link>https://anizb.org/dl/65498/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 12 - Tanker Robbing Operation.mp4\" yEnc (1/522)
+        373803541</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65498/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65498/\" length=\"406864237\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:27:15 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 13 - Move Out!!
+        Breastforce</title>\n      <link>https://anizb.org/dl/65495/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 13 - Move Out!! Breastforce.mp4\" yEnc (1/577)
+        413396551</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65495/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65495/\" length=\"449237809\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:27:53 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 14 - Rescue Jean!!</title>\n
+        \     <link>https://anizb.org/dl/65496/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 14 - Rescue Jean!!.mp4\" yEnc (1/536) 383770871</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65496/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65496/\" length=\"417143129\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:28:35 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 15 - Mach and Tackle</title>\n      <link>https://anizb.org/dl/65493/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 15 - Mach and Tackle.mp4\"
+        yEnc (1/527) 377608108</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65493/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65493/\" length=\"410781401\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:29:15 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 16 - Fierce Battle!!
+        Asteroid</title>\n      <link>https://anizb.org/dl/65530/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 16 - Fierce Battle!! Asteroid.mp4\" yEnc (1/524)
+        375438507</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65530/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65530/\" length=\"408555812\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:29:52 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 16 - Fierce Battle!!
+        Asteroid</title>\n      <link>https://anizb.org/dl/65494/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 16 - Fierce Battle!! Asteroid.mp4\" yEnc (1/524)
+        375438507</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65494/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65494/\" length=\"408555812\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:29:52 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 17 - Planet Micro
+        - The Mysterious Warrior</title>\n      <link>https://anizb.org/dl/65528/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 17 - Planet Micro
+        - The Mysterious Warrior.mp4\" yEnc (1/516) 369834840</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65528/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65528/\" length=\"401294797\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:30:31 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 18 - Rescue! Gaihawk</title>\n      <link>https://anizb.org/dl/65529/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 18 - Rescue! Gaihawk.mp4\"
+        yEnc (1/493) 353280653</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65529/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65529/\" length=\"384169240\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:31:12 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 19 - Unite! Liokaiser</title>\n
+        \     <link>https://anizb.org/dl/65526/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 19 - Unite! Liokaiser.mp4\" yEnc (1/483) 346012062</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65526/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65526/\" length=\"376661230\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:31:50 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 20 - Assemble! Warrior Combiner</title>\n
+        \     <link>https://anizb.org/dl/65527/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 20 - Assemble! Warrior Combiner.mp4\" yEnc
+        (1/596) 426555029</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65527/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65527/\" length=\"462839390\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:32:25 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 21 - Resurrection!
+        The Destron Fortress</title>\n      <link>https://anizb.org/dl/65524/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 21 - Resurrection!
+        The Destron Fortress.mp4\" yEnc (1/510) 364990702</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65524/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65524/\" length=\"396278636\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:33:08 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 22 - Battle Up of Anger!!</title>\n      <link>https://anizb.org/dl/65525/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 22 - Battle Up of
+        Anger!!.mp4\" yEnc (1/510) 364891430</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65525/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65525/\" length=\"396159701\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:33:47 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 23 - Fight to the
+        Death!! Antarctic Battle</title>\n      <link>https://anizb.org/dl/65523/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 23 - Fight to the
+        Death!! Antarctic Battle.mp4\" yEnc (1/558) 399603506</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65523/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65523/\" length=\"433523407\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:34:26 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 24 - Crisis! Desert Ambush</title>\n      <link>https://anizb.org/dl/65521/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 24 - Crisis! Desert
+        Ambush.mp4\" yEnc (1/512) 366380982</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65521/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65521/\" length=\"397711297\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:35:11 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 25 - A Deadly Battle
+        Bet</title>\n      <link>https://anizb.org/dl/65522/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 25 - A Deadly Battle Bet.mp4\" yEnc (1/507)
+        362924341</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65522/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65522/\" length=\"394136240\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:35:54 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 26 - Ginrai Dies!!</title>\n
+        \     <link>https://anizb.org/dl/65519/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 26 - Ginrai Dies!!.mp4\" yEnc (1/467) 334615573</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65519/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65519/\" length=\"363405269\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:36:31 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 27 - Fight!! Victory Leo</title>\n      <link>https://anizb.org/dl/65520/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 27 - Fight!! Victory
+        Leo.mp4\" yEnc (1/592) 423707067</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65520/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65520/\" length=\"459884528\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:37:05 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 28 - Desperate
+        Situation!! Cybertron</title>\n      <link>https://anizb.org/dl/65517/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 28 - Desperate Situation!!
+        Cybertron.mp4\" yEnc (1/565) 404290984</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65517/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65517/\" length=\"439847190\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:37:51 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 29 - Awaken! Victory
+        Leo</title>\n      <link>https://anizb.org/dl/65518/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 29 - Awaken! Victory Leo.mp4\" yEnc (1/520)
+        372735725</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65518/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65518/\" length=\"404265969\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:38:38 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 30 - Turnaround!
+        Deadly Victory Unity</title>\n      <link>https://anizb.org/dl/65515/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 30 - Turnaround! Deadly
+        Victory Unity.mp4\" yEnc (1/508) 364107834</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65515/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65515/\" length=\"395368387\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:39:17 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 31 - Jan - Defend
+        the School!!</title>\n      <link>https://anizb.org/dl/65516/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 31 - Jan - Defend the School!!.mp4\" yEnc (1/536)
+        383639376</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65516/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65516/\" length=\"417024088\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:39:57 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 32 - Mysterious!
+        The Base Explosion Trap</title>\n      <link>https://anizb.org/dl/65514/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 32 - Mysterious! The
+        Base Explosion Trap.mp4\" yEnc (1/443) 317070466</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65514/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65514/\" length=\"345307809\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:40:37 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 33 - The Death-Bringing Space Insects!!</title>\n
+        \     <link>https://anizb.org/dl/65512/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 33 - The Death-Bringing Space Insects!!.mp4\"
+        yEnc (1/576) 412785066</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65512/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65512/\" length=\"448619614\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:41:09 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 34 - The Strongest!
+        Victory Saber</title>\n      <link>https://anizb.org/dl/65513/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/7] - \"Transformers Victory 34 - The Strongest! Victory Saber.mp4\" yEnc
+        (1/602) 431411749</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65513/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65513/\" length=\"469349388\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:41:53 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 35 - Terror of
+        the Giant Tsuanami</title>\n      <link>https://anizb.org/dl/65510/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 35 - Terror of the
+        Giant Tsuanami.mp4\" yEnc (1/541) 387469978</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65510/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65510/\" length=\"420977474\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:42:39 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>Transformers Victory 36 -The Wrath of
+        the Resurrected Giant Fortress!</title>\n      <link>https://anizb.org/dl/65511/</link>\n
+        \     <description>Fight! Super Robot Lifeform Transformers Victory - [JPN
+        - ENG Sub] 1-37 Complete [1/6] - \"Transformers Victory 36 -The Wrath of the
+        Resurrected Giant Fortress!.mp4\" yEnc (1/489) 350183163</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65511/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65511/\" length=\"380988520\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 13:43:23 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>Transformers Victory 37 - Clash! Fortress vs Victory Unity</title>\n
+        \     <link>https://anizb.org/dl/65509/</link>\n      <description>Fight!
+        Super Robot Lifeform Transformers Victory - [JPN - ENG Sub] 1-37 Complete
+        [1/6] - \"Transformers Victory 37 - Clash! Fortress vs Victory Unity.mp4\"
+        yEnc (1/584) 418138129</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65509/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65509/\" length=\"454146741\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 13:43:59 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Dororo - 07 [480p]</title>\n
+        \     <link>https://anizb.org/dl/65532/</link>\n      <description>[HorribleSubs]
+        Dororo - 07 [480p].mkv [1/5] - \"[HorribleSubs] Dororo - 07 [480p].mkv\" yEnc
+        (1/146) 104168477</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65532/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65532/\" length=\"113480471\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 14:04:06 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Dororo - 07 [720p]</title>\n
+        \     <link>https://anizb.org/dl/65533/</link>\n      <description>[HorribleSubs]
+        Dororo - 07 [720p].mkv [1/6] - \"[HorribleSubs] Dororo - 07 [720p].mkv\" yEnc
+        (1/301) 215240764</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65533/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65533/\" length=\"234125614\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 14:06:07 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[HorribleSubs] Dororo - 07 [1080p]</title>\n
+        \     <link>https://anizb.org/dl/65531/</link>\n      <description>[HorribleSubs]
+        Dororo - 07 [1080p].mkv [1/7] - \"[HorribleSubs] Dororo - 07 [1080p].mkv\"
+        yEnc (1/713) 510633813</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65531/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65531/\" length=\"554001888\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 14:08:07 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[DragsterPS] Dororo S01E06 [720p] [Japanese
+        Audio] [Multi-Subs] [457D45F1]</title>\n      <link>https://anizb.org/dl/65537/</link>\n
+        \     <description>[DragsterPS] Dororo S01E06 [720p] [Japanese Audio] [Multi-Subs]
+        [1/6] - \"[DragsterPS] Dororo S01E06 [720p] [Japanese Audio] [Multi-Subs]
+        [457D45F1].mkv\" yEnc (1/420) 300730061</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65537/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65537/\" length=\"326893326\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 14:10:08 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[DragsterPS] Dororo S01E06 [1080p] [Japanese
+        Audio] [Multi-Subs] [9F52D960]</title>\n      <link>https://anizb.org/dl/65535/</link>\n
+        \     <description>[DragsterPS] Dororo S01E06 [1080p] [Japanese Audio] [Multi-Subs]
+        [1/7] - \"[DragsterPS] Dororo S01E06 [1080p] [Japanese Audio] [Multi-Subs]
+        [9F52D960].mkv\" yEnc (1/875) 626859656</description>\n      <guid isPermaLink=\"false\">https://anizb.org/dl/65535/</guid>\n
+        \     <enclosure url=\"https://anizb.org/dl/65535/\" length=\"680104209\"
+        type=\"application/x-nzb\"/>\n      <pubDate>Mon, 18 Feb 2019 14:12:06 +0000</pubDate>\n
+        \   </item>\n    <item>\n      <title>[Erai-raws] Dororo - 07 [720p][Multiple
+        Subtitle]</title>\n      <link>https://anizb.org/dl/65536/</link>\n      <description>[Erai-raws]
+        Dororo - 07 [720p][Multiple Subtitle].mkv [1/6] - \"[Erai-raws] Dororo - 07
+        [720p][Multiple Subtitle].mkv\" yEnc (1/325) 232644322</description>\n      <guid
+        isPermaLink=\"false\">https://anizb.org/dl/65536/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65536/\" length=\"253575490\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 14:16:06 +0000</pubDate>\n    </item>\n    <item>\n
+        \     <title>[Erai-raws] Dororo - 07 [1080p][Multiple Subtitle]</title>\n
+        \     <link>https://anizb.org/dl/65534/</link>\n      <description>[Erai-raws]
+        Dororo - 07 [1080p][Multiple Subtitle].mkv [1/7] - \"[Erai-raws] Dororo -
+        07 [1080p][Multiple Subtitle].mkv\" yEnc (1/681) 488071859</description>\n
+        \     <guid isPermaLink=\"false\">https://anizb.org/dl/65534/</guid>\n      <enclosure
+        url=\"https://anizb.org/dl/65534/\" length=\"530763355\" type=\"application/x-nzb\"/>\n
+        \     <pubDate>Mon, 18 Feb 2019 14:16:42 +0000</pubDate>\n    </item>\n  </channel>\n</rss>\n"}
+    headers:
+      connection: [keep-alive]
+      content-disposition: [inline; filename=feed.xml]
+      content-length: ['55723']
+      content-type: [application/rss+xml]
+      date: ['Mon, 18 Feb 2019 14:31:11 GMT']
+      server: [nginx/1.14.0 (Ubuntu)]
+    status: {code: 200, message: OK}
+version: 1
