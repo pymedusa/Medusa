@@ -100,7 +100,7 @@
                                 <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
                             </app-link>
 
-                            <app-link v-if="show.xemNumbering" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
+                            <app-link v-if="show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
                                 <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
                             </app-link>
 
