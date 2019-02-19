@@ -796,11 +796,81 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Show not in show list')
 
         t = PageTemplate(rh=self, filename='displayShow.mako')
+
         submenu = [{
             'title': 'Edit',
             'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil',
         }]
+
+        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
+            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
+                submenu.append({
+                    'title': 'Resume' if series_obj.paused else 'Pause',
+                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
+                })
+                submenu.append({
+                    'title': 'Remove',
+                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'class': 'removeshow',
+                    'confirm': True,
+                    'icon': 'ui-icon ui-icon-trash',
+                })
+                submenu.append({
+                    'title': 'Re-scan files',
+                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'icon': 'ui-icon ui-icon-refresh',
+                })
+                submenu.append({
+                    'title': 'Force Full Update',
+                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'icon': 'ui-icon ui-icon-transfer-e-w',
+                })
+                submenu.append({
+                    'title': 'Update show in KODI',
+                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'requires': self.haveKODI(),
+                    'icon': 'menu-icon-kodi',
+                })
+                submenu.append({
+                    'title': 'Update show in Emby',
+                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'requires': self.haveEMBY(),
+                    'icon': 'menu-icon-emby',
+                })
+                submenu.append({
+                    'title': 'Preview Rename',
+                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                    'icon': 'ui-icon ui-icon-tag',
+                })
+
+                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
+                        series_obj) and series_obj.subtitles:
+                    submenu.append({
+                        'title': 'Download Subtitles',
+                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
+                        'icon': 'menu-icon-backlog',
+                    })
+
+        indexer_id = int(series_obj.indexer)
+        series_id = int(series_obj.series_id)
+
+        # Delete any previous occurrances
+        indexer_name = indexer_id_to_name(indexer_id)
+        for index, recentShow in enumerate(app.SHOWS_RECENT):
+            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
+                del app.SHOWS_RECENT[index]
+
+        # Only track 5 most recent shows
+        del app.SHOWS_RECENT[4:]
+
+        # Insert most recent show
+        app.SHOWS_RECENT.insert(0, {
+            'indexerName': indexer_name,
+            'showId': series_id,
+            'name': series_obj.name,
+        })
 
         return t.render(
             submenu=submenu[::-1],
