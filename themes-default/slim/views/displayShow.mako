@@ -82,8 +82,8 @@
                                         <td class="col-checkbox triggerhighlight">
                                             <input v-if="episode.status !== 'Unaired'" type="checkbox" class="epCheck" :id="'s' + episode.season + 'e' + episode.episode" :name="'s' + episode.season + 'e' + episode.episode"/>
                                         </td>
-                                        <td align="center" class="triggerhighlight"><img :src="'images/' + (episode.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(episode.hasNfo ? 'Y' : 'N')" width="23" height="11" /></td>
-                                        <td align="center" class="triggerhighlight"><img :src="'images/' + (episode.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(episode.hasTbn ? 'Y' : 'N')" width="23" height="11" /></td>
+                                        <td align="center" class="triggerhighlight"><img :src="'images/' + (episode.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(episode.content.hasNfo ? 'Y' : 'N')" width="23" height="11" /></td>
+                                        <td align="center" class="triggerhighlight"><img :src="'images/' + (episode.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(episode.content.hasTbn ? 'Y' : 'N')" width="23" height="11" /></td>
                                         <td align="center" class="triggerhighlight">
                                         <!-- <
                                             text = str(epResult['episode'])
