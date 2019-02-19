@@ -21,7 +21,7 @@
                             <th data-sorter="false" class="col-metadata">TBN</th>
                             <th data-sorter="false" class="col-ep">Episode</th>
                             <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.anime }]">Absolute</th>
-                            <th data-sorter="false:" :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || show.config.anime) && !show.config.scene }]">Scene</th>
+                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || show.config.anime) && !show.config.scene }]">Scene</th>
                             <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || !show.config.anime) && !show.config.scene }]">Scene Absolute</th>
                             <th data-sorter="false" class="col-name">Name</th>
                             <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
@@ -34,7 +34,7 @@
                         </tr>
                     </thead>
 
-                    <div class="row" v-for="season in seasonsInverse" :key="season.season">
+                    <div class="row" v-for="(season, $index) in seasonsInverse" :key="season.season">
                         <div class="col-lg-12">
                                 <tbody class="tablesorter-no-sort">
                                     <tr>
@@ -47,10 +47,12 @@
                                                     <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
                                                 </app-link>
                                             </h3>
-                                            <div class="season-scene-exception" data-season=""></div>
+                                            <div class="season-scene-exception" :data-season="season.season > 0 ? season.season : 'Specials'">
+                                                <img v-bind="getSeasonExceptions(season.season)" height="16" />
+                                            </div>
                                             <div class="pull-right"> <!-- column select and hide/show episodes -->
                                                     <!-- if not app.DISPLAY_ALL_SEASONS: -->
-                                                    <button v-if="!config.displayAllSeasons" :id="'showseason-' + season.season" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="'#collapseSeason-' + season.season">Hide Episodes</button>
+                                                    <button v-if="!config.layout.show.allSeasons" :id="'showseason-' + season.season" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="'#collapseSeason-' + season.season">Hide Episodes</button>
                                                     <!-- endif -->
                                                 <button id="popover" type="button" class="btn-medusa pull-right selectColumns">Select Columns <b class="caret"></b></button>
                                             </div> <!-- end column select and hide/show episodes -->
@@ -59,7 +61,7 @@
                                 </tbody>
                                 <tbody class="tablesorter-no-sort">
                                     <tr :id="'season-' + season.season + '-cols'" class="seasoncols">
-                                        <th data-column="0" class="col-checkbox"><input type="checkbox" class="seasonCheck" id="" /></th>
+                                        <th data-column="0" class="col-checkbox"><input type="checkbox" class="seasonCheck" :id="season.season" /></th>
                                         <th data-column="1" class="col-metadata">NFO</th>
                                         <th data-column="2" class="col-metadata">TBN</th>
                                         <th data-column="3" class="col-ep">Episode</th>
@@ -77,7 +79,7 @@
                                     </tr>
                                 </tbody>
 
-                                <tbody>
+                                <tbody :class="[{toggle: !config.layout.show.allSeasons}, {collapse: !config.layout.show.allSeasons}, {'in': !config.layout.show.allSeasons && $index === 0}]" :id="'collapseSeason-'+ season.season">
                                     <tr v-for="episode in episodesInverse(season)" :key="episode.episode" :value="episode.episode" :class="episode.status.toLowerCase() + ' season-' + episode.season + ' seasonstyle'" :id="'S' + episode.season + 'E' + episode.episode">
                                         <td class="col-checkbox triggerhighlight">
                                             <input v-if="episode.status !== 'Unaired'" type="checkbox" class="epCheck" :id="'s' + episode.season + 'e' + episode.episode" :name="'s' + episode.season + 'e' + episode.episode"/>
