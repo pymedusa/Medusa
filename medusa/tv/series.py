@@ -98,7 +98,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from medusa.scene_numbering import get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
 from medusa.show.show import Show
 from medusa.subtitles import (
@@ -611,6 +611,11 @@ class Series(TV):
     def scene_absolute_numbering(self):
         """Return series scene absolute numbering."""
         return get_scene_absolute_numbering_for_show(self)
+
+    @property
+    def all_scene_exceptions(self):
+        """Return series season scene exceptions."""
+        return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
 
     @property
     def release_ignore_words(self):
@@ -2174,6 +2179,7 @@ class Series(TV):
                                     for src, dest in viewitems(self.xem_numbering)]
             data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
             data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
+            data['allSceneExceptions'] = self.all_scene_exceptions
 
         return data
 
