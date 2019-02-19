@@ -413,8 +413,8 @@ export default {
                 Unset: 0,
                 Archived: 0
             };
-            seasons.forEach(function (season) {
-                season.episodes.forEach(function (episode) {
+            seasons.forEach(season => {
+                season.episodes.forEach(episode => {
                     summary[episode.status] += 1;
                 });
             });
