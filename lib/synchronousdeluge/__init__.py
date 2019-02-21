@@ -1,6 +1,6 @@
 """A synchronous implementation of the Deluge RPC protocol
    based on gevent-deluge by Christopher Rosell.
-   
+
    https://github.com/chrippa/gevent-deluge
 
 Example usage:
@@ -21,4 +21,3 @@ __author__ = "Christian Dale"
 
 from synchronousdeluge.client import DelugeClient
 from synchronousdeluge.exceptions import DelugeRPCError
-
