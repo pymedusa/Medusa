@@ -15,6 +15,7 @@ import VueNativeSock from 'vue-native-websocket';
 import AsyncComputed from 'vue-async-computed';
 import { ToggleButton } from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
+import { ClientTable } from 'vue-tables-2';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import store from './store';
@@ -63,6 +64,7 @@ if (window) {
     window.AsyncComputed = AsyncComputed;
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
+    window.ClientTable = ClientTable;
     window.axios = axios;
     window._ = { debounce };
     window.store = store;

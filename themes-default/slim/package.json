@@ -26,7 +26,10 @@
       }
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "vue-tables-2": "1.4.70",
+    "vuetify": "1.5.1"
+  },
   "devDependencies": {
     "@babel/core": "7.4.4",
     "@babel/plugin-proposal-object-rest-spread": "7.4.4",

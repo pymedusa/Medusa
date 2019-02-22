@@ -42,5 +42,38 @@ const humanFileSize = (bytes, useDecimal = false) => {
 export {
     combineQualities,
     humanFileSize,
-    isDevelopment
+    isDevelopment,
+    attachImdbTooltip
+};
+
+/**
+ * Attach a jquery qtip to elements with the .imdbstars class.
+ */
+const attachImdbTooltip = () => {
+    $('.imdbstars').qtip({
+        content: {
+            text() {
+                // Retrieve content from custom attribute of the $('.selector') elements.
+                return $(this).attr('qtip-content');
+            }
+        },
+        show: {
+            solo: true
+        },
+        position: {
+            my: 'right center',
+            at: 'center left',
+            adjust: {
+                y: 0,
+                x: -6
+            }
+        },
+        style: {
+            tip: {
+                corner: true,
+                method: 'polygon'
+            },
+            classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+        }
+    });
 };

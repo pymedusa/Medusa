@@ -5,6 +5,7 @@ import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
+import { ClientTable, Event } from 'vue-tables-2';
 import { isDevelopment } from './utils';
 import {
     AnidbReleaseGroupUi,
@@ -31,6 +32,7 @@ Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
+Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
 
 // Load x-template components
 window.components.forEach(component => {

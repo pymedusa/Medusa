@@ -3,6 +3,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize } from '../utils';
+import { ClientTable, Event } from 'vue-tables-2';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -10,6 +11,7 @@ export default {
     template: '#show-template',
     components: {
         AppLink,
+        ClientTable,
         PlotInfo,
         ShowHeader
     },
@@ -40,8 +42,21 @@ export default {
         }
     },
     data() {
+
         return {
-            invertTable: true
+            invertTable: true,
+            isMobile: false,
+            search: '',
+            seasonColumns: ['season'],
+            seasonOptions: {
+                headings: {
+                    season: 'Season'
+                }
+            },
+            episodeColumns: [
+                'nfo', 'tbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
+                'size', 'airDate', 'download', 'airDate', 'subtitles', 'status', 'search'
+                ]
         };
     },
     computed: {
@@ -217,24 +232,6 @@ export default {
                 sceneAbsolute = m[1];
             }
             setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
-        });
-
-        $('#showTable, #animeTable').tablesorter({
-            widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
-            widgetOptions: {
-                columnSelector_saveColumns: true, // eslint-disable-line camelcase
-                columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
-                columnSelector_mediaquery: false, // eslint-disable-line camelcase
-                columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
-            }
-        });
-
-        $('#popover').popover({
-            placement: 'bottom',
-            html: true, // Required if content has HTML
-            content: '<div id="popover-target"></div>'
-        }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
-            $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
         });
 
         // Changes the button when clicked for collapsing/expanding the season to show/hide episodes

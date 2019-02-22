@@ -795,7 +795,7 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        t = PageTemplate(rh=self, filename='displayShow.mako')
+        t = PageTemplate(rh=self, filename='index.mako')
 
         submenu = [{
             'title': 'Edit',
