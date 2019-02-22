@@ -120,7 +120,7 @@
 
                     <div class="row">
                         <!-- Show Summary -->
-                        <div id="summary" class="col-md-12">
+                        <div v-if="configLoaded" id="summary" class="col-md-12">
                             <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
@@ -337,7 +337,10 @@ export default {
             failedDownloads: state => state.config.failedDownloads,
             displaySpecials: state => state.config.layout.show.specials,
             qualities: state => state.qualities,
-            search: state => state.search
+            search: state => state.search,
+            configLoaded: state => state.config.fanartBackground !== null,
+            config: state => state.config,
+
         }),
         ...mapGetters({
             show: 'getCurrentShow',

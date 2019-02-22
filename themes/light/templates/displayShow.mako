@@ -11,35 +11,26 @@
     ></show-header>
 
     <div class="row">
+        <div class="col-md-12">
+        
+                <v-client-table v-if="show.seasons" :data="show.seasons" :columns="seasonColumns" :options="seasonOptions">
+                    <a slot="edit" slot-scope="props" class="fa fa-edit" :href="edit(props.row.season)"></a>
+                </v-client-table>
+
+
+        </div>
+    </div>
+
+    <div class="row">
         <div class="col-md-12 horizontal-scroll" style="top: 12px" :class="[{ displayShowTableFanArt: config.fanartBackground }, { tablesorterFanArt: config.fanartBackground }, { displayShowTable: !config.fanartBackground }]">
 
                 <table :id='show.config.anime ? "animeTable" : "showTable"' cellspacing="0" border="0" cellpadding="0" class="display_show">
-                    <thead>
-                        <tr class="seasoncols" style="display:none;">
-                            <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
-                            <th data-sorter="false" class="col-metadata">NFO</th>
-                            <th data-sorter="false" class="col-metadata">TBN</th>
-                            <th data-sorter="false" class="col-ep">Episode</th>
-                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.anime }]">Absolute</th>
-                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || show.config.anime) && !show.config.scene }]">Scene</th>
-                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || !show.config.anime) && !show.config.scene }]">Scene Absolute</th>
-                            <th data-sorter="false" class="col-name">Name</th>
-                            <th data-sorter="false" class="col-name columnSelector-false">File Name</th>
-                            <th data-sorter="false" class="col-ep columnSelector-false">Size</th>
-                            <th data-sorter="false" class="col-airdate">Airdate</th>
-                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !config.downloadUrl }]">Download</th>
-                            <th data-sorter="false" :class="['col-ep', { 'columnSelector-false': !show.config.subtitlesEnabled }]">Subtitles</th>
-                            <th data-sorter="false" class="col-status">Status</th>
-                            <th data-sorter="false" class="col-search">Search</th>
-                        </tr>
-                    </thead>
-
-                    <div class="row" v-for="(season, $index) in seasonsInverse" :key="season.season">
-                        <div class="col-lg-12">
-                                <tbody class="tablesorter-no-sort">
-                                    <tr>
-                                        <th class="row-seasonheader" colspan="15" style="vertical-align: bottom; width: auto;">
-                                            <h3 style="display: inline;"><app-link :name="'season-'+ season.season"></app-link>
+                    
+                    <div v-for="(season, $index) in seasonsInverse" :key="season.season">
+                                
+                                <div style="vertical-align: bottom; display: table-row" colspan="15">
+                                    <div>
+                                            <h3 style="display: inline"><app-link :name="'season-'+ season.season"></app-link>
                                                 <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
                                                 {{ season.season > 0 ? 'Season ' + season.season : 'Specials' }}
                                                 <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
@@ -47,35 +38,34 @@
                                                     <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
                                                 </app-link>
                                             </h3>
-                                            <div class="season-scene-exception" :data-season="season.season > 0 ? season.season : 'Specials'">
-                                                <img v-bind="getSeasonExceptions(season.season)" height="16" />
-                                            </div>
-                                            <div class="pull-right"> <!-- column select and hide/show episodes -->
-                                                    <!-- if not app.DISPLAY_ALL_SEASONS: -->
-                                                    <button v-if="!config.layout.show.allSeasons" :id="'showseason-' + season.season" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="'#collapseSeason-' + season.season">Hide Episodes</button>
-                                                    <!-- endif -->
-                                                <button id="popover" type="button" class="btn-medusa pull-right selectColumns">Select Columns <b class="caret"></b></button>
-                                            </div> <!-- end column select and hide/show episodes -->
-                                        </th>
-                                    </tr>
-                                </tbody>
+        
+                                    </div>
+                                    <div class="season-scene-exception" :data-season="season.season > 0 ? season.season : 'Specials'">
+                                        <img v-bind="getSeasonExceptions(season.season)" height="16" />
+                                    </div>
+                                    <div class="pull-right"> <!-- column select and hide/show episodes -->
+                                        <button v-if="!config.layout.show.allSeasons" :id="'showseason-' + season.season" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="'#collapseSeason-' + season.season">Hide Episodes</button>
+                                        <button id="popover" type="button" class="btn-medusa pull-right selectColumns">Select Columns <b class="caret"></b></button>
+                                    </div> <!-- end column select and hide/show episodes -->
+                                </div>
+                                
                                 <tbody class="tablesorter-no-sort">
-                                    <tr :id="'season-' + season.season + '-cols'" class="seasoncols">
-                                        <th data-column="0" class="col-checkbox"><input type="checkbox" class="seasonCheck" :id="season.season" /></th>
-                                        <th data-column="1" class="col-metadata">NFO</th>
-                                        <th data-column="2" class="col-metadata">TBN</th>
-                                        <th data-column="3" class="col-ep">Episode</th>
-                                        <th data-column="4" class="col-ep">Absolute</th>
-                                        <th data-column="5" class="col-ep">Scene</th>
-                                        <th data-column="6" class="col-ep">Scene Absolute</th>
-                                        <th data-column="7" class="col-name hidden-xs">Name</th>
-                                        <th data-column="8" class="col-name hidden-xs">File Name</th>
-                                        <th data-column="9" class="col-ep">Size</th>
-                                        <th data-column="10" class="col-airdate">Airdate</th>
-                                        <th data-column="11" class="col-ep">Download</th>
-                                        <th data-column="12" class="col-ep">Subtitles</th>
-                                        <th data-column="13" class="col-status">Status</th>
-                                        <th data-column="14" class="col-search">Search</th>
+                                    <tr class="seasoncols">
+                                        <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
+                                        <th class="col-metadata">NFO</th>
+                                        <th  class="col-metadata">TBN</th>
+                                        <th  class="col-ep">Episode</th>
+                                        <th  :class="['col-ep', { 'columnSelector-false': !show.config.anime }]">Absolute</th>
+                                        <th  :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || show.config.anime) && !show.config.scene }]">Scene</th>
+                                        <th  :class="['col-ep', { 'columnSelector-false': (show.config.airByDate || show.config.sports || !show.config.anime) && !show.config.scene }]">Scene Absolute</th>
+                                        <th  class="col-name">Name</th>
+                                        <th  class="col-name columnSelector-false">File Name</th>
+                                        <th  class="col-ep columnSelector-false">Size</th>
+                                        <th  class="col-airdate">Airdate</th>
+                                        <th  :class="['col-ep', { 'columnSelector-false': !config.downloadUrl }]">Download</th>
+                                        <th  :class="['col-ep', { 'columnSelector-false': !show.config.subtitlesEnabled }]">Subtitles</th>
+                                        <th  class="col-status">Status</th>
+                                        <th  class="col-search">Search</th>
                                     </tr>
                                 </tbody>
 
@@ -158,14 +148,13 @@
                                                 <img v-if="flag === 'und'" :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
                                             </div>
                                         </td>
-                                        <td v-if="episode.quality !== 'N/A'" class="col-status triggerhighlight">{{episode.status}} 
-                                            <quality-pill v-if="episode.quality !== 'N/A'" :quality="episode.quality"></quality-pill>
+                                        <td class="col-status triggerhighlight">{{episode.status}} 
+                                            <quality-pill v-if="episode.quality !== 0" :quality="episode.quality"></quality-pill>
                                         </td>
                                         <td class="col-search triggerhighlight">
-                                                <!-- if int(epResult['season']) != 0: -->
                                             <div >
                                                 <app-link v-if="episode.season !== 0" :class="retryDownload(episode) ? 'epRetry' : 'epSearch'" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" :href="'home/' + (retryDownload(episode) ? 'retryEpisode' : 'searchEpisode') + '?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + episode.season + '&episode=' + episode.episode"><img data-ep-search src="images/search16.png" height="16" alt="retryDownload(episode) ? 'retry' : 'search'" title="retryDownload(episode) ? 'Retry Download' : 'Forced Seach'"/></app-link>
-                                                <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" href="home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + episode.season + '&episode='episode.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                                                <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + episode.season + 'x' + episode.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + episode.season + '&episode=' + episode.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                                                 <app-link v-if="showSubtitleButton(episode)" class="epSubtitlesSearch" :href="'home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + episode.season + '&episode=' + episode.episode"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
                                             </div>
                                         </td>
@@ -177,9 +166,8 @@
                                 </tr>
                                 <!-- endif -->
                                 </tbody>
-                                    
-                        </div>                    
-                    </div>
+                                                  
+                            </div>
                     <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=15></th></tr></tbody>
             </table>
         </div>

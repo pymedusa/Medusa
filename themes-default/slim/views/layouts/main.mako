@@ -45,6 +45,7 @@
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
@@ -107,6 +108,10 @@
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
+
+        <!-- Moved to main, as I can't add it to display-show.vue, because vue templates don't allow script tags. -->
+        <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
         <script>
             // Used to get username to the app.js and header
             % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
@@ -172,6 +177,7 @@
 
                 // Global components
                 Vue.use(Snotify);
+                Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
             }
         </script>
         <%block name="scripts" />

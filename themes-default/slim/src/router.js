@@ -4,6 +4,7 @@ const AddRecommended = () => import('./components/add-recommended.vue');
 const AddShows = () => import('./components/add-shows.vue');
 const Config = () => import('./components/config.vue');
 const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
+const DisplayShow = () => import('./components/display-show.vue');
 const IRC = () => import('./components/irc.vue');
 const Login = () => import('./components/login.vue');
 const NotFound = () => import('./components/http/404.vue');
@@ -27,7 +28,8 @@ const homeRoutes = [{
     name: 'show',
     meta: {
         topMenu: 'home'
-    }
+    },
+    component: DisplayShow
 }, {
     path: '/home/snatchSelection',
     name: 'snatchSelection',
