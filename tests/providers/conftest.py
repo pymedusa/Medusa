@@ -14,11 +14,13 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 def get_providers():
-    from medusa.providers.torrent import (anidex, horriblesubs, limetorrents, newpct, nyaa, rarbg, shanaproject,
-                                          thepiratebay, tokyotoshokan, torrent9, torrentz2, yggtorrent, zooqle)
+    from medusa.providers.torrent import (anidex, limetorrents, nyaa, rarbg, shanaproject, tntvillage,
+                                          thepiratebay, tokyotoshokan, torrentz2, zooqle)
+    from medusa.providers.nzb import anizb, binsearch
 
-    return (anidex, horriblesubs, limetorrents, newpct, nyaa, rarbg, shanaproject,
-            thepiratebay, tokyotoshokan, torrent9, torrentz2, yggtorrent, zooqle)
+    return (anidex, limetorrents, nyaa, rarbg, shanaproject, tntvillage,
+            thepiratebay, tokyotoshokan, torrentz2, zooqle, anizb, binsearch)
+
 
 def get_provider_data():
     Provider = namedtuple('Provider', 'name type klass data')
@@ -29,7 +31,6 @@ def get_provider_data():
                  for provider in get_providers()]
 
     for provider in providers:
-
         # Load provider test config
         input_file = os.path.join(__location__, provider.type, provider.name, provider.name + '_test.yaml')
         with open(input_file, 'r') as stream:
@@ -39,6 +40,7 @@ def get_provider_data():
         provider.data.update(test_data)
 
     return providers
+
 
 @pytest.fixture(scope='session')
 def providers():

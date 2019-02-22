@@ -42,12 +42,8 @@ class Torrentz2Provider(TorrentProvider):
         # Miscellaneous Options
         # self.confirmed = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -122,7 +118,7 @@ class Torrentz2Provider(TorrentProvider):
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

@@ -31,8 +31,7 @@ class Anizb(NZBProvider):
         # URLs
         self.url = 'https://anizb.org/'
         self.urls = {
-            'rss': self.url,
-            'api': urljoin(self.url, 'api/?q=')
+            'search': urljoin(self.url, 'api'),
         }
 
         # Proper Strings
@@ -46,59 +45,81 @@ class Anizb(NZBProvider):
         self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
-        """Start searching for anime using the provided search_strings. Used for backlog and daily."""
+        """
+        Search a provider and parse the results.
+
+        :param search_strings: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
 
+        # Search Params
+        search_params = {
+            'q': '',
+        }
+
         for mode in search_strings:
-            items = []
             log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
-
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
+                    search_params['q'] = search_string
 
-                    search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
-                    response = self.session.get(search_url)
-                    if not response or not response.text:
-                        log.debug('No data returned from provider')
+                response = self.session.get(self.urls['search'], params=search_params)
+                if not response or not response.text:
+                    log.debug('No data returned from provider')
+                    continue
+                elif not response.text.startswith('<?xml'):
+                    log.info('Expected xml but got something else, is your mirror failing?')
+                    continue
+
+                results += self.parse(response.text, mode)
+
+        return results
+
+    def parse(self, data, mode):
+        """
+        Parse search results for items.
+
+        :param data: The raw response from a search
+        :param mode: The current mode used to search, e.g. RSS
+
+        :return: A list of items found
+        """
+        items = []
+
+        with BS4Parser(data, 'html5lib') as html:
+            entries = html('item')
+
+            for item in entries:
+                try:
+                    title = item.title.get_text(strip=True)
+                    download_url = item.enclosure.get('url').strip()
+                    if not (title and download_url):
                         continue
 
-                    if not response.text.startswith('<?xml'):
-                        log.info('Expected xml but got something else, is your mirror failing?')
-                        continue
+                    # description = item.find('description')
+                    size = convert_size(item.enclosure.get('length'), default=-1)
 
-                    with BS4Parser(response.text, 'html5lib') as html:
-                        entries = html('item')
-                        if not entries:
-                            log.info('Returned xml contained no results')
-                            continue
+                    pubdate_raw = item.pubdate.get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
-                        for item in entries:
-                            try:
-                                title = item.title.get_text(strip=True)
-                                download_url = item.enclosure.get('url').strip()
-                                if not (title and download_url):
-                                    continue
+                    item = {
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'pubdate': pubdate,
+                    }
 
-                                # description = item.find('description')
-                                size = convert_size(item.enclosure.get('length'), default=-1)
+                    items.append(item)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    log.exception('Failed parsing provider.')
 
-                                item = {
-                                    'title': title,
-                                    'link': download_url,
-                                    'size': size,
-                                }
-
-                                items.append(item)
-                            except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                                log.exception('Failed parsing provider.')
-                                continue
-
-                results += items
-
-            return results
+        return items
 
     def _get_size(self, item):
         """Override the default _get_size to prevent it from extracting using the default tags."""
