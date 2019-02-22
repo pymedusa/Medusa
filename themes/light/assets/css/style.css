@@ -1441,7 +1441,7 @@ span.snatched b {
     font-weight: 800;
 }
 
-.displayShowTable > table {
+.displayShowTable {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1456,7 +1456,7 @@ span.snatched b {
     clear: both;
 }
 
-.displayShowTable > table th.row-seasonheader {
+.displayShowTable th.row-seasonheader {
     border: none !important;
     background-color: rgb(34, 34, 34) !important;
     color: rgb(255, 255, 255) !important;
@@ -1464,11 +1464,11 @@ span.snatched b {
     text-align: left !important;
 }
 
-.displayShowTable > table td.col-search {
+.displayShowTable td.col-search {
     text-align: center;
 }
 
-.displayShowTableFanArt > table {
+.displayShowTableFanArt {
     table-layout: auto;
     width: 100%;
     border-collapse: collapse;
@@ -1488,7 +1488,7 @@ span.snatched b {
     opacity: 0.9;
 }
 
-.displayShowTableFanArt > table th.row-seasonheader {
+.displayShowTableFanArt th.row-seasonheader {
     border: none !important;
     background-color: transparent !important;
     color: rgb(255, 255, 255) !important;
@@ -1496,7 +1496,7 @@ span.snatched b {
     text-align: left !important;
 }
 
-.displayShowTableFanArt > table td.col-search {
+.displayShowTableFanArt td.col-search {
     text-align: center;
 }
 
@@ -1504,7 +1504,7 @@ span.snatched b {
     color: rgb(255, 255, 255) !important;
 }
 
-.tablesorterFanArt > table {
+.tablesorterFanArt {
     background-color: transparent !important;
 }
 
