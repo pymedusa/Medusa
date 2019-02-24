@@ -11,35 +11,28 @@
         <div class="row">
             <div class="col-md-12 top-15">
             
-                    <v-client-table v-if="show.seasons" :data="seasonsInverse" :columns="seasonColumns" :options="seasonOptions">
-                        <!-- All slots below should be moved to a seasonRow component -->
-                        
-                        <div slot="season" slot-scope="{row}">
+                    <v-client-table v-if="show.seasons" :data="show.seasons" :columns="seasonColumns" :options="seasonOptions">
+                        <template slot="child_row" slot-scope="props">
                             <div>
-                                <h3 style="display: inline"><app-link :name="'season-'+ row.season"></app-link>
+                                <h3 style="display: inline"><app-link :name="'season-'+ props.row.season"></app-link>
                                     <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
-                                    {{ row.season > 0 ? 'Season ' + row.season : 'Specials' }}
+                                    {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                                     <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                                    <app-link v-if="anyEpisodeNotUnaired(row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + row.season + '&amp;episode=1&amp;manual_search_type=season'">
+                                    <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
                                         <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
                                     </app-link>
                                 </h3>
                             </div>
-                            <div class="season-scene-exception" :data-season="row.season > 0 ? row.season : 'Specials'">
-                                <img v-bind="getSeasonExceptions(row)" height="16" />
+                            <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'">
+                                <img v-bind="getSeasonExceptions(props.row)" height="16" />
                             </div>
                             <div class="episodes">
-                                <table class="table">
-                                    <tbody>
-                                        <episode-row v-for="episode in episodesInverse(row)" :key="episode.episode" v-bind="{episode, show}"></episode-row>
-                                    </tbody>
-                                </table>
+                                <episode-table :show="show" :season="props.row.season" :episodes="props.row.episodes"
+                                    :columns="episodeColumns" :options="episodeOptions" :ref="`episodeTable-${props.row.season}`" @episodeTableSorted="episodeTableSorted($event)">
+                                </episode-table>
                             </div>
-                        </div>
-
+                        </template>
                     </v-client-table>
-
-
             </div>
         </div>
 
@@ -131,7 +124,7 @@ import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, attachImdbTooltip } from '../utils';
 import { ClientTable, Event } from 'vue-tables-2';
-import EpisodeRow from './episode-row.vue';
+import EpisodeTable from './episode-table.vue';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -139,7 +132,7 @@ export default {
     components: {
         AppLink,
         ClientTable,
-        EpisodeRow,
+        EpisodeTable,
         PlotInfo,
         ShowHeader
     },
@@ -170,7 +163,14 @@ export default {
         }
     },
     data() {
-
+        const episodeColumns = [
+           'content.hasNfo', 'content.hasTbn', 'episode', 'absoluteNumber', 'title', 'file.location',
+           'file.size', 'airDate', 'download', 'subtitles', 'status', 'search'
+        ];
+        // episodeColumns = [
+        //     'content.hasNfo', 'content.hasTbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
+        //     'size', 'airDate', 'download', 'subtitles', 'status', 'search'
+        // ];
         return {
             invertTable: true,
             isMobile: false,
@@ -180,12 +180,29 @@ export default {
                 headings: {
                     season: 'Season'
                 },
-                filterable: false
+                filterable: false,
+                perPage: 10,
+                orderBy: {
+                    column: 'season',
+                    ascending: false
+                },
             },
-            episodeColumns: [
-                'nfo', 'tbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
-                'size', 'airDate', 'download', 'airDate', 'subtitles', 'status', 'search'
-                ]
+            episodeColumns,
+            episodeOptions: {
+                headings: {
+                    'content.hasNfo': 'nfo',
+                    'content.hasTbn': 'tbn',
+                    episode: 'Episode'
+                },
+                perPage: 250,
+                orderBy: {
+                    column: 'episode',
+                    ascending: false
+                },
+                dateColumns: ['airDate'],
+                columnsDropdown: true,
+                unqiueKey: 'episode'
+            }
         };
     },
     computed: {
@@ -552,7 +569,7 @@ export default {
         },
         getSceneAbsoluteNumbering(episode) {
             const { show } = this;
-            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;  
+            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;
             const xemAbsolute = xemAbsoluteNumbering[episode.absoluteNumber];
 
             if (Object.keys(sceneAbsoluteNumbering).length > 0) {
@@ -604,79 +621,16 @@ export default {
             }
 
             return bindData;
-        }
-    },
-    /**
-     * Check if the season/episode combination exists in the scene numbering.
-     */
-    getSceneNumbering(episode) {
-        const { show } = this;
-        const { xemNumbering } = show;
-
-        if (xemNumbering.length !== 0) {
-            const mapped = xemNumbering.filter(x => {
-                return x.source.season === episode.season && x.source.episode === episode.episode;
+        },
+        /**
+         * Sort all season tables, when a sort event is emitted.
+         */
+        episodeTableSorted(event) {
+            const { show } = this;
+            show.seasons.forEach(season => {
+                this.$refs[`episodeTable-${season.season}`].$refs[`tableSeason-${season.season}`].setOrder(event.column, event.ascending)
             });
-            if (mapped.length !== 0) {
-                return mapped[0].destination;
-            }
         }
-        return { season: 0, episode: 0 };
-    },
-    getSceneAbsoluteNumbering(episode) {
-        const { show } = this;
-        const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;  
-        const xemAbsolute = xemAbsoluteNumbering[episode.absoluteNumber];
-
-        if (Object.keys(sceneAbsoluteNumbering).length > 0) {
-            return sceneAbsoluteNumbering[episode.absoluteNumber];
-        } else if (xemAbsolute) {
-            return xemAbsolute;
-        }
-        return 0;
-    },
-    retryDownload(episode) {
-        const { config } = this;
-        return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
-    },
-    showSubtitleButton(episode) {
-        const { config, show } = this;
-        return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
-    },
-    totalSeasonEpisodeSize(season) {
-        return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
-    },
-    getSeasonExceptions(season) {
-        const { show } = this;
-        const { allSceneExceptions } = show;
-        let bindData = { class: 'display: none' };
-
-        // Map the indexer season to a xem mapped season.
-        // check if the season exception also exists in the xem numbering table
-
-        let xemSeasons = [];
-        let foundInXem = false;
-        if (show.xemNumbering.length > 0) {
-            const xemResult = show.xemNumbering.filter(x => x.source.season === season);
-            // Create an array with unique seasons
-            xemSeasons = [...new Set(xemResult.map(item => item.destination.season))];
-            foundInXem = Boolean(xemSeasons.length);
-        }
-
-        // Check if there is a season exception for this season
-        if (allSceneExceptions[season]) {
-            // if there is not a match on the xem table, display it as a medusa scene exception
-            bindData = {
-                id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
-                alt: foundInXem ? '[xem]' : '[medusa]',
-                src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
-                title: xemSeasons.reduce(function (a, b) {
-                    return a = a.concat(allSceneExceptions[b]);
-                }, []).join(', '),
-            }
-        }
-
-        return bindData;
     }
 };
 </script>
@@ -724,6 +678,9 @@ export default {
 .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, 
 .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
     border-top: none;
+}
+.table-hover>tbody>tr:hover, .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active {
+    background-color: transparent;
 }
 </style>
 
