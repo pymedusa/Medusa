@@ -303,6 +303,12 @@ class Episode(TV):
                 )
                 return super(Episode, self).__getattribute__(refactor)
 
+    def __eq__(self, other):
+        """Override default equalize implementation."""
+        return all([self.series.identifier == other.series.identifier,
+                    self.season == other.season,
+                    self.episode == other.episode])
+
     @classmethod
     def find_by_series_and_episode(cls, series, episode_number):
         """Find Episode based on series and episode number.
@@ -2060,9 +2066,3 @@ class Episode(TV):
                     'filepath': filepath,
                 }
             )
-
-    def __eq__(self, other):
-        """Override default equalize implementation."""
-        return all([self.series.identifier == other.series.identifier,
-                    self.season == other.season,
-                    self.episode == other.episode])
