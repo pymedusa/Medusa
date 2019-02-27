@@ -29,7 +29,7 @@
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
 :: | `PyGithub` | [1.43.4](https://pypi.org/project/PyGithub/1.43.4/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
-:: | `guessit` | [3.0.3](https://pypi.org/project/guessit/3.0.3/) | **`medusa`**, `subliminal` | ext | -
+:: | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
 :: | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | ext | -
 :: | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | ext | -

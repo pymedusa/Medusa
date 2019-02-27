@@ -35,11 +35,16 @@ def other(config):  # pylint:disable=unused-argument,too-many-statements
     rebulk.regex('ws', 'wide-?screen', value='Widescreen')
     rebulk.regex('Re-?Enc(?:oded)?', value='Reencoded')
 
-    rebulk.string('Proper', 'Repack', 'Rerip', value='Proper',
+    rebulk.string('Repack', 'Rerip', value='Proper',
                   tags=['streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.string('Proper', value='Proper',
+                  tags=['has-neighbor', 'streaming_service.prefix', 'streaming_service.suffix'])
 
     rebulk.regex('Real-Proper', 'Real-Repack', 'Real-Rerip', value='Proper',
                  tags=['streaming_service.prefix', 'streaming_service.suffix', 'real'])
+    rebulk.regex('Real', value='Proper',
+                 tags=['has-neighbor', 'streaming_service.prefix', 'streaming_service.suffix', 'real'])
+
     rebulk.string('Fix', 'Fixed', value='Fix', tags=['has-neighbor-before', 'has-neighbor-after',
                                                      'streaming_service.prefix', 'streaming_service.suffix'])
     rebulk.string('Dirfix', 'Nfofix', 'Prooffix', value='Fix',
@@ -80,8 +85,9 @@ def other(config):  # pylint:disable=unused-argument,too-many-statements
     rebulk.regex('(HD)(?P<another>Rip)', value={'other': 'HD', 'another': 'Rip'},
                  private_parent=True, children=True, validator={'__parent__': seps_surround}, validate_all=True)
 
-    for value in ('Screener', 'Remux', '3D', 'PAL', 'SECAM', 'NTSC', 'XXX'):
+    for value in ('Screener', 'Remux', 'PAL', 'SECAM', 'NTSC', 'XXX'):
         rebulk.string(value, value=value)
+    rebulk.string('3D', value='3D', tags='has-neighbor')
 
     rebulk.string('HQ', value='High Quality', tags='uhdbluray-neighbor')
     rebulk.string('HR', value='High Resolution')
@@ -128,13 +134,15 @@ def other(config):  # pylint:disable=unused-argument,too-many-statements
     rebulk.regex('BT-?2020', value='BT.2020', tags='uhdbluray-neighbor')
 
     rebulk.string('Sample', value='Sample', tags=['at-end', 'not-a-release-group'])
+    rebulk.string('Extras', value='Extras', tags='has-neighbor')
+    rebulk.regex('Digital-?Extras?', value='Extras')
     rebulk.string('Proof', value='Proof', tags=['at-end', 'not-a-release-group'])
     rebulk.string('Obfuscated', 'Scrambled', value='Obfuscated', tags=['at-end', 'not-a-release-group'])
     rebulk.string('xpost', 'postbot', 'asrequested', value='Repost', tags='not-a-release-group')
 
     rebulk.rules(RenameAnotherToOther, ValidateHasNeighbor, ValidateHasNeighborAfter, ValidateHasNeighborBefore,
                  ValidateScreenerRule, ValidateMuxRule, ValidateHardcodedSubs, ValidateStreamingServiceNeighbor,
-                 ValidateAtEnd, ProperCountRule)
+                 ValidateAtEnd, ValidateReal, ProperCountRule)
 
     return rebulk
 
@@ -354,3 +362,20 @@ class ValidateAtEnd(Rule):
                     to_remove.append(match)
 
         return to_remove
+
+
+class ValidateReal(Rule):
+    """
+    Validate Real
+    """
+    consequence = RemoveMatch
+    priority = 64
+
+    def when(self, matches, context):
+        ret = []
+        for filepart in matches.markers.named('path'):
+            for match in matches.range(filepart.start, filepart.end, lambda m: m.name == 'other' and 'real' in m.tags):
+                if not matches.range(filepart.start, match.start):
+                    ret.append(match)
+
+        return ret

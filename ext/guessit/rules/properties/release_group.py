@@ -50,7 +50,7 @@ def release_group(config):
             if string.lower().endswith(forbidden) and string[-len(forbidden) - 1:-len(forbidden)] in seps:
                 string = string[:len(forbidden)]
                 string = string.strip(groupname_seps)
-        return string
+        return string.strip()
 
     rebulk = Rebulk(disabled=lambda context: is_disabled(context, 'release_group'))
 
