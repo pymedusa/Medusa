@@ -17,7 +17,7 @@ git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c948
 future==0.17.1
 futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
 gntp==1.0.3
-guessit==3.0.3
+git+https://github.com/guessit-io/guessit.git@74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
 html5lib==1.0.1
 imdbpie==5.6.3
 jsonrpclib-pelix==0.4.0
