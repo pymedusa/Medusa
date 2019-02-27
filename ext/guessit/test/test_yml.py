@@ -7,9 +7,9 @@ import os
 from io import open  # pylint: disable=redefined-builtin
 
 import babelfish
-import pytest
-import six
-import yaml
+import pytest  # pylint:disable=wrong-import-order
+import six  # pylint:disable=wrong-import-order
+import yaml  # pylint:disable=wrong-import-order
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
