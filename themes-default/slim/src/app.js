@@ -3,7 +3,6 @@ import Vuex, { mapState } from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
-import Truncate from 'vue-truncate-collapsed';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils';
@@ -69,7 +68,6 @@ const app = new Vue({
     store,
     router,
     components: {
-        Truncate
     },
     data() {
         return {

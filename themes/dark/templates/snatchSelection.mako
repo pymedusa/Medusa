@@ -12,7 +12,11 @@
     <input type="hidden" id="series-slug" value="${show.slug}" />
     <div class="clearfix"></div><!-- div.clearfix //-->
 
-    <%include file="/partials/showheader.mako"/>
+    <show-header @reflow="reflowLayout" type="snatch-selection"
+        :show-id="id" :show-indexer="indexer"
+        :show-season="season" :show-episode="episode"
+        manual-search-type="${manual_search_type}"
+    ></show-header>
 
     <div class="row">
         <div class="col-md-12 horizontal-scroll">
@@ -142,7 +146,7 @@
                                     ${sbdatetime.sbfdatetime(dt=hItem['pubdate'], d_preset=app.DATE_PRESET, t_preset=app.TIME_PRESET) if hItem['pubdate'] else 'N/A'}
                                 </td>
                                 <td class="col-date triggerhighlight" data-datetime="${hItem['date_added'].isoformat('T') if hItem['date_added'] else datetime.min}">
-                                    ${sbdatetime.sbfdatetime(dt=hItem['date_added'], d_preset=app.DATE_PRESET, t_preset=app.TIME_PRESET) if hItem['pubdate'] else 'N/A'}
+                                    ${sbdatetime.sbfdatetime(dt=hItem['date_added'], d_preset=app.DATE_PRESET, t_preset=app.TIME_PRESET) if hItem['date_added'] else 'N/A'}
                                 </td>
                                 <td class="col-search triggerhighlight"><app-link class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></app-link></td>
                             </tr>

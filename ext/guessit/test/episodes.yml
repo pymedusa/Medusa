@@ -1917,9 +1917,11 @@
 
 ? Duck.Dynasty.S02E07.Streik.German.DOKU.DL.WS.DVDRiP.x264-CDP
 : episode: 7
-  episode_title: Streik German
+  episode_title: Streik
   source: DVD
-  language: mul
+  language:
+    - German
+    - Multi
   other: [Documentary, Widescreen, Rip]
   release_group: CDP
   season: 2
@@ -1930,9 +1932,11 @@
 ? Family.Guy.S13E14.JOLO.German.AC3D.DL.720p.WebHD.x264-CDD
 : audio_codec: Dolby Digital
   episode: 14
-  episode_title: JOLO German
+  episode_title: JOLO
   source: Web
-  language: mul
+  language:
+    - German
+    - Multi
   release_group: CDD
   screen_size: 720p
   season: 13
@@ -4524,4 +4528,129 @@
   video_codec: H.264
   audio_codec: MP2
   release_group: KIDKAT
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]/Por Trece Razones 2x01 [des202].mkv
+: title: Por Trece Razones
+  season: 2
+  source: HDTV
+  screen_size: 720p
+  episode: 1
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  language: Catalan
+  release_group: des202
+  container: mkv
+  type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  source: HDTV
+  screen_size: 720p
+  episode: 13
+  audio_codec: Dolby Digital
+  audio_channels: '5.1'
+  language:
+  - Spanish
+  - Catalan
+  container: mkv
+  type: episode
+
+? Show.Name.S01E01.St.Patricks.Day.1080p.mkv
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: St Patricks Day
+  screen_size: 1080p
+  container: mkv
+  type: episode
+
+? Show.Name.S01E01.St.Patricks.Day.1080p-grp.mkv
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: St Patricks Day
+  screen_size: 1080p
+  release_group: grp
+  container: mkv
+  type: episode
+
+? Titans.2018.S01E09.Hank.And.Dawn.720p.DCU.WEB-DL.AAC2.0.H264-NTb
+: title: Titans
+  year: 2018
+  season: 1
+  episode: 9
+  episode_title: Hank And Dawn
+  screen_size: 720p
+  streaming_service: DC Universe
+  source: Web
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: NTb
+  type: episode
+
+? S.W.A.T.2017.S01E21.Treibjagd.German.Dubbed.DL.AmazonHD.x264-TVS
+: title: S.W.A.T.
+  year: 2017
+  season: 1
+  episode: 21
+  episode_title: Treibjagd
+  language:
+  - German
+  - Multi
+  streaming_service: Amazon Prime
+  other: HD
+  video_codec: H.264
+  release_group: TVS
+  type: episode
+
+? S.W.A.T.2017.S01E16.READNFO.720p.HDTV.x264-KILLERS
+: title: S.W.A.T.
+  year: 2017
+  season: 1
+  episode: 16
+  other: Read NFO
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: KILLERS
+  type: episode
+
+? /mnt/NAS/NoSubsTVShows/Babylon 5/Season 01/Ep. 02 - Soul Hunter
+: title: Babylon 5
+  season: 1
+  episode: 2
+  episode_title: Soul Hunter
+  type: episode
+
+? This.is.Us.S01E01.HDTV.x264-KILLERS.mkv
+: title: This is Us
+  season: 1
+  episode: 1
+  source: HDTV
+  video_codec: H.264
+  release_group: KILLERS
+  container: mkv
+  type: episode
+
+? Videos/Office1080/The Office  (US)  (2005) Season 2 S02 + Extras  (1080p AMZN WEB-DL x265 HEVC 10bit AAC 2.0 LION)/The Office  (US)  (2005) - S02E12 - The Injury  (1080p AMZN WEB-DL x265 LION).mkv
+: title: The Office
+  country: US
+  year: 2005
+  season: 2
+  other: Extras
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  video_codec: H.265
+  video_profile: High Efficiency Video Coding
+  color_depth: 10-bit
+  audio_codec: AAC
+  audio_channels: '2.0'
+  release_group: LION
+  episode: 12
+  episode_title: The Injury
+  container: mkv
   type: episode

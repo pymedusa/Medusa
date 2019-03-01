@@ -1,8 +1,8 @@
 export const state = {
     enabled: null,
-    api: null,
+    api: [],
     messageTitle: null,
-    piority: null,
+    priority: null,
     notifyOnSnatch: null,
     notifyOnDownload: null,
     notifyOnSubtitleDownload: null

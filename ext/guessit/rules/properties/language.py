@@ -72,6 +72,8 @@ def language(config, common_words):
 
 
 UNDETERMINED = babelfish.Language('und')
+MULTIPLE = babelfish.Language('mul')
+NON_SPECIFIC_LANGUAGES = frozenset([UNDETERMINED, MULTIPLE])
 
 
 class GuessitConverter(babelfish.LanguageReverseConverter):  # pylint: disable=missing-docstring
@@ -478,6 +480,7 @@ class RemoveInvalidLanguages(Rule):
     """Remove language matches that matches the blacklisted common words."""
 
     consequence = RemoveMatch
+    priority = 32
 
     def __init__(self, common_words):
         """Constructor."""

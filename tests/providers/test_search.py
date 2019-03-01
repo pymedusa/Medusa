@@ -14,7 +14,7 @@ import vcr
 record_cassettes = False
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-record_mode = 'all' if record_cassettes else 'none'
+record_mode = 'once' if record_cassettes else 'none'
 
 
 def search(search_type, provider):
@@ -30,6 +30,10 @@ def search(search_type, provider):
                                  cassette_filename)
     with vcr.use_cassette(cassette_path, record_mode=record_mode):
         actual = provider.klass.search(test_case['search_strings'])
+
+    # Check if we got any results
+    if record_cassettes:
+        assert actual != []
 
     for i, result in enumerate(actual):
         # Only compare up to the info hash if we have magnets

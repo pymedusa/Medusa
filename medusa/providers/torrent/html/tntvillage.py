@@ -5,22 +5,13 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
-
-from six.moves.urllib_parse import parse_qs
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -34,31 +25,23 @@ class TNTVillageProvider(TorrentProvider):
         super(TNTVillageProvider, self).__init__('TNTVillage')
 
         # Credentials
-        self.username = None
-        self.password = None
-        self._uid = None
-        self._hash = None
+        self.public = True
 
         # URLs
-        self.url = 'http://forum.tntvillage.scambioetico.org/'
+        self.url = 'http://tntvillage.scambioetico.org'
         self.urls = {
-            'login': urljoin(self.url, 'index.php?act=Login&CODE=01'),
-            'download': urljoin(self.url, 'index.php?act=Attach&type=post&id={0}'),
+            'search': urljoin(self.url, 'src/releaselist.php'),
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
-        self.engrelease = None
+        self.engrelease = None  # Currently unused
         self.subtitle = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -75,9 +58,9 @@ class TNTVillageProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'act': 'allreleases',
-            'filter': 'eng ' if self.engrelease else '',
             'cat': 29,
+            'page': 1,
+            'srcrel': '',
         }
 
         for mode in search_strings:
@@ -88,10 +71,11 @@ class TNTVillageProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_params['filter'] += search_string
-                    search_params['cat'] = None
 
-                response = self.session.get(self.url, params=search_params)
+                    search_params['cat'] = 0
+                    search_params['srcrel'] = search_string
+
+                response = self.session.post(self.urls['search'], data=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -112,40 +96,33 @@ class TNTVillageProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='copyright')
+            torrent_table = html.find('div', class_='showrelease_tb')
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 3:
+            if len(torrent_rows) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
+            # T	 M  Cat	 L	S  C  Titolo
+            labels = [label.get_text() for label in torrent_rows[0]('td')]
+
             # Skip column headers
-            for row in torrent_table('tr')[1:]:
+            for row in torrent_rows[1:]:
                 cells = row('td')
 
                 try:
-                    if not cells:
-                        continue
-
-                    last_cell_anchor = cells[-1].find('a')
-                    if not last_cell_anchor:
-                        continue
-                    params = parse_qs(last_cell_anchor.get('href', ''))
-                    download_url = self.urls['download'].format(params['pid'][0]) if \
-                        params.get('pid') else None
-                    title = self._process_title(cells[0], cells[1], mode)
+                    title_cell = cells[labels.index('Titolo')]
+                    title = title_cell.get_text()
+                    download_url = cells[labels.index('T')].a.get('href')
                     if not all([title, download_url]):
                         continue
 
-                    info_cell = cells[3]('td')
-                    leechers = info_cell[0].find('span').get_text(strip=True)
-                    leechers = try_int(leechers)
-                    seeders = info_cell[1].find('span').get_text()
-                    seeders = try_int(seeders, 1)
+                    seeders = int(cells[labels.index('S')].get_text())
+                    leechers = int(cells[labels.index('L')].get_text())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -157,16 +134,13 @@ class TNTVillageProvider(TorrentProvider):
                                   title)
                         continue
 
-                    torrent_size = info_cell[3].find('span').get_text() + ' GB'
-                    size = convert_size(torrent_size) or -1
-
                     item = {
                         'title': title,
                         'link': download_url,
-                        'size': size,
+                        'size': -1,  # Provider doesn't have size information
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': None,  # Provider doesn't have pubdate information
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -178,42 +152,8 @@ class TNTVillageProvider(TorrentProvider):
 
         return items
 
-    def login(self):
-        """Login method used for logging in before doing search and torrent downloads."""
-        if len(self.session.cookies) > 1:
-            cookies_dict = dict_from_cookiejar(self.session.cookies)
-            if cookies_dict['pass_hash'] != '0' and cookies_dict['member_id'] != '0':
-                return True
-
-        login_params = {
-            'UserName': self.username,
-            'PassWord': self.password,
-            'CookieDate': 1,
-            'submit': 'Connettiti al Forum',
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if any([re.search('Sono stati riscontrati i seguenti errori', response.text),
-                re.search('<title>Connettiti</title>', response.text), ]):
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        return True
-
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
-
     @staticmethod
-    def _process_title(title, info, mode):
+    def _process_title(title, info, mode):  # Currently unused
 
         result_title = title.find('a').get_text()
         result_info = info.find('span')

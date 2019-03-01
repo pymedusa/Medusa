@@ -2,38 +2,38 @@ daily:
   search_strings:
     RSS: ['']
   results:
-    - seeders: 5
+    - seeders: 1
       pubdate: 2017-11-17 00:00:00
-      title: Ghost.Wars.S01E07.Whistle.Past.the.Graveyard.1080p.AMZN.WEBRip.DDP5.1.x264-NTb[rartv]
-      leechers: 11
-      link: magnet:?xt=urn:btih:6dc059d532bf54ce5d4ac61aef31f2d601f5d328
-      size: 1506137088
-    - seeders: 3
+      title: The.Voice.UK.S08E05.WEBRip.x264-ION10
+      leechers: 17
+      link: magnet:?xt=urn:btih:e40b39d3ff9301f18ddeef3e6ae5c0de1d7d219d
+      size: 675478909
+    - seeders: 14
       pubdate: 2017-11-17 00:00:00
-      title: S.W.A.T.2017.S01E03.Pamilya.1080p.AMZN.WEBRip.DDP5.1.x264-NTb[rartv]
-      leechers: 12
-      link: magnet:?xt=urn:btih:72736a12e182980ec2e4c8b4902874793ff0a71a
-      size: 2459813388
-    - seeders: 10
+      title: BBC.Williams.Formula.1.in.the.Blood.1080p.HDTV.x264.AAC.MVGroup.org.mkv
+      leechers: 55
+      link: magnet:?xt=urn:btih:a8a153c0390e6357b49a41d28e7b04150be9078d
+      size: 3586064806
+    - seeders: 16
       pubdate: 2017-11-17 00:00:00
-      title: Pickle.and.Peanut.S02E31E32.Gregazoids-Meat.Ballers.720p.DSNY.WEBRip.AAC2.0.x264-TVSmash[rartv]
-      leechers: 11
-      link: magnet:?xt=urn:btih:0e4241041713a8b058f4733fb7dd946c76f8b001
-      size: 566841009
+      title: BBC.Williams.Formula.1.in.the.Blood.720p.HDTV.x265.AAC.MVGroup.org.mkv
+      leechers: 42
+      link: magnet:?xt=urn:btih:ead53a320f5c6dd012f8b4cb3cd70f5e70b8bc31
+      size: 1225778158
 
 backlog:
   search_strings:
     Episode: ['Lethal Weapon S02E05']
   results:
-    - seeders: 210
+    - seeders: 16
       pubdate: 2017-11-08 00:00:00
       title: Lethal.Weapon.S02E05.HDTV.x264-KILLERS[rartv]
-      leechers: 16
+      leechers: 0
       link: magnet:?xt=urn:btih:0f414d9aba84fce80eacd0b9ca307ac39e748cb3
       size: 311075131
-    - seeders: 143
+    - seeders: 7
       pubdate: 2017-11-08 00:00:00
-      title: Lethal.Weapon.S02E05.720p.HDTV.x264-KILLERS[rartv]
-      leechers: 16
-      link: magnet:?xt=urn:btih:7c80f72b90e3302d55466d8d93ad870ae6c2274a
-      size: 1242475213
+      title: Lethal.Weapon.S02E05.1080p.WEB.x264-TBS[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:8b5f178d7ab23b177a248fcb0f24e224015ef708
+      size: 1622606805

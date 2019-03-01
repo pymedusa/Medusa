@@ -112,7 +112,7 @@ export default {
             }
             const indexerName = selectedShow.indexer;
             const showId = selectedShow.id[indexerName];
-            const base = document.getElementsByTagName('base')[0].getAttribute('href');
+            const base = document.querySelectorAll('base')[0].getAttribute('href');
             const path = 'home/displayShow?indexername=' + indexerName + '&seriesid=' + showId;
             window.location.href = base + path;
         }

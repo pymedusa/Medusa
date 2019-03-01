@@ -105,11 +105,11 @@ class Notifier(object):
             return False
 
         result = ''
-        for curHost in [x.strip() for x in host if x.strip()]:
+        for cur_host in [x.strip() for x in host if x.strip()]:
             log.debug(u'Sending {app} notification to {host} - {msg}',
-                      {'app': dest_app, 'host': curHost, 'msg': message})
+                      {'app': dest_app, 'host': cur_host, 'msg': message})
 
-            kodi_api = self._get_kodi_version(curHost, username, password, dest_app)
+            kodi_api = self._get_kodi_version(cur_host, username, password, dest_app)
             if kodi_api:
                 if kodi_api <= 4:
                     log.warning(u'Detected {app} version <= 11, this version is not supported by Medusa. '
@@ -128,17 +128,17 @@ class Notifier(object):
                         },
                         'id': '1',
                     }
-                    notify_result = self._send_to_kodi(command, curHost, username, password, dest_app)
+                    notify_result = self._send_to_kodi(command, cur_host, username, password, dest_app)
                     if notify_result and notify_result.get('result'):
-                        result += curHost + ':' + notify_result['result'].decode('utf-8')
+                        result += cur_host + ':' + notify_result['result'].decode('utf-8')
             else:
                 if app.KODI_ALWAYS_ON or force:
                     log.warning(
                         u'Failed to detect {app} version for {host},'
                         u' check configuration and try again.',
-                        {'app': dest_app, 'host': curHost}
+                        {'app': dest_app, 'host': cur_host}
                     )
-                result += curHost + ':False'
+                result += cur_host + ':False'
 
         return result
 

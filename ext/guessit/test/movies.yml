@@ -815,10 +815,12 @@
 ? Das.Appartement.German.AC3D.DL.720p.BluRay.x264-TVP
 : audio_codec: Dolby Digital
   source: Blu-ray
-  language: mul
+  language:
+    - German
+    - Multi
   release_group: TVP
   screen_size: 720p
-  title: Das Appartement German
+  title: Das Appartement
   type: movie
   video_codec: H.264
 
@@ -1723,7 +1725,7 @@
 ? Ant-Man.and.the.Wasp.2018.Digital.Extras.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG.mkv
 : title: Ant-Man and the Wasp
   year: 2018
-  alternative_title: Digital Extras
+  other: Extras
   screen_size: 1080p
   streaming_service: Amazon Prime
   source: Web
@@ -1770,4 +1772,15 @@
   audio_channels: '5.1'
   video_codec: H.264
   release_group: CMRG
+  type: movie
+
+? The.Girl.in.the.Spiders.Web.2019.1080p.WEB-DL.x264.AC3-EVO.mkv
+: title: The Girl in the Spiders Web
+  year: 2019
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  audio_codec: Dolby Digital
+  release_group: EVO
+  container: mkv
   type: movie

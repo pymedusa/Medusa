@@ -24,7 +24,7 @@ def urldecode(body):
     """Parse query or json to python dictionary"""
     try:
         return _urldecode(body)
-    except:
+    except Exception:
         import json
         return json.loads(body)
 
@@ -255,7 +255,7 @@ class OAuth1Session(requests.Session):
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **request_kwargs):
-        """Fetch a request token.
+        r"""Fetch a request token.
 
         This is the first step in the OAuth 1 workflow. A request token is
         obtained by making a signed post request to url. The token is then

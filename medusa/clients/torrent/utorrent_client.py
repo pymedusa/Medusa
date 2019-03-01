@@ -26,7 +26,7 @@ def get_torrent_subfolder(result):
     root_dirs = app.ROOT_DIRS
     if root_dirs:
         root_location = root_dirs[int(root_dirs[0]) + 1]
-    torrent_path = result.series.raw_location
+    torrent_path = result.series.location
 
     if root_dirs and root_location != torrent_path:
         # Subfolder is under root, but possibly not directly under

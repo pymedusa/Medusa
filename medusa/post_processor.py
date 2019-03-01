@@ -304,7 +304,7 @@ class PostProcessor(object):
             pattern = new_pattern + pattern
 
         files = []
-        for root, __, filenames in os.walk(directory):
+        for root, _, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
                 files.append(os.path.join(root, filename))
             if not subfolders:
@@ -1203,11 +1203,11 @@ class PostProcessor(object):
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = os.path.join(ep_obj.series.location, proper_path)
+            proper_absolute_path = os.path.join(ep_obj.series.validate_location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.series.location))
 
         self.log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 

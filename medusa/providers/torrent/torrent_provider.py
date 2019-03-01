@@ -35,6 +35,8 @@ class TorrentProvider(GenericProvider):
 
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
+        self.minseed = 0
+        self.minleech = 0
 
     def is_active(self):
         """Check if provider is enabled."""

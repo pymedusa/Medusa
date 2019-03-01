@@ -884,12 +884,31 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
         self.inc_minor_version()
 
 
-class AddPreferredWordsUpgradeFields(AddTvshowStartSearchOffset):
-    """Add tv_show / tv_episodes preferred words upgrade fields."""
+class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+    """Add release ignore and require exclude option flags."""
 
     def test(self):
         """Test if the version is at least 44.14"""
         return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding release ignore and require exclude option flags to the tv_shows table')
+        if not self.hasColumn('tv_shows', 'rls_require_exclude'):
+            self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
+            self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class AddPreferredWordsUpgradeFields(AddReleaseIgnoreRequireExludeOptions):
+    """Add tv_show / tv_episodes preferred words upgrade fields."""
+
+    def test(self):
+        """Test if the version is at least 44.15"""
+        return self.connection.version >= (44, 15)
 
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
@@ -905,3 +924,4 @@ class AddPreferredWordsUpgradeFields(AddTvshowStartSearchOffset):
             self.addColumn('tv_episodes', 'preferred_words_score', 'NUMERIC', 0)
 
         self.inc_minor_version()
+

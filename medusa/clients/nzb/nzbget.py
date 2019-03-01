@@ -206,6 +206,6 @@ def sendNZB(nzb, proper=False):
                         {'name': nzb.name})
             return False
     except Exception:
-        log.warning('Connect Error to NZBget: could not add {file}.nzb to the'
+        log.warning('Connect Error to NZBget: could not add {name}.nzb to the'
                     ' queue', {'name': nzb.name})
         return False

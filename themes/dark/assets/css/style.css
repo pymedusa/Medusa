@@ -603,11 +603,6 @@ div.xem {
     border: 1px solid rgb(136, 136, 136);
 }
 
-/* Used by the displayShow and snatchSelection show header posters */
-#col-show-summary img.show-image {
-    max-width: 180px;
-}
-
 .background-image img {
     width: 100%;
     overflow: hidden;
@@ -1143,29 +1138,6 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#col-show-summary {
-    display: table;
-}
-
-.show-poster-container {
-    margin-right: 10px;
-    display: table-cell;
-    width: 180px;
-}
-
-.ver-spacer {
-    width: 15px;
-}
-
-#show-specials-and-seasons {
-    margin-bottom: 15px;
-}
-
-.show-info-container {
-    overflow: hidden;
-    display: table-cell;
-}
-
 .container-navShow {
     margin-top: -2px;
     margin-left: 305px;
@@ -1219,62 +1191,14 @@ div#col-show-summary {
         float: none;
     }
 
-    .show-poster-container {
-        display: inline-block;
-        width: 100%;
-        margin: 0 auto;
-        border-style: none;
-    }
-
-    .show-poster-container img {
-        display: block;
-        margin: 0 auto;
-        max-width: 280px !important;
-    }
-
     .col-md-12 > .horizontal-scroll {
         margin: 0 -13px;
-    }
-
-    .show-info-container {
-        display: block;
-        padding-top: 5px;
-        width: 100%;
     }
 }
 
 @media (min-width: 768px) {
-    .display-specials,
-    .display-seasons {
-        top: -60px;
-    }
-
-    #show-specials-and-seasons {
-        bottom: 5px;
-        right: 15px;
-        position: absolute;
-    }
-
     .tvshowImg {
         max-height: 245px;
-    }
-}
-
-@media (max-width: 991px) and (min-width: 768px) {
-    .show-poster-container {
-        float: left;
-        display: inline-block;
-        width: 100%;
-        border-style: none;
-    }
-
-    .show-info-container {
-        display: block;
-        width: 100%;
-    }
-
-    #col-show-summary img.show-image {
-        max-width: 280px;
     }
 }
 
@@ -1426,10 +1350,6 @@ ul.tags li a {
     border-style: solid none;
     border-color: rgb(136, 136, 136);
     z-index: -2;
-}
-
-.summaryTable {
-    overflow: hidden;
 }
 
 #checkboxControls {
@@ -1776,6 +1696,10 @@ div.season-scene-exception {
 
 button.selectColumns {
     margin-right: 2px;
+}
+
+.location-invalid {
+    color: rgb(255, 0, 0);
 }
 
 /* =======================================================================
@@ -2604,22 +2528,6 @@ span.true {
 .break-word {
     word-break: break-all;
     word-wrap: break-word;
-}
-
-span.required {
-    color: green;
-}
-
-span.preferred {
-    color: blue;
-}
-
-span.undesired {
-    color: orange;
-}
-
-span.ignored {
-    color: red;
 }
 
 a.wiki {
@@ -4117,10 +4025,6 @@ div#searchNotification {
 #srchresults.tablesorter td:nth-child(n+2) {
     width: 4%;
     text-align: center;
-}
-
-.summaryTable tr td {
-    word-break: break-all;
 }
 
 .release-name-ellipses {
