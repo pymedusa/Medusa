@@ -177,7 +177,7 @@ class SearchResult(object):
                 u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'", {
                     'id': self.series.series_id,
                     'show': self.series.name,
-                    'ep': self.series.episode_num(season, episode),
+                    'ep': episode_num(season, episode),
                     'quality': Quality.qualityStrings[quality],
                 }
             )

@@ -1280,6 +1280,7 @@ class Episode(TV):
                          self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
                          self.version, self.release_group, self.manually_searched, self.watched, self.preferred_words_score, ep_id]]
             else:
+                # @TODO: I checked this query, but it's not up2date with the db. We should remove it or review it.
                 # use a custom insert method to get the data into the DB.
                 return [
                     'INSERT OR IGNORE INTO '
