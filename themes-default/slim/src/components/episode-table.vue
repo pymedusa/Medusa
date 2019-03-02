@@ -37,15 +37,39 @@ export default {
         },
         episodes: {
             type: Array
-        },
-        columns: {
-            type: Array
-        },
-        options: {
-            type: Object
         }
     },
     data() {
+        // episodeColumns = [
+        //     'content.hasNfo', 'content.hasTbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
+        //     'size', 'airDate', 'download', 'subtitles', 'status', 'search'
+        // ];
+        return {
+            columns: [
+                'content.hasNfo', 'content.hasTbn', 'episode', 'absoluteNumber', 'title', 'file.location',
+                'file.size', 'airDate', 'download', 'subtitles', 'status', 'search'
+            ],
+            options: {
+                headings: {
+                    'content.hasNfo': 'nfo',
+                    'content.hasTbn': 'tbn',
+                    episode: 'Episode'
+                },
+                perPage: 1000,
+                orderBy: {
+                    column: 'episode',
+                    ascending: false
+                },
+                dateColumns: ['airDate'],
+                columnsDropdown: true,
+                unqiueKey: 'episode',
+                filterable: false,
+                pagination:{
+                    dropdown: false
+                }
+            }
+        }
+        
     },
     computed: {
         ...mapState({
@@ -182,4 +206,8 @@ export default {
 table.VueTables__table.table {
     background-color: inherit;
 }
+div.form-group.form-inline.float-right.VueTables__limit {
+    display: none;
+}
+
 </style>
