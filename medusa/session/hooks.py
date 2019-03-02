@@ -26,7 +26,7 @@ def log_url(response, **kwargs):
 
     if request.method.upper() == 'POST':
         if request.body:
-            text_body = ensure_text(request.body)
+            text_body = ensure_text(request.body, errors='replace')
             if 'multipart/form-data' not in request.headers.get('content-type', ''):
                 body = text_body
             elif len(text_body) > 99:
