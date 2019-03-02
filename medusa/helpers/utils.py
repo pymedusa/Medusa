@@ -80,7 +80,7 @@ def strtobool(val):
     elif val in ('n', 'no', 'f', 'false', 'off', '0'):
         return 0
     else:
-        raise ValueError("invalid truth value %r" % (val,))
+        raise ValueError('invalid truth value %r' % (val,))
 
 
 def to_timestamp(dt):
