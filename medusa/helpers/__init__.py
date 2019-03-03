@@ -1020,8 +1020,8 @@ def get_show(name, try_indexers=False):
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
-                            (name=series_name, series=found_series))
+                log.info("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                         (name=series_name, series=found_series))
 
         # add show to cache
         if series and not from_cache:
