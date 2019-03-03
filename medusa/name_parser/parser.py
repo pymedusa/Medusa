@@ -416,9 +416,18 @@ class NameParser(object):
         :return:
         :rtype: ParseResult
         """
-        season_numbers = helpers.ensure_list(guess.get('season'))
-        if len(season_numbers) > 1 and not self.allow_multi_season:
-            raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
+        if not self.allow_multi_season:
+            season_numbers = helpers.ensure_list(guess.get('season'))
+            if len(season_numbers) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-season detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
+
+            versions = helpers.ensure_list(guess.get('version'))
+            if len(versions) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-version detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
@@ -593,8 +602,12 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = [cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
-                     cached_parsed_result.series.indexer == indexer and cached_parsed_result.series.indexerid == indexer_id]
+        to_remove = [
+            cached_name
+            for cached_name, cached_parsed_result in iteritems(self.cache)
+            if cached_parsed_result.series.indexer == indexer
+            and cached_parsed_result.series.indexerid == indexer_id
+        ]
         for item in to_remove:
             del self.cache[item]
             log.debug('Removed parsed cached result for release: {release}'.format(release=item))
