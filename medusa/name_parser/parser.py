@@ -198,8 +198,8 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and
-                                              scene_season is not None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None
+                                              and scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
