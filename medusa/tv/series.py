@@ -1489,14 +1489,13 @@ class Series(TV):
             if not self.imdb_id:
                 self.imdb_id = sql_results[0]['imdb_id']
 
-            self.release_groups = BlackAndWhiteList(self)
-
             self.plot = sql_results[0]['plot']
+            self.airdate_offset = int(sql_results[0]['airdate_offset'])
+
+            self.release_groups = BlackAndWhiteList(self)
 
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
-
-            self.airdate_offset = int(sql_results[0]['airdate_offset'])
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
