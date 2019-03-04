@@ -1305,7 +1305,7 @@ class Episode(TV):
                     '  preferred_words_score) '
                     'VALUES '
                     '  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
-                    '  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
+                    '  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
                     [self.series.indexer, self.series.series_id, self.season, self.episode, self.indexerid, self.series.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.quality, self.location,
