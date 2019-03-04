@@ -340,5 +340,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

@@ -324,7 +324,7 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid page parameter')
 
-    def _get_limit(self, default=20, maximum=10000):
+    def _get_limit(self, default=20, maximum=1000):
         try:
             limit = self._parse(self.get_argument('limit', default=default))
             if limit < 1 or limit > maximum:
@@ -375,6 +375,7 @@ class BaseRequestHandler(RequestHandler):
             results = results[start:end]
             next_page = None if end > count else arg_page + 1
             last_page = ((count - 1) // arg_limit) + 1
+            headers['X-Pagination-Total'] = last_page
             if last_page <= arg_page:
                 last_page = None
 

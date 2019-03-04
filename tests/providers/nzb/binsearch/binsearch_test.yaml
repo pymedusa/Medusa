@@ -1,0 +1,29 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - pubdate: 2017-11-08 00:00:00
+      title: High.Maintenance.2016.S03E05.Pay.Day.1080p.AMZN.WEB-DL.DDP5.1.H.264-monkee.vol00+1
+      link: https://www.binsearch.info/fcgi/nzb.fcgi?server=2&max=50&bg=alt.binaries.teevee|nzb_id=238480579
+      size: 95923732
+    - pubdate: 2017-11-08 00:00:00
+      title: High.Maintenance.2016.S03E05.Pay.Day.1080p.AMZN.WEB-DL.DDP5.1.H.264-monkee
+      link: https://www.binsearch.info/fcgi/nzb.fcgi?server=2&max=50&bg=alt.binaries.teevee|nzb_id=238480578
+      size: 1395864371
+    - pubdate: 2017-11-08 00:00:00
+      title: Last.Week.Tonight.with.John.Oliver.S06E01.720p.WEB-DL.AAC2.0.H.264-doosh.vol00+1
+      link: https://www.binsearch.info/fcgi/nzb.fcgi?server=2&max=50&bg=alt.binaries.teevee|nzb_id=238478709
+      size: 106189291
+
+backlog:
+  search_strings:
+    Episode: ['Arrow S07E07']
+  results:
+    - pubdate: 2017-11-08 00:00:00
+      title: Arrow.S07E07.The.Slabside.Redemption.1080p.AMZN.WEB-DL.DDP5.1.H.264-Ca sStudio
+      link: https://www.binsearch.info/fcgi/nzb.fcgi?server=1&q=Arrow+S07E07&xminsize=20&adv_age=&max=250|nzb_id=608128280
+      size: -1
+    - pubdate: 2017-11-08 00:00:00
+      title: Arrow.S07E07.The.Slabside.Redemption.720p.AMZN.WEB-DL.DDP5.1.H.264-Cas Studio
+      link: https://www.binsearch.info/fcgi/nzb.fcgi?server=1&q=Arrow+S07E07&xminsize=20&adv_age=&max=250|nzb_id=608128279
+      size: -1

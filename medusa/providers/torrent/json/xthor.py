@@ -37,13 +37,11 @@ class XthorProvider(TorrentProvider):
         self.subcategories = [433, 637, 455, 639]
 
         # Torrent Stats
-        self.minseed = None
-        self.minleech = None
         self.confirmed = False
-        self.freeleech = None
+        self.freeleech = False
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -132,9 +130,9 @@ class XthorProvider(TorrentProvider):
                 leechers = row.get('leechers')
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
-                        log.debug('Discarding torrent because it doesn\'t meet the'
+                        log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue

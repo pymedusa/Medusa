@@ -1,12 +1,14 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink } from './helpers';
+import ShowHeader from './show-header.vue';
 
 export default {
     name: 'snatchSelection',
     template: '#snatch-selection-template',
     components: {
-        AppLink
+        AppLink,
+        ShowHeader
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -22,63 +24,39 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers
+            shows: state => state.shows.shows
         }),
-        ...mapGetters([
-            'getShowById'
-        ]),
+        ...mapGetters({
+            getShowById: 'getShowById',
+            show: 'getCurrentShow'
+        }),
         indexer() {
             return this.$route.query.indexername;
         },
         id() {
-            return this.$route.query.seriesid;
+            return Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.$route.query.season;
+            return Number(this.$route.query.season) || undefined;
         },
         episode() {
-            return this.$route.query.episode;
-        },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            return show;
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-
-            if (!show.indexer || !indexerConfig) {
-                return undefined;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-            return `${indexerUrl}${id}`;
+            return Number(this.$route.query.episode) || undefined;
         }
     },
-    created() {
-        const { indexer, id, $store } = this;
-        // Needed for the title
-        $store.dispatch('getShow', { indexer, id });
-    },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+        }),
+        /**
+         * Attaches IMDB tooltip,
+         * Moves summary and checkbox controls backgrounds
+         */
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
-
-                attachImdbTooltip(); // eslint-disable-line no-undef
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the summary background position and size on page load and resize
@@ -89,15 +67,28 @@ export default {
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
-        },
-        reverse(array) {
-            return array ? array.slice().reverse() : [];
-        },
-        dedupeGenres(genres) {
-            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
         }
     },
     mounted() {
+        const {
+            indexer,
+            id,
+            show,
+            getShow,
+            $store
+        } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer,
+            id
+        });
+
+        // We need the show info, so let's get it.
+        if (!show || !show.id.slug) {
+            getShow({ id, indexer, detailed: false });
+        }
+
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
         });
@@ -371,5 +362,5 @@ export default {
 </script>
 
 <style>
-/* placeholder */
+
 </style>

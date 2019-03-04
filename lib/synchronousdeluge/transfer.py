@@ -8,6 +8,7 @@ from synchronousdeluge import rencode
 
 __all__ = ["DelugeTransfer"]
 
+
 class DelugeTransfer(object):
     def __init__(self):
         self.sock = None
@@ -45,7 +46,7 @@ class DelugeTransfer(object):
             dobj = zlib.decompressobj()
 
             try:
-                message = rencode.loads(dobj.decompress(buf))
+                message = rencode.loads(dobj.decompress(buf), decode_utf8=True)
             except (ValueError, zlib.error, struct.error):
                 # Probably incomplete data, read more
                 continue
@@ -53,5 +54,3 @@ class DelugeTransfer(object):
                 buf = dobj.unused_data
 
             yield message
-
-

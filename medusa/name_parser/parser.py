@@ -198,8 +198,8 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and
-                                              scene_season is not None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None
+                                              and scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
@@ -416,9 +416,18 @@ class NameParser(object):
         :return:
         :rtype: ParseResult
         """
-        season_numbers = helpers.ensure_list(guess.get('season'))
-        if len(season_numbers) > 1 and not self.allow_multi_season:
-            raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
+        if not self.allow_multi_season:
+            season_numbers = helpers.ensure_list(guess.get('season'))
+            if len(season_numbers) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-season detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
+
+            versions = helpers.ensure_list(guess.get('version'))
+            if len(versions) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-version detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
@@ -593,10 +602,14 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
-                     cached_parsed_result.series.indexer == indexer and cached_parsed_result.series.indexerid == indexer_id)
+        to_remove = [
+            cached_name
+            for cached_name, cached_parsed_result in iteritems(self.cache)
+            if cached_parsed_result.series.indexer == indexer
+            and cached_parsed_result.series.indexerid == indexer_id
+        ]
         for item in to_remove:
-            self.cache.popitem(item)
+            del self.cache[item]
             log.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 

@@ -37,10 +37,6 @@ class AniDexProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
@@ -123,7 +119,7 @@ class AniDexProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

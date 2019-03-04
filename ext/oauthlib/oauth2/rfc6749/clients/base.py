@@ -47,6 +47,7 @@ class Client(object):
     Python, this is usually :py:class:`oauthlib.oauth2.WebApplicationClient`.
 
     """
+    refresh_token_key = 'refresh_token'
 
     def __init__(self, client_id,
                  default_token_placement=AUTH_HEADER,
@@ -143,6 +144,7 @@ class Client(object):
 
     def parse_request_uri_response(self, *args, **kwargs):
         """Abstract method used to parse redirection responses."""
+        raise NotImplementedError("Must be implemented by inheriting classes.")
 
     def add_token(self, uri, http_method='GET', body=None, headers=None,
                   token_placement=None, **kwargs):
@@ -253,7 +255,8 @@ class Client(object):
         :param redirect_url: The redirect_url supplied with the authorization
         request (if there was one).
 
-        :param body: Request body (URL encoded string).
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
 
         :param kwargs: Additional parameters to included in the request.
 
@@ -285,7 +288,8 @@ class Client(object):
 
         :param refresh_token: Refresh token string.
 
-        :param body: Request body (URL encoded string).
+        :param body: Existing request body (URL encoded string) to embed parameters
+                     into. This may contain extra paramters. Default ''.
 
         :param scope: List of scopes to request. Must be equal to
         or a subset of the scopes granted when obtaining the refresh
@@ -432,7 +436,7 @@ class Client(object):
                 resource owner.
         """
         refresh_token = refresh_token or self.refresh_token
-        return prepare_token_request('refresh_token', body=body, scope=scope,
+        return prepare_token_request(self.refresh_token_key, body=body, scope=scope,
                                      refresh_token=refresh_token, **kwargs)
 
     def _add_bearer_token(self, uri, http_method='GET', body=None,

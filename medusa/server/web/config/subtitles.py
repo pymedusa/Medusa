@@ -66,8 +66,8 @@ class ConfigSubtitles(Config):
         services_str_list = service_order.split()
         subtitles_services_list = []
         subtitles_services_enabled = []
-        for curServiceStr in services_str_list:
-            cur_service, cur_enabled = curServiceStr.split(':')
+        for cur_service_str in services_str_list:
+            cur_service, cur_enabled = cur_service_str.split(':')
             subtitles_services_list.append(cur_service)
             subtitles_services_enabled.append(int(cur_enabled))
 

@@ -8,7 +8,7 @@ certifi==2018.11.29
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
-configparser==3.5.0
+configparser==3.7.1
 contextlib2==0.5.5 ; python_version < '3.5'
 dirtyjson==1.0.7
 dogpile.cache==0.7.1
@@ -17,10 +17,10 @@ git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c948
 future==0.17.1
 futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
 gntp==1.0.3
-guessit==3.0.3
+git+https://github.com/guessit-io/guessit.git@74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
 html5lib==1.0.1
 imdbpie==5.6.3
-jsonrpclib-pelix==0.3.2
+jsonrpclib-pelix==0.4.0
 knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
@@ -34,10 +34,10 @@ python-twitter==3.5
 rarfile==3.0
 rebulk==1.0.0
 requests==2.21.0
-requests-oauthlib==1.0.0
+requests-oauthlib==1.2.0
 six==1.12.0
 stevedore==1.30.0
 git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
-validators==0.12.3
+validators==0.12.4

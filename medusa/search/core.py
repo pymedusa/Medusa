@@ -215,7 +215,6 @@ def snatch_episode(result):
             cur_ep_obj.version = 0
 
             cur_ep_obj.manually_searched = result.manually_searched
-
             cur_ep_obj.preferred_words_score = result.preferred_words_score
 
             sql_l.append(cur_ep_obj.get_sql())

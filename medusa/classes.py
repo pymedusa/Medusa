@@ -133,12 +133,15 @@ class SearchResult(object):
         # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH, SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
 
-        # # Assign a score for the amount of preffered words there are in the release name
+        # # Assign a score for the amount of preferred words there are in the release name
         self._preferred_words_score = None
 
     @property
     def preferred_words_score(self):
         """Calculate a score based on the amount of preferred words in release name."""
+        if not app.PREFERRED_WORDS:
+            return 0
+
         preferred_words = [word.lower() for word in app.PREFERRED_WORDS]
         self._preferred_words_score = round((len([word for word in preferred_words if word in self.name.lower()]) / float(len(preferred_words))) * 100)
         return self._preferred_words_score
@@ -177,7 +180,7 @@ class SearchResult(object):
                 u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'", {
                     'id': self.series.series_id,
                     'show': self.series.name,
-                    'ep': self.series.episode_num(season, episode),
+                    'ep': episode_num(season, episode),
                     'quality': Quality.qualityStrings[quality],
                 }
             )

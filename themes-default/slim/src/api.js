@@ -6,7 +6,7 @@ const apiKey = document.body.getAttribute('api-key');
 /**
  * Api client based on the axios client, to communicate with medusa's web routes, which return json data.
  */
-const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
+const apiRoute = axios.create({
     baseURL: webRoot + '/',
     timeout: 30000,
     headers: {
@@ -18,7 +18,7 @@ const apiRoute = axios.create({ // eslint-disable-line no-unused-vars
 /**
  * Api client based on the axios client, to communicate with medusa's api v1.
  */
-const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
+const apiv1 = axios.create({
     baseURL: webRoot + '/api/v1/' + apiKey + '/',
     timeout: 30000,
     headers: {
@@ -30,7 +30,7 @@ const apiv1 = axios.create({ // eslint-disable-line no-unused-vars
 /**
  * Api client based on the axios client, to communicate with medusa's api v2.
  */
-const api = axios.create({ // eslint-disable-line no-unused-vars
+const api = axios.create({
     baseURL: webRoot + '/api/v2/',
     timeout: 30000,
     headers: {

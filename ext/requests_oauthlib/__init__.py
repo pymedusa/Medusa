@@ -5,7 +5,7 @@ from .oauth1_session import OAuth1Session
 from .oauth2_auth import OAuth2
 from .oauth2_session import OAuth2Session, TokenUpdated
 
-__version__ = '1.0.0'
+__version__ = '1.2.0'
 
 import requests
 if requests.__version__ < '2.0.0':

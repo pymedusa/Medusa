@@ -53,6 +53,14 @@ def json_response(result=True, message=None, redirect=None, params=None):
     })
 
 
+def decode_shows(names):
+    """Decode show names to UTF-8."""
+    return [
+        name.decode('utf-8') if not isinstance(name, text_type) else name
+        for name in names
+    ]
+
+
 @route('/addShows(/?.*)')
 class HomeAddShows(Home):
     def __init__(self, *args, **kwargs):
@@ -96,9 +104,9 @@ class HomeAddShows(Home):
         elif not isinstance(other_shows, list):
             other_shows = [other_shows]
 
+        other_shows = decode_shows(other_shows)
         provided_indexer_id = int(indexer_id or 0)
         provided_indexer_name = show_name
-
         provided_indexer = int(indexer or app.INDEXER_DEFAULT)
 
         return t.render(
@@ -386,6 +394,8 @@ class HomeAddShows(Home):
         elif not isinstance(other_shows, list):
             other_shows = [other_shows]
 
+        other_shows = decode_shows(other_shows)
+
         def finishAddShow():
             # if there are no extra shows then go home
             if not other_shows:
@@ -537,8 +547,7 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [text_type(x, 'utf-8') if not isinstance(x, text_type) else x for x in shows_to_add]
-
+        shows_to_add = decode_shows(shows_to_add)
         prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 
         indexer_id_given = []

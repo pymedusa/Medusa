@@ -1,0 +1,53 @@
+interactions:
+- request:
+    body: !!python/unicode cat=0&srcrel=American+Horror+Story+S08E08&page=1
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: [!!python/unicode 'gzip,deflate']
+      Connection: [keep-alive]
+      Content-Length: ['48']
+      Content-Type: [application/x-www-form-urlencoded]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 60777a8f-32f5-11e9-99af-1c1b0d9d2a41)]
+    method: POST
+    uri: http://tntvillage.scambioetico.org/src/releaselist.php
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA+1YW2/bNhR+zn4FgaHWyxzr4siXWC4U22kDNEPQpO2AojAoiZa5UKRAUom9X79D
+        SfbcxuyC7tKXAkks83w8d37UySSjDyhlWKnIUTJdSsIIVsSZTlZCFohmkWMelopgma4dJLiqkoLq
+        yJFEV5KjFWYG/tPJycmMyBSjVsMYTSgvK430tiSRo8lGO7U6sJKIjaPoH7B85jroAbMKHuOCSJpi
+        jl4LKYVEt1rILbp1hwt36KBebeEzlUmlteCN0kTzZev+XmHtTrtz0jNRNE8Q8XTSS+Thn8MsrMVj
+        G8NSJyayicYJIygljKkSp5TnkeM2Almr1Bl6pJleR47vlhtnejfp6eyo5PpAMp1hfQTo1cA3Vsmt
+        VTI7VH5HtWCiXYEPCLLx9qSRTzBaS7KKnLXW5bhn8lMVp5rrB8oYzsmpSnGRUEE0TcWpkHmP8oxs
+        Tst1+RKnOoq1xum6U5eiFEp3oAze2WAUBsEIuocWOYKCRA4tQJnqgRK+TPTSCzdeeFry3EGYQRfN
+        xSNnAmcIqi0J16Zekx6e1o4/Sd/eaVDKiR6/3OgImnCcaLoez88Gl8P5Rd+Nw8VgMQgW3tk8WIRz
+        1x94fn8xcIf9cDZczDoZj3bN9sK/aNoNHuqGg88u/MalSDHblooYgTsk7rCjZWRy9SKIX/iX8KMl
+        Tu+J/FrOAAvGXQBjzkXFU2K0VNl/pCQVZUmkquTKaLwHeTgKR8/YyAhJ17CzW2KJM6pIa/dvtl/d
+        PITfundnmnJNJNTyEUtJhVSn8AwgLwgGz0kb5dvuQ6kg9OL5Nos87Ld2nplZURKeUN02aWtteLjT
+        1vNNpz7p++t6GTHK75/Z8t94TjFjLZupjtKR21lRBhmPOiqJvI7KYCXFOvJHDtJY5gR8WyYMg1sH
+        AfWU3jKybOMq7kshNWbdMAjrIP3RaU5XDloTmq9BgReC58eDapjKPb7sBcfXhwN/J/hH+TDUrkVJ
+        0ygERvDPnoZ8/BLqor/4ADVsYGLr8ESV5x+vqw0gXvthHz6uNEYxTj+h+RuznmzRuwuKPs7evY0/
+        oWuqIPUUYHNCfsfbHV//r/zsBf734efRhevPZsHcjb3RvA9MPRj5cTAMhm7c71+O+rEfzhbxcPGD
+        n3/w8w9+/q78HB5f9i387I0Gg3+foINjMX8rQXvu0C0/p+kFz1GcBvDttkp2K58MZV8LWa5JpZ7J
+        2716PpgeThYH80SJc8qxpjCqTCcVm04YRSVkztkBQJpq+gAdeiOhgpMeozXoifiKZ5RoKfaIRk1d
+        +8hJ4XVfjn9erVbnCRyKXELbZ9121XXDcDQ639vcqfTs1uIHzDX9wtYT1Dum9z73THSfj425WGqx
+        hBSQr4+OJ0eGxdZWLrSAIJtxcR9tAX1BeReaZdz1ys15+52RlR6fQVOeO70jig9HRnANpsYDM8ud
+        tJ0f32NqDgmMfHwH0gKOFTCEycX07X7QTabwfpJMf0E3da3NgmcWUEb3z5OeUTRtB9G2V0ybtAGt
+        4JbVY2kOqGMmQ5ILSY1yBWZSjTguTJGxXmZSlBlcy00Yu28wobMliKHJRGm6bRcGTNio0UHM9N0+
+        wZAK0RJk5tqdsUmv2fmlhr6DppeUFTa5D/LrSsGxtCG8VgO6e48IKqXIJS4KaoUbi3ORVgWQOZZ2
+        XAC4W11lAFOorYeyoQ14gS6EuLdCQoC8obza2AADAMScFtZcDQEwwxL6yOr1yKTL/BtBC7W2hgZl
+        m34AZhSPCt2Klbl/rUY9k9+bFL3Cdsc8U6UbhrdK12RkLabR9Z5mRKCmpswaiG9U3pq7xoowOb8j
+        uCYtC8TU+oMkSsNdm1tRZ8Yr/JUm9U3tfkuEtXS+qd1VUZgjSpFaCWBTK9aUMWYaOP8VFenaDjTF
+        vIW7gUBrWxvP1PISmlmbW8R6SAKT+TuJ7U0RmIT/at7IoC+sIJPQuO5zK8Rk80ZkKVbW0gUmn4sM
+        7mhm99ik9FoklB2UpddQzPTr/6tryWqnCcgBXuXqdxJDjH8Cnv2cqpYUAAA=
+    headers:
+      connection: [keep-alive]
+      content-encoding: [gzip]
+      content-type: [text/html; charset=utf-8]
+      date: ['Sun, 17 Feb 2019 20:48:53 GMT']
+      server: [nginx/1.10.3]
+      transfer-encoding: [chunked]
+      x-frame-options: [SAMEORIGIN]
+      x-powered-by: [PHP/5.3.29]
+    status: {code: 200, message: OK}
+version: 1

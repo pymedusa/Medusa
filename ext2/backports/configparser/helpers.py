@@ -6,6 +6,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import abc
+import os
+
 from collections import MutableMapping
 try:
     from collections import UserDict
@@ -16,6 +19,11 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
+
+try:
+    import pathlib
+except ImportError:
+    pathlib = None
 
 from io import open
 import sys
@@ -31,6 +39,7 @@ except ImportError:
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
+native_str = str
 str = type('str')
 
 
@@ -169,3 +178,73 @@ try:
     from collections import ChainMap
 except ImportError:
     ChainMap = _ChainMap
+
+
+_ABC = getattr(
+    abc, 'ABC',
+    # Python 3.3 compatibility
+    abc.ABCMeta(
+        native_str('__ABC'),
+        (object,),
+        dict(__metaclass__=abc.ABCMeta),
+    ),
+)
+
+
+class _PathLike(_ABC):
+
+    """Abstract base class for implementing the file system path protocol."""
+
+    @abc.abstractmethod
+    def __fspath__(self):
+        """Return the file system path representation of the object."""
+        raise NotImplementedError
+
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return bool(
+            hasattr(subclass, '__fspath__')
+            # workaround for Python 3.5
+            or pathlib and issubclass(subclass, pathlib.Path)
+        )
+
+
+PathLike = getattr(os, 'PathLike', _PathLike)
+
+
+def _fspath(path):
+    """Return the path representation of a path-like object.
+
+    If str or bytes is passed in, it is returned unchanged. Otherwise the
+    os.PathLike interface is used to get the path representation. If the
+    path representation is not str or bytes, TypeError is raised. If the
+    provided path is not str, bytes, or os.PathLike, TypeError is raised.
+    """
+    if isinstance(path, (str, bytes)):
+        return path
+
+    if not hasattr(path, '__fspath__') and isinstance(path, pathlib.Path):
+        # workaround for Python 3.5
+        return str(path)
+
+    # Work from the object's type to match method resolution of other magic
+    # methods.
+    path_type = type(path)
+    try:
+        path_repr = path_type.__fspath__(path)
+    except AttributeError:
+
+        if hasattr(path_type, '__fspath__'):
+            raise
+        else:
+            raise TypeError("expected str, bytes or os.PathLike object, "
+                            "not " + path_type.__name__)
+    if isinstance(path_repr, (str, bytes)):
+        return path_repr
+    else:
+        raise TypeError("expected {}.__fspath__() to return str or bytes, "
+                        "not {}".format(path_type.__name__,
+                                        type(path_repr).__name__))
+
+
+fspath = getattr(os, 'fspath', _fspath)

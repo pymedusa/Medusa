@@ -1,6 +1,7 @@
 {
   "expected_title": [
-    "OSS 117"
+    "OSS 117",
+    "This is Us"
   ],
   "allowed_countries": [
     "au",
@@ -21,6 +22,7 @@
     "ja",
     "ko",
     "nl",
+    "no",
     "pl",
     "pt",
     "ro",
@@ -33,12 +35,45 @@
   ],
   "advanced_config": {
     "common_words": [
+      "ca",
+      "cat",
       "de",
-      "it"
+      "he",
+      "it",
+      "no",
+      "por",
+      "rum",
+      "se",
+      "st",
+      "sub"
     ],
     "groups": {
       "starting": "([{",
       "ending": ")]}"
+    },
+    "audio_codec": {
+      "audio_channels": {
+        "1.0": [
+          "1ch",
+          "mono"
+        ],
+        "2.0": [
+          "2ch",
+          "stereo",
+          "re:(2[\\W_]0(?:ch)?)(?=[^\\d]|$)"
+        ],
+        "5.1": [
+          "5ch",
+          "6ch",
+          "re:(5[\\W_][01](?:ch)?)(?=[^\\d]|$)",
+          "re:(6[\\W_]0(?:ch)?)(?=[^\\d]|$)"
+        ],
+        "7.1": [
+          "7ch",
+          "8ch",
+          "re:(7[\\W_][01](?:ch)?)(?=[^\\d]|$)"
+        ]
+      }
     },
     "container": {
       "subtitles": [
@@ -329,6 +364,7 @@
       "progressive": [
         "360",
         "480",
+        "540",
         "576",
         "900",
         "1080",
@@ -357,6 +393,180 @@
       "prefixes": [
         "from"
       ]
+    },
+    "streaming_service": {
+      "A&E": [
+        "AE",
+        "A&E"
+      ],
+      "ABC": "AMBC",
+      "ABC Australia": "AUBC",
+      "Al Jazeera English": "AJAZ",
+      "AMC": "AMC",
+      "Amazon Prime": [
+        "AMZN",
+        "Amazon",
+        "re:Amazon-?Prime"
+      ],
+      "Adult Swim": [
+        "AS",
+        "re:Adult-?Swim"
+      ],
+      "America's Test Kitchen": "ATK",
+      "Animal Planet": "ANPL",
+      "AnimeLab": "ANLB",
+      "AOL": "AOL",
+      "ARD": "ARD",
+      "BBC iPlayer": [
+        "iP",
+        "re:BBC-?iPlayer"
+      ],
+      "BravoTV": "BRAV",
+      "Canal+": "CNLP",
+      "Cartoon Network": "CN",
+      "CBC": "CBC",
+      "CBS": "CBS",
+      "CNBC": "CNBC",
+      "Comedy Central": [
+        "CC",
+        "re:Comedy-?Central"
+      ],
+      "Channel 4": "4OD",
+      "CHRGD": "CHGD",
+      "Cinemax": "CMAX",
+      "Country Music Television": "CMT",
+      "Comedians in Cars Getting Coffee": "CCGC",
+      "Crunchy Roll": [
+        "CR",
+        "re:Crunchy-?Roll"
+      ],
+      "Crackle": "CRKL",
+      "CSpan": "CSPN",
+      "CTV": "CTV",
+      "CuriosityStream": "CUR",
+      "CWSeed": "CWS",
+      "Daisuki": "DSKI",
+      "DC Universe": "DCU",
+      "Deadhouse Films": "DHF",
+      "Digiturk Diledigin Yerde": "DDY",
+      "Discovery": [
+        "DISC",
+        "Discovery"
+      ],
+      "Disney": [
+        "DSNY",
+        "Disney"
+      ],
+      "DIY Network": "DIY",
+      "Doc Club": "DOCC",
+      "DPlay": "DPLY",
+      "E!": "ETV",
+      "ePix": "EPIX",
+      "El Trece": "ETTV",
+      "ESPN": "ESPN",
+      "Esquire": "ESQ",
+      "Family": "FAM",
+      "Family Jr": "FJR",
+      "Food Network": "FOOD",
+      "Fox": "FOX",
+      "Freeform": "FREE",
+      "FYI Network": "FYI",
+      "Global": "GLBL",
+      "GloboSat Play": "GLOB",
+      "Hallmark": "HLMK",
+      "HBO Go": [
+        "HBO",
+        "re:HBO-?Go"
+      ],
+      "HGTV": "HGTV",
+      "History": [
+        "HIST",
+        "History"
+      ],
+      "Hulu": "HULU",
+      "Investigation Discovery": "ID",
+      "IFC": "IFC",
+      "iTunes": "iTunes",
+      "ITV": "ITV",
+      "Knowledge Network": "KNOW",
+      "Lifetime": "LIFE",
+      "Motor Trend OnDemand": "MTOD",
+      "MSNBC": "MNBC",
+      "MTV": "MTV",
+      "National Geographic": [
+        "NATG",
+        "re:National-?Geographic"
+      ],
+      "NBA TV": [
+        "NBA",
+        "re:NBA-?TV"
+      ],
+      "NBC": "NBC",
+      "Netflix": [
+        "NF",
+        "Netflix"
+      ],
+      "NFL": "NFL",
+      "NFL Now": "NFLN",
+      "NHL GameCenter": "GC",
+      "Nickelodeon": [
+        "NICK",
+        "Nickelodeon"
+      ],
+      "Norsk Rikskringkasting": "NRK",
+      "PBS": "PBS",
+      "PBS Kids": "PBSK",
+      "Playstation Network": "PSN",
+      "Pluzz": "PLUZ",
+      "RTE One": "RTE",
+      "SBS (AU)": "SBS",
+      "SeeSo": [
+        "SESO",
+        "SeeSo"
+      ],
+      "Shomi": "SHMI",
+      "Spike": "SPIK",
+      "Spike TV": [
+        "SPKE",
+        "re:Spike-?TV"
+      ],
+      "Sportsnet": "SNET",
+      "Sprout": "SPRT",
+      "Stan": "STAN",
+      "Starz": "STZ",
+      "Sveriges Television": "SVT",
+      "SwearNet": "SWER",
+      "Syfy": "SYFY",
+      "TBS": "TBS",
+      "TFou": "TFOU",
+      "The CW": [
+        "CW",
+        "re:The-?CW"
+      ],
+      "TLC": "TLC",
+      "TubiTV": "TUBI",
+      "TV3 Ireland": "TV3",
+      "TV4 Sweeden": "TV4",
+      "TV Land": [
+        "TVL",
+        "re:TV-?Land"
+      ],
+      "UFC": "UFC",
+      "UKTV": "UKTV",
+      "Univision": "UNIV",
+      "USA Network": "USAN",
+      "Velocity": "VLCT",
+      "VH1": "VH1",
+      "Viceland": "VICE",
+      "Vimeo": "VMEO",
+      "VRV": "VRV",
+      "W Network": "WNET",
+      "WatchMe": "WME",
+      "WWE Network": "WWEN",
+      "Xbox Video": "XBOX",
+      "Yahoo": "YHOO",
+      "YouTube Red": "RED",
+      "ZDF": "ZDF"
     }
   }
 }

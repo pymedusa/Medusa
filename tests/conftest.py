@@ -20,11 +20,10 @@ from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, i
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import Episode, Series
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
-import six
 from six import iteritems, text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video

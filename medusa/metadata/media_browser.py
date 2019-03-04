@@ -138,8 +138,8 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in os.listdir(show_obj.location) if
-                    os.path.isdir(os.path.join(show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.validate_location) if
+                    os.path.isdir(os.path.join(show_obj.validate_location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -170,7 +170,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         log.debug(u'Using {path}/folder.jpg as season directory for season {number}',
                   {u'path': season_dir, u'number': season})
 
-        return os.path.join(show_obj.location, season_dir, u'folder.jpg')
+        return os.path.join(show_obj.validate_location, season_dir, u'folder.jpg')
 
     @staticmethod
     def get_season_banner_path(show_obj, season):
@@ -180,8 +180,8 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in os.listdir(show_obj.location) if
-                    os.path.isdir(os.path.join(show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.validate_location) if
+                    os.path.isdir(os.path.join(show_obj.validate_location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -212,7 +212,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         log.debug(u'Using {path}/banner.jpg as season directory for season {number}',
                   {u'path': season_dir, u'number': season})
 
-        return os.path.join(show_obj.location, season_dir, u'banner.jpg')
+        return os.path.join(show_obj.validate_location, season_dir, u'banner.jpg')
 
     def _show_data(self, show_obj):
         """

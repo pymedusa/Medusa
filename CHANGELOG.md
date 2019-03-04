@@ -3,11 +3,14 @@
 #### New Features
 - Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
 - Added feature to search episodes early or late compared to their scheduled airdate ([#5874](https://github.com/pymedusa/Medusa/pull/5874))
+- Added per show required/preferred words exclude option ([#4982](https://github.com/pymedusa/Medusa/pull/6033))
 
 #### Improvements
+- Vueified the partial mako template showheader.mako into show-header.vue ([#6189](https://github.com/pymedusa/Medusa/pull/6189))
 
 #### Fixes
-- Fixed saving newznab provider api key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
+- Fixed saving newznab provider API key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
+- Fixed permanent Docker update message ([#6018](https://github.com/pymedusa/Medusa/pull/6018))
 
 -----
 
@@ -45,6 +48,7 @@
 - Fixed adding anime release group when adding show ([#5749](https://github.com/pymedusa/Medusa/pull/5749))
 - Fixed Pushover debug log causing BraceException ([#5759](https://github.com/pymedusa/Medusa/pull/5759))
 - Fixed torrent method Downloadstation not selected after restart ([#5761](https://github.com/pymedusa/Medusa/pull/5761))
+- Fixed changing show location, should now also utilise the option 'CREATE_MISSING_SHOW_DIRS' ([#5795](https://github.com/pymedusa/Medusa/pull/5795))
 
 -----
 
