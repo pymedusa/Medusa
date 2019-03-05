@@ -238,7 +238,7 @@ class Series(TV):
         self._cached_indexer_api = None
         self.plot = None
         self.upgrade_preferred_words = False
-        self.pref_words_score = 0
+        self.preferred_words_score = 0
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
