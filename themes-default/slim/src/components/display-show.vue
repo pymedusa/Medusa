@@ -180,10 +180,8 @@ export default {
                     column: 'season',
                     ascending: false
                 },
-                columnsClasses: {
-                    'child_row': 'doesntwork'
-                },
-                childRowTogglerFirst: false
+                childRowTogglerFirst: false,
+                unqiueKey: 'season'
             }
         };
     },
