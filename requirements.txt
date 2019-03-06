@@ -10,6 +10,7 @@ git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a89
 configobj==5.0.6
 configparser==3.7.1
 contextlib2==0.5.5 ; python_version < '3.5'
+deluge-client==1.7.0
 dirtyjson==1.0.7
 dogpile.cache==0.7.1
 git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
