@@ -69,13 +69,13 @@ from medusa import (
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones,
     providers, scheduler, show_queue, show_updater, subtitles, trakt_checker
 )
+from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
     check_setting_str, load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
-from medusa.clients.torrent import torrent_checker
 from medusa.event_queue import Events
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
