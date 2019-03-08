@@ -46,7 +46,7 @@
     "copy-webpack-plugin": "4.6.0",
     "country-language": "0.1.7",
     "cross-env": "5.2.0",
-    "css-loader": "2.1.0",
+    "css-loader": "2.1.1",
     "date-fns": "1.30.1",
     "eslint": "5.15.1",
     "eslint-config-xo": "0.26.0",
