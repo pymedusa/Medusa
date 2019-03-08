@@ -12,12 +12,12 @@ import logging
 from base64 import b64encode
 from builtins import object
 
+from deluge_client import DelugeRPCClient
+
 from medusa import app
-from medusa.clients.torrent.deluge_client import read_torrent_status
+from medusa.clients.torrent.deluge import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
-
-from synchronousdeluge import DelugeClient
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -26,8 +26,6 @@ log.logger.addHandler(logging.NullHandler())
 
 class DelugeDAPI(GenericClient):
     """Deluge Daemon API class."""
-
-    drpc = None
 
     def __init__(self, host=None, username=None, password=None):
         """Constructor.
@@ -40,6 +38,7 @@ class DelugeDAPI(GenericClient):
         :type password: string
         """
         super(DelugeDAPI, self).__init__('DelugeD', host, username, password)
+        self.drpc = None
 
     def _get_auth(self):
         return True if self.connect() else None
@@ -168,12 +167,6 @@ class DelugeDAPI(GenericClient):
 class DelugeRPC(object):
     """Deluge RPC client class."""
 
-    host = 'localhost'
-    port = 58846
-    username = None
-    password = None
-    client = None
-
     def __init__(self, host='localhost', port=58846, username=None, password=None):
         """Constructor.
 
@@ -188,14 +181,14 @@ class DelugeRPC(object):
         """
         super(DelugeRPC, self).__init__()
         self.host = host
-        self.port = port
+        self.port = int(port)
         self.username = username
         self.password = password
 
     def connect(self):
         """Connect to the host using synchronousdeluge API."""
-        self.client = DelugeClient()
-        self.client.connect(self.host, int(self.port), self.username, self.password)
+        self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
+        self.client.connect()
 
     def test(self):
         """Test connection.
@@ -220,7 +213,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.remove_torrent(torrent_id, True).get()
+            self.client.core.remove_torrent(torrent_id, True)
         except Exception:
             return False
         else:
@@ -241,7 +234,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.move_storage(torrent_id, location).get()
+            self.client.core.move_storage(torrent_id, location)
         except Exception:
             return False
         else:
@@ -264,10 +257,11 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            torrent_id = self.client.core.add_torrent_magnet(torrent, options).get()
+            torrent_id = self.client.core.add_torrent_magnet(torrent, options)
             if not torrent_id:
                 torrent_id = self._check_torrent(info_hash)
         except Exception:
+            raise
             return False
         else:
             return torrent_id
@@ -291,7 +285,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options).get()
+            torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options)
             if not torrent_id:
                 torrent_id = self._check_torrent(info_hash)
         except Exception:
@@ -314,7 +308,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.label.set_torrent(torrent_id, label).get()
+            self.client.label.set_torrent(torrent_id, label)
         except Exception:
             return False
         else:
@@ -335,8 +329,8 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.set_torrent_move_completed_path(torrent_id, path).get()
-            self.client.core.set_torrent_move_completed(torrent_id, 1).get()
+            self.client.core.set_torrent_move_completed_path(torrent_id, path)
+            self.client.core.set_torrent_move_completed(torrent_id, 1)
         except Exception:
             return False
         else:
@@ -358,7 +352,7 @@ class DelugeRPC(object):
         try:
             self.connect()
             if priority:
-                self.client.core.queue_top([torrent_id]).get()
+                self.client.core.queue_top([torrent_id])
         except Exception:
             return False
         else:
@@ -379,8 +373,8 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.set_torrent_stop_at_ratio(torrent_id, True).get()
-            self.client.core.set_torrent_stop_ratio(torrent_id, ratio).get()
+            self.client.core.set_torrent_stop_at_ratio(torrent_id, True)
+            self.client.core.set_torrent_stop_ratio(torrent_id, ratio)
         except Exception:
             return False
         else:
@@ -399,7 +393,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.pause_torrent(torrent_ids).get()
+            self.client.core.pause_torrent(torrent_ids)
         except Exception:
             return False
         else:
@@ -413,7 +407,7 @@ class DelugeRPC(object):
         self.client.disconnect()
 
     def _check_torrent(self, info_hash):
-        torrent_id = self.client.core.get_torrent_status(info_hash, {}).get()
+        torrent_id = self.client.core.get_torrent_status(info_hash, {})
         if torrent_id['hash']:
             log.debug('DelugeD: Torrent already exists in Deluge')
             return info_hash
@@ -429,7 +423,7 @@ class DelugeRPC(object):
             self.connect()
             torrents_data = self.client.core.get_torrents_status({}, ('name', 'hash', 'progress', 'state',
                                                                       'ratio', 'stop_ratio', 'is_seed', 'is_finished',
-                                                                      'paused', 'files')).get()
+                                                                      'paused', 'files'))
         except Exception:
             return False
         else:

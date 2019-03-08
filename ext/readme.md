@@ -18,6 +18,7 @@
 :: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.1](https://pypi.org/project/configparser/3.7.1/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `dogpile.cache`, `validators` | ext | -
+:: | `deluge-client` | [1.7.0](https://pypi.org/project/deluge-client/1.7.0/) | **`medusa`** | ext | -
 :: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | ext | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | ext | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | ext | -

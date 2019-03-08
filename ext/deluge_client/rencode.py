@@ -37,7 +37,6 @@
 #
 # (The rencode module is licensed under the above license as well).
 #
-# pylint: disable=redefined-builtin
 
 """
 rencode -- Web safe object pickling/unpickling.
@@ -63,13 +62,19 @@ import struct
 import sys
 from threading import Lock
 
-__version__ = ("Python", 1, 0, 6)
-__all__ = ('dumps', 'loads')
+try:
+    from future_builtins import zip
+except ImportError:
+    # Ignore on Py3.
+    pass
+
+__version__ = ('Python', 1, 0, 4)
+__all__ = ['dumps', 'loads']
 
 py3 = sys.version_info[0] >= 3
 if py3:
-    long = int
-    unicode = str
+    long = int  # pylint: disable=redefined-builtin
+    unicode = str  # pylint: disable=redefined-builtin
 
     def int2byte(c):
         return bytes([c])
@@ -215,6 +220,7 @@ def decode_false(x, f):
 def decode_none(x, f):
     return (None, f + 1)
 
+
 decode_func = {}
 decode_func[b'0'] = decode_string
 decode_func[b'1'] = decode_string
@@ -245,11 +251,12 @@ def make_fixed_length_string_decoders():
         def f(x, f):
             s = x[f + 1:f + 1 + slen]
             if _decode_utf8:
-                s = s.decode("utf8")
+                s = s.decode('utf8')
             return (s, f + 1 + slen)
         return f
     for i in range(STR_FIXED_COUNT):
         decode_func[int2byte(STR_FIXED_START + i)] = make_decoder(i)
+
 
 make_fixed_length_string_decoders()
 
@@ -266,6 +273,7 @@ def make_fixed_length_list_decoders():
     for i in range(LIST_FIXED_COUNT):
         decode_func[int2byte(LIST_FIXED_START + i)] = make_decoder(i)
 
+
 make_fixed_length_list_decoders()
 
 
@@ -278,6 +286,7 @@ def make_fixed_length_int_decoders():
         decode_func[int2byte(INT_POS_FIXED_START + i)] = make_decoder(i)
     for i in range(INT_NEG_FIXED_COUNT):
         decode_func[int2byte(INT_NEG_FIXED_START + i)] = make_decoder(-1 - i)
+
 
 make_fixed_length_int_decoders()
 
@@ -293,6 +302,7 @@ def make_fixed_length_dict_decoders():
         return f
     for i in range(DICT_FIXED_COUNT):
         decode_func[int2byte(DICT_FIXED_START + i)] = make_decoder(i)
+
 
 make_fixed_length_dict_decoders()
 
@@ -325,7 +335,7 @@ def encode_int(x, r):
     else:
         s = str(x)
         if py3:
-            s = bytes(s, "ascii")
+            s = bytes(s, 'ascii')
 
         if len(s) >= MAX_INT_LENGTH:
             raise ValueError('overflow')
@@ -354,12 +364,12 @@ def encode_string(x, r):
     else:
         s = str(len(x))
         if py3:
-            s = bytes(s, "ascii")
+            s = bytes(s, 'ascii')
         r.extend((s, b':', x))
 
 
 def encode_unicode(x, r):
-    encode_string(x.encode("utf8"), r)
+    encode_string(x.encode('utf8'), r)
 
 
 def encode_list(x, r):
@@ -386,6 +396,7 @@ def encode_dict(x, r):
             encode_func[type(k)](k, r)
             encode_func[type(v)](v, r)
         r.append(CHR_TERM)
+
 
 encode_func = {}
 encode_func[int] = encode_int
@@ -448,7 +459,9 @@ def test():
     assert 1e-10 < abs(loads(dumps(1.1)) - 1.1) < 1e-6
     assert 1e-10 < abs(loads(dumps(1.1, 32)) - 1.1) < 1e-6
     assert abs(loads(dumps(1.1, 64)) - 1.1) < 1e-12
-    assert loads(dumps("Hello World!!"), decode_utf8=True)
+    assert loads(dumps('Hello World!!'), decode_utf8=True)
+
+
 try:
     import psyco
     psyco.bind(dumps)

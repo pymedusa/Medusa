@@ -11,7 +11,6 @@
 :: | `send2trash` | [1.3.0](https://pypi.org/project/send2trash/1.3.0/) | **`medusa`** | lib | **Modified**
 :: | `shutil_custom` | - | **`medusa`** | lib | **Custom**
 :: | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb/tree/5d26c8c146891225c05651821ef34ced0c118221) | **`medusa`** | lib | -
-:: | `synchronousdeluge` | ????? | **`medusa`** | lib | From CouchPotato?
 :: | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | lib | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 :: | `traktor` | - | **`medusa`** | lib | **Custom**
 :: | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | lib | **Modified**: [Upstream PR](https://github.com/pymedusa/tvdbv2/pull/2)
