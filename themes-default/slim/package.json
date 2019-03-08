@@ -82,7 +82,7 @@
     "vue-template-compiler": "2.5.22",
     "vue-truncate-collapsed": "2.1.0",
     "vuex": "3.1.0",
-    "webpack": "4.29.3",
+    "webpack": "4.29.6",
     "webpack-cli": "3.2.3",
     "xo": "0.24.0"
   },
