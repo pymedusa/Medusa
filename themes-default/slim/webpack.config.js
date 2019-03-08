@@ -170,7 +170,7 @@ const webpackConfig = (env, mode) => ({
         ]
     },
     plugins: [
-        new CleanWebpackPlugin(['dist']),
+        new CleanWebpackPlugin(),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
