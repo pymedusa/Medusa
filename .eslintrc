@@ -8,7 +8,7 @@
     "space-before-function-paren": ["error", "never"]
   },
   "env": {
-	"browser": true,
-	"jquery": true
+	  "browser": true,
+	  "jquery": true
   }
 }
