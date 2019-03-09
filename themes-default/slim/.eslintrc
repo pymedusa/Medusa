@@ -2,15 +2,17 @@
   "extends": [
     "xo/browser",
     "xo/esnext",
-    "plugin:vue/essential"
+    "plugin:unicorn/recommended",
+    "plugin:vue/essential",
+    "plugin:jest/recommended"
   ],
   "rules": {
-      "indent": ["error", 4],
-      "object-curly-spacing": ["error", "always"],
-      "space-before-function-paren": ["error", "never"],
-      "unicorn/catch-error-name": ["error", { "name": "error" }]
-    },
-    "env": {
-      "jquery": true
-    }
+    "indent": ["error", 4],
+    "object-curly-spacing": ["error", "always"],
+    "space-before-function-paren": ["error", "never"],
+    "unicorn/catch-error-name": ["error", { "name": "error" }]
+  },
+  "env": {
+    "jquery": true
+  }
 }
