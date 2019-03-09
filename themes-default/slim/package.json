@@ -73,7 +73,7 @@
     "vue": "2.5.22",
     "vue-async-computed": "3.5.2",
     "vue-js-toggle-button": "1.3.1",
-    "vue-loader": "15.5.1",
+    "vue-loader": "15.7.0",
     "vue-meta": "1.5.8",
     "vue-native-websocket": "2.0.12",
     "vue-router": "3.0.2",
