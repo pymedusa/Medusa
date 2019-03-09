@@ -1,51 +1,52 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AddShowOptions } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('AddShowOptions.test.js', () => {
+    let localVue;
+    let store;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders with `enable-anime-options` disabled', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AddShowOptions, {
-        localVue,
-        store,
-        stubs: [
-            'quality-chooser',
-            'toggle-button'
-        ],
-        propsData: {
-            enableAnimeOptions: false
-        }
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
-});
+    it('renders with `enable-anime-options` disabled', () => {
+        const wrapper = mount(AddShowOptions, {
+            localVue,
+            store,
+            stubs: [
+                'quality-chooser',
+                'toggle-button'
+            ],
+            propsData: {
+                enableAnimeOptions: false
+            }
+        });
 
-test('renders with `enable-anime-options` enabled', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AddShowOptions, {
-        localVue,
-        store,
-        stubs: [
-            'quality-chooser',
-            'toggle-button'
-        ],
-        propsData: {
-            enableAnimeOptions: true
-        }
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders with `enable-anime-options` enabled', () => {
+        const wrapper = mount(AddShowOptions, {
+            localVue,
+            store,
+            stubs: [
+                'quality-chooser',
+                'toggle-button'
+            ],
+            propsData: {
+                enableAnimeOptions: true
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });
