@@ -1,162 +1,161 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
 import fixtures from '../__fixtures__/app-link';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('AppLink.test.js', () => {
+    let localVue;
+    let store;
+    let routerBase;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-    t.context.routerBase = '/'; // This might be '/webroot'
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders external link', t => {
-    const { localVue, store, state } = t.context;
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        propsData: {
-            href: 'https://google.com'
-        },
-        computed: {
-            config() {
-                return Object.assign(state.config, {
-                    anonRedirect: ''
-                });
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
+        routerBase = '/'; // This might be '/webroot'
+    });
+
+    it('renders external link', () => {
+        const { state } = fixtures;
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            propsData: {
+                href: 'https://google.com'
+            },
+            computed: {
+                config() {
+                    return Object.assign(state.config, {
+                        anonRedirect: ''
+                    });
+                }
             }
-        }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('https://google.com');
+        expect(wrapper.attributes().target).toEqual('_blank');
+        expect(wrapper.attributes().rel).toEqual('noreferrer');
     });
 
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().href, 'https://google.com');
-    t.is(wrapper.attributes().target, '_blank');
-    t.is(wrapper.attributes().rel, 'noreferrer');
-});
-
-test('renders anonymised external link', t => {
-    const { localVue, store, state } = t.context;
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        propsData: {
-            href: 'https://google.com'
-        },
-        computed: {
-            config() {
-                return Object.assign(state.config, {
-                    anonRedirect: 'https://anon-redirect.tld/?url='
-                });
+    it('renders anonymised external link', () => {
+        const { state } = fixtures;
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            propsData: {
+                href: 'https://google.com'
+            },
+            computed: {
+                config() {
+                    return Object.assign(state.config, {
+                        anonRedirect: 'https://anon-redirect.tld/?url='
+                    });
+                }
             }
-        }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('https://anon-redirect.tld/?url=https://google.com');
+        expect(wrapper.attributes().target).toEqual('_blank');
+        expect(wrapper.attributes().rel).toEqual('noreferrer');
     });
 
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().href, 'https://anon-redirect.tld/?url=https://google.com');
-    t.is(wrapper.attributes().target, '_blank');
-    t.is(wrapper.attributes().rel, 'noreferrer');
-});
-
-test('renders internal link', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        propsData: {
-            href: './config'
-        }
-    });
-
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().href, 'http://localhost:8081/config');
-    t.is(wrapper.attributes().target, '_self');
-    t.is(wrapper.attributes().rel, undefined);
-});
-
-test('renders router-link from to (string)', t => {
-    const { routerBase, localVue, store } = t.context;
-    const router = new VueRouter({
-        base: routerBase,
-        mode: 'history',
-        routes: [{
-            path: '/config',
-            name: 'config'
-        }]
-    });
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        router,
-        propsData: {
-            to: 'config'
-        }
-    });
-
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().href, '/config');
-    t.is(wrapper.attributes().target, undefined);
-    t.is(wrapper.attributes().rel, undefined);
-});
-
-test('renders router-link from to (object)', t => {
-    const { routerBase, localVue, store } = t.context;
-    const router = new VueRouter({
-        base: routerBase,
-        mode: 'history',
-        routes: [{
-            path: '/config',
-            name: 'config'
-        }]
-    });
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        router,
-        propsData: {
-            to: {
-                path: '/config'
+    it('renders internal link', () => {
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            propsData: {
+                href: './config'
             }
-        }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('http://localhost:8081/config');
+        expect(wrapper.attributes().target).toEqual('_self');
+        expect(wrapper.attributes().rel).toEqual(undefined);
     });
 
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().href, '/config');
-    t.is(wrapper.attributes().target, undefined);
-    t.is(wrapper.attributes().rel, undefined);
-});
+    it('renders router-link from to (string)', () => {
+        const router = new VueRouter({
+            base: routerBase,
+            mode: 'history',
+            routes: [{
+                path: '/config',
+                name: 'config'
+            }]
+        });
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            router,
+            propsData: {
+                to: 'config'
+            }
+        });
 
-test('renders "false-link" anchor', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        attrs: {
-            name: 'season-3'
-        }
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('/config');
+        expect(wrapper.attributes().target).toEqual(undefined);
+        expect(wrapper.attributes().rel).toEqual(undefined);
     });
 
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().name, 'season-3');
-    t.is(wrapper.attributes()['false-link'], 'true');
-});
+    it('renders router-link from to (object)', () => {
+        const router = new VueRouter({
+            base: routerBase,
+            mode: 'history',
+            routes: [{
+                path: '/config',
+                name: 'config'
+            }]
+        });
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            router,
+            propsData: {
+                to: {
+                    path: '/config'
+                }
+            }
+        });
 
-test('renders simple anchor', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AppLink, {
-        localVue,
-        store,
-        attrs: {
-            class: 'my-class'
-        }
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('/config');
+        expect(wrapper.attributes().target).toEqual(undefined);
+        expect(wrapper.attributes().rel).toEqual(undefined);
     });
 
-    t.snapshot(wrapper.html());
-    t.is(wrapper.attributes().class, 'my-class');
-    t.is(wrapper.attributes()['false-link'], undefined);
+    it('renders "false-link" anchor', () => {
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            attrs: {
+                name: 'season-3'
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().name).toEqual('season-3');
+        expect(wrapper.attributes()['false-link']).toEqual('true');
+    });
+
+    it('renders simple anchor', () => {
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            attrs: {
+                class: 'my-class'
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().class).toEqual('my-class');
+        expect(wrapper.attributes()['false-link']).toEqual(undefined);
+    });
 });
