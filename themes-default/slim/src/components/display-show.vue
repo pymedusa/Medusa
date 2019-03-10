@@ -10,31 +10,20 @@
         
         <div class="row">
             <div class="col-md-12 top-15">
-            
-                    <v-client-table v-if="show.seasons" :data="show.seasons" :columns="seasonColumns" :options="seasonOptions" class="season-table">
-                        <template slot="season" slot-scope="props">
-                            <div>
-                                <h3 style="display: inline"><app-link :name="'season-'+ props.row.season"></app-link>
-                                    <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
-                                    {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
-                                    <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                                    <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
-                                        <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
-                                    </app-link>
-                                </h3>
-                            </div>
-                            <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'">
-                                <img v-bind="getSeasonExceptions(props.row)" height="16" />
-                            </div>
-                        </template>
-                        <template slot="child_row" slot-scope="props">
-                            <div class="episodes">
-                                <episode-table :show="show" :season="props.row.season" :episodes="props.row.episodes"
-                                    :ref="`episodeTable-${props.row.season}`" @episodeTableSorted="episodeTableSorted($event)">
-                                </episode-table>
-                            </div>
-                        </template>
-                    </v-client-table>
+                <vue-good-table v-if="show.seasons"
+                :columns="columns"
+                :rows="show.seasons"
+                :groupOptions="{ enabled: true }">
+                <template slot="table-row" slot-scope="props">
+                    <span v-if="props.column.field == 'content.hasNfo'">
+                        <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
+                    </span>
+                    <span v-else>
+                        {{props.formattedRow[props.column.field]}}
+                    </span>
+                </template>
+
+                </vue-good-table>
             </div>
         </div>
 
@@ -125,7 +114,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, attachImdbTooltip } from '../utils';
-import { ClientTable, Event } from 'vue-tables-2';
+import { VueGoodTable  } from 'vue-good-table';
 import EpisodeTable from './episode-table.vue';
 import ShowHeader from './show-header.vue';
 
@@ -133,7 +122,7 @@ export default {
     name: 'show',
     components: {
         AppLink,
-        ClientTable,
+        VueGoodTable,
         EpisodeTable,
         PlotInfo,
         ShowHeader
@@ -169,6 +158,18 @@ export default {
             invertTable: true,
             isMobile: false,
             search: '',
+            columns: [{
+                label: 'nfo',
+                field: 'content.hasNfo'
+            },{
+                label: 'Episode',
+                field: 'episode'
+            }, {
+                label: 'Title',
+                field: 'title'
+            }],
+                // 'content.hasNfo', 'content.hasTbn', 'episode', 'absoluteNumber', 'title', 'file.location',
+                // 'file.size', 'airDate', 'download', 'subtitles', 'status', 'search'
             seasonColumns: ['season'],
             seasonOptions: {
                 headings: {

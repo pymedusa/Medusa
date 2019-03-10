@@ -2165,7 +2165,12 @@ class Series(TV):
         if detailed:
             episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [{'episodes': list(v), 'season': season} for season, v in
+            data['seasons'] = [{'children': list(v),
+                                'season': season,
+                                'label': 'Season {season}'.format(season=season),
+                                'mode': 'span',
+                                'html': False}
+                               for season, v in
                                groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
 
             data['episodeCount'] = len(episodes)

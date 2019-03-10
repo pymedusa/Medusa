@@ -18,5 +18,8 @@
     "dredd": "11.0.3",
     "execa": "1.0.0",
     "yargs": "13.2.2"
+  },
+  "dependencies": {
+    "vue-good-table": "2.16.3"
   }
 }
