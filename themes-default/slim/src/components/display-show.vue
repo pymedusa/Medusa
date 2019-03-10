@@ -12,8 +12,12 @@
             <div class="col-md-12 top-15">
                 <vue-good-table v-if="show.seasons"
                 :columns="columns"
-                :rows="show.seasons"
-                :groupOptions="{ enabled: true }">
+                :rows="show.seasons.slice().reverse()"
+                :groupOptions="{ enabled: true }"
+                :sort-options="{
+                    enabled: true,
+                    initialSortBy: {field: 'episode', type: 'desc'}
+                }">
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
@@ -163,7 +167,8 @@ export default {
                 field: 'content.hasNfo'
             },{
                 label: 'Episode',
-                field: 'episode'
+                field: 'episode',
+                type: 'number'
             }, {
                 label: 'Title',
                 field: 'title'
