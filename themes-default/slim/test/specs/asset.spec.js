@@ -1,44 +1,41 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { Asset } from '../../src/components';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
-});
+describe('Asset.test.js', () => {
+    let localVue;
 
-test('renders default content for network', t => {
-    const { localVue } = t.context;
-    const wrapper = mount(Asset, {
-        localVue,
-        propsData: {
-            type: 'network',
-            default: 'https://default_website.tld/img.png'
-        }
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
     });
 
-    const html = wrapper.html();
+    it('renders default content for network', () => {
+        const wrapper = mount(Asset, {
+            localVue,
+            propsData: {
+                type: 'network',
+                default: 'https://default_website.tld/img.png'
+            }
+        });
 
-    t.snapshot(html);
-    t.true(html.includes('https://default_website.tld/img.png'));
-});
-
-test('renders image with API v2 path for network', t => {
-    const { localVue } = t.context;
-    const wrapper = mount(Asset, {
-        localVue,
-        propsData: {
-            type: 'network',
-            showSlug: 'tvdb1000',
-            default: 'https://default_website.tld/img.png'
-        }
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.html().includes('https://default_website.tld/img.png')).toEqual(true);
     });
 
-    const html = wrapper.html();
+    it('renders image with API v2 path for network', () => {
+        const wrapper = mount(Asset, {
+            localVue,
+            propsData: {
+                type: 'network',
+                showSlug: 'tvdb1000',
+                default: 'https://default_website.tld/img.png'
+            }
+        });
 
-    t.snapshot(html);
-    t.true(html.includes('/api/v2/series/tvdb1000/asset/network?api_key='));
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.html().includes('/api/v2/series/tvdb1000/asset/network?api_key=')).toEqual(true);
+    });
 });
