@@ -190,6 +190,9 @@
     ]
   },
   "jest": {
+    "setupFiles": [
+      "./test/helpers/setup.js"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",
