@@ -18,10 +18,71 @@
                     enabled: true,
                     initialSortBy: {field: 'episode', type: 'desc'}
                 }">
+                <div slot="table-actions">
+                    <div class="button-group pull-right">
+                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret"></span></button>
+                        <ul class="dropdown-menu" style="top: auto; left: auto;">
+                            <li v-for="(column, index) in columns" :key="index">
+                                <a href="#" class="small" tabIndex="-1" @click.prevent="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox"/>&nbsp;{{column.label}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
                     </span>
+                    <span v-else-if="props.column.field == 'content.hasTbn'">
+                        <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11" />
+                    </span>
+                    <span v-else-if="props.column.field == 'download'">
+                        <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'episode'">
+                        <span :title="props.row.location !== '' ? props.row.location : ''" :class="{addQTip: props.row.location !== ''}">{{props.row.episode}}</span>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'scene'">
+                        <input type="text" :placeholder="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode" size="6" maxlength="8"
+                            class="sceneSeasonXEpisode form-control input-scene" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
+                            :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
+                            title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
+                            :value="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode"
+                            style="padding: 0; text-align: center; max-width: 60px;"/>
+                    </span>
+                    
+                    <span v-else-if="props.column.field == 'sceneAbsolute'">
+                        <input type="text" :placeholder="getSceneAbsoluteNumbering(props.row)" size="6" maxlength="8"
+                            class="sceneAbsolute form-control input-scene" :data-for-absolute="props.row.absoluteNumber || 0"
+                            :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
+                            title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
+                            :value="getSceneAbsoluteNumbering(props.row) ? getSceneAbsoluteNumbering(props.row) : ''"
+                            style="padding: 0; text-align: center; max-width: 60px;"/>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'subtitles'">
+                        <div v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                            <div class="subtitles" v-for="flag in props.row.subtitles" :key="flag">
+                                <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode='props.row.episode' + '&lang=' + flag">
+                                    <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
+                                </app-link>
+                                <img v-if="flag === 'und'" :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                            </div>
+                        </div>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'status'">
+                        {{props.row.status}}<quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'search'">
+                        <app-link v-if="props.row.season !== 0" :class="retryDownload(props.row) ? 'epRetry' : 'epSearch'" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/' + (retryDownload(props.row) ? 'retryEpisode' : 'searchEpisode') + '?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-search src="images/search16.png" height="16" alt="retryDownload(props.row) ? 'retry' : 'search'" title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"/></app-link>
+                        <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
+                        <app-link v-if="showSubtitleButton(props.row)" class="epSubtitlesSearch" :href="'home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
+                    </span>
+
                     <span v-else>
                         {{props.formattedRow[props.column.field]}}
                     </span>
@@ -114,6 +175,8 @@
 </template>
 
 <script>
+import formatDate from 'date-fns/format';
+import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
@@ -164,31 +227,59 @@ export default {
             search: '',
             columns: [{
                 label: 'nfo',
-                field: 'content.hasNfo'
+                field: 'content.hasNfo',
+                type: 'boolean'
+            },{
+                label: 'tbn',
+                field: 'content.hasTbn',
+                type: 'boolean'
             },{
                 label: 'Episode',
                 field: 'episode',
                 type: 'number'
             }, {
+                label: 'Absolute Number',
+                field: 'absoluteNumber',
+                type: 'number'
+            }, {
+                label: 'Scene',
+                field: 'scene',
+                type: 'number'
+            }, {
+                label: 'Scene Absolute',
+                field: 'sceneAbsolute',
+                type: 'number'
+            }, {
                 label: 'Title',
                 field: 'title'
-            }],
-                // 'content.hasNfo', 'content.hasTbn', 'episode', 'absoluteNumber', 'title', 'file.location',
-                // 'file.size', 'airDate', 'download', 'subtitles', 'status', 'search'
-            seasonColumns: ['season'],
-            seasonOptions: {
-                headings: {
-                    season: 'Season'
-                },
-                filterable: false,
-                perPage: 10,
-                orderBy: {
-                    column: 'season',
-                    ascending: false
-                },
-                childRowTogglerFirst: false,
-                unqiueKey: 'season'
-            }
+            }, {
+                label: 'File',
+                field: 'file.location'
+            }, {
+                label: 'Size',
+                field: 'file.size',
+                type: 'number'
+            }, {
+                // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
+                label: 'Air date',
+                field: this.parseDateFn
+                // type: 'date',
+                // dateInputFormat: 'YYYY-MM-DD HH:mm:ssZ ', // expects 2018-03-16
+                // dateOutputFormat: 'MMM Do YYYY', // outputs Mar 16th 2018
+            }, {
+                label: 'Download',
+                field: 'download'
+            }, {
+                label: 'Subtitles',
+                field: 'subtitles',
+                sortable: false
+            }, {
+                label: 'Status',
+                field: 'status'
+            }, {
+                label: 'Search',
+                field: 'search'
+            }]
         };
     },
     computed: {
@@ -402,6 +493,12 @@ export default {
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getShows: 'getShows' 
         }),
+        parseDateFn(row) {
+            return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
+        },
+        parseSubtitlesFn(row) {
+            debugger;
+        },
         /**
          * Attaches IMDB tooltip,
          * Moves summary and checkbox controls backgrounds
@@ -616,6 +713,10 @@ export default {
             show.seasons.forEach(season => {
                 this.$refs[`episodeTable-${season.season}`].$refs[`tableSeason-${season.season}`].setOrder(event.column, event.ascending)
             });
+        },
+        toggleColumn(index, event) {
+            // Set hidden to inverse of what it currently is
+            this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
         }
     }
 };
