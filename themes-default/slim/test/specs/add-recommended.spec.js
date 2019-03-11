@@ -1,28 +1,29 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { AppLink, AddRecommended } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
-    t.context.localVue.component('app-link', AppLink);
+describe('AddRecommended.test.js', () => {
+    let wrapper;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
+        localVue.component('app-link', AppLink);
 
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AddRecommended, {
-        localVue,
-        store
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        const store = new Store({ state });
+
+        wrapper = shallowMount(AddRecommended, {
+            localVue,
+            store
+        });
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });
