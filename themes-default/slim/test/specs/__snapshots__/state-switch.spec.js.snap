@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StateSwitch.test.js renders: loading with \`null\` 1`] = `
+<img
+  alt="Loading"
+  height="16"
+  src="images/loading16-dark.gif"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: loading with \`theme\` prop 1`] = `
+<img
+  alt="Loading"
+  height="16"
+  src="images/loading16-light.gif"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: loading with string 1`] = `
+<img
+  alt="Loading"
+  height="16"
+  src="images/loading16-dark.gif"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: no with \`false\` 1`] = `
+<img
+  alt="No"
+  height="16"
+  src="images/no16.png"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: no with string 1`] = `
+<img
+  alt="No"
+  height="16"
+  src="images/no16.png"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: yes with \`true\` 1`] = `
+<img
+  alt="Yes"
+  height="16"
+  src="images/yes16.png"
+  width="16"
+/>
+`;
+
+exports[`StateSwitch.test.js renders: yes with string 1`] = `
+<img
+  alt="Yes"
+  height="16"
+  src="images/yes16.png"
+  width="16"
+/>
+`;

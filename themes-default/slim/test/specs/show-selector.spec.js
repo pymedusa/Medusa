@@ -1,131 +1,130 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { ShowSelector } from '../../src/components';
-import { state } from '../__fixtures__/common';
+import fixtures from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('ShowSelector.test.js', () => {
+    let localVue;
+    let store;
 
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders "loading..." with empty show array', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return [];
-            },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: 'asc'
-                };
-            }
-        },
-        store
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with shows', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders "loading..." with empty show array', () => {
+        const wrapper = mount(ShowSelector, {
+            localVue,
+            computed: {
+                shows() {
+                    return [];
+                },
+                config() {
+                    return {
+                        animeSplitHome: false,
+                        sortArticle: 'asc'
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: true
-                };
-            }
-        },
-        propsData: {
-            placeholder: '-- Select a Show --'
-        },
-        store
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with articles(The|A|An) ignored', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders with shows', () => {
+        const wrapper = mount(ShowSelector, {
+            localVue,
+            computed: {
+                shows() {
+                    return shows;
+                },
+                config() {
+                    return {
+                        animeSplitHome: false,
+                        sortArticle: true
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: false
-                };
-            }
-        },
-        propsData: {
-            placeholder: '-- Select a Show --'
-        },
-        store
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders with split sections', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders with articles(The|A|An) ignored', () => {
+        const wrapper = mount(ShowSelector, {
+            localVue,
+            computed: {
+                shows() {
+                    return shows;
+                },
+                config() {
+                    return {
+                        animeSplitHome: false,
+                        sortArticle: false
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: 'asc'
-                };
-            }
-        },
-        propsData: {
-            placeholder: '-- Select a Show --'
-        },
-        store
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
-});
-
-test('renders without placeholder', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(ShowSelector, {
-        localVue,
-        computed: {
-            shows() {
-                return shows;
+    it('renders with split sections', () => {
+        const wrapper = mount(ShowSelector, {
+            localVue,
+            computed: {
+                shows() {
+                    return shows;
+                },
+                config() {
+                    return {
+                        animeSplitHome: false,
+                        sortArticle: 'asc'
+                    };
+                }
             },
-            config() {
-                return {
-                    animeSplitHome: false,
-                    sortArticle: 'asc'
-                };
-            }
-        },
-        store
+            propsData: {
+                placeholder: '-- Select a Show --'
+            },
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders without placeholder', () => {
+        const wrapper = mount(ShowSelector, {
+            localVue,
+            computed: {
+                shows() {
+                    return shows;
+                },
+                config() {
+                    return {
+                        animeSplitHome: false,
+                        sortArticle: 'asc'
+                    };
+                }
+            },
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });
