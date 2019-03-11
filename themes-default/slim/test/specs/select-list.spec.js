@@ -31,16 +31,19 @@ describe('SelectList.test.js', () => {
     });
 
     it('renders with values', () => {
-        const wrapper = mount(SelectList, {
-            localVue,
-            store
-        });
-
         const expectedItems = [
             'abc',
             'bcd',
             'test'
         ];
+
+        const wrapper = mount(SelectList, {
+            localVue,
+            store,
+            propsData: {
+                listItems: expectedItems
+            }
+        });
 
         expectedItems.forEach(item => {
             wrapper.setData({ newItem: item });

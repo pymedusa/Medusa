@@ -2,15 +2,13 @@
   "extends": [
     "xo/browser",
     "xo/esnext",
-    "plugin:unicorn/recommended",
     "plugin:vue/essential",
     "plugin:jest/recommended"
   ],
   "rules": {
     "indent": ["error", 4],
     "object-curly-spacing": ["error", "always"],
-    "space-before-function-paren": ["error", "never"],
-    "unicorn/catch-error-name": ["error", { "name": "error" }]
+    "space-before-function-paren": ["error", "never"]
   },
   "env": {
     "jquery": true
