@@ -2167,7 +2167,7 @@ class Series(TV):
             data['size'] = self.size
             data['seasons'] = [{'children': list(v),
                                 'season': season,
-                                'label': 'Season {season}'.format(season=season),
+                                'label': season,
                                 'mode': 'span',
                                 'html': False}
                                for season, v in
