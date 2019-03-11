@@ -1,4 +1,5 @@
 <template>
+
     <v-client-table v-if="episodes" :data="episodes" v-bind="{columns, options}" :ref="`tableSeason-${season}`" @sorted="sorted">
         <!-- <episode-row v-for="episode in episodesInverse(row)" :key="episode.episode" v-bind="{episode, show}"></episode-row> -->
         <div slot="content.hasNfo" slot-scope="{row}">

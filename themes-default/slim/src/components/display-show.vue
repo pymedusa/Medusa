@@ -1,5 +1,6 @@
 <template>
     <div class="display-show-template">
+        <backstretch v-bind="{indexer, id}"></backstretch>
         <input type="hidden" id="series-id" value="" />
         <input type="hidden" id="indexer-name" value="" />
         <input type="hidden" id="series-slug" value="" />
@@ -9,14 +10,20 @@
         ></show-header>
         
         <div class="row">
-            <div class="col-md-12 top-15">
+            <div class="col-md-12 top-15 displayShow" :class="{ fanartBackground: config.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
                 :columns="columns"
                 :rows="show.seasons.slice().reverse()"
                 :groupOptions="{ enabled: true }"
+                :search-options="{
+                    enabled: true,
+                    trigger: 'enter',
+                    skipDiacritics: false,
+                    placeholder: 'Search episodes',
+                }"
                 :sort-options="{
                     enabled: true,
-                    initialSortBy: {field: 'episode', type: 'desc'}
+                    initialSortBy: { field: 'episode', type: 'desc' }
                 }">
                 <div slot="table-actions">
                     <div class="button-group pull-right">
@@ -28,6 +35,17 @@
                         </ul>
                     </div>
                 </div>
+
+                <template slot="table-header-row" slot-scope="props" :class="'my-class'">
+                    <h3 style="display: inline"><app-link :name="'season-'+ props.row.season"></app-link>
+                        <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
+                        {{ props.row.label > 0 ? 'Season ' + props.row.label : 'Specials' }}
+                        <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
+                        <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
+                            <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
+                        </app-link>
+                    </h3>
+                </template>
 
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.field == 'content.hasNfo'">
@@ -182,7 +200,7 @@ import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, attachImdbTooltip } from '../utils';
 import { VueGoodTable  } from 'vue-good-table';
-import EpisodeTable from './episode-table.vue';
+import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -190,7 +208,7 @@ export default {
     components: {
         AppLink,
         VueGoodTable,
-        EpisodeTable,
+        Backstretch,
         PlotInfo,
         ShowHeader
     },
@@ -620,17 +638,17 @@ export default {
          * If that's the case we want to manual season search icon.
          */
         anyEpisodeNotUnaired(season) {
-            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
+            return season.children.filter(ep => ep.status !== 'Unaired').length > 0;
         },
         episodesInverse(season) {
             const { invertTable } = this;
-            if (!season.episodes) {
+            if (!season.children) {
                 return [];
             }
             if (invertTable) {
-                return season.episodes.slice().reverse();
+                return season.children.slice().reverse();
             } else {
-                return season.episodes;
+                return season.children;
             }
         },
         /**
@@ -671,7 +689,7 @@ export default {
             return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         totalSeasonEpisodeSize(season) {
-            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
+            return season.children.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
         },
         getSeasonExceptions(season) {
             const { show } = this;
@@ -722,58 +740,180 @@ export default {
 };
 </script>
 
-<style>
-.table {
+<style scope>
+.vgt-global-search__input.vgt-pull-left {
+    /* width: 50%; */
+    /* display: inline-block; */
+    float: left;
+}
+.vgt-input {
+    border: 1px solid #ccc;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
+    height: 30px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+.fanartBackground.displayShow {
+    clear: both;
+    opacity: 0.9;
+}
+.defaultTable.displayShow {
+    clear: both;
+}
+.displayShowTable.displayShow {
+    clear: both;
+}
+.fanartBackground table {
+    table-layout: auto;
     width: 100%;
-    max-width: 100%;
-    margin-bottom: 20px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+    color: rgb(0, 0, 0) !important;
 }
-
-div.season-table > div.table-responsive > table > thead {
-    display: none;
+.summaryFanArt {
+    opacity: 0.9;
 }
-.table-striped>tbody>tr:nth-of-type(odd) {
-    background-color: transparent;
+.fanartBackground > table th.vgt-row-header {
+    border: none !important;
+    background-color: transparent !important;
+    color: rgb(255, 255, 255) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
 }
-.VueTables__child-row-toggler {
-    width: 16px;
-    height: 16px;
-    line-height: 16px;
-    display: block;
-    margin: auto;
+.fanartBackground td.col-search {
     text-align: center;
 }
- 
-.VueTables__child-row-toggler--closed::before {
-    content: "+";
-}
- 
-.VueTables__child-row-toggler--open::before {
-    content: "-";
-}
-.VueTables__table > .float-right {
-    float: right;
-}
-.VueTables.episodes {
-    display: inline-block;
-}
-.table-bordered, .table-bordered>tbody>tr>td, 
-.table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, 
-.table-bordered>tfoot>tr>th, 
-.table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
-    border: none;
-}
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, 
-.table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
-    border-top: none;
-}
-.table-hover>tbody>tr:hover, .table>tbody>tr.active>td, .table>tbody>tr.active>th, .table>tbody>tr>td.active, .table>tbody>tr>th.active, .table>tfoot>tr.active>td, .table>tfoot>tr.active>th, .table>tfoot>tr>td.active, .table>tfoot>tr>th.active, .table>thead>tr.active>td, .table>thead>tr.active>th, .table>thead>tr>td.active, .table>thead>tr>th.active {
-    background-color: transparent;
+
+/* Trying to migrate this from tablesorter */
+/* =======================================================================
+tablesorter.css
+========================================================================== */
+
+.vgt-table {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    color: rgb(0, 0, 0);
+    text-align: left;
+    background-color: rgb(255, 255, 255);
+    border-spacing: 0;
 }
 
-div.season-table > table.VueTables__table.table {
-    width: 250px;
+.vgt-table th,
+.vgt-table td {
+    padding: 4px;
+    border-top: rgb(255, 255, 255) 1px solid;
+    border-left: rgb(255, 255, 255) 1px solid;
+    vertical-align: middle;
 }
+
+/* remove extra border from left edge */
+.vgt-table th:first-child,
+.vgt-table td:first-child {
+    border-left: none;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    border-collapse: collapse;
+    font-weight: normal;
+}
+
+/* .vgt-table .tablesorter-header {
+    padding: 4px 18px;
+    cursor: pointer;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+    background-position: center right;
+    background-repeat: no-repeat;
+} */
+
+.tablesorter thead th.sorting.sorting-desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.tablesorter thead th.sorting.sorting-asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+
+.tablesorter thead th {
+    background-image: none;
+    padding: 4px;
+    cursor: default;
+}
+
+/* thead.tablesorter-stickyHeader {
+    border-top: 2px solid rgb(255, 255, 255);
+    border-bottom: 2px solid rgb(255, 255, 255);
+} */
+
+/* Zebra Widget - row alternating colors */
+.vgt-table tr:nth-child(odd) {
+    background-color: rgb(245, 241, 228);
+}
+
+.vgt-table tr:nth-child(odd) {
+    background-color: rgb(223, 218, 207);
+}
+
+/* filter widget */
+/* .tablesorter .filtered {
+    display: none;
+} */
+
+.tablesorter input.tablesorter-filter {
+    width: 98%;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.tablesorter tr.tablesorter-filter-row,
+.tablesorter tr.tablesorter-filter-row td {
+    text-align: center;
+    background: rgb(238, 238, 238);
+    border-bottom: 1px solid rgb(221, 221, 221);
+}
+
+/* optional disabled input styling */
+.tablesorter input.tablesorter-filter-row .disabled {
+    display: none;
+}
+
+.tablesorter-header-inner {
+    padding: 0 2px;
+    text-align: center;
+}
+
+.tablesorter tfoot tr {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    border-collapse: collapse;
+}
+
+.tablesorter tfoot a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+
 </style>
 
 
