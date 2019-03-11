@@ -135,16 +135,29 @@ window.app = new Vue({
             this.localConfig = Object.assign({}, localConfig, stateConfig);
             this.configLoaded = true;
         });
+    },
+    computed: {
+        indexerDefault() {
+            const { localConfig } = this;
+            const { indexerDefault  } = localConfig;
+            return indexerDefault || 0;
+        },
+        indexerListOptions() {
+            const { configLoaded } = this; 
+            if (!configLoaded) {
+                return;
+            }
+            debugger;
+            const allIndexers = { text: 'All Indexers', value: 0 };
+            const { indexers } = this.localConfig.indexers.config.indexers;
+            
+        }
     }
 });
 </script>
 </%block>
 <%block name="content">
 <h1 class="header">{{ $route.meta.header }}</h1>
-<% indexer = 0 %>
-% if app.INDEXER_DEFAULT:
-    <% indexer = app.INDEXER_DEFAULT %>
-% endif
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/general/saveGeneral" method="post">
@@ -164,15 +177,9 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
 
                             <fieldset class="component-group-list">
-                                <div class="field-pair">
-                                    <label for="launch_browser">
-                                        <span class="component-title">Launch browser</span>
-                                        <span class="component-desc">
-                                            <input type="checkbox" name="launch_browser" id="launch_browser" ${'checked="checked"' if app.LAUNCH_BROWSER else ''}/>
-                                            <p>open the Medusa home page on startup</p>
-                                        </span>
-                                    </label>
-                                </div>
+                                
+                                <config-toggle-slider v-model="localConfig.launchBrowser" label="Launch browser" id="launch_browser" :explanations="['open the Medusa home page on startup']" ></config-toggle-slider>                                
+                                
                                 <div class="field-pair">
                                     <label for="default_page">
                                         <span class="component-title">Initial page</span>
@@ -278,20 +285,15 @@ window.app = new Vue({
                                         </span>
                                     </label>
                                 </div>
-                                <div class="field-pair">
-                                    <label for="indexer_default">
-                                        <span class="component-title">Use initial indexer set to</span>
-                                        <span class="component-desc">
-                                            <select id="indexer_default" name="indexer_default" class="form-control input-sm">
-                                                <option value="0" ${'selected="selected"' if indexer == 0 else ''}>All Indexers</option>
-                                                % for indexer in indexerApi().indexers:
-                                                <option value="${indexer}" ${'selected="selected"' if app.INDEXER_DEFAULT == indexer else ''}>${indexerApi().indexers[indexer]}</option>
-                                                % endfor
-                                            </select>
-                                            <span>as the default selection when adding new shows</span>
-                                        </span>
-                                    </label>
-                                </div>
+                                
+                                <config-template label-for="indexer_default" label="Use initial indexer set to">
+                                    <select id="indexer_default" name="indexer_default" v-model="indexerDefault" class="form-control input-sm">
+                                        <option v-for="option in indexerListOptions" v-bind:value="option.value">
+                                            {{ option.text }}
+                                        </option>
+                                    </select>
+                                </config-template>
+                                
                                 <div class="field-pair">
                                     <label for="fallback_plex_enable">
                                         <span class="component-title">Enable fallback to plex</span>
