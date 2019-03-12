@@ -4,7 +4,7 @@ git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f
 beautifulsoup4==4.7.1
 bencode.py==2.0.0
 CacheControl==0.12.5
-certifi==2018.11.29
+certifi==2019.3.9
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
