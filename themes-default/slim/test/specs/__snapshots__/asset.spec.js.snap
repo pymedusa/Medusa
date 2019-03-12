@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Asset.test.js renders default content for network 1`] = `
+<img
+  src="https://default_website.tld/img.png"
+/>
+`;
+
+exports[`Asset.test.js renders image with API v2 path for network 1`] = `
+<img
+  src="null/api/v2/series/tvdb1000/asset/network?api_key=null"
+/>
+`;

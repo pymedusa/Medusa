@@ -436,10 +436,10 @@ dredd-transactions@6.5.2:
     fury-adapter-swagger "0.23.2"
     uri-template "1.0.1"
 
-dredd@8.0.2:
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-8.0.2.tgz#5be4ba8bfec19e28fb42969f686182c8f0c9f1b9"
-  integrity sha512-LSRfHxnEE1ZEVNkOke52bgqWS179U+xxI1baKBbHjNLXKaiyHmArgrSsHG3kEG7uIrNHKW3wwfKNxlf04RzMaw==
+dredd@8.0.4:
+  version "8.0.4"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-8.0.4.tgz#a4d31344aea16169f19f218f46b6e8e1d46c5eee"
+  integrity sha512-fH0M/tHMU5Z3oG9FnvaizyfovtoKzU550e5O9fW4saQMmyhUzqs1TZMAOFPZqCFqC0o9uyLdvfo58ClDWnbUOA==
   dependencies:
     async "2.6.2"
     caseless "0.12.0"
@@ -452,8 +452,8 @@ dredd@8.0.2:
     html "1.0.0"
     htmlencode "0.0.4"
     inquirer "6.2.2"
-    js-yaml "3.12.1"
-    make-dir "2.0.0"
+    js-yaml "3.12.2"
+    make-dir "2.1.0"
     markdown-it "8.4.2"
     optimist "0.6.1"
     proxyquire "2.1.0"
@@ -1034,7 +1034,15 @@ jju@^1.1.0:
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
   integrity sha1-o6vicYryQaKykE+EpiWXDzia4yo=
 
-js-yaml@3.12.1, js-yaml@^3.12.0, js-yaml@^3.12.1:
+js-yaml@3.12.2:
+  version "3.12.2"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.2.tgz#ef1d067c5a9d9cb65bd72f285b5d8105c77f14fc"
+  integrity sha512-QHn/Lh/7HhZ/Twc7vJYQTkjuCa0kaCcDcjK5Zlk2rvnUpy7DxMJ23+Jc2dcyvltwQVg1nygAVlB2oRDFHoRS5Q==
+  dependencies:
+    argparse "^1.0.7"
+    esprima "^4.0.0"
+
+js-yaml@^3.12.0, js-yaml@^3.12.1:
   version "3.12.1"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.1.tgz#295c8632a18a23e054cf5c9d3cecafe678167600"
   integrity sha512-um46hB9wNOKlwkHgiuyEVAybXBjwFUV0Z/RaHJblRd9DXltue9FTYvzCr9ErQrK9Adz5MU4gHWVaNUfdmrC8qA==
@@ -1197,10 +1205,10 @@ lodash@^4.17.11:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
 
-make-dir@2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-2.0.0.tgz#648a648c64fe460621461997f7ae2b40d1f65c7e"
-  integrity sha512-DCZvJtCxpfY3a0Onp57Jm0PY9ggZENfVtBMsPdXFZDrMSHU5kYCMJkJesLr0/UrFdJKuDUYoGxCpc93n4F3Z8g==
+make-dir@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/make-dir/-/make-dir-2.1.0.tgz#5f0310e18b8be898cc07009295a30ae41e91e6f5"
+  integrity sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==
   dependencies:
     pify "^4.0.1"
     semver "^5.6.0"
@@ -2134,10 +2142,10 @@ yargs-parser@^13.0.0:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs@13.2.0:
-  version "13.2.0"
-  resolved "https://registry.yarnpkg.com/yargs/-/yargs-13.2.0.tgz#8b749168defffe473ec1e7980634aa360518d7e7"
-  integrity sha512-C+2y+DJwm9JIyZqeZtBnXQWAwltzeaWWtWmLdC7mBvs46PZu8a3WOyiKfJX+pEqOfzwH7OljABNwU2XJqftk6g==
+yargs@13.2.2:
+  version "13.2.2"
+  resolved "https://registry.yarnpkg.com/yargs/-/yargs-13.2.2.tgz#0c101f580ae95cea7f39d927e7770e3fdc97f993"
+  integrity sha512-WyEoxgyTD3w5XRpAQNYUB9ycVH/PQrToaTXdYXRdOXvEy1l19br+VJsc0vcO8PTGg5ro/l/GY7F/JMEBmI0BxA==
   dependencies:
     cliui "^4.0.0"
     find-up "^3.0.0"

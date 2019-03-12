@@ -142,7 +142,7 @@ def main(args=None):  # pylint:disable=too-many-branches
 
     if options.get('yaml'):
         try:
-            import yaml  # pylint:disable=unused-variable
+            import yaml  # pylint:disable=unused-variable,unused-import
         except ImportError:  # pragma: no cover
             del options['yaml']
             print('PyYAML is not installed. \'--yaml\' option will be ignored ...', file=sys.stderr)

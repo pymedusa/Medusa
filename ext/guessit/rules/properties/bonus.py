@@ -26,7 +26,8 @@ def bonus(config):  # pylint:disable=unused-argument
     rebulk = rebulk.regex_defaults(flags=re.IGNORECASE)
 
     rebulk.regex(r'x(\d+)', name='bonus', private_parent=True, children=True, formatter=int,
-                 validator={'__parent__': lambda match: seps_surround},
+                 validator={'__parent__': seps_surround},
+                 validate_all=True,
                  conflict_solver=lambda match, conflicting: match
                  if conflicting.name in ('video_codec', 'episode') and 'weak-episode' not in conflicting.tags
                  else '__default__')

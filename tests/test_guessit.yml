@@ -4341,7 +4341,8 @@
   source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  language: ca
+  episode_title: desca202
+  language: [es, ca]
   container: mkv
   mimetype: video/x-matroska
   type: episode
@@ -4354,7 +4355,7 @@
   source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  language: [ca, pt]
+  language: ca
   release_group: desca202
   container: mkv
   mimetype: video/x-matroska
@@ -4371,4 +4372,16 @@
   screen_size: 1080p
   container: mkv
   mimetype: video/x-matroska
+  type: episode
+
+? VA_-_Redux_presents_The_Uplifting_Selection_Vol_1-2019-(RDXSEL026)-WEB-2019-ZzZz
+: title: VA
+  year: 2019
+  season: 2019
+  episode: 1
+  episode_title: '2019'
+  release_group: RDXSEL026
+  alias: VA - Redux presents The Uplifting Selection Vol
+  alternative_title: Redux presents The Uplifting Selection Vol
+  source: Web
   type: episode

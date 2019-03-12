@@ -1,6 +1,7 @@
-import test from 'ava';
 import router from '../../src/router';
 
-test('router compiles', t => {
-    t.truthy(router);
+describe('router.test.js', () => {
+    it('router compiles', () => {
+        expect(router).toBeTruthy();
+    });
 });

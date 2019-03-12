@@ -1,64 +1,61 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { SelectList } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('SelectList.test.js', () => {
+    let localVue;
+    let store;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(SelectList, {
-        localVue,
-        store,
-        propsData: {
-            listItems: []
-        }
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
-});
+    it('renders', () => {
+        const wrapper = mount(SelectList, {
+            localVue,
+            store,
+            propsData: {
+                listItems: []
+            }
+        });
 
-/*
-In order to regenerate the snapshot with the correct values
-uncomment 2 lines in `select-list.vue :: created()`
-*/
-test.failing('renders with values', t => {
-    const { localVue, store } = t.context;
-
-    const listItems = [
-        'abc',
-        'bcd',
-        'test'
-    ];
-
-    const wrapper = mount(SelectList, {
-        localVue,
-        store,
-        propsData: {
-            listItems
-        }
+        expect(wrapper.element).toMatchSnapshot();
     });
 
-    const expectedItems = listItems;
-    const inputWrapperArray = wrapper.findAll('li input[type="text"]');
+    it('renders with values', () => {
+        const expectedItems = [
+            'abc',
+            'bcd',
+            'test'
+        ];
 
-    t.is(inputWrapperArray.length, expectedItems.length);
+        const wrapper = mount(SelectList, {
+            localVue,
+            store,
+            propsData: {
+                listItems: expectedItems
+            }
+        });
 
-    inputWrapperArray.wrappers.forEach((inputWrapper, index) => {
-        const { element } = inputWrapper;
-        t.is(element.value, expectedItems[index]);
+        expectedItems.forEach(item => {
+            wrapper.setData({ newItem: item });
+            wrapper.vm.addNewItem();
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        const inputWrapperArray = wrapper.findAll('li input[type="text"]');
+        expect(inputWrapperArray.length).toEqual(expectedItems.length);
+
+        wrapper.vm.editItems.forEach((item, index) => {
+            expect(item.value).toEqual(expectedItems[index]);
+        });
     });
-
-    t.snapshot(wrapper.html());
 });

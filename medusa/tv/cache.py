@@ -419,7 +419,7 @@ class Cache(object):
             proper_tags = '|'.join(parse_result.proper_tags)
 
             if not self.item_in_cache(url):
-                log.debug('Added item: {0} to cache: {1} with url {2}', name, self.provider_id, url)
+                log.debug('Added item: {0} to cache: {1} with url: {2}', name, self.provider_id, url)
                 return [
                     'INSERT INTO [{name}] '
                     '   (name, season, episodes, indexerid, url, time, quality, '

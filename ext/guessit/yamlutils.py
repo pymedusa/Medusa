@@ -10,7 +10,7 @@ except ImportError:  # pragma: no-cover
     from ordereddict import OrderedDict  # pylint:disable=import-error
 import babelfish
 
-import yaml
+import yaml  # pylint:disable=wrong-import-order
 
 from .rules.common.quantity import BitRate, FrameRate, Size
 
@@ -58,7 +58,7 @@ class CustomDumper(yaml.SafeDumper):
     """
     Custom YAML Dumper.
     """
-    pass
+    pass  # pylint:disable=unnecessary-pass
 
 
 def default_representer(dumper, data):
