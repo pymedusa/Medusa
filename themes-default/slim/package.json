@@ -79,7 +79,7 @@
     "vue-meta": "1.5.8",
     "vue-native-websocket": "2.0.12",
     "vue-router": "3.0.2",
-    "vue-scrollto": "2.13.0",
+    "vue-scrollto": "2.14.0",
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.8",
     "vue-truncate-collapsed": "2.1.0",
