@@ -11,7 +11,7 @@
 :: | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`medusa`** | ext | Module: `bencode`
 :: | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | ext | -
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | ext | Module: `cachecontrol`
-:: | `certifi` | [2018.11.29](https://pypi.org/project/certifi/2018.11.29/) | **`medusa`**, `traktor`, `requests` | ext | -
+:: | `certifi` | [2019.3.9](https://pypi.org/project/certifi/2019.3.9/) | **`medusa`**, `traktor`, `requests` | ext | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | ext | -
 :: | `cloudflare-scrape` | pymedusa/[320456e](https://github.com/pymedusa/cloudflare-scrape/tree/320456e8b28cedb807363a7a892b1379db843f66) | **`medusa`** | ext | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
