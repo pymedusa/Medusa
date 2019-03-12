@@ -8,7 +8,7 @@ certifi==2018.11.29
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
-configparser==3.7.1
+configparser==3.7.3
 contextlib2==0.5.5 ; python_version < '3.5'
 deluge-client==1.7.0
 dirtyjson==1.0.7
