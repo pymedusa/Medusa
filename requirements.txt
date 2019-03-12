@@ -37,7 +37,7 @@ rebulk==1.0.0
 requests==2.21.0
 requests-oauthlib==1.2.0
 six==1.12.0
-stevedore==1.30.0
+stevedore==1.30.1
 git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
