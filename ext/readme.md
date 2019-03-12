@@ -18,6 +18,7 @@
 :: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.1](https://pypi.org/project/configparser/3.7.1/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `dogpile.cache`, `validators` | ext | -
+:: | `deluge-client` | [1.7.0](https://pypi.org/project/deluge-client/1.7.0/) | **`medusa`** | ext | -
 :: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | ext | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | ext | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | ext | -
@@ -27,7 +28,7 @@
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.43.4](https://pypi.org/project/PyGithub/1.43.4/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43.5](https://pypi.org/project/PyGithub/1.43.5/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
 :: | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
@@ -47,7 +48,7 @@
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
-:: | `python-dateutil` | [2.7.5](https://pypi.org/project/python-dateutil/2.7.5/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
+:: | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
 :: | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | ext | Module: `twitter`
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
