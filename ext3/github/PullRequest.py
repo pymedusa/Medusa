@@ -42,6 +42,7 @@
 #                                                                              #
 ################################################################################
 
+import datetime
 import urllib.request, urllib.parse, urllib.error
 import github.GithubObject
 import github.PaginatedList

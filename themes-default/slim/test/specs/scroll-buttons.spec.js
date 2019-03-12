@@ -1,22 +1,24 @@
-import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { ScrollButtons } from '../../src/components';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-});
+describe('ScrollButtons.test.js', () => {
+    let localVue;
 
-test('renders', t => {
-    const { localVue } = t.context;
-    const wrapper = mount(ScrollButtons, {
-        localVue,
-        data() {
-            return {
-                showToTop: true,
-                showLeftRight: true
-            };
-        }
+    beforeEach(() => {
+        localVue = createLocalVue();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        const wrapper = mount(ScrollButtons, {
+            localVue,
+            data() {
+                return {
+                    showToTop: true,
+                    showLeftRight: true
+                };
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

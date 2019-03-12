@@ -8,7 +8,7 @@ certifi==2018.11.29
 chardet==3.0.4
 git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
 configobj==5.0.6
-configparser==3.7.1
+configparser==3.7.3
 contextlib2==0.5.5 ; python_version < '3.5'
 deluge-client==1.7.0
 dirtyjson==1.0.7
@@ -28,16 +28,16 @@ Mako==1.0.7
 markdown2==2.3.7
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
-PyGithub==1.43.4
+PyGithub==1.43.5
 PyJWT==1.7.1
-python-dateutil==2.7.5
+python-dateutil==2.8.0
 python-twitter==3.5
 rarfile==3.0
 rebulk==1.0.0
 requests==2.21.0
 requests-oauthlib==1.2.0
 six==1.12.0
-stevedore==1.30.0
+stevedore==1.30.1
 git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1

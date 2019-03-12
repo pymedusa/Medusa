@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NotFound.test.js renders not-found page 1`] = `
+<div
+  class="align-center"
+>
+  You have reached this page by accident, please check the url.
+</div>
+`;

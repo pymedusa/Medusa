@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfigTextboxNumber.test.js renders 1`] = `
+<div
+  id="config-textbox-number-content"
+>
+  <div
+    class="form-group"
+  >
+    <div
+      class="row"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="test-id"
+      >
+        <span>
+          test-label
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <input
+          class="form-control input-sm input75"
+          id="test-id"
+          min="20"
+          name="test-id"
+          placeholder=""
+          step="0.5"
+          type="number"
+        />
+         
+        <p>
+          explanation 1
+        </p>
+        <p>
+          explanation 2
+        </p>
+         
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConfigTextboxNumber.test.js renders with min and max 1`] = `
+<div
+  id="config-textbox-number-content"
+>
+  <div
+    class="form-group"
+  >
+    <div
+      class="row"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="test-id"
+      >
+        <span>
+          test-label
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <input
+          class="form-control input-sm input75"
+          id="test-id"
+          max="100"
+          min="20"
+          name="test-id"
+          placeholder=""
+          step="0.5"
+          type="number"
+        />
+         
+        <p>
+          explanation 1
+        </p>
+        <p>
+          explanation 2
+        </p>
+         
+      </div>
+    </div>
+  </div>
+</div>
+`;
