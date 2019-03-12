@@ -48,7 +48,7 @@
 :: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
-:: | `python-dateutil` | [2.7.5](https://pypi.org/project/python-dateutil/2.7.5/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
+:: | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
 :: | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | ext | Module: `twitter`
 :: | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | ext | -
 :: | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | ext | -
