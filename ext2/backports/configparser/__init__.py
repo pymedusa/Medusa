@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 """Configuration file parser.
 
@@ -127,7 +128,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from collections import MutableMapping
 import functools
 import io
 import itertools
@@ -140,6 +140,7 @@ from backports.configparser.helpers import OrderedDict as _default_dict
 from backports.configparser.helpers import ChainMap as _ChainMap
 from backports.configparser.helpers import from_none, open, str, PY2
 from backports.configparser.helpers import PathLike, fspath
+from backports.configparser.helpers import MutableMapping
 
 __all__ = ["NoSectionError", "DuplicateOptionError", "DuplicateSectionError",
            "NoOptionError", "InterpolationError", "InterpolationDepthError",
