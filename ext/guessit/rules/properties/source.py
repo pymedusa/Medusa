@@ -92,8 +92,9 @@ def source(config):  # pylint:disable=unused-argument
     # WEBCap is a synonym to WEBRip, mostly used by non english
     rebulk.regex(*build_source_pattern('WEB-?(?P<another>Cap)', suffix=rip_optional_suffix),
                  value={'source': 'Web', 'other': 'Rip', 'another': 'Rip'})
-    rebulk.regex(*build_source_pattern('WEB-?DL', 'WEB-?U?HD', 'WEB', 'DL-?WEB', 'DL(?=-?Mux)'),
+    rebulk.regex(*build_source_pattern('WEB-?DL', 'WEB-?U?HD', 'DL-?WEB', 'DL(?=-?Mux)'),
                  value={'source': 'Web'})
+    rebulk.regex('(WEB)', value='Web', tags='weak.source')
 
     rebulk.regex(*build_source_pattern('HD-?DVD', suffix=rip_optional_suffix),
                  value={'source': 'HD-DVD', 'other': 'Rip'})
@@ -175,27 +176,40 @@ class UltraHdBlurayRule(Rule):
 
 class ValidateSource(Rule):
     """
-    Validate source with screener property, with video_codec property or separated
+    Validate source with source prefix, source suffix.
     """
     priority = 64
     consequence = RemoveMatch
 
     def when(self, matches, context):
         ret = []
-        for match in matches.named('source'):
-            match = match.initiator
-            if not seps_before(match) and \
-                    not matches.range(match.start - 1, match.start - 2,
-                                      lambda m: 'source-prefix' in m.tags):
-                if match.children:
-                    ret.extend(match.children)
-                ret.append(match)
-                continue
-            if not seps_after(match) and \
-                    not matches.range(match.end, match.end + 1,
-                                      lambda m: 'source-suffix' in m.tags):
-                if match.children:
-                    ret.extend(match.children)
-                ret.append(match)
-                continue
+        for filepart in matches.markers.named('path'):
+            for match in matches.range(filepart.start, filepart.end, predicate=lambda m: m.name == 'source'):
+                match = match.initiator
+                if not seps_before(match) and \
+                        not matches.range(match.start - 1, match.start - 2,
+                                          lambda m: 'source-prefix' in m.tags):
+                    if match.children:
+                        ret.extend(match.children)
+                    ret.append(match)
+                    continue
+                if not seps_after(match) and \
+                        not matches.range(match.end, match.end + 1,
+                                          lambda m: 'source-suffix' in m.tags):
+                    if match.children:
+                        ret.extend(match.children)
+                    ret.append(match)
+                    continue
+
+                # if there are more than 1 source in this filepart, just before the year and with holes for the title
+                # most likely the source is part of the title
+                if 'weak.source' in match.tags \
+                        and matches.range(match.end, filepart.end, predicate=lambda m: m.name == 'source') \
+                        and matches.holes(filepart.start, match.start,
+                                          predicate=lambda m: m.value.strip(seps), index=-1):
+                    if match.children:
+                        ret.extend(match.children)
+                    ret.append(match)
+                    continue
+
         return ret

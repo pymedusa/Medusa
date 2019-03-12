@@ -1,42 +1,43 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { IRC } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('IRC.test.js', () => {
+    let localVue;
+    let store;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(IRC, {
-        localVue,
-        store
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
-});
+    it('renders', () => {
+        const wrapper = mount(IRC, {
+            localVue,
+            store
+        });
 
-test('renders with username', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(IRC, {
-        localVue,
-        store,
-        computed: {
-            gitUsername() {
-                return 'pymedusa';
+        expect(wrapper.element).toMatchSnapshot();
+    });
+
+    it('renders with username', () => {
+        const wrapper = mount(IRC, {
+            localVue,
+            store,
+            computed: {
+                gitUsername() {
+                    return 'pymedusa';
+                }
             }
-        }
-    });
+        });
 
-    t.snapshot(wrapper.html());
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

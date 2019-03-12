@@ -67,14 +67,6 @@ export default {
         };
     },
     created() {
-        /*
-        These are needed in order to test the component,
-        but they break the component in the application:
-
-        this.editItems = this.sanitize(this.listItems);
-        this.csv = this.editItems.map(item => item.value).join(', ');
-        */
-
         /**
          * ListItems property might receive values originating from the API,
          * that are sometimes not available when rendering.

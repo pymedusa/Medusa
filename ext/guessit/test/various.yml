@@ -946,3 +946,171 @@
   source: Blu-ray
   audio_codec: DTS-HD
   type: movie
+
+? Mr Robot - S03E01 - eps3 0 power-saver-mode h (1080p AMZN WEB-DL x265 HEVC 10bit EAC3 6.0 RCVR).mkv
+: title: Mr Robot
+  season: 3
+  episode: 1
+  episode_title: eps3 0 power-saver-mode h
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  video_codec: H.265
+  video_profile: High Efficiency Video Coding
+  color_depth: 10-bit
+  audio_codec: Dolby Digital Plus
+  audio_channels: '5.1'
+  release_group: RCVR
+  container: mkv
+  type: episode
+
+? Panorama.15-05-2018.Web-DL.540p.H264.AAC.Subs.mp4
+: title: Panorama
+  date: 2018-05-15
+  source: Web
+  screen_size: 540p
+  video_codec: H.264
+  audio_codec: AAC
+  subtitle_language: und
+  container: mp4
+  type: episode
+
+? Shaolin 2011.720p.BluRay.x264-x0r.mkv
+: title: Shaolin
+  year: 2011
+  screen_size: 720p
+  source: Blu-ray
+  video_codec: H.264
+  release_group: x0r
+  container: mkv
+  type: movie
+
+? '[ Engineering Catastrophes S02E10 1080p AMZN WEB-DL DD+ 2.0 x264-TrollHD ]'
+: title: Engineering Catastrophes
+  season: 2
+  episode: 10
+  screen_size: 1080p
+  streaming_service: Amazon Prime
+  source: Web
+  audio_codec: Dolby Digital Plus
+  audio_channels: '2.0'
+  video_codec: H.264
+  release_group: TrollHD
+  type: episode
+
+? A Very Harold & Kumar 3D Christmas (2011).mkv
+: title: A Very Harold & Kumar 3D Christmas
+  year: 2011
+  container: mkv
+  type: movie
+
+? Cleveland.Hustles.S01E03.Downward.Dogs.and.Proper.Pigs.720p.HDTV.x264-W4F
+: title: Cleveland Hustles
+  season: 1
+  episode: 3
+  episode_title: Downward Dogs and Proper Pigs
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: W4F
+  type: episode
+
+? Pawn.Stars.S12E20.The.Pawn.Awakens.REAL.READ.NFO.720p.HDTV.x264-DHD
+: title: Pawn Stars
+  season: 12
+  episode: 20
+  episode_title: The Pawn Awakens
+  other:
+    - Proper
+    - Read NFO
+  proper_count: 2
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: DHD
+  type: episode
+
+? Pawn.Stars.S12E22.Racing.Revolution.REAL.720p.HDTV.x264-DHD
+: title: Pawn Stars
+  season: 12
+  episode: 22
+  episode_title: Racing Revolution
+  other: Proper
+  proper_count: 2
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: DHD
+  type: episode
+
+? Luksusfellen.S18E02.REAL.NORWEGiAN.720p.WEB.h264-NORPiLT
+: title: Luksusfellen
+  season: 18
+  episode: 2
+  other: Proper
+  proper_count: 2
+  language: Norwegian
+  screen_size: 720p
+  source: Web
+  video_codec: H.264
+  release_group: NORPiLT
+  type: episode
+
+? The.Exorcist.S02E07.REAL.FRENCH.720p.HDTV.x264-SH0W
+: title: The Exorcist
+  season: 2
+  episode: 7
+  other: Proper
+  proper_count: 2
+  language: fr
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: SH0W
+  type: episode
+
+? Outrageous.Acts.of.Science.S05E02.Is.This.for.Real.720p.HDTV.x264-DHD
+: title: Outrageous Acts of Science
+  season: 5
+  episode: 2
+# corner case
+# episode_title: Is This for Real
+  screen_size: 720p
+  source: HDTV
+  video_codec: H.264
+  release_group: DHD
+  type: episode
+
+? How.the.Universe.Works.S06E08.Strange.Lives.of.Dwarf.Planets.REAL.720p.WEB.x264-DHD
+: title: How the Universe Works
+  season: 6
+  episode: 8
+  episode_title: Strange Lives of Dwarf Planets
+  other: Proper
+  proper_count: 2
+  screen_size: 720p
+  source: Web
+  video_codec: H.264
+  release_group: DHD
+  type: episode
+
+? Vampirina.S01E16.REAL.HDTV.x264-W4F
+: title: Vampirina
+  season: 1
+  episode: 16
+  other: Proper
+  proper_count: 2
+  source: HDTV
+  video_codec: H.264
+  release_group: W4F
+  type: episode
+
+? Test.S01E16.Some Real Episode Title.HDTV.x264-W4F
+: title: Test
+  season: 1
+  episode: 16
+  episode_title: Some Real Episode Title
+  source: HDTV
+  video_codec: H.264
+  release_group: W4F
+  type: episode

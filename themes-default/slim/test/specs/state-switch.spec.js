@@ -1,41 +1,45 @@
-import test from 'ava';
 import { createLocalVue } from '@vue/test-utils';
 import { StateSwitch } from '../../src/components';
 import { generatePropTest } from '../helpers/generators';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-});
+describe('StateSwitch.test.js', () => {
+    let localVue;
+    const store = {};
 
-const stateTestCase = generatePropTest(StateSwitch);
-
-test('renders', t => {
-    stateTestCase(t, 'loading with `null`', {
-        state: null
+    beforeEach(() => {
+        localVue = createLocalVue();
     });
 
-    stateTestCase(t, 'loading with string', {
-        state: 'loading'
-    });
+    const stateTestCase = generatePropTest(StateSwitch);
 
-    stateTestCase(t, 'loading with `theme` prop', {
-        theme: 'light',
-        state: 'loading'
-    });
+    it('renders', () => {
+        stateTestCase(localVue, store, 'loading with `null`', {
+            state: null
+        });
 
-    stateTestCase(t, 'yes with `true`', {
-        state: true
-    });
+        stateTestCase(localVue, store, 'loading with string', {
+            state: 'loading'
+        });
 
-    stateTestCase(t, 'yes with string', {
-        state: 'yes'
-    });
+        stateTestCase(localVue, store, 'loading with `theme` prop', {
+            theme: 'light',
+            state: 'loading'
+        });
 
-    stateTestCase(t, 'no with `false`', {
-        state: false
-    });
+        stateTestCase(localVue, store, 'yes with `true`', {
+            state: true
+        });
 
-    stateTestCase(t, 'no with string', {
-        state: 'no'
+        stateTestCase(localVue, store, 'yes with string', {
+            state: 'yes'
+        });
+
+        stateTestCase(localVue, store, 'no with `false`', {
+            state: false
+        });
+
+        stateTestCase(localVue, store, 'no with string', {
+            state: 'no'
+        });
     });
 });

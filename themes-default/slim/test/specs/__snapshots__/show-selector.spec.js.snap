@@ -1,0 +1,153 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowSelector.test.js renders "loading..." with empty show array 1`] = `
+<span>
+  Loading...
+</span>
+`;
+
+exports[`ShowSelector.test.js renders with articles(The|A|An) ignored 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <option
+        value="tvdb76924"
+      >
+        Black Books
+      </option>
+      <option
+        value="tvdb330942"
+      >
+        Blue Planet II
+      </option>
+      <option
+        value="tvdb73787"
+      >
+        That '70s Show
+      </option>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with shows 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <option
+        value="tvdb76924"
+      >
+        Black Books
+      </option>
+      <option
+        value="tvdb330942"
+      >
+        Blue Planet II
+      </option>
+      <option
+        value="tvdb73787"
+      >
+        That '70s Show
+      </option>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders with split sections 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <option
+        disabled="disabled"
+        hidden="hidden"
+        value="-- Select a Show --"
+      >
+        -- Select a Show --
+      </option>
+       
+      <option
+        value="tvdb76924"
+      >
+        Black Books
+      </option>
+      <option
+        value="tvdb330942"
+      >
+        Blue Planet II
+      </option>
+      <option
+        value="tvdb73787"
+      >
+        That '70s Show
+      </option>
+    </select>
+  </div>
+</div>
+`;
+
+exports[`ShowSelector.test.js renders without placeholder 1`] = `
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+    >
+      <!---->
+       
+      <option
+        value="tvdb76924"
+      >
+        Black Books
+      </option>
+      <option
+        value="tvdb330942"
+      >
+        Blue Planet II
+      </option>
+      <option
+        value="tvdb73787"
+      >
+        That '70s Show
+      </option>
+    </select>
+  </div>
+</div>
+`;

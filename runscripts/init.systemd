@@ -50,9 +50,11 @@ After=network.target
 User=medusa
 Group=medusa
 
-Type=forking
-GuessMainPID=no
-ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --daemon --nolaunch --datadir=/opt/medusa
+Type=simple
+ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --nolaunch --datadir=/opt/medusa
+TimeoutStopSec=25
+KillMode=process
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

@@ -103,7 +103,7 @@ result_type_map = {
 class ApiHandler(RequestHandler):
     """Api class that returns json results."""
 
-    version = 6  # use an int since float-point is unpredictable
+    version = 7  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):
         super(ApiHandler, self).__init__(*args, **kwargs)
@@ -1078,7 +1078,7 @@ class CMD_History(ApiCall):
                 return {
                     'date': convert_date(cur_item.date),
                     'episode': cur_item.episode,
-                    'indexerid': cur_item.show_id,
+                    'indexer': cur_item.indexer_id,
                     'provider': cur_item.provider,
                     'quality': get_quality_string(cur_item.quality),
                     'resource': os.path.basename(cur_item.resource),
@@ -1086,9 +1086,7 @@ class CMD_History(ApiCall):
                     'season': cur_item.season,
                     'show_name': cur_item.show_name,
                     'status': statusStrings[cur_item.action],
-                    # Add tvdbid for backward compatibility
-                    # TODO: Make this actual tvdb id for other indexers
-                    'tvdbid': cur_item.show_id,
+                    'show_id': cur_item.show_id,
                 }
 
         results = [make_result(x, self.type) for x in history if x]
