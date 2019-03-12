@@ -89,6 +89,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="process_automatically"
+                      margin="3"
                       name="process_automatically"
                       speed="300"
                       sync="true"
@@ -293,6 +294,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="postpone_if_sync_files"
+                      margin="3"
                       name="postpone_if_sync_files"
                       speed="300"
                       sync="true"
@@ -353,6 +355,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="postpone_if_no_subs"
+                      margin="3"
                       name="postpone_if_no_subs"
                       speed="300"
                       sync="true"
@@ -402,6 +405,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="rename_episodes"
+                      margin="3"
                       name="rename_episodes"
                       speed="300"
                       sync="true"
@@ -433,6 +437,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="create_missing_show_dirs"
+                      margin="3"
                       name="create_missing_show_dirs"
                       speed="300"
                       sync="true"
@@ -464,6 +469,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="add_shows_wo_dir"
+                      margin="3"
                       name="add_shows_wo_dir"
                       speed="300"
                       sync="true"
@@ -494,6 +500,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="move_associated_files"
+                      margin="3"
                       name="move_associated_files"
                       speed="300"
                       sync="true"
@@ -557,6 +564,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="nfo_rename"
+                      margin="3"
                       name="nfo_rename"
                       speed="300"
                       sync="true"
@@ -588,6 +596,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="airdate_episodes"
+                      margin="3"
                       name="airdate_episodes"
                       speed="300"
                       sync="true"
@@ -656,6 +665,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="unpack"
+                      margin="3"
                       name="unpack"
                       speed="300"
                       sync="true"
@@ -698,6 +708,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="del_rar_contents"
+                      margin="3"
                       name="del_rar_contents"
                       speed="300"
                       sync="true"
@@ -728,6 +739,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="no_delete"
+                      margin="3"
                       name="no_delete"
                       speed="300"
                       sync="true"
@@ -881,6 +893,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <toggle-button-stub
                       height="22"
                       id="naming_strip_year"
+                      margin="3"
                       name="naming_strip_year"
                       speed="300"
                       sync="true"
