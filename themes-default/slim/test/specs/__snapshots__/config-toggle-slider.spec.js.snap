@@ -26,6 +26,7 @@ exports[`ConfigToggleSlider.test.js renders 1`] = `
         <togglebutton-stub
           height="22"
           id="test-id"
+          margin="3"
           name="test-id"
           speed="300"
           sync="true"
