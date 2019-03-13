@@ -3,8 +3,6 @@
 # Copyright (c) 2007-2008 ActiveState Corp.
 # License: MIT (http://www.opensource.org/licenses/mit-license.php)
 
-from __future__ import generators
-
 r"""A fast and complete Python implementation of Markdown.
 
 [from http://daringfireball.net/projects/markdown/]
@@ -98,7 +96,7 @@ see <https://github.com/trentm/python-markdown2/wiki/Extras> for details):
 #   not yet sure if there implications with this. Compare 'pydoc sre'
 #   and 'perldoc perlre'.
 
-__version_info__ = (2, 3, 6)
+__version_info__ = (2, 3, 7)
 __version__ = '.'.join(map(str, __version_info__))
 __author__ = "Trent Mick"
 
@@ -109,6 +107,7 @@ from hashlib import sha256
 import optparse
 from random import random, randint
 import codecs
+from collections import defaultdict
 try:
     from urllib import quote_plus
 except ImportError:
@@ -116,11 +115,6 @@ except ImportError:
 
 
 # ---- Python version compat
-
-if sys.version_info[:2] < (2, 4):
-    def reversed(sequence):
-        for i in sequence[::-1]:
-            yield i
 
 # Use `bytes` for byte strings and `unicode` for unicode strings (str in Py3).
 if sys.version_info[0] <= 2:
@@ -242,8 +236,11 @@ class Markdown(object):
                 extras = dict([(e, None) for e in extras])
             self.extras.update(extras)
         assert isinstance(self.extras, dict)
-        if "toc" in self.extras and "header-ids" not in self.extras:
-            self.extras["header-ids"] = None   # "toc" implies "header-ids"
+
+        if "toc" in self.extras:
+            if "header-ids" not in self.extras:
+                self.extras["header-ids"] = None   # "toc" implies "header-ids"
+
             if self.extras["toc"] is None:
                 self._toc_depth = 6
             else:
@@ -273,7 +270,7 @@ class Markdown(object):
             self.footnotes = {}
             self.footnote_ids = []
         if "header-ids" in self.extras:
-            self._count_from_header_id = {}  # no `defaultdict` in Python 2.4
+            self._count_from_header_id = defaultdict(int)
         if "metadata" in self.extras:
             self.metadata = {}
 
@@ -1505,13 +1502,10 @@ class Markdown(object):
         header_id = _slugify(text)
         if prefix and isinstance(prefix, base_string_type):
             header_id = prefix + '-' + header_id
-        if header_id in self._count_from_header_id:
-            self._count_from_header_id[header_id] += 1
+
+        self._count_from_header_id[header_id] += 1
+        if 0 == len(header_id) or self._count_from_header_id[header_id] > 1:
             header_id += '-%s' % self._count_from_header_id[header_id]
-        else:
-            self._count_from_header_id[header_id] = 1
-            if 0 == len(header_id):
-                header_id += '-%s' % self._count_from_header_id[header_id]
 
         return header_id
 
@@ -2140,7 +2134,7 @@ class Markdown(object):
         text = self._naked_gt_re.sub('&gt;', text)
         return text
 
-    _incomplete_tags_re = re.compile("<(/?\w+\s+)")
+    _incomplete_tags_re = re.compile("<(/?\w+[\s/]+?)")
 
     def _encode_incomplete_tags(self, text):
         if self.safe_mode not in ("replace", "escape"):

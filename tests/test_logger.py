@@ -1,5 +1,7 @@
 # coding=utf-8
 """Tests for medusa.logger.py."""
+from __future__ import unicode_literals
+
 import os.path
 from datetime import datetime
 
@@ -55,8 +57,8 @@ class TestStandardLoggingApi(object):
         },
         {  # p1: Regression
             'message': 'This is an example: {json}',
-            'args': [{'json': {'a': 1}}],
-            'expected': "This is an example: {'a': 1}"
+            'args': [{'json': {5: 1}}],
+            'expected': 'This is an example: {5: 1}'
         },
     ])
     def test_logger__brace_adapter(self, logger, read_loglines, p):
@@ -110,21 +112,20 @@ def describe_logline(logline):
 
 
 @pytest.mark.parametrize('line_pattern', [
-    b'This is a example of log line with number {n}',
-    u'This is a example of unicode log line with number {n}',
-    b'This is a example of log line with number {n} using \xbb',
+    'This is a example of log line with number {n}',
 ])
 def test_reverse_readlines(create_file, line_pattern):
     # Given
     no_lines = 10000
-    filename = create_file(filename='samplefile.log', lines=[line_pattern.format(n=i) for i in range(0, no_lines)])
-    expected = [line_pattern.format(n=no_lines - i - 1) for i in range(0, no_lines)]
+    lines = [line_pattern.format(n=i).encode('utf-8') for i in list(range(0, no_lines))]
+    filename = create_file(filename='samplefile.log', lines=lines)
+    expected = [line_pattern.format(n=no_lines - i - 1) for i in list(range(0, no_lines))]
     for i, v in enumerate(expected):
         if not isinstance(v, text_type):
             expected[i] = text_type(v, errors='replace')
 
     # When
-    actual = list(sut.reverse_readlines(filename, buf_size=1024))
+    actual = list(sut.reverse_readlines(filename, block_size=1024))
 
     # Then
     assert expected == actual
@@ -134,7 +135,7 @@ def test_read_loglines(logger, commit_hash, logfile):
     # Given
     no_msgs = 200
     line_pattern = 'This is a example of log line with number {n}'
-    for i in range(0, no_msgs):
+    for i in list(range(0, no_msgs)):
         logger.warning(line_pattern.format(n=i + 1))
 
     # When
@@ -159,9 +160,9 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
     logger.info(line1)
     logger.debug(line2)
     try:
-        1 / 0
-    except ZeroDivisionError as e:
-        logger.exception(e.message)
+        1 // 0
+    except ZeroDivisionError as error:
+        logger.exception(error)
 
     # When
     actual = list(sut.read_loglines(logfile))
@@ -340,8 +341,8 @@ def test_get_context_loglines__without_timestamp():
 def test_get_context_loglines(logger, read_loglines):
     # Given
     max_lines = 100
-    for i in range(1, 200):
-        logger.debug('line {}'.format(i))
+    for i in list(range(1, 200)):
+        logger.debug('line {0}'.format(i))
     loglines = list(read_loglines)
     logline = loglines[0]
     expected = reversed(loglines[:max_lines])
@@ -356,11 +357,11 @@ def test_get_context_loglines(logger, read_loglines):
 def test_read_loglines__max_traceback_depth(logger):
     # Given
     try:
-        1 / 0
+        1 // 0
     except ZeroDivisionError:
         logger.exception('Expected exception message')
     try:
-        123 / 0
+        123 // 0
     except ZeroDivisionError:
         logger.exception('Another Expected exception message')
 
@@ -381,7 +382,7 @@ def test_format_to_html(logger, read_loglines, app_config):
     prog_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     base_url = '../base'
     try:
-        1 / 0
+        1 // 0
     except ZeroDivisionError:
         logger.exception('Expected exception message')
     loglines = list(read_loglines)

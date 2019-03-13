@@ -128,7 +128,7 @@ class ConfigurationException(Exception):
     """
     Exception related to configuration file.
     """
-    pass
+    pass  # pylint:disable=unnecessary-pass
 
 
 def load_config(options):
@@ -153,7 +153,7 @@ def load_config(options):
         cwd = os.getcwd()
         yaml_supported = False
         try:
-            import yaml  # pylint: disable=unused-variable
+            import yaml  # pylint:disable=unused-variable,unused-import
             yaml_supported = True
         except ImportError:
             pass

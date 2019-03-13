@@ -53,7 +53,7 @@ import urllib.request, urllib.parse, urllib.error
 import pickle
 import time
 import sys
-from http.client import HTTPSConnection
+import requests
 import jwt
 
 from .Requester import Requester, json
@@ -66,6 +66,7 @@ from . import Repository
 from . import Installation
 from . import Legacy
 from . import License
+from . import Topic
 import github.GithubObject
 from . import HookDescription
 from . import GitignoreTemplate
@@ -542,7 +543,7 @@ class Github(object):
         :calls: `GET /search/topics <http://developer.github.com/v3/search>`_
         :param query: string
         :param qualifiers: keyword dict query qualifiers
-        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Repository.Repository`
+        :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Topic.Topic`
         """
         assert isinstance(query, str), query
         url_parameters = dict()
@@ -558,7 +559,7 @@ class Github(object):
         assert url_parameters["q"], "need at least one qualifier"
 
         return github.PaginatedList.PaginatedList(
-            github.Repository.Repository,
+            github.Topic.Topic,
             self.__requester,
             "/search/topics",
             url_parameters,
@@ -771,28 +772,24 @@ class GithubIntegration(object):
         :param installation_id: int
         :return: :class:`github.InstallationAuthorization.InstallationAuthorization`
         """
-        body = None
+        body = {}
         if user_id:
-            body = json.dumps({"user_id": user_id})
-        conn = HTTPSConnection("api.github.com")
-        conn.request(
-            method="POST",
-            url="/installations/{}/access_tokens".format(installation_id),
+            body = {"user_id": user_id}
+        response = requests.post(
+            "https://api.github.com/installations/{}/access_tokens".format(installation_id),
             headers={
                 "Authorization": "Bearer {}".format(self.create_jwt()),
                 "Accept": Consts.mediaTypeIntegrationPreview,
                 "User-Agent": "PyGithub/Python"
             },
-            body=body
+            json=body
         )
-        response = conn.getresponse()
-        response_text = response.read()
+        response_text = response.text
 
         if atLeastPython3:
             response_text = response_text.decode('utf-8')
 
-        conn.close()
-        if response.status == 201:
+        if response.status_code == 201:
             data = json.loads(response_text)
             return InstallationAuthorization.InstallationAuthorization(
                 requester=None,  # not required, this is a NonCompletableGithubObject
@@ -800,17 +797,17 @@ class GithubIntegration(object):
                 attributes=data,
                 completed=True
             )
-        elif response.status == 403:
+        elif response.status_code == 403:
             raise GithubException.BadCredentialsException(
-                status=response.status,
+                status=response.status_code,
                 data=response_text
             )
-        elif response.status == 404:
+        elif response.status_code == 404:
             raise GithubException.UnknownObjectException(
-                status=response.status,
+                status=response.status_code,
                 data=response_text
             )
         raise GithubException.GithubException(
-            status=response.status,
+            status=response.status_code,
             data=response_text
         )

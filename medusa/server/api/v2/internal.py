@@ -172,9 +172,9 @@ class InternalHandler(BaseRequestHandler):
         if matches:
             search_terms.append('{0}({1})'.format(matches.group(1), matches.group(2)))
 
-        for searchTerm in search_terms:
+        for search_term in search_terms:
             # If search term begins with an article, let's also search for it without
-            matches = re.match(r'^(?:a|an|the) (.+)$', searchTerm, re.I)
+            matches = re.match(r'^(?:a|an|the) (.+)$', search_term, re.I)
             if matches:
                 search_terms.append(matches.group(1))
 
@@ -203,7 +203,11 @@ class InternalHandler(BaseRequestHandler):
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
                 except IndexerException as error:
-                    log.info('Error searching for show: {error}', {'error': error})
+                    log.info('Error searching for show. term(s): {terms} indexer: {indexer} error: {error}',
+                             {'terms': search_terms, 'indexer': indexer_api.name, 'error': error})
+                except Exception as error:
+                    log.error('Internal Error searching for show. term(s): {terms} indexer: {indexer} error: {error}',
+                              {'terms': search_terms, 'indexer': indexer_api.name, 'error': error})
 
         # Get all possible show ids
         all_show_ids = {}
@@ -225,10 +229,10 @@ class InternalHandler(BaseRequestHandler):
                         indexer,
                         indexer_api.config['show_url'],
                         show_id,
-                        show['seriesname'].encode('utf-8'),
+                        show['seriesname'],
                         show['firstaired'] or 'N/A',
-                        show.get('network', '').encode('utf-8') or 'N/A',
-                        sanitize_filename(show['seriesname']).encode('utf-8'),
+                        show.get('network', '') or 'N/A',
+                        sanitize_filename(show['seriesname']),
                         all_show_ids.get((indexer, show_id), False)
                     )
                 )

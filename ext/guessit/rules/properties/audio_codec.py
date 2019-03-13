@@ -71,16 +71,16 @@ def audio_codec(config):  # pylint:disable=unused-argument
     rebulk.string('EX', value='EX', tags=['audio_profile.rule', 'Dolby Digital'])
 
     rebulk.defaults(name="audio_channels", disabled=lambda context: is_disabled(context, 'audio_channels'))
-    rebulk.regex(r'(7[\W_][01](?:ch)?)(?=[^\d]|$)', value='7.1', children=True)
-    rebulk.regex(r'(5[\W_][01](?:ch)?)(?=[^\d]|$)', value='5.1', children=True)
-    rebulk.regex(r'(2[\W_]0(?:ch)?)(?=[^\d]|$)', value='2.0', children=True)
     rebulk.regex('7[01]', value='7.1', validator=seps_after, tags='weak-audio_channels')
     rebulk.regex('5[01]', value='5.1', validator=seps_after, tags='weak-audio_channels')
     rebulk.string('20', value='2.0', validator=seps_after, tags='weak-audio_channels')
-    rebulk.string('7ch', '8ch', value='7.1')
-    rebulk.string('5ch', '6ch', value='5.1')
-    rebulk.string('2ch', 'stereo', value='2.0')
-    rebulk.string('1ch', 'mono', value='1.0')
+
+    for value, items in config.get('audio_channels').items():
+        for item in items:
+            if item.startswith('re:'):
+                rebulk.regex(item[3:], value=value, children=True)
+            else:
+                rebulk.string(item, value=value)
 
     rebulk.rules(DtsHDRule, DtsRule, AacRule, DolbyDigitalRule, AudioValidatorRule, HqConflictRule,
                  AudioChannelsValidatorRule)

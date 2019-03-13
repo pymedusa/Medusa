@@ -80,3 +80,21 @@ class LXMLXMLTreeBuilderSmokeTest(SoupTest, XMLTreeBuilderSmokeTest):
     @property
     def default_builder(self):
         return LXMLTreeBuilderForXML()
+
+    def test_namespace_indexing(self):
+        # We should not track un-prefixed namespaces as we can only hold one
+        # and it will be recognized as the default namespace by soupsieve,
+        # which may be confusing in some situations. When no namespace is provided
+        # for a selector, the default namespace (if defined) is assumed.
+
+        soup = self.soup(
+            '<?xml version="1.1"?>\n'
+            '<root>'
+            '<tag xmlns="http://unprefixed-namespace.com">content</tag>'
+            '<prefix:tag xmlns:prefix="http://prefixed-namespace.com">content</tag>'
+            '</root>'
+        )
+        self.assertEqual(
+            soup._namespaces,
+            {'xml': 'http://www.w3.org/XML/1998/namespace', 'prefix': 'http://prefixed-namespace.com'}
+        )

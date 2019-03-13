@@ -1,5 +1,6 @@
 # coding=utf-8
 """Test /log route."""
+from __future__ import unicode_literals
 import json
 
 from medusa.server.api.v2 import log

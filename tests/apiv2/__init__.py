@@ -1,5 +1,6 @@
 # coding=utf-8
 """Api v2 tests."""
+from __future__ import unicode_literals
 import os
 import sys
 

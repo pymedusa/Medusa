@@ -48,7 +48,8 @@ window.app = new Vue({
                         labelOption: true,
                         labelAnimeOption: true,
                         seedTimeOption: true,
-                        pausedOption: true
+                        pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     transmission: {
                         title: 'Transmission',
@@ -58,6 +59,7 @@ window.app = new Vue({
                         seedLocationOption: true,
                         seedTimeOption: true,
                         pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     deluge: {
                         title: 'Deluge (via WebUI)',
@@ -69,7 +71,8 @@ window.app = new Vue({
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     deluged: {
                         title: 'Deluge (via Daemon)',
@@ -81,12 +84,14 @@ window.app = new Vue({
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     downloadstation: {
                         title: 'Synology DS',
                         description: 'URL to your Synology DS client (e.g. http://localhost:5000)',
-                        pathOption: true
+                        pathOption: true,
+                        testStatus: 'Click below to test'
                     },
                     rtorrent: {
                         title: 'rTorrent',
@@ -94,19 +99,22 @@ window.app = new Vue({
                         pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     },
                     qbittorrent: {
                         title: 'qBittorrent',
                         description: 'URL to your qBittorrent client (e.g. http://localhost:8080)',
                         labelOption: true,
                         labelAnimeOption: true,
-                        pausedOption: true
+                        pausedOption: true,
+                        testStatus: 'Click below to test'
                     },
                     mlnet: {
                         title: 'MLDonkey',
                         description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
-                        verifyCertOption: true
+                        verifyCertOption: true,
+                        testStatus: 'Click below to test'
                     }
                 },
                 nzb: {
@@ -138,7 +146,7 @@ window.app = new Vue({
                     method: null,
                     path: null,
                     paused: null,
-                    rpcurl: null,
+                    rpcUrl: null,
                     seedLocation: null,
                     seedTime: null,
                     username: null,
@@ -457,7 +465,7 @@ window.app = new Vue({
 
                                 </div><!-- check propers -->
 
-                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to search in the past for a forced backlog search (default: 7 days)']"></config-textbox-number>
 
                                 <config-textbox-number :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>

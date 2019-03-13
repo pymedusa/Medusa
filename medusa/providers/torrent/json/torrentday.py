@@ -60,12 +60,8 @@ class TorrentDayProvider(TorrentProvider):
             'RSS': {'2': 1, '26': 1, '7': 1, '24': 1, '34': 1, '14': 1}
         }
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -137,7 +133,7 @@ class TorrentDayProvider(TorrentProvider):
                 leechers = int(row['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',

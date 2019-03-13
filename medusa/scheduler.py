@@ -43,7 +43,7 @@ class Scheduler(threading.Thread):
 
         :return: timedelta
         """
-        if self.isAlive():
+        if self.is_alive():
             if self.start_time is None:
                 return self.cycleTime - (datetime.datetime.now() - self.lastRun)
             else:

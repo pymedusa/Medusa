@@ -345,6 +345,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
              'lang': subtitle.language.opensubtitles,
              'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
              'sub_score': score,
+             'hearing_impaired': subtitle.hearing_impaired,
              'max_score': max_score,
              'min_score': get_min_score(),
              'filename': get_subtitle_description(subtitle)}
@@ -438,7 +439,8 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     scored_subtitles = score_subtitles(subtitles_list, video)
     for subtitle, score in scored_subtitles:
         logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
-            subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
+            subtitle.provider_name, text_type(subtitle.language), score,
+            min_score, get_subtitle_description(subtitle)))
 
     found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                    hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
@@ -473,8 +475,8 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     episode_name = tv_episode.name
     show_indexerid = tv_episode.series.indexerid
     subtitles_dir = get_subtitles_dir(video_path)
-    saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
-                                     single=not app.SUBTITLES_MULTI)
+    saved_subtitles = save_subtitles(video, found_subtitles, directory=subtitles_dir,
+                                     single=not app.SUBTITLES_MULTI, encoding='utf-8')
 
     for subtitle in saved_subtitles:
         logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
@@ -713,15 +715,14 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         return cached_payload['video']
 
     video_is_mkv = video_path.endswith('.mkv')
-    video_path = _encode(video_path)
-    subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
+    subtitles_dir = subtitles_dir or get_subtitles_dir(video_path)
 
     logger.debug(u'Scanning video %s...', video_path)
 
     try:
         video = scan_video(video_path)
-    except ValueError as e:
-        logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
+    except ValueError as error:
+        logger.warning(u'Unable to scan video: %s. Error: %r', video_path, error)
     else:
 
         # Add hash of our custom provider Itasa

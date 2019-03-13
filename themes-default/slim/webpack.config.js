@@ -5,6 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const pkg = require('./package.json');
 
@@ -169,13 +170,14 @@ const webpackConfig = (env, mode) => ({
         ]
     },
     plugins: [
-        new CleanWebpackPlugin(['dist']),
+        new CleanWebpackPlugin(),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
+        new OptimizeCssAssetsPlugin({}),
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),

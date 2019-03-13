@@ -359,6 +359,7 @@
 </template>
 <script>
 import { mapState } from 'vuex';
+import { ToggleButton } from 'vue-js-toggle-button';
 import { AppLink, FileBrowser, NamePattern, SelectList } from './helpers';
 
 export default {
@@ -367,7 +368,8 @@ export default {
         AppLink,
         FileBrowser,
         NamePattern,
-        SelectList
+        SelectList,
+        ToggleButton
     },
     data() {
         return {
@@ -578,5 +580,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

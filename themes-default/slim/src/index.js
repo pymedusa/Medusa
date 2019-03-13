@@ -2,6 +2,7 @@
 import $ from 'jquery';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'vue-snotify/styles/material.css';
 import '../vendor/js/tablesorter';
 import '../vendor/css/open-sans.css';
 /* eslint-enable import/no-unassigned-import */
@@ -12,9 +13,8 @@ import VueMeta from 'vue-meta';
 import VueRouter from 'vue-router';
 import VueNativeSock from 'vue-native-websocket';
 import AsyncComputed from 'vue-async-computed';
-import ToggleButton from 'vue-js-toggle-button';
+import { ToggleButton } from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
-import Truncate from 'vue-truncate-collapsed';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import store from './store';
@@ -63,7 +63,6 @@ if (window) {
     window.AsyncComputed = AsyncComputed;
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
-    window.Truncate = Truncate;
     window.axios = axios;
     window._ = { debounce };
     window.store = store;

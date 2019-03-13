@@ -130,17 +130,20 @@ class SeriesHandler(BaseRequestHandler):
             'config.scene': BooleanField(series, 'scene'),
             'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
-            'config.location': StringField(series, '_location'),
+            'config.location': StringField(series, 'location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
             'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
             'config.release.requiredWords': ListField(series, 'release_required_words'),
             'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
+            'config.release.requiredWordsExclude': BooleanField(series, 'rls_require_exclude'),
+            'config.release.ignoredWordsExclude': BooleanField(series, 'rls_ignore_exclude'),
             'language': StringField(series, 'lang'),
             'config.qualities.allowed': ListField(series, 'qualities_allowed'),
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
+            'config.airdateOffset': IntegerField(series, 'airdate_offset'),
         }
 
         for key, value in iter_nested_items(data):

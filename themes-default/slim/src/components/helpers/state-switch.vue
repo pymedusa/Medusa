@@ -35,7 +35,7 @@ export default {
     computed: {
         src() {
             const { theme, realState: state } = this;
-            return state === 'loading' ? `images/loading16-${theme}.gif` : `images/${state}16.png`;
+            return state === 'loading' ? `images/loading16-${theme || 'dark'}.gif` : `images/${state}16.png`;
         },
         alt() {
             const { realState: state } = this;
@@ -56,5 +56,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

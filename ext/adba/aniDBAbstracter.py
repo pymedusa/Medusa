@@ -166,7 +166,7 @@ class Anime(aniDBabstractObject):
         self.rawData = self.aniDB.groupstatus(aid=self.aid)
         self.release_groups = []
         for line in self.rawData.datalines:
-            self.release_groups.append({"name": line["name"].decode("utf-8"),
+            self.release_groups.append({"name": line["name"],
                                         "rating": line["rating"],
                                         "range": line["episode_range"]
                                         })

@@ -275,10 +275,14 @@
 
 <script>
 import formatDate from 'date-fns/format';
+import { ToggleButton } from 'vue-js-toggle-button';
 import { apiRoute } from '../../api';
 
 export default {
     name: 'name-pattern',
+    components: {
+        ToggleButton
+    },
     props: {
         /**
          * Current naming pattern.
@@ -566,5 +570,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

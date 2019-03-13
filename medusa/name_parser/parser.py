@@ -132,14 +132,14 @@ class NameParser(object):
                 episode_numbers = []
             except IndexerError as error:
                 log.warning(
-                    'Unable to contact {indexer_api.name}: {error}',
-                    {'indexer_api': indexer_api, 'error': error.message}
+                    'Unable to contact {indexer_api.name}: {error!r}',
+                    {'indexer_api': indexer_api, 'error': error}
                 )
                 episode_numbers = []
             except IndexerException as error:
                 log.warning(
-                    'Indexer exception: {indexer_api.name}: {error}',
-                    {'indexer_api': indexer_api, 'error': error.message}
+                    'Indexer exception: {indexer_api.name}: {error!r}',
+                    {'indexer_api': indexer_api, 'error': error}
                 )
                 episode_numbers = []
 
@@ -198,8 +198,8 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and
-                                              scene_season is not None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None
+                                              and scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
@@ -218,8 +218,9 @@ class NameParser(object):
                     )
                 else:
                     log.debug(
-                        'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Scene numbering enabled series {name} with season {season} using indexer for absolute {absolute}: {ep}',
+                        {'name': result.series.name, 'season': season, 'absolute': a,
+                         'ep': episode_num(season, episode, 'absolute')}
                     )
 
                 new_absolute_numbers.append(a)
@@ -300,10 +301,12 @@ class NameParser(object):
         elif result.season_number and result.episode_numbers:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
+        # Remove None from the list of seasons, as we can't sort on that
+        new_season_numbers = sorted({season for season in new_season_numbers if season is not None})
+
         # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
         # for the application, so we'd need to flag it.
-        new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
         if len(new_season_numbers) > 1:
             raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
                                        'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
@@ -413,9 +416,18 @@ class NameParser(object):
         :return:
         :rtype: ParseResult
         """
-        season_numbers = helpers.ensure_list(guess.get('season'))
-        if len(season_numbers) > 1 and not self.allow_multi_season:
-            raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
+        if not self.allow_multi_season:
+            season_numbers = helpers.ensure_list(guess.get('season'))
+            if len(season_numbers) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-season detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
+
+            versions = helpers.ensure_list(guess.get('version'))
+            if len(versions) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-version detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
@@ -590,10 +602,14 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
-                     cached_parsed_result.series.indexer == indexer and cached_parsed_result.series.indexerid == indexer_id)
+        to_remove = [
+            cached_name
+            for cached_name, cached_parsed_result in iteritems(self.cache)
+            if cached_parsed_result.series.indexer == indexer
+            and cached_parsed_result.series.indexerid == indexer_id
+        ]
         for item in to_remove:
-            self.cache.popitem(item)
+            del self.cache[item]
             log.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 

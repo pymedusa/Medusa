@@ -79,7 +79,7 @@ pre {
                     <select name="min_level" id="min_level" class="form-control form-control-inline input-sm">
                         <%
                             levels = LOGGING_LEVELS.keys()
-                            levels.sort(key=lambda x: LOGGING_LEVELS[x])
+                            levels = sorted(levels, key=lambda x: LOGGING_LEVELS[x])
                             if not app.DEBUG:
                                 levels.remove('DEBUG')
                             if not app.DBDEBUG:

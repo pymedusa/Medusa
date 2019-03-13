@@ -1,3 +1,19 @@
+## 0.3.0 (2019-03-13)
+
+#### New Features
+- Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
+- Added feature to search episodes early or late compared to their scheduled airdate ([#5874](https://github.com/pymedusa/Medusa/pull/5874))
+- Added per show required/preferred words exclude option ([#4982](https://github.com/pymedusa/Medusa/pull/6033))
+
+#### Improvements
+- Vueified the partial mako template showheader.mako into show-header.vue ([#6189](https://github.com/pymedusa/Medusa/pull/6189))
+
+#### Fixes
+- Fixed saving newznab provider API key ([#5918](https://github.com/pymedusa/Medusa/pull/5918))
+- Fixed permanent Docker update message ([#6018](https://github.com/pymedusa/Medusa/pull/6018))
+
+-----
+
 ## 0.2.14 (2018-12-19)
 
 #### New Features
@@ -17,7 +33,7 @@
 - Fixed mis-mapped proper search interval config option of 24 hours, added 30 minutes ([#5896](https://github.com/pymedusa/Medusa/pull/5896))
 - Fixed config - search settings, test nzb client connectivity ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
 - Fixed adding an episode to the my anidb list on post processing when enabled ([#5897](https://github.com/pymedusa/Medusa/pull/5897))
-- Fixed creating banner and fanart from metadata. Any metadata images in the shows folder other then the poster, will now also become visible in medusa ([#5808](https://github.com/pymedusa/Medusa/pull/5808))
+- Fixed creating banner and fanart from metadata. Any metadata images in the shows folder other then the poster, will now also become visible in Medusa ([#5808](https://github.com/pymedusa/Medusa/pull/5808))
 
 -----
 
@@ -32,6 +48,7 @@
 - Fixed adding anime release group when adding show ([#5749](https://github.com/pymedusa/Medusa/pull/5749))
 - Fixed Pushover debug log causing BraceException ([#5759](https://github.com/pymedusa/Medusa/pull/5759))
 - Fixed torrent method Downloadstation not selected after restart ([#5761](https://github.com/pymedusa/Medusa/pull/5761))
+- Fixed changing show location, should now also utilise the option 'CREATE_MISSING_SHOW_DIRS' ([#5795](https://github.com/pymedusa/Medusa/pull/5795))
 
 -----
 

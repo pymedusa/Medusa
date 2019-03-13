@@ -97,13 +97,13 @@ class ShowUpdater(object):
                         continue
                     except IndexerException as error:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error.message)
+                                       u'issues while trying to get updates for show {show}. Cause: {cause!r}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                         continue
                     except RequestException as error:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'issues while trying to get updates for show {show}. ',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
+                                       u'issues while trying to get updates for show {show}. Cause: {cause!r}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
 
                         if isinstance(error, HTTPError):
                             if error.response.status_code == 503:
@@ -111,12 +111,10 @@ class ShowUpdater(object):
                                                u'This service is temporarily offline, try again later.')
                             elif error.response.status_code == 429:
                                 logger.warning(u'Your request count (#) is over the allowed limit of (40).')
-
-                        logger.warning(u'Cause: {cause}.', cause=error)
                         continue
                     except Exception as error:
                         logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                         u'issues while trying to get updates for show {show}. Cause: {cause}.',
+                                         u'issues while trying to get updates for show {show}. Cause: {cause!r}.',
                                          indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                         continue
 
@@ -132,8 +130,7 @@ class ShowUpdater(object):
 
             # These are the criteria for performing a full show refresh.
             if any([not hasattr(indexer_api, 'get_last_updated_seasons'),
-                    not last_update,
-                    last_update < time.time() - 604800 * update_max_weeks]):
+                    not last_update or last_update < time.time() - 604800 * update_max_weeks]):
                 # no entry in lastUpdate, or last update was too long ago,
                 # let's refresh the show for this indexer
                 logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
@@ -153,15 +150,15 @@ class ShowUpdater(object):
                                    u'connectivity issues while trying to look for showupdates on show: {show}',
                                    indexer_name=indexerApi(show.indexer).name, show=show.name)
                     continue
-                except IndexerException as e:
+                except IndexerException as error:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                   u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
+                                   u'issues while trying to get updates for show {show}. Cause: {cause!r}',
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                     continue
-                except Exception as e:
+                except Exception as error:
                     logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                     u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                     indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                                     u'issues while trying to get updates for show {show}. Cause: {cause!r}',
+                                     indexer_name=indexerApi(show.indexer).name, show=show.name, cause=error)
                     continue
 
                 if updated_seasons[show.indexerid]:

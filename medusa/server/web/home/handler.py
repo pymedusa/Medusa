@@ -33,7 +33,6 @@ from medusa.common import (
     DOWNLOADED,
     FAILED,
     IGNORED,
-    Overview,
     Quality,
     SKIPPED,
     SNATCHED,
@@ -105,7 +104,7 @@ from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
 from medusa.tv.series import Series, SeriesIdentifier
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import (
     quote_plus,
@@ -796,17 +795,9 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            'SELECT DISTINCT season '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT * '
             'FROM tv_episodes '
@@ -821,34 +812,6 @@ class Home(WebRoot):
             'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
             'icon': 'ui-icon ui-icon-pencil',
         }]
-
-        try:
-            show_loc = (series_obj.location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
-
-        show_message = ''
-
-        if app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
-
-        elif app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-            show_message = 'The information on this page is in the process of being updated.'
-
-        elif app.show_queue_scheduler.action.isBeingRefreshed(series_obj):
-            show_message = 'The episodes below are currently being refreshed from disk'
-
-        elif app.show_queue_scheduler.action.isBeingSubtitled(series_obj):
-            show_message = 'Currently downloading subtitles for this show'
-
-        elif app.show_queue_scheduler.action.isInRefreshQueue(series_obj):
-            show_message = 'This show is queued to be refreshed.'
-
-        elif app.show_queue_scheduler.action.isInUpdateQueue(series_obj):
-            show_message = 'This show is queued and awaiting an update.'
-
-        elif app.show_queue_scheduler.action.isInSubtitleQueue(series_obj):
-            show_message = 'This show is queued and awaiting subtitles download.'
 
         if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
@@ -900,27 +863,12 @@ class Home(WebRoot):
                         'icon': 'menu-icon-backlog',
                     })
 
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
         ep_cats = {}
 
         for cur_result in sql_results:
             cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
             if cur_ep_cat:
                 ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -944,15 +892,13 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
-            show=series_obj, sql_results=sql_results, season_results=season_results,
-            bwl=bwl, ep_counts=ep_counts,
-            ep_cats=ep_cats, all_scene_exceptions=' | '.join(series_obj.exceptions),
+            submenu=submenu[::-1],
+            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='displayShow',
+            controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None):
@@ -1145,13 +1091,6 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
-        try:
-            show_loc = (series_obj.location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
-
-        show_message = app.show_queue_scheduler.action.getQueueActionMessage(series_obj)
-
         if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
             if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
                 submenu.append({
@@ -1201,10 +1140,6 @@ class Home(WebRoot):
                         'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
                         'icon': 'ui-icon ui-icon-comment',
                     })
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -1289,59 +1224,11 @@ class Home(WebRoot):
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        # There is some logic for this in the partials/showheader.mako page.
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            'SELECT DISTINCT season '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
-
-        sql_results = main_db_con.select(
-            'SELECT * '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season >= ? '
-            'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'],
-                                                 manually_searched=cur_result['manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result['season'],
-                                                     episode=cur_result['episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
-
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
-            show=series_obj, provider_results=provider_results, episode=episode,
-            bwl=bwl, season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=' | '.join(series_obj.exceptions),
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='snatchSelection',
-            episode_history=episode_history, season_results=season_results, sql_results=sql_results,
-            ep_counts=ep_counts, ep_cats=ep_cats
+            submenu=submenu[::-1], show=series_obj,
+            provider_results=provider_results, episode_history=episode_history,
+            season=season, episode=episode, manual_search_type=manual_search_type,
+            controller='home', action='snatchSelection'
         )
 
     @staticmethod
@@ -1466,11 +1353,11 @@ class Home(WebRoot):
             except IndexerShowNotFoundInLanguage:
                 errors += 1
                 status = 'Could not change language to'
-            except IndexerException as e:
+            except IndexerException as error:
                 errors += 1
                 status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {error}'.format(
-                    error=e.message,
+                msg += u' Please try again later. Error: {error!r}'.format(
+                    error=error,
                 )
             else:
                 language = indexer_lang
@@ -1535,10 +1422,10 @@ class Home(WebRoot):
                 series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
-                except CantRefreshShowException as e:
+                except CantRefreshShowException as error:
                     errors += 1
-                    logger.log("Unable to refresh show '{show}': {error}".format
-                               (show=series_obj.name, error=e.message), logger.WARNING)
+                    logger.log("Unable to refresh show '{show}': {error!r}".format
+                               (show=series_obj.name, error=error), logger.WARNING)
 
             # Check if we should erase parsed cached results for that show
             do_erase_parsed_cache = False
@@ -1595,10 +1482,10 @@ class Home(WebRoot):
                 if (do_update or changed_location) and os.path.isdir(new_location):
                     try:
                         app.show_queue_scheduler.action.refreshShow(series_obj)
-                    except CantRefreshShowException as e:
+                    except CantRefreshShowException as error:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
-                                   (show=series_obj.name, error=e.message), logger.WARNING)
+                        logger.log("Unable to refresh show '{show}'. Error: {error!r}".format
+                                   (show=series_obj.name, error=error), logger.WARNING)
 
             # Save all settings changed while in series_obj.lock
             series_obj.save_to_db()
@@ -1608,29 +1495,29 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as e:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to update show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to update show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(series_obj, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
                 name_cache.build_name_cache(series_obj)
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene exceptions for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
             self.erase_cache(series_obj)
@@ -1642,10 +1529,10 @@ class Home(WebRoot):
             # Need to refresh show as we updated scene numbering or changed show format
             try:
                 app.show_queue_scheduler.action.refreshShow(series_obj)
-            except CantRefreshShowException as e:
+            except CantRefreshShowException as error:
                 errors += 1
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           'Error: {error}'.format(show=series_obj.name, error=e.message), logger.WARNING)
+                           'Error: {error!r}'.format(show=series_obj.name, error=error), logger.WARNING)
 
         if directCall:
             return errors
@@ -2016,7 +1903,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Show not in show list')
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 
@@ -2051,7 +1938,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', error_message)
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
             return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
 

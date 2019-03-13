@@ -136,10 +136,10 @@ timeFormat = '%A %I:%M %p'
 def http_code_description(http_code):
     """
     Get the description of the provided HTTP status code.
+
     :param http_code: The HTTP status code
     :return: The description of the provided ``http_code``
     """
-
     description = http_status_code.get(try_int(http_code))
 
     if isinstance(description, list):
@@ -151,10 +151,10 @@ def http_code_description(http_code):
 def is_sync_file(filename):
     """
     Check if the provided ``filename`` is a sync file, based on its name.
+
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a sync file, ``False`` otherwise
     """
-
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
@@ -168,10 +168,10 @@ def is_sync_file(filename):
 def is_torrent_or_nzb_file(filename):
     """
     Check if the provided ``filename`` is a NZB file or a torrent file, based on its extension.
+
     :param filename: The filename to check
     :return: ``True`` if the ``filename`` is a NZB file or a torrent file, ``False`` otherwise
     """
-
     if not isinstance(filename, (str, text_type)):
         return False
 
@@ -206,14 +206,15 @@ def pretty_file_size(size, use_decimal=False, **kwargs):
 
 def convert_size(size, default=None, use_decimal=False, **kwargs):
     """
-    Convert a file size into the number of bytes
+    Convert a file size into the number of bytes.
 
     :param size: to be converted
     :param default: value to return if conversion fails
     :param use_decimal: use decimal instead of binary prefixes (e.g. kilo = 1000 instead of 1024)
 
     :keyword sep: Separator between size and units, default is space
-    :keyword units: A list of (uppercase) unit names in ascending order. Default units: ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+    :keyword units: A list of (uppercase) unit names in ascending order.
+                    Default units: ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
     :keyword default_units: Default unit if none is given, default is lowest unit in the scale, e.g. bytes
 
     :returns: the number of bytes, the default value, or 0
@@ -260,11 +261,11 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
 def remove_extension(filename):
     """
     Remove the extension of the provided ``filename``.
+
     The extension is only removed if it is in `medusa.helper.common.media_extensions` or ['nzb', 'torrent'].
     :param filename: The filename from which we want to remove the extension
     :return: The ``filename`` without its extension.
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, extension = filename.rpartition('.')
 
@@ -277,11 +278,11 @@ def remove_extension(filename):
 def replace_extension(filename, new_extension):
     """
     Replace the extension of the provided ``filename`` with a new extension.
+
     :param filename: The filename for which we want to change the extension
     :param new_extension: The new extension to apply on the ``filename``
     :return: The ``filename`` with the new extension
     """
-
     if isinstance(filename, (str, text_type)) and '.' in filename:
         basename, _, _ = filename.rpartition('.')
 
@@ -294,10 +295,10 @@ def replace_extension(filename, new_extension):
 def sanitize_filename(filename):
     """
     Remove specific characters from the provided ``filename``.
+
     :param filename: The filename to clean
     :return: The cleaned ``filename``
     """
-
     if isinstance(filename, (str, text_type)):
         # https://stackoverflow.com/a/31976060/7597273
         remove = r''.join((
@@ -321,24 +322,24 @@ def sanitize_filename(filename):
 def try_int(candidate, default_value=0):
     """
     Try to convert ``candidate`` to int, or return the ``default_value``.
+
     :param candidate: The value to convert to int
     :param default_value: The value to return if the conversion fails
     :return: ``candidate`` as int, or ``default_value`` if the conversion fails
     """
-
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        if candidate and (',' in candidate or '.' in candidate):
+        if candidate:
             # Get the current stack trace (excluding the following line)
             stack_trace = traceback.format_stack(limit=10)[:-2]
-            log.exception(u'Failed parsing provider.\nStack trace:\n{0}', ''.join(stack_trace))
+            log.exception('Casting to int failed.\nStack trace:\n{0}'.format(''.join(stack_trace)))
         return default_value
 
 
 def episode_num(season=None, episode=None, numbering='standard'):
     """
-    Convert season and episode into string
+    Convert season and episode into string.
 
     :param season: Season number
     :type season: int or None
@@ -357,9 +358,7 @@ def episode_num(season=None, episode=None, numbering='standard'):
 
 
 def enabled_providers(search_type):
-    """
-    Return providers based on search type: daily, backlog and manualsearch
-    """
+    """Return providers based on search type: daily, backlog and manual search."""
     from medusa import providers
     return [x for x in providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
             if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
@@ -369,7 +368,7 @@ def enabled_providers(search_type):
 
 def remove_strings(old_string, unwanted_strings):
     """
-    Return string removing all unwanted strings on it
+    Return string removing all unwanted strings on it.
 
     :param old_string: String that will be cleaned
     :param unwanted_strings: List of unwanted strings

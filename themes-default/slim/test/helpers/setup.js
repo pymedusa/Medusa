@@ -1,6 +1,5 @@
 import browserEnv from 'browser-env';
-import jQuery from 'jquery';
-import hooks from 'require-extension-hooks';
+import $ from 'jquery';
 
 // Setup browser environment
 browserEnv({
@@ -11,13 +10,8 @@ browserEnv({
 // Setup document variables
 const baseElement = document.createElement('base');
 baseElement.setAttribute('href', 'http://localhost:8081');
-document.head.appendChild(baseElement);
+document.head.append(baseElement);
 
 // Setup jQuery
-global.$ = jQuery(window);
-
-// Setup vue files to be processed by `require-extension-hooks-vue`
-hooks('vue').plugin('vue').push();
-// Setup vue and js files to be processed by `require-extension-hooks-babel`
-// This also requires `require-extension-hooks-vue`
-hooks(['vue', 'js']).plugin('babel').push();
+global.$ = $;
+global.jQuery = $;

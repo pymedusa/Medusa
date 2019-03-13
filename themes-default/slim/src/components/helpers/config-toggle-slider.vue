@@ -16,8 +16,13 @@
 </template>
 
 <script>
+import { ToggleButton } from 'vue-js-toggle-button';
+
 export default {
     name: 'config-toggle-slider',
+    components: {
+        ToggleButton
+    },
     props: {
         label: {
             type: String,

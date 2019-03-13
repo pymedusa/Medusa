@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
 # Author: Nic Wolfe <nic@wolfeden.ca>
 #
@@ -66,9 +66,10 @@ from configobj import ConfigObj
 
 from medusa import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
-    helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
+    helpers, logger as app_logger, metadata, name_cache, naming, network_timezones,
+    providers, scheduler, show_queue, show_updater, subtitles, trakt_checker
 )
+from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
     CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
@@ -90,6 +91,7 @@ from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
+from medusa.updater.version_checker import CheckVersion
 
 
 logger = logging.getLogger(__name__)
@@ -571,7 +573,6 @@ class Application(object):
             app.NAMING_CUSTOM_ANIME = bool(check_setting_int(app.CFG, 'General', 'naming_custom_anime', 0))
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
-            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
@@ -952,8 +953,8 @@ class Application(object):
             app.GIT_REMOTE_BRANCHES = []
             app.KODI_LIBRARY_CLEAN_PENDING = False
             app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
-            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
-            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
+            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'General', 'backlog_period', 'all')
+            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
 
@@ -968,6 +969,10 @@ class Application(object):
             try:
                 import pwd
                 app.OS_USER = pwd.getpwuid(os.getuid()).pw_name
+            except KeyError:
+                # In the case of a usage with Docker run `user` feature, the username might not exist.
+                # See: https://docs.docker.com/engine/reference/run/#user
+                app.OS_USER = os.getuid()
             except ImportError:
                 try:
                     import getpass
@@ -987,9 +992,9 @@ class Application(object):
                 pass
 
             if app.VERSION_NOTIFY:
-                updater = version_checker.CheckVersion().updater
+                updater = CheckVersion().updater
                 if updater:
-                    app.APP_VERSION = updater.get_cur_version()
+                    app.APP_VERSION = updater.current_version
 
             app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
@@ -1108,6 +1113,9 @@ class Application(object):
             main_db_con = db.DBConnection()
             db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
 
+            # checks that require DB existence
+            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
+
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
@@ -1128,7 +1136,7 @@ class Application(object):
 
             # initialize schedulers
             # updaters
-            app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
+            app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
 
@@ -2050,9 +2058,9 @@ class Application(object):
         sys.stderr.flush()
 
         devnull = getattr(os, 'devnull', '/dev/null')
-        stdin = file(devnull)
-        stdout = file(devnull, 'a+')
-        stderr = file(devnull, 'a+')
+        stdin = open(devnull)
+        stdout = open(devnull, 'a+')
+        stderr = open(devnull, 'a+')
 
         os.dup2(stdin.fileno(), getattr(sys.stdin, 'device', sys.stdin).fileno())
         os.dup2(stdout.fileno(), getattr(sys.stdout, 'device', sys.stdout).fileno())
@@ -2073,16 +2081,9 @@ class Application(object):
     @staticmethod
     def restart():
         """Restart application."""
-        install_type = app.version_check_scheduler.action.install_type
+        popen_list = [sys.executable, app.MY_FULLNAME]
 
-        popen_list = []
-
-        if install_type in ('git', 'source'):
-            popen_list = [sys.executable, app.MY_FULLNAME]
-        elif install_type == 'win':
-            logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
-
-        if popen_list and not app.NO_RESTART:
+        if not app.NO_RESTART:
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']

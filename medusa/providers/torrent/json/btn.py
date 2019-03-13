@@ -76,12 +76,8 @@ class BTNProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -141,14 +137,15 @@ class BTNProvider(TorrentProvider):
             if not all([title, download_url]):
                 continue
 
-            seeders = row.get('Seeders', 1)
-            leechers = row.get('Leechers', 0)
+            seeders = int(row.get('Seeders', 1))
+            leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
-                log.debug("Discarding torrent because it doesn't meet the"
-                          ' minimum seeders: {0}. Seeders: {1}',
-                          title, seeders)
+            if seeders < self.minseed:
+                if mode != 'RSS':
+                    log.debug("Discarding torrent because it doesn't meet the"
+                              ' minimum seeders: {0}. Seeders: {1}',
+                              title, seeders)
                 continue
 
             size = convert_size(row.get('Size'), default=-1)

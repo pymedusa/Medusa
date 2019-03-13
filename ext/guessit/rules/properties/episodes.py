@@ -629,10 +629,11 @@ class RemoveWeak(Rule):
     Remove weak-episode matches which appears after video, source, and audio matches.
     """
     priority = 16
-    consequence = RemoveMatch
+    consequence = RemoveMatch, AppendMatch
 
     def when(self, matches, context):
         to_remove = []
+        to_append = []
         for filepart in matches.markers.named('path'):
             weaks = matches.range(filepart.start, filepart.end, predicate=lambda m: 'weak-episode' in m.tags)
             if weaks:
@@ -641,8 +642,18 @@ class RemoveWeak(Rule):
                     'audio_channels', 'audio_profile'), index=0)
                 if previous and not matches.holes(
                         previous.end, weaks[0].start, predicate=lambda m: m.raw.strip(seps)):
+                    if previous.raw.lower() == 'ep':
+                        episode = copy.copy(weaks[0])
+                        episode.name = 'episode'
+                        episode.value = int(weaks[0].value)
+                        episode.start = previous.start
+                        episode.private = False
+                        episode.tags = []
+
+                        to_append.append(episode)
+
                     to_remove.extend(weaks)
-        return to_remove
+        return to_remove, to_append
 
 
 class RemoveWeakIfSxxExx(Rule):

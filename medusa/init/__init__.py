@@ -18,7 +18,9 @@ def initialize():
     """Initialize all fixes and workarounds."""
     _check_python_version()
     _configure_syspath()
-    _monkey_patch_fs_functions()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _monkey_patch_fs_functions()
     _monkey_patch_logging_functions()
     _early_basic_logging()
     _register_utf8_codec()
@@ -26,7 +28,9 @@ def initialize():
     _configure_mimetypes()
     _handle_old_tornado()
     _unload_system_dogpile()
-    _use_shutil_custom()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _use_shutil_custom()
     _urllib3_disable_warnings()
     _strptime_workaround()
     _monkey_patch_bdecode()

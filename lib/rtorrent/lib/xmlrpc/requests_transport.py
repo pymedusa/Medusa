@@ -19,7 +19,6 @@ Support:
 -SSL with Basic and Digest authentication
 -Proxies
 """
-
 try:
     import xmlrpc.client as xmlrpc_client
 except ImportError:

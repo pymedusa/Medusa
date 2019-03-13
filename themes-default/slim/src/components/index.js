@@ -12,6 +12,7 @@ export { default as Login } from './login.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as Show } from './show.vue';
+export { default as ShowHeader } from './show-header.vue';
 export { default as SnatchSelection } from './snatch-selection.vue';
 export { default as Status } from './status.vue';
 export * from './http';

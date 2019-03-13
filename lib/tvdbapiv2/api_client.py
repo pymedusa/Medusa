@@ -208,9 +208,9 @@ class ApiClient(object):
 
         # fetch data from response object
         try:
-            data = json.loads(response.content)
+            data = response.json()
         except ValueError:
-            data = response.content
+            data = response.text
 
         return self.__deserialize(data, response_type)
 

@@ -47,7 +47,6 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
@@ -172,9 +171,7 @@
                 });
 
                 // Global components
-                Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('truncate', Truncate);
             }
         </script>
         <%block name="scripts" />

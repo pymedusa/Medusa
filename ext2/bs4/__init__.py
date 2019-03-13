@@ -17,12 +17,10 @@ http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 
 """
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "4.6.3"
-__copyright__ = "Copyright (c) 2004-2018 Leonard Richardson"
+__version__ = "4.7.1"
+__copyright__ = "Copyright (c) 2004-2019 Leonard Richardson"
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 __all__ = ['BeautifulSoup']
@@ -237,9 +235,10 @@ class BeautifulSoup(Tag):
         self.builder = builder
         self.is_xml = builder.is_xml
         self.known_xml = self.is_xml
-        self.builder.soup = self
-
+        self._namespaces = dict()
         self.parse_only = parse_only
+
+        self.builder.initialize_soup(self)
 
         if hasattr(markup, 'read'):        # It's a file-type object.
             markup = markup.read()
@@ -382,7 +381,7 @@ class BeautifulSoup(Tag):
 
     def pushTag(self, tag):
         #print "Push", tag.name
-        if self.currentTag:
+        if self.currentTag is not None:
             self.currentTag.contents.append(tag)
         self.tagStack.append(tag)
         self.currentTag = self.tagStack[-1]
@@ -421,60 +420,71 @@ class BeautifulSoup(Tag):
 
     def object_was_parsed(self, o, parent=None, most_recent_element=None):
         """Add an object to the parse tree."""
-        parent = parent or self.currentTag
-        previous_element = most_recent_element or self._most_recent_element
+        if parent is None:
+            parent = self.currentTag
+        if most_recent_element is not None:
+            previous_element = most_recent_element
+        else:
+            previous_element = self._most_recent_element
 
         next_element = previous_sibling = next_sibling = None
         if isinstance(o, Tag):
             next_element = o.next_element
             next_sibling = o.next_sibling
             previous_sibling = o.previous_sibling
-            if not previous_element:
+            if previous_element is None:
                 previous_element = o.previous_element
+
+        fix = parent.next_element is not None
 
         o.setup(parent, previous_element, next_element, previous_sibling, next_sibling)
 
         self._most_recent_element = o
         parent.contents.append(o)
 
-        if parent.next_sibling:
-            # This node is being inserted into an element that has
-            # already been parsed. Deal with any dangling references.
-            index = len(parent.contents)-1
-            while index >= 0:
-                if parent.contents[index] is o:
-                    break
-                index -= 1
-            else:
-                raise ValueError(
-                    "Error building tree: supposedly %r was inserted "
-                    "into %r after the fact, but I don't see it!" % (
-                        o, parent
-                    )
-                )
-            if index == 0:
-                previous_element = parent
-                previous_sibling = None
-            else:
-                previous_element = previous_sibling = parent.contents[index-1]
-            if index == len(parent.contents)-1:
-                next_element = parent.next_sibling
-                next_sibling = None
-            else:
-                next_element = next_sibling = parent.contents[index+1]
+        # Check if we are inserting into an already parsed node.
+        if fix:
+            self._linkage_fixer(parent)
 
-            o.previous_element = previous_element
-            if previous_element:
-                previous_element.next_element = o
-            o.next_element = next_element
-            if next_element:
-                next_element.previous_element = o
-            o.next_sibling = next_sibling
-            if next_sibling:
-                next_sibling.previous_sibling = o
-            o.previous_sibling = previous_sibling
-            if previous_sibling:
-                previous_sibling.next_sibling = o
+    def _linkage_fixer(self, el):
+        """Make sure linkage of this fragment is sound."""
+
+        first = el.contents[0]
+        child = el.contents[-1]
+        descendant = child
+
+        if child is first and el.parent is not None:
+            # Parent should be linked to first child
+            el.next_element = child
+            # We are no longer linked to whatever this element is
+            prev_el = child.previous_element
+            if prev_el is not None and prev_el is not el:
+                prev_el.next_element = None
+            # First child should be linked to the parent, and no previous siblings.
+            child.previous_element = el
+            child.previous_sibling = None
+
+        # We have no sibling as we've been appended as the last.
+        child.next_sibling = None
+
+        # This index is a tag, dig deeper for a "last descendant"
+        if isinstance(child, Tag) and child.contents:
+            descendant = child._last_descendant(False)
+
+        # As the final step, link last descendant. It should be linked
+        # to the parent's next sibling (if found), else walk up the chain
+        # and find a parent with a sibling. It should have no next sibling.
+        descendant.next_element = None
+        descendant.next_sibling = None
+        target = el
+        while True:
+            if target is None:
+                break
+            elif target.next_sibling is not None:
+                descendant.next_element = target.next_sibling
+                target.next_sibling.previous_element = child
+                break
+            target = target.parent
 
     def _popToTag(self, name, nsprefix=None, inclusivePop=True):
         """Pops the tag stack up to and including the most recent
@@ -520,7 +530,7 @@ class BeautifulSoup(Tag):
                   self.currentTag, self._most_recent_element)
         if tag is None:
             return tag
-        if self._most_recent_element:
+        if self._most_recent_element is not None:
             self._most_recent_element.next_element = tag
         self._most_recent_element = tag
         self.pushTag(tag)

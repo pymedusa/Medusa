@@ -1,16 +1,16 @@
 <script>
-import { isVisible } from 'is-visible';
-import { scrollTo } from 'vue-scrollto';
-import { mapState, mapGetters } from 'vuex';
-import { api, apiRoute } from '../api';
+import { mapState, mapGetters, mapActions } from 'vuex';
+import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
+import ShowHeader from './show-header.vue';
 
 export default {
     name: 'show',
     template: '#show-template',
     components: {
         AppLink,
-        PlotInfo
+        PlotInfo,
+        ShowHeader
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -26,79 +26,59 @@ export default {
     },
     props: {
         /**
-         * Show id
-         */
-        showId: {
-            type: Number
-        },
-        /**
          * Show indexer
          */
         showIndexer: {
             type: String
+        },
+        /**
+         * Show id
+         */
+        showId: {
+            type: Number
         }
     },
     data() {
-        return {
-            jumpToSeason: 'jump'
-        };
+        return {};
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers
+            shows: state => state.shows.shows
         }),
-        ...mapGetters([
-            'getShowById'
-        ]),
+        ...mapGetters({
+            getShowById: 'getShowById',
+            show: 'getCurrentShow'
+        }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
         id() {
-            return this.showId || this.$route.query.seriesid;
-        },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            // Not detailed
-            if (!show.seasons) {
-                $store.dispatch('getShow', { id, indexer, detailed: true });
-                return getShowById({ indexer, id });
-            }
-
-            return show;
-        },
-        showIndexerUrl() {
-            const { show, indexerConfig } = this;
-
-            if (!show.indexer || !indexerConfig[show.indexer] || !indexerConfig[show.indexer].showUrl) {
-                return undefined;
-            }
-
-            const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
-            return `${indexerUrl}${id}`;
+            return this.showId || Number(this.$route.query.seriesid) || undefined;
         }
     },
     mounted() {
         const {
-            setQuality,
+            id,
+            indexer,
+            getShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
             getSeasonSceneExceptions,
-            showHideRows
+            $store,
+            show
         } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer,
+            id
+        });
+
+        // We need detailed info for the seasons, so let's get it.
+        if (!show || !show.seasons) {
+            getShow({ id, indexer, detailed: true });
+        }
 
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
@@ -118,35 +98,6 @@ export default {
             startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
             $.ajaxEpSubtitlesSearch();
             $.ajaxEpRedownloadSubtitle();
-        });
-
-        $(document.body).on('click', '#changeStatus', () => {
-            const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
-
-            $('.epCheck').each((index, element) => {
-                if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
-                }
-            });
-
-            if (epArr.length === 0) {
-                return false;
-            }
-
-            if (quality) {
-                setQuality(quality, showSlug, epArr);
-            }
-
-            if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
-            }
         });
 
         $(document.body).on('click', '.seasonCheck', event => {
@@ -187,30 +138,6 @@ export default {
                     found++;
                 }
             });
-        });
-
-        // Selects all visible episode checkboxes
-        document.addEventListener('click', event => {
-            if (event.target && event.target.className.includes('seriesCheck')) {
-                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                    element.checked = true;
-                });
-            }
-        });
-
-        // Clears all visible episode checkboxes and the season selectors
-        document.addEventListener('click', event => {
-            if (event.target && event.target.className.includes('clearAll')) {
-                [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                    element.checked = false;
-                });
-            }
-        });
-
-        // Show/hide different types of rows when the checkboxes are changed
-        $(document.body).on('change', '#checkboxControls input', event => {
-            const whichClass = $(event.currentTarget).attr('id');
-            showHideRows(whichClass);
         });
 
         // Initially show/hide all the rows according to the checkboxes
@@ -314,26 +241,14 @@ export default {
 
         // Get the season exceptions and the xem season mappings.
         getSeasonSceneExceptions();
-
-        $(document.body).on('click', '.display-specials a', event => {
-            api.patch('config/main', {
-                layout: {
-                    show: {
-                        specials: $(event.currentTarget).text() !== 'Hide'
-                    }
-                }
-            }).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
-        });
     },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+        }),
         /**
-         * Attaches imdb tool tip,
-         * moves summary background and checkbox controls
+         * Attaches IMDB tooltip,
+         * Moves summary and checkbox controls backgrounds
          */
         reflowLayout() {
             console.debug('Reflowing layout');
@@ -351,29 +266,21 @@ export default {
         moveSummaryBackground() {
             const height = $('#summary').height() + 10;
             const top = $('#summary').offset().top + 5;
+
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
         },
+        /**
+         * Adjust the checkbox controls (episode filter) background position
+         */
         movecheckboxControlsBackground() {
             const height = $('#checkboxControls').height() + 10;
             const top = $('#checkboxControls').offset().top - 3;
+
             $('#checkboxControlsBackground').height(height);
             $('#checkboxControlsBackground').offset({ top, left: 0 });
             $('#checkboxControlsBackground').show();
-        },
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
-            });
-
-            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const indexerName = $('#indexer-name').val();
@@ -511,72 +418,11 @@ export default {
                     }
                 }
             });
-        },
-        showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
-                if (status) {
-                    $(element).show();
-                } else {
-                    $(element).hide();
-                }
-            });
-
-            // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
-                let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
-                    numRows++;
-                });
-                if (numRows === 0) {
-                    $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
-                } else {
-                    $(element).show();
-                    $('#' + seasonNo + '-cols').show();
-                }
-            });
-        },
-        toggleSpecials() {
-            this.$store.dispatch('setConfig', {
-                layout: {
-                    show: {
-                        specials: !this.config.layout.show.specials
-                    }
-                }
-            });
-        },
-        reverse(array) {
-            return array ? array.slice().reverse() : [];
-        },
-        dedupeGenres(genres) {
-            return genres ? [...new Set(genres.slice(0).map(genre => genre.replace('-', ' ')))] : [];
-        }
-    },
-    watch: {
-        jumpToSeason(season) {
-            // Don't jump until an option is selected
-            if (season !== 'jump') {
-                console.debug(`Jumping to ${season}`);
-
-                scrollTo(season, 100, {
-                    container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
-                });
-
-                // Update URL hash
-                location.hash = season;
-
-                // Reset jump
-                this.jumpToSeason = 'jump';
-            }
         }
     }
 };
 </script>
 
 <style>
-/* placeholder */
+
 </style>

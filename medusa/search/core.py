@@ -185,48 +185,48 @@ def snatch_episode(result):
     # don't notify when we re-download an episode
     sql_l = []
     trakt_data = []
-    for curEpObj in result.episodes:
-        with curEpObj.lock:
+    for cur_ep_obj in result.episodes:
+        with cur_ep_obj.lock:
             if is_first_best_match(result):
-                curEpObj.status = SNATCHED_BEST
-                curEpObj.quality = result.quality
+                cur_ep_obj.status = SNATCHED_BEST
+                cur_ep_obj.quality = result.quality
             else:
-                curEpObj.status = end_status
-                curEpObj.quality = result.quality
+                cur_ep_obj.status = end_status
+                cur_ep_obj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn
-            curEpObj.hasnfo = False
-            curEpObj.hastbn = False
+            cur_ep_obj.hasnfo = False
+            cur_ep_obj.hastbn = False
 
             # We can't reset location because we need to know what we are replacing
-            # curEpObj.location = ''
+            # cur_ep_obj.location = ''
 
             # Release name and group are parsed in PP
-            curEpObj.release_name = ''
-            curEpObj.release_group = ''
+            cur_ep_obj.release_name = ''
+            cur_ep_obj.release_group = ''
 
             # Need to reset subtitle settings because it's a different file
-            curEpObj.subtitles = list()
-            curEpObj.subtitles_searchcount = 0
-            curEpObj.subtitles_lastsearch = u'0001-01-01 00:00:00'
+            cur_ep_obj.subtitles = list()
+            cur_ep_obj.subtitles_searchcount = 0
+            cur_ep_obj.subtitles_lastsearch = u'0001-01-01 00:00:00'
 
             # Need to store the correct is_proper. Not use the old one
-            curEpObj.is_proper = is_proper
-            curEpObj.version = 0
+            cur_ep_obj.is_proper = is_proper
+            cur_ep_obj.version = 0
 
-            curEpObj.manually_searched = result.manually_searched
+            cur_ep_obj.manually_searched = result.manually_searched
 
-            sql_l.append(curEpObj.get_sql())
+            sql_l.append(cur_ep_obj.get_sql())
 
-        if curEpObj.status != common.DOWNLOADED:
-            notifiers.notify_snatch(curEpObj, result)
+        if cur_ep_obj.status != common.DOWNLOADED:
+            notifiers.notify_snatch(cur_ep_obj, result)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                trakt_data.append((curEpObj.season, curEpObj.episode))
+                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
                     result.series.name,
-                    episode_num(curEpObj.season, curEpObj.episode),
+                    episode_num(cur_ep_obj.season, cur_ep_obj.episode),
                 )
 
     if trakt_data:
@@ -446,7 +446,7 @@ def wanted_episodes(series_obj, from_date):
         'WHERE indexer = ? '
         ' AND showid = ?'
         ' AND season > 0'
-        ' and airdate > ?',
+        ' AND airdate > ?',
         [series_obj.indexer, series_obj.series_id, from_date.toordinal()]
     )
 
@@ -648,8 +648,6 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
     manual_search_results = []
     multi_results = []
     single_results = []
-    cache_multi_results = []
-    cache_single_results = []
 
     # build name cache for show
     name_cache.build_name_cache(series_obj)
@@ -707,17 +705,10 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                     cache_search_results = cur_provider.search_results_in_cache(episodes)
                     if cache_search_results:
                         # From our provider multi_episode and single_episode results, collect candidates.
-                        found_cache_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
+                        cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(found_cache_results, cur_provider, cache_multi,
-                                                                       cache_single, series_obj, down_cur_quality)
-
-                        # Check if we got any candidates from cache add add them to the list.
-                        # If we found candidates in cache, we don't need to search the provider.
-                        if cache_multi:
-                            cache_multi_results += cache_multi
-                        if cache_single:
-                            cache_single_results += cache_single
+                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [],
+                                                                       [], series_obj, down_cur_quality)
 
                 # For now we only search if we didn't get any results back from cache,
                 # but we might wanna check if there was something useful in cache.
@@ -727,6 +718,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                                                                       down_cur_quality, manual_search, manual_search_type)
                     # Update the list found_results
                     found_results = list_results_for_provider(search_results, found_results, cur_provider)
+                else:
+                    found_results = cache_found_results
 
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
@@ -768,13 +761,8 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        # From our providers multi_episode and single_episode results, collect candidates.
-        # Only collect the candidates if we didn't get any from cache.
-        if not (cache_multi_results or cache_single_results):
-            multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                               single_results, series_obj, down_cur_quality)
-        else:
-            multi_results, single_results = cache_multi_results, cache_single_results
+        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
+                                                           single_results, series_obj, down_cur_quality)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -824,7 +812,13 @@ def list_results_for_provider(search_results, found_results, provider):
 
 
 def collect_single_candidates(candidates, results):
-    """Collect single-episode result candidates."""
+    """
+    Collect single-episode result candidates.
+
+    :param candidates: A list of SearchResult objects we just parsed, which we want to evaluate against the already
+    collected list of results.
+    :param results: The existing list of valid results.
+    """
     single_candidates = list(results)
     new_candidates = []
 
@@ -934,12 +928,13 @@ def combine_results(multi_results, single_results):
         log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
         result_candidates.append(candidate)
 
+    return_multi_results = []
     for multi_result in result_candidates:
         # see how many of the eps that this result covers aren't covered by single results
         needed_eps = []
         not_needed_eps = []
         for result in single_results:
-            if result in multi_result.episodes:
+            if result.episodes[0] in multi_result.episodes:
                 not_needed_eps.append(result.actual_episode)
             else:
                 needed_eps.append(result.actual_episode)
@@ -947,7 +942,9 @@ def combine_results(multi_results, single_results):
         log.debug(u'Single-ep check result is needed_eps: {0}, not_needed_eps: {1}',
                   needed_eps, not_needed_eps)
 
-        if not needed_eps:
+        if needed_eps:
+            return_multi_results.append(multi_result)
+        else:
             log.debug(u'All of these episodes were covered by single-episode results,'
                       u' ignoring this multi-episode result')
             continue
@@ -963,4 +960,4 @@ def combine_results(multi_results, single_results):
                     )
                     del single_results[i]
 
-    return single_results + result_candidates
+    return single_results + return_multi_results

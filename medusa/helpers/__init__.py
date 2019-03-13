@@ -23,13 +23,13 @@ import struct
 import time
 import traceback
 import uuid
-import xml.etree.ElementTree as ET
 import zipfile
 from builtins import chr
 from builtins import hex
 from builtins import str
 from builtins import zip
 from itertools import cycle
+from xml.etree import ElementTree
 
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
@@ -54,7 +54,7 @@ from medusa.show.show import Show
 import requests
 from requests.compat import urlparse
 
-from six import string_types, text_type, viewitems
+from six import binary_type, ensure_binary, ensure_text, string_types, text_type, viewitems
 from six.moves import http_client
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -286,7 +286,7 @@ def copy_file(src_file, dest_file):
     except (SpecialFileError, Error) as error:
         log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        msg = BraceMessage('OSError: {0}', error.message)
+        msg = BraceMessage('OSError: {0!r}', error)
         if error.errno == errno.ENOSPC:
             # Only warn if device is out of space
             log.warning(msg)
@@ -953,24 +953,19 @@ unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
 
 
 def encrypt(data, encryption_version=0, _decrypt=False):
-    # Version 1: Simple XOR encryption (this is not very secure, but works)
-    if encryption_version == 1:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data), cycle(unique_key1)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(unique_key1)))).strip()
-    # Version 2: Simple XOR encryption (this is not very secure, but works)
-    elif encryption_version == 2:
-        if _decrypt:
-            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(base64.decodestring(data),
-                                                                  cycle(app.ENCRYPTION_SECRET)))
-        else:
-            return base64.encodestring(
-                ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(app.ENCRYPTION_SECRET)))).strip()
     # Version 0: Plain text
-    else:
+    if encryption_version == 0:
         return data
+    else:
+        # Simple XOR encryption, Base64 encoded
+        # Version 1: unique_key1; Version 2: app.ENCRYPTION_SECRET
+        key = unique_key1 if encryption_version == 1 else app.ENCRYPTION_SECRET
+        if _decrypt:
+            data = ensure_text(base64.decodestring(ensure_binary(data)))
+            return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+        else:
+            data = ''.join(chr(ord(x) ^ ord(y)) for (x, y) in zip(data, cycle(key)))
+            return ensure_text(base64.encodestring(ensure_binary(data))).strip()
 
 
 def decrypt(data, encryption_version=0):
@@ -1025,8 +1020,8 @@ def get_show(name, try_indexers=False):
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
-                            (name=series_name, series=found_series))
+                log.info("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                         (name=series_name, series=found_series))
 
         # add show to cache
         if series and not from_cache:
@@ -1089,7 +1084,7 @@ def validate_show(show, season=None, episode=None):
 
         return show.indexer_api[show.indexerid][season][episode]
     except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
-        log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
+        log.debug(u'Unable to validate show. Reason: {0!r}', error)
         pass
 
 
@@ -1308,8 +1303,8 @@ def get_size(start_path='.'):
 def generate_api_key():
     """Return a new randomized API_KEY."""
     log.info(u'Generating New API key')
-    secure_hash = hashlib.sha512(str(time.time()))
-    secure_hash.update(str(random.SystemRandom().getrandbits(4096)))
+    secure_hash = hashlib.sha512(str(time.time()).encode('utf-8'))
+    secure_hash.update(str(random.SystemRandom().getrandbits(4096)).encode('utf-8'))
     return secure_hash.hexdigest()[:32]
 
 
@@ -1467,7 +1462,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 
@@ -1481,7 +1476,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 
@@ -1611,6 +1606,25 @@ def unicodify(value):
     return value
 
 
+def to_text(s, encoding='utf-8', errors='strict'):
+    """Coerce *s* to six.text_type.
+
+    This code is part of the six library.
+    For Python 2:
+      - `unicode` -> `unicode`
+      - `str` -> `unicode`
+    For Python 3:
+      - `str` -> `str`
+      - `bytes` -> decoded to `str`
+    """
+    if isinstance(s, binary_type):
+        return s.decode(encoding, errors)
+    elif isinstance(s, text_type):
+        return s
+    else:
+        raise TypeError("not expecting type '%s'" % type(s))
+
+
 def single_or_list(value, allow_multi=False):
     """Return a single value or a list.
 
@@ -1728,7 +1742,13 @@ def title_to_imdb(title, start_year, imdb_api=None):
     if imdb_api is None:
         imdb_api = Imdb()
 
-    titles = imdb_api.search_for_title(title)
+    try:
+        titles = imdb_api.search_for_title(title)
+    except ValueError as error:
+        # FIXME: Putting an error here, as this is a known error with the lib imdbpie. And should be fix.
+        log.warning('Could not get a result from imdbpie for the title {title}, error: {error}',
+                    {'title': title, 'error': error})
+        return None
 
     if len(titles) == 1:
         return titles[0]['imdb_id']

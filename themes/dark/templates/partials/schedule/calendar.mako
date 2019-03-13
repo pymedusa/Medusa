@@ -5,7 +5,7 @@
 
     from medusa import app
     from medusa.indexers.utils import indexer_id_to_name
-    from medusa import sbdatetime
+    from medusa.sbdatetime import sbdatetime
 %>
 
 <% dates = [today.date() + datetime.timedelta(days = i) for i in range(7)] %>
@@ -15,7 +15,7 @@
     % for day in dates:
     <% tbl_day += 1 %>
         <table class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
-        <thead><tr><th>${day.strftime('%A').decode(app.SYS_ENCODING).capitalize()}</th></tr></thead>
+        <thead><tr><th>${sbdatetime.sbftime(dt=day, t_preset='%A').capitalize()}</th></tr></thead>
         <tbody>
         <% day_has_show = False %>
         % for cur_result in results:
@@ -28,7 +28,7 @@
             % if airday == day:
                 % try:
                     <% day_has_show = True %>
-                    <% airtime = sbdatetime.sbdatetime.fromtimestamp(time.mktime(cur_result['localtime'].timetuple())).sbftime().decode(app.SYS_ENCODING) %>
+                    <% airtime = sbdatetime.fromtimestamp(time.mktime(cur_result['localtime'].timetuple())).sbftime() %>
                     % if app.TRIM_ZERO:
                         <% airtime = re.sub(r'0(\d:\d\d)', r'\1', airtime, 0, re.IGNORECASE | re.MULTILINE) %>
                     % endif

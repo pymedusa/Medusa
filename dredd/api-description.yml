@@ -36,7 +36,6 @@ paths:
           required: true
           description: Only id (with indexer information) should be specified
           schema:
-            $ref: '#/definitions/Series'
             example:
               id:
                 tvdb: 301824
@@ -451,7 +450,6 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Operation'
             example:
               type: ARCHIVE_EPISODES
       responses:
@@ -558,12 +556,14 @@ paths:
         200:
           description: The alias information
           schema: {}
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
         400:
           $ref: '#/responses/error'
           description: Invalid field
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -586,6 +586,7 @@ paths:
           description: The alias information
           schema:
             $ref: '#/definitions/Alias'
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -738,7 +739,6 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Operation'
             example:
               type: REFRESH
       responses:
@@ -941,6 +941,9 @@ definitions:
         type: string
         description: "Air time"
         example: "Thursday 8:00 PM"
+      airsFormatValid:
+        type: boolean
+        description: "Tests the airs format"
       language:
         type: string
         description: Language code
@@ -948,11 +951,40 @@ definitions:
       showType:
         type: string
         enum: [series, anime, sports]
-      akas:
+      imdbInfo:
         type: object
-        description: Also known as
-        additionalProperties:
-          type: string
+        description: "Object with additional show information retrieved from imdb"
+        properties:
+          akas:
+            type: string
+          certificates:
+            type: string
+          countries:
+            type: string
+          countryCodes:
+            type: string
+          genres:
+            type: string
+          imdbId:
+            type: string
+          imdbInfoId:
+            type: integer
+          indexer:
+            type: integer
+          indexerId:
+            type: integer
+          lastUpdate:
+            type: integer
+          plot:
+            type: string
+          rating:
+            type: string
+          runtimes:
+            type: integer
+          title:
+            type: string
+          votes:
+            type: integer
       year:
         type: object
         properties:
@@ -1028,6 +1060,9 @@ definitions:
             type: string
             description: Series home folder
             example: "/library/My Series"
+          locationValid:
+            type: boolean
+            description: Result of a stat on the configured location
           qualities:
             type: object
             description: Qualities settings
@@ -1091,6 +1126,15 @@ definitions:
                 description: Required release words
                 items:
                   type: string
+              requiredWordsExclude:
+                type: boolean
+                description: Exclude required words from global required words list
+              ignoredWordsExclude:
+                type: boolean
+                description: Exclude ignored words from global ignored words list
+          airdateOffset:
+            type: integer
+            description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
       seasons:
         type: array
         description: Episodes grouped by season. Available in detailed view.
@@ -1105,6 +1149,20 @@ definitions:
         minimum: 0
         maximum: 10000
         description: Total number of episodes. Available in detailed view
+      size:
+        type: integer
+        description: Show size on disk calculated from the shows configured location
+      showQueueStatus:
+        type: array
+        description: Array of objects with information on the different queues used for operations on a show.
+        items:
+          type: object
+      xemNumbering:
+        type: array
+        description: Array of objects with xem indexer to scene mappings
+        items:
+          type: object
+          example: '"xemNumbering": [{"source": {"season": 6, "episode": 34}, "destination": {"season": 2, "episode": 16}}'
   Episode:
     type: object
     properties:
@@ -2122,7 +2180,6 @@ definitions:
         x-nullable: true
       type:
         type: string
-        enum: [null, local]
         x-nullable: true
     example:
       series: tvdb301824

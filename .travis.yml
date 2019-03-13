@@ -12,8 +12,6 @@ install: false
 script: false
 jobs:
   fast_finish: true
-  allow_failures:
-    - python: '3.6'
   include:
     # test stage + frontend tests start here
     - stage: test
@@ -70,21 +68,20 @@ jobs:
       after_failure:
         - cat ./dredd/data/Logs/application.log
     # dredd tests (py3.6) start here
-    # @FIXME: Disabled because they take too long. Enable when Medusa can *actually* start on Python 3.
-    # - name: 'Dredd tests (py3.6)'
-    #   python: '3.6'
-    #   install:
-    #     - pip install --upgrade pip
-    #     - pip install dredd_hooks
-    #     - pip install 'PyYAML<4'
-    #     - pip install six
-    #     - nvm install v10.7.0
-    #     - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-    #     - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
-    #   script:
-    #     - yarn test-api
-    #   after_failure:
-    #     - cat ./dredd/data/Logs/application.log
+    - name: 'Dredd tests (py3.6)'
+      python: '3.6'
+      install:
+        - pip install --upgrade pip
+        - pip install dredd_hooks
+        - pip install 'PyYAML<4'
+        - pip install six
+        - nvm install v10.7.0
+        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
+        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
+      script:
+        - yarn test-api
+      after_failure:
+        - cat ./dredd/data/Logs/application.log
 notifications:
   slack:
     secure: >-

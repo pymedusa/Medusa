@@ -35,6 +35,8 @@ class TorrentProvider(GenericProvider):
 
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
+        self.minseed = 0
+        self.minleech = 0
 
     def is_active(self):
         """Check if provider is enabled."""
@@ -59,10 +61,6 @@ class TorrentProvider(GenericProvider):
         elif isinstance(item, (list, tuple)) and len(item) > 2:
             size = item[2]
         else:
-            size = -1
-
-        # Make sure we didn't select seeds/leechers by accident
-        if not size or size < 1024 * 1024:
             size = -1
 
         return try_int(size, -1)

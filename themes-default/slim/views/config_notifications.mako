@@ -153,7 +153,7 @@ window.app = new Vue({
                     enabled: null,
                     api: [],
                     messageTitle: null,
-                    piority: null,
+                    priority: null,
                     notifyOnSnatch: null,
                     notifyOnDownload: null,
                     notifyOnSubtitleDownload: null
@@ -451,7 +451,7 @@ window.app = new Vue({
                 const response = await apiRoute('home/testTwitter');
                 const { data } = response;
                 this.twitterTestInfo = data;
-            } catch {
+            } catch (e) {
                 this.twitterTestInfo = 'Error while trying to request for a test on the twitter api.'
             }
         },
@@ -1659,7 +1659,7 @@ window.app = new Vue({
 
                                     <config-textbox v-model="notifiers.trakt.username" label="Username" id="trakt_username" :explanations="['username of your Trakt account.']" @change="save()" ></config-textbox>
 
-                                    <config-template label-for="twitterStep2" label="Trakt PIN">
+                                    <config-template label-for="trakt_pin" label="Trakt PIN">
                                         <input type="text" name="trakt_pin" id="trakt_pin" value="" style="display: inline" class="form-control input-sm max-input250" :disabled="notifiers.trakt.accessToken"/>
                                         <input type="button" class="btn-medusa" :value="traktNewTokenMessage" id="TraktGetPin" @click="TraktGetPin"/>
                                         <input type="button" class="btn-medusa hide" value="Authorize Medusa" id="authTrakt" @click="authTrakt"/>
@@ -1668,7 +1668,7 @@ window.app = new Vue({
 
                                     <config-textbox-number v-model="notifiers.trakt.timeout" label="API Timeout" id="trakt_timeout" :explanations="['Seconds to wait for Trakt API to respond. (Use 0 to wait forever)']"></config-textbox-number>
 
-                                    <config-template label-for="twitterStep2" label="Trakt PIN">
+                                    <config-template label-for="trakt_default_indexer" label="Default indexer">
                                         <select id="trakt_default_indexer" name="trakt_default_indexer" v-model="notifiers.trakt.defaultIndexer" class="form-control">
                                             <option v-for="option in traktIndexersOptions" v-bind:value="option.value">
                                                 {{ option.text }}

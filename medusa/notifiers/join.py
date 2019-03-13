@@ -84,9 +84,9 @@ class Notifier(object):
         join_device = join_device or app.JOIN_DEVICE
         icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
 
-        post_data = {'title': title, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
+        params = {'title': title, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
 
-        r = requests.get(self.url, params=post_data)
+        r = requests.get(self.url, params=params)
         try:
             response = r.json()
         except ValueError:
@@ -96,8 +96,8 @@ class Notifier(object):
 
         failed = response.pop('errorMessage', {})
         if failed:
-            log.warning('Join notification failed: {0}', failed.get('message'))
-            push_result['error'] = 'Join notification failed: {0}'.format(failed.get('message'))
+            log.warning('Join notification failed: {0}', failed)
+            push_result['error'] = 'Join notification failed: {0}'.format(failed)
         else:
             log.debug('Join notification sent.')
             push_result['success'] = True

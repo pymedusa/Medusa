@@ -26,6 +26,9 @@ from builtins import object
 from medusa import app
 from medusa.network_timezones import app_timezone
 
+import six
+
+
 date_presets = (
     '%Y-%m-%d',
     '%a, %Y-%m-%d',
@@ -104,7 +107,7 @@ class static_or_instance(object):
 # subclass datetime.datetime to add function to display custom date and time formats
 class sbdatetime(datetime.datetime):
     has_locale = True
-    en_US_norm = locale.normalize('en_US.utf-8')
+    en_us_norm = locale.normalize('en_US.utf-8')
 
     @static_or_instance
     def convert_to_setting(self, dt=None):
@@ -140,7 +143,7 @@ class sbdatetime(datetime.datetime):
         except Exception:
             try:
                 if sbdatetime.has_locale:
-                    locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                    locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
             except Exception:
                 sbdatetime.has_locale = False
 
@@ -168,7 +171,10 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 sbdatetime.has_locale = False
 
-        return strt.decode(app.SYS_ENCODING)
+        if six.PY2:
+            strt = strt.decode(app.SYS_ENCODING)
+
+        return strt
 
     # display Date in application Format
     @static_or_instance
@@ -207,7 +213,10 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 pass
 
-        return strd.decode(app.SYS_ENCODING)
+        if six.PY2:
+            strd = strd.decode(app.SYS_ENCODING)
+
+        return strd
 
     # display Datetime in application Format
     @static_or_instance
@@ -242,15 +251,17 @@ class sbdatetime(datetime.datetime):
                     except Exception:
                         try:
                             if sbdatetime.has_locale:
-                                locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                                locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
                         except Exception:
                             sbdatetime.has_locale = False
-                    if t_preset is not None:
-                        strd += b', ' + dt.strftime(t_preset)
-                    elif show_seconds:
-                        strd += b', ' + dt.strftime(app.TIME_PRESET_W_SECONDS)
-                    else:
-                        strd += b', ' + dt.strftime(app.TIME_PRESET)
+
+                    if six.PY2:
+                        strd = strd.decode(app.SYS_ENCODING)
+
+                    # Select format
+                    fmt = t_preset or app.TIME_PRESET_W_SECONDS if show_seconds else app.TIME_PRESET
+                    # Add formatted date
+                    strd = ', '.join([strd, dt.strftime(fmt)])
             else:
                 if d_preset is not None:
                     strd = self.strftime(d_preset)
@@ -262,15 +273,17 @@ class sbdatetime(datetime.datetime):
                 except Exception:
                     try:
                         if sbdatetime.has_locale:
-                            locale.setlocale(locale.LC_TIME, sbdatetime.en_US_norm)
+                            locale.setlocale(locale.LC_TIME, sbdatetime.en_us_norm)
                     except Exception:
                         sbdatetime.has_locale = False
-                if t_preset is not None:
-                    strd += b', ' + self.strftime(t_preset)
-                elif show_seconds:
-                    strd += b', ' + self.strftime(app.TIME_PRESET_W_SECONDS)
-                else:
-                    strd += b', ' + self.strftime(app.TIME_PRESET)
+
+                if six.PY2:
+                    strd = strd.decode(app.SYS_ENCODING)
+
+                # Select format
+                fmt = t_preset or app.TIME_PRESET_W_SECONDS if show_seconds else app.TIME_PRESET
+                # Add formatted date
+                strd = ', '.join([strd, self.strftime(fmt)])
         finally:
             try:
                 if sbdatetime.has_locale:
@@ -278,4 +291,4 @@ class sbdatetime(datetime.datetime):
             except Exception:
                 sbdatetime.has_locale = False
 
-        return strd.decode(app.SYS_ENCODING)
+        return strd

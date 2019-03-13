@@ -40,10 +40,6 @@ class HDBitsProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -133,11 +129,11 @@ class HDBitsProvider(TorrentProvider):
             leechers = row.get('leechers', 0)
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
-                log.debug(
-                    "Discarding torrent because it doesn't meet the"
-                    ' minimum seeders: {0}. Seeders: {1}',
-                    title, seeders)
+            if seeders < self.minseed:
+                if mode != 'RSS':
+                    log.debug("Discarding torrent because it doesn't meet the"
+                              ' minimum seeders: {0}. Seeders: {1}',
+                              title, seeders)
                 continue
 
             size = convert_size(row.get('size'), default=-1)

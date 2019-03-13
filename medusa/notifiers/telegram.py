@@ -18,9 +18,8 @@ from medusa.common import (
 from medusa.helper.common import http_status_code
 from medusa.logger.adapters.style import BraceAdapter
 
-from requests.compat import urlencode
-
-from six.moves.urllib.request import Request, urlopen
+import requests
+from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -58,29 +57,28 @@ class Notifier(object):
         log.debug('Telegram in use with API KEY: {0}', api_key)
 
         message = '{0} : {1}'.format(title, msg).encode('utf-8')
-        payload = urlencode({'chat_id': user_id, 'text': message})
-        telegram_api = 'https://api.telegram.org/bot%s/%s'
-
-        req = Request(telegram_api % (api_key, 'sendMessage'), payload)
+        payload = {'chat_id': user_id, 'text': message}
+        telegram_api = 'https://api.telegram.org/bot{api_key}/sendMessage'
 
         success = False
         try:
-            urlopen(req)
+            r = requests.post(telegram_api.format(api_key=api_key), data=payload)
+            r.raise_for_status()
             message = 'Telegram message sent successfully.'
             success = True
-        except IOError as e:
-            message = 'Unknown IO error: %s' % e
-            if hasattr(e, 'code'):
+        except RequestException as error:
+            message = 'Unknown IO error: %s' % error
+            if hasattr(error, 'response') and error.response is not None:
                 error_message = {
                     400: 'Missing parameter(s). Double check your settings or if the channel/user exists.',
                     401: 'Authentication failed.',
                     420: 'Too many messages.',
                     500: 'Server error. Please retry in a few moments.',
                 }
-                if e.code in error_message:
-                    message = error_message.get(e.code)
+                if error.response.status_code in error_message:
+                    message = error_message.get(error.response.status_code)
                 else:
-                    http_status_code.get(e.code, message)
+                    message = http_status_code.get(error.response.status_code, message)
         except Exception as e:
             message = 'Error while sending Telegram message: %s ' % e
         finally:

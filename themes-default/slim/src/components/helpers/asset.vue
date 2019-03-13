@@ -53,10 +53,11 @@ export default {
             if (this.link) {
                 return this.src.replace('Thumb', '');
             }
+            return undefined;
         }
     }
 };
 </script>
 <style>
-/* placeholder */
+
 </style>
