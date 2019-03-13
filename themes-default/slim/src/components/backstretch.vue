@@ -34,7 +34,6 @@ export default {
         const el = $($el);
 
         const showSlug = indexer + String(id);
-        debugger;
         if (indexer && id) {
             $.backstretch(webRoot + '/api/v2/series/' + showSlug + '/asset/fanart?api_key=' + apiKey);
             el.css('top', offset);

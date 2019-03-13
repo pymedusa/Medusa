@@ -37,6 +37,7 @@
                 </div>
 
                 <template slot="table-header-row" slot-scope="props" :class="'my-class'">
+                    <input type="checkbox" class="epCheck" :id="`s${props.row.season}`" :name="`s${props.row.season}`" :ref="`check-${props.row.season}`" @change="checkEpisodes(props.row.season, $event)"/>
                     <h3 style="display: inline"><app-link :name="'season-'+ props.row.season"></app-link>
                         <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
                         {{ props.row.label > 0 ? 'Season ' + props.row.label : 'Specials' }}
@@ -47,7 +48,18 @@
                     </h3>
                 </template>
 
+                <template slot="table-column" slot-scope="props">
+                    <span v-if="props.column.label =='check'"></span>
+                    <span v-else>
+                        {{props.column.label}}
+                    </span>
+                </template>
+                
                 <template slot="table-row" slot-scope="props">
+                    <span v-if="props.column.field == 'check'">
+                        <input type="checkbox" class="epCheck" :ref="`s${props.row.season}`"/>
+                    </span>
+
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
                     </span>
@@ -244,14 +256,17 @@ export default {
             isMobile: false,
             search: '',
             columns: [{
+                label: 'check',
+                field: 'check'
+            }, {
                 label: 'nfo',
                 field: 'content.hasNfo',
                 type: 'boolean'
-            },{
+            }, {
                 label: 'tbn',
                 field: 'content.hasTbn',
                 type: 'boolean'
-            },{
+            }, {
                 label: 'Episode',
                 field: 'episode',
                 type: 'number'
@@ -486,7 +501,6 @@ export default {
         document.querySelectorAll('.collapse.toggle').forEach(element => {
             element.addEventListener('hide.bs.collapse', () => {
                 // On hide
-                debugger;
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Show Episodes');
@@ -494,7 +508,6 @@ export default {
             });
             element.addEventListener('show.bs.collapse', () => {
                 // On show
-                debugger;
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Hide Episodes');
@@ -515,6 +528,9 @@ export default {
             return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
         },
         parseSubtitlesFn(row) {
+            debugger;
+        },
+        checkEpisodes(season, event) {
             debugger;
         },
         /**
