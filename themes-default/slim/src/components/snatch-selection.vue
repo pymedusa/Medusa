@@ -43,11 +43,6 @@ export default {
             return Number(this.$route.query.episode) || undefined;
         }
     },
-    created() {
-        const { indexer, id, $store } = this;
-        // Needed for ShowHeader
-        $store.dispatch('getShow', { indexer, id });
-    },
     methods: {
         ...mapActions({
             getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
@@ -90,7 +85,7 @@ export default {
         });
 
         // We need the show info, so let's get it.
-        if (!show) {
+        if (!show || !show.id.slug) {
             getShow({ id, indexer, detailed: false });
         }
 

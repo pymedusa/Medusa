@@ -1,8 +1,8 @@
+import copy
 import logging
 import random
 import re
-from copy import deepcopy
-from time import sleep
+import time
 
 import js2py
 
@@ -16,7 +16,7 @@ except ImportError:
 # Disallow parsing of the unsafe 'pyimport' statement in Js2Py.
 js2py.disable_pyimport()
 
-__version__ = "1.9.5-Custom"
+__version__ = "1.9.6-Custom"
 
 DEFAULT_USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
@@ -73,14 +73,14 @@ class CloudflareScraper(Session):
         return resp
 
     def solve_cf_challenge(self, resp, **original_kwargs):
-        sleep(self.delay)  # Cloudflare requires a delay before solving the challenge
+        start_time = time.time()
 
         body = resp.text
         parsed_url = urlparse(resp.url)
         domain = parsed_url.netloc
         submit_url = "%s://%s/cdn-cgi/l/chk_jschl" % (parsed_url.scheme, domain)
 
-        cloudflare_kwargs = deepcopy(original_kwargs)
+        cloudflare_kwargs = copy.deepcopy(original_kwargs)
         params = cloudflare_kwargs.setdefault("params", {})
         headers = cloudflare_kwargs.setdefault("headers", {})
         headers["Referer"] = resp.url
@@ -91,7 +91,6 @@ class CloudflareScraper(Session):
 
             # Extract the arithmetic operation
             js = self.extract_js(body, domain)
-
         except Exception as e:
             # Something is wrong with the page.
             # This may indicate Cloudflare has changed their anti-bot
@@ -107,6 +106,10 @@ class CloudflareScraper(Session):
         # performing other types of requests even as the first request.
         method = resp.request.method
         cloudflare_kwargs["allow_redirects"] = False
+
+        end_time = time.time()
+        time.sleep(self.delay - (end_time - start_time))  # Cloudflare requires a delay before solving the challenge
+
         redirect = self.request(method, submit_url, **cloudflare_kwargs)
 
         redirect_location = urlparse(redirect.headers["Location"])
@@ -118,7 +121,7 @@ class CloudflareScraper(Session):
     def extract_js(self, body, domain):
         js = re.search(r"setTimeout\(function\(\){\s+(var "
                        "s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n", body).group(1)
-        js = re.sub(r"a\.value = (.+ \+ t\.length).+", r"\1", js)
+        js = re.sub(r"a\.value = (.+ \+ t\.length(\).toFixed\(10\))?).+", r"\1", js)
         js = re.sub(r"\s{3,}[a-z](?: = |\.).+", "", js).replace("t.length", str(len(domain)))
 
         # Strip characters that could be used to exit the string context

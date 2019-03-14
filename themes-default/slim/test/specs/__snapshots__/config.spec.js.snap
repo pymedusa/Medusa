@@ -1,0 +1,335 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Config.test.js renders 1`] = `
+<div
+  id="config-content"
+>
+  <table
+    border="0"
+    cellpadding="0"
+    cellspacing="1"
+    class="infoTable"
+    width="100%"
+  >
+    <tr>
+      <td>
+        <i
+          class="icon16-config-application"
+        />
+         Medusa Info:
+      </td>
+       
+      <td>
+        
+                Branch:
+                
+        <span>
+          <a
+            class=""
+            href="https://github.com/pymedusa/Medusa/tree/master"
+            rel="noreferrer"
+            target="_blank"
+          >
+            master
+          </a>
+        </span>
+         
+        <br />
+        
+                Commit:
+                
+        <span>
+          <a
+            class=""
+            href="https://github.com/pymedusa/Medusa/commit/f5973b28465246e67465d7d86bdc8aa74d13e659"
+            rel="noreferrer"
+            target="_blank"
+          >
+            f5973b28465246e67465d7d86bdc8aa74d13e659
+          </a>
+        </span>
+         
+        <br />
+        
+                Version:
+                
+        <span>
+          <a
+            class=""
+            href="https://github.com/pymedusa/Medusa/releases/tag/v0.2.8"
+            rel="noreferrer"
+            target="_blank"
+          >
+            v0.2.8
+          </a>
+        </span>
+         
+        <br />
+        
+                Database:
+                
+        <span>
+          44.11
+        </span>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-python"
+        />
+         Python Version:
+      </td>
+      <td>
+        2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)]
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-ssl"
+        />
+         SSL Version:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-os"
+        />
+         OS:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-locale"
+        />
+         Locale:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-user"
+        />
+         User:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-dir"
+        />
+         Program Folder:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-config"
+        />
+         Config File:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-db"
+        />
+         Database File:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-cache"
+        />
+         Cache Folder:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-log"
+        />
+         Log Folder:
+      </td>
+      <td>
+        
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-arguments"
+        />
+         Arguments:
+      </td>
+      <td>
+        <pre>
+          [
+    "--nolaunch",
+    "--datadir=C:\\\\Medusa\\\\Data"
+]
+        </pre>
+      </td>
+    </tr>
+     
+    <!---->
+     
+    <!---->
+     
+    <tr>
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr
+      class="infoTableSeperator"
+    >
+      <td>
+         
+      </td>
+      <td>
+         
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-web"
+        />
+         Website:
+      </td>
+      <td>
+        <a
+          class=""
+        >
+          
+        </a>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-wiki"
+        />
+         Wiki:
+      </td>
+      <td>
+        <a
+          class=""
+        >
+          
+        </a>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-github"
+        />
+         Source:
+      </td>
+      <td>
+        <a
+          class=""
+          href="https://github.com/pymedusa/Medusa"
+          rel="noreferrer"
+          target="_blank"
+        >
+          https://github.com/pymedusa/Medusa
+        </a>
+      </td>
+    </tr>
+     
+    <tr>
+      <td>
+        <i
+          class="icon16-config-mirc"
+        />
+         IRC Chat:
+      </td>
+      <td>
+        <a
+          class=""
+          href="irc://irc.freenode.net/#pymedusa"
+          rel="noreferrer"
+          target="_blank"
+        >
+          <i>
+            #pymedusa
+          </i>
+           on 
+          <i>
+            irc.freenode.net
+          </i>
+        </a>
+      </td>
+    </tr>
+  </table>
+</div>
+`;

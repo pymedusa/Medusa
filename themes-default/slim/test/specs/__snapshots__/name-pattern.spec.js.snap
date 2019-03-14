@@ -1,0 +1,114 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`NamePattern.test.js renders 1`] = `
+<div
+  id="name-pattern-wrapper"
+>
+  <!---->
+   
+  <div
+    class="episode-naming"
+  >
+    <div
+      class="form-group"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="name_presets"
+      >
+        <span>
+          Name Pattern:
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <select
+          class="form-control input-sm"
+          id="name_presets"
+        />
+      </div>
+    </div>
+     
+    <div
+      id="naming_custom"
+    >
+      <!---->
+       
+      <!---->
+    </div>
+     
+    <div
+      class="form-group"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="naming_multi_ep"
+      >
+        <span>
+          Multi-Episode Style:
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <select
+          class="form-control input-sm"
+          id="naming_multi_ep"
+          name="naming_multi_ep"
+        />
+      </div>
+    </div>
+     
+    <div
+      class="form-group row"
+    >
+      <h3
+        class="col-sm-12"
+      >
+        Single-EP Sample:
+      </h3>
+       
+      <div
+        class="example col-sm-12"
+      >
+        <span
+          class="jumbo"
+          id="naming_example"
+        >
+          
+        </span>
+      </div>
+    </div>
+     
+    <div
+      class="form-group row"
+    >
+      <h3
+        class="col-sm-12"
+      >
+        Multi-EP sample:
+      </h3>
+       
+      <div
+        class="example col-sm-12"
+      >
+        <span
+          class="jumbo"
+          id="naming_example_multi"
+        >
+          
+        </span>
+      </div>
+    </div>
+     
+    <!---->
+     
+    <!---->
+     
+    <!---->
+  </div>
+</div>
+`;

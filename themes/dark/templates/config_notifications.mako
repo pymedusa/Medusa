@@ -451,7 +451,7 @@ window.app = new Vue({
                 const response = await apiRoute('home/testTwitter');
                 const { data } = response;
                 this.twitterTestInfo = data;
-            } catch {
+            } catch (e) {
                 this.twitterTestInfo = 'Error while trying to request for a test on the twitter api.'
             }
         },

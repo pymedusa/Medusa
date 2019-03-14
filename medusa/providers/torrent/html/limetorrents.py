@@ -51,10 +51,6 @@ class LimeTorrentsProvider(TorrentProvider):
         # Miscellaneous Options
         self.confirmed = False
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=15)
 
@@ -153,7 +149,7 @@ class LimeTorrentsProvider(TorrentProvider):
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''))
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True).replace(',', ''))
 
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

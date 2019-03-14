@@ -9,7 +9,11 @@ from __future__ import unicode_literals
 import abc
 import os
 
-from collections import MutableMapping
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
+
 try:
     from collections import UserDict
 except ImportError:
@@ -34,6 +38,9 @@ except ImportError:
         from _thread import get_ident
     except ImportError:
         from _dummy_thread import get_ident
+
+
+__all__ = ['UserDict', 'OrderedDict', 'open']
 
 
 PY2 = sys.version_info[0] == 2
@@ -77,6 +84,7 @@ def recursive_repr(fillvalue='...'):
 
     return decorating_function
 
+
 # from collections 3.2.1
 class _ChainMap(MutableMapping):
     ''' A ChainMap groups multiple dicts (or other mappings) together
@@ -104,16 +112,19 @@ class _ChainMap(MutableMapping):
     def __getitem__(self, key):
         for mapping in self.maps:
             try:
-                return mapping[key]             # can't use 'key in mapping' with defaultdict
+                # can't use 'key in mapping' with defaultdict
+                return mapping[key]
             except KeyError:
                 pass
-        return self.__missing__(key)            # support subclasses that define __missing__
+        # support subclasses that define __missing__
+        return self.__missing__(key)
 
     def get(self, key, default=None):
         return self[key] if key in self else default
 
     def __len__(self):
-        return len(set().union(*self.maps))     # reuses stored hash values if possible
+        # reuses stored hash values if possible
+        return len(set().union(*self.maps))
 
     def __iter__(self):
         return iter(set().union(*self.maps))
@@ -132,7 +143,10 @@ class _ChainMap(MutableMapping):
         return cls(dict.fromkeys(iterable, *args))
 
     def copy(self):
-        'New ChainMap or subclass with a new copy of maps[0] and refs to maps[1:]'
+        """
+        New ChainMap or subclass with a new copy of
+        maps[0] and refs to maps[1:]
+        """
         return self.__class__(self.maps[0].copy(), *self.maps[1:])
 
     __copy__ = copy
@@ -153,21 +167,30 @@ class _ChainMap(MutableMapping):
         try:
             del self.maps[0][key]
         except KeyError:
-            raise KeyError('Key not found in the first mapping: {!r}'.format(key))
+            raise KeyError(
+                'Key not found in the first mapping: {!r}'.format(key))
 
     def popitem(self):
-        'Remove and return an item pair from maps[0]. Raise KeyError is maps[0] is empty.'
+        """
+        Remove and return an item pair from maps[0].
+        Raise KeyError is maps[0] is empty.
+        """
         try:
             return self.maps[0].popitem()
         except KeyError:
             raise KeyError('No keys found in the first mapping.')
 
     def pop(self, key, *args):
-        'Remove *key* from maps[0] and return its value. Raise KeyError if *key* not in maps[0].'
+        """
+        Remove *key* from maps[0] and return its value.
+        Raise KeyError if *key* not in maps[0].
+        """
+
         try:
             return self.maps[0].pop(key, *args)
         except KeyError:
-            raise KeyError('Key not found in the first mapping: {!r}'.format(key))
+            raise KeyError(
+                'Key not found in the first mapping: {!r}'.format(key))
 
     def clear(self):
         'Clear maps[0], leaving maps[1:] intact.'

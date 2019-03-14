@@ -1,58 +1,63 @@
-import test from 'ava';
 import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { RootDirs } from '../../src/components';
 import fixtures from '../__fixtures__/root-dirs';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+describe('QualityPill.test.js', () => {
+    let localVue;
+    let store;
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-test('renders and changing default/selected', t => {
-    const { localVue, store, state } = t.context;
-    const wrapper = mount(RootDirs, {
-        localVue,
-        store
+        const { state } = fixtures;
+        const { Store } = Vuex;
+        store = new Store({ state });
     });
 
-    const rawRootDirs = state.config.rootDirs;
-    const defaultIndex = rawRootDirs[0];
-    const rawPaths = rawRootDirs.slice(1);
-    const { vm } = wrapper;
+    test('renders and changing default/selected', () => {
+        const { state } = fixtures;
+        const wrapper = mount(RootDirs, {
+            localVue,
+            store
+        });
 
-    t.snapshot(wrapper.html(), 'Base snapshot');
+        const rawRootDirs = state.config.rootDirs;
+        const defaultIndex = rawRootDirs[0];
+        const rawPaths = rawRootDirs.slice(1);
+        const { vm } = wrapper;
 
-    // Make sure all the paths are rendered
-    t.deepEqual(vm.rootDirs, vm.transformRaw(rawRootDirs));
-    const select = wrapper.find('select');
-    t.false(select.isEmpty());
-    const selectOptions = select.findAll('option');
-    t.is(selectOptions.length, rawPaths.length);
+        expect(wrapper.element).toMatchSnapshot('Base snapshot');
 
-    // Make sure the default root dir is marked
-    const defaultRootDir = rawPaths[defaultIndex];
-    t.is(vm.defaultRootDir, defaultRootDir);
-    t.is(selectOptions.at(defaultIndex).text(), `* ${defaultRootDir}`);
-    t.true(selectOptions.at(defaultIndex).is(':selected'));
+        // Make sure all the paths are rendered
+        expect(vm.rootDirs).toEqual(vm.transformRaw(rawRootDirs));
 
-    // Test changing default root dir
-    const newDefault = rawPaths.find((_path, index) => index !== defaultIndex);
-    wrapper.setData({ defaultRootDir: newDefault });
-    t.is(vm.defaultRootDir, newDefault);
-    t.snapshot(wrapper.html(), 'After changing the default root dir');
+        const select = wrapper.find('select');
+        expect(select.isEmpty()).toBe(false);
 
-    // Test changing selected root dir
-    const newSelectionIndex = rawPaths.findIndex((_path, index) => index !== vm.selectedRootDir);
-    const newSelection = rawPaths[newSelectionIndex];
-    wrapper.setData({ selectedRootDir: newSelection });
-    t.is(vm.selectedRootDir, newSelection);
-    t.true(selectOptions.at(newSelectionIndex).is(':selected'));
+        const selectOptions = select.findAll('option');
+        expect(selectOptions.length).toEqual(rawPaths.length);
+
+        // Make sure the default root dir is marked
+        const defaultRootDir = rawPaths[defaultIndex];
+        expect(vm.defaultRootDir).toEqual(defaultRootDir);
+        expect(selectOptions.at(defaultIndex).text()).toEqual(`* ${defaultRootDir}`);
+        expect(selectOptions.at(defaultIndex).element.value).toEqual('/media/Anime/');
+
+        // Test changing default root dir
+        const newDefault = rawPaths.find((_path, index) => index !== defaultIndex);
+        wrapper.setData({ defaultRootDir: newDefault });
+        expect(vm.defaultRootDir).toEqual(newDefault);
+        expect(wrapper.element).toMatchSnapshot('After changing the default root dir');
+
+        // Test changing selected root dir
+        const newSelectionIndex = rawPaths.findIndex((_path, index) => index !== vm.selectedRootDir);
+        const newSelection = rawPaths[newSelectionIndex];
+        wrapper.setData({ selectedRootDir: newSelection });
+        expect(vm.selectedRootDir).toEqual(newSelection);
+        expect(selectOptions.at(newSelectionIndex).element.value).toEqual('/media/TV');
+    });
 });

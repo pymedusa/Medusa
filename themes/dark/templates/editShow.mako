@@ -213,7 +213,7 @@ window.app = new Vue({
             if (!this.series.config.release.ignoredWordsExclude) {
                 return arrayUnique(globalIgnored.concat(seriesIgnored));
             } else {
-                return arrayExclude(globalIgnored, seriesRequired);
+                return arrayExclude(globalIgnored, seriesIgnored);
             }
         },
         effectiveRequired() {
@@ -266,7 +266,7 @@ window.app = new Vue({
                                 <p>This will set the status for future episodes.</p>
                             </select>
                         </config-template>
-                        
+
                         <config-template label-for="indexerLangSelect" label="Info Language">
                             <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="series.language" :available="availableLanguages" name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm"></language-select>
                             <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
@@ -291,15 +291,15 @@ window.app = new Vue({
                             <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                             <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                         </config-toggle-slider>
-        
+
                         <config-toggle-slider v-model="series.config.anime" label="Anime" id="anime">
                             <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                         </config-toggle-slider>
-    
+
                         <config-template v-if="series.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
                             <anidb-release-group-ui class="max-width" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                         </config-template>
-    
+
                         <config-toggle-slider v-model="series.config.sports" label="Sports" id="sports">
                             <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03<span>
                             <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
@@ -312,7 +312,7 @@ window.app = new Vue({
                         <config-toggle-slider v-model="series.config.scene" label="Scene Numbering" id="scene_numbering">
                             <span>search by scene numbering (disable to search by indexer numbering)</span>
                         </config-toggle-slider>
-    
+
                         <config-toggle-slider v-model="series.config.dvdOrder" label="DVD Order" id="dvd_order">
                             <span>use the DVD order instead of the air order</span>
                             <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
@@ -339,7 +339,7 @@ window.app = new Vue({
 
                         <config-template label-for="rls_require_words" label="Required words">
                             <select-list :list-items="series.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
-                            <p>Search results with no words from this list will be ignored.</p>                                
+                            <p>Search results with no words from this list will be ignored.</p>
                         </config-template>
 
                         <config-toggle-slider v-model="series.config.release.requiredWordsExclude" label="Exclude required words" id="required_words_exclude">

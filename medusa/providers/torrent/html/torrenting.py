@@ -43,10 +43,6 @@ class TorrentingProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ('uid', 'pass')
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -107,53 +103,53 @@ class TorrentingProvider(TorrentProvider):
             if torrent_table:
                 torrent_rows = torrent_table.find_all('tr')
 
-                # Continue only if at least one release is found
-                if len(torrent_rows) < 1:
-                    log.debug('Data returned from provider does not contain any torrents')
-                    return items
+            # Continue only if at least one release is found
+            if len(torrent_rows) < 2:
+                log.debug('Data returned from provider does not contain any torrents')
+                return items
 
-                # Skip column headers
-                for row in torrent_rows[1:]:
-                    try:
-                        torrent_items = row.find_all('td')
-                        title = torrent_items[1].find('a').get_text(strip=True)
-                        download_url = torrent_items[2].find('a')['href']
-                        if not all([title, download_url]):
-                            continue
-                        download_url = urljoin(self.url, download_url)
+            # Skip column headers
+            for row in torrent_rows[1:]:
+                try:
+                    torrent_items = row.find_all('td')
+                    title = torrent_items[1].find('a').get_text(strip=True)
+                    download_url = torrent_items[2].find('a')['href']
+                    if not all([title, download_url]):
+                        continue
+                    download_url = urljoin(self.url, download_url)
 
-                        seeders = try_int(torrent_items[5].get_text(strip=True))
-                        leechers = try_int(torrent_items[6].get_text(strip=True))
+                    seeders = try_int(torrent_items[5].get_text(strip=True))
+                    leechers = try_int(torrent_items[6].get_text(strip=True))
 
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
-                            if mode != 'RSS':
-                                log.debug("Discarding torrent because it doesn't meet the"
-                                          ' minimum seeders: {0}. Seeders: {1}',
-                                          title, seeders)
-                            continue
-
-                        torrent_size = torrent_items[4].get_text()
-                        size = convert_size(torrent_size) or -1
-
-                        pubdate_raw = torrent_items[1].find('div').get_text()
-                        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
-
-                        item = {
-                            'title': title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': pubdate,
-                        }
+                    # Filter unseeded torrent
+                    if seeders < self.minseed:
                         if mode != 'RSS':
-                            log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                      title, seeders, leechers)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      ' minimum seeders: {0}. Seeders: {1}',
+                                      title, seeders)
+                        continue
 
-                        items.append(item)
-                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                        log.exception('Failed parsing provider')
+                    torrent_size = torrent_items[4].get_text()
+                    size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = torrent_items[1].find('div').get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+
+                    item = {
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'pubdate': pubdate,
+                    }
+                    if mode != 'RSS':
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
+
+                    items.append(item)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    log.exception('Failed parsing provider')
 
         return items
 

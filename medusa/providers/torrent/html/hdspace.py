@@ -45,12 +45,8 @@ class HDSpaceProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # only poll HDSpace every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -145,7 +141,7 @@ class HDSpaceProvider(TorrentProvider):
                     leechers = try_int(row.find('span', class_='leechy').find('a').get_text())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
