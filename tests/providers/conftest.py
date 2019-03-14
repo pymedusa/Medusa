@@ -34,7 +34,7 @@ def get_provider_data():
         # Load provider test config
         input_file = os.path.join(__location__, provider.type, provider.name, provider.name + '_test.yaml')
         with open(input_file, 'r') as stream:
-            test_data = yaml.load(stream)
+            test_data = yaml.safe_load(stream)
 
         # Update provider with test data
         provider.data.update(test_data)

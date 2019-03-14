@@ -69,7 +69,7 @@
 :: | `validators` | [0.12.4](https://pypi.org/project/validators/0.12.4/) | **`medusa`** | ext | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | ext | -
 :: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | ext | -
-:: | `PyYAML` | [3.13](https://pypi.org/project/PyYAML/3.13/) | `knowit` | **ext2 ext3** | Module: `yaml`
+:: | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | **ext2 ext3** | Module: `yaml`
 
 Notes:
  - `ext` compatible with python2 and python3

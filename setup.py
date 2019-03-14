@@ -48,7 +48,7 @@ setup(
         'pytest-cov>=2.6.1',
         'pytest-flake8>=1.0.2',
         'pytest-tornado5>=2.0.0',
-        'PyYAML>=3.13,<4',
+        'PyYAML>=5.1',
         'vcrpy>=2.0.1',
         'mock>=2.0.0',
     ],

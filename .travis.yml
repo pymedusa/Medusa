@@ -58,7 +58,7 @@ jobs:
       install:
         - pip install --upgrade pip
         - pip install dredd_hooks
-        - pip install 'PyYAML<4'
+        - pip install 'PyYAML>=5.1'
         - pip install six
         - nvm install v10.7.0
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
@@ -73,7 +73,7 @@ jobs:
       install:
         - pip install --upgrade pip
         - pip install dredd_hooks
-        - pip install 'PyYAML<4'
+        - pip install 'PyYAML>=5.1'
         - pip install six
         - nvm install v10.7.0
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
