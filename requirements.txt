@@ -6,7 +6,7 @@ bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2019.3.9
 chardet==3.0.4
-git+https://github.com/pymedusa/cloudflare-scrape.git@320456e8b28cedb807363a7a892b1379db843f66#egg=cfscrape
+git+https://github.com/pymedusa/cloudflare-scrape.git@2a5af1d4928b70f0cf1640564d618be51cf22332#egg=cfscrape
 configobj==5.0.6
 configparser==3.7.3
 contextlib2==0.5.5 ; python_version < '3.5'
