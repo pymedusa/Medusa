@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed auto update causing DB issues ([#6356](https://github.com/pymedusa/Medusa/pull/6356))
 
 -----
 
