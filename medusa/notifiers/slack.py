@@ -94,9 +94,6 @@ class Notifier(object):
         log.info('Sending slack message: {message}', {'message': message})
         log.info('Sending slack message  to url: {url}', {'url': webhook})
 
-        if isinstance(message, six.text_type):
-            message = message.encode('utf-8')
-
         headers = {'Content-Type': 'application/json'}
         data = {
             'text': message,
