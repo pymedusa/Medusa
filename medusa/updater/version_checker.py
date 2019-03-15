@@ -47,7 +47,7 @@ class CheckVersion(object):
                     log.info(u'New update found, starting auto-updater ...')
                     ui.notifications.message('New update found, starting auto-updater')
                     if self.run_backup_if_safe():
-                        if app.version_check_scheduler.action.update():
+                        if self.update():
                             log.info(u'Update was successful!')
                             ui.notifications.message('Update was successful')
                             app.events.put(app.events.SystemEvent.RESTART)
@@ -137,11 +137,11 @@ class CheckVersion(object):
                     'type': DEBUG,
                     'text': u'We can proceed with the update. New update has same DB version'},
                 'upgrade': {
-                    'type': WARNING,
-                    'text': u"We can't proceed with the update. New update has a new DB version. Please manually update"},
+                    'type': DEBUG,
+                    'text': u"We can proceed with the update. New update has a new DB version"},
                 'downgrade': {
                     'type': WARNING,
-                    'text': u"We can't proceed with the update. New update has a old DB version. It's not possible to downgrade"},
+                    'text': u"We can't proceed with the update. New update has an old DB version. It's not possible to downgrade"},
             }
             try:
                 result = self.getDBcompare()
@@ -149,7 +149,7 @@ class CheckVersion(object):
                     log.log(message[result]['type'], message[result]['text'])  # unpack the result message into a log entry
                 else:
                     log.warning(u"We can't proceed with the update. Unable to check remote DB version. Error: {0}", result)
-                return result in ['equal']  # add future True results to the list
+                return result in ['equal', 'upgrade']  # add future True results to the list
             except Exception as error:
                 log.error(u"We can't proceed with the update. Unable to compare DB version. Error: {0!r}", error)
                 return False
@@ -200,24 +200,18 @@ class CheckVersion(object):
             # Get remote DB version
             match_max_db = re.search(r'MAX_DB_VERSION\s*=\s*(?P<version>\d{2,3})', response.text)
             new_branch_major_db_version = int(match_max_db.group('version')) if match_max_db else None
-            match_minor_db = re.search(r'CURRENT_MINOR_DB_VERSION\s*=\s*(?P<version>\d{1,2})', response.text)
-            new_branch_min_db_version = int(match_minor_db.group('version')) if match_minor_db else None
 
             # Check local DB version
             main_db_con = db.DBConnection()
             cur_branch_major_db_version, cur_branch_minor_db_version = main_db_con.checkDBVersion()
 
             if any([cur_branch_major_db_version is None, cur_branch_minor_db_version is None,
-                    new_branch_major_db_version is None, new_branch_min_db_version is None]):
+                    new_branch_major_db_version is None]):
                 return 'Could not compare database versions, aborting'
 
             if new_branch_major_db_version > cur_branch_major_db_version:
                 return 'upgrade'
             elif new_branch_major_db_version == cur_branch_major_db_version:
-                if new_branch_min_db_version < cur_branch_minor_db_version:
-                    return 'downgrade'
-                elif new_branch_min_db_version > cur_branch_minor_db_version:
-                    return 'upgrade'
                 return 'equal'
             else:
                 return 'downgrade'
@@ -316,8 +310,10 @@ class CheckVersion(object):
             self.updater.branch = app.BRANCH
 
             # check for updates
-            if self.updater.need_update():
+            if self.updater.need_update() and self.updater.can_update():
                 return self.updater.update()
+
+        return False
 
     def list_remote_branches(self):
         if self.updater:
