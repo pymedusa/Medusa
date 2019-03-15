@@ -138,7 +138,7 @@ class CheckVersion(object):
                     'text': u'We can proceed with the update. New update has same DB version'},
                 'upgrade': {
                     'type': DEBUG,
-                    'text': u"We can proceed with the update. New update has a new DB version"},
+                    'text': u'We can proceed with the update. New update has a new DB version'},
                 'downgrade': {
                     'type': WARNING,
                     'text': u"We can't proceed with the update. New update has an old DB version. It's not possible to downgrade"},
