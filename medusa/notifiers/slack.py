@@ -12,8 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 
 import requests
 
-import six
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
