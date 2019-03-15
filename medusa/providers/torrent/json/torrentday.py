@@ -89,12 +89,12 @@ class TorrentDayProvider(TorrentProvider):
                 params = dict({'q': search_string}, **self.categories[mode])
 
                 response = self.session.get(self.urls['search'], params=params)
-                if not response or not response.content:
+                if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
 
                 try:
-                    jdata = djson.loads(response.content)
+                    jdata = djson.loads(response.text)
                 except ValueError as error:
                     log.error("Couldn't deserialize JSON document. Error: {0!r}", error)
                     continue
