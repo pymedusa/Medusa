@@ -347,14 +347,8 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: int
         """
-        # Fixes: goo.gl/tr8Awf - to be removed in the next release
-        root_dir = os.path.basename(app.PROG_DIR)
-        helper_folder = os.path.join(root_dir, 'helper')
-        helpers_folder = os.path.join(root_dir, 'helpers')
-
         folders = (app.LIB_FOLDER, app.LIB2_FOLDER, app.LIB3_FOLDER, app.EXT_FOLDER,
-                   app.EXT2_FOLDER, app.EXT3_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER,
-                   helper_folder, helpers_folder) + app.LEGACY_SRC_FOLDERS
+                   app.EXT2_FOLDER, app.EXT3_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER) + app.LEGACY_SRC_FOLDERS
         _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(' '.join(folders)))
 
         return exit_status
