@@ -846,6 +846,7 @@ tablesorter.css
     background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
+    white-space: nowrap;
 }
 
 /* .vgt-table .tablesorter-header {
@@ -856,17 +857,17 @@ tablesorter.css
     background-repeat: no-repeat;
 } */
 
-.tablesorter thead th.sorting.sorting-desc {
+.vgt-table thead th.sorting.sorting-desc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
 }
 
-.tablesorter thead th.sorting.sorting-asc {
+.vgt-table thead th.sorting.sorting-asc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
 }
 
-.tablesorter thead th {
+.vgt-table thead th {
     background-image: none;
     padding: 4px;
     cursor: default;
@@ -891,7 +892,7 @@ tablesorter.css
     display: none;
 } */
 
-.tablesorter input.tablesorter-filter {
+.vgt-table input.tablesorter-filter {
     width: 98%;
     height: auto;
     -webkit-box-sizing: border-box;
@@ -899,15 +900,15 @@ tablesorter.css
     box-sizing: border-box;
 }
 
-.tablesorter tr.tablesorter-filter-row,
-.tablesorter tr.tablesorter-filter-row td {
+.vgt-table tr.tablesorter-filter-row,
+.vgt-table tr.tablesorter-filter-row td {
     text-align: center;
     background: rgb(238, 238, 238);
     border-bottom: 1px solid rgb(221, 221, 221);
 }
 
 /* optional disabled input styling */
-.tablesorter input.tablesorter-filter-row .disabled {
+.vgt-table input.tablesorter-filter-row .disabled {
     display: none;
 }
 
@@ -916,7 +917,7 @@ tablesorter.css
     text-align: center;
 }
 
-.tablesorter tfoot tr {
+.vgt-table tfoot tr {
     color: rgb(255, 255, 255);
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
@@ -924,7 +925,7 @@ tablesorter.css
     border-collapse: collapse;
 }
 
-.tablesorter tfoot a {
+.vgt-table tfoot a {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
