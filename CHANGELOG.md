@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed auto update causing DB issues ([#6356](https://github.com/pymedusa/Medusa/pull/6356))
 - Fixed sending Kodi notifications (Python 3) ([#6355](https://github.com/pymedusa/Medusa/pull/6355))
 - Fixed sending Slack notifications (Python 3) ([#6355](https://github.com/pymedusa/Medusa/pull/6355))
 - Fixed possible error while getting AniDB scene exceptions (Python 3) ([#6355](https://github.com/pymedusa/Medusa/pull/6355))
