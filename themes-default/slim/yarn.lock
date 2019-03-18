@@ -1786,9 +1786,10 @@ beeper@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/beeper/-/beeper-1.1.1.tgz#e6d5ea8c5dad001304a70b22638447f69cb2f809"
 
-bezier-easing@^2.0.3:
+bezier-easing@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/bezier-easing/-/bezier-easing-2.1.0.tgz#c04dfe8b926d6ecaca1813d69ff179b7c2025d86"
+  integrity sha1-wE3+i5JtbsrKGBPWn/F5t8ICXYY=
 
 big.js@^3.1.3:
   version "3.2.0"
@@ -11484,12 +11485,12 @@ vue-router@3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
 
-vue-scrollto@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/vue-scrollto/-/vue-scrollto-2.14.0.tgz#e8c5fcf82ce420faa82396a625dbab460d11b246"
-  integrity sha512-X2j0CXJM8zP85LPGWjJt41CvetqmiXj/6kPvlELpUYoTt1WNCZgHnu97kaUdpUn8YYGevZ1jnTKT3d3Q4GkgBQ==
+vue-scrollto@2.15.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/vue-scrollto/-/vue-scrollto-2.15.0.tgz#e6e4645dfd2efc0d960123f607c2ab448b81670a"
+  integrity sha512-FmJncIrXvsqvyVAN55Trc2CQWVDyxuMgdQQp1Q9I9bhoEi7XXpvXXQonhbFBktzNggJf1rpfHpVqa8KLhPeePQ==
   dependencies:
-    bezier-easing "^2.0.3"
+    bezier-easing "2.1.0"
 
 vue-snotify@3.2.1:
   version "3.2.1"
