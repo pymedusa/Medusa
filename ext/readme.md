@@ -13,7 +13,7 @@
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | ext | Module: `cachecontrol`
 :: | `certifi` | [2019.3.9](https://pypi.org/project/certifi/2019.3.9/) | **`medusa`**, `traktor`, `requests` | ext | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | ext | -
-:: | `cloudflare-scrape` | pymedusa/[2a5af1d](https://github.com/pymedusa/cloudflare-scrape/tree/2a5af1d4928b70f0cf1640564d618be51cf22332) | **`medusa`** | ext | Module: `cfscrape`
+:: | `cloudflare-scrape` | pymedusa/[1354751](https://github.com/pymedusa/cloudflare-scrape/tree/1354751d5efd9353ad837d83941ed6b3f4488c77) | **`medusa`** | ext | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
 :: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.3](https://pypi.org/project/configparser/3.7.3/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
