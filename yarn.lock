@@ -436,10 +436,10 @@ dredd-transactions@7.0.0:
     fury-adapter-swagger "0.23.2"
     uri-template "1.0.1"
 
-dredd@8.0.5:
-  version "8.0.5"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-8.0.5.tgz#7dfb1c4639c08e4735b965e4356c2980372cab2f"
-  integrity sha512-Hw4/IO11B9+v6rY55e6/Q+mutJ6lm1t6KtrPyOo4tdFxaZ+wjXmnNNvdW7rOD3fKJU4kj+0jjwu6gHa6TyaLNA==
+dredd@8.0.6:
+  version "8.0.6"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-8.0.6.tgz#911aa32440d4a564aacc966513669eaa2ded80e2"
+  integrity sha512-t+umOhi0sYXkInTtNBV/DwJtdpB5OhmTrNFAll+XIkLiqJoXvBVslVeQ15qF8M38TEijQDS601yfK2oCEaP9ag==
   dependencies:
     async "2.6.2"
     caseless "0.12.0"
@@ -452,7 +452,7 @@ dredd@8.0.5:
     html "1.0.0"
     htmlencode "0.0.4"
     inquirer "6.2.2"
-    js-yaml "3.12.2"
+    js-yaml "3.13.0"
     make-dir "2.1.0"
     markdown-it "8.4.2"
     optimist "0.6.1"
@@ -1034,10 +1034,10 @@ jju@^1.1.0:
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
   integrity sha1-o6vicYryQaKykE+EpiWXDzia4yo=
 
-js-yaml@3.12.2:
-  version "3.12.2"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.2.tgz#ef1d067c5a9d9cb65bd72f285b5d8105c77f14fc"
-  integrity sha512-QHn/Lh/7HhZ/Twc7vJYQTkjuCa0kaCcDcjK5Zlk2rvnUpy7DxMJ23+Jc2dcyvltwQVg1nygAVlB2oRDFHoRS5Q==
+js-yaml@3.13.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.0.tgz#38ee7178ac0eea2c97ff6d96fff4b18c7d8cf98e"
+  integrity sha512-pZZoSxcCYco+DIKBTimr67J6Hy+EYGZDY/HCWC+iAEA9h1ByhMXAIVUXMcMFpOCxQ/xjXmPI2MkDL5HRm5eFrQ==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
