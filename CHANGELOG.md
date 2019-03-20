@@ -1,8 +1,4 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 0.3.1 (2019-03-20)
 
 #### Fixes
 - Fixed auto update causing DB issues ([#6356](https://github.com/pymedusa/Medusa/pull/6356))
