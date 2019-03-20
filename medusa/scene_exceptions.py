@@ -426,7 +426,7 @@ def _get_anidb_exceptions(force):
 
                 if anime and anime.name != show.name:
                     series_id = int(show.series_id)
-                    exceptions[series_id] = [{anime.name.decode('utf-8'): -1}]
+                    exceptions[series_id] = [{anime.name: -1}]
 
         set_last_refresh('anidb')
 

@@ -130,7 +130,7 @@ class Notifier(object):
                     }
                     notify_result = self._send_to_kodi(command, cur_host, username, password, dest_app)
                     if notify_result and notify_result.get('result'):
-                        result += cur_host + ':' + notify_result['result'].decode('utf-8')
+                        result += cur_host + ':' + notify_result['result']
             else:
                 if app.KODI_ALWAYS_ON or force:
                     log.warning(
@@ -281,7 +281,7 @@ class Notifier(object):
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
         return clean_library
 
-    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
+    def _update_library(self, host=None, series_name=None):
         """Handle updating KODI host via HTTP JSON-RPC.
 
         Attempts to update the KODI video library for a specific tv show if passed,

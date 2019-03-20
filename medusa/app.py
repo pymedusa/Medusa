@@ -2,6 +2,7 @@
 """First module to initialize."""
 from __future__ import unicode_literals
 
+import os
 import random
 import sys
 from threading import Lock
@@ -16,8 +17,7 @@ class MedusaApp(object):
         self.instance = None
 
         # Fixed values
-        self.__title__ = __name__
-        self.SRC_FOLDER = __name__
+        self.SRC_FOLDER = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
         self.LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
         self.LIB_FOLDER = 'lib'
         self.LIB2_FOLDER = 'lib2'
