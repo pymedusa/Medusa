@@ -5,6 +5,10 @@
 #### Improvements
 
 #### Fixes
+
+## 0.3.1 (2019-03-20)
+
+#### Fixes
 - Fixed auto update causing DB issues ([#6356](https://github.com/pymedusa/Medusa/pull/6356))
 - Fixed sending Kodi notifications (Python 3) ([#6355](https://github.com/pymedusa/Medusa/pull/6355))
 - Fixed sending Slack notifications (Python 3) ([#6355](https://github.com/pymedusa/Medusa/pull/6355))
