@@ -122,15 +122,15 @@ class Notifier(object):
                         'jsonrpc': '2.0',
                         'method': 'GUI.ShowNotification',
                         'params': {
-                            'title': title.encode('utf-8'),
-                            'message': message.encode('utf-8'),
+                            'title': title,
+                            'message': message,
                             'image': app.LOGO_URL,
                         },
                         'id': '1',
                     }
                     notify_result = self._send_to_kodi(command, cur_host, username, password, dest_app)
                     if notify_result and notify_result.get('result'):
-                        result += cur_host + ':' + notify_result['result']
+                        result += '{cur_host}:{notify_result}'.format(cur_host=cur_host, notify_result=notify_result['result'])
             else:
                 if app.KODI_ALWAYS_ON or force:
                     log.warning(
@@ -180,7 +180,7 @@ class Notifier(object):
         """Handle communication to KODI servers via JSONRPC.
 
         Args:
-            command: Dictionary of field/data pairs, encoded via urllib and passed to the KODI JSON-RPC via HTTP
+            command: Dictionary of field/data pairs and passed to the KODI JSON-RPC via HTTP
             host: KODI webserver host:port
             username: KODI webserver username
             password: KODI webserver password
@@ -227,7 +227,9 @@ class Notifier(object):
                     log.warning(u'Connection error while trying to retrieve {0} API version for {1}: {2!r}',
                                 dest_app, host, error)
                 return False
-            except Exception:
+            except Exception as error:
+                log.exception(u'An error occurred while trying to retrieve {0} API version for {1}: {2!r}',
+                              dest_app, host, error)
                 return False
 
             # parse the json result
@@ -281,7 +283,7 @@ class Notifier(object):
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
         return clean_library
 
-    def _update_library(self, host=None, series_name=None):
+    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
         """Handle updating KODI host via HTTP JSON-RPC.
 
         Attempts to update the KODI video library for a specific tv show if passed,
