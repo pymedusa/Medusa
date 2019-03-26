@@ -947,6 +947,10 @@ tablesorter.css
     margin-left: 5px;
 }
 
+.vgt-table tr.spacer {
+    height: 25px;
+}
+
 </style>
 
 
