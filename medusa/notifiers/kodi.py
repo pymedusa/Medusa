@@ -283,7 +283,7 @@ class Notifier(object):
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
         return clean_library
 
-    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
+    def _update_library(self, host=None, series_name=None):
         """Handle updating KODI host via HTTP JSON-RPC.
 
         Attempts to update the KODI video library for a specific tv show if passed,
