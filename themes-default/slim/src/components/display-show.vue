@@ -14,7 +14,10 @@
                 <vue-good-table v-if="show.seasons"
                 :columns="columns"
                 :rows="show.seasons.slice().reverse()"
-                :groupOptions="{ enabled: true }"
+                :groupOptions="{
+                    enabled: true,
+                    mode: 'span'
+                }"
                 :search-options="{
                     enabled: true,
                     trigger: 'enter',
@@ -24,7 +27,16 @@
                 :sort-options="{
                     enabled: true,
                     initialSortBy: { field: 'episode', type: 'desc' }
-                }">
+                }"
+                :selectOptions="{
+                    enabled: true,
+                    selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+                    selectionInfoClass: 'select-info',
+                    selectionText: 'rows selected',
+                    clearSelectionText: 'clear',
+                    selectAllByGroup: true
+                }"
+                :row-style-class="rowStyleClassFn">
                 <div slot="table-actions">
                     <div class="button-group pull-right">
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret"></span></button>
@@ -37,8 +49,7 @@
                 </div>
 
                 <template slot="table-header-row" slot-scope="props" :class="'my-class'">
-                    <input type="checkbox" class="epCheck" :id="`s${props.row.season}`" :name="`s${props.row.season}`" :ref="`check-${props.row.season}`" @change="checkEpisodes(props.row.season, $event)"/>
-                    <h3 style="display: inline"><app-link :name="'season-'+ props.row.season"></app-link>
+                    <h3 class="season-header"><app-link :name="'season-'+ props.row.season"></app-link>
                         <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
                         {{ props.row.label > 0 ? 'Season ' + props.row.label : 'Specials' }}
                         <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
@@ -47,19 +58,9 @@
                         </app-link>
                     </h3>
                 </template>
-
-                <template slot="table-column" slot-scope="props">
-                    <span v-if="props.column.label =='check'"></span>
-                    <span v-else>
-                        {{props.column.label}}
-                    </span>
-                </template>
-                
+                                
                 <template slot="table-row" slot-scope="props">
-                    <span v-if="props.column.field == 'check'">
-                        <input type="checkbox" class="epCheck" :ref="`s${props.row.season}`"/>
-                    </span>
-
+                    
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
                     </span>
@@ -211,7 +212,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, attachImdbTooltip } from '../utils';
-import { VueGoodTable  } from 'vue-good-table';
+import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 
@@ -256,9 +257,6 @@ export default {
             isMobile: false,
             search: '',
             columns: [{
-                label: 'check',
-                field: 'check'
-            }, {
                 label: 'nfo',
                 field: 'content.hasNfo',
                 type: 'boolean'
@@ -529,6 +527,9 @@ export default {
         },
         parseSubtitlesFn(row) {
             debugger;
+        },
+        rowStyleClassFn(row) {
+            return row.status.toLowerCase().trim();
         },
         checkEpisodes(season, event) {
             debugger;
@@ -821,15 +822,15 @@ tablesorter.css
     margin-left: auto;
     color: rgb(0, 0, 0);
     text-align: left;
-    background-color: rgb(255, 255, 255);
+    /* background-color: rgb(255, 255, 255); */
     border-spacing: 0;
 }
 
 .vgt-table th,
 .vgt-table td {
     padding: 4px;
-    border-top: rgb(255, 255, 255) 1px solid;
-    border-left: rgb(255, 255, 255) 1px solid;
+    border-top: rgb(34, 34, 34) 1px solid;
+    border-left: rgb(34, 34, 34) 1px solid;
     vertical-align: middle;
 }
 
@@ -840,13 +841,14 @@ tablesorter.css
 }
 
 .vgt-table th {
-    color: rgb(255, 255, 255);
+    /* color: rgb(255, 255, 255); */
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
     white-space: nowrap;
+    color: rgb(255, 255, 255);
 }
 
 /* .vgt-table .tablesorter-header {
@@ -865,6 +867,12 @@ tablesorter.css
 .vgt-table thead th.sorting.sorting-asc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+    background-position-x: right;
+    background-position-y: bottom;
+}
+
+.vgt-table thead th.sorting {
+    background-repeat: no-repeat;
 }
 
 .vgt-table thead th {
@@ -880,11 +888,11 @@ tablesorter.css
 
 /* Zebra Widget - row alternating colors */
 .vgt-table tr:nth-child(odd) {
-    background-color: rgb(245, 241, 228);
+    /* background-color: rgb(245, 241, 228); */
 }
 
 .vgt-table tr:nth-child(odd) {
-    background-color: rgb(223, 218, 207);
+    /* background-color: rgb(223, 218, 207); */
 }
 
 /* filter widget */
@@ -903,8 +911,8 @@ tablesorter.css
 .vgt-table tr.tablesorter-filter-row,
 .vgt-table tr.tablesorter-filter-row td {
     text-align: center;
-    background: rgb(238, 238, 238);
-    border-bottom: 1px solid rgb(221, 221, 221);
+    /* background: rgb(238, 238, 238); */
+    /* border-bottom: 1px solid rgb(221, 221, 221); */
 }
 
 /* optional disabled input styling */
@@ -930,6 +938,14 @@ tablesorter.css
     text-decoration: none;
 }
 
+.vgt-table th.vgt-row-header {
+    text-align: left;
+}
+
+.vgt-table .season-header {
+    display: inline;
+    margin-left: 5px;
+}
 
 </style>
 
