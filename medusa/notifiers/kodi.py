@@ -180,7 +180,7 @@ class Notifier(object):
         """Handle communication to KODI servers via JSONRPC.
 
         Args:
-            command: Dictionary of field/data pairs and passed to the KODI JSON-RPC via HTTP
+            command: Dictionary of field/data pairs, passed to the KODI JSON-RPC via HTTP
             host: KODI webserver host:port
             username: KODI webserver username
             password: KODI webserver password
