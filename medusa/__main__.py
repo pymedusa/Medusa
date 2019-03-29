@@ -473,12 +473,14 @@ class Application(object):
                     app.GIT_REMOTE_URL = app.APPLICATION_URL
 
             # current commit hash
-            app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+            commit_hash_env = os.environ.get('MEDUSA_COMMIT_HASH', None)  # This is for our Docker container
+            app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', commit_hash_env or '')
 
             # current commit branch
-            app.CUR_COMMIT_BRANCH = check_setting_str(app.CFG, 'General', 'cur_commit_branch', '')
-            app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
+            commit_branch_env = os.environ.get('MEDUSA_COMMIT_BRANCH', None)  # This is for our Docker container
+            app.CUR_COMMIT_BRANCH = check_setting_str(app.CFG, 'General', 'cur_commit_branch', commit_branch_env or '')
 
+            app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
             # fix bad configs due to buggy code
             if app.ACTUAL_CACHE_DIR == 'None':
                 app.ACTUAL_CACHE_DIR = 'cache'
