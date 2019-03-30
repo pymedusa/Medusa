@@ -5,6 +5,8 @@
 #### Improvements
 
 #### Fixes
+- Fixed lists not being saved when used with comma separated items ([#6428](https://github.com/pymedusa/Medusa/pull/6428))
+- Fixed extra scripts running with Python 3 ([#6428](https://github.com/pymedusa/Medusa/pull/6428))
 
 ## 0.3.1 (2019-03-20)
 
