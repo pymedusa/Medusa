@@ -69,7 +69,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type, viewitems
+from six import viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags

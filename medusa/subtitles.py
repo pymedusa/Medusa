@@ -24,7 +24,6 @@ import datetime
 import logging
 import operator
 import os
-import re
 import subprocess
 import time
 from builtins import object
