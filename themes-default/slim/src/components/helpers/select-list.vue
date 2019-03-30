@@ -140,6 +140,7 @@ export default {
                         this.addItem(value.trim());
                     }
                 }));
+                this.$emit('change', this.editItems);
             } else {
                 this.csv = this.editItems.map(item => item.value).join(', ');
             }
