@@ -1110,7 +1110,7 @@ def run_subs_scripts(video_path, scripts, *args):
     :type args: list of str
     """
     for script_name in scripts:
-        script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
+        script_cmd = [piece for piece in script_name.split(' ') if piece.strip()]
         script_cmd.extend(str(arg) for arg in args)
 
         logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
@@ -1124,6 +1124,6 @@ def run_subs_scripts(video_path, scripts, *args):
             logger.debug(u'Script result: %s', out)
 
         except Exception as error:
-            logger.info(u'Unable to run subtitles script: %s', ex(error))
+            logger.info(u'Unable to run subtitles script: %r', ex(error))
 
     invalidate_video_cache(video_path)
