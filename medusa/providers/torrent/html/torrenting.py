@@ -100,8 +100,7 @@ class TorrentingProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', {'id': 'torrentsTable'})
-            if torrent_table:
-                torrent_rows = torrent_table.find_all('tr')
+            torrent_rows = torrent_table.find_all('tr') if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
