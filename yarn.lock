@@ -436,10 +436,10 @@ dredd-transactions@7.0.0:
     fury-adapter-swagger "0.23.2"
     uri-template "1.0.1"
 
-dredd@8.0.6:
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-8.0.6.tgz#911aa32440d4a564aacc966513669eaa2ded80e2"
-  integrity sha512-t+umOhi0sYXkInTtNBV/DwJtdpB5OhmTrNFAll+XIkLiqJoXvBVslVeQ15qF8M38TEijQDS601yfK2oCEaP9ag==
+dredd@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-9.0.0.tgz#783d3ce1a292cebfed9ed56929cd33413a671dab"
+  integrity sha512-MJ7d3eAh5PdLiGXnAploX4ozLBxh3a81tl34tYI9WkAbFORXtagD/8upo8fe9PFCBoK2ZHwwg+nEktw4OPK01w==
   dependencies:
     async "2.6.2"
     caseless "0.12.0"
