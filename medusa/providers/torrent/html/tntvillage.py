@@ -97,7 +97,10 @@ class TNTVillageProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('div', class_='showrelease_tb')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+            torrent_rows = []
+            for row in torrent_table:
+                if row.find('td', string='Titolo'):
+                    torrent_rows += row('tr')
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
