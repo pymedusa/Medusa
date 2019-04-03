@@ -15,7 +15,7 @@
     "install": "yarn run lint"
   },
   "devDependencies": {
-    "dredd": "9.0.0",
+    "dredd": "9.0.3",
     "execa": "1.0.0",
     "yargs": "13.2.2"
   }
