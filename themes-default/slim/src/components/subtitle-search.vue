@@ -1,0 +1,243 @@
+<template>
+<!-- template for the modal component -->
+<tr class='subtitle-search-wrapper'>
+    <td colspan='9999' transition="expand">
+        <modal :name="`choose-search-${_uid}`" transition="pop-out" height="auto" class="choose-search">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="$modal.hide('choose-search')">&times;</button>
+                        <h4 class="modal-title">Subtitle search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-medusa btn-info" data-dismiss="modal" @click="autoSearch">Auto</button>
+                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="manualSearch(this)">Manual</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
+        <!-- <h3>Subtitle results</h3> -->
+            <vue-good-table v-if="subtitles.length"
+                :columns="columns"
+                :rows="subtitles"
+                :search-options="{
+                    enabled: false
+                }"
+                :sort-options="{
+                    enabled: true,
+                    initialSortBy: { field: 'score', type: 'desc' }
+                }"
+                styleClass="vgt-table condensed subtitle-table"
+                >
+                <template slot="table-column" slot-scope="props">
+                    <span v-if="props.column.label == 'Missing Matches'">
+                        <span>{{props.column.label}}</span>
+                        <span class="btn-medusa btn-xs pull-right" @click="destroy">hide</span>
+                    </span>
+                    <span v-else>
+                        {{props.column.label}}
+                    </span>
+                </template>
+            </vue-good-table>
+    </td>
+</tr>
+</template>
+<script>
+
+import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
+
+export default {
+    name: 'subtitle-search',
+    components: {
+        VueGoodTable
+    },
+    props: {
+        show: {
+            type: Object,
+            required: true
+        },
+        season: {
+            type: [String, Number],
+            required: true
+        },
+        episode: {
+            type: [String, Number],
+            required: true
+        }
+    },
+    data() {
+        return {
+            columns: [{
+                label: 'Filename',
+                field: 'filename'
+            }, {
+                label: 'Hearing impaired',
+                field: 'hearing_impaired',
+                type: 'boolean'
+            }, {
+                label: 'Language',
+                field: 'lang'
+            }, {
+                label: 'Provider',
+                field: 'provider'
+            }, {
+                label: 'Score',
+                field: 'score',
+                type: 'number'
+            }, {
+                label: 'Sub Score',
+                field: 'sub_score',
+                type: 'number'
+            }, {
+                label: 'Missing Matches',
+                field: (rowObj) => {
+                    if (rowObj.missing_guess) {
+                        return rowObj.missing_guess.join(', ')
+                    }
+                },
+                type: 'array'
+            }],
+            subtitles: []
+        }
+    },
+    computed: {},
+    mounted() {
+        debugger;
+        this.$modal.show(`choose-search-${this._uid}`);
+
+// If manual search, replace handler
+            // url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
+            // $.getJSON(url, data => {
+            //     // Delete existing rows in the modal
+            //     const existingRows = $('#subtitle_results tr').length;
+            //     if (existingRows > 1) {
+            //         for (let x = existingRows - 1; x > 0; x--) {
+            //             $('#subtitle_results tr').eq(x).remove();
+            //         }
+            //     }
+            //     // Add the release to the modal title
+            //     $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
+            //     if (data.result === 'success') {
+            //         $.each(data.subtitles, (index, subtitle) => {
+            //             // For each subtitle found create the row string and append to the modal
+            //             const provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
+            //             const flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
+            //             let missingGuess = '';
+            //             for (let i = 0; i < subtitle.missing_guess.length; i++) {
+            //                 let value = subtitle.missing_guess[i];
+            //                 if (missingGuess) {
+            //                     missingGuess += ', ';
+            //                 }
+            //                 value = value.charAt(0).toUpperCase() + value.slice(1);
+            //                 missingGuess += value.replace(/(_[a-z])/g, $1 => {
+            //                     return $1.toUpperCase().replace('_', ' ');
+            //                 });
+            //             }
+            //             let subtitleScore = subtitle.score;
+            //             const subtitleName = subtitle.filename.substring(0, 99);
+            //             // If hash match, don't show missingGuess
+            //             if (subtitle.sub_score >= subtitle.max_score) {
+            //                 missingGuess = '';
+            //             }
+            //             // If hearing impaired, add an icon next to subtitle filename
+            //             let hearingImpairedTitle = '';
+            //             let hearingImpairedImage = '';
+            //             if (subtitle.hearing_impaired) {
+            //                 hearingImpairedTitle = 'hearing impaired ';
+            //                 hearingImpairedImage = '<img src="images/hearing_impaired.png" width="16" height="16"/> ';
+            //             }
+            //             // If perfect match, add a checkmark next to subtitle filename
+            //             let checkmark = '';
+            //             if (subtitle.sub_score >= subtitle.min_score) {
+            //                 checkmark = ' <img src="images/save.png" width="16" height="16"/>';
+            //             }
+            //             const subtitleLink = '<a href="#" id="pickSub" title="Download ' + hearingImpairedTitle + 'subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + hearingImpairedImage + subtitleName + checkmark + '</a>';
+            //             // Make subtitle score always between 0 and 10
+            //             if (subtitleScore > 10) {
+            //                 subtitleScore = 10;
+            //             } else if (subtitleScore < 0) {
+            //                 subtitleScore = 0;
+            //             }
+            //             const row = '<tr style="font-size: 95%;">' +
+            //                       '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
+            //                       '<td>' + flag + '</td>' +
+            //                       '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitleScore + '</td>' +
+            //                       '<td class="tvShow"> ' + subtitleLink + '</td>' +
+            //                       '<td>' + missingGuess + '</td>' +
+            //                       '</tr>';
+            //             $('#subtitle_results').append(row);
+            //             // Allow the modal to be resizable
+            //             $('.modal-content').resizable({
+            //                 alsoResize: '.modal-body'
+            //             });
+            //             // Allow the modal to be draggable
+            //             $('.modal-dialog').draggable({
+            //                 cancel: '.text'
+            //             });
+            //             // After all rows are added, show the modal with results found
+            //             subtitlesResultModal.modal('show');
+            //         });
+            //     }
+            // }
+
+    },
+    methods: {
+        autoSearch() {
+            debugger;
+        },
+        manualSearch(x) {   
+            const { show, season, episode } = this;
+            this.$modal.hide(`choose-search-${this._uid}`);
+            const url = `home/manualSearchSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
+            apiRoute(url)
+                .then(response => {
+                    if (response.data.result !== 'failure') {
+                        this.subtitles.push(...response.data.subtitles);
+                    } else {
+                        // Add meaningfull notification
+                        console.log(response.data.description);
+                    }
+                });
+        },
+        destroy() {
+            // destroy the vue listeners, etc
+            this.$destroy();
+            // remove the element from the DOM
+            this.$el.parentNode.removeChild(this.$el);
+        }
+    }
+};
+</script>
+<style>
+.v--modal-overlay .v--modal-box {
+    overflow: inherit!important;
+}
+table.subtitle-table tr {
+    background-color: rgb(190, 222, 237);
+}
+.subtitle-search-wrapper {
+    display: table-row;
+    column-span: all;
+}
+tr.subtitle-search-wrapper > td {
+    padding: 0;
+}
+/* always present */
+.expand-transition {
+  transition: all .3s ease;
+  height: 30px;
+  padding: 10px;
+  background-color: #eee;
+  overflow: hidden;
+}
+/* .expand-enter defines the starting state for entering */
+/* .expand-leave defines the ending state for leaving */
+.expand-enter, .expand-leave {
+  height: 0;
+  padding: 0 10px;
+  opacity: 0;
+}
+</style>

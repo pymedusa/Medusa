@@ -8,7 +8,9 @@
         <show-header @reflow="reflowLayout" type="show"
             :show-id="id" :show-indexer="indexer"
         ></show-header>
-        
+
+        <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
+
         <div class="row">
             <div class="col-md-12 top-15 displayShow" :class="{ fanartBackground: config.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
@@ -36,13 +38,15 @@
                     clearSelectionText: 'clear',
                     selectAllByGroup: true
                 }"
-                :row-style-class="rowStyleClassFn">
+                :row-style-class="rowStyleClassFn"
+                ref='table-seasons'>
                 <div slot="table-actions">
+                    <!-- Drowdown with checkboxes for showing / hiding table headers -->
                     <div class="button-group pull-right">
                         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret"></span></button>
                         <ul class="dropdown-menu" style="top: auto; left: auto;">
                             <li v-for="(column, index) in columns" :key="index">
-                                <a href="#" class="small" tabIndex="-1" @click.prevent="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox"/>&nbsp;{{column.label}}</a>
+                                <a href="#" class="small" tabIndex="-1" @click="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox"/>{{column.label}}</a>
                             </li>
                         </ul>
                     </div>
@@ -60,7 +64,6 @@
                 </template>
                                 
                 <template slot="table-row" slot-scope="props">
-                    
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
                     </span>
@@ -109,9 +112,9 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
-                        <app-link v-if="props.row.season !== 0" :class="retryDownload(props.row) ? 'epRetry' : 'epSearch'" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/' + (retryDownload(props.row) ? 'retryEpisode' : 'searchEpisode') + '?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-search src="images/search16.png" height="16" alt="retryDownload(props.row) ? 'retry' : 'search'" title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"/></app-link>
+                        <app-link v-if="props.row.season !== 0" :class="retryDownload(props.row) ? 'epRetry' : 'epSearch'" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/' + (retryDownload(props.row) ? 'retryEpisode' : 'searchEpisode') + '?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-search src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"/></app-link>
                         <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
-                        <app-link v-if="showSubtitleButton(props.row)" class="epSubtitlesSearch" :href="'home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></app-link>
+                        <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
                     </span>
 
                     <span v-else>
@@ -178,24 +181,7 @@
                 </div>
             </div>
         </div>
-        <div id="askmanualSubtitleSearchModal" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Subtitle search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to manually pick subtitles or let us choose it for you?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-info" data-dismiss="modal">Auto</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Manual</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        
         <!-- TODO: Implement subtitle modal in vue -->
         <!-- <include file="subtitle_modal.mako"/> -->
         <!--End - Bootstrap Modal-->
@@ -215,6 +201,7 @@ import { humanFileSize, attachImdbTooltip } from '../utils';
 import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
+import SubtitleSearch from './subtitle-search.vue';
 
 export default {
     name: 'show',
@@ -255,61 +242,76 @@ export default {
         return {
             invertTable: true,
             isMobile: false,
+            subtitleSearchComponents: [],
             search: '',
             columns: [{
                 label: 'nfo',
                 field: 'content.hasNfo',
-                type: 'boolean'
+                type: 'boolean',
+                hidden: false
             }, {
                 label: 'tbn',
                 field: 'content.hasTbn',
-                type: 'boolean'
+                type: 'boolean',
+                hidden: false
             }, {
                 label: 'Episode',
                 field: 'episode',
-                type: 'number'
+                type: 'number',
+                hidden: false
             }, {
                 label: 'Absolute Number',
                 field: 'absoluteNumber',
-                type: 'number'
+                type: 'number',
+                hidden: false
             }, {
                 label: 'Scene',
                 field: 'scene',
-                type: 'number'
+                type: 'number',
+                hidden: false
             }, {
                 label: 'Scene Absolute',
                 field: 'sceneAbsolute',
-                type: 'number'
+                type: 'number',
+                hidden: false
             }, {
                 label: 'Title',
-                field: 'title'
+                field: 'title',
+                hidden: false
             }, {
                 label: 'File',
-                field: 'file.location'
+                field: 'file.location',
+                hidden: false
             }, {
                 label: 'Size',
                 field: 'file.size',
-                type: 'number'
+                type: 'number',
+                hidden: false
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
                 label: 'Air date',
-                field: this.parseDateFn
+                field: this.parseDateFn,
                 // type: 'date',
                 // dateInputFormat: 'YYYY-MM-DD HH:mm:ssZ ', // expects 2018-03-16
                 // dateOutputFormat: 'MMM Do YYYY', // outputs Mar 16th 2018
+                hidden: false
             }, {
                 label: 'Download',
-                field: 'download'
+                field: 'download',
+                hidden: false
             }, {
                 label: 'Subtitles',
                 field: 'subtitles',
-                sortable: false
+                sortable: false,
+                hidden: false
             }, {
                 label: 'Status',
-                field: 'status'
+                field: 'status',
+                hidden: false
             }, {
                 label: 'Search',
-                field: 'search'
+                field: 'search',
+                hidden: false
             }]
         };
     },
@@ -526,13 +528,25 @@ export default {
             return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
         },
         parseSubtitlesFn(row) {
-            debugger;
         },
         rowStyleClassFn(row) {
             return row.status.toLowerCase().trim();
         },
         checkEpisodes(season, event) {
-            debugger;
+        },
+        searchSubtitle(event, season, episode, rowIndex) {
+
+            const { show, subtitleSearchComponents } = this;
+            const SubtitleSearchClass = Vue.extend(SubtitleSearch);
+            const instance = new SubtitleSearchClass({
+                propsData: { show, season, episode, key: rowIndex },
+                parent: this
+            });
+            const node = document.createElement('div')
+            this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(node)
+            instance.$mount(node) // pass nothing
+            subtitleSearchComponents.push(instance);
+            // this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(instance.$el);
         },
         /**
          * Attaches IMDB tooltip,
