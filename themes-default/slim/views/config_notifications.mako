@@ -1,12 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import re
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import get_trakt_indexer
-%>
 <%block name="scripts">
 <script>
 window.app = {};

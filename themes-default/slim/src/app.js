@@ -7,6 +7,7 @@ import store from './store';
 import router from './router';
 import { ClientTable, Event } from 'vue-tables-2';
 import { isDevelopment } from './utils';
+import VModal from 'vue-js-modal';
 import {
     AnidbReleaseGroupUi,
     AppHeader,
@@ -33,6 +34,7 @@ Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
 Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
+Vue.use(VModal);
 
 // Load x-template components
 window.components.forEach(component => {
