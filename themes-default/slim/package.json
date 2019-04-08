@@ -78,7 +78,7 @@
     "vue-loader": "15.7.0",
     "vue-meta": "1.5.8",
     "vue-native-websocket": "2.0.12",
-    "vue-router": "3.0.2",
+    "vue-router": "3.0.3",
     "vue-scrollto": "2.15.0",
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.10",
