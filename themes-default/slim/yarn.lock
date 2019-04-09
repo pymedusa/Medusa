@@ -11662,9 +11662,10 @@ vue-meta@1.6.0:
     lodash.uniqueid "^4.0.1"
     object-assign "^4.1.1"
 
-vue-native-websocket@2.0.12:
-  version "2.0.12"
-  resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.12.tgz#a60d424d28b277a47702a6f874785407f6a884ef"
+vue-native-websocket@2.0.13:
+  version "2.0.13"
+  resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.13.tgz#5eaba0e7ba08749d7bff331e3290cdf5e61ca918"
+  integrity sha512-w91n76ZcvjCUzWRKX7SkVTqr9YXTxbdYQmf4RX1LvMdsM0RQvpRdWvzTWaY6kw/egsdRKVSceqDsJKbr+WTyMQ==
 
 vue-router@3.0.2:
   version "3.0.2"
