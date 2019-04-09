@@ -2,23 +2,15 @@
 <!-- template for the modal component -->
 <tr class='subtitle-search-wrapper'>
     <td colspan='9999' transition="expand">
-        <modal :name="`choose-search-${_uid}`" transition="pop-out" height="auto" class="choose-search">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" @click="$modal.hide('choose-search')">&times;</button>
-                        <h4 class="modal-title">Subtitle search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to manually pick subtitles or let us choose it for you?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-info" data-dismiss="modal" @click="autoSearch">Auto</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="manualSearch(this)">Manual</button>
-                    </div>
-                </div>
+        <div v-if="displayQuestion" class="search-question">
+            <div class="question">
+                <p>Do you want to manually pick subtitles or let us choose it for you?</p>
             </div>
-        </modal>
+            <div class="options">
+                <button type="button" class="btn-medusa btn-info" @click="autoSearch">Auto</button>
+                <button type="button" class="btn-medusa btn-success" @click="manualSearch">Manual</button>
+            </div>
+        </div>
         <!-- <h3>Subtitle results</h3> -->
             <vue-good-table v-if="subtitles.length"
                 :columns="columns"
@@ -100,15 +92,15 @@ export default {
                 },
                 type: 'array'
             }],
-            subtitles: []
+            subtitles: [],
+            displayQuestion: false
         }
     },
     computed: {},
     mounted() {
-        debugger;
-        this.$modal.show(`choose-search-${this._uid}`);
+        this.displayQuestion = true;
 
-// If manual search, replace handler
+        // If manual search, replace handler
             // url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
             // $.getJSON(url, data => {
             //     // Delete existing rows in the modal
@@ -186,20 +178,40 @@ export default {
     },
     methods: {
         autoSearch() {
-            debugger;
+            const { destroy, episode, season, show } = this;
+            this.displayQuestion = false;
+            const url = `home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
+            apiRoute(url)
+                .then(response => {
+                    if (response.data.result !== 'failure') {
+                        // Update the show, as we have new information (subtitles)
+                        // Let's emit an event, telling the displayShow component, to update the show using the api/store.
+                        this.$emit('update', { 
+                            reason: 'new subtitles found',
+                            codes: response.data.subtitles,
+                            languages: response.data.languages
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.log(`Error trying to search for subtitles. Error: ${error}`);
+                })
+                .finally(() => {
+                    // Destroy this component.
+                    destroy();
+                });
         },
-        manualSearch(x) {   
+        manualSearch() {   
             const { show, season, episode } = this;
-            this.$modal.hide(`choose-search-${this._uid}`);
+            this.displayQuestion = false;
             const url = `home/manualSearchSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
             apiRoute(url)
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         this.subtitles.push(...response.data.subtitles);
-                    } else {
-                        // Add meaningfull notification
-                        console.log(response.data.description);
                     }
+                }).catch(error => {
+                    console.log(`Error trying to search for subtitles. Error: ${error}`);
                 });
         },
         destroy() {
@@ -239,5 +251,10 @@ tr.subtitle-search-wrapper > td {
   height: 0;
   padding: 0 10px;
   opacity: 0;
+}
+.search-question {
+    background-color: rgb(51, 51, 51);
+    color: rgb(255,255,255);
+    padding: 10px;
 }
 </style>

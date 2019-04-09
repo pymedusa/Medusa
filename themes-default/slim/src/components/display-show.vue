@@ -532,21 +532,26 @@ export default {
         rowStyleClassFn(row) {
             return row.status.toLowerCase().trim();
         },
-        checkEpisodes(season, event) {
-        },
         searchSubtitle(event, season, episode, rowIndex) {
-
-            const { show, subtitleSearchComponents } = this;
+            const { id, indexer, getShow, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch);
             const instance = new SubtitleSearchClass({
                 propsData: { show, season, episode, key: rowIndex },
                 parent: this
             });
+
+            // Update the show, as we downloaded new subtitle(s)
+            instance.$on('update', event => {
+                // TODO: This could be replaced by the generic websocket updates in future. 
+                if (event.reason === 'new subtitles found') {
+                    getShow({ id, indexer, detailed: true });
+                }
+            });
+
             const node = document.createElement('div')
             this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(node)
             instance.$mount(node) // pass nothing
             subtitleSearchComponents.push(instance);
-            // this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(instance.$el);
         },
         /**
          * Attaches IMDB tooltip,

@@ -2005,35 +2005,33 @@ class Home(WebRoot):
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
         ep_obj = series_obj.get_episode(season, episode)
-        if isinstance(ep_obj, str):
-            return json.dumps({
-                'result': 'failure',
-            })
 
         try:
             if lang:
                 logger.log('Manual re-downloading subtitles for {show} with language {lang}'.format
                            (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
-        except Exception:
+        except Exception as error:
             return json.dumps({
                 'result': 'failure',
+                'description': 'Error while downloading subtitles: {error}'.format(error=error)
             })
 
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
-            status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
+            description = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
             result = 'success'
         else:
             new_languages = []
-            status = 'No subtitles downloaded'
+            description = 'No subtitles downloaded'
             result = 'failure'
 
-        ui.notifications.message(ep_obj.series.name, status)
+        ui.notifications.message(ep_obj.series.name, description)
         return json.dumps({
             'result': result,
-            'subtitles': ','.join(ep_obj.subtitles),
-            'new_subtitles': ','.join(new_languages),
+            'subtitles': ep_obj.subtitles,
+            'languages': new_languages,
+            'description': description
         })
 
     def manualSearchSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
