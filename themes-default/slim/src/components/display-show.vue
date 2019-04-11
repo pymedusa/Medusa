@@ -18,7 +18,8 @@
                 :rows="show.seasons.slice().reverse()"
                 :groupOptions="{
                     enabled: true,
-                    mode: 'span'
+                    mode: 'span',
+                    customChildObject: 'episodes'
                 }"
                 :search-options="{
                     enabled: true,
@@ -674,17 +675,17 @@ export default {
          * If that's the case we want to manual season search icon.
          */
         anyEpisodeNotUnaired(season) {
-            return season.children.filter(ep => ep.status !== 'Unaired').length > 0;
+            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
         },
         episodesInverse(season) {
             const { invertTable } = this;
-            if (!season.children) {
+            if (!season.episodes) {
                 return [];
             }
             if (invertTable) {
-                return season.children.slice().reverse();
+                return season.episodes.slice().reverse();
             } else {
-                return season.children;
+                return season.episodes;
             }
         },
         /**
@@ -725,7 +726,7 @@ export default {
             return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         totalSeasonEpisodeSize(season) {
-            return season.children.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
+            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
         },
         getSeasonExceptions(season) {
             const { show } = this;
