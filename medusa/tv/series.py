@@ -2165,7 +2165,7 @@ class Series(TV):
         if detailed:
             episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [{'children': list(v),
+            data['seasons'] = [{'episodes': list(v),
                                 'season': season,
                                 'label': season,
                                 'mode': 'span',
