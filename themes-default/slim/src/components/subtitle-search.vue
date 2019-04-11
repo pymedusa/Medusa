@@ -2,7 +2,7 @@
 <!-- template for the modal component -->
 <tr class='subtitle-search-wrapper'>
     <td colspan='9999' transition="expand">
-        <span v-if="loading">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"></state-switch></span>
+        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"></state-switch></span>
         <div v-if="displayQuestion" class="search-question">
             <div class="question">
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -321,9 +321,10 @@ tr.subtitle-search-wrapper > td {
   padding: 0 10px;
   opacity: 0;
 }
-.search-question {
+.search-question, .loading-message {
     background-color: rgb(51, 51, 51);
     color: rgb(255,255,255);
     padding: 10px;
+    line-height: 55px;
 }
 </style>
