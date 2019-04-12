@@ -39,7 +39,7 @@ if PY3:
     long = int
 
 INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)

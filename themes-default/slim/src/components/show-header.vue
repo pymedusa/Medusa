@@ -144,7 +144,7 @@
                                         </template>
                                     </td></tr>
 
-                                    <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && combineQualities(show.config.qualities.preferred).length > 0">
+                                    <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && combineQualities(show.config.qualities.preferred) > 0">
                                         <td class="showLegend">Quality preferred:</td><td>
                                             <template v-for="(curQuality, $index) in show.config.qualities.preferred">
                                             <template v-if="$index > 0">&comma;</template>

@@ -231,7 +231,7 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.series:
+        if self.actual_season is not None and self.series:
             if self.actual_episodes:
                 self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
             else:
