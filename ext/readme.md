@@ -15,7 +15,7 @@
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | ext | -
 :: | `cloudflare-scrape` | pymedusa/[1354751](https://github.com/pymedusa/cloudflare-scrape/tree/1354751d5efd9353ad837d83941ed6b3f4488c77) | **`medusa`** | ext | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
-:: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.3](https://pypi.org/project/configparser/3.7.3/) | `adba` | **ext2** | -
+:: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `dogpile.cache`, `validators` | ext | -
 :: | `deluge-client` | [1.7.0](https://pypi.org/project/deluge-client/1.7.0/) | **`medusa`** | ext | -
