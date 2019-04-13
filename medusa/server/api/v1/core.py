@@ -906,7 +906,7 @@ class CMD_EpisodeSetStatus(ApiCall):
                     failure = True
                     continue
 
-                ep_obj.status = self.status
+                ep_obj._status = self.status
                 sql_l.append(ep_obj.get_sql())
 
                 if self.status == WANTED:

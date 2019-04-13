@@ -2448,7 +2448,7 @@ class Series(TV):
                     if final_status_only and Quality.should_search(ep_obj.status, ep_obj.quality, self,
                                                                    ep_obj.manually_searched)[0]:
                         continue
-                    ep_obj.status = ARCHIVED
+                    ep_obj._status = ARCHIVED
                     sql_list.append(ep_obj.get_sql())
         if sql_list:
             main_db_con = db.DBConnection()

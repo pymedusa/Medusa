@@ -239,13 +239,13 @@
                         </div>
                         <div class="pull-lg-right top-5">
 
-                            <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                            <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                                 <option v-for="option in changeStatusOptions" :key="option.value" :value="option.value">
                                     {{option.text}}
                                 </option>
                             </select>
 
-                            <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                            <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
                                 <option v-for="option in changeQualityOptions" :key="option.value" :value="option.value">
                                     {{option.text}}
                                 </option>
@@ -327,7 +327,9 @@ export default {
     },
     data() {
         return {
-            jumpToSeason: 'jump'
+            jumpToSeason: 'jump',
+            selectedStatus: null,
+            selectedQuality: null
         };
     },
     computed: {
@@ -452,7 +454,7 @@ export default {
                 Object.keys(qualities.strings.values).forEach(key => {
                     defaultOptions.push({
                         text: qualities.strings.values[key],
-                        value: key
+                        value: Number(key)
                     });
                 });
             }
@@ -462,49 +464,43 @@ export default {
     },
     methods: {
         humanFileSize,
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
-            });
-
-            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
-        },
         changeStatusClicked() {
-            const { setQuality } = this;
-
-            const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
-
-            $('.epCheck').each((index, element) => {
-                if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
-                }
+            const { changeStatusOptions, changeQualityOptions, selectedStatus, selectedQuality } = this;
+            this.$emit('update', {
+                newStatus: selectedStatus,
+                newQuality: selectedQuality,
+                statusOptions: changeStatusOptions,
+                qualityOptions: changeQualityOptions 
             });
+            
+            // const { setQuality } = this;
 
-            if (epArr.length === 0) {
-                return false;
-            }
+            // const epArr = [];
+            // const status = $('#statusSelect').val();
+            // const quality = $('#qualitySelect').val();
+            // const showSlug = $('#series-slug').val();
 
-            if (quality) {
-                setQuality(quality, showSlug, epArr);
-            }
+            // $('.epCheck').each((index, element) => {
+            //     if (element.checked === true) {
+            //         epArr.push($(element).attr('id'));
+            //     }
+            // });
 
-            if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
-            }
+            // if (epArr.length === 0) {
+            //     return false;
+            // }
+
+            // if (quality) {
+            //     setQuality(quality, showSlug, epArr);
+            // }
+
+            // if (status) {
+            //     window.location.href = $('base').attr('href') + 'home/setStatus?' +
+            //         'indexername=' + $('#indexer-name').attr('value') +
+            //         '&seriesid=' + $('#series-id').attr('value') +
+            //         '&eps=' + epArr.join('|') +
+            //         '&status=' + status;
+            // }
         },
         showHideRows(whichClass) {
             const status = $('#checkboxControls > input, #' + whichClass).prop('checked');

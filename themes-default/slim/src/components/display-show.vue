@@ -6,7 +6,7 @@
         <input type="hidden" id="series-slug" value="" />
 
         <show-header @reflow="reflowLayout" type="show"
-            :show-id="id" :show-indexer="indexer"
+            :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate"
         ></show-header>
 
         <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
@@ -40,7 +40,8 @@
                     selectAllByGroup: true
                 }"
                 :row-style-class="rowStyleClassFn"
-                ref='table-seasons'>
+                ref='table-seasons'
+                @on-selected-rows-change="selectedEpisodes=$event.selectedRows">
                 <div slot="table-actions">
                     <!-- Drowdown with checkboxes for showing / hiding table headers -->
                     <div class="button-group pull-right">
@@ -313,7 +314,8 @@ export default {
                 label: 'Search',
                 field: 'search',
                 hidden: false
-            }]
+            }],
+            selectedEpisodes: []
         };
     },
     computed: {
@@ -525,6 +527,48 @@ export default {
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getShows: 'getShows' 
         }),
+        statusQualityUpdate(event) {
+            const { selectedEpisodes, setStatus, setQuality } = this;
+
+            if (event.newQuality !== null) {
+                setQuality(event.newQuality, selectedEpisodes);
+            }
+            if (event.newStatus !== null) {
+                setStatus(event.newStatus, selectedEpisodes);
+            } 
+        },
+        setQuality(quality, episodes) {
+            const { id, indexer, getShow, show } = this;
+            const patchData = {};
+
+            episodes.forEach(episode => {
+                patchData[episode.identifier] = { quality: parseInt(quality, 10) };
+            });
+
+            api.patch('series/' + show.id.slug + '/episodes', patchData)
+            .then(response => {
+                console.info(`patched show ${show.id.slug} with quality ${quality}`);
+                getShow({ id, indexer, detailed: true });
+            }).catch(error => {
+                console.error(String(error));
+            });
+        },
+        setStatus(status, episodes) {
+            const { id, indexer, getShow, show } = this;
+            const patchData = {};
+
+            episodes.forEach(episode => {
+                patchData[episode.identifier] = { status };
+            });
+
+            api.patch('series/' + show.id.slug + '/episodes', patchData)
+            .then(response => {
+                console.info(`patched show ${show.id.slug} with status ${status}`);
+                getShow({ id, indexer, detailed: true });
+            }).catch(error => {
+                console.error(String(error));
+            });
+        },
         parseDateFn(row) {
             return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
         },
