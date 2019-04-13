@@ -43,7 +43,7 @@ def set_episode_to_wanted(show, season, episode):
             })
             # figure out what segment the episode is in and remember it so we can backlog it
 
-            ep_obj.status = WANTED
+            ep_obj._status = WANTED
             # As we created the episode and updated the status, need to save to DB
             ep_obj.save_to_db()
 

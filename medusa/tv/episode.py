@@ -27,6 +27,7 @@ from medusa import (
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
+    FAILED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
@@ -250,7 +251,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNSET
+        self._status = UNSET
         self.quality = Quality.NA
         self.file_size = 0
         self.release_name = ''
@@ -428,6 +429,61 @@ class Episode(TV):
     def quality_name(self):
         """Return the status name."""
         return Quality.qualityStrings[self.quality]
+
+    @property
+    def status(self):
+        """Return episode status."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        """
+        Set status with a few sanity checks.
+
+        Mainly only used through the apiv2. If you need to set the status without any checks.
+        Use self._status.
+        :param value: The new episode status
+        :type value: int
+        """
+        if self.status == UNAIRED:
+            log.warning('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
+                series=self.series.name, episode=self.pretty_name()))
+
+        snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+
+        if value == DOWNLOADED and not (
+                    self.status in snatched_qualities + [DOWNLOADED] or
+                os.path.isfile(self.location)):
+            error_message = 'Refusing to change status of {series} {episode} to DOWNLOADED' \
+                            " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
+                                series=self.series.name, episode=self.pretty_name()
+                            )
+            log.warning(error_message)
+
+        if value == FAILED and self.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
+            error_message = 'Refusing to change status of {series} {episode} to FAILED ' \
+                            "because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
+                                series=self.series.name, episode=self.pretty_name()
+                            )
+            log.warning(error_message)
+
+        if value == WANTED:
+            if self.status in [DOWNLOADED, ARCHIVED]:
+                log.debug('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
+                    series=self.series.name, episode=self.pretty_name()))
+                self.release_name = ''
+
+            if self.manually_searched:
+                log.debug("Resetting 'manually searched' flag of {series} {episode}"
+                          ' as episode was changed to WANTED'.format(
+                              series=self.series.name, episode=self.pretty_name())
+                          )
+                self.manually_searched = False
+
+        # Change the actual value
+        # Only in failed_history we set to FAILED.
+        if value != FAILED:
+            self._status = value
 
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
@@ -637,7 +693,7 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self.status = int(sql_results[0]['status'] or UNSET)
+            self._status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.watched = bool(sql_results[0]['watched'])
 
@@ -896,7 +952,7 @@ class Episode(TV):
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
-                self.status = UNAIRED
+                self._status = UNAIRED
                 log.debug(
                     '{id}: {series} {ep} airs in the future or has no air date, marking it {status}', {
                         'id': self.series.series_id,
@@ -908,7 +964,7 @@ class Episode(TV):
             elif self.status in (UNSET, UNAIRED):
                 # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self._status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
                     '{id}: {series} {ep} has already aired, marking it {status}', {
                         'id': self.series.series_id,
@@ -949,7 +1005,7 @@ class Episode(TV):
                     'old_status': statusStrings[self.status],
                 }
             )
-            self.status = UNSET
+            self._status = UNSET
 
     def __load_from_nfo(self, location):
 
@@ -2036,7 +2092,7 @@ class Episode(TV):
                 new_status = ARCHIVED
 
             with self.lock:
-                self.status = new_status
+                self._status = new_status
                 self.quality = new_quality
 
                 if not same_name:
