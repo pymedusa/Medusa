@@ -40,10 +40,11 @@ const humanFileSize = (bytes, useDecimal = false) => {
 };
 
 export {
+    addQTip,
+    attachImdbTooltip,
     combineQualities,
     humanFileSize,
-    isDevelopment,
-    attachImdbTooltip
+    isDevelopment
 };
 
 /**
@@ -77,3 +78,35 @@ const attachImdbTooltip = () => {
         }
     });
 };
+
+/** 
+ * Attach a default qtip to elements with the addQTip class.
+ */
+const addQTip = () => {
+    $('.addQTip').each(function() {
+        $(this).css({
+            'cursor': 'help', // eslint-disable-line quote-props
+            'text-shadow': '0px 0px 0.5px #666'
+        });
+    
+        const my = $(this).data('qtip-my') || 'left center';
+        const at = $(this).data('qtip-at') || 'middle right';
+    
+        $(this).qtip({
+            show: {
+                solo: true
+            },
+            position: {
+                my,
+                at
+            },
+            style: {
+                tip: {
+                    corner: true,
+                    method: 'polygon'
+                },
+                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+            }
+        });
+    });
+}

@@ -49,24 +49,9 @@ export default {
         }),
         /**
          * Attaches IMDB tooltip,
-         * Moves summary and checkbox controls backgrounds
          */
         reflowLayout() {
-            this.$nextTick(() => {
-                this.moveSummaryBackground();
-            });
-
             attachImdbTooltip(); // eslint-disable-line no-undef
-        },
-        /**
-         * Adjust the summary background position and size on page load and resize
-         */
-        moveSummaryBackground() {
-            const height = $('#summary').height() + 10;
-            const top = $('#summary').offset().top + 5;
-            $('#summaryBackground').height(height);
-            $('#summaryBackground').offset({ top, left: 0 });
-            $('#summaryBackground').show();
         }
     },
     mounted() {

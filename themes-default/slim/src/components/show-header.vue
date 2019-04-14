@@ -74,7 +74,7 @@
                         <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                             <span v-if="show.rating.imdb && show.rating.imdb.rating"
                                 class="imdbstars"
-                                :qtip-content="show.rating.imdb.rating + ' / 10 Stars<br> ' + show.rating.imdb.votes + ' Votes'"
+                                :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
                                 <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
                             </span>
@@ -270,7 +270,7 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
-import { humanFileSize } from '../utils';
+import { humanFileSize, attachImdbTooltip } from '../utils';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -462,6 +462,13 @@ export default {
             return defaultOptions;
         }
     },
+    mounted() {
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
+        });
+    },
     methods: {
         humanFileSize,
         changeStatusClicked() {
@@ -583,6 +590,23 @@ export default {
                     'Error'
                 );
             })
+        },
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+            });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
+        moveSummaryBackground() {
+            const height = $('#summary').height() + 10;
+            const top = $('#summary').offset().top + 5;
+            $('#summaryBackground').height(height);
+            $('#summaryBackground').offset({ top, left: 0 });
+            $('#summaryBackground').show();
         }
     },
     watch: {
