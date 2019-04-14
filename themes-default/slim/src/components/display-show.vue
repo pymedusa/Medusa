@@ -12,7 +12,7 @@
         <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
 
         <div class="row">
-            <div class="col-md-12 top-15 displayShow" :class="{ fanartBackground: config.fanartBackground }">
+            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
                 :columns="columns"
                 :rows="show.seasons.slice().reverse()"
@@ -77,12 +77,12 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'episode'">
-                        <span :title="props.row.location !== '' ? props.row.location : ''" :class="{addQTip: props.row.location !== ''}">{{props.row.episode}}</span>
+                        <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                     </span>
 
                     <span v-else-if="props.column.field == 'scene'">
                         <input type="text" :placeholder="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode" size="6" maxlength="8"
-                            class="sceneSeasonXEpisode form-control input-scene" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
+                            class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
                             :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
                             title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
                             :value="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode"
@@ -91,11 +91,16 @@
                     
                     <span v-else-if="props.column.field == 'sceneAbsolute'">
                         <input type="text" :placeholder="getSceneAbsoluteNumbering(props.row)" size="6" maxlength="8"
-                            class="sceneAbsolute form-control input-scene" :data-for-absolute="props.row.absoluteNumber || 0"
+                            class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
                             :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
                             title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
                             :value="getSceneAbsoluteNumbering(props.row) ? getSceneAbsoluteNumbering(props.row) : ''"
                             style="padding: 0; text-align: center; max-width: 60px;"/>
+                    </span>
+
+                    <span v-else-if="props.column.field == 'title'">
+                        <plot-info v-if="props.row.description !== ''" :description="props.row.description" :show-slug="show.id.slug" :season="props.row.season" :episode="props.row.episode"></plot-info>
+                        {{props.row.title}}
                     </span>
 
                     <span v-else-if="props.column.field == 'subtitles'">
@@ -199,7 +204,7 @@ import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, attachImdbTooltip } from '../utils';
+import { humanFileSize, addQTip } from '../utils';
 import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
@@ -606,22 +611,9 @@ export default {
             console.debug('Reflowing layout');
 
             this.$nextTick(() => {
-                this.moveSummaryBackground();
                 this.movecheckboxControlsBackground();
             });
-
-            attachImdbTooltip(); // eslint-disable-line no-undef
-        },
-        /**
-         * Adjust the summary background position and size on page load and resize
-         */
-        moveSummaryBackground() {
-            const height = $('#summary').height() + 10;
-            const top = $('#summary').offset().top + 5;
-
-            $('#summaryBackground').height(height);
-            $('#summaryBackground').offset({ top, left: 0 });
-            $('#summaryBackground').show();
+            addQTip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the checkbox controls (episode filter) background position

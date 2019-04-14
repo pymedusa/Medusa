@@ -8,6 +8,9 @@ import router from './router';
 import { ClientTable, Event } from 'vue-tables-2';
 import { isDevelopment } from './utils';
 import VModal from 'vue-js-modal';
+import Tooltip from 'vue-directive-tooltip';
+import 'vue-directive-tooltip/css/index.css';
+
 import {
     AnidbReleaseGroupUi,
     AppHeader,
@@ -35,6 +38,7 @@ Vue.use(AsyncComputed);
 Vue.use(Snotify);
 Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
 Vue.use(VModal);
+Vue.use(Tooltip);
 
 // Load x-template components
 window.components.forEach(component => {
