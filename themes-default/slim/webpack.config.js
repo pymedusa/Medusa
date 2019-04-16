@@ -81,7 +81,7 @@ const webpackConfig = (env, mode) => ({
     },
     stats: {
         // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
-        excludeAssets: /(\.\.\/)+themes\/.*/,
+        excludeAssets: /(\.\.[\\/])+themes[\\/].*/,
         // When `false`, hides extra information about assets collected by children (e.g. plugins)
         children: false
     },
