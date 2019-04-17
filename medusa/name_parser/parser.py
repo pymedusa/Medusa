@@ -184,8 +184,7 @@ class NameParser(object):
         # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
-        scene_season = scene_exceptions.get_scene_exceptions_by_name(
-            result.series_name or result.series.name)[0][1]
+        scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:
@@ -210,9 +209,9 @@ class NameParser(object):
                     log.debug(
                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
                         'season number in the title, '
-                        'translating the indexer absolute #{indexer_absolute} to #{absolute}: {ep}',
-                        {'series_name': result.series_name, 'scene_season': scene_season, 'indexer_absolute': a,
-                         'absolute': absolute_episode, 'ep': episode_num(season, episodes[0])}
+                        'translating the episode #{absolute} to indexer #{indexer_absolute}: {ep}',
+                        {'series_name': result.series_name, 'scene_season': scene_season, 'absolute': absolute_episode,
+                         'indexer_absolute': a, 'ep': episode_num(season, episodes[0])}
                     )
                 elif result.series.is_scene:
                     log.debug(
