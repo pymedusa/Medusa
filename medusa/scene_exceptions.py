@@ -12,7 +12,7 @@ from os.path import join
 
 import adba
 
-from medusa import app, db, helpers
+from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
