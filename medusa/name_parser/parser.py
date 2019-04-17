@@ -173,8 +173,7 @@ class NameParser(object):
         :param result: Guessit parse result object.
         :return: tuple of found indexer episode numbers and indexer season numbers
         """
-        log.debug('Scene numbering enabled series {name} is anime',
-                  {'name': result.series.name})
+        log.debug('Series {name} is anime', {'name': result.series.name})
 
         new_episode_numbers = []
         new_season_numbers = []
@@ -205,26 +204,31 @@ class NameParser(object):
                     )
 
                 # Translate the absolute episode number, back to the indexers season and episode.
-                (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
+                (season, episodes) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
 
                 if result.season_number is None and scene_season is not None and scene_season > 0:
                     log.debug(
                         'Detected a season scene exception [{series_name} -> {scene_season}] without a '
                         'season number in the title, '
-                        'translating the episode absolute # [{scene_absolute}] to season #[{absolute_season}] and '
-                        'episode #[{absolute_episode}].',
-                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a,
-                         'absolute_season': season, 'absolute_episode': episode}
+                        'translating the indexer absolute #{indexer_absolute} to #{absolute}: {ep}',
+                        {'series_name': result.series_name, 'scene_season': scene_season, 'indexer_absolute': a,
+                         'absolute': absolute_episode, 'ep': episode_num(season, episodes[0])}
+                    )
+                elif result.series.is_scene:
+                    log.debug(
+                        'Scene numbering enabled anime series {name} using indexer numbering #{absolute}: {ep}',
+                        {'name': result.series.name, 'season': season, 'absolute': a,
+                         'ep': episode_num(season, episodes[0])}
                     )
                 else:
                     log.debug(
-                        'Scene numbering enabled series {name} with season {season} using indexer for absolute {absolute}: {ep}',
+                        'Anime series {name} using indexer numbering #{absolute}: {ep}',
                         {'name': result.series.name, 'season': season, 'absolute': a,
-                         'ep': episode_num(season, episode, 'absolute')}
+                         'ep': episode_num(season, episodes[0])}
                     )
 
-                new_absolute_numbers.append(a)
-                new_episode_numbers.extend(episode)
+                new_absolute_numbers.append(absolute_episode)
+                new_episode_numbers.extend(episodes)
                 new_season_numbers.append(season)
 
         # It's possible that we map a parsed result to an anime series,
@@ -233,12 +237,24 @@ class NameParser(object):
             for episode_number in result.episode_numbers:
                 season = result.season_number
                 episode = episode_number
+
+                if result.series.is_scene:
+                    (season, episode) = scene_numbering.get_indexer_numbering(
+                        result.series,
+                        result.season_number,
+                        episode_number
+                    )
+                    log.debug(
+                        'Scene numbering enabled anime {name} using indexer numbering: {ep}',
+                        {'name': result.series.name, 'ep': episode_num(season, episode)}
+                    )
+
                 a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
                 if a:
                     new_absolute_numbers.append(a)
                     log.debug(
-                        'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Anime series {name} using using indexer numbering #{absolute}: {ep}',
+                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode)}
                     )
 
                 new_episode_numbers.append(episode)
