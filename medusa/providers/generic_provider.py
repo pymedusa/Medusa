@@ -395,23 +395,17 @@ class GenericProvider(object):
                         # Compare the episodes and season from the result with what was searched.
                         wanted_ep = False
                         for searched_ep in episodes:
-                            if searched_ep.series.is_anime:
-                                if (searched_ep.scene_absolute_number in
-                                        search_result.parsed_result.ab_episode_numbers):
-                                    wanted_ep = True
-                                    break
+                            if searched_ep.series.is_scene:
+                                season = searched_ep.scene_season
+                                episode = searched_ep.scene_episode
                             else:
-                                if searched_ep.series.is_scene:
-                                    season = searched_ep.scene_season
-                                    episode = searched_ep.scene_episode
-                                else:
-                                    season = searched_ep.season
-                                    episode = searched_ep.episode
+                                season = searched_ep.season
+                                episode = searched_ep.episode
 
-                                if (season == search_result.parsed_result.season_number
-                                        and episode in search_result.parsed_result.episode_numbers):
-                                    wanted_ep = True
-                                    break
+                            if (season == search_result.parsed_result.season_number
+                                    and episode in search_result.parsed_result.episode_numbers):
+                                wanted_ep = True
+                                break
 
                         if not wanted_ep:
                             log.debug(

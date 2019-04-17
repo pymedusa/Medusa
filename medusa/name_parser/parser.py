@@ -227,7 +227,7 @@ class NameParser(object):
                          'ep': episode_num(season, episodes[0])}
                     )
 
-                new_absolute_numbers.append(absolute_episode)
+                new_absolute_numbers.append(a)
                 new_episode_numbers.extend(episodes)
                 new_season_numbers.append(season)
 
