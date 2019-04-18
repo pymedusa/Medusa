@@ -716,7 +716,7 @@ class Home(WebRoot):
                 return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
-                                            'Update wasn\'t successful, not restarting. Check your log for more information.')
+                                            "Update wasn't successful, not restarting. Check your log for more information.")
         else:
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
