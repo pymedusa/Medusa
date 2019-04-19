@@ -6,9 +6,9 @@ bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2019.3.9
 chardet==3.0.4
-git+https://github.com/pymedusa/cloudflare-scrape.git@2a5af1d4928b70f0cf1640564d618be51cf22332#egg=cfscrape
+git+https://github.com/pymedusa/cloudflare-scrape.git@1354751d5efd9353ad837d83941ed6b3f4488c77#egg=cfscrape
 configobj==5.0.6
-configparser==3.7.3
+configparser==3.7.4
 contextlib2==0.5.5 ; python_version < '3.5'
 deluge-client==1.7.0
 dirtyjson==1.0.7
@@ -24,11 +24,11 @@ imdbpie==5.6.3
 jsonrpclib-pelix==0.4.0
 knowit==0.2.4
 lockfile==0.12.2
-Mako==1.0.7
+Mako==1.0.8
 markdown2==2.3.7
 git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.10.0
-PyGithub==1.43.5
+PyGithub==1.43.6
 PyJWT==1.7.1
 python-dateutil==2.8.0
 python-twitter==3.5

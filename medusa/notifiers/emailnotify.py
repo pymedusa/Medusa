@@ -42,7 +42,7 @@ class Notifier(object):
 
     name_pattern = re.compile(
         r'(?P<show>.+?) - '
-        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4}-\d{2}-\d{2}) - '
+        r'(?P<ep_id>S?\d+[Ex]\d+( - \d{3})?|\d{3}|\d{4} \d{2} \d{2}) - '
         r'(?P<episode>.*)'
     )
 

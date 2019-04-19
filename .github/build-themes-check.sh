@@ -21,14 +21,24 @@ elif [[ $TRAVIS_BRANCH == "develop" ]]; then
     build_mode="development"
 fi
 
+# Keep track of the current themes size.
+size_before=$(du -sb themes/ | cut -f1)
+
 # Build themes.
 cd themes-default/slim/
 [[ -n $build_cmd ]] && run_verbose "$build_cmd"
 run_verbose "yarn gulp sync"
 cd ../../
+
+# Keep track of the new themes size.
+size_after=$(du -sb themes/ | cut -f1)
+
+echo "Themes size before: $size_before"
+echo "Themes size after: $size_after"
+
 # Check if the themes changed.
 status="$(git status --porcelain -- themes/)";
-if [[ -n $status ]]; then
+if [[ -n $status && $size_before != $size_after ]]; then
     if [[ -z $build_mode ]]; then
         echo "Please build the themes"
         echo "-----------------------"

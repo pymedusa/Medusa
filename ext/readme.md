@@ -13,9 +13,9 @@
 :: | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | ext | Module: `cachecontrol`
 :: | `certifi` | [2019.3.9](https://pypi.org/project/certifi/2019.3.9/) | **`medusa`**, `traktor`, `requests` | ext | -
 :: | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | ext | -
-:: | `cloudflare-scrape` | pymedusa/[2a5af1d](https://github.com/pymedusa/cloudflare-scrape/tree/2a5af1d4928b70f0cf1640564d618be51cf22332) | **`medusa`** | ext | Module: `cfscrape`
+:: | `cloudflare-scrape` | pymedusa/[1354751](https://github.com/pymedusa/cloudflare-scrape/tree/1354751d5efd9353ad837d83941ed6b3f4488c77) | **`medusa`** | ext | Module: `cfscrape`
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
-:: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.3](https://pypi.org/project/configparser/3.7.3/) | `adba` | **ext2** | -
+:: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `dogpile.cache`, `validators` | ext | -
 :: | `deluge-client` | [1.7.0](https://pypi.org/project/deluge-client/1.7.0/) | **`medusa`** | ext | -
@@ -28,7 +28,7 @@
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.43.5](https://pypi.org/project/PyGithub/1.43.5/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43.6](https://pypi.org/project/PyGithub/1.43.6/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
 :: | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
@@ -39,7 +39,7 @@
 :: | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
 :: | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | ext | -
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
-:: | `Mako` | [1.0.7](https://pypi.org/project/mako/1.0.7/) | **`medusa`** | ext | Module: `mako`
+:: | `Mako` | [1.0.8](https://pypi.org/project/mako/1.0.8/) | **`medusa`** | ext | Module: `mako`
 :: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
 :: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -

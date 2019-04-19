@@ -16,7 +16,7 @@ except ImportError:
 # Disallow parsing of the unsafe 'pyimport' statement in Js2Py.
 js2py.disable_pyimport()
 
-__version__ = "1.9.6-Custom"
+__version__ = "1.9.7-Custom"
 
 DEFAULT_USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
@@ -88,6 +88,7 @@ class CloudflareScraper(Session):
         try:
             params["jschl_vc"] = re.search(r'name="jschl_vc" value="(\w+)"', body).group(1)
             params["pass"] = re.search(r'name="pass" value="(.+?)"', body).group(1)
+            params["s"] = re.search(r'name="s"\svalue="(?P<s_value>[^"]+)', body).group('s_value')
 
             # Extract the arithmetic operation
             js = self.extract_js(body, domain)

@@ -1505,7 +1505,7 @@ class Series(TV):
                 self.imdb_id = sql_results[0]['imdb_id']
 
             self.plot = sql_results[0]['plot']
-            self.airdate_offset = int(sql_results[0]['airdate_offset'])
+            self.airdate_offset = int(sql_results[0]['airdate_offset'] or 0)
 
             self.release_groups = BlackAndWhiteList(self)
 

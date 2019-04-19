@@ -408,7 +408,7 @@ class DelugeRPC(object):
 
     def _check_torrent(self, info_hash):
         torrent_id = self.client.core.get_torrent_status(info_hash, {})
-        if torrent_id['hash']:
+        if torrent_id.get('hash'):
             log.debug('DelugeD: Torrent already exists in Deluge')
             return info_hash
         return False
