@@ -928,6 +928,10 @@ def combine_results(multi_results, single_results):
         log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
         result_candidates.append(candidate)
 
+    # If there aren't any single results we can return early
+    if not single_results:
+        return result_candidates
+
     return_multi_results = []
     for multi_result in result_candidates:
         # see how many of the eps that this result covers aren't covered by single results
