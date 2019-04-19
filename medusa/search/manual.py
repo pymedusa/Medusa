@@ -22,7 +22,7 @@ from medusa.common import (
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.search.queue import SEARCH_HISTORY, ManualSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
@@ -121,11 +121,11 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
+        if isinstance(search_thread, ManualSearchQueueItem):
             if not isinstance(search_thread.segment, list):
                 search_thread.segment = [search_thread.segment]
 
@@ -163,11 +163,11 @@ def collect_episodes_from_search_thread(series_obj):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
+        if isinstance(search_thread, ManualSearchQueueItem):
             if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += get_episodes(search_thread, searchstatus)
         else:
@@ -286,7 +286,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             and episode: {1}x{2}'.format(series_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ManualSearchQueueItem(ep_obj.series, [ep_obj], manual_search_type)  # pylint: disable=maybe-no-member
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
