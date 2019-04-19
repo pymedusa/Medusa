@@ -159,7 +159,6 @@ class NcoreProvider(TorrentProvider):
             'submitted': '1',
             'set_lang': 'en',
             'submit': 'Access!',
-
         }
 
         response = self.session.post(self.urls['login'], data=login_params)
