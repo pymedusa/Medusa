@@ -21,7 +21,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class NcoreProvider(TorrentProvider):
-    """Norbits Torrent provider."""
+    """nCore Torrent provider."""
 
     def __init__(self):
         """.Initialize the class."""
