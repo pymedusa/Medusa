@@ -7,10 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -115,8 +112,8 @@ class NcoreProvider(TorrentProvider):
                 if not (title and download_url):
                     continue
 
-                seeders = try_int(row.pop('seeders', 0))
-                leechers = try_int(row.pop('leechers', 0))
+                seeders = int(row.pop('seeders', 0))
+                leechers = int(row.pop('leechers', 0))
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:
