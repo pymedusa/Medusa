@@ -115,11 +115,11 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'status'">
-                        {{props.row.status}}<quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
+                        {{getOverviewStatus(props.row.status, props.row.quality, show.config.qualities)}}<quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
-                        <app-link v-if="props.row.season !== 0" :class="retryDownload(props.row) ? 'epRetry' : 'epSearch'" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/' + (retryDownload(props.row) ? 'retryEpisode' : 'searchEpisode') + '?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-search src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'"/></app-link>
+                        <img :ref="`search-${props.row.identifier}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
                         <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
                     </span>
@@ -330,8 +330,8 @@ export default {
             config: state => state.config            
         }),
         ...mapGetters({
-            getShowById: 'getShowById',
-            show: 'getCurrentShow'
+            show: 'getCurrentShow',
+            getOverviewStatus: 'getOverviewStatus'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -756,6 +756,41 @@ export default {
         retryDownload(episode) {
             const { config } = this;
             return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        /**
+         * Start a backlog search or failed search for the specific episode.
+         * A failed search is started depending on the current episodes status.
+         */
+        queueSearch(episode) {
+            const { retryDownload, show } = this;
+            let searchType = 'backlog';
+            const data = {
+                showslug: show.id.slug,
+                episodes: [ episode.identifier ],
+                options: {}
+            }
+
+            if (this.$refs[`search-${episode.identifier}`].disabled == true) {
+                return;
+            }
+            
+            if (retryDownload(episode)) {
+                searchType = 'failed'
+            }
+
+            this.$refs[`search-${episode.identifier}`].src = `images/loading16-dark.gif`;
+
+            api.post(`search/${searchType}`, data)
+            .then(response => {
+                console.info(`started search for show: ${show.id.slug} episode: ${episode.identifier}`);
+                this.$refs[`search-${episode.identifier}`].src = `images/queued.png`;
+                this.$refs[`search-${episode.identifier}`].disabled = true;
+            }).catch(error => {
+                debugger;
+                console.error(String(error));
+                this.$refs[`search-${episode.identifier}`].src = `images/no16.png`;
+            });
+
         },
         showSubtitleButton(episode) {
             const { config, show } = this;

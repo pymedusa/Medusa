@@ -1,7 +1,3 @@
-const searchStatusUrl = 'home/getManualSearchStatus';
-let failedDownload = false;
-let qualityDownload = false;
-let selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
 $.fn.forcedSearches = [];
@@ -93,6 +89,7 @@ function updateImages(data) {
 
 function checkManualSearches() {
     let pollInterval = 5000;
+    const searchStatusUrl = 'home/getManualSearchStatus';
 
     // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
     const indexerName = $('#indexer-name').val();
@@ -143,7 +140,7 @@ $.ajaxEpSearch = function(options) {
             return false;
         }
 
-        selectedEpisode = $(this);
+        $.selectedEpisode = $(this);
 
         $('#forcedSearchModalFailed').modal('show');
     });
@@ -151,19 +148,21 @@ $.ajaxEpSearch = function(options) {
     function forcedSearch() {
         let imageName;
         let imageResult;
+        let failedDownload = false;
+        let qualityDownload = false;
 
-        const parent = selectedEpisode.parent();
+        const parent = $.selectedEpisode.parent();
 
         // Create var for anchor
-        const link = selectedEpisode;
+        const link = $.selectedEpisode;
 
         // Create var for img under anchor and set options for the loading gif
-        const img = selectedEpisode.children('img');
+        const img = $.selectedEpisode.children('img');
         img.prop('title', 'loading');
         img.prop('alt', '');
         img.prop('src', 'images/' + options.loadingImage);
 
-        let url = selectedEpisode.prop('href');
+        let url = $.selectedEpisode.prop('href');
 
         if (!failedDownload) {
             url = url.replace('retryEpisode', 'searchEpisode');
@@ -212,7 +211,7 @@ $.ajaxEpSearch = function(options) {
             return false;
         }
 
-        selectedEpisode = $(this);
+        $.selectedEpisode = $(this);
 
         // @TODO: Replace this with an easier to read selector
         if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {

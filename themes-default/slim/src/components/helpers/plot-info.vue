@@ -16,19 +16,11 @@ export default {
         },
         season: {
             type: [Number, String],
-            required: true,
-            validator: function (value) {
-                // Cast to number
-                return Number(value)
-            }
+            required: true
         },
         episode: {
             type: [Number, String],
-            required: true,
-            validator: function (value) {
-                // Cast to number
-                return Number(value)
-            }
+            required: true
         }
     },
     computed: {

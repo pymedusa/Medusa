@@ -13,7 +13,31 @@ const mutations = {
     }
 };
 
-const getters = {};
+const getters = {
+    getOverviewStatus: state => (status, quality, showQualities) => {
+        if (['Unset', 'Unaired'].includes(status)) {
+            return 'Unaired';
+        }
+        if (['Skipped', 'Ignored'].includes(status)) {
+            return 'Skipped';
+        }
+        if (['Wanted', 'Failed'].includes(status)) {
+            return 'Wanted';
+        }
+        if (['Snatched', 'Snatched (Proper)', 'Snatched (Best)'].includes(status)) {
+            return 'Snatched';
+        }
+        if (['Downloaded', 'Archived'].includes(status)) {
+            if (showQualities.preferred.includes(quality)) {
+                return 'Preferred';
+            }
+            if (showQualities.allowed.includes(quality)) {
+                return 'Allowed';
+            }
+        }
+
+    }
+};
 
 const actions = {};
 

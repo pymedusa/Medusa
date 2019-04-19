@@ -638,7 +638,7 @@ class Episode(TV):
             self.subtitles_searchcount = sql_results[0]['subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0]['subtitles_lastsearch']
             self.airdate = date.fromordinal(int(sql_results[0]['airdate']))
-            self._status = int(sql_results[0]['status'] or UNSET)
+            self.status = int(sql_results[0]['status'] or UNSET)
             self.quality = int(sql_results[0]['quality'] or Quality.NA)
             self.watched = bool(sql_results[0]['watched'])
 
@@ -897,7 +897,7 @@ class Episode(TV):
                 # If is a leaked episode and user manually snatched, it will respect status
                 # If is a fake (manually snatched), when user set as FAILED, status will be WANTED
                 # and code below will make it UNAIRED again
-                self._status = UNAIRED
+                self.status = UNAIRED
                 log.debug(
                     '{id}: {series} {ep} airs in the future or has no air date, marking it {status}', {
                         'id': self.series.series_id,
@@ -909,7 +909,7 @@ class Episode(TV):
             elif self.status in (UNSET, UNAIRED):
                 # Only do UNAIRED/UNSET, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
-                self._status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                self.status = self.series.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 log.debug(
                     '{id}: {series} {ep} has already aired, marking it {status}', {
                         'id': self.series.series_id,
@@ -950,7 +950,7 @@ class Episode(TV):
                     'old_status': statusStrings[self.status],
                 }
             )
-            self._status = UNSET
+            self.status = UNSET
 
     def __load_from_nfo(self, location):
 
@@ -2037,7 +2037,7 @@ class Episode(TV):
                 new_status = ARCHIVED
 
             with self.lock:
-                self._status = new_status
+                self.status = new_status
                 self.quality = new_quality
 
                 if not same_name:
