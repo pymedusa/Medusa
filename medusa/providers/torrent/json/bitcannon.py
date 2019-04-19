@@ -129,7 +129,7 @@ class BitCannonProvider(TorrentProvider):
                                   title, seeders)
                     continue
 
-                size = convert_size(row.pop('size', -1)) or -1
+                size = convert_size(row.pop('size', None), default=-1)
 
                 item = {
                     'title': title,
