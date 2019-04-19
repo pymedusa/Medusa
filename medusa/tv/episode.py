@@ -251,7 +251,7 @@ class Episode(TV):
         self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self._status = UNSET
+        self.status = UNSET
         self.quality = Quality.NA
         self.file_size = 0
         self.release_name = ''
@@ -429,61 +429,6 @@ class Episode(TV):
     def quality_name(self):
         """Return the status name."""
         return Quality.qualityStrings[self.quality]
-
-    @property
-    def status(self):
-        """Return episode status."""
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        """
-        Set status with a few sanity checks.
-
-        Mainly only used through the apiv2. If you need to set the status without any checks.
-        Use self._status.
-        :param value: The new episode status
-        :type value: int
-        """
-        if self.status == UNAIRED:
-            log.warning('Refusing to change status of {series} {episode} because it is UNAIRED'.format(
-                series=self.series.name, episode=self.pretty_name()))
-
-        snatched_qualities = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-
-        if value == DOWNLOADED and not (
-                    self.status in snatched_qualities + [DOWNLOADED] or
-                os.path.isfile(self.location)):
-            error_message = 'Refusing to change status of {series} {episode} to DOWNLOADED' \
-                            " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
-                                series=self.series.name, episode=self.pretty_name()
-                            )
-            log.warning(error_message)
-
-        if value == FAILED and self.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
-            error_message = 'Refusing to change status of {series} {episode} to FAILED ' \
-                            "because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
-                                series=self.series.name, episode=self.pretty_name()
-                            )
-            log.warning(error_message)
-
-        if value == WANTED:
-            if self.status in [DOWNLOADED, ARCHIVED]:
-                log.debug('Removing release_name of {series} {episode} as episode was changed to WANTED'.format(
-                    series=self.series.name, episode=self.pretty_name()))
-                self.release_name = ''
-
-            if self.manually_searched:
-                log.debug("Resetting 'manually searched' flag of {series} {episode}"
-                          ' as episode was changed to WANTED'.format(
-                              series=self.series.name, episode=self.pretty_name())
-                          )
-                self.manually_searched = False
-
-        # Change the actual value
-        # Only in failed_history we set to FAILED.
-        if value != FAILED:
-            self._status = value
 
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
