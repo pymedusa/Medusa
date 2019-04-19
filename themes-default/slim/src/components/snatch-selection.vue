@@ -27,7 +27,6 @@ export default {
             shows: state => state.shows.shows
         }),
         ...mapGetters({
-            getShowById: 'getShowById',
             show: 'getCurrentShow'
         }),
         indexer() {
