@@ -230,8 +230,8 @@
                         <div id="key-padding" class="pull-left top-5">
 
                             <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                            <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                            <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
+                            <label v-if="show.seasons" for="allowed"><span class="allowed"><input type="checkbox" id="allowed" checked="checked" @input="showHideRows('allowed')" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
+                            <label v-if="show.seasons" for="preferred"><span class="preferred"><input type="checkbox" id="preferred" checked="checked" @input="showHideRows('preferred')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
                             <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
                             <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
                             <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
@@ -347,7 +347,8 @@ export default {
         ...mapGetters({
             show: 'getCurrentShow',
             getPreset: 'getPreset',
-            combineQualities: 'combineQualities'
+            combineQualities: 'combineQualities',
+            getOverviewStatus: 'getOverviewStatus'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -420,7 +421,7 @@ export default {
             };
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
-                    summary[episode.status] += 1;
+                    summary[this.getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1
                 });
             });
             return summary;
@@ -734,5 +735,75 @@ div#col-show-summary {
     #col-show-summary img.show-image {
         max-width: 280px;
     }
+}
+
+.unaired {
+    background-color: rgb(245, 241, 228);
+}
+
+.skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.preferred {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
+.allowed {
+    background-color: rgb(255, 218, 138);
+}
+
+.wanted {
+    background-color: rgb(255, 176, 176);
+}
+
+.snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.downloaded {
+    background-color: rgb(195, 227, 200);
+}
+
+.failed {
+    background-color: rgb(255, 153, 153);
+}
+
+span.unaired {
+    color: rgb(88, 75, 32);
+}
+
+span.skipped {
+    color: rgb(29, 80, 104);
+}
+
+span.preffered {
+    color: rgb(53, 82, 58);
+}
+
+span.allowed {
+    color: rgb(118, 81, 0);
+}
+
+span.wanted {
+    color: rgb(137, 0, 0);
+}
+
+span.snatched {
+    color: rgb(101, 33, 100);
+}
+
+span.unaired b,
+span.skipped b,
+span.preferred b,
+span.allowed b,
+span.wanted b,
+span.snatched b {
+    color: rgb(0, 0, 0);
+    font-weight: 800;
 }
 </style>

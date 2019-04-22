@@ -14,6 +14,13 @@ const mutations = {
 };
 
 const getters = {
+    /**
+     * Get an overview status for an episodes status, quality and show config's quality configuration.
+     * @param {String} status - current episode status
+     * @param {Number} quality - current episode quality
+     * @param {Object} showQualities - show config's quality configuration. Including the arrays, 'preferred' and 'allowed'.
+     * @return {String} the overview status. 
+     */
     getOverviewStatus: state => (status, quality, showQualities) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
