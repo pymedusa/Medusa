@@ -580,7 +580,8 @@ export default {
         parseSubtitlesFn(row) {
         },
         rowStyleClassFn(row) {
-            return row.status.toLowerCase().trim();
+            const { getOverviewStatus, show } = this;
+            return getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
         },
         searchSubtitle(event, season, episode, rowIndex) {
             const { id, indexer, getShow, show, subtitleSearchComponents } = this;
@@ -1042,24 +1043,74 @@ tablesorter.css
     height: 25px;
 }
 
+.unaired {
+    background-color: rgb(245, 241, 228);
+}
+
+.skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.preferred {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
+.allowed {
+    background-color: rgb(255, 218, 138);
+}
+
+.wanted {
+    background-color: rgb(255, 176, 176);
+}
+
+.snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.downloaded {
+    background-color: rgb(195, 227, 200);
+}
+
+.failed {
+    background-color: rgb(255, 153, 153);
+}
+
+span.unaired {
+    color: rgb(88, 75, 32);
+}
+
+span.skipped {
+    color: rgb(29, 80, 104);
+}
+
+span.preffered {
+    color: rgb(53, 82, 58);
+}
+
+span.allowed {
+    color: rgb(118, 81, 0);
+}
+
+span.wanted {
+    color: rgb(137, 0, 0);
+}
+
+span.snatched {
+    color: rgb(101, 33, 100);
+}
+
+span.unaired b,
+span.skipped b,
+span.preferred b,
+span.allowed b,
+span.wanted b,
+span.snatched b {
+    color: rgb(0, 0, 0);
+    font-weight: 800;
+}
+
 </style>
-
-
-// window.app = {};
-// window.app = new Vue({
-//     el: '#vue-wrap',
-//     store,
-//     router,
-//     data() {
-//         return {
-//             // This loads show.vue
-//             pageComponent: 'show'
-//         }
-//     },
-//     created() {
-//         const { $store } = this;
-//         // Needed for the show-selector component
-//         $store.dispatch('getShows');
-//     }
-// });
-// </script>
