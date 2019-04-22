@@ -95,7 +95,8 @@ def get_episodes(search_thread, searchstatus):
     for ep_obj in search_thread.segment:
         ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
-            'indexer_id': series_obj.indexer,
+            'indexer_id': series_obj.indexer,  # Left here for the legacy scheduled mako page.
+            'indexer_name': series_obj.indexer_name,
             'series_id': series_obj.series_id,
             'episode': ep.episode,
             'episodeindexerid': ep.indexerid,
@@ -151,29 +152,23 @@ def collect_episodes_from_search_thread(series_obj):
     for search_thread in app.forced_search_queue_scheduler.action.get_all_ep_from_queue(series_obj):
         episodes += get_episodes(search_thread, searchstatus)
 
-    # Running Searches
-    searchstatus = SEARCH_STATUS_SEARCHING
-    if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
-        search_thread = app.forced_search_queue_scheduler.action.currentItem
-
-        if search_thread.success:
-            searchstatus = SEARCH_STATUS_FINISHED
-
-        episodes += get_episodes(search_thread, searchstatus)
-
-    # Finished Searches
-    searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in SEARCH_HISTORY:
+    # Running and Finished Searches
+    for search_thread in app.forced_search_queue_scheduler.action.history + app.search_queue_scheduler.action.history:
         if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
-        if isinstance(search_thread, ManualSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
-                episodes += get_episodes(search_thread, searchstatus)
+        if search_thread == app.forced_search_queue_scheduler.action.currentItem:
+            searchstatus = SEARCH_STATUS_SEARCHING
+            episodes += get_episodes(search_thread, searchstatus)
         else:
-            # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
-            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexerid']]:
-                episodes += get_episodes(search_thread, searchstatus)
+            searchstatus = SEARCH_STATUS_FINISHED
+            if isinstance(search_thread, ManualSearchQueueItem):
+                if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
+                    episodes += get_episodes(search_thread, searchstatus)
+            else:
+                # These are Backlog, Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
+                if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexerid']]:
+                    episodes += get_episodes(search_thread, searchstatus)
 
     return episodes
 

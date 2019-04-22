@@ -119,7 +119,7 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
-                        <img :ref="`search-${props.row.identifier}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
+                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.identifier}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
                         <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
                     </span>
@@ -188,6 +188,24 @@
                 </div>
             </div>
         </div>
+
+        <modal name="query-start-backlog-search" :height="'auto'">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Start search?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Some episodes have been changed to 'Wanted'. Do you want to trigger a backlog search?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-start-backlog-search')">No</button>
+                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="queueSearch(null); $modal.hide('query-start-backlog-search')">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
         
         <!-- TODO: Implement subtitle modal in vue -->
         <!-- <include file="subtitle_modal.mako"/> -->
@@ -204,7 +222,8 @@ import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, addQTip } from '../utils';
+import { humanFileSize } from '../utils';
+import { addQTip, updateSearchIcons } from '../jquery-wrappers';
 import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
@@ -320,7 +339,8 @@ export default {
                 field: 'search',
                 hidden: false
             }],
-            selectedEpisodes: []
+            selectedEpisodes: [],
+
         };
     },
     computed: {
@@ -392,15 +412,15 @@ export default {
             });
         });
 
-        window.addEventListener('load', () => {
-            $.ajaxEpSearch({
-                colorRow: true
-            });
+        // window.addEventListener('load', () => {
+        //     $.ajaxEpSearch({
+        //         colorRow: true
+        //     });
 
-            startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
-            $.ajaxEpSubtitlesSearch();
-            $.ajaxEpRedownloadSubtitle();
-        });
+        //     startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
+        //     $.ajaxEpSubtitlesSearch();
+        //     $.ajaxEpRedownloadSubtitle();
+        // });
 
         $(document.body).on('click', '.seasonCheck', event => {
             const seasCheck = event.currentTarget;
@@ -522,7 +542,7 @@ export default {
                 $('#season-' + result[1] + '-cols').removeClass('shadow');
             });
         });
-
+        
         // Get the season exceptions and the xem season mappings.
         // getSeasonSceneExceptions();
     },
@@ -573,6 +593,10 @@ export default {
             }).catch(error => {
                 console.error(String(error));
             });
+
+            if (status == 3) {
+                this.$modal.show('query-start-backlog-search');
+            }
         },
         parseDateFn(row) {
             return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
@@ -761,35 +785,47 @@ export default {
         /**
          * Start a backlog search or failed search for the specific episode.
          * A failed search is started depending on the current episodes status.
+         * @param {Object} epsiode - Episode object. If no episode object is passed, a backlog search is started.
          */
         queueSearch(episode) {
             const { retryDownload, show } = this;
             let searchType = 'backlog';
-            const data = {
-                showslug: show.id.slug,
-                episodes: [ episode.identifier ],
-                options: {}
+            let data = {};
+            if (episode) {
+                data = {
+                    showslug: show.id.slug,
+                    episodes: [ episode.identifier ],
+                    options: {}
+                }
             }
 
-            if (this.$refs[`search-${episode.identifier}`].disabled == true) {
-                return;
-            }
+            if (episode) {
+                if (this.$refs[`search-${episode.identifier}`].disabled == true) {
+                    return;
+                }
             
-            if (retryDownload(episode)) {
-                searchType = 'failed'
-            }
+                if (retryDownload(episode)) {
+                    searchType = 'failed';
+                }
 
-            this.$refs[`search-${episode.identifier}`].src = `images/loading16-dark.gif`;
+                this.$refs[`search-${episode.identifier}`].src = `images/loading16-dark.gif`;
+            }        
 
             api.post(`search/${searchType}`, data)
             .then(response => {
-                console.info(`started search for show: ${show.id.slug} episode: ${episode.identifier}`);
-                this.$refs[`search-${episode.identifier}`].src = `images/queued.png`;
-                this.$refs[`search-${episode.identifier}`].disabled = true;
+                if (episode) {
+                    console.info(`started search for show: ${show.id.slug} episode: ${episode.identifier}`);
+                    this.$refs[`search-${episode.identifier}`].src = `images/queued.png`;
+                    this.$refs[`search-${episode.identifier}`].disabled = true;
+                } else {
+                    console.info(`started a full backlog search`);
+                }
             }).catch(error => {
                 debugger;
                 console.error(String(error));
-                this.$refs[`search-${episode.identifier}`].src = `images/no16.png`;
+                if (episode) {
+                    this.$refs[`search-${episode.identifier}`].src = `images/no16.png`;
+                }
             });
 
         },
@@ -845,6 +881,14 @@ export default {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
         }
+    },
+    watch: {
+        'show.id.slug': function(slug) {
+        // show's slug has changed, meaning the show's page has finished loading.
+            if (slug) {
+                updateSearchIcons(slug);
+            }
+        } 
     }
 };
 </script>
