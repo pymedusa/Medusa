@@ -34,7 +34,7 @@ const getters = {
         if (['Snatched', 'Snatched (Proper)', 'Snatched (Best)'].includes(status)) {
             return 'Snatched';
         }
-        if (['Downloaded', 'Archived'].includes(status)) {
+        if (['Downloaded'].includes(status)) {
             if (showQualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
@@ -42,7 +42,7 @@ const getters = {
                 return 'Allowed';
             }
         }
-
+        return status;
     }
 };
 

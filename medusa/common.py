@@ -788,8 +788,8 @@ class Overview(object):
     overviewStrings = {
         SKIPPED: 'skipped',
         WANTED: 'wanted',
-        QUAL: 'qual',
-        GOOD: 'good',
+        QUAL: 'allowed',
+        GOOD: 'preferred',
         UNAIRED: 'unaired',
         SNATCHED: 'snatched',
         # we can give these a different class later, otherwise

@@ -679,8 +679,11 @@ class BacklogQueueItem(generic_queue.QueueItem):
                 self.success = False
                 log.debug(traceback.format_exc())
 
-        if self.success is None:
-            self.success = False
+            # Keep a list with the 100 last executed searches
+            fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
+
+            if self.success is None:
+                self.success = False
 
         self.finish()
 

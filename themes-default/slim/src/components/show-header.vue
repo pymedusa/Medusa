@@ -270,7 +270,8 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
-import { humanFileSize, attachImdbTooltip } from '../utils';
+import { humanFileSize } from '../utils';
+import { attachImdbTooltip } from '../jquery-wrappers';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {

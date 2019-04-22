@@ -110,8 +110,8 @@
         <script type="text/javascript" src="js/notifications.js?${sbPID}"></script>
 
         <!-- Moved to main, as I can't add it to display-show.vue, because vue templates don't allow script tags. -->
-        <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
+        <!-- <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script> -->
+        <!-- <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script> -->
         <script>
             // Used to get username to the app.js and header
             % if app.WEB_USERNAME and app.WEB_PASSWORD and '/login' not in full_url:
