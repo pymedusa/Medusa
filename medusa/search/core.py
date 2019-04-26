@@ -600,7 +600,7 @@ def delay_search(best_result):
             date_added = first_result['date_added']
             # Some results in cache have date_added as 0
             if not date_added:
-                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                log.debug("DELAY: First result in cache doesn't have a valid date, skipping provider.")
                 return False
 
             timestamp = to_timestamp(date_added)

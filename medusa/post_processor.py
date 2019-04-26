@@ -928,7 +928,7 @@ class PostProcessor(object):
             if current_quality in preferred:
                 return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
+                return True, "New quality is Allowed and we don't have a current Preferred. Accepting quality"
             elif new_quality > current_quality:
                 return True, 'New quality is higher than current Allowed. Accepting quality'
             elif new_quality < current_quality:
