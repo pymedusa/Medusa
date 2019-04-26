@@ -109,7 +109,7 @@ class WizdomProvider(Provider):
         # make the search
         logger.info('Searching IMDB ID for %r%r', title, '' if not year else ' ({})'.format(year))
         category = 'movie' if is_movie else 'tv'
-        title = title.replace('\'', '')
+        title = title.replace("'", '')
         # get TMDB ID first
         r = self.session.get('http://api.tmdb.org/3/search/{}?api_key={}&query={}{}&language=en'.format(
             category, self._tmdb_api_key, title, '' if not year else '&year={}'.format(year)))
