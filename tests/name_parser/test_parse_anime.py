@@ -198,7 +198,7 @@ import pytest
         'indexer': 81797,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
-            ('medusa.scene_numbering.get_indexer_numbering', (3, [13])),
+            ('medusa.scene_numbering.get_indexer_numbering', (3, 13)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 43),
         ],
         'series_info': {
