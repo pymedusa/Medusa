@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa.name_parser.parser import NameParser
+
 import guessit
 import pytest
 
@@ -120,6 +121,7 @@ import pytest
         'indexer': 300835,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
@@ -135,6 +137,7 @@ import pytest
         'indexer': 300835,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
@@ -183,6 +186,7 @@ import pytest
         'indexer': 262954,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 2, 1)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 38),
         ],
         'series_info': {
