@@ -2121,6 +2121,12 @@ class Home(WebRoot):
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
 
+        if not series_obj:
+            return json.dumps({
+                'success': False,
+                'errorMessage': 'Could not find show {0} {1} to set scene numbering'.format(indexername, seriesid),
+            })
+
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
         if series_obj.is_anime and forAbsolute is None:
             return json.dumps({
