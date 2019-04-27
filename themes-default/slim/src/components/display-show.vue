@@ -610,8 +610,7 @@ export default {
             $('#checkboxControlsBackground').show();
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-            const indexerName = $('#indexer-name').val();
-            const seriesId = $('#series-id').val();
+            const { id, indexer } = this;
 
             if (sceneSeason === '') {
                 sceneSeason = null;
@@ -621,8 +620,8 @@ export default {
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: indexerName,
-                seriesid: seriesId,
+                indexername: indexer,
+                seriesid: id,
                 forSeason,
                 forEpisode,
                 sceneSeason,
@@ -630,9 +629,9 @@ export default {
             }, data => {
                 // Set the values we get back
                 if (data.sceneSeason === null || data.sceneEpisode === null) {
-                    $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val('');
+                    $('#sceneSeasonXEpisode_' + id + '_' + forSeason + '_' + forEpisode).val('');
                 } else {
-                    $('#sceneSeasonXEpisode_' + seriesId + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
+                    $('#sceneSeasonXEpisode_' + id + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
                 }
                 if (!data.success) {
                     if (data.errorMessage) {
@@ -644,24 +643,23 @@ export default {
             });
         },
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-            const indexerName = $('#indexer-name').val();
-            const seriesId = $('#series-id').val();
+            const { id, indexer } = this;
 
             if (sceneAbsolute === '') {
                 sceneAbsolute = null;
             }
 
             $.getJSON('home/setSceneNumbering', {
-                indexername: indexerName,
-                seriesid: seriesId,
+                indexername: indexer,
+                seriesid: id,
                 forAbsolute,
                 sceneAbsolute
             }, data => {
                 // Set the values we get back
                 if (data.sceneAbsolute === null) {
-                    $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val('');
+                    $('#sceneAbsolute_' + id + '_' + forAbsolute).val('');
                 } else {
-                    $('#sceneAbsolute_' + seriesId + '_' + forAbsolute).val(data.sceneAbsolute);
+                    $('#sceneAbsolute_' + id + '_' + forAbsolute).val(data.sceneAbsolute);
                 }
 
                 if (!data.success) {
