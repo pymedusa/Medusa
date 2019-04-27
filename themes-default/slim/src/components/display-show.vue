@@ -263,6 +263,7 @@ export default {
                 label: 'Size',
                 field: 'file.size',
                 type: 'number',
+                formatFn: humanFileSize,
                 hidden: false
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
@@ -563,7 +564,7 @@ export default {
          * @param headerRow {Ojbect} - A season object, with a property "episodes".
          */
         addFileSize(headerRow) {
-            return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.count || 0), 0));
+            return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, season, episode, rowIndex) {
             const { id, indexer, getShow, show, subtitleSearchComponents } = this;
