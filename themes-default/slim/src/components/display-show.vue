@@ -64,6 +64,13 @@
                         </app-link>
                     </h3>
                 </template>
+
+                <template slot="table-footer-row" slot-scope="{headerRow}">
+                    <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
+                        <th class="col-footer" colspan=15 align=left>Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                    </tr>
+                    <tr class="spacer"></tr>
+                </template>
                                 
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.field == 'content.hasNfo'">
@@ -130,62 +137,6 @@
                 </template>
 
                 </vue-good-table>
-            </div>
-        </div>
-
-        <!--Begin - Bootstrap Modals-->
-        <div id="forcedSearchModalFailed" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Forced Search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to mark this episode as failed?</p>
-                        <p class="text-warning"><small>The episode release name will be added to the failed history, preventing it to be downloaded again.</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="forcedSearchModalQuality" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Forced Search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to include the current episode quality in the search?</p>
-                        <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="confirmSubtitleReDownloadModal" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Re-download subtitle</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to re-download the subtitle for this language?</p>
-                        <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -606,6 +557,13 @@ export default {
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
             return getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+        },
+        /**
+         * Add (reduce) the total episodes filesize.
+         * @param headerRow {Ojbect} - A season object, with a property "episodes".
+         */
+        addFileSize(headerRow) {
+            return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.count || 0), 0));
         },
         searchSubtitle(event, season, episode, rowIndex) {
             const { id, indexer, getShow, show, subtitleSearchComponents } = this;
@@ -1155,6 +1113,10 @@ span.wanted b,
 span.snatched b {
     color: rgb(0, 0, 0);
     font-weight: 800;
+}
+
+td.col-footer {
+    text-align: left !important;
 }
 
 </style>
