@@ -8,7 +8,7 @@
 :: | `pytimeparse` | [1.1.5](https://pypi.org/project/pytimeparse/1.1.5/) | **`medusa`** | lib | **Modified**: [#1792](https://github.com/pymedusa/Medusa/pull/1792)
 :: | `pytvmaze` | [2.0.7](https://pypi.org/project/pytvmaze/2.0.7/) | **`medusa`** | lib | **Modified**: [#1706](https://github.com/pymedusa/Medusa/pull/1706)
 :: | `rtorrent-python` | [0.2.9](https://pypi.org/project/rtorrent-python/0.2.9/) | **`medusa`** | lib | Module: `rtorrent`<br>**Modified**: [commit log](https://github.com/pymedusa/Medusa/commits/master/lib/rtorrent)
-:: | `send2trash` | [1.3.0](https://pypi.org/project/send2trash/1.3.0/) | **`medusa`** | lib | **Modified**
+:: | `send2trash` | [1.5.0](https://pypi.org/project/Send2Trash/1.5.0/) | **`medusa`** | lib |
 :: | `shutil_custom` | - | **`medusa`** | lib | **Custom**
 :: | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb/tree/5d26c8c146891225c05651821ef34ced0c118221) | **`medusa`** | lib | -
 :: | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | lib | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
