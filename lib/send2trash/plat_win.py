@@ -7,7 +7,8 @@
 from __future__ import unicode_literals
 
 from ctypes import (windll, Structure, byref, c_uint,
-                    create_unicode_buffer, addressof)
+                    create_unicode_buffer, addressof,
+                    GetLastError, FormatError)
 from ctypes.wintypes import HWND, UINT, LPCWSTR, BOOL
 import os.path as op
 
@@ -49,6 +50,11 @@ def get_short_path_name(long_name):
     if not long_name.startswith('\\\\?\\'):
         long_name = '\\\\?\\' + long_name
     buf_size = GetShortPathNameW(long_name, None, 0)
+    # FIX: https://github.com/hsoft/send2trash/issues/31
+    # If buffer size is zero, an error has occurred.
+    if not buf_size:
+        err_no = GetLastError()
+        raise WindowsError(err_no, FormatError(err_no), long_name[4:])
     output = create_unicode_buffer(buf_size)
     GetShortPathNameW(long_name, output, buf_size)
     return output.value[4:]  # Remove '\\?\' for SHFileOperationW
@@ -83,4 +89,4 @@ def send2trash(path):
     fileop.lpszProgressTitle = None
     result = SHFileOperationW(byref(fileop))
     if result:
-        raise WindowsError(None, None, path, result)
+        raise WindowsError(result, FormatError(result), path)
