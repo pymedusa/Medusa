@@ -153,7 +153,7 @@ def collect_episodes_from_search_thread(series_obj):
         episodes += get_episodes(search_thread, searchstatus)
 
     # Running and Finished Searches
-    for search_thread in app.forced_search_queue_scheduler.action.history + app.search_queue_scheduler.action.history:
+    for search_thread in app.forced_search_queue_scheduler.action.history:
         if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
