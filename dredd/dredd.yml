@@ -14,8 +14,7 @@ inline-errors: false
 details: false
 method: []
 color: true
-loglevel: info
-timestamp: false
+loglevel: warning
 path: []
 hooks-worker-timeout: 5000
 hooks-worker-connect-timeout: 1500
@@ -25,6 +24,5 @@ hooks-worker-term-timeout: 5000
 hooks-worker-term-retry: 500
 hooks-worker-handler-host: localhost
 hooks-worker-handler-port: 61321
-config: dredd.yml
 blueprint: dredd/api-description.yml
 endpoint: 'http://localhost:8081'
