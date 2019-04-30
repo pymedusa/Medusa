@@ -1,7 +1,6 @@
 dry-run: null
 hookfiles: dredd/dredd_hook.py
 language: python
-sandbox: false
 server: python dredd/dredd_hook.py
 server-wait: 20
 init: false
@@ -15,9 +14,8 @@ inline-errors: false
 details: false
 method: []
 color: true
-level: info
+loglevel: info
 timestamp: false
-silent: false
 path: []
 hooks-worker-timeout: 5000
 hooks-worker-connect-timeout: 1500
