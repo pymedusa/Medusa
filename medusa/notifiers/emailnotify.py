@@ -55,7 +55,7 @@ class Notifier(object):
 
         :return: True for no issue or False if there was an error
         """
-        msg = MIMEText('This is a test message from Medusa. If you\'re reading this, the test succeeded.')
+        msg = MIMEText("This is a test message from Medusa. If you're reading this, the test succeeded.")
         if app.EMAIL_SUBJECT:
             msg['Subject'] = '[TEST] {0}'.format(app.EMAIL_SUBJECT)
         else:
