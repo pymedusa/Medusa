@@ -83,7 +83,7 @@ def _download_result(result):
 
         # save the data to disk
         try:
-            with open(file_name, u'w') as file_out:
+            with open(file_name, u'wb') as file_out:
                 file_out.write(result.extra_info[0])
 
             chmod_as_parent(file_name)
@@ -600,7 +600,7 @@ def delay_search(best_result):
             date_added = first_result['date_added']
             # Some results in cache have date_added as 0
             if not date_added:
-                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                log.debug("DELAY: First result in cache doesn't have a valid date, skipping provider.")
                 return False
 
             timestamp = to_timestamp(date_added)
@@ -927,6 +927,10 @@ def combine_results(multi_results, single_results):
 
         log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
         result_candidates.append(candidate)
+
+    # If there aren't any single results we can return early
+    if not single_results:
+        return result_candidates
 
     return_multi_results = []
     for multi_result in result_candidates:

@@ -264,7 +264,7 @@ class Application(object):
             if self.run_as_daemon:
                 pid_dir = os.path.dirname(self.pid_file)
                 if not os.access(pid_dir, os.F_OK):
-                    sys.exit('PID dir: %s doesn\'t exist. Exiting.' % pid_dir)
+                    sys.exit("PID dir: %s doesn't exist. Exiting." % pid_dir)
                 if not os.access(pid_dir, os.W_OK):
                     sys.exit('PID dir: %s must be writable (write permissions). Exiting.' % pid_dir)
 
