@@ -67,9 +67,6 @@
                             <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search" />
                         </app-link>
                         <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'"></div>
-                        <div class="pull-right"> <!-- hide/show episodes -->
-                            <button v-if="!config.layout.show.allSeasons" :id="`showseason-${props.row.season}`" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="`#collapseSeason-${props.row.season}`">Hide Episodes</button>
-                        </div> <!-- end column select and hide/show episodes -->
                     </h3>
                 </template>
 
@@ -95,7 +92,7 @@
                         <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                     </span>
 
-                    <span v-else-if="props.column.field == 'scene'">
+                    <span v-else-if="props.column.label == 'Scene'">
                         <input type="text" :placeholder="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode" size="6" maxlength="8"
                             class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
                             :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
@@ -233,11 +230,13 @@ export default {
                 label: 'nfo',
                 field: 'content.hasNfo',
                 type: 'boolean',
+                sortable: false,
                 hidden: false
             }, {
                 label: 'tbn',
                 field: 'content.hasTbn',
                 type: 'boolean',
+                sortable: false,
                 hidden: false
             }, {
                 label: 'Episode',
@@ -251,7 +250,7 @@ export default {
                 hidden: false
             }, {
                 label: 'Scene',
-                field: 'scene',
+                field: (row) => `${row.scene.season}x${row.scene.episode}`,
                 type: 'number',
                 hidden: false
             }, {
@@ -820,51 +819,13 @@ export default {
         toggleColumn(index, event) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
-        },
-        /**
-         * Add jquery listeners that can only be added after the show has finished loading.
-         */
-        addDynamicListeners() {
-            // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
-
-            // Season = ??
-            // tbody = $(document.querySelectorAll('.collapse.toggle')[season]).parents('tbody')
-            // Get all rows, except for the top one.
-            // tbody.children('tr:not([mode="local"])')
-
-            document.querySelectorAll('.collapse.toggle').forEach(element => {
-                element.addEventListener('hide.bs.collapse', () => {
-                    // On hide
-                    const reg = /collapseSeason-(\d+)/g;
-                    const result = reg.exec(this.id);
-                    $('#showseason-' + result[1]).text('Show Episodes');
-                    $('#season-' + result[1] + '-cols').addClass('shadow');
-                });
-                element.addEventListener('show.bs.collapse', () => {
-                    // On show
-                    const reg = /collapseSeason-(\d+)/g;
-                    const result = reg.exec(this.id);
-                    $('#showseason-' + result[1]).text('Hide Episodes');
-                    $('#season-' + result[1] + '-cols').removeClass('shadow');
-                });
-            });
         }
     },
     watch: {
         'show.id.slug': function(slug) {
-        // show's slug has changed, meaning the show's page has finished loading.
-            if (slug) {
-                const { addDynamicListeners } = this;
-                updateSearchIcons(slug);
-            }
-        },
-        'show.seasons': function(seasons) {
             // show's slug has changed, meaning the show's page has finished loading.
-            if (seasons) {
-                const { addDynamicListeners } = this;
-                this.$nextTick(() => {
-                    addDynamicListeners();
-                });
+            if (slug) {
+                updateSearchIcons(slug);
             }
         }
     }
@@ -873,8 +834,6 @@ export default {
 
 <style scope>
 .vgt-global-search__input.vgt-pull-left {
-    /* width: 50%; */
-    /* display: inline-block; */
     float: left;
     height: 40px;
 }
@@ -966,14 +925,6 @@ tablesorter.css
     color: rgb(255, 255, 255);
 }
 
-/* .vgt-table .tablesorter-header {
-    padding: 4px 18px;
-    cursor: pointer;
-    background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
-    background-position: center right;
-    background-repeat: no-repeat;
-} */
-
 .vgt-table thead th.sorting.sorting-desc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
@@ -996,25 +947,6 @@ tablesorter.css
     cursor: default;
 }
 
-/* thead.tablesorter-stickyHeader {
-    border-top: 2px solid rgb(255, 255, 255);
-    border-bottom: 2px solid rgb(255, 255, 255);
-} */
-
-/* Zebra Widget - row alternating colors */
-.vgt-table tr:nth-child(odd) {
-    /* background-color: rgb(245, 241, 228); */
-}
-
-.vgt-table tr:nth-child(odd) {
-    /* background-color: rgb(223, 218, 207); */
-}
-
-/* filter widget */
-/* .tablesorter .filtered {
-    display: none;
-} */
-
 .vgt-table input.tablesorter-filter {
     width: 98%;
     height: auto;
@@ -1026,8 +958,6 @@ tablesorter.css
 .vgt-table tr.tablesorter-filter-row,
 .vgt-table tr.tablesorter-filter-row td {
     text-align: center;
-    /* background: rgb(238, 238, 238); */
-    /* border-bottom: 1px solid rgb(221, 221, 221); */
 }
 
 /* optional disabled input styling */
