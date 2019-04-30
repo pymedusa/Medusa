@@ -1,5 +1,5 @@
 <template>
-    <div class="display-show-template">
+    <div class="display-show-template" :class="theme">
         <backstretch v-bind="{indexer, id}"></backstretch>
         <input type="hidden" id="series-id" value="" />
         <input type="hidden" id="indexer-name" value="" />
@@ -21,6 +21,10 @@
                     mode: 'span',
                     customChildObject: 'episodes'
                 }"
+                :pagination-options="{
+                    enabled: true,
+                    perPage: 50
+                }"
                 :search-options="{
                     enabled: true,
                     trigger: 'enter',
@@ -35,7 +39,7 @@
                     enabled: true,
                     selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
                     selectionInfoClass: 'select-info',
-                    selectionText: 'rows selected',
+                    selectionText: 'episodes selected',
                     clearSelectionText: 'clear',
                     selectAllByGroup: true
                 }"
@@ -54,14 +58,18 @@
                     </div>
                 </div>
 
-                <template slot="table-header-row" slot-scope="props" :class="'my-class'">
-                    <h3 class="season-header"><app-link :name="'season-'+ props.row.season"></app-link>
+                <template slot="table-header-row" slot-scope="props">
+                    <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season"></app-link>
                         <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
                         {{ props.row.label > 0 ? 'Season ' + props.row.label : 'Specials' }}
                         <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                         <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
-                            <img v-if="config" data-ep-manual-search :src="'images/manualsearch' + (config.themeName === 'dark' ? '-white' : '') + '.png'" width="16" height="16" alt="search" title="Manual Search" />
+                            <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search" />
                         </app-link>
+                        <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'"></div>
+                        <div class="pull-right"> <!-- hide/show episodes -->
+                            <button v-if="!config.layout.show.allSeasons" :id="`showseason-${props.row.season}`" type="button" class="btn-medusa pull-right" data-toggle="collapse" :data-target="`#collapseSeason-${props.row.season}`">Hide Episodes</button>
+                        </div> <!-- end column select and hide/show episodes -->
                     </h3>
                 </template>
 
@@ -323,6 +331,11 @@ export default {
             } else {
                 return this.show.seasons;
             }
+        },
+        theme() {
+            const { config } = this;
+            const { themeName } = config;
+            return themeName || 'light';
         }
     },
     created() {
@@ -363,16 +376,6 @@ export default {
                 this.reflowLayout();
             });
         });
-
-        // window.addEventListener('load', () => {
-        //     $.ajaxEpSearch({
-        //         colorRow: true
-        //     });
-
-        //     startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
-        //     $.ajaxEpSubtitlesSearch();
-        //     $.ajaxEpRedownloadSubtitle();
-        // });
 
         $(document.body).on('click', '.seasonCheck', event => {
             const seasCheck = event.currentTarget;
@@ -475,24 +478,6 @@ export default {
                 sceneAbsolute = m[1];
             }
             setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
-        });
-
-        // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
-        document.querySelectorAll('.collapse.toggle').forEach(element => {
-            element.addEventListener('hide.bs.collapse', () => {
-                // On hide
-                const reg = /collapseSeason-(\d+)/g;
-                const result = reg.exec(this.id);
-                $('#showseason-' + result[1]).text('Show Episodes');
-                $('#season-' + result[1] + '-cols').addClass('shadow');
-            });
-            element.addEventListener('show.bs.collapse', () => {
-                // On show
-                const reg = /collapseSeason-(\d+)/g;
-                const result = reg.exec(this.id);
-                $('#showseason-' + result[1]).text('Hide Episodes');
-                $('#season-' + result[1] + '-cols').removeClass('shadow');
-            });
         });
         
         // Get the season exceptions and the xem season mappings.
@@ -778,13 +763,11 @@ export default {
                     console.info(`started a full backlog search`);
                 }
             }).catch(error => {
-                debugger;
                 console.error(String(error));
                 if (episode) {
                     this.$refs[`search-${episode.identifier}`].src = `images/no16.png`;
                 }
             });
-
         },
         showSubtitleButton(episode) {
             const { config, show } = this;
@@ -837,15 +820,53 @@ export default {
         toggleColumn(index, event) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
+        },
+        /**
+         * Add jquery listeners that can only be added after the show has finished loading.
+         */
+        addDynamicListeners() {
+            // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
+
+            // Season = ??
+            // tbody = $(document.querySelectorAll('.collapse.toggle')[season]).parents('tbody')
+            // Get all rows, except for the top one.
+            // tbody.children('tr:not([mode="local"])')
+
+            document.querySelectorAll('.collapse.toggle').forEach(element => {
+                element.addEventListener('hide.bs.collapse', () => {
+                    // On hide
+                    const reg = /collapseSeason-(\d+)/g;
+                    const result = reg.exec(this.id);
+                    $('#showseason-' + result[1]).text('Show Episodes');
+                    $('#season-' + result[1] + '-cols').addClass('shadow');
+                });
+                element.addEventListener('show.bs.collapse', () => {
+                    // On show
+                    const reg = /collapseSeason-(\d+)/g;
+                    const result = reg.exec(this.id);
+                    $('#showseason-' + result[1]).text('Hide Episodes');
+                    $('#season-' + result[1] + '-cols').removeClass('shadow');
+                });
+            });
         }
     },
     watch: {
         'show.id.slug': function(slug) {
         // show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
+                const { addDynamicListeners } = this;
                 updateSearchIcons(slug);
             }
-        } 
+        },
+        'show.seasons': function(seasons) {
+            // show's slug has changed, meaning the show's page has finished loading.
+            if (seasons) {
+                const { addDynamicListeners } = this;
+                this.$nextTick(() => {
+                    addDynamicListeners();
+                });
+            }
+        }
     }
 };
 </script>
@@ -855,6 +876,7 @@ export default {
     /* width: 50%; */
     /* display: inline-block; */
     float: left;
+    height: 40px;
 }
 .vgt-input {
     border: 1px solid #ccc;
@@ -1116,6 +1138,52 @@ span.snatched b {
 
 td.col-footer {
     text-align: left !important;
+}
+
+.vgt-wrap__footer {
+    color: rgb(255, 255, 255);
+    padding: 1em;
+    background-color: rgb(51, 51, 51);
+    margin-bottom: 1em;
+}
+
+.footer__row-count, .footer__navigation__page-info {
+    display: inline;
+}
+
+.footer__row-count__label {
+    margin-right: 1em;
+}
+
+.vgt-wrap__footer .footer__navigation {
+    font-size: 14px;
+}
+
+.vgt-pull-right {
+    float: right!important;
+}
+
+.vgt-wrap__footer .footer__navigation__page-btn .chevron {
+    width: 24px;
+    height: 24px;
+    border-radius: 15%;
+    position: relative;
+    margin: 0 8px;
+}
+
+.vgt-wrap__footer .footer__navigation__info, .vgt-wrap__footer .footer__navigation__page-info {
+    display: inline-block;
+    color: #909399;
+    margin: 0 16px;
+    margin-top: 0px;
+    margin-right: 16px;
+    margin-bottom: 0px;
+    margin-left: 16px;
+}
+
+.select-info span {
+    margin-left: 5px;
+    line-height: 40px;
 }
 
 </style>
