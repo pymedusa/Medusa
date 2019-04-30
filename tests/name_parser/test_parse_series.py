@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from medusa.name_parser.parser import NameParser
-from six import iteritems
+
 import guessit
 import pytest
 
