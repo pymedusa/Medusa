@@ -13,6 +13,7 @@
 - Fixed snatching of air by date shows specials ([#6457](https://github.com/pymedusa/Medusa/pull/6457))
 - Fixed email notifier name parser warning for ABD episodes ([#6527](https://github.com/pymedusa/Medusa/pull/6527))
 - Fixed download of multi episode releases without single results ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
+- Fixed "send to trash" option not doing anything (Python 3.6 and higher) ([#6625](https://github.com/pymedusa/Medusa/pull/6625))
 
 ## 0.3.1 (2019-03-20)
 
