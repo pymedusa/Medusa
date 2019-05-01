@@ -28,7 +28,6 @@ ext | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665c
 ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | Requires `sgmllib3k` on Python 3
 **ext2** | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | Markers: `python_version < '3'`
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-**ext2 ext3** | `PyGithub` | [1.43.7](https://pypi.org/project/PyGithub/1.43.7/) | **`medusa`** | Module: `github`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 ext | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | -
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
@@ -36,7 +35,6 @@ ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.3](https://pypi.org/project/imdbpie/5.6.3/) | **`medusa`** | -
 ext | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
 ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
-ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | Module: `jwt`
 ext | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | -
 ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
 ext | `Mako` | [1.0.9](https://pypi.org/project/Mako/1.0.9/) | **`medusa`** | Module: `mako`
@@ -46,11 +44,14 @@ ext | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheContr
 ext | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
 ext | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | Module: `pint`
 ext | <code><b>profilehooks</b>.py</code> | [1.11.0](https://pypi.org/project/profilehooks/1.11.0/) | **`medusa`** | -
+**ext2 ext3** | `PyGithub` | [1.43.7](https://pypi.org/project/PyGithub/1.43.7/) | **`medusa`** | Module: `github`
 ext | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | -
+ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | Module: `jwt`
 ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | -
 ext | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
+**ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 ext | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | -
@@ -69,7 +70,6 @@ ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests
 ext | `validators` | [0.12.4](https://pypi.org/project/validators/0.12.4/) | **`medusa`** | -
 ext | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
-**ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 
 Notes:
  - `ext` compatible with python2 and python3
