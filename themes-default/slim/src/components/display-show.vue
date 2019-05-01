@@ -131,7 +131,7 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
-                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.identifier}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
+                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${createEpisodeIdentifier(props.row.season, props.row.episode)}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
                         <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
                     </span>
@@ -162,6 +162,25 @@
                 </div>
             </div>
         </modal>
+
+        <modal name="query-mark-failed-and-search" @before-open="beforeFailedSearchModalClose" :height="'auto'">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Mark episode as failed and search?</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Starting to search for the episode</p>
+                        <p v-if="searchedEpisode">Would you also like to mark episode {{createEpisodeIdentifier(searchedEpisode.season, searchedEpisode.episode)}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
+                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+                    </div>
+                </div>
+            </div>
+        </modal>
         
         <!-- TODO: Implement subtitle modal in vue -->
         <!-- <include file="subtitle_modal.mako"/> -->
@@ -174,6 +193,7 @@
 
 <script>
 import formatDate from 'date-fns/format';
+import padStart from 'lodash/padstart';
 import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
@@ -299,7 +319,8 @@ export default {
                 hidden: false
             }],
             selectedEpisodes: [],
-
+            // We need to keep track of which episode where trying to search, for the vue-modal
+            searchedEpisode: null
         };
     },
     computed: {
@@ -390,44 +411,6 @@ export default {
             });
         });
 
-        let lastCheck = null;
-        $(document.body).on('click', '.epCheck', event => {
-            const target = event.currentTarget;
-            if (!lastCheck || !event.shiftKey) {
-                lastCheck = target;
-                return;
-            }
-
-            const check = target;
-            let found = 0;
-
-            $('.epCheck').each((index, element) => {
-                if (found === 1) {
-                    element.checked = lastCheck.checked;
-                }
-
-                if (found === 2) {
-                    return false;
-                }
-
-                if (element === check || element === lastCheck) {
-                    found++;
-                }
-            });
-        });
-
-        // Initially show/hide all the rows according to the checkboxes
-        $('#checkboxControls input').each((index, element) => {
-            const status = $(element).prop('checked');
-            $('tr.' + $(element).attr('id')).each((index, tableRow) => {
-                if (status) {
-                    $(tableRow).show();
-                } else {
-                    $(tableRow).hide();
-                }
-            });
-        });
-
         $(document.body).on('change', '.sceneSeasonXEpisode', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
@@ -499,11 +482,11 @@ export default {
             } 
         },
         setQuality(quality, episodes) {
-            const { id, indexer, getShow, show } = this;
+            const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[episode.identifier] = { quality: parseInt(quality, 10) };
+                patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { quality: parseInt(quality, 10) };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData)
@@ -515,11 +498,11 @@ export default {
             });
         },
         setStatus(status, episodes) {
-            const { id, indexer, getShow, show } = this;
+            const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[episode.identifier] = { status };
+                patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { status };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData)
@@ -719,9 +702,45 @@ export default {
             }
             return 0;
         },
+        /**
+         * vue-js-modal requires a method, to pass an event to.
+         * The event then can be used to assign the value of the episode.
+         */
+        beforeFailedSearchModalClose (event) {
+            this.searchedEpisode = event.params.episode;
+        },
         retryDownload(episode) {
             const { config } = this;
             return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        forcedSearch(episode, searchType) {
+            const { createEpisodeIdentifier, show } = this;
+            const episodeIdentifier = createEpisodeIdentifier(episode.season, episode.episode);
+            let data = {};
+            if (episode) {
+                data = {
+                    showslug: show.id.slug,
+                    episodes: [ episodeIdentifier ],
+                    options: {}
+                }
+            }
+
+            api.post(`search/${searchType}`, data)
+            .then(response => {
+                if (episode) {
+                    console.info(`started search for show: ${show.id.slug} episode: ${episodeIdentifier}`);
+                    this.$refs[`search-${episodeIdentifier}`].src = `images/queued.png`;
+                    this.$refs[`search-${episodeIdentifier}`].disabled = true;
+                } else {
+                    console.info(`started a full backlog search`);
+                }
+            }).catch(error => {
+                console.error(String(error));
+                if (episode) {
+                    this.$refs[`search-${episodeIdentifier}`].src = `images/no16.png`;
+                }
+            });
+
         },
         /**
          * Start a backlog search or failed search for the specific episode.
@@ -729,44 +748,20 @@ export default {
          * @param {Object} epsiode - Episode object. If no episode object is passed, a backlog search is started.
          */
         queueSearch(episode) {
-            const { retryDownload, show } = this;
-            let searchType = 'backlog';
-            let data = {};
+            const { $modal, createEpisodeIdentifier, forcedSearch, retryDownload } = this;
+            const episodeIdentifier = createEpisodeIdentifier(episode.season, episode.episode);
             if (episode) {
-                data = {
-                    showslug: show.id.slug,
-                    episodes: [ episode.identifier ],
-                    options: {}
-                }
-            }
-
-            if (episode) {
-                if (this.$refs[`search-${episode.identifier}`].disabled == true) {
+                if (this.$refs[`search-${episodeIdentifier}`].disabled == true) {
                     return;
                 }
-            
+
+                this.$refs[`search-${episodeIdentifier}`].src = `images/loading16-dark.gif`;
                 if (retryDownload(episode)) {
-                    searchType = 'failed';
-                }
-
-                this.$refs[`search-${episode.identifier}`].src = `images/loading16-dark.gif`;
-            }        
-
-            api.post(`search/${searchType}`, data)
-            .then(response => {
-                if (episode) {
-                    console.info(`started search for show: ${show.id.slug} episode: ${episode.identifier}`);
-                    this.$refs[`search-${episode.identifier}`].src = `images/queued.png`;
-                    this.$refs[`search-${episode.identifier}`].disabled = true;
+                    $modal.show('query-mark-failed-and-search', { episode });
                 } else {
-                    console.info(`started a full backlog search`);
+                    forcedSearch(episode, 'backlog');
                 }
-            }).catch(error => {
-                console.error(String(error));
-                if (episode) {
-                    this.$refs[`search-${episode.identifier}`].src = `images/no16.png`;
-                }
-            });
+            }
         },
         showSubtitleButton(episode) {
             const { config, show } = this;
@@ -819,13 +814,16 @@ export default {
         toggleColumn(index, event) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
+        },
+        createEpisodeIdentifier(season, episode) {
+            return `s${padStart(season, 2, '0')}e${padStart(episode, 2, '0')}`;
         }
     },
     watch: {
         'show.id.slug': function(slug) {
             // show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
-                updateSearchIcons(slug);
+                updateSearchIcons(slug, this);
             }
         }
     }
