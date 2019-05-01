@@ -108,6 +108,8 @@ def get_episodes(search_thread, searchstatus):
                 ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
+            'queuetime': search_thread.queue_time.isoformat(),
+            'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None,
         })
 
     return results
