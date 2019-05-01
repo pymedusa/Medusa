@@ -111,10 +111,13 @@ class QueueItem(threading.Thread):
         self.action_id = action_id
         self.stop = threading.Event()
         self.added = None
+        self.queue_time = datetime.datetime.now()
+        self.start_time = None
 
     def run(self):
         """Implementing classes should call this."""
         self.inProgress = True
+        self.start_time = datetime.datetime.now()
 
     def finish(self):
         """Implementing Classes should call this."""
