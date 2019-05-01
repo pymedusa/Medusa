@@ -92,7 +92,6 @@ from medusa.search.manual import (
 from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
-    ForcedSearchQueueItem,
     SnatchQueueItem,
 )
 from medusa.server.web.core import (
@@ -1960,7 +1959,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = BacklogQueueItem(ep_obj.series, [ep_obj])
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
