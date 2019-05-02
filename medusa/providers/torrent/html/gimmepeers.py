@@ -87,6 +87,7 @@ class GimmePeersProvider(TorrentProvider):
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
         """
+                
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -111,7 +112,7 @@ class GimmePeersProvider(TorrentProvider):
 
                     seeders = int(cells[10].get_text().replace(',', ''))
                     leechers = int(cells[11].get_text().replace(',', ''))
-                    torrent_size = cells[8].get_text()
+                    torrent_size = cells[5].get_text(' ')
                     size = convert_size(torrent_size) or -1
 
                     # Filter unseeded torrent
