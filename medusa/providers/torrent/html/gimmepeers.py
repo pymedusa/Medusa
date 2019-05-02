@@ -109,10 +109,11 @@ class GimmePeersProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     # Filter unseeded torrent
-                    if seeders < self.minseed or leechers < self.minleech:
+                    if seeders < self.minseed:
                         if mode != 'RSS':
-                            logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format
-                                       (title, seeders, leechers), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      ' minimum seeders: {0}. Seeders: {1}',
+                                      title, seeders)
                         continue
 
                     item = {
