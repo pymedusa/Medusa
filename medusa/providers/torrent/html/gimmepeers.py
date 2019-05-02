@@ -51,7 +51,6 @@ class GimmePeersProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):  # pylint: disable=too-many-locals
         """
         Search a provider and parse the results.
-
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
@@ -71,7 +70,8 @@ class GimmePeersProvider(TorrentProvider):
                 self.search_params['search'] = search_string
 
                 data = self.session.get(self.urls['search'], params=self.search_params)
-                if not data:
+                if not data or not data.content:
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(data.text, mode)
@@ -81,7 +81,6 @@ class GimmePeersProvider(TorrentProvider):
     def parse(self, data, mode):
         """
         Parse search results for items.
-
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
@@ -103,14 +102,14 @@ class GimmePeersProvider(TorrentProvider):
 
                     link = cells[1].find('a')
                     download_url = urljoin(self.url, cells[2].find('a')['href'])
-                    title = link.getText()
+                    title = link.get_text()
 
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(cells[10].getText().replace(',', ''))
-                    leechers = int(cells[11].getText().replace(',', ''))
-                    torrent_size = cells[8].getText()
+                    seeders = int(cells[10].get_text().replace(',', ''))
+                    leechers = int(cells[11].get_text().replace(',', ''))
+                    torrent_size = cells[8].get_text()
                     size = convert_size(torrent_size) or -1
 
                     # Filter unseeded torrent
@@ -121,13 +120,16 @@ class GimmePeersProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
+                    pubdate_raw = cells[6].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'hash': '',
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -165,6 +167,7 @@ class GimmePeersProvider(TorrentProvider):
     def _check_auth(self):
         if not self.username or not self.password:
             log.debug(u'Invalid username or password. Check your settings')
+            return False
 
         return True
 
