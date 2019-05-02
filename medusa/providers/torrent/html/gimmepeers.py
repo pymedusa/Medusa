@@ -9,12 +9,10 @@ import traceback
 
 from requests.utils import dict_from_cookiejar
 
-from medusa import tv
-from medusa import logger
+from medusa import logger, tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, try_int
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
 
 
 class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
