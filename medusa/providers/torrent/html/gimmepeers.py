@@ -86,7 +86,7 @@ class GimmePeersProvider(TorrentProvider):
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
-        """ 
+        """
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
