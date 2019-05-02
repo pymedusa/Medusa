@@ -86,8 +86,6 @@
 
 ##### [Wiki](https://github.com/pymedusa/Medusa/wiki)
 
-##### [Discord](https://discord.gg/zMdAdUK)
-
 #### Important
 Before using this with your existing database (sickbeard.db) please make a backup copy of it and delete any other database files such as cache.db and failed.db if present<br>
 We HIGHLY recommend starting out with no database files at all to make this a fresh start but the choice is at your own risk.
