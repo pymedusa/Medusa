@@ -6,12 +6,12 @@ from __future__ import unicode_literals
 
 import re
 
-from requests.utils import dict_from_cookiejar
-
 from medusa import logger, tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from requests.utils import dict_from_cookiejar
 
 
 class GimmePeersProvider(TorrentProvider):
