@@ -31,7 +31,6 @@ class GimmePeersProvider(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, 'takelogin.php'),
             'search': urljoin(self.url, 'browse.php'),
-            'download': urljoin(self.url, '%s'),
         }
 
         self.username = None
@@ -103,7 +102,7 @@ class GimmePeersProvider(TorrentProvider):
                     cells = result('td')
 
                     link = cells[1].find('a')
-                    download_url = self.urls['download'] % cells[2].find('a')['href']
+                    download_url = urljoin(self.url, cells[2].find('a')['href'])
                     title = link.getText()
 
                     if not all([title, download_url]):
