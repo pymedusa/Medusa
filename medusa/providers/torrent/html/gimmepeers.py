@@ -95,17 +95,6 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return results
 
-                # Checks if cookie has timed-out causing search to redirect to login page. 
-                # If text matches on loginpage we login and generate a new cookie and load the search data again.
-                # if re.search('Still need help logging in?', response.text):
-                #     logger.log(u"Login has timed out. Need to generate new cookie for GimmePeers and search again.", logger.DEBUG)
-                #     self.session.cookies.clear()
-                #     self.login()
-                # 
-                #     data = self.session.get(self.urls['search'], params=self.search_params)
-                #     if not data:
-                #         continue
-
     def parse(self, data, mode):
         items = []
 
