@@ -3,25 +3,65 @@
 """Initialize all torrent providers."""
 from __future__ import unicode_literals
 
-from medusa.providers.torrent.html import (abnormal, alpharatio, anidex,
-                                           animetorrents, archetorrent,
-                                           avistaz, bithdtv, bjshare, cinemaz,
-                                           elitetracker, gimmepeers, hdspace,
-                                           hdtorrents, hebits, iptorrents,
-                                           limetorrents, morethantv, nebulance,
-                                           nordicbits, pretome, privatehd,
-                                           scenetime, sdbits, shanaproject,
-                                           speedcd, thepiratebay, tntvillage,
-                                           tokyotoshokan, torrentbytes,
-                                           torrenting, tvchaosuk, yggtorrent,
-                                           zooqle)
-from medusa.providers.torrent.json import (animebytes, bitcannon, btn,
-                                           danishbits, hdbits, ncore, norbits,
-                                           rarbg, torrentday, torrentleech,
-                                           xthor)
-from medusa.providers.torrent.rss import nyaa, rsstorrent, shazbat
-from medusa.providers.torrent.torznab import torznab
-from medusa.providers.torrent.xml import torrentz2
+from medusa.providers.torrent.html import (
+    abnormal,
+    alpharatio,
+    anidex,
+    animetorrents,
+    archetorrent,
+    avistaz,
+    bithdtv,
+    bjshare,
+    cinemaz,
+    elitetracker,
+    gimmepeers,
+    hdspace,
+    hdtorrents,
+    hebits,
+    iptorrents,
+    limetorrents,
+    morethantv,
+    nebulance,
+    nordicbits,
+    pretome,
+    privatehd,
+    scenetime,
+    sdbits,
+    shanaproject,
+    speedcd,
+    thepiratebay,
+    tntvillage,
+    tokyotoshokan,
+    torrentbytes,
+    torrenting,
+    tvchaosuk,
+    yggtorrent,
+    zooqle,
+)
+from medusa.providers.torrent.json import (
+    animebytes,
+    bitcannon,
+    btn,
+    danishbits,
+    hdbits,
+    ncore,
+    norbits,
+    rarbg,
+    torrentday,
+    torrentleech,
+    xthor,
+)
+from medusa.providers.torrent.rss import (
+    nyaa,
+    rsstorrent,
+    shazbat,
+)
+from medusa.providers.torrent.torznab import (
+    torznab,
+)
+from medusa.providers.torrent.xml import (
+    torrentz2,
+)
 
 __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'danishbits',
