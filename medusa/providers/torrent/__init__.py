@@ -14,6 +14,7 @@ from medusa.providers.torrent.html import (
     bjshare,
     cinemaz,
     elitetracker,
+    gimmepeers,
     hdspace,
     hdtorrents,
     hebits,
@@ -69,5 +70,5 @@ __all__ = [
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
     'torrentz2', 'animetorrents', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare', 'ncore'
+    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare', 'ncore', 'gimmepeers'
 ]
