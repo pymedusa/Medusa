@@ -8,15 +8,16 @@ import re
 
 from medusa import logger, tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import convert_size, try_int
+from medusa.helper.common import convert_size
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 
-class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-
+class GimmePeersProvider(TorrentProvider):
+    """GimmePeers Torrent provider."""
+    
     def __init__(self):
 
-        TorrentProvider.__init__(self, "GimmePeers")
+        TorrentProvider.__init__(self, 'GimmePeers')
 
         self.urls = {
             'base_url': 'https://www.gimmepeers.com',
@@ -37,16 +38,17 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         self.search_params = {
             # c20=1&c21=1&c25=1&c24=1&c23=1&c22=1&c1=1
-            "c20": 1, "c21": 1, "c25": 1, "c24": 1, "c23": 1, "c22": 1, "c1": 1
+            'c20': 1, 'c21': 1, 'c25': 1, 'c24': 1, 'c23': 1, 'c22': 1, 'c1': 1
         }
 
     def _check_auth(self):
         if not self.username or not self.password:
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
 
         return True
 
     def login(self):
+        """Login method used for logging in before doing search and torrent downloads."""
         if any(dict_from_cookiejar(self.session.cookies).values()):
             return True
 
@@ -58,16 +60,23 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log(u"Unable to connect to provider", logger.WARNING)
+            logger.log(u'Unable to connect to provider', logger.WARNING)
             return False
 
         if re.search('Username or password incorrect!', response.text):
-            logger.log(u"Invalid username or password. Check your settings", logger.WARNING)
+            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         return True
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):  # pylint: disable=too-many-locals
+        """
+        Search a provider and parse the results.
+        :param search_strings: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
+        """
         results = []
         if not self.login():
             return results
@@ -91,6 +100,12 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return results
 
     def parse(self, data, mode):
+        """
+        Parse search results for items.
+        :param data: The raw response from a search
+        :param mode: The current mode used to search, e.g. RSS
+        :return: A list of items found
+        """
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
