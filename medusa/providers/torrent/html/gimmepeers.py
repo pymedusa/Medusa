@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for GimmePeers."""	
+"""Provider code for GimmePeers."""
 
 from __future__ import unicode_literals
 
@@ -39,7 +39,7 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.cache = tv.Cache(self)
 
         self.search_params = {
-            #c20=1&c21=1&c25=1&c24=1&c23=1&c22=1&c1=1
+            # c20=1&c21=1&c25=1&c24=1&c23=1&c22=1&c1=1
             "c20": 1, "c21": 1, "c25": 1, "c24": 1, "c23": 1, "c22": 1, "c1": 1
         }
 
@@ -76,7 +76,7 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return results
 
         for mode in search_strings:
-            
+
             logger.log(u"Search Mode: {0}".format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
@@ -112,7 +112,6 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                     link = cells[1].find('a')
                     download_url = self.urls['download'] % cells[2].find('a')['href']
 
-                
                     title = link.getText()
                     seeders = int(cells[10].getText().replace(',', ''))
                     leechers = int(cells[11].getText().replace(',', ''))
@@ -142,7 +141,7 @@ class GimmePeersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     logger.exception('Failed parsing provider.')
-                    
+
         return items
 
 
