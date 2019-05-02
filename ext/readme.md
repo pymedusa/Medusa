@@ -6,7 +6,7 @@ ext | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
 ext | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd63092cfaaae80be9f309fd85c7f20c9) | **`medusa`**, `guessit`, `knowit`, `subliminal` | -
 **ext2** | `backports.functools_lru_cache` | [1.5](https://pypi.org/project/backports.functools_lru_cache/1.5/) | `soupsieve` | Markers: `python_version < '3'`
-ext | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
+**ext2** | <code><b>backports_abc</b>.py</code> | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | Markers: `python_version < '3.5'`
 **ext2 ext3** | `beautifulsoup4` | [4.7.1](https://pypi.org/project/beautifulsoup4/4.7.1/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`medusa`** | Module: `bencode`
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
@@ -57,7 +57,7 @@ ext | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**,
 ext | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`<br>Markers: `python_version >= '3'`
-ext | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
+**ext2** | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | Markers: `python_version < '3.4'`
 ext | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `tvdbapiv2`, `configobj`, `python-dateutil`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `rebulk`, `subliminal`, `validators` | -
 ext | `soupsieve` | [1.7](https://pypi.org/project/soupsieve/1.7/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
