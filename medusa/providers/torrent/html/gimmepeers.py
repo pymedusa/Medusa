@@ -5,9 +5,6 @@
 from __future__ import unicode_literals
 
 import re
-import traceback
-
-from requests.utils import dict_from_cookiejar
 
 from medusa import logger, tv
 from medusa.bs4_parser import BS4Parser
