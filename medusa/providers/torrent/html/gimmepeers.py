@@ -14,7 +14,6 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 class GimmePeersProvider(TorrentProvider):
     """GimmePeers Torrent provider."""
-    
     def __init__(self):
 
         TorrentProvider.__init__(self, 'GimmePeers')
@@ -72,6 +71,7 @@ class GimmePeersProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):  # pylint: disable=too-many-locals
         """
         Search a provider and parse the results.
+        
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
@@ -83,11 +83,11 @@ class GimmePeersProvider(TorrentProvider):
 
         for mode in search_strings:
 
-            logger.log(u"Search Mode: {0}".format(mode), logger.DEBUG)
+            logger.log(u'Search Mode: {0}'.format(mode), logger.DEBUG)
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log(u"Search string: {0}".format
-                               (search_string.decode("utf-8")), logger.DEBUG)
+                    logger.log(u'Search string: {0}'.format
+                               (search_string.decode('utf-8')), logger.DEBUG)
 
                 self.search_params['search'] = search_string
 
@@ -102,6 +102,7 @@ class GimmePeersProvider(TorrentProvider):
     def parse(self, data, mode):
         """
         Parse search results for items.
+        
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
@@ -114,7 +115,7 @@ class GimmePeersProvider(TorrentProvider):
 
             # Continue only if one Release is found
             if len(torrent_rows) < 2:
-                logger.log(u"Data returned from provider does not contain any torrents", logger.DEBUG)
+                logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
             for result in torrent_rows[1:]:
@@ -147,7 +148,7 @@ class GimmePeersProvider(TorrentProvider):
 
                     item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': ''}
                     if mode != 'RSS':
-                        logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format(title, seeders, leechers), logger.DEBUG)
+                        logger.log(u'Found result: {0} with {1} seeders and {2} leechers'.format(title, seeders, leechers), logger.DEBUG)
 
                     items.append(item)
 
