@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import re
-import traceback
 
 from requests.utils import dict_from_cookiejar
 
