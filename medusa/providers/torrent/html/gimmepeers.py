@@ -4,15 +4,20 @@
 
 from __future__ import unicode_literals
 
+import logging
 import re
 
 from medusa import logger, tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class GimmePeersProvider(TorrentProvider):
@@ -58,11 +63,11 @@ class GimmePeersProvider(TorrentProvider):
 
         for mode in search_strings:
 
-            logger.log(u'Search Mode: {0}'.format(mode), logger.DEBUG)
+            log.debug(u'Search Mode: {0}'.format(mode))
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log(u'Search string: {0}'.format
-                               (search_string), logger.DEBUG)
+                    log.debug(u'Search string: {0}'.format
+                               (search_string))
 
                 self.search_params['search'] = search_string
 
@@ -89,7 +94,7 @@ class GimmePeersProvider(TorrentProvider):
 
             # Continue only if one Release is found
             if len(torrent_rows) < 2:
-                logger.log(u'Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug(u'Data returned from provider does not contain any torrents')
                 return items
 
             for result in torrent_rows[1:]:
@@ -125,13 +130,13 @@ class GimmePeersProvider(TorrentProvider):
                         'hash': '',
                     }
                     if mode != 'RSS':
-                        logger.debug('Found result: {0} with {1} seeders and {2} leechers',
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
                                   title, seeders, leechers)
 
                     items.append(item)
 
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.exception('Failed parsing provider.')
+                    log.exception('Failed parsing provider.')
 
         return items
 
@@ -148,18 +153,18 @@ class GimmePeersProvider(TorrentProvider):
 
         response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log(u'Unable to connect to provider', logger.WARNING)
+            log.debug(u'Unable to connect to provider')
             return False
 
         if re.search('Username or password incorrect!', response.text):
-            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+            log.debug(u'Invalid username or password. Check your settings')
             return False
 
         return True
 
     def _check_auth(self):
         if not self.username or not self.password:
-            logger.log(u'Invalid username or password. Check your settings', logger.WARNING)
+            log.debug(u'Invalid username or password. Check your settings')
 
         return True
 
