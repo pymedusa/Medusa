@@ -4,26 +4,64 @@
 from __future__ import unicode_literals
 
 import pkgutil
-from builtins import next, zip
+from builtins import next
+from builtins import zip
 from os import sys
 from random import shuffle
 
 from medusa import app
-from medusa.providers.nzb import anizb, binsearch
-from medusa.providers.torrent import (abnormal, alpharatio, anidex, animebytes,
-                                      animetorrents, archetorrent, avistaz,
-                                      bitcannon, bithdtv, bjshare, btn,
-                                      cinemaz, danishbits, elitetracker,
-                                      gimmepeers, hdbits, hdspace, hdtorrents,
-                                      hebits, iptorrents, limetorrents,
-                                      morethantv, ncore, nebulance, norbits,
-                                      nordicbits, nyaa, pretome, privatehd,
-                                      rarbg, scenetime, sdbits, shanaproject,
-                                      shazbat, speedcd, thepiratebay,
-                                      tntvillage, tokyotoshokan, torrentbytes,
-                                      torrentday, torrenting, torrentleech,
-                                      torrentz2, tvchaosuk, xthor, yggtorrent,
-                                      zooqle)
+from medusa.providers.nzb import (
+    anizb, binsearch,
+)
+from medusa.providers.torrent import (
+    abnormal,
+    alpharatio,
+    anidex,
+    animebytes,
+    animetorrents,
+    archetorrent,
+    avistaz,
+    bitcannon,
+    bithdtv,
+    bjshare,
+    btn,
+    cinemaz,
+    danishbits,
+    elitetracker,
+    gimmepeers,
+    hdbits,
+    hdspace,
+    hdtorrents,
+    hebits,
+    iptorrents,
+    limetorrents,
+    morethantv,
+    ncore,
+    nebulance,
+    norbits,
+    nordicbits,
+    nyaa,
+    pretome,
+    privatehd,
+    rarbg,
+    scenetime,
+    sdbits,
+    shanaproject,
+    shazbat,
+    speedcd,
+    thepiratebay,
+    tntvillage,
+    tokyotoshokan,
+    torrentbytes,
+    torrentday,
+    torrenting,
+    torrentleech,
+    torrentz2,
+    tvchaosuk,
+    xthor,
+    yggtorrent,
+    zooqle
+)
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday', 'hdbits',
