@@ -45,7 +45,7 @@
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
 :: | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | ext | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | ext | Module: `pint`
-:: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
+:: | <code><b>profilehooks</b>.py</code> | [1.11.0](https://pypi.org/project/profilehooks/1.11.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
 :: | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`
