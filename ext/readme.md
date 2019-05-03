@@ -18,7 +18,7 @@
 :: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
 :: | <code><b>decorator</b>.py</code> | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `dogpile.cache`, `validators` | ext | -
-:: | `deluge-client` | [1.7.0](https://pypi.org/project/deluge-client/1.7.0/) | **`medusa`** | ext | -
+:: | `deluge-client` | [1.7.1](https://pypi.org/project/deluge-client/1.7.1/) | **`medusa`** | ext | -
 :: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | ext | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | ext | -
 :: | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | ext | -
@@ -28,7 +28,7 @@
 :: | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | ext | Requires `sgmllib3k` on Python 3
 :: | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | **ext2** | -
 :: | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | **ext2** | Module: `concurrent.futures`<br>Markers: `python_version >= '2.6' and python_version < '3'`
-:: | `PyGithub` | [1.43.6](https://pypi.org/project/PyGithub/1.43.6/) | **`medusa`** | **ext2 ext3** | Module: `github`<br>**Removed tests**
+:: | `PyGithub` | [1.43.7](https://pypi.org/project/PyGithub/1.43.7/) | **`medusa`** | **ext2 ext3** | Module: `github`
 :: | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | ext | -
 :: | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | ext | -
 :: | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | ext | -
@@ -39,13 +39,13 @@
 :: | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | ext | Module: `jwt`
 :: | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | ext | -
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
-:: | `Mako` | [1.0.8](https://pypi.org/project/mako/1.0.8/) | **`medusa`** | ext | Module: `mako`
+:: | `Mako` | [1.0.9](https://pypi.org/project/Mako/1.0.9/) | **`medusa`** | ext | Module: `mako`
 :: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
-:: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
+:: | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
 :: | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | ext | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | ext | Module: `pint`
-:: | <code><b>profilehooks</b>.py</code> | [1.10.0](https://pypi.org/project/profilehooks/1.10.0/) | **`medusa`** | ext | -
+:: | <code><b>profilehooks</b>.py</code> | [1.11.0](https://pypi.org/project/profilehooks/1.11.0/) | **`medusa`** | ext | -
 :: | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | ext | -
 :: | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | ext | -
 :: | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `tvdbapiv2`, `guessit`, `imdbpie` | ext | Module: `dateutil`

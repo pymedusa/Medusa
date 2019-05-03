@@ -99,26 +99,26 @@ from six import text_type
         }
     },
     {  # p11 - [%SN - %AD - %EN] - hypen in episode name
-        'ep_name': 'Archer - 2017-08-12 - Danger Island - Disheartening Situation',
+        'ep_name': 'Archer - 2017 08 12 - Danger Island - Disheartening Situation',
         'expected': {
             'show': 'Archer',
-            'ep_id': '2017-08-12',
+            'ep_id': '2017 08 12',
             'episode': 'Danger Island - Disheartening Situation'
         }
     },
     {  # p12 - [%SN - %AD - %EN]
-        'ep_name': 'Jersey Shore Family Vacation - 2018-04-20 - Meatball Down',
+        'ep_name': 'Jersey Shore Family Vacation - 2018 04 20 - Meatball Down',
         'expected': {
             'show': 'Jersey Shore Family Vacation',
-            'ep_id': '2018-04-20',
+            'ep_id': '2018 04 20',
             'episode': 'Meatball Down'
         }
     },
     {  # p13 - [%SN - %AD - %EN] - empty episode name
-        'ep_name': 'Jersey Shore Family Vacation - 2018-04-20 - ',
+        'ep_name': 'Jersey Shore Family Vacation - 2018 04 20 - ',
         'expected': {
             'show': 'Jersey Shore Family Vacation',
-            'ep_id': '2018-04-20',
+            'ep_id': '2018 04 20',
             'episode': ''
         }
     },

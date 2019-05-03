@@ -1,48 +1,47 @@
 # coding=utf-8
 
-"""Provider code for Bitcannon."""
+"""Provider code for nCore."""
 
 from __future__ import unicode_literals
 
 import logging
 
 from medusa import tv
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import urljoin
-
-import validators
+from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class BitCannonProvider(TorrentProvider):
-    """BitCannon Torrent provider."""
+class NcoreProvider(TorrentProvider):
+    """nCore Torrent provider."""
 
     def __init__(self):
-        """Initialize the class."""
-        super(BitCannonProvider, self).__init__('BitCannon')
+        """.Initialize the class."""
+        super(NcoreProvider, self).__init__('nCore')
 
         # Credentials
-        self.api_key = None
+        self.username = None
+        self.password = None
 
         # URLs
-        self.url = 'http://localhost:3000/'
-        self.custom_url = None
+        self.url = 'https://ncore.cc'
+        self.urls = {
+            'login': 'https://ncore.cc/login.php',
+            'search': 'https://ncore.cc/torrents.php',
+        }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
         # Cache
-        cache_params = {'RSS': ['tv', 'anime']}
-        self.cache = tv.Cache(self, search_params=cache_params)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -54,45 +53,43 @@ class BitCannonProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+        if not self.login():
+            return results
 
-        if self.custom_url:
-            if not validators.url(self.custom_url):
-                log.warning('Invalid custom url: {0}', self.custom_url)
-                return results
-            self.url = self.custom_url
+        categories = [
+            'xvidser_hun', 'xvidser',
+            'dvdser_hun', 'dvdser',
+            'hdser_hun', 'hdser'
+        ]
 
         # Search Params
         search_params = {
-            'category': 'anime' if ep_obj and ep_obj.series and ep_obj.series.anime else 'tv',
-            'apiKey': self.api_key,
+            'nyit_sorozat_resz': 'true',
+            'kivalasztott_tipus': ','.join(categories),
+            'mire': '',
+            'miben': 'name',
+            'tipus': 'kivalasztottak_kozott',
+            'searchedfrompotato': 'true',
+            'jsons': 'true',
         }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
-                search_params['q'] = search_string
+
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_url = urljoin(self.url, 'api/search')
+                    search_params['mire'] = search_string
 
-                response = self.session.get(search_url, params=search_params)
-                if not response or not response.content:
+                data = self.session.get_json(self.urls['search'], params=search_params)
+                if not data:
                     log.debug('No data returned from provider')
                     continue
 
-                try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
-                    continue
-
-                if not self._check_auth_from_data(jdata):
-                    return results
-
-                results += self.parse(jdata, mode)
+                results += self.parse(data, mode)
 
         return results
 
@@ -106,20 +103,17 @@ class BitCannonProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
-        torrent_rows = data.pop('torrents', {})
 
-        # Skip column headers
+        torrent_rows = data.get('results', {})
         for row in torrent_rows:
             try:
-                title = row.pop('title', '')
-                info_hash = row.pop('infoHash', '')
-                download_url = 'magnet:?xt=urn:btih:' + info_hash
-                if not all([title, download_url, info_hash]):
+                title = row.pop('release_name', '')
+                download_url = row.pop('download_url', '')
+                if not (title and download_url):
                     continue
 
-                swarm = row.pop('swarm', {})
-                seeders = try_int(swarm.pop('seeders', 0))
-                leechers = try_int(swarm.pop('leechers', 0))
+                seeders = int(row.pop('seeders', 0))
+                leechers = int(row.pop('leechers', 0))
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:
@@ -149,16 +143,31 @@ class BitCannonProvider(TorrentProvider):
 
         return items
 
-    @staticmethod
-    def _check_auth_from_data(data):
-        if not all([isinstance(data, dict),
-                    data.pop('status', 200) != 401,
-                    data.pop('message', '') != 'Invalid API key']):
+    def login(self):
+        """Login method used for logging in before doing search and torrent downloads."""
+        if (dict_from_cookiejar(self.session.cookies).values()
+                and self.session.cookies.get('nick')):
+            return True
 
-            log.warning('Invalid api key. Check your settings')
+        login_params = {
+            'nev': self.username,
+            'pass': self.password,
+            'ne_leptessen_ki': '1',
+            'submitted': '1',
+            'set_lang': 'en',
+            'submit': 'Access!',
+        }
+
+        response = self.session.post(self.urls['login'], data=login_params)
+        if not response or not response.text:
+            log.warning('Unable to connect to provider')
+            return False
+
+        if 'Wrong username or password!' in response.text:
+            log.warning('Invalid username or password. Check your settings')
             return False
 
         return True
 
 
-provider = BitCannonProvider()
+provider = NcoreProvider()
