@@ -1060,6 +1060,7 @@ class Episode(TV):
         data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
+        data['slug'] = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
         data['season'] = self.season
         data['episode'] = self.episode
 
