@@ -2,6 +2,7 @@
 
 #### New Features
 - Added nCore torrent provider ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
+- Added Gimmepeers torrent provider (credits to @mystycs) ([#6635](https://github.com/pymedusa/Medusa/pull/6635))
 
 #### Improvements
 
