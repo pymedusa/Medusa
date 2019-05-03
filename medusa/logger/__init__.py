@@ -224,10 +224,10 @@ def blocks_r(filename, size=64 * 1024, reset_offset=True):
             Otherwise, starts reading from where the file current position is.
 
     Yields:
-        block (bytes): The data within the blocks.
+        block (str): The data within the blocks.
 
     """
-    with io.open(filename, 'rb') as file_obj:
+    with io.open(filename, 'r', encoding='utf-8') as file_obj:
         offset = 0
         if reset_offset:
             file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
@@ -275,7 +275,7 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
     block_generator_kws = dict(size=block_size, reset_offset=reset_offset)
     block_generator = blocks_r
     for block in block_generator(filename, **block_generator_kws):
-        lines = block.decode(encoding).split(newline)
+        lines = block.split(newline)
         if remainder:
             lines[-1] = lines[-1] + remainder
         remainder = lines[0]
