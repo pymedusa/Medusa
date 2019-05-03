@@ -131,7 +131,7 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
-                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${createEpisodeIdentifier(props.row.season, props.row.episode)}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
+                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
                         <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                         <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
                     </span>
@@ -172,7 +172,7 @@
                     </div>
                     <div class="modal-body">
                         <p>Starting to search for the episode</p>
-                        <p v-if="searchedEpisode">Would you also like to mark episode {{createEpisodeIdentifier(searchedEpisode.season, searchedEpisode.episode)}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                        <p v-if="searchedEpisode">Would you also like to mark episode {{searchedEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
@@ -481,11 +481,11 @@ export default {
             }
         },
         setQuality(quality, episodes) {
-            const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
+            const { id, indexer, getShow, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { quality: parseInt(quality, 10) };
+                patchData[episode.slug] = { quality: parseInt(quality, 10) };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
@@ -497,11 +497,11 @@ export default {
                 });
         },
         setStatus(status, episodes) {
-            const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
+            const { id, indexer, getShow, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { status };
+                patchData[episode.slug] = { status };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
@@ -721,8 +721,8 @@ export default {
             return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         forcedSearch(episode, searchType) {
-            const { createEpisodeIdentifier, show } = this;
-            const episodeIdentifier = createEpisodeIdentifier(episode.season, episode.episode);
+            const { show } = this;
+            const episodeIdentifier = episode.slug;
             let data = {};
             if (episode) {
                 data = {
@@ -755,8 +755,8 @@ export default {
          * @param {Object} episode - Episode object. If no episode object is passed, a backlog search is started.
          */
         queueSearch(episode) {
-            const { $modal, createEpisodeIdentifier, forcedSearch, retryDownload } = this;
-            const episodeIdentifier = createEpisodeIdentifier(episode.season, episode.episode);
+            const { $modal, forcedSearch, retryDownload } = this;
+            const episodeIdentifier = episode.slug;
             if (episode) {
                 if (this.$refs[`search-${episodeIdentifier}`].disabled === true) {
                     return;
@@ -821,9 +821,6 @@ export default {
         toggleColumn(index) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
-        },
-        createEpisodeIdentifier(season, episode) {
-            return `s${padStart(season, 2, '0')}e${padStart(episode, 2, '0')}`;
         }
     },
     watch: {
