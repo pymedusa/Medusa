@@ -17,23 +17,27 @@ READ_SIZE = 10
 logger = logging.getLogger(__name__)
 
 
-class ConnectionLostException(Exception):
+class DelugeClientException(Exception):
+    """Base exception for all deluge client exceptions"""
+
+
+class ConnectionLostException(DelugeClientException):
     pass
 
 
-class CallTimeoutException(Exception):
+class CallTimeoutException(DelugeClientException):
     pass
 
 
-class InvalidHeaderException(Exception):
+class InvalidHeaderException(DelugeClientException):
     pass
 
 
-class FailedToReconnectException(Exception):
+class FailedToReconnectException(DelugeClientException):
     pass
 
 
-class RemoteException(Exception):
+class RemoteException(DelugeClientException):
     pass
 
 
@@ -133,7 +137,13 @@ class DelugeRPCClient(object):
 
     def _send_call(self, deluge_version, protocol_version, method, *args, **kwargs):
         self.request_id += 1
-        logger.debug('Calling reqid %s method %r with args:%r kwargs:%r' % (self.request_id, method, args, kwargs))
+        if method == 'daemon.login':
+            debug_args = list(args)
+            if len(debug_args) >= 2:
+                debug_args[1] = '<password hidden>'
+            logger.debug('Calling reqid %s method %r with args:%r kwargs:%r' % (self.request_id, method, debug_args, kwargs))
+        else:
+            logger.debug('Calling reqid %s method %r with args:%r kwargs:%r' % (self.request_id, method, args, kwargs))
 
         req = ((self.request_id, method, args, kwargs), )
         req = zlib.compress(dumps(req))
