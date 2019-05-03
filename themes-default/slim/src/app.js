@@ -1,12 +1,15 @@
 import Vue from 'vue';
-import Vuex, { mapState } from 'vuex';
+import Vuex, {
+    mapState
+} from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
-import { ClientTable, Event } from 'vue-tables-2';
-import { isDevelopment } from './utils';
+import {
+    isDevelopment
+} from './utils';
 import VModal from 'vue-js-modal';
 import Tooltip from 'vue-directive-tooltip';
 import 'vue-directive-tooltip/css/index.css';
@@ -36,7 +39,6 @@ Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
-Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
 Vue.use(VModal);
 Vue.use(Tooltip);
 
@@ -75,8 +77,7 @@ const app = new Vue({
     name: 'App',
     store,
     router,
-    components: {
-    },
+    components: {},
     data() {
         return {
             globalLoading: false,
@@ -90,8 +91,12 @@ const app = new Vue({
         }
 
         if (!document.location.pathname.includes('/login')) {
-            const { $store } = this;
-            $store.dispatch('login', { username: window.username });
+            const {
+                $store
+            } = this;
+            $store.dispatch('login', {
+                username: window.username
+            });
             $store.dispatch('getConfig');
 
             if (isDevelopment) {

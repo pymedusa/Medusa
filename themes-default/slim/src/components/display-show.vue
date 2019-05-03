@@ -76,7 +76,7 @@
                     </tr>
                     <tr class="spacer"></tr>
                 </template>
-                                
+
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.field == 'content.hasNfo'">
                         <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
@@ -100,7 +100,7 @@
                             :value="getSceneNumbering(props.row).season + 'x' + getSceneNumbering(props.row).episode"
                             style="padding: 0; text-align: center; max-width: 60px;"/>
                     </span>
-                    
+
                     <span v-else-if="props.column.field == 'sceneAbsolute'">
                         <input type="text" :placeholder="getSceneAbsoluteNumbering(props.row)" size="6" maxlength="8"
                             class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
@@ -127,7 +127,7 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'status'">
-                        {{getOverviewStatus(props.row.status, props.row.quality, show.config.qualities)}}<quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
+                        {{props.row.status}} <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
@@ -181,7 +181,7 @@
                 </div>
             </div>
         </modal>
-        
+
         <!-- TODO: Implement subtitle modal in vue -->
         <!-- <include file="subtitle_modal.mako"/> -->
         <!--End - Bootstrap Modal-->
@@ -196,7 +196,6 @@ import formatDate from 'date-fns/format';
 import padStart from 'lodash/padstart';
 import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize } from '../utils';
 import { addQTip, updateSearchIcons } from '../jquery-wrappers';
@@ -220,6 +219,7 @@ export default {
                 title: 'Medusa'
             };
         }
+
         const { title } = this.show;
         return {
             title,
@@ -294,11 +294,9 @@ export default {
                 hidden: false
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
+                // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
-                // type: 'date',
-                // dateInputFormat: 'YYYY-MM-DD HH:mm:ssZ ', // expects 2018-03-16
-                // dateOutputFormat: 'MMM Do YYYY', // outputs Mar 16th 2018
                 hidden: false
             }, {
                 label: 'Download',
@@ -327,7 +325,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config            
+            config: state => state.config
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -345,12 +343,12 @@ export default {
             if (!seasons) {
                 return [];
             }
-            
+
             if (invertTable) {
                 return this.show.seasons.slice().reverse();
-            } else {
-                return this.show.seasons;
             }
+
+            return this.show.seasons;
         },
         theme() {
             const { config } = this;
@@ -371,7 +369,6 @@ export default {
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
-            getSeasonSceneExceptions,
             $store,
             show
         } = this;
@@ -459,9 +456,10 @@ export default {
             if (m) {
                 sceneAbsolute = m[1];
             }
+
             setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
         });
-        
+
         // Get the season exceptions and the xem season mappings.
         // getSeasonSceneExceptions();
     },
@@ -469,7 +467,7 @@ export default {
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
-            getShows: 'getShows' 
+            getShows: 'getShows'
         }),
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -477,9 +475,10 @@ export default {
             if (event.newQuality !== null) {
                 setQuality(event.newQuality, selectedEpisodes);
             }
+
             if (event.newStatus !== null) {
                 setStatus(event.newStatus, selectedEpisodes);
-            } 
+            }
         },
         setQuality(quality, episodes) {
             const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
@@ -489,13 +488,13 @@ export default {
                 patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { quality: parseInt(quality, 10) };
             });
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData)
-            .then(response => {
-                console.info(`patched show ${show.id.slug} with quality ${quality}`);
-                getShow({ id, indexer, detailed: true });
-            }).catch(error => {
-                console.error(String(error));
-            });
+            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+                .then( _ => {
+                    console.info(`patched show ${show.id.slug} with quality ${quality}`);
+                    getShow({ id, indexer, detailed: true });
+                }).catch(error => {
+                    console.error(String(error));
+                });
         },
         setStatus(status, episodes) {
             const { createEpisodeIdentifier, id, indexer, getShow, show } = this;
@@ -505,22 +504,20 @@ export default {
                 patchData[createEpisodeIdentifier(episode.season, episode.episode)] = { status };
             });
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData)
-            .then(response => {
-                console.info(`patched show ${show.id.slug} with status ${status}`);
-                getShow({ id, indexer, detailed: true });
-            }).catch(error => {
-                console.error(String(error));
-            });
+            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+                .then( _ => {
+                    console.info(`patched show ${show.id.slug} with status ${status}`);
+                    getShow({ id, indexer, detailed: true });
+                }).catch(error => {
+                    console.error(String(error));
+                });
 
-            if (status == 3) {
+            if (status === 3) {
                 this.$modal.show('query-start-backlog-search');
             }
         },
         parseDateFn(row) {
             return formatDate(parse(row.airDate), 'DD/MM/YYYY, hh:mm a');
-        },
-        parseSubtitlesFn(row) {
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
@@ -528,14 +525,15 @@ export default {
         },
         /**
          * Add (reduce) the total episodes filesize.
-         * @param headerRow {Ojbect} - A season object, with a property "episodes".
+         * @param {object} headerRow header row object.
+         * @returns {string} - Human readable file size.
          */
         addFileSize(headerRow) {
             return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, season, episode, rowIndex) {
             const { id, indexer, getShow, show, subtitleSearchComponents } = this;
-            const SubtitleSearchClass = Vue.extend(SubtitleSearch);
+            const SubtitleSearchClass = Vue.extend(SubtitleSearch);  // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
                 propsData: { show, season, episode, key: rowIndex },
                 parent: this
@@ -543,15 +541,15 @@ export default {
 
             // Update the show, as we downloaded new subtitle(s)
             instance.$on('update', event => {
-                // TODO: This could be replaced by the generic websocket updates in future. 
+                // TODO: This could be replaced by the generic websocket updates in future.
                 if (event.reason === 'new subtitles found') {
                     getShow({ id, indexer, detailed: true });
                 }
             });
 
-            const node = document.createElement('div')
-            this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(node)
-            instance.$mount(node) // pass nothing
+            const node = document.createElement('div');
+            this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(node);
+            instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
         /**
@@ -583,6 +581,7 @@ export default {
             if (sceneSeason === '') {
                 sceneSeason = null;
             }
+
             if (sceneEpisode === '') {
                 sceneEpisode = null;
             }
@@ -601,6 +600,7 @@ export default {
                 } else {
                     $('#sceneSeasonXEpisode_' + id + '_' + forSeason + '_' + forEpisode).val(data.sceneSeason + 'x' + data.sceneEpisode);
                 }
+
                 if (!data.success) {
                     if (data.errorMessage) {
                         alert(data.errorMessage); // eslint-disable-line no-alert
@@ -648,6 +648,7 @@ export default {
                 });
                 return true;
             }
+
             $(el).css({
                 'background-color': '#FF0000', // Red
                 'color': '#FFF!important', // eslint-disable-line quote-props
@@ -667,11 +668,12 @@ export default {
             if (!season.episodes) {
                 return [];
             }
+
             if (invertTable) {
                 return season.episodes.slice().reverse();
-            } else {
-                return season.episodes;
             }
+
+            return season.episodes;
         },
         /**
          * Check if the season/episode combination exists in the scene numbering.
@@ -688,6 +690,7 @@ export default {
                     return mapped[0].destination;
                 }
             }
+
             return { season: 0, episode: 0 };
         },
         getSceneAbsoluteNumbering(episode) {
@@ -697,16 +700,20 @@ export default {
 
             if (Object.keys(sceneAbsoluteNumbering).length > 0) {
                 return sceneAbsoluteNumbering[episode.absoluteNumber];
-            } else if (xemAbsolute) {
+            }
+
+            if (xemAbsolute) {
                 return xemAbsolute;
             }
+
             return 0;
         },
         /**
-         * vue-js-modal requires a method, to pass an event to.
+         * Vue-js-modal requires a method, to pass an event to.
          * The event then can be used to assign the value of the episode.
+         * @param {Object} event - vue js modal event
          */
-        beforeFailedSearchModalClose (event) {
+        beforeFailedSearchModalClose(event) {
             this.searchedEpisode = event.params.episode;
         },
         retryDownload(episode) {
@@ -725,33 +732,33 @@ export default {
                 }
             }
 
-            api.post(`search/${searchType}`, data)
-            .then(response => {
-                if (episode) {
-                    console.info(`started search for show: ${show.id.slug} episode: ${episodeIdentifier}`);
-                    this.$refs[`search-${episodeIdentifier}`].src = `images/queued.png`;
-                    this.$refs[`search-${episodeIdentifier}`].disabled = true;
-                } else {
-                    console.info(`started a full backlog search`);
-                }
-            }).catch(error => {
-                console.error(String(error));
-                if (episode) {
-                    this.$refs[`search-${episodeIdentifier}`].src = `images/no16.png`;
-                }
-            });
+            api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
+                .then( _ => {
+                    if (episode) {
+                        console.info(`started search for show: ${show.id.slug} episode: ${episodeIdentifier}`);
+                        this.$refs[`search-${episodeIdentifier}`].src = `images/queued.png`;
+                        this.$refs[`search-${episodeIdentifier}`].disabled = true;
+                    } else {
+                        console.info(`started a full backlog search`);
+                    }
+                }).catch(error => {
+                    console.error(String(error));
+                    if (episode) {
+                        this.$refs[`search-${episodeIdentifier}`].src = `images/no16.png`;
+                    }
+                });
 
         },
         /**
          * Start a backlog search or failed search for the specific episode.
          * A failed search is started depending on the current episodes status.
-         * @param {Object} epsiode - Episode object. If no episode object is passed, a backlog search is started.
+         * @param {Object} episode - Episode object. If no episode object is passed, a backlog search is started.
          */
         queueSearch(episode) {
             const { $modal, createEpisodeIdentifier, forcedSearch, retryDownload } = this;
             const episodeIdentifier = createEpisodeIdentifier(episode.season, episode.episode);
             if (episode) {
-                if (this.$refs[`search-${episodeIdentifier}`].disabled == true) {
+                if (this.$refs[`search-${episodeIdentifier}`].disabled === true) {
                     return;
                 }
 
@@ -789,13 +796,13 @@ export default {
 
             // Check if there is a season exception for this season
             if (allSceneExceptions[season]) {
-                // if there is not a match on the xem table, display it as a medusa scene exception
+                // If there is not a match on the xem table, display it as a medusa scene exception
                 bindData = {
                     id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
                     alt: foundInXem ? '[xem]' : '[medusa]',
                     src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
-                    title: xemSeasons.reduce(function (a, b) {
-                        return a = a.concat(allSceneExceptions[b]);
+                    title: xemSeasons.reduce(function(a, b) {
+                        return a.concat(allSceneExceptions[b]);
                     }, []).join(', '),
                 }
             }
@@ -811,7 +818,7 @@ export default {
                 this.$refs[`episodeTable-${season.season}`].$refs[`tableSeason-${season.season}`].setOrder(event.column, event.ascending)
             });
         },
-        toggleColumn(index, event) {
+        toggleColumn(index) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
         },
@@ -820,8 +827,8 @@ export default {
         }
     },
     watch: {
-        'show.id.slug': function(slug) {
-            // show's slug has changed, meaning the show's page has finished loading.
+        'show.id.slug': slug => {
+            // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
             }

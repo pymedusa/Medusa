@@ -3,7 +3,6 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize } from '../utils';
-import { ClientTable, Event } from 'vue-tables-2';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -11,7 +10,6 @@ export default {
     template: '#show-template',
     components: {
         AppLink,
-        ClientTable,
         PlotInfo,
         ShowHeader
     },
@@ -21,6 +19,7 @@ export default {
                 title: 'Medusa'
             };
         }
+        
         const { title } = this.show;
         return {
             title,

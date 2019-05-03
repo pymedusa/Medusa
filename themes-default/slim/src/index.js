@@ -13,15 +13,24 @@ import VueMeta from 'vue-meta';
 import VueRouter from 'vue-router';
 import VueNativeSock from 'vue-native-websocket';
 import AsyncComputed from 'vue-async-computed';
-import { ToggleButton } from 'vue-js-toggle-button';
+import {
+    ToggleButton
+} from 'vue-js-toggle-button';
 import Snotify from 'vue-snotify';
-import { ClientTable } from 'vue-tables-2';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
-import { isDevelopment } from './utils';
-import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
+import {
+    isDevelopment
+} from './utils';
+import {
+    apiRoute,
+    apiv1,
+    api,
+    webRoot,
+    apiKey
+} from './api';
 import {
     AddShowOptions,
     AnidbReleaseGroupUi,
@@ -64,9 +73,10 @@ if (window) {
     window.AsyncComputed = AsyncComputed;
     window.ToggleButton = ToggleButton;
     window.Snotify = Snotify;
-    window.ClientTable = ClientTable;
     window.axios = axios;
-    window._ = { debounce };
+    window._ = {
+        debounce
+    };
     window.store = store;
     window.router = router;
     window.apiRoute = apiRoute;
@@ -124,7 +134,9 @@ const UTIL = {
     init() {
         $('[v-cloak]').removeAttr('v-cloak');
 
-        const { body } = document;
+        const {
+            body
+        } = document;
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 
@@ -136,7 +148,9 @@ const UTIL = {
     }
 };
 
-const { pathname } = window.location;
+const {
+    pathname
+} = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     api.get('config/main').then(response => {
         $.extend(MEDUSA.config, response.data);

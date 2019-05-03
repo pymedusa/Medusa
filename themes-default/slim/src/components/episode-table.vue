@@ -20,15 +20,10 @@
 
 import { mapState } from 'vuex';
 import { humanFileSize } from '../utils';
-import { ClientTable, Event } from 'vue-tables-2';
 import EpisodeRow from './episode-row.vue';
 
 export default {
     name: 'episode-table',
-    components: {
-        ClientTable,
-        EpisodeRow
-    },
     props: {
         show: {
             type: Object
