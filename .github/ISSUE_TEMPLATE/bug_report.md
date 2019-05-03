@@ -24,12 +24,15 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. ubuntu 14.04 x64]
  - Branch: [e.g. master, develop]
  - Commit: [e.g. c65ca2]
+ - Python version: [e.g. 3.6.8]
+ - Database version: [e.g. 44.12]
 
-**Logs:**
+**Debug logs (at least 50 lines):**
+General > Advanced Settings > Enable debug
 <details>
 
 ```
-<-- Please replace this whole line with your logs -->
+<-- Please replace this whole line with your debug logs -->
 ```
 </details>
 
