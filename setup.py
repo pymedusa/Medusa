@@ -47,6 +47,33 @@ with open(os.path.join(here, 'readme.md'), 'r') as r:
     long_description = r.read()
 
 
+def install_requires():
+    pkg_name_pattern = re.compile(r'#egg=(.+)(?:&|$)')
+
+    with open(os.path.join(here, 'requirements.txt'), 'r') as r:
+        requirements = r.read().split('\n')[:-1]
+
+    return [
+        r if not r.startswith('https://')
+        else (pkg_name_pattern.search(r).group(1) + ' @ ' + r)
+        for r in requirements
+    ]
+
+
+def packages():
+    result = []
+
+    for folder in ('medusa', 'ext', 'lib', 'themes'):
+        if os.path.isdir(os.path.join(here, folder)):
+            result.append(folder)
+
+    for folder in ('ext2', 'ext3', 'lib2', 'lib3'):
+        if os.path.isdir(os.path.join(here, folder)) and sys.version_info.major == int(folder[-1]):
+            result.append(folder)
+
+    return result
+
+
 # These requirements probably won't be needed
 # when `install_requires` is populated with `requirements.txt`
 tests_runtime_require = ['tornado==5.1.1', 'six', 'profilehooks', 'contextlib2', ]
@@ -61,8 +88,12 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/pymedusa/Medusa',
     license='GPLv3',
-    packages=[],
-    install_requires=[],
+    packages=packages(),
+    include_package_data=True,
+    # install_requires=install_requires(),
+    extras_require={
+        'system-stats': ['psutil'],
+    },
     entry_points={
         'console_scripts': [
             'medusa = medusa.__main__:main'
@@ -84,9 +115,6 @@ setup(
         'vcrpy>=2.0.1',
         'mock>=2.0.0',
     ],
-    extras_require={
-        'system-stats': ['psutil'],
-    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: End Users/Desktop',
