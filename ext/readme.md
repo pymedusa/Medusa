@@ -41,7 +41,7 @@
 :: | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | ext | -
 :: | `Mako` | [1.0.9](https://pypi.org/project/Mako/1.0.9/) | **`medusa`** | ext | Module: `mako`
 :: | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | ext | -
-:: | `MarkupSafe` | [1.0](https://pypi.org/project/MarkupSafe/1.0/) | `Mako` | ext | Module: `markupsafe`
+:: | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | ext | Module: `markupsafe`
 :: | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | ext | -
 :: | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | ext | -
 :: | `Pint` | [0.8.1](https://pypi.org/project/Pint/0.8.1/) | `knowit` | ext | Module: `pint`
