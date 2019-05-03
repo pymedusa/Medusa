@@ -19,29 +19,36 @@ const getters = {
      * @param {String} status - current episode status
      * @param {Number} quality - current episode quality
      * @param {Object} showQualities - show config's quality configuration. Including the arrays, 'preferred' and 'allowed'.
-     * @return {String} the overview status. 
+     * @return {String} the overview status.
      */
-    getOverviewStatus: state => (status, quality, showQualities) => {
+    // eslint-disable-next-line no-unused-vars
+    getOverviewStatus: _state => (status, quality, showQualities) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
         }
+
         if (['Skipped', 'Ignored'].includes(status)) {
             return 'Skipped';
         }
+
         if (['Wanted', 'Failed'].includes(status)) {
             return 'Wanted';
         }
+
         if (['Snatched', 'Snatched (Proper)', 'Snatched (Best)'].includes(status)) {
             return 'Snatched';
         }
+
         if (['Downloaded'].includes(status)) {
             if (showQualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
+
             if (showQualities.allowed.includes(quality)) {
                 return 'Allowed';
             }
         }
+
         return status;
     }
 };

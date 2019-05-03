@@ -5,15 +5,16 @@
 %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="robots" content="noindex, nofollow">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#333333">
-        <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
-        <base href="${base_url}">
-        <%block name="metas" />
+
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#333333">
+    <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
+    <base href="${base_url}">
+    <%block name="metas" />
         <link rel="shortcut icon" href="images/ico/favicon.ico?v=2">
         <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
         <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
@@ -51,15 +52,16 @@
         <%block name="css" />
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
-    <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
-        <div id="vue-wrap" class="container-fluid">
 
-          <div v-if="globalLoading" class="text-center">
-              <h3>Loading&hellip;</h3>
-              If this is taking too long,<br>
-              <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
-          </div>
-          <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
+<body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
+    <div id="vue-wrap" class="container-fluid">
+
+        <div v-if="globalLoading" class="text-center">
+            <h3>Loading&hellip;</h3>
+            If this is taking too long,<br>
+            <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
+        </div>
+        <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -177,7 +179,6 @@
 
                 // Global components
                 Vue.use(Snotify);
-                Vue.use(ClientTable, {}, false, 'bootstrap4', 'default');
             }
         </script>
         <%block name="scripts" />

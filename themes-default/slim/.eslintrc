@@ -3,7 +3,8 @@
     "xo/browser",
     "xo/esnext",
     "plugin:vue/essential",
-    "plugin:jest/recommended"
+    "plugin:jest/recommended",
+    "prettier"
   ],
   "rules": {
     "indent": ["error", 4],
@@ -12,5 +13,6 @@
   },
   "env": {
     "jquery": true
-  }
+  },
+  "plugins": ["vue"]
 }
