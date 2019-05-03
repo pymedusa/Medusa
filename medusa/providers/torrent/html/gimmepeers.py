@@ -73,7 +73,7 @@ class GimmePeersProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                self.search_params['search'] = search_string
+                search_params['search'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
