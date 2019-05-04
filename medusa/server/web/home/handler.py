@@ -72,10 +72,7 @@ from medusa.scene_exceptions import (
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    get_scene_absolute_numbering_for_show,
     get_scene_numbering,
-    get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show,
     get_xem_numbering_for_show,
     set_scene_numbering,
     xem_refresh,

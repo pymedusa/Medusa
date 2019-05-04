@@ -99,7 +99,10 @@ from medusa.name_parser.parser import (
 )
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
-from medusa.scene_numbering import get_scene_absolute_numbering_for_show, get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
+)
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -616,6 +619,11 @@ class Series(TV):
     def all_scene_exceptions(self):
         """Return series season scene exceptions."""
         return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
+
+    @property
+    def scene_numbering(self):
+        """Return series scene numbering."""
+        return get_scene_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -2182,9 +2190,14 @@ class Series(TV):
             data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
                                      'destination': {'season': dest[0], 'episode': dest[1]}}
                                     for src, dest in viewitems(self.xem_numbering)]
-            data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
             data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
             data['allSceneExceptions'] = self.all_scene_exceptions
+            if self.is_anime:
+                data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
+            if self.is_scene:
+                data['sceneNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
+                                          'destination': {'season': dest[0], 'episode': dest[1]}}
+                                          for src, dest in viewitems(self.scene_numbering)]
 
         return data
 

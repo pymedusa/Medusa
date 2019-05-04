@@ -1,5 +1,6 @@
 <template>
     <div class="display-show-template" :class="theme">
+        <vue-snotify></vue-snotify>
         <backstretch v-bind="{indexer, id}"></backstretch>
         <input type="hidden" id="series-id" value="" />
         <input type="hidden" id="indexer-name" value="" />
@@ -193,7 +194,6 @@
 
 <script>
 import formatDate from 'date-fns/format';
-import padStart from 'lodash/padstart';
 import parse from 'date-fns/parse'
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
@@ -247,13 +247,13 @@ export default {
             subtitleSearchComponents: [],
             search: '',
             columns: [{
-                label: 'nfo',
+                label: 'NFO',
                 field: 'content.hasNfo',
                 type: 'boolean',
                 sortable: false,
                 hidden: false
             }, {
-                label: 'tbn',
+                label: 'TBN',
                 field: 'content.hasTbn',
                 type: 'boolean',
                 sortable: false,
@@ -270,7 +270,9 @@ export default {
                 hidden: false
             }, {
                 label: 'Scene',
-                field: (row) => `${row.scene.season}x${row.scene.episode}`,
+                field: (row) => {
+                    return `${row.scene.season}x${row.scene.episode}`
+                },
                 type: 'number',
                 hidden: false
             }, {
@@ -301,6 +303,7 @@ export default {
             }, {
                 label: 'Download',
                 field: 'download',
+                sortable: false,
                 hidden: false
             }, {
                 label: 'Subtitles',
@@ -314,6 +317,7 @@ export default {
             }, {
                 label: 'Search',
                 field: 'search',
+                sortable: false,
                 hidden: false
             }],
             selectedEpisodes: [],
@@ -576,7 +580,15 @@ export default {
             $('#checkboxControlsBackground').show();
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-            const { id, indexer } = this;
+            const { $snotify, id, indexer, show } = this;
+
+            if (!show.config.scene) {
+                $snotify.warning(
+                    'To change episode scene numbering you need to enable the show option `scene` first',
+                    'Warning',
+                    { timeout: 0 }
+                );
+            }
 
             if (sceneSeason === '') {
                 sceneSeason = null;
@@ -611,7 +623,15 @@ export default {
             });
         },
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-            const { id, indexer } = this;
+            const { $snotify, id, indexer, show } = this;
+
+            if (!show.config.scene) {
+                $snotify.warning(
+                    'To change an anime episode scene numbering you need to enable the show option `scene` first',
+                    'Warning',
+                    { timeout: 0 }
+                );
+            }
 
             if (sceneAbsolute === '') {
                 sceneAbsolute = null;
@@ -677,10 +697,12 @@ export default {
         },
         /**
          * Check if the season/episode combination exists in the scene numbering.
+         * @param {Object} episode - object.
+         * @returns {Object} with scene season and episodes mapped numbering.
          */
         getSceneNumbering(episode) {
             const { show } = this;
-            const { xemNumbering } = show;
+            const { sceneNumbering, xemNumbering } = show;
 
             if (xemNumbering.length !== 0) {
                 const mapped = xemNumbering.filter(x => {
@@ -691,7 +713,16 @@ export default {
                 }
             }
 
-            return { season: 0, episode: 0 };
+            if (sceneNumbering.length !== 0) {
+                const mapped = sceneNumbering.filter(x => {
+                    return x.source.season === episode.season && x.source.episode === episode.episode;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].destination;
+                }
+            }
+
+            return { season: episode.scene.season || 0, episode: episode.scene.episode || 0 };
         },
         getSceneAbsoluteNumbering(episode) {
             const { show } = this;
@@ -824,7 +855,7 @@ export default {
         }
     },
     watch: {
-        'show.id.slug': slug => {
+        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
@@ -1043,7 +1074,7 @@ span.skipped {
 }
 
 span.preffered {
-    color: rgb(53, 82, 58);
+    color: rgb(41, 87, 48);
 }
 
 span.allowed {
