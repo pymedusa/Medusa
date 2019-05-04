@@ -40,19 +40,19 @@ const attachImdbTooltip = () => {
     });
 };
 
-/** 
+/**
  * Attach a default qtip to elements with the addQTip class.
  */
 const addQTip = () => {
-    $('.addQTip').each(function() {
+    $('.addQTip').each(function () {
         $(this).css({
             'cursor': 'help', // eslint-disable-line quote-props
             'text-shadow': '0px 0px 0.5px #666'
         });
-    
+
         const my = $(this).data('qtip-my') || 'left center';
         const at = $(this).data('qtip-at') || 'middle right';
-    
+
         $(this).qtip({
             show: {
                 solo: true
@@ -93,6 +93,11 @@ const updateSearchIcons = (showSlug, vm) => {
         el.disabled = true;
     };
 
+    /**
+     * Update search icons based on it's current search status (queued, error, searched)
+     * @param {*} results - Search queue results
+     * @param {*} vm - Vue instance
+     */
     const updateImages = results => {
         $.each(results, (index, ep) => {
             // Get td element for current ep
@@ -105,7 +110,7 @@ const updateSearchIcons = (showSlug, vm) => {
             }
 
             // Try to get the <a> Element
-            const img = vm.$refs[`search-s${padStart(ep.season, 2, '0')}e${padStart(ep.episode, 2, '0')}`];
+            const img = vm.$refs[`search-${ep.slug}`];
             if (img) {
                 if (ep.searchstatus.toLowerCase() === 'searching') {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
@@ -128,31 +133,6 @@ const updateSearchIcons = (showSlug, vm) => {
                 }
             }
 
-            // // This is used by the schedule page partials. Leaving this here for now. Should work if the updateSearchIcons function
-            // // is added to the mount method of the scheduled page.
-            // const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
-            // const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
-            // if (elementCompleteEpisodes) {
-            //     if (ep.searchstatus.toLowerCase() === 'searching') {
-            //         imageCompleteEpisodes.prop('title', 'Searching');
-            //         imageCompleteEpisodes.prop('alt', 'Searching');
-            //         imageCompleteEpisodes.prop('src', 'images/' + loadingImage);
-            //         disableLink(elementCompleteEpisodes);
-            //     } else if (ep.searchstatus.toLowerCase() === 'queued') {
-            //         imageCompleteEpisodes.prop('title', 'Queued');
-            //         imageCompleteEpisodes.prop('alt', 'queued');
-            //         imageCompleteEpisodes.prop('src', 'images/' + queuedImage);
-            //     } else if (ep.searchstatus.toLowerCase() === 'finished') {
-            //         imageCompleteEpisodes.prop('title', 'Forced Search');
-            //         imageCompleteEpisodes.prop('alt', '[search]');
-            //         imageCompleteEpisodes.prop('src', 'images/' + searchImage);
-            //         if (ep.overview.toLowerCase() === 'snatched') {
-            //             elementCompleteEpisodes.closest('tr').remove();
-            //         } else {
-            //             enableLink(elementCompleteEpisodes);
-            //         }
-            //     }
-            // }
         });
     };
 
@@ -162,13 +142,14 @@ const updateSearchIcons = (showSlug, vm) => {
     const checkManualSearches = () => {
         let pollInterval = 5000;
 
-        api.get(`search/${showSlug}`)
+        api.get(`search/${showSlug}`) // eslint-disable-line no-undef
             .then(response => {
                 if (response.data.results && response.data.results.length) {
                     pollInterval = 5000;
                 } else {
                     pollInterval = 15000;
                 }
+
                 updateImages(response.data.results);
             }).catch(error => {
                 console.error(String(error));
@@ -177,25 +158,6 @@ const updateSearchIcons = (showSlug, vm) => {
                 setTimeout(checkManualSearches, pollInterval);
             })
 
-        // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
-        // const indexerName = $('#indexer-name').val();
-        // const seriesId = $('#series-id').val();
-
-        // const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
-        // $.ajax({
-        //     url,
-        //     error() {
-                
-        //     },
-        //     type: 'GET',
-        //     dataType: 'JSON',
-        //     complete() {
-        //         setTimeout(checkManualSearches, pollInterval);
-        //     },
-        //     timeout: 15000 // Timeout every 15 secs
-        // }).done(data => {
-            
-        // });
     }
 
     checkManualSearches();
