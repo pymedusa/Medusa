@@ -479,9 +479,9 @@ export default {
                 newStatus: selectedStatus,
                 newQuality: selectedQuality,
                 statusOptions: changeStatusOptions,
-                qualityOptions: changeQualityOptions 
+                qualityOptions: changeQualityOptions
             });
-            
+
             // const { setQuality } = this;
 
             // const epArr = [];
@@ -656,7 +656,7 @@ span.required {
 }
 
 span.preferred {
-    color: blue;
+    color: rgb(41, 87, 48);
 }
 
 span.undesired {
@@ -783,7 +783,7 @@ span.skipped {
 }
 
 span.preffered {
-    color: rgb(53, 82, 58);
+    color: rgb(41, 87, 48);
 }
 
 span.allowed {
