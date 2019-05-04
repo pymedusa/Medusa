@@ -78,7 +78,8 @@ const state = {
         xemNumbering: [],
         xemAbsoluteNumbering: [],
         sceneAbsoluteNumbering: [],
-        allSceneExceptions: []
+        allSceneExceptions: [],
+        sceneNumbering: []
     }
 };
 
