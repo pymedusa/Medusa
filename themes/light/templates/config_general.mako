@@ -328,16 +328,6 @@ window.app = new Vue({
                                 </label>
                             </div>
                         </div>
-
-                        <div class="field-pair">
-                            <label for="display_all_seasons">
-                                <span class="component-title">Show all seasons</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="display_all_seasons" id="display_all_seasons" ${'checked="checked"' if app.DISPLAY_ALL_SEASONS else ''}>
-                                    <p>on the show summary page</p>
-                                </span>
-                            </label>
-                        </div>
                         <div class="field-pair">
                             <label for="sort_article">
                                 <span class="component-title">Sort with "The", "A", "An"</span>

@@ -39,8 +39,7 @@ const state = {
     layout: {
         show: {
             specials: null,
-            showListOrder: [],
-            allSeasons: null
+            showListOrder: []
         },
         home: null,
         history: null,
