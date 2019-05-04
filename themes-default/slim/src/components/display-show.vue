@@ -1121,6 +1121,8 @@ td.col-footer {
     padding: 1em;
     background-color: rgb(51, 51, 51);
     margin-bottom: 1em;
+    display: flex;
+    justify-content: space-between;
 }
 
 .footer__row-count, .footer__navigation__page-info {
@@ -1148,7 +1150,7 @@ td.col-footer {
 }
 
 .vgt-wrap__footer .footer__navigation__info, .vgt-wrap__footer .footer__navigation__page-info {
-    display: inline-block;
+    display: inline-flex;
     color: #909399;
     margin: 0 16px;
     margin-top: 0px;
