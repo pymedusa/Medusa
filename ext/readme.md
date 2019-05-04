@@ -17,7 +17,7 @@
 :: | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | ext | -
 :: | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | **ext2** | -
 :: | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | ext | Markers: `python_version < '3.5'`
-:: | <code><b>decorator</b>.py</code> | [4.3.0](https://pypi.org/project/decorator/4.3.0/) | `dogpile.cache`, `validators` | ext | -
+:: | <code><b>decorator</b>.py</code> | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `dogpile.cache`, `validators` | ext | -
 :: | `deluge-client` | [1.7.1](https://pypi.org/project/deluge-client/1.7.1/) | **`medusa`** | ext | -
 :: | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | ext | -
 :: | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | ext | -
@@ -66,7 +66,7 @@
 :: | `trans` | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | ext | -
 :: | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | ext | -
 :: | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests`, `CacheControl` | ext | -
-:: | `validators` | [0.12.4](https://pypi.org/project/validators/0.12.4/) | **`medusa`** | ext | -
+:: | `validators` | [0.12.5](https://pypi.org/project/validators/0.12.5/) | **`medusa`** | ext | -
 :: | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | ext | -
 :: | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | ext | -
 :: | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | **ext2 ext3** | Module: `yaml`
