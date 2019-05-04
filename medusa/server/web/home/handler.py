@@ -712,7 +712,7 @@ class Home(WebRoot):
                 return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
-                                            'Update wasn\'t successful, not restarting. Check your log for more information.')
+                                            "Update wasn't successful, not restarting. Check your log for more information.")
         else:
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
@@ -757,7 +757,7 @@ class Home(WebRoot):
                 'message': 'downgrade',
             })
         else:
-            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.WARNING)
+            logger.log(u"Checkout branch couldn't compare DB version.", logger.WARNING)
             return json.dumps({
                 'status': 'error',
                 'message': 'General exception',
@@ -890,13 +890,13 @@ class Home(WebRoot):
             main_db_con = db.DBConnection('cache.db')
             cached_result = main_db_con.action(
                 'SELECT * '
-                'FROM \'{provider}\' '
+                "FROM '{provider}' "
                 'WHERE rowid = ?'.format(provider=provider),
                 [rowid],
                 fetchone=True
             )
         except Exception as msg:
-            error_message = 'Couldn\'t read cached results. Error: {error}'.format(error=msg)
+            error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
             return self._genericMessage('Error', error_message)
 
@@ -998,7 +998,7 @@ class Home(WebRoot):
             table_exists = main_db_con.select(
                 'SELECT name '
                 'FROM sqlite_master '
-                'WHERE type=\'table\' AND name=?',
+                "WHERE type='table' AND name=?",
                 [provider]
             )
             if not table_exists:
@@ -1007,7 +1007,7 @@ class Home(WebRoot):
             # FIXME: This will need to be adjusted when indexer field is added to the providers.
             needs_update = main_db_con.select(
                 'SELECT * '
-                'FROM \'{provider}\' '
+                "FROM '{provider}' "
                 'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
                 ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
             )
@@ -1530,14 +1530,14 @@ class Home(WebRoot):
                 table_exists = main_db_con.select(
                     'SELECT name '
                     'FROM sqlite_master '
-                    'WHERE type=\'table\' AND name=?',
+                    "WHERE type='table' AND name=?",
                     [cur_provider.get_id()]
                 )
                 if not table_exists:
                     continue
                 try:
                     main_db_con.action(
-                        'DELETE FROM \'{provider}\' '
+                        "DELETE FROM '{provider}' "
                         'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
                         [series_obj.series_id]
                     )
@@ -1741,7 +1741,7 @@ class Home(WebRoot):
 
                 ep_obj = series_obj.get_episode(season_no, episode_no)
                 if not ep_obj:
-                    return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
+                    return self._genericMessage('Error', "Episode couldn't be retrieved")
 
                 status = int(status)
                 if status in [WANTED, FAILED]:
@@ -1763,13 +1763,13 @@ class Home(WebRoot):
                             ep_obj.status in snatched_qualities + [DOWNLOADED] or
                             os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
+                                   " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
+                                   " because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
@@ -1869,7 +1869,7 @@ class Home(WebRoot):
         try:
             series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
+            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         ep_obj_list = series_obj.get_all_episodes(has_location=True)
         ep_obj_list = [x for x in ep_obj_list if x.location]
@@ -1904,7 +1904,7 @@ class Home(WebRoot):
         try:
             series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
+            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         if eps is None:
             return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
@@ -2127,7 +2127,7 @@ class Home(WebRoot):
         if series_obj.is_anime and forAbsolute is None:
             return json.dumps({
                 'success': False,
-                'errorMessage': 'You can\'t use the Scene numbering for anime shows. '
+                'errorMessage': "You can't use the Scene numbering for anime shows. "
                                 'Use the Scene Absolute field, to configure a diverging episode number.',
                 'sceneSeason': None,
                 'sceneAbsolute': None,
@@ -2135,7 +2135,7 @@ class Home(WebRoot):
         elif not series_obj.is_anime and (forSeason is None or forEpisode is None):
             return json.dumps({
                 'success': False,
-                'errorMessage': 'You can\'t use the Scene Absolute for non-anime shows. '
+                'errorMessage': "You can't use the Scene Absolute for non-anime shows. "
                                 'Use the scene field, to configure a diverging episode number.',
                 'sceneSeason': None,
                 'sceneAbsolute': None,
