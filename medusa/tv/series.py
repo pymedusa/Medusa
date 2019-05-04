@@ -2192,12 +2192,13 @@ class Series(TV):
                                     for src, dest in viewitems(self.xem_numbering)]
             data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
             data['allSceneExceptions'] = self.all_scene_exceptions
-            if self.is_anime:
-                data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
             if self.is_scene:
+                data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
                 data['sceneNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
-                                          'destination': {'season': dest[0], 'episode': dest[1]}}
+                                           'destination': {'season': dest[0], 'episode': dest[1]}}
                                           for src, dest in viewitems(self.scene_numbering)]
+            else:
+                data['xemAbsoluteNumbering'], data['sceneNumbering'] = [], []
 
         return data
 

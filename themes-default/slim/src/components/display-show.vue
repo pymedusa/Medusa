@@ -102,7 +102,7 @@
                             style="padding: 0; text-align: center; max-width: 60px;"/>
                     </span>
 
-                    <span v-else-if="props.column.field == 'sceneAbsolute'">
+                    <span v-else-if="props.column.label == 'Scene Absolute'">
                         <input type="text" :placeholder="getSceneAbsoluteNumbering(props.row)" size="6" maxlength="8"
                             class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
                             :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
@@ -271,14 +271,27 @@ export default {
             }, {
                 label: 'Scene',
                 field: (row) => {
-                    return `${row.scene.season}x${row.scene.episode}`
+                    const { getSceneNumbering } = this;
+                    return `${getSceneNumbering(row).season}x${getSceneNumbering(row).episode}`
                 },
-                type: 'number',
+                sortable: false,
                 hidden: false
             }, {
                 label: 'Scene Absolute',
-                field: 'sceneAbsolute',
+                field: (row) => {
+                    const { getSceneAbsoluteNumbering } = this;
+                    return getSceneAbsoluteNumbering(row)
+                },
                 type: 'number',
+                /**
+                 * Vue-good-table sort overwrite function.
+                 * @param {Object} x - row1 value for column.
+                 * @param {object} y - row2 value for column.
+                 * @returns {Boolean} - if we want to display this row before the next
+                 */
+                sortFn(x, y) {
+                    return (x < y ? -1 : (x > y ? 1 : 0));
+                },
                 hidden: false
             }, {
                 label: 'Title',
