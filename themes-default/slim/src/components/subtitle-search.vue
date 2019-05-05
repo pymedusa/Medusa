@@ -46,7 +46,7 @@
                         <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
                             <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16"/>
                             <span class="subtitle-name">{{props.row.filename}}</span>
-                            <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>    
+                            <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>
                         </a>
                     </span>
                     <span v-else-if="props.column.field == 'download'">
@@ -125,7 +125,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config            
+            config: state => state.config
         })
     },
     mounted() {
@@ -219,7 +219,7 @@ export default {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
                         // Let's emit an event, telling the displayShow component, to update the show using the api/store.
-                        this.$emit('update', { 
+                        this.$emit('update', {
                             reason: 'new subtitles found',
                             codes: response.data.subtitles,
                             languages: response.data.languages
@@ -236,7 +236,7 @@ export default {
                     destroy();
                 });
         },
-        manualSearch() {   
+        manualSearch() {
             const { show, season, episode } = this;
             this.displayQuestion = false;
             this.loading = true;
@@ -272,7 +272,7 @@ export default {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)
                         // Let's emit an event, telling the displayShow component, to update the show using the api/store.
-                        this.$emit('update', { 
+                        this.$emit('update', {
                             reason: 'new subtitles found',
                             codes: response.data.subtitles,
                             languages: response.data.languages
@@ -326,5 +326,8 @@ tr.subtitle-search-wrapper > td {
     color: rgb(255,255,255);
     padding: 10px;
     line-height: 55px;
+}
+span.subtitle-name {
+    color: rgb(0, 0, 0);
 }
 </style>
