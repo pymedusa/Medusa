@@ -1,32 +1,29 @@
-# No setup.py, unable to install using pip
-# git+https://github.com/pymedusa/adba.git@6502307ae34286e44b28234cfbacee6df1eadf07#egg=adba
-git+https://github.com/Diaoul/babelfish.git@f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
+https://codeload.github.com/pymedusa/adba/tar.gz/4d7388c815ee7f54c5479028bd1435083403a18c#egg=adba
+https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.7.1
 bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2019.3.9
+https://codeload.github.com/pymedusa/cloudflare-scrape/tar.gz/1354751d5efd9353ad837d83941ed6b3f4488c77#egg=cfscrape
 chardet==3.0.4
-git+https://github.com/pymedusa/cloudflare-scrape.git@1354751d5efd9353ad837d83941ed6b3f4488c77#egg=cfscrape
 configobj==5.0.6
-configparser==3.7.4
-contextlib2==0.5.5 ; python_version < '3.5'
+contextlib2==0.5.5
 deluge-client==1.7.1
 dirtyjson==1.0.7
 dogpile.cache==0.7.1
-git+https://github.com/pymedusa/enzyme.git@665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
-git+https://github.com/kurtmckee/feedparser.git@2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
-future==0.17.1
-futures==3.2.0 ; python_version >= '2.6' and python_version < '3'
+enum34==1.1.6 ; python_version == '2.*'
+https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
+https://codeload.github.com/kurtmckee/feedparser/tar.gz/2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
+future==0.17.1 ; python_version == '2.*'
+futures==3.2.0 ; python_version == '2.*'
 gntp==1.0.3
-git+https://github.com/guessit-io/guessit.git@74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
+https://codeload.github.com/guessit-io/guessit/tar.gz/74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
 html5lib==1.0.1
 imdbpie==5.6.3
 jsonrpclib-pelix==0.4.0
 knowit==0.2.4
-lockfile==0.12.2
 Mako==1.0.9
 markdown2==2.3.7
-git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6540f44ca23#egg=oauth2
 profilehooks==1.11.0
 PyGithub==1.43.7
 PyJWT==1.7.1
@@ -37,8 +34,7 @@ rebulk==1.0.0
 requests==2.21.0
 requests-oauthlib==1.2.0
 six==1.12.0
-stevedore==1.30.1
-git+https://github.com/Diaoul/subliminal.git@6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
+https://codeload.github.com/Diaoul/subliminal/tar.gz/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
 validators==0.12.5
