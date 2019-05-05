@@ -39,8 +39,47 @@ const humanFileSize = (bytes, useDecimal = false) => {
     return `${bytes.toFixed(2)} ${units[u]}`;
 };
 
+/**
+ * Map dateformat of pythons datetime.strftime() to that of javascripts dateFns.
+ * @param {String} dateFormatString - pythons strftime format
+ * @returns {String} mapped format that can be used by dateFns
+ */
+const mapDateFormat = dateFormatString => {
+    const dateMap = new Map(
+        [
+            ['%a', 'ddd'],
+            ['%A', 'dddd'],
+            ['%w', 'E'],
+            ['%d', 'DD'],
+            ['%-d', 'DD'],
+            ['%b', 'MMM'],
+            ['%B', 'MMMM'],
+            ['%m', 'MM'],
+            ['%-m', 'M'],
+            ['%y', 'YY'],
+            ['%Y', 'YYYY'],
+            ['%H', 'HH'],
+            ['%-H', 'H'],
+            ['%I', 'hh'],
+            ['%-I', 'h'],
+            ['%p', 'A'],
+            ['%M', 'mm'],
+            ['%-M', 'm'],
+            ['%S', 'ss'],
+            ['%-S', 's']
+        ]
+    );
+
+    dateMap.forEach((value, key, _) => {
+        dateFormatString = dateFormatString.replace(key, value);
+    })
+
+    return dateFormatString;
+}
+
 export {
     combineQualities,
     humanFileSize,
+    mapDateFormat,
     isDevelopment
 };
