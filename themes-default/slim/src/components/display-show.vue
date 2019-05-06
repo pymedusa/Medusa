@@ -241,6 +241,7 @@ export default {
         }
     },
     data() {
+        const { getCookie } = this;
         return {
             invertTable: true,
             isMobile: false,
@@ -251,23 +252,23 @@ export default {
                 field: 'content.hasNfo',
                 type: 'boolean',
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-NFO')
             }, {
                 label: 'TBN',
                 field: 'content.hasTbn',
                 type: 'boolean',
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-TBN')
             }, {
                 label: 'Episode',
                 field: 'episode',
                 type: 'number',
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Episode')
             }, {
                 label: 'Absolute Number',
                 field: 'absoluteNumber',
                 type: 'number',
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Absolute Number')
             }, {
                 label: 'Scene',
                 field: row => {
@@ -275,7 +276,7 @@ export default {
                     return getSceneNumbering(row);
                 },
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Scene')
             }, {
                 label: 'Scene Absolute',
                 field: row => {
@@ -292,46 +293,46 @@ export default {
                 sortFn(x, y) {
                     return (x < y ? -1 : (x > y ? 1 : 0));
                 },
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Scene Absolute')
             }, {
                 label: 'Title',
                 field: 'title',
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Title')
             }, {
                 label: 'File',
                 field: 'file.location',
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-File')
             }, {
                 label: 'Size',
                 field: 'file.size',
                 type: 'number',
                 formatFn: humanFileSize,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Size')
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Air date')
             }, {
                 label: 'Download',
                 field: 'download',
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Download')
             }, {
                 label: 'Subtitles',
                 field: 'subtitles',
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Subtitles')
             }, {
                 label: 'Status',
                 field: 'status',
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Status')
             }, {
                 label: 'Search',
                 field: 'search',
                 sortable: false,
-                hidden: false
+                hidden: getCookie('displayShow-hide-field-Search')
             }],
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
@@ -870,7 +871,14 @@ export default {
         toggleColumn(index) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
-        }
+        },
+        getCookie(key) {
+            const cookie = this.$cookie.get(key);
+            return JSON.parse(cookie);
+        },
+        setCookie(key, value) {
+            return this.$cookie.set(key, JSON.stringify(value));
+        },
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
@@ -878,6 +886,18 @@ export default {
             if (slug) {
                 updateSearchIcons(slug, this);
             }
+        },
+        columns:{
+            handler: function(newVal) { // eslint-disable-line object-shorthand
+                // Monitor the columns, to update the cookies, when changed.
+                const { setCookie } = this;
+                for (const column of newVal) {
+                    if (column) {
+                        setCookie(`displayShow-hide-field-${column.label}`, column.hidden)
+                    }
+                }
+            },
+            deep: true
         }
     }
 };
