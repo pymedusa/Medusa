@@ -41,10 +41,10 @@ export default {
                 solo: true
             },
             position: {
-                my: 'left center',
+                my: 'right center',
                 adjust: {
                     y: -10,
-                    x: 2
+                    x: -10
                 }
             },
             style: {
