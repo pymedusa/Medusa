@@ -368,6 +368,7 @@ export default {
             if (!show.indexer) {
                 return;
             }
+
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
@@ -378,6 +379,7 @@ export default {
             if (!showQueueStatus) {
                 return [];
             }
+
             return showQueueStatus.filter(status => status.active === true);
         },
         showGenres() {
@@ -389,6 +391,7 @@ export default {
             if (genres) {
                 result = dedupeGenres(genres.split('|'));
             }
+
             return result;
         },
         preferredWords() {
@@ -396,6 +399,7 @@ export default {
             if (preferred.length > 0) {
                 return preferred;
             }
+
             return [];
         },
         undesiredWords() {
@@ -403,6 +407,7 @@ export default {
             if (undesired.length > 0) {
                 return undesired;
             }
+
             return [];
         },
         episodeSummary() {
@@ -481,35 +486,6 @@ export default {
                 statusOptions: changeStatusOptions,
                 qualityOptions: changeQualityOptions
             });
-
-            // const { setQuality } = this;
-
-            // const epArr = [];
-            // const status = $('#statusSelect').val();
-            // const quality = $('#qualitySelect').val();
-            // const showSlug = $('#series-slug').val();
-
-            // $('.epCheck').each((index, element) => {
-            //     if (element.checked === true) {
-            //         epArr.push($(element).attr('id'));
-            //     }
-            // });
-
-            // if (epArr.length === 0) {
-            //     return false;
-            // }
-
-            // if (quality) {
-            //     setQuality(quality, showSlug, epArr);
-            // }
-
-            // if (status) {
-            //     window.location.href = $('base').attr('href') + 'home/setStatus?' +
-            //         'indexername=' + $('#indexer-name').attr('value') +
-            //         '&seriesid=' + $('#series-id').attr('value') +
-            //         '&eps=' + epArr.join('|') +
-            //         '&status=' + status;
-            // }
         },
         showHideRows(whichClass) {
             const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
@@ -580,7 +556,7 @@ export default {
             const data = {
                 config: { [option]: config[option] }
             }
-            api.patch('series/' + show.id.slug, data).then(response => {
+            api.patch('series/' + show.id.slug, data).then( _ => {
                 this.$snotify.success(
                     `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
                     'Saved',
@@ -629,7 +605,15 @@ export default {
                 // Reset jump
                 this.jumpToSeason = 'jump';
             }
-        }
+        },
+        'show': function(slug) { // eslint-disable-line object-shorthand
+            // Show has changed. Meaning we should reflow the layout.
+            if (slug) {
+                const { reflowLayout } = this;
+                reflowLayout();
+            }
+        },
+        deep: true
     }
 };
 </script>
