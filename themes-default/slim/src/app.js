@@ -11,6 +11,7 @@ import {
     isDevelopment
 } from './utils';
 import VModal from 'vue-js-modal';
+import VueCookie from 'vue-cookie';
 import Tooltip from 'vue-directive-tooltip';
 import 'vue-directive-tooltip/css/index.css';
 
@@ -36,6 +37,7 @@ Vue.config.devtools = true;
 Vue.config.performance = true;
 
 Vue.use(Vuex);
+Vue.use(VueCookie);
 Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
