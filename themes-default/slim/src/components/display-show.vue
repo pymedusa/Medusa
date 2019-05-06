@@ -858,15 +858,6 @@ export default {
 
             return bindData;
         },
-        /**
-         * Sort all season tables, when a sort event is emitted.
-         */
-        episodeTableSorted(event) {
-            const { show } = this;
-            show.seasons.forEach(season => {
-                this.$refs[`episodeTable-${season.season}`].$refs[`tableSeason-${season.season}`].setOrder(event.column, event.ascending)
-            });
-        },
         toggleColumn(index) {
             // Set hidden to inverse of what it currently is
             this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
