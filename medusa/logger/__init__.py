@@ -203,7 +203,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(filename, size=64 * 1024, reset_offset=True):
+def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
@@ -222,12 +222,15 @@ def blocks_r(filename, size=64 * 1024, reset_offset=True):
         reset_offset (bool): Reset the file offset.
             If True, starts reading from the end of the file.
             Otherwise, starts reading from where the file current position is.
+        encoding (str|None): The encoding for correct block size computation.
+            If `str`, must be a valid string encoding.
+            If None, the default encoding is used.
 
     Yields:
-        block (bytes): The data within the blocks.
+        block (str): The data within the blocks.
 
     """
-    with io.open(filename, 'rb') as file_obj:
+    with io.open(filename, 'r', encoding=encoding) as file_obj:
         offset = 0
         if reset_offset:
             file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
@@ -272,10 +275,11 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
     newline = '\n'
     empty = ''
     remainder = empty
-    block_generator_kws = dict(size=block_size, reset_offset=reset_offset)
+    block_generator_kws = dict(size=block_size, reset_offset=reset_offset,
+                               encoding=encoding)
     block_generator = blocks_r
     for block in block_generator(filename, **block_generator_kws):
-        lines = block.decode(encoding).split(newline)
+        lines = block.split(newline)
         if remainder:
             lines[-1] = lines[-1] + remainder
         remainder = lines[0]
