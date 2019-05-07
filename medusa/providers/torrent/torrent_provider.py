@@ -146,12 +146,13 @@ class TorrentProvider(GenericProvider):
         return pubdate
 
     def get_redirect_url(self, url):
-        """Get the address that the provided URL redirects to."""
+        """Get the final address that the provided URL redirects to."""
         log.debug('Retrieving redirect URL for {url}', {'url': url})
 
-        response = self.session.get(url, allow_redirects=False)
-        if response and response.headers.get('Location'):
-            return response.headers['Location']
+        response = self.session.get(url, stream=True)
+        if response:
+            response.close()
+            return response.url
 
         log.debug('Unable to retrieve redirect URL for {url}', {'url': url})
         return url
