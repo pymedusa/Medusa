@@ -38,4 +38,4 @@ six==1.12.0
 https://codeload.github.com/Diaoul/subliminal/tar.gz/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
-validators==0.12.5
+validators==0.12.6
