@@ -473,6 +473,14 @@ export default {
                 this.reflowLayout();
             });
         });
+
+        this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
+            // Show has changed. Meaning we should reflow the layout.
+            if (slug) {
+                const { reflowLayout } = this;
+                this.$nextTick(() => { reflowLayout(); });
+            }
+        }, { deep: true });
     },
     methods: {
         humanFileSize,
@@ -591,15 +599,7 @@ export default {
                 // Reset jump
                 this.jumpToSeason = 'jump';
             }
-        },
-        'show': function(slug) { // eslint-disable-line object-shorthand
-            // Show has changed. Meaning we should reflow the layout.
-            if (slug) {
-                const { reflowLayout } = this;
-                reflowLayout();
-            }
-        },
-        deep: true
+        }
     }
 };
 </script>
