@@ -234,8 +234,6 @@
                             <label v-if="show.seasons" for="preferred"><span class="preferred"><input type="checkbox" id="preferred" checked="checked" @input="showHideRows('preferred')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
                             <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
                             <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
-                            <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
-                            <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
                         </div>
                         <div class="pull-lg-right top-5">
 
@@ -511,18 +509,6 @@ export default {
                     $(element).show();
                     $('#' + seasonNo + '-cols').show();
                 }
-            });
-        },
-        selectEpisodesClicked() {
-            // Selects all visible episode checkboxes
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = true;
-            });
-        },
-        clearEpisodeSelectionClicked() {
-            // Clears all visible episode checkboxes and the season selectors
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = false;
             });
         },
         toggleSpecials() {
