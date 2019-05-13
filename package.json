@@ -17,6 +17,6 @@
   "devDependencies": {
     "dredd": "11.0.3",
     "execa": "1.0.0",
-    "yargs": "13.2.2"
+    "yargs": "13.2.4"
   }
 }
