@@ -1074,7 +1074,7 @@ class Episode(TV):
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
-        data['watched'] = self.watched
+        data['watched'] = bool(self.watched)
         data['quality'] = self.quality
         data['release'] = {}
         data['release']['name'] = self.release_name
