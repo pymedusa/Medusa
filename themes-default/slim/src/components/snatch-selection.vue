@@ -24,7 +24,8 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            config: state => state.config
         }),
         ...mapGetters({
             show: 'getCurrentShow'
@@ -51,6 +52,43 @@ export default {
          */
         reflowLayout() {
             attachImdbTooltip(); // eslint-disable-line no-undef
+        },
+        getReleaseNameClasses(name) {
+            const { config } = this;
+            let classes = [];
+            const { ignored, required, show, undesired } =  this.$store.state.search.filters;
+            
+            if (this.$store.state.search.filters.ignored.map( word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length) {
+                classes.push('global-ignored');
+            }
+
+            if (this.$store.state.search.filters.required.map( word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length) {
+                classes.push('global-required');
+            }
+
+            if (this.$store.state.search.filters.undesired.map( word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length) {
+                classes.push('global-undesired');
+            }
+
+            if (this.show.config.release.ignoredWords.map( word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length) {
+                classes.push('show-ignored');
+            }
+
+            if (this.show.config.release.requiredWords.map( word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length) {
+                classes.push('show-required');
+            }
+
+            return classes.join(' ');
         }
     },
     mounted() {
@@ -346,5 +384,25 @@ export default {
 </script>
 
 <style>
+span.global-ignored {
+    color: red;
+}
 
+span.show-ignored {
+    color: red;
+    font-style: italic;
+}
+
+span.global-required {
+    color: green;
+}
+
+span.show-required {
+    color: green;
+    font-style: italic;
+}
+
+span.global-undesired {
+    color: orange;
+}
 </style>

@@ -116,7 +116,7 @@
                         % for hItem in provider_results['found_items']:
                             <tr id="${hItem['name'] | h}" class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                                 <td class="release-name-ellipses triggerhighlight">
-                                    <span data-qtip-my="top left" data-qtip-at="bottom left" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
+                                    <span data-qtip-my="top left" data-qtip-at="bottom left" :class="getReleaseNameClasses(`${hItem['name']}`)" title="${hItem['name'] | h}" class="break-word ${hItem['name_highlight']} addQTip">${hItem['name'] | h}</span>
                                 </td>
                                 <td class="col-group break-word triggerhighlight">
                                     <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
