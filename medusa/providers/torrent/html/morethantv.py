@@ -235,7 +235,9 @@ class MoreThanTVProvider(TorrentProvider):
 
         with BS4Parser(response.text, 'html5lib') as html:
             torrent_table = html.find('table', class_='torrent_table')
-            torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id[0]))
+            torrent_row = torrent_table.find(
+                'tr', id='torrent_{0}'.format(torrent_id[0])
+            ) if torrent_table else None
             if not torrent_row:
                 log.debug("Couldn't find season pack details for title: {0}", title)
                 return title
