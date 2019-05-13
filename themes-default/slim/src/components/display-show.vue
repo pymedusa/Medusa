@@ -129,6 +129,7 @@
 
                     <span v-else-if="props.column.field == 'status'">
                         {{props.row.status}} <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
+                        <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);"/>
                     </span>
 
                     <span v-else-if="props.column.field == 'search'">
@@ -146,41 +147,51 @@
             </div>
         </div>
 
-        <modal name="query-start-backlog-search" :height="'auto'">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Start search?</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Some episodes have been changed to 'Wanted'. Do you want to trigger a backlog search?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-start-backlog-search')">No</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="queueSearch(null); $modal.hide('query-start-backlog-search')">Yes</button>
+        <modal name="query-start-backlog-search" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title">Start search?</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>Some episodes have been changed to 'Wanted'. Do you want to trigger a backlog search?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-start-backlog-search')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="queueSearch(null); $modal.hide('query-start-backlog-search')">Yes</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </transition>
         </modal>
 
-        <modal name="query-mark-failed-and-search" @before-open="beforeFailedSearchModalClose" :height="'auto'">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Mark episode as failed and search?</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Starting to search for the episode</p>
-                        <p v-if="searchedEpisode">Would you also like to mark episode {{searchedEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
-                        <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+        <modal name="query-mark-failed-and-search" @before-open="beforeFailedSearchModalClose" :height="'auto'" :width="'80%'">
+            <transition name="modal">
+                <div class="modal-mask">
+                    <div class="modal-wrapper">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                Mark episode as failed and search?
+                            </div>
+
+                            <div class="modal-body">
+                                <p>Starting to search for the episode</p>
+                                <p v-if="searchedEpisode">Would you also like to mark episode {{searchedEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-mark-failed-and-search')">Cancel</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </transition>
         </modal>
 
         <!-- TODO: Implement subtitle modal in vue -->
@@ -783,6 +794,7 @@ export default {
             const { show } = this;
             const episodeIdentifier = episode.slug;
             let data = {};
+            
             if (episode) {
                 data = {
                     showslug: show.id.slug,
@@ -790,7 +802,8 @@ export default {
                     options: {}
                 }
             }
-
+            
+            this.$refs[`search-${episodeIdentifier}`].src = `images/loading16-dark.gif`;
             api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then( _ => {
                     if (episode) {
@@ -821,7 +834,6 @@ export default {
                     return;
                 }
 
-                this.$refs[`search-${episodeIdentifier}`].src = `images/loading16-dark.gif`;
                 if (retryDownload(episode)) {
                     $modal.show('query-mark-failed-and-search', { episode });
                 } else {
@@ -878,6 +890,20 @@ export default {
         },
         setCookie(key, value) {
             return this.$cookie.set(key, JSON.stringify(value));
+        },
+        updateEpisodeWatched(episode, watched) {
+            const { id, indexer, getShow, show } = this;
+            const patchData = {};
+
+            patchData[episode.slug] = { watched };
+            
+            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+                .then( _ => {
+                    console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
+                    getShow({ id, indexer, detailed: true });
+                }).catch(error => {
+                    console.error(String(error));
+                });
         },
     },
     watch: {
@@ -1187,6 +1213,38 @@ td.col-footer {
 .select-info span {
     margin-left: 5px;
     line-height: 40px;
+}
+
+
+/** Style the modal. This should be saved somewhere, where we create one modal template with slots, and style that.*/
+.modal-container {
+    border: 1px solid rgb(17, 17, 17);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
+    border-radius: 0;
+}
+
+.modal-header {
+    padding: 9px 15px;
+    border-bottom: none;
+    border-radius: 0;
+    background-color: rgb(55, 55, 55);
+}
+
+.modal-content {
+    background: rgb(34, 34, 34);
+    border-radius: 0;
+    border: 1px solid rgba(0,0,0,.2);
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+}
+
+.modal-body {
+    background: rgb(34, 34, 34);
+    overflow-y: auto;
+}
+
+.modal-footer {
+    border-top: none;
+    text-align: center;
 }
 
 </style>
