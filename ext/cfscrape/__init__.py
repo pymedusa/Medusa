@@ -3,20 +3,18 @@ import logging
 import random
 import re
 import time
+from base64 import b64decode
+from collections import OrderedDict
 
 import js2py
 
+from requests.compat import urlparse, urlunparse
 from requests.sessions import Session
-
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
 
 # Disallow parsing of the unsafe 'pyimport' statement in Js2Py.
 js2py.disable_pyimport()
 
-__version__ = "1.9.7-Custom"
+__version__ = "2.0.0-Custom"
 
 DEFAULT_USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
@@ -29,6 +27,16 @@ DEFAULT_USER_AGENTS = [
 ]
 
 DEFAULT_USER_AGENT = random.choice(DEFAULT_USER_AGENTS)
+
+DEFAULT_HEADERS = OrderedDict((
+    ("Host", None),
+    ("Connection", "keep-alive"),
+    ("Upgrade-Insecure-Requests", "1"),
+    ("User-Agent", DEFAULT_USER_AGENT),
+    ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"),
+    ("Accept-Language", "en-US,en;q=0.9"),
+    ("Accept-Encoding", "gzip, deflate")
+))
 
 BUG_REPORT = """\
 Cloudflare may have changed their technique, or there may be a bug in the script.
@@ -48,16 +56,22 @@ https://github.com/Anorov/cloudflare-scrape/issues\
 
 class CloudflareScraper(Session):
     def __init__(self, *args, **kwargs):
-        self.delay = kwargs.pop("delay", 8)
+        self.delay = kwargs.pop("delay", None)
+        # Use headers with a random User-Agent if no custom headers have been set
+        headers = OrderedDict(kwargs.pop('headers', DEFAULT_HEADERS))
+
+        # Set the User-Agent header if it was not provided
+        headers.setdefault('User-Agent', DEFAULT_USER_AGENT)
+
         super(CloudflareScraper, self).__init__(*args, **kwargs)
 
-        if "requests" in self.headers["User-Agent"]:
-            # Set a random User-Agent if no custom User-Agent has been set
-            self.headers["User-Agent"] = DEFAULT_USER_AGENT
+        # Define headers to force using an OrderedDict and preserve header order
+        self.headers = headers
 
-    def is_cloudflare_challenge(self, resp):
+    @staticmethod
+    def is_cloudflare_challenge(resp):
         return (
-            resp.status_code == 503
+            resp.status_code in (503, 429)
             and resp.headers.get("Server", "").startswith("cloudflare")
             and b"jschl_vc" in resp.content
             and b"jschl_answer" in resp.content
@@ -81,26 +95,28 @@ class CloudflareScraper(Session):
         submit_url = "%s://%s/cdn-cgi/l/chk_jschl" % (parsed_url.scheme, domain)
 
         cloudflare_kwargs = copy.deepcopy(original_kwargs)
-        params = cloudflare_kwargs.setdefault("params", {})
+
         headers = cloudflare_kwargs.setdefault("headers", {})
         headers["Referer"] = resp.url
 
         try:
-            params["jschl_vc"] = re.search(r'name="jschl_vc" value="(\w+)"', body).group(1)
-            params["pass"] = re.search(r'name="pass" value="(.+?)"', body).group(1)
-            params["s"] = re.search(r'name="s"\svalue="(?P<s_value>[^"]+)', body).group('s_value')
+            params = cloudflare_kwargs['params'] = OrderedDict(
+                re.findall(r'name="(s|jschl_vc|pass)"(?: [^<>]*)? value="(.+?)"', body)
+            )
 
-            # Extract the arithmetic operation
-            js = self.extract_js(body, domain)
+            for k in ('jschl_vc', 'pass'):
+                if k not in params:
+                    raise ValueError('%s is missing from challenge form' % k)
         except Exception as e:
             # Something is wrong with the page.
             # This may indicate Cloudflare has changed their anti-bot
             # technique. If you see this and are running the latest version,
             # please open a GitHub issue so I can update the code accordingly.
-            raise ValueError("Unable to parse Cloudflare anti-bots page: %s %s" % (e.message, BUG_REPORT))
+            raise ValueError("Unable to parse Cloudflare anti-bots page: %s %s" % (e, BUG_REPORT))
 
-        # Safely evaluate the Javascript expression
-        params["jschl_answer"] = float(js2py.eval_js(js))
+        # Solve the Javascript challenge
+        answer, delay = self.solve_challenge(body, domain)
+        params["jschl_answer"] = answer
 
         # Requests transforms any request into a GET after a redirect,
         # so the redirect has to be handled manually here to allow for
@@ -108,31 +124,75 @@ class CloudflareScraper(Session):
         method = resp.request.method
         cloudflare_kwargs["allow_redirects"] = False
 
-        end_time = time.time()
-        time.sleep(self.delay - (end_time - start_time))  # Cloudflare requires a delay before solving the challenge
+        # Cloudflare requires a delay before solving the challenge
+        time.sleep(max(delay - (time.time() - start_time), 0))
 
+        # Send the challenge response and handle the redirect manually
         redirect = self.request(method, submit_url, **cloudflare_kwargs)
-
         redirect_location = urlparse(redirect.headers["Location"])
         if not redirect_location.netloc:
-            redirect_url = "%s://%s%s" % (parsed_url.scheme, domain, redirect_location.path)
+            redirect_url = urlunparse(
+                (
+                    parsed_url.scheme,
+                    domain,
+                    redirect_location.path,
+                    redirect_location.params,
+                    redirect_location.query,
+                    redirect_location.fragment
+                )
+            )
             return self.request(method, redirect_url, **original_kwargs)
         return self.request(method, redirect.headers["Location"], **original_kwargs)
 
-    def extract_js(self, body, domain):
-        js = re.search(r"setTimeout\(function\(\){\s+(var "
-                       "s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n", body).group(1)
-        js = re.sub(r"a\.value = (.+ \+ t\.length(\).toFixed\(10\))?).+", r"\1", js)
-        js = re.sub(r"\s{3,}[a-z](?: = |\.).+", "", js).replace("t.length", str(len(domain)))
+    def solve_challenge(self, body, domain):
+        try:
+            js, ms = re.search(
+                r"setTimeout\(function\(\){\s*(var "
+                r"s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value\s*=.+?)\r?\n"
+                r"(?:[^{<>]*},\s*(\d{4,}))?", body).groups()
 
-        # Strip characters that could be used to exit the string context
-        # These characters are not currently used in Cloudflare's arithmetic snippet
-        js = re.sub(r"[\n\\']", "", js)
+            js = re.sub(r'\s{2,}', ' ', js, flags=re.MULTILINE | re.DOTALL).replace('\'; 121\'', '')
+            js += '\na.value;'
 
-        if "toFixed" not in js:
-            raise ValueError("Error parsing Cloudflare IUAM Javascript challenge. %s" % BUG_REPORT)
+            # The challenge requires `document.getElementById` to get this content.
+            # Future proofing would require escaping newlines and double quotes
+            inner_html = re.search(r"<div(?: [^<>]*)? id=\"cf-dn.*?\">([^<>]*)", body)
+            inner_html = inner_html.group(1) if inner_html else ''
 
-        return js
+            # Prefix the challenge with a fake document object.
+            # Interpolate the domain and div contents.
+            challenge = """
+                var document = {
+                    createElement: function () {
+                      return { firstChild: { href: "http://%s/" } }
+                    },
+                    getElementById: function () {
+                      return {"innerHTML": "%s"};
+                    }
+                  };
+            """ % (domain, inner_html)
+
+            # Use the provided delay, parsed delay, or default to 8 secs
+            delay = self.delay or (float(ms) / float(1000) if ms else 8)
+        except Exception:
+            raise ValueError("Unable to identify Cloudflare IUAM Javascript on website. %s" % BUG_REPORT)
+
+        def atob(s):
+            return b64decode('%s' % s).decode('utf-8')
+
+        try:
+            context = js2py.EvalJs({'atob': atob})
+            result = context.eval('%s%s' % (challenge, js))
+        except Exception:
+            logging.error("Error executing Cloudflare IUAM Javascript. %s" % BUG_REPORT)
+            raise
+
+        try:
+            float(result)
+        except Exception:
+            raise ValueError("Cloudflare IUAM challenge returned unexpected answer. %s" % BUG_REPORT)
+
+        return result, delay
 
     @classmethod
     def create_scraper(cls, sess=None, **kwargs):
@@ -170,13 +230,17 @@ class CloudflareScraper(Session):
                 cookie_domain = d
                 break
         else:
-            raise ValueError("Unable to find Cloudflare cookies. Does the site actually have Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?")
+            raise ValueError(
+                "Unable to find Cloudflare cookies. "
+                "Does the site actually have Cloudflare IUAM (\"I'm Under Attack Mode\") enabled?"
+            )
 
         return ({
-                    "__cfduid": scraper.cookies.get("__cfduid", "", domain=cookie_domain),
-                    "cf_clearance": scraper.cookies.get("cf_clearance", "", domain=cookie_domain)
-                }, scraper.headers["User-Agent"]
-                )
+            "__cfduid":
+            scraper.cookies.get("__cfduid", "", domain=cookie_domain),
+            "cf_clearance":
+            scraper.cookies.get("cf_clearance", "", domain=cookie_domain)
+        }, scraper.headers["User-Agent"])
 
     @classmethod
     def get_cookie_string(cls, url, user_agent=None, **kwargs):

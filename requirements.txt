@@ -4,7 +4,7 @@ beautifulsoup4==4.7.1
 bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2019.3.9
-https://codeload.github.com/pymedusa/cloudflare-scrape/tar.gz/1354751d5efd9353ad837d83941ed6b3f4488c77#egg=cfscrape
+https://codeload.github.com/pymedusa/cloudflare-scrape/tar.gz/6912530b224e77d9d54f19feda3611fb61326b7f#egg=cfscrape
 chardet==3.0.4
 configobj==5.0.6
 contextlib2==0.5.5

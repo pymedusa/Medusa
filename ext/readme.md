@@ -12,7 +12,7 @@ ext | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.3.9](https://pypi.org/project/certifi/2019.3.9/) | **`medusa`**, `traktor`, `requests` | -
-ext | `cfscrape` | pymedusa/[1354751](https://github.com/pymedusa/cloudflare-scrape/tree/1354751d5efd9353ad837d83941ed6b3f4488c77) | **`medusa`** | -
+ext | `cfscrape` | pymedusa/[6912530](https://github.com/pymedusa/cloudflare-scrape/tree/6912530b224e77d9d54f19feda3611fb61326b7f) | **`medusa`** | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
@@ -33,7 +33,7 @@ ext | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c74
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
-ext | `Js2Py` | [0.59](https://pypi.org/project/Js2Py/0.59/) | `cloudflare-scrape` | Module: `js2py`
+ext | `Js2Py` | [0.63](https://pypi.org/project/Js2Py/0.63/) | `cloudflare-scrape` | Module: `js2py`
 ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
 ext | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | -
 ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
