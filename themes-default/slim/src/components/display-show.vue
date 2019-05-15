@@ -917,7 +917,10 @@ export default {
         },
         paginationPerPage(newVal) {
             const { setCookie } = this;
-            setCookie('displayShow-pagination-perPage', newVal)
+            // FIXME: disabled this, as there is a bug in vue-good-table's event emit.
+            // If set to All, it will automatically set to the number of episodes.
+            // this is then taken into the next show.
+            // setCookie('displayShow-pagination-perPage', newVal)
         }
     }
 };
