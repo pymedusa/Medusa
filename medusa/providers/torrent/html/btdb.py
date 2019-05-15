@@ -115,8 +115,8 @@ class BTDBProvider(TorrentProvider):
 
                     spans = row.find('div').find_all('span')
 
-                    seeders = int(spans[3].get_text())
-                    leechers = int(spans[4].get_text())
+                    seeders = int(spans[3].get_text().replace(',', ''))
+                    leechers = int(spans[4].get_text().replace(',', ''))
 
                     torrent_size = spans[0].get_text()
                     size = convert_size(torrent_size, default=-1)
