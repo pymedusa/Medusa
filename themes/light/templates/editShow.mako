@@ -205,7 +205,7 @@ window.app = new Vue({
             return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
         },
         globalRequired() {
-            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase())
+            return this.$store.state.search.filters.required.map(x => x.toLowerCase())
         },
         effectiveIgnored() {
             const { arrayExclude, arrayUnique, globalIgnored } = this;
