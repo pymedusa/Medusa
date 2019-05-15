@@ -77,9 +77,44 @@ const mapDateFormat = dateFormatString => {
     return dateFormatString;
 }
 
+/**
+ * Create an array with unique strings
+ * @param {Array} array - array with strings
+ * @returns {Array} array with unique strings
+ */
+const arrayUnique = array => {
+    var a = array.concat();
+    for (let i=0; i < a.length; ++i) {
+        for (let j = i + 1; j < a.length; ++j) {
+            if (a[i] === a[j]) {
+                a.splice(j--, 1);
+            }
+        }
+    }
+    return a;
+}
+
+/**
+ * Exclude strings out of the array `exclude` compared to the strings in the array baseArray.
+ * @param {Array} baseArray - array of strings
+ * @param {Array} eclude - array of strings which we want to exclude in baseArray
+ * @returns {Array} reduced array
+ */
+const arrayExclude = (baseArray, exclude) => {
+    let newArray = [];
+    for (let i=0; i < baseArray.length; i++) {
+        if (!exclude.includes(baseArray[i])) {
+            newArray.push(baseArray[i]);
+        }
+    }
+    return newArray;
+}
+
 export {
     combineQualities,
     humanFileSize,
     mapDateFormat,
-    isDevelopment
+    isDevelopment,
+    arrayUnique,
+    arrayExclude
 };

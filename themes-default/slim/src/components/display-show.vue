@@ -369,19 +369,6 @@ export default {
         id() {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
-        seasonsInverse() {
-            const { invertTable, show } = this;
-            const { seasons } = show;
-            if (!seasons) {
-                return [];
-            }
-
-            if (invertTable) {
-                return this.show.seasons.slice().reverse();
-            }
-
-            return this.show.seasons;
-        },
         theme() {
             const { config } = this;
             const { themeName } = config;

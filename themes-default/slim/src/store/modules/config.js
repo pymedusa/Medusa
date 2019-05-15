@@ -1,5 +1,6 @@
 import { api } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
+import { arrayUnique, arrayExclude } from '../../utils';
 
 const state = {
     wikiUrl: null,
@@ -237,8 +238,24 @@ const mutations = {
 };
 
 const getters = {
-    layout: state => layout => {
-        return state.layout[layout];
+    layout: state => layout => state.layout[layout],
+    effectiveIgnored: (state, _, rootState) => series => {
+        const seriesIgnored = series.config.release.ignoredWords.map(x => x.toLowerCase());
+        const globalIgnored = rootState.search.filters.ignored.map(x => x.toLowerCase());
+        if (!series.config.release.ignoredWordsExclude) {
+            return arrayUnique(globalIgnored.concat(seriesIgnored));
+        } else {
+            return arrayExclude(globalIgnored, seriesIgnored);
+        }
+    },
+    effectiveRequired: (state, _, rootState) => series => {
+        const globalRequired = rootState.search.filters.required.map(x => x.toLowerCase());
+        const seriesRequired = series.config.release.requiredWords.map(x => x.toLowerCase());
+        if (!series.config.release.requiredWordsExclude) {
+            return arrayUnique(globalRequired.concat(seriesRequired));
+        } else {
+            return arrayExclude(globalRequired, seriesRequired);
+        }
     }
 };
 

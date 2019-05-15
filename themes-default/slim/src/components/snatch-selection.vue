@@ -28,7 +28,9 @@ export default {
             config: state => state.config
         }),
         ...mapGetters({
-            show: 'getCurrentShow'
+            show: 'getCurrentShow',
+            effectiveIgnored: 'effectiveIgnored',
+            effectiveRequired: 'effectiveRequired'
         }),
         indexer() {
             return this.$route.query.indexername;
@@ -54,17 +56,17 @@ export default {
             attachImdbTooltip(); // eslint-disable-line no-undef
         },
         getReleaseNameClasses(name) {
-            const { config } = this;
+            const { config, effectiveIgnored, effectiveRequired, show } = this;
             let classes = [];
-            const { ignored, required, show, undesired } =  this.$store.state.search.filters;
-            
-            if (this.$store.state.search.filters.ignored.map( word => {
+            const { ignored, required, undesired } =  this.$store.state.search.filters;
+
+            if (effectiveIgnored(show).map( word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length) {
                 classes.push('global-ignored');
             }
 
-            if (this.$store.state.search.filters.required.map( word => {
+            if (effectiveRequired(show).map( word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length) {
                 classes.push('global-required');
@@ -76,17 +78,18 @@ export default {
                 classes.push('global-undesired');
             }
 
-            if (this.show.config.release.ignoredWords.map( word => {
-                return name.toLowerCase().includes(word.toLowerCase());
-            }).filter(x => x === true).length) {
-                classes.push('show-ignored');
-            }
+            /** Disabled for now. Because global + series ignored can be concatenated or excluded. So it's not that simple to color them. */
+            // if (this.show.config.release.ignoredWords.map( word => {
+            //     return name.toLowerCase().includes(word.toLowerCase());
+            // }).filter(x => x === true).length) {
+            //     classes.push('show-ignored');
+            // }
 
-            if (this.show.config.release.requiredWords.map( word => {
-                return name.toLowerCase().includes(word.toLowerCase());
-            }).filter(x => x === true).length) {
-                classes.push('show-required');
-            }
+            // if (this.show.config.release.requiredWords.map( word => {
+            //     return name.toLowerCase().includes(word.toLowerCase());
+            // }).filter(x => x === true).length) {
+            //     classes.push('show-required');
+            // }
 
             return classes.join(' ');
         }
