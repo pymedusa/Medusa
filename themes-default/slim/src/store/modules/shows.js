@@ -76,16 +76,19 @@ const actions = {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
+            let timeout = 30000;
 
             if (detailed !== undefined) {
                 params.detailed = Boolean(detailed);
+                timeout = 60000;
             }
 
             if (fetch !== undefined) {
                 params.fetch = Boolean(fetch);
+                timeout = 60000;
             }
 
-            api.get('/series/' + indexer + id, { params })
+            api.get('/series/' + indexer + id, { params }, { timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
