@@ -24,7 +24,8 @@
                 }"
                 :pagination-options="{
                     enabled: true,
-                    perPage: 50
+                    perPage: paginationPerPage,
+                    perPageDropdown: [25, 50, 100, 250, 500]
                 }"
                 :search-options="{
                     enabled: true,
@@ -45,8 +46,9 @@
                     selectAllByGroup: true
                 }"
                 :row-style-class="rowStyleClassFn"
-                ref='table-seasons'
-                @on-selected-rows-change="selectedEpisodes=$event.selectedRows">
+                ref="table-seasons"
+                @on-selected-rows-change="selectedEpisodes=$event.selectedRows" 
+                @on-per-page-change="paginationPerPage=$event.currentPerPage">
                 <div slot="table-actions">
                     <!-- Drowdown with checkboxes for showing / hiding table headers -->
                     <div class="button-group pull-right">
@@ -345,6 +347,7 @@ export default {
                 sortable: false,
                 hidden: getCookie('displayShow-hide-field-Search')
             }],
+            paginationPerPage: getCookie('displayShow-pagination-perPage') || 50,
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
             searchedEpisode: null
@@ -913,7 +916,7 @@ export default {
                 updateSearchIcons(slug, this);
             }
         },
-        columns:{
+        columns: {
             handler: function(newVal) { // eslint-disable-line object-shorthand
                 // Monitor the columns, to update the cookies, when changed.
                 const { setCookie } = this;
@@ -924,6 +927,10 @@ export default {
                 }
             },
             deep: true
+        },
+        paginationPerPage(newVal) {
+            const { setCookie } = this;
+            setCookie('displayShow-pagination-perPage', newVal)
         }
     }
 };
