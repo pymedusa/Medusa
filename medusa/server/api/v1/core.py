@@ -53,7 +53,7 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show

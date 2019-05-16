@@ -1710,8 +1710,16 @@ class Home(WebRoot):
                 'message': error_message
             })
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showSlug)
+        if not identifier:
+            error_message = 'Error', 'Show not in show list'
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+                'message': error_message
+            })
 
+        series_obj = Series.find_by_identifier(identifier)
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
             ui.notifications.error('Error', error_message)
@@ -1945,7 +1953,6 @@ class Home(WebRoot):
 
     def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None, manual_search=None):
         """Search a ForcedSearch single episode using providers which are backlog enabled."""
-        down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
@@ -1976,10 +1983,15 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-    # ## Returns the current ep_queue_item status for the current viewed show.
-    # Possible status: Downloaded, Snatched, etc...
-    # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, indexername=None, seriesid=None):
+        """
+        Returns the current ep_queue_item status for the current viewed show.
+        Possible status: Downloaded, Snatched, etc...
+        Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
+        :param indexername: Name of indexer. For ex. 'tvdb', 'tmdb', 'tvmaze'
+        :param seriesid: Id of series as identified by the indexer
+        :return:
+        """
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
         episodes = collect_episodes_from_search_thread(series_obj)
