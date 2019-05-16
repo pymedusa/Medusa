@@ -4,15 +4,16 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 from medusa import app
+from medusa.search.manual import collect_episodes_from_search_thread
 from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
-from medusa.search.manual import collect_episodes_from_search_thread
 from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
     ManualSearchQueueItem,
 )
 from medusa.server.api.v2.base import BaseRequestHandler
+
 from tornado.escape import json_decode
 
 

@@ -27,7 +27,6 @@ from medusa import (
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
-    FAILED,
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,

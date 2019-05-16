@@ -22,7 +22,7 @@ from medusa.common import (
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.search.queue import SEARCH_HISTORY, ManualSearchQueueItem
+from medusa.search.queue import ManualSearchQueueItem, SEARCH_HISTORY
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
@@ -178,7 +178,6 @@ def collect_episodes_from_search_thread(series_obj):
 def get_provider_cache_results(series_obj, show_all_results=None, perform_search=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    down_cur_quality = 0
     preferred_words = series_obj.show_words().preferred_words
     undesired_words = series_obj.show_words().undesired_words
     ignored_words = series_obj.show_words().ignored_words
