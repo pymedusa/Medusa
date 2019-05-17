@@ -1,10 +1,10 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { RootDirs } from '../../src/components';
 import fixtures from '../__fixtures__/root-dirs';
 
-describe('QualityPill.test.js', () => {
+describe('RootDirs.test.js', () => {
     let localVue;
     let store;
 
@@ -14,7 +14,6 @@ describe('QualityPill.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         store = new Store({ state });
     });
 

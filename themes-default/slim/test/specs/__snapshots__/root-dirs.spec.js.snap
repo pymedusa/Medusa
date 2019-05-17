@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`QualityPill.test.js renders and changing default/selected: After changing the default root dir 1`] = `
+exports[`RootDirs.test.js renders and changing default/selected: After changing the default root dir 1`] = `
 <div
   id="root-dirs-wrapper"
 >
@@ -63,7 +63,7 @@ exports[`QualityPill.test.js renders and changing default/selected: After changi
 </div>
 `;
 
-exports[`QualityPill.test.js renders and changing default/selected: Base snapshot 1`] = `
+exports[`RootDirs.test.js renders and changing default/selected: Base snapshot 1`] = `
 <div
   id="root-dirs-wrapper"
 >

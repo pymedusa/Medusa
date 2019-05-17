@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
@@ -15,7 +15,6 @@ describe('AppLink.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         store = new Store({ state });
         routerBase = '/'; // This might be '/webroot'
     });

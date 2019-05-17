@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
 import { QualityPill } from '../../src/components';
@@ -15,7 +15,6 @@ describe('QualityPill.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         store = new Store({ state });
     });
 
