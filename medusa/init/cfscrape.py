@@ -7,6 +7,7 @@ import logging
 import re
 
 import cfscrape
+
 import js2py
 
 # Disallow parsing of the unsafe 'pyimport' statement in Js2Py.
@@ -14,6 +15,7 @@ js2py.disable_pyimport()
 
 
 def patch_cfscrape():
+    """Patch `cfscrape.CloudflareScraper.solve_challenge` to use Js2Py."""
     assert hasattr(cfscrape.CloudflareScraper, 'solve_challenge')
     cfscrape.CloudflareScraper.solve_challenge = _patched_solve_challenge
 
@@ -21,9 +23,9 @@ def patch_cfscrape():
 def _patched_solve_challenge(self, body, domain):
     try:
         js, ms = re.search(
-            r"setTimeout\(function\(\){\s*(var "
-            r"s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value\s*=.+?)\r?\n"
-            r"(?:[^{<>]*},\s*(\d{4,}))?",
+            r'setTimeout\(function\(\){\s*(var '
+            r's,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value\s*=.+?)\r?\n'
+            r'(?:[^{<>]*},\s*(\d{4,}))?',
             body,
         ).groups()
 
@@ -56,7 +58,7 @@ def _patched_solve_challenge(self, body, domain):
     try:
         result = js2py.eval_js(challenge)
     except Exception:
-        logging.error('Error executing Cloudflare IUAM Javascript. %s' % cfscrape.BUG_REPORT)
+        logging.error('Error executing Cloudflare IUAM Javascript. %s', cfscrape.BUG_REPORT)
         raise
 
     try:
