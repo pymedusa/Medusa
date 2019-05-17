@@ -4,7 +4,7 @@ beautifulsoup4==4.7.1
 bencode.py==2.0.0
 CacheControl==0.12.5
 certifi==2019.3.9
-https://codeload.github.com/pymedusa/cloudflare-scrape/tar.gz/6912530b224e77d9d54f19feda3611fb61326b7f#egg=cfscrape
+cfscrape==2.0.5
 chardet==3.0.4
 configobj==5.0.6
 contextlib2==0.5.5
@@ -20,6 +20,7 @@ gntp==1.0.3
 https://codeload.github.com/guessit-io/guessit/tar.gz/74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
 html5lib==1.0.1
 imdbpie==5.6.4
+Js2Py==0.63
 jsonrpclib-pelix==0.4.0
 knowit==0.2.4
 Mako==1.0.9
