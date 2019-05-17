@@ -28,32 +28,31 @@ def filtered_kwargs(kwargs):
 
 def cloudflare(session, resp, **kwargs):
     """
-    Bypass CloudFlare's anti-bot protection.
+    Bypass Cloudflare's anti-bot protection.
 
-    A request handler that retries a request after bypassing CloudFlare anti-bot
+    A request handler that retries a request after bypassing Cloudflare anti-bot
     protection.
     """
-    if CloudflareScraper.is_cloudflare_challenge(resp):
-
-        log.debug(u'CloudFlare protection detected, trying to bypass it')
+    if CloudflareScraper.is_cloudflare_iuam_challenge(resp):
+        log.debug('Cloudflare protection detected, trying to bypass it.')
 
         # Get the original request
         original_request = resp.request
 
-        # Get the CloudFlare tokens and original user-agent
+        # Get the Cloudflare tokens and original user-agent
         tokens, user_agent = CloudflareScraper.get_tokens(original_request.url)
 
-        # Add CloudFlare tokens to the session cookies
+        # Add Cloudflare tokens to the session cookies
         session.cookies.update(tokens)
-        # Add CloudFlare Tokens to the original request
+        # Add Cloudflare Tokens to the original request
         original_cookies = dict_from_cookiejar(original_request._cookies)
         original_cookies.update(tokens)
         original_request.prepare_cookies(original_cookies)
 
         # The same User-Agent must be used for the retry
-        # Update the session with the CloudFlare User-Agent
+        # Update the session with the Cloudflare User-Agent
         session.headers['User-Agent'] = user_agent
-        # Update the original request with the CloudFlare User-Agent
+        # Update the original request with the Cloudflare User-Agent
         original_request.headers['User-Agent'] = user_agent
 
         # Resend the request
@@ -66,7 +65,10 @@ def cloudflare(session, resp, **kwargs):
         cf_resp.raise_for_status()
 
         if cf_resp.ok:
-            log.debug('CloudFlare successfully bypassed.')
+            log.debug('Cloudflare successfully bypassed.')
         return cf_resp
     else:
+        if CloudflareScraper.is_cloudflare_captcha_challenge(resp):
+            log.warning("Cloudflare captcha challenge detected, it can't be bypassed.")
+
         return resp

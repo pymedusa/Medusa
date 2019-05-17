@@ -34,6 +34,7 @@ def initialize():
     _urllib3_disable_warnings()
     _strptime_workaround()
     _monkey_patch_bdecode()
+    _monkey_patch_cfscrape()
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
@@ -176,6 +177,12 @@ def _monkey_patch_bdecode():
         return result
 
     bencode.bdecode = _patched_bdecode
+
+
+def _monkey_patch_cfscrape():
+    """Monkeypatch `cfscrape.CloudflareScraper.solve_challenge` to solve the challenge without requiring Node.js."""
+    from medusa.init.cfscrape import patch_cfscrape
+    patch_cfscrape()
 
 
 def _configure_guessit():

@@ -12,7 +12,7 @@ ext | `bencode.py` | [2.0.0](https://pypi.org/project/bencode.py/2.0.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.3.9](https://pypi.org/project/certifi/2019.3.9/) | **`medusa`**, `traktor`, `requests` | -
-ext | `cfscrape` | pymedusa/[6912530](https://github.com/pymedusa/cloudflare-scrape/tree/6912530b224e77d9d54f19feda3611fb61326b7f) | **`medusa`** | -
+ext | `cfscrape` | [2.0.5](https://pypi.org/project/cfscrape/2.0.5/) | **`medusa`** | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
@@ -33,7 +33,7 @@ ext | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c74
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
-ext | `Js2Py` | [0.63](https://pypi.org/project/Js2Py/0.63/) | `cloudflare-scrape` | Module: `js2py`
+ext | `Js2Py` | [0.63](https://pypi.org/project/Js2Py/0.63/) | **`medusa`** | Module: `js2py`
 ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
 ext | `knowit` | [0.2.4](https://pypi.org/project/knowit/0.2.4/) | **`medusa`** | -
 ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
@@ -54,7 +54,7 @@ ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `
 **ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 ext | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | -
-ext | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cloudflare-scrape`, `subliminal`, `PyGithub`, `python-twitter` | -
+ext | `requests` | [2.21.0](https://pypi.org/project/requests/2.21.0/) | **`medusa`**, `adba`, `pytvmaze`, `simpleanidb`, `tmdbsimple`, `traktor`, `tvdbapiv2`, `boto`, `rtorrent`, `CacheControl`, `cfscrape`, `subliminal`, `PyGithub`, `python-twitter` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | <code>sgmllib3k</code> | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 **ext2** | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | -
