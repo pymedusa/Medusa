@@ -21,13 +21,15 @@ export const combineQualities = (allowedQualities, preferredQualities = []) => {
  * @returns {string} The converted size.
  */
 export const humanFileSize = (bytes, useDecimal = false) => {
-    if (bytes === undefined) {
-        return;
+    if (!bytes) {
+        bytes = 0;
     }
+
+    bytes = Math.max(bytes, 0);
 
     const thresh = useDecimal ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
-        return bytes + ' B';
+        return bytes.toFixed(2) + ' B';
     }
     const units = ['KB', 'MB', 'GB', 'TB', 'PB'];
     let u = -1;
