@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
@@ -23,8 +23,6 @@ import {
     SOCKET_RECONNECT,
     SOCKET_RECONNECT_ERROR
 } from './mutation-types';
-
-const { Store } = Vuex;
 
 Vue.use(Vuex);
 

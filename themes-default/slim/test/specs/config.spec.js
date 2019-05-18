@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { Config } from '../../src/components';
@@ -14,7 +14,6 @@ describe('Config.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         store = new Store({ state });
     });
 
