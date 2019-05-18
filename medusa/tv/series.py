@@ -2084,7 +2084,7 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True, fetch=False):
+    def to_json(self, detailed=True, fetch=False, episodes=False):
         """
         Return JSON representation.
 
@@ -2104,6 +2104,7 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
+        data['seasonCount'] = self.get_all_seasons()
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2171,21 +2172,7 @@ class Series(TV):
                     )
 
         if detailed:
-            episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [{'episodes': list(v),
-                                'season': season,
-                                'label': season,
-                                'mode': 'span',
-                                'html': False}
-                               for season, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
-
-            data['episodeCount'] = len(episodes)
-            data['seasonCount'] = len(data['seasons'])
-            last_episode = episodes[-1] if episodes else None
-            if self.status == 'Ended' and last_episode and last_episode.airdate:
-                data['year']['end'] = last_episode.airdate.year
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
                                      'destination': {'season': dest[0], 'episode': dest[1]}}
@@ -2199,6 +2186,21 @@ class Series(TV):
                                           for src, dest in viewitems(self.scene_numbering)]
             else:
                 data['xemAbsoluteNumbering'], data['sceneNumbering'] = [], []
+
+        if episodes:
+            episodes = self.get_all_episodes()
+            data['episodeCount'] = len(episodes)
+            last_episode = episodes[-1] if episodes else None
+            if self.status == 'Ended' and last_episode and last_episode.airdate:
+                data['year']['end'] = last_episode.airdate.year
+
+            data['seasons'] = [{'episodes': list(v),
+                                'season': season,
+                                'label': season,
+                                'mode': 'span',
+                                'html': False}
+                               for season, v in
+                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
 
         return data
 
