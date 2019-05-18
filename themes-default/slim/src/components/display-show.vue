@@ -926,9 +926,14 @@ export default {
                 updateSearchIcons(slug, this);
                 const { id, indexer, getEpisodes, show } = this;                
                 if (!show.seasons) {
-                    for (const season in show.seasonCount) {
-                        getEpisodes({id, indexer, season});
-                    }
+                    // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
+                    // before going on to the next one.
+                    const _getEpisodes = async (id, indexer) => {
+                        for (const season of Object.keys(show.seasonCount).reverse()) {
+                            await getEpisodes({id, indexer, season});
+                        }
+                    };
+                    _getEpisodes(id, indexer);
                 }
             }
         },
