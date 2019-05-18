@@ -68,6 +68,7 @@ const state = {
             }
         },
         runtime: null,
+        seasonCount: null,
         showType: null,
         status: null,
         title: null,
