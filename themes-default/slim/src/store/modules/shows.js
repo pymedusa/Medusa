@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import { api } from '../../api';
 import { ADD_SHOW } from '../mutation-types';
+import { ADD_SHOW_EPISODE } from '../mutation-types';
 
 const state = {
     shows: [],
@@ -36,7 +37,46 @@ const mutations = {
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
         state.currentShow.id = id;
+    },
+    [ADD_SHOW_EPISODE](state, { show, episodes }) {
+        // Creating a new show object (from the state one) as we want to trigger a store update
+        const newShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+        
+        if (!newShow.seasons) {
+            newShow.seasons = [];
+        }
+
+        episodes.forEach(episode => {
+            // checking if we need to create a new season item.
+            
+            const existingSeason = newShow.seasons.find(season => season.season === episode.season);
+            if (!existingSeason) {
+                const newSeason = {
+                    season: episode.season,
+                    episodes: [],
+                    html: false,
+                    mode: "span",
+                    label: 1
+                };
+                newShow.seasons.push(newSeason);
+                newSeason.episodes.push(episode);
+            } else {
+                const foundIndex = existingSeason.episodes.findIndex(element => element.identifier === episode.identifier);
+                if (foundIndex === -1) {
+                    existingSeason.episodes.push(episode);
+                } else {
+                    existingSeason.episodes.splice(foundIndex, 1, episode)
+                }
+            }
+        });
+
+        // Update state
+        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
+        console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
     }
+
+    
 };
 
 const getters = {
@@ -88,7 +128,7 @@ const actions = {
                 timeout = 60000;
             }
 
-            api.get('/series/' + indexer + id, { params }, { timeout })
+            api.get(`/series/${indexer}${id}`, { params }, { timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
@@ -97,6 +137,35 @@ const actions = {
                     reject(error);
                 });
         });
+    },
+    /**
+     * Get episdoes for a specified show from API and commit it to the store.
+     *
+     * @param {*} context - The store context.
+     * @param {ShowParameteres} parameters - Request parameters.
+     * @returns {Promise} The API response.
+     */
+    async getEpisodes({ commit, getters }, { indexer, id, season }) {
+    
+        const { getShowById } = getters;
+        const show = getShowById({id, indexer});
+        
+        const limit = 1000;
+        const params = {
+            limit
+        };
+
+        if (season) {
+            params['season'] = season;
+        }
+
+        // Get episodes
+        const response = await api.get(`/series/${indexer}${id}/episodes`, { params });
+        try {
+            commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
+        } catch {
+            console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
+        }
     },
     /**
      * Get shows from API and commit them to the store.
