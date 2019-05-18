@@ -37,7 +37,7 @@
     "axios": "0.18.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.1",
-    "babel-loader": "8.0.5",
+    "babel-loader": "8.0.6",
     "bootstrap": "3.4.1",
     "browser-env": "3.2.6",
     "clean-webpack-plugin": "2.0.2",
