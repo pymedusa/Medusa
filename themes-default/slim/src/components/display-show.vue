@@ -408,7 +408,7 @@ export default {
             id
         });
 
-        //We need detailed info for the xem / scene exceptions, so let's get it.
+        // We need detailed info for the xem / scene exceptions, so let's get it.
         getShow({ id, indexer, detailed: true });
 
         this.$watch('show', () => {
@@ -509,7 +509,7 @@ export default {
             }
         },
         setQuality(quality, episodes) {
-            const { id, indexer, getShow, show } = this;
+            const { id, indexer, getEpisodes, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
@@ -519,13 +519,16 @@ export default {
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
                 .then( _ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
-                    getShow({ id, indexer, detailed: true });
+                    [...new Set(episodes.map(episode => episode.season))].forEach(season => {
+                        getEpisodes({id, indexer, season});    
+                    });
+
                 }).catch(error => {
                     console.error(String(error));
                 });
         },
         setStatus(status, episodes) {
-            const { id, indexer, getShow, show } = this;
+            const { id, indexer, getEpisodes, show } = this;
             const patchData = {};
 
             episodes.forEach(episode => {
@@ -535,7 +538,9 @@ export default {
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
                 .then( _ => {
                     console.info(`patched show ${show.id.slug} with status ${status}`);
-                    getShow({ id, indexer, detailed: true });
+                    [...new Set(episodes.map(episode => episode.season))].forEach(season => {
+                        getEpisodes({id, indexer, season});    
+                    });
                 }).catch(error => {
                     console.error(String(error));
                 });
@@ -565,7 +570,7 @@ export default {
             return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
         searchSubtitle(event, season, episode, rowIndex) {
-            const { id, indexer, getShow, show, subtitleSearchComponents } = this;
+            const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch);  // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
                 propsData: { show, season, episode, key: rowIndex },
@@ -576,7 +581,7 @@ export default {
             instance.$on('update', event => {
                 // TODO: This could be replaced by the generic websocket updates in future.
                 if (event.reason === 'new subtitles found') {
-                    getShow({ id, indexer, detailed: true });
+                    getEpisodes({id, indexer, season});
                 }
             });
 
@@ -905,7 +910,7 @@ export default {
             return this.$cookie.set(key, JSON.stringify(value));
         },
         updateEpisodeWatched(episode, watched) {
-            const { id, indexer, getShow, show } = this;
+            const { id, indexer, getEpisodes, show } = this;
             const patchData = {};
 
             patchData[episode.slug] = { watched };
@@ -913,7 +918,7 @@ export default {
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
                 .then( _ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
-                    getShow({ id, indexer, detailed: true });
+                    getEpisodes({ id, indexer, season: episode.season });
                 }).catch(error => {
                     console.error(String(error));
                 });
