@@ -574,8 +574,14 @@ export default {
          * Adjust the summary background position and size on page load and resize
          */
         moveSummaryBackground() {
-            const height = $('#summary').height() + 10;
-            const top = $('#summary').offset().top + 5;
+            const summary = $('#summary');
+            // A hack for now, to bail if the page hasn't fully been rendered yet.
+            if (!summary) {
+                return;
+            }
+
+            const height = summary.height() + 10;
+            const top = summary.offset().top + 5;
             $('#summaryBackground').height(height);
             $('#summaryBackground').offset({ top, left: 0 });
             $('#summaryBackground').show();
