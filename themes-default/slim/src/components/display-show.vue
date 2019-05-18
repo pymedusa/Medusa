@@ -16,7 +16,7 @@
             <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
                 :columns="columns"
-                :rows="show.seasons.slice().reverse()"
+                :rows="orderSeasons"
                 :groupOptions="{
                     enabled: true,
                     mode: 'span',
@@ -64,7 +64,7 @@
                 <template slot="table-header-row" slot-scope="props">
                     <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season"></app-link>
                         <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
-                        {{ props.row.label > 0 ? 'Season ' + props.row.label : 'Specials' }}
+                        {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                         <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                         <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
                             <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search" />
@@ -373,6 +373,16 @@ export default {
             const { config } = this;
             const { themeName } = config;
             return themeName || 'light';
+        },
+        orderSeasons() {
+            const { invertTable, show } = this;
+            const sortedSeasons = show.seasons.sort((a,b) => a.season - b.season);
+            
+            if (invertTable) {
+                return sortedSeasons.reverse();
+            }
+
+            return sortedSeasons;
         }
     },
     created() {
@@ -398,10 +408,8 @@ export default {
             id
         });
 
-        // We need detailed info for the seasons, so let's get it.
-        if (!show || !show.seasons) {
-            getShow({ id, indexer, detailed: true });
-        }
+        //We need detailed info for the xem / scene exceptions, so let's get it.
+        getShow({ id, indexer, detailed: true });
 
         this.$watch('show', () => {
             this.$nextTick(() => this.reflowLayout());
@@ -486,7 +494,8 @@ export default {
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
-            getShows: 'getShows'
+            getShows: 'getShows',
+            getEpisodes: 'getEpisodes'
         }),
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
@@ -901,6 +910,12 @@ export default {
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
+                const { id, indexer, getEpisodes, show } = this;                
+                if (!show.seasons) {
+                    for (const season in show.seasonCount) {
+                        getEpisodes({id, indexer, season});
+                    }
+                }
             }
         },
         columns: {
