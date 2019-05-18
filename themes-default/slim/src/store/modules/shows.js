@@ -146,26 +146,30 @@ const actions = {
      * @returns {Promise} The API response.
      */
     async getEpisodes({ commit, getters }, { indexer, id, season }) {
-    
-        const { getShowById } = getters;
-        const show = getShowById({id, indexer});
-        
-        const limit = 1000;
-        const params = {
-            limit
-        };
+        return new Promise((resolve, reject) => {
+            const { getShowById } = getters;
+            const show = getShowById({id, indexer});
+            
+            const limit = 1000;
+            const params = {
+                limit
+            };
 
-        if (season) {
-            params['season'] = season;
-        }
+            if (season) {
+                params['season'] = season;
+            }
 
-        // Get episodes
-        const response = await api.get(`/series/${indexer}${id}/episodes`, { params });
-        try {
-            commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
-        } catch {
-            console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
-        }
+            // Get episodes
+            api.get(`/series/${indexer}${id}/episodes`, { params })
+                .then(response => {
+                    commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
+                    resolve();
+                })
+                .catch(error => {
+                    console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
+                    reject(error);
+                });
+        });
     },
     /**
      * Get shows from API and commit them to the store.
