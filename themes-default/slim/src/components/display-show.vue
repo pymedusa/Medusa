@@ -149,7 +149,7 @@
             </div>
         </div>
 
-        <modal name="query-start-backlog-search" :height="'auto'" :width="'80%'">
+        <modal name="query-start-backlog-search" @before-open="beforeBacklogSearchModalClose" :height="'auto'" :width="'80%'">
             <transition name="modal">
                 <div class="modal-mask">
                     <div class="modal-wrapper">
@@ -159,11 +159,11 @@
                                 <h4 class="modal-title">Start search?</h4>
                             </div>
                             <div class="modal-body">
-                                <p>Some episodes have been changed to 'Wanted'. Do you want to trigger a backlog search?</p>
+                                <p>Some episodes have been changed to 'Wanted'. Do you want to trigger a backlog search for these {{backlogSearchEpisodes.length}} episode(s)</p>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-start-backlog-search')">No</button>
-                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="queueSearch(null); $modal.hide('query-start-backlog-search')">Yes</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search(backlogSearchEpisodes, 'backlog'); $modal.hide('query-start-backlog-search')">Yes</button>
                             </div>
                         </div>
                     </div>
@@ -182,12 +182,12 @@
 
                             <div class="modal-body">
                                 <p>Starting to search for the episode</p>
-                                <p v-if="searchedEpisode">Would you also like to mark episode {{searchedEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
+                                <p v-if="failedSearchEpisode">Would you also like to mark episode {{failedSearchEpisode.slug}} as "failed"? This will make sure the episode cannot be downloaded again</p>
                             </div>
 
                             <div class="modal-footer">
-                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
-                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="forcedSearch(searchedEpisode, 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
+                                <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="search([failedSearchEpisode], 'backlog'); $modal.hide('query-mark-failed-and-search')">No</button>
+                                <button type="button" class="btn-medusa btn-success" data-dismiss="modal" @click="search([failedSearchEpisode], 'failed'); $modal.hide('query-mark-failed-and-search')">Yes</button>
                                 <button type="button" class="btn-medusa btn-danger" data-dismiss="modal" @click="$modal.hide('query-mark-failed-and-search')">Cancel</button>
                             </div>
                         </div>
@@ -259,7 +259,6 @@ export default {
             invertTable: true,
             isMobile: false,
             subtitleSearchComponents: [],
-            search: '',
             columns: [{
                 label: 'NFO',
                 field: 'content.hasNfo',
@@ -350,7 +349,8 @@ export default {
             paginationPerPage: getCookie('displayShow-pagination-perPage') || 50,
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
-            searchedEpisode: null
+            failedSearchEpisode: null,
+            backlogSearchEpisodes: []
         };
     },
     computed: {
@@ -541,7 +541,7 @@ export default {
                 });
 
             if (status === 3) {
-                this.$modal.show('query-start-backlog-search');
+                this.$modal.show('query-start-backlog-search', { episodes });
             }
         },
         parseDateFn(row) {
@@ -782,43 +782,57 @@ export default {
          * The event then can be used to assign the value of the episode.
          * @param {Object} event - vue js modal event
          */
+        beforeBacklogSearchModalClose(event) {
+            this.backlogSearchEpisodes = event.params.episodes;
+        },
+        /**
+         * Vue-js-modal requires a method, to pass an event to.
+         * The event then can be used to assign the value of the episode.
+         * @param {Object} event - vue js modal event
+         */
         beforeFailedSearchModalClose(event) {
-            this.searchedEpisode = event.params.episode;
+            this.failedSearchEpisode = event.params.episode;
         },
         retryDownload(episode) {
             const { config } = this;
             return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
-        forcedSearch(episode, searchType) {
+        search(episodes, searchType) {
             const { show } = this;
-            const episodeIdentifier = episode.slug;
             let data = {};
             
-            if (episode) {
+            if (episodes) {
                 data = {
                     showslug: show.id.slug,
-                    episodes: [ episodeIdentifier ],
+                    episodes: [],
                     options: {}
                 }
+                episodes.forEach(episode => {
+                    data.episodes.push(episode.slug);
+                    this.$refs[`search-${episode.slug}`].src = `images/loading16-dark.gif`;
+                })
             }
             
-            this.$refs[`search-${episodeIdentifier}`].src = `images/loading16-dark.gif`;
             api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then( _ => {
-                    if (episode) {
-                        console.info(`started search for show: ${show.id.slug} episode: ${episodeIdentifier}`);
-                        this.$refs[`search-${episodeIdentifier}`].src = `images/queued.png`;
-                        this.$refs[`search-${episodeIdentifier}`].disabled = true;
+                    if (episodes.length === 1) {
+                        console.info(`started search for show: ${show.id.slug} episode: ${episodes[0].slug}`);
+                        this.$refs[`search-${episodes[0].slug}`].src = `images/queued.png`;
+                        this.$refs[`search-${episodes[0].slug}`].disabled = true;
                     } else {
                         console.info(`started a full backlog search`);
                     }
                 }).catch(error => {
                     console.error(String(error));
-                    if (episode) {
-                        this.$refs[`search-${episodeIdentifier}`].src = `images/no16.png`;
-                    }
+                
+                    episodes.forEach(episode => {
+                        data.episodes.push(episode.slug);
+                        this.$refs[`search-${episodes[0].slug}`].src = `images/no16.png`;
+                    });
+                }).finally(() => {
+                    this.failedSearchEpisode = null;
+                    this.backlogSearchEpisodes = [];
                 });
-
         },
         /**
          * Start a backlog search or failed search for the specific episode.
@@ -826,7 +840,7 @@ export default {
          * @param {Object} episode - Episode object. If no episode object is passed, a backlog search is started.
          */
         queueSearch(episode) {
-            const { $modal, forcedSearch, retryDownload } = this;
+            const { $modal, search, retryDownload } = this;
             const episodeIdentifier = episode.slug;
             if (episode) {
                 if (this.$refs[`search-${episodeIdentifier}`].disabled === true) {
@@ -836,7 +850,7 @@ export default {
                 if (retryDownload(episode)) {
                     $modal.show('query-mark-failed-and-search', { episode });
                 } else {
-                    forcedSearch(episode, 'backlog');
+                    search([episode], 'backlog');
                 }
             }
         },
