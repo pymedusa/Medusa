@@ -65,7 +65,7 @@
 <script>
 
 import { mapState } from 'vuex';
-import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
+import { VueGoodTable  } from 'vue-good-table';
 
 export default {
     name: 'subtitle-search',

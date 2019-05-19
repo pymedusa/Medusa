@@ -212,7 +212,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, mapDateFormat } from '../utils';
 import { addQTip, updateSearchIcons } from '../jquery-wrappers';
-import { VueGoodTable  } from '../monkeypatched/vue-good-table/vue-good-table.js';
+import { VueGoodTable  } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
