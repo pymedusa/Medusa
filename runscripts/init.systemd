@@ -55,6 +55,8 @@ ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --nolaunch --datadir=/opt/m
 TimeoutStopSec=25
 KillMode=process
 Restart=on-failure
+CapabilityBoundingSet=CAP_FOWNER
+AmbientCapabilities=CAP_FOWNER
 
 [Install]
 WantedBy=multi-user.target
