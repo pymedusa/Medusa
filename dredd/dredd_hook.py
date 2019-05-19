@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 """Dredd hook."""
+from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
@@ -8,11 +10,16 @@ import json
 import os
 import sys
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext')))
-if sys.version_info[0] == 2:
-    sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext2')))
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
-from collections import Mapping
+current_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.insert(1, os.path.join(root_dir, 'ext'))
+sys.path.insert(1, os.path.join(root_dir, 'ext%d' % sys.version_info.major))
+
 from configparser import ConfigParser
 
 import dredd_hooks as hooks
@@ -151,13 +158,9 @@ def evaluate(expression, context=None):
 
 def start():
     """Start application."""
-    import os
     import shutil
-    import sys
 
-    current_dir = os.path.dirname(__file__)
-    app_dir = os.path.abspath(os.path.join(current_dir, '..'))
-    data_dir = os.path.abspath(os.path.join(current_dir, 'data'))
+    data_dir = os.path.join(current_dir, 'data')
     if os.path.isdir(data_dir):
         shutil.rmtree(data_dir)
     args = [
@@ -176,7 +179,7 @@ def start():
     with io.open('config.ini', 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
-    sys.path.insert(1, app_dir)
+    sys.path.insert(1, root_dir)
 
     from medusa.__main__ import Application
     application = Application()
