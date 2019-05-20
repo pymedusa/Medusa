@@ -166,6 +166,24 @@ class BaseRequestHandler(RequestHandler):
 
         self.finish(response)
 
+    def log_exception(self, typ, value, tb):
+        """
+        Customize logging of uncaught exceptions.
+
+        Only logs unhandled exceptions, as ``HTTPErrors`` are common for a RESTful API handler.
+        """
+        if not app.WEB_LOG:
+            return
+
+        if isinstance(value, HTTPError):
+            return
+
+        log.error('Uncaught exception: {summary}\n{req!r}', {
+            'summary': self._request_summary(),
+            'req': self.request,
+            'exc_info': (typ, value, tb),
+        })
+
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""
         self._no_content()
