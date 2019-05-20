@@ -25,10 +25,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from six import iteritems, string_types, text_type, viewitems
 
 from tornado.gen import coroutine
-from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
 from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -87,14 +86,11 @@ class BaseRequestHandler(RequestHandler):
         try:
             method = getattr(self, 'http_' + name)
         except AttributeError:
-            raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
+            raise HTTPError(405)
 
         def blocking_call():
-            try:
-                result = self._check_authentication()
-                return method(*args, **kwargs) if result is None else result
-            except Exception as error:
-                self._handle_request_exception(error)
+            result = self._check_authentication()
+            return method(*args, **kwargs) if result is None else result
 
         return IOLoop.current().run_in_executor(executor, blocking_call)
 
@@ -152,17 +148,23 @@ class BaseRequestHandler(RequestHandler):
         if not self._finished:
             self.finish(content)
 
-    def write_error(self, *args, **kwargs):
+    def write_error(self, status_code, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
-        if app.DEVELOPER and 'exc_info' in kwargs:
+        response = None
+        exc_info = kwargs.get('exc_info', None)
+
+        if exc_info and isinstance(exc_info[1], HTTPError):
+            error = exc_info[1]
+            response = self.api_response(status=status_code, error=error.reason)
+        elif app.DEVELOPER and exc_info:
             self.set_header('content-type', 'text/plain')
             self.set_status(500)
-            for line in traceback.format_exception(*kwargs['exc_info']):
+            for line in traceback.format_exception(*exc_info):
                 self.write(line)
-            self.finish()
         else:
             response = self._internal_server_error()
-            self.finish(response)
+
+        self.finish(response)
 
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""
@@ -245,13 +247,6 @@ class BaseRequestHandler(RequestHandler):
             base = cls._create_base_url(base, cls.parent_handler.name, cls.parent_handler.identifier)
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
-
-    def _handle_request_exception(self, error):
-        if isinstance(error, HTTPError):
-            response = self.api_response(error.code, error.message)
-            self.finish(response)
-        else:
-            super(BaseRequestHandler, self)._handle_request_exception(error)
 
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
         return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
