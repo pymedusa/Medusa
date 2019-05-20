@@ -25,10 +25,9 @@ from medusa.logger.adapters.style import BraceAdapter
 from six import iteritems, string_types, text_type, viewitems
 
 from tornado.gen import coroutine
-from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
 from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -56,11 +55,8 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def prepare(self):
+    def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
-        if self.request.method == 'OPTIONS':
-            return
-
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
         if api_key and api_key == app.API_KEY:
             return
@@ -90,13 +86,11 @@ class BaseRequestHandler(RequestHandler):
         try:
             method = getattr(self, 'http_' + name)
         except AttributeError:
-            raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
+            raise HTTPError(405)
 
         def blocking_call():
-            try:
-                return method(*args, **kwargs)
-            except Exception as error:
-                self._handle_request_exception(error)
+            result = self._check_authentication()
+            return method(*args, **kwargs) if result is None else result
 
         return IOLoop.current().run_in_executor(executor, blocking_call)
 
@@ -154,17 +148,41 @@ class BaseRequestHandler(RequestHandler):
         if not self._finished:
             self.finish(content)
 
-    def write_error(self, *args, **kwargs):
+    def write_error(self, status_code, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
-        if app.DEVELOPER and 'exc_info' in kwargs:
+        response = None
+        exc_info = kwargs.get('exc_info', None)
+
+        if exc_info and isinstance(exc_info[1], HTTPError):
+            error = exc_info[1].log_message or exc_info[1].reason
+            response = self.api_response(status=status_code, error=error)
+        elif app.DEVELOPER and exc_info:
             self.set_header('content-type', 'text/plain')
             self.set_status(500)
-            for line in traceback.format_exception(*kwargs['exc_info']):
+            for line in traceback.format_exception(*exc_info):
                 self.write(line)
-            self.finish()
         else:
             response = self._internal_server_error()
-            self.finish(response)
+
+        self.finish(response)
+
+    def log_exception(self, typ, value, tb):
+        """
+        Customize logging of uncaught exceptions.
+
+        Only logs unhandled exceptions, as ``HTTPErrors`` are common for a RESTful API handler.
+        """
+        if not app.WEB_LOG:
+            return
+
+        if isinstance(value, HTTPError):
+            return
+
+        log.error('Uncaught exception: {summary}\n{req!r}', {
+            'summary': self._request_summary(),
+            'req': self.request,
+            'exc_info': (typ, value, tb),
+        })
 
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""
@@ -248,13 +266,6 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _handle_request_exception(self, error):
-        if isinstance(error, HTTPError):
-            response = self.api_response(error.code, error.message)
-            self.finish(response)
-        else:
-            super(BaseRequestHandler, self)._handle_request_exception(error)
-
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
         return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
@@ -335,11 +346,8 @@ class BaseRequestHandler(RequestHandler):
             self._raise_bad_request_error('Invalid limit parameter')
 
     def _paginate(self, data=None, data_generator=None, sort=None):
-        try:
-            arg_page = self._get_page()
-            arg_limit = self._get_limit()
-        except HTTPError as error:
-            return self._bad_request(error.message)
+        arg_page = self._get_page()
+        arg_limit = self._get_limit()
 
         headers = {
             'X-Pagination-Page': arg_page,
