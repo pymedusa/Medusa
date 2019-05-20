@@ -172,9 +172,6 @@ class BaseRequestHandler(RequestHandler):
 
         Only logs unhandled exceptions, as ``HTTPErrors`` are common for a RESTful API handler.
         """
-        if not app.WEB_LOG:
-            return
-
         if isinstance(value, HTTPError):
             return
 
