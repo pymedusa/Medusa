@@ -56,11 +56,8 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def prepare(self):
+    def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
-        if self.request.method == 'OPTIONS':
-            return
-
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
         if api_key and api_key == app.API_KEY:
             return
@@ -94,7 +91,8 @@ class BaseRequestHandler(RequestHandler):
 
         def blocking_call():
             try:
-                return method(*args, **kwargs)
+                result = self._check_authentication()
+                return method(*args, **kwargs) if result is None else result
             except Exception as error:
                 self._handle_request_exception(error)
 
