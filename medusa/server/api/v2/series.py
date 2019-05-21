@@ -34,7 +34,7 @@ class SeriesHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', 'DELETE', )
+    allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
     def http_get(self, series_slug, path_param=None):
         """Query series information.
