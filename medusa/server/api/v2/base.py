@@ -57,6 +57,9 @@ class BaseRequestHandler(RequestHandler):
 
     def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
+        if self.request.method == 'OPTIONS':
+            return
+
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
         if api_key and api_key == app.API_KEY:
             return
@@ -94,59 +97,21 @@ class BaseRequestHandler(RequestHandler):
 
         return IOLoop.current().run_in_executor(executor, blocking_call)
 
-    @coroutine
-    def head(self, *args, **kwargs):
-        """HEAD HTTP method."""
-        content = self.async_call('head', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
+    def initialize(self):
+        """
+        Override the request method to use the async dispatcher.
 
-    @coroutine
-    def get(self, *args, **kwargs):
-        """GET HTTP method."""
-        content = self.async_call('get', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
+        This function is called for each request.
+        """
+        name = self.request.method.lower()
+        # Wrap the original method with the code needed to run it asynchronously
+        method = make_async(self, getattr(self, name))
+        # Bind the wrapped method to self.<name>
+        setattr(self, name, method)
 
-    @coroutine
-    def post(self, *args, **kwargs):
-        """POST HTTP method."""
-        content = self.async_call('post', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def delete(self, *args, **kwargs):
-        """DELETE HTTP method."""
-        content = self.async_call('delete', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def patch(self, *args, **kwargs):
-        """PATCH HTTP method."""
-        content = self.async_call('patch', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def put(self, *args, **kwargs):
-        """PUT HTTP method."""
-        content = self.async_call('put', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
+    def options(self, *args, **kwargs):
+        """OPTIONS HTTP method."""
+        self._no_content()
 
     def write_error(self, status_code, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
@@ -186,10 +151,6 @@ class BaseRequestHandler(RequestHandler):
             'debug': debug_info,
             'exc_info': (typ, value, tb),
         })
-
-    def options(self, *args, **kwargs):
-        """OPTIONS HTTP method."""
-        self._no_content()
 
     def set_default_headers(self):
         """Set default CORS headers."""
