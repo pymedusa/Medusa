@@ -14,6 +14,7 @@ from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from functools import partial
+from types import MethodType
 
 from babelfish.language import Language
 
@@ -37,6 +38,35 @@ if sys.version_info[:2] == (3, 5):
     executor = ThreadPoolExecutor()
 else:
     executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+
+
+def make_async(instance, method):
+    """
+    Wrap a method with an async wrapper.
+
+    :param instance: A RequestHandler class instance.
+    :param type: instance of RequestHandler
+    :param method: The method to wrap.
+    :type method: callable
+    :return: An instance-bound async-wrapped method.
+    :rtype: callable
+    """
+    @coroutine
+    def async_call(self, *args, **kwargs):
+        """Call the actual HTTP method asynchronously."""
+        content = self._check_authentication()
+        if content is not None:
+            self.finish(content)
+            return
+
+        # Authentication check passed, run the method in a thread
+        prepared = partial(method, *args, **kwargs)
+        content = yield IOLoop.current().run_in_executor(executor, prepared)
+        self.finish(content)
+
+    # This creates a bound method `instance.async_call`,
+    # so that it could substitute the original method in the class instance.
+    return MethodType(async_call, instance)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -83,19 +113,6 @@ class BaseRequestHandler(RequestHandler):
                 return self._unauthorized('Invalid user/pass.')
         else:
             return self._unauthorized('Invalid token.')
-
-    def async_call(self, name, *args, **kwargs):
-        """Call the actual HTTP method, if available."""
-        try:
-            method = getattr(self, 'http_' + name)
-        except AttributeError:
-            raise HTTPError(405)
-
-        def blocking_call():
-            result = self._check_authentication()
-            return method(*args, **kwargs) if result is None else result
-
-        return IOLoop.current().run_in_executor(executor, blocking_call)
 
     def initialize(self):
         """
