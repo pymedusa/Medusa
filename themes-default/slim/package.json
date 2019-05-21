@@ -29,7 +29,6 @@
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "7.4.4",
-    "@babel/plugin-proposal-object-rest-spread": "7.4.4",
     "@babel/plugin-syntax-dynamic-import": "7.2.0",
     "@babel/preset-env": "7.4.4",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
