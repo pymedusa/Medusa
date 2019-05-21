@@ -456,7 +456,7 @@ class BaseRequestHandler(RequestHandler):
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
 
-    def http_get(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
         """Get."""
         return self.api_response(status=404)
 

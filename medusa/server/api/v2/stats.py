@@ -31,7 +31,7 @@ class StatsHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, identifier, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query statistics.
 
         :param identifier:
