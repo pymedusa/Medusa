@@ -22,7 +22,7 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import iteritems, string_types, text_type, viewitems
+from six import ensure_text, iteritems, string_types, text_type, viewitems
 
 from tornado.gen import coroutine
 from tornado.httputil import url_concat
@@ -170,14 +170,20 @@ class BaseRequestHandler(RequestHandler):
         """
         Customize logging of uncaught exceptions.
 
-        Only logs unhandled exceptions, as ``HTTPErrors`` are common for a RESTful API handler.
+        Only logs unhandled exceptions, as `HTTPErrors` are common for a RESTful API handler.
+        Note: If this method raises an exception, it will only be logged if `app.WEB_LOG` is enabled
         """
         if isinstance(value, HTTPError):
             return
 
-        log.error('Uncaught exception: {summary}\n{req!r}', {
-            'summary': self._request_summary(),
-            'req': self.request,
+        debug_info = 'Request: {0}'.format(self._request_summary())
+        if self.request.body:
+            body = ensure_text(self.request.body, errors='replace')
+            debug_info += '\nWith body:\n{0}'.format(body)
+
+        log.error('Uncaught exception in APIv2: {error!r}\n{debug}', {
+            'error': value,
+            'debug': debug_info,
             'exc_info': (typ, value, tb),
         })
 
