@@ -49,6 +49,7 @@ window.components.forEach(component => {
     if (isDevelopment) {
         console.debug(`Registering ${component.name}`);
     }
+
     Vue.component(component.name, component);
 });
 

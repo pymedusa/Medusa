@@ -47,7 +47,7 @@
                 }"
                 :row-style-class="rowStyleClassFn"
                 ref="table-seasons"
-                @on-selected-rows-change="selectedEpisodes=$event.selectedRows" 
+                @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
                 @on-per-page-change="paginationPerPage=$event.currentPerPage">
                 <div slot="table-actions">
                     <!-- Drowdown with checkboxes for showing / hiding table headers -->
@@ -377,7 +377,7 @@ export default {
         orderSeasons() {
             const { invertTable, show } = this;
             const sortedSeasons = show.seasons.sort((a,b) => a.season - b.season);
-            
+
             if (invertTable) {
                 return sortedSeasons.reverse();
             }
@@ -398,8 +398,7 @@ export default {
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
-            $store,
-            show
+            $store
         } = this;
 
         // Let's tell the store which show we currently want as current.
@@ -520,7 +519,7 @@ export default {
                 .then( _ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
-                        getEpisodes({id, indexer, season});    
+                        getEpisodes({ id, indexer, season });
                     });
 
                 }).catch(error => {
@@ -539,7 +538,7 @@ export default {
                 .then( _ => {
                     console.info(`patched show ${show.id.slug} with status ${status}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
-                        getEpisodes({id, indexer, season});    
+                        getEpisodes({ id, indexer, season });
                     });
                 }).catch(error => {
                     console.error(String(error));
@@ -579,9 +578,9 @@ export default {
 
             // Update the show, as we downloaded new subtitle(s)
             instance.$on('update', event => {
-                // TODO: This could be replaced by the generic websocket updates in future.
+                // This could be replaced by the generic websocket updates in future.
                 if (event.reason === 'new subtitles found') {
-                    getEpisodes({id, indexer, season});
+                    getEpisodes({ id, indexer, season });
                 }
             });
 
@@ -713,6 +712,8 @@ export default {
         /**
          * Check if any of the episodes in this season does not have the status "unaired".
          * If that's the case we want to manual season search icon.
+         * @param {object} season - A season object.
+         * @returns {Boolean} - true if one of the seasons episodes has a status 'unaired'.
          */
         anyEpisodeNotUnaired(season) {
             return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
@@ -805,7 +806,7 @@ export default {
         search(episodes, searchType) {
             const { show } = this;
             let data = {};
-            
+
             if (episodes) {
                 data = {
                     showslug: show.id.slug,
@@ -817,7 +818,7 @@ export default {
                     this.$refs[`search-${episode.slug}`].src = `images/loading16-dark.gif`;
                 })
             }
-            
+
             api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then( _ => {
                     if (episodes.length === 1) {
@@ -829,7 +830,7 @@ export default {
                     }
                 }).catch(error => {
                     console.error(String(error));
-                
+
                     episodes.forEach(episode => {
                         data.episodes.push(episode.slug);
                         this.$refs[`search-${episodes[0].slug}`].src = `images/no16.png`;
@@ -914,7 +915,7 @@ export default {
             const patchData = {};
 
             patchData[episode.slug] = { watched };
-            
+
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
                 .then( _ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
@@ -929,15 +930,19 @@ export default {
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
-                const { id, indexer, getEpisodes, show } = this;                
+                const { id, indexer, getEpisodes, show } = this;
                 if (!show.seasons) {
                     // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
                     // before going on to the next one.
-                    const _getEpisodes = async (id, indexer) => {
+                    const _getEpisodes = async(id, indexer) => {
                         for (const season of Object.keys(show.seasonCount).reverse()) {
-                            await getEpisodes({id, indexer, season});
+                            // We're waiting for the results by design, to give vue the chance to update the dom.
+                            // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
+                            // and chance is high a number of requests will timeout.
+                            await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
                         }
                     };
+
                     _getEpisodes(id, indexer);
                 }
             }
@@ -953,13 +958,6 @@ export default {
                 }
             },
             deep: true
-        },
-        paginationPerPage(newVal) {
-            const { setCookie } = this;
-            // FIXME: disabled this, as there is a bug in vue-good-table's event emit.
-            // If set to All, it will automatically set to the number of episodes.
-            // this is then taken into the next show.
-            // setCookie('displayShow-pagination-perPage', newVal)
         }
     }
 };

@@ -41,26 +41,17 @@ const mutations = {
     [ADD_SHOW_EPISODE](state, { show, episodes }) {
         // Creating a new show object (from the state one) as we want to trigger a store update
         const newShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
-        
+
         if (!newShow.seasons) {
             newShow.seasons = [];
         }
 
+        // Recreate an Array with season objects, with each season having an episodes array.
+        // This format is used by vue-good-table (displayShow).
         episodes.forEach(episode => {
-            // checking if we need to create a new season item.
-            
             const existingSeason = newShow.seasons.find(season => season.season === episode.season);
-            if (!existingSeason) {
-                const newSeason = {
-                    season: episode.season,
-                    episodes: [],
-                    html: false,
-                    mode: "span",
-                    label: 1
-                };
-                newShow.seasons.push(newSeason);
-                newSeason.episodes.push(episode);
-            } else {
+
+            if (existingSeason) {
                 const foundIndex = existingSeason.episodes.findIndex(element => element.identifier === episode.identifier);
                 if (foundIndex === -1) {
                     existingSeason.episodes.push(episode);
@@ -68,6 +59,16 @@ const mutations = {
                     existingSeason.episodes.splice(foundIndex, 1, episode)
                 }
             }
+
+            const newSeason = {
+                season: episode.season,
+                episodes: [],
+                html: false,
+                mode: "span",
+                label: 1
+            };
+            newShow.seasons.push(newSeason);
+            newSeason.episodes.push(episode);
         });
 
         // Update state
@@ -76,7 +77,7 @@ const mutations = {
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
     }
 
-    
+
 };
 
 const getters = {
@@ -148,15 +149,15 @@ const actions = {
     async getEpisodes({ commit, getters }, { indexer, id, season }) {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
-            const show = getShowById({id, indexer});
-            
+            const show = getShowById({ id, indexer });
+
             const limit = 1000;
             const params = {
                 limit
             };
 
             if (season) {
-                params['season'] = season;
+                params.season = season;
             }
 
             // Get episodes

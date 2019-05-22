@@ -264,7 +264,6 @@
 <script>
 import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
-import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
@@ -478,7 +477,7 @@ export default {
             // Show has changed. Meaning we should reflow the layout.
             if (slug) {
                 const { reflowLayout } = this;
-                this.$nextTick(() => { reflowLayout(); });
+                this.$nextTick(() => reflowLayout());
             }
         }, { deep: true });
     },
