@@ -7,8 +7,6 @@ export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
 export { default as ConfigPostProcessing } from './config-post-processing.vue';
 export { default as DisplayShow } from './display-show.vue';
-export { default as EpisodeRow } from './episode-row.vue';
-export { default as EpisodeTable } from './episode-table.vue';
 export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
