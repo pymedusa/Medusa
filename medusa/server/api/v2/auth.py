@@ -34,7 +34,7 @@ class AuthHandler(BaseRequestHandler):
         """Override authentication check for the authentication endpoint."""
         return None
 
-    def http_post(self, *args, **kwargs):
+    def post(self, *args, **kwargs):
         """Request JWT."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD

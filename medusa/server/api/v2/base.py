@@ -14,6 +14,7 @@ from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from functools import partial
+from types import MethodType
 
 from babelfish.language import Language
 
@@ -22,7 +23,7 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import iteritems, string_types, text_type, viewitems
+from six import ensure_text, iteritems, string_types, text_type, viewitems
 
 from tornado.gen import coroutine
 from tornado.httputil import url_concat
@@ -37,6 +38,35 @@ if sys.version_info[:2] == (3, 5):
     executor = ThreadPoolExecutor()
 else:
     executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+
+
+def make_async(instance, method):
+    """
+    Wrap a method with an async wrapper.
+
+    :param instance: A RequestHandler class instance.
+    :param type: instance of RequestHandler
+    :param method: The method to wrap.
+    :type method: callable
+    :return: An instance-bound async-wrapped method.
+    :rtype: callable
+    """
+    @coroutine
+    def async_call(self, *args, **kwargs):
+        """Call the actual HTTP method asynchronously."""
+        content = self._check_authentication()
+        if content is not None:
+            self.finish(content)
+            return
+
+        # Authentication check passed, run the method in a thread
+        prepared = partial(method, *args, **kwargs)
+        content = yield IOLoop.current().run_in_executor(executor, prepared)
+        self.finish(content)
+
+    # This creates a bound method `instance.async_call`,
+    # so that it could substitute the original method in the class instance.
+    return MethodType(async_call, instance)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -57,6 +87,9 @@ class BaseRequestHandler(RequestHandler):
 
     def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
+        if self.request.method == 'OPTIONS':
+            return
+
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
         if api_key and api_key == app.API_KEY:
             return
@@ -81,72 +114,21 @@ class BaseRequestHandler(RequestHandler):
         else:
             return self._unauthorized('Invalid token.')
 
-    def async_call(self, name, *args, **kwargs):
-        """Call the actual HTTP method, if available."""
-        try:
-            method = getattr(self, 'http_' + name)
-        except AttributeError:
-            raise HTTPError(405)
+    def initialize(self):
+        """
+        Override the request method to use the async dispatcher.
 
-        def blocking_call():
-            result = self._check_authentication()
-            return method(*args, **kwargs) if result is None else result
+        This function is called for each request.
+        """
+        name = self.request.method.lower()
+        # Wrap the original method with the code needed to run it asynchronously
+        method = make_async(self, getattr(self, name))
+        # Bind the wrapped method to self.<name>
+        setattr(self, name, method)
 
-        return IOLoop.current().run_in_executor(executor, blocking_call)
-
-    @coroutine
-    def head(self, *args, **kwargs):
-        """HEAD HTTP method."""
-        content = self.async_call('head', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def get(self, *args, **kwargs):
-        """GET HTTP method."""
-        content = self.async_call('get', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def post(self, *args, **kwargs):
-        """POST HTTP method."""
-        content = self.async_call('post', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def delete(self, *args, **kwargs):
-        """DELETE HTTP method."""
-        content = self.async_call('delete', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def patch(self, *args, **kwargs):
-        """PATCH HTTP method."""
-        content = self.async_call('patch', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def put(self, *args, **kwargs):
-        """PUT HTTP method."""
-        content = self.async_call('put', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
+    def options(self, *args, **kwargs):
+        """OPTIONS HTTP method."""
+        self._no_content()
 
     def write_error(self, status_code, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
@@ -170,20 +152,22 @@ class BaseRequestHandler(RequestHandler):
         """
         Customize logging of uncaught exceptions.
 
-        Only logs unhandled exceptions, as ``HTTPErrors`` are common for a RESTful API handler.
+        Only logs unhandled exceptions, as `HTTPErrors` are common for a RESTful API handler.
+        Note: If this method raises an exception, it will only be logged if `app.WEB_LOG` is enabled
         """
         if isinstance(value, HTTPError):
             return
 
-        log.error('Uncaught exception: {summary}\n{req!r}', {
-            'summary': self._request_summary(),
-            'req': self.request,
+        debug_info = 'Request: {0}'.format(self._request_summary())
+        if self.request.body:
+            body = ensure_text(self.request.body, errors='replace')
+            debug_info += '\nWith body:\n{0}'.format(body)
+
+        log.error('Uncaught exception in APIv2: {error!r}\n{debug}', {
+            'error': value,
+            'debug': debug_info,
             'exc_info': (typ, value, tb),
         })
-
-    def options(self, *args, **kwargs):
-        """OPTIONS HTTP method."""
-        self._no_content()
 
     def set_default_headers(self):
         """Set default CORS headers."""
@@ -450,7 +434,7 @@ class BaseRequestHandler(RequestHandler):
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
 
-    def http_get(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
         """Get."""
         return self.api_response(status=404)
 
