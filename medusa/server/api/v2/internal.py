@@ -33,7 +33,7 @@ class InternalHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, resource, path_param=None):
+    def get(self, resource, path_param=None):
         """Query internal data.
 
         :param resource: a resource name

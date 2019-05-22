@@ -214,6 +214,8 @@ class RichTraceback(object):
                         # A normal .py file (not a Template)
                         fp = open(new_trcback[-1][0], 'rb')
                         encoding = util.parse_encoding(fp)
+                        if compat.py3k and not encoding:
+                            encoding = 'utf-8'
                         fp.seek(0)
                         self.source = fp.read()
                         fp.close()

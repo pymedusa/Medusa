@@ -23,7 +23,7 @@ class SeriesLegacyHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, series_slug, identifier):
+    def get(self, series_slug, identifier):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234

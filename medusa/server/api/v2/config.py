@@ -362,7 +362,7 @@ class ConfigHandler(BaseRequestHandler):
 
     }
 
-    def http_get(self, identifier, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query general configuration.
 
         :param identifier:
@@ -392,7 +392,7 @@ class ConfigHandler(BaseRequestHandler):
 
         return self._ok(data=config_data)
 
-    def http_patch(self, identifier, *args, **kwargs):
+    def patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
         if not identifier:
             return self._bad_request('Config identifier not specified')
