@@ -29,7 +29,7 @@ class SearchHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST')
 
-    def http_get(self, identifier, path_param=None, *args, **kwargs):
+    def get(self, identifier, path_param=None, *args, **kwargs):
         """Query statistics.
 
         :param identifier:
@@ -51,7 +51,7 @@ class SearchHandler(BaseRequestHandler):
             'results': collect_episodes_from_search_thread(series_obj)
         }
 
-    def http_post(self, identifier, path_param=None):
+    def post(self, identifier, path_param=None):
         """Queue a backlog search for a range of episodes.
 
         :param identifier:
