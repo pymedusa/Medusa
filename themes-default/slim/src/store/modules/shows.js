@@ -58,17 +58,17 @@ const mutations = {
                 } else {
                     existingSeason.episodes.splice(foundIndex, 1, episode)
                 }
+            } else {
+                const newSeason = {
+                    season: episode.season,
+                    episodes: [],
+                    html: false,
+                    mode: "span",
+                    label: 1
+                };
+                newShow.seasons.push(newSeason);
+                newSeason.episodes.push(episode);
             }
-
-            const newSeason = {
-                season: episode.season,
-                episodes: [],
-                html: false,
-                mode: "span",
-                label: 1
-            };
-            newShow.seasons.push(newSeason);
-            newSeason.episodes.push(episode);
         });
 
         // Update state
