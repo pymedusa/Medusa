@@ -276,7 +276,7 @@ const manageRoutes = [{
     name: 'manageFailedDownloads',
     meta: {
         title: 'Failed Downloads',
-        header: 'Failed Downlaods',
+        header: 'Failed Downloads',
         topMenu: 'manage'
     }
 }, {
