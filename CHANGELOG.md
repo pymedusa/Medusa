@@ -18,6 +18,7 @@
 - Fixed "send to trash" option not doing anything (Python 3.6 and higher) ([#6625](https://github.com/pymedusa/Medusa/pull/6625))
 - Fixed setting episodes to archived in backlog overview ([#6636](https://github.com/pymedusa/Medusa/pull/6636))
 - Fixed exception in Elte-Tracker provider when no result is found ([#6680](https://github.com/pymedusa/Medusa/pull/6680))
+- Fixed DelugeD remove torrents when ratio is reached (Python 2.7) ([#6702](https://github.com/pymedusa/Medusa/pull/6702))
 
 ## 0.3.1 (2019-03-20)
 
