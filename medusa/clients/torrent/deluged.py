@@ -155,11 +155,11 @@ class DelugeDAPI(GenericClient):
         """
         log.info('Checking DelugeD torrent status.')
 
-        torrent_data = self.drpc.get_all_torrents()
-        if torrent_data is False:
-            log.info('Error while fetching torrents status')
+        if not self.connect():
+            log.warning('Error while fetching torrents status')
             return
 
+        torrent_data = self.drpc.get_all_torrents()
         info_hash_to_remove = read_torrent_status(torrent_data)
         for info_hash in info_hash_to_remove:
             self.remove_torrent(info_hash)
