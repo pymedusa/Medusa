@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import json
 import logging
 from base64 import b64encode
-from builtins import str
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -22,7 +21,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
-from six import viewitems
+from six import text_type, viewitems
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -33,7 +32,7 @@ def read_torrent_status(torrent_data):
     found_torrents = False
     info_hash_to_remove = []
     for torrent in viewitems(torrent_data):
-        info_hash = str(torrent[0])
+        info_hash = text_type(torrent[0])
         details = torrent[1]
         if not is_info_hash_in_history(info_hash):
             continue
@@ -472,7 +471,7 @@ class DelugeAPI(GenericClient):
         log.info('Checking Deluge torrent status.')
         if self._request(method='post', data=post_data):
             if self.response.json()['error']:
-                log.info('Error while fetching torrents status')
+                log.warning('Error while fetching torrents status')
                 return
             else:
                 torrent_data = self.response.json()['result']
