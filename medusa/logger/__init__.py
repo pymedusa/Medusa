@@ -576,9 +576,6 @@ class CensoredFormatter(logging.Formatter, object):
 
     absurd_re = re.compile(r'[\d\w]')
 
-    # Needed because Newznab apikey isn't stored as key=value in a section.
-    apikey_re = re.compile(r'(?P<before>[&?]r|[&?]apikey|[&?]api_key)(?:=|%3D)([^&]*)(?P<after>[&\w]?)', re.IGNORECASE)
-
     def __init__(self, fmt=None, datefmt=None, encoding='utf-8'):
         """Constructor."""
         super(CensoredFormatter, self).__init__(fmt, datefmt)
@@ -614,8 +611,6 @@ class CensoredFormatter(logging.Formatter, object):
 
             for item in censored:
                 msg = msg.replace(item, '**********')  # must not give any hint about the length
-
-            msg = self.apikey_re.sub(r'\g<before>=**********\g<after>', msg)
 
         level = record.levelno
         if level in (WARNING, ERROR):

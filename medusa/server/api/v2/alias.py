@@ -21,7 +21,7 @@ class AliasHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
 
-    def http_get(self, identifier, path_param):
+    def get(self, identifier, path_param):
         """Query scene_exception information."""
         cache_db_con = db.DBConnection('cache.db')
         sql_base = ('SELECT '
@@ -92,7 +92,7 @@ class AliasHandler(BaseRequestHandler):
 
         return self._ok(data=data)
 
-    def http_put(self, identifier, **kwargs):
+    def put(self, identifier, **kwargs):
         """Update alias information."""
         identifier = self._parse(identifier)
         if not identifier:
@@ -128,7 +128,7 @@ class AliasHandler(BaseRequestHandler):
 
         return self._no_content()
 
-    def http_post(self, identifier, **kwargs):
+    def post(self, identifier, **kwargs):
         """Add an alias."""
         if identifier is not None:
             return self._bad_request('Alias id should not be specified')
@@ -159,7 +159,7 @@ class AliasHandler(BaseRequestHandler):
         data['id'] = cursor.lastrowid
         return self._created(data=data, identifier=data['id'])
 
-    def http_delete(self, identifier, **kwargs):
+    def delete(self, identifier, **kwargs):
         """Delete an alias."""
         identifier = self._parse(identifier)
         if not identifier:

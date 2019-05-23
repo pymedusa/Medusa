@@ -39,7 +39,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'PATCH', 'DELETE',)
 
-    def http_get(self, series_slug, episode_slug, path_param):
+    def get(self, series_slug, episode_slug, path_param):
         """Query episode information.
 
         :param series_slug: series slug. E.g.: tvdb1234
@@ -80,7 +80,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         return self._ok(data=data)
 
-    def http_patch(self, series_slug, episode_slug=None, path_param=None):
+    def patch(self, series_slug, episode_slug=None, path_param=None):
         """Patch episode."""
         series_identifier = SeriesIdentifier.from_slug(series_slug)
         if not series_identifier:
@@ -158,7 +158,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         return accepted
 
-    def http_delete(self, series_slug, episode_slug, **kwargs):
+    def delete(self, series_slug, episode_slug, **kwargs):
         """Delete the episode."""
         if not series_slug:
             return self._method_not_allowed('Deleting multiple series are not allowed')

@@ -323,16 +323,23 @@ class AppWebServer(threading.Thread):
         if not app.WEB_LOG:
             return
 
+        level = None
         if handler.get_status() < 400:
             level = logging.INFO
         elif handler.get_status() < 500:
-            # Don't log normal RESTful responses as warnings
+            # Don't log normal APIv2 RESTful responses as warnings
             if isinstance(handler, BaseRequestHandler):
                 level = logging.INFO
             else:
                 level = logging.WARNING
         else:
-            level = logging.ERROR
+            # If a real exception was raised in APIv2,
+            # let `BaseRequestHandler.log_exception` handle the logging
+            if not isinstance(handler, BaseRequestHandler):
+                level = logging.ERROR
+
+        if level is None:
+            return
 
         log.log(
             level,
