@@ -488,11 +488,6 @@ export default {
                 }
             });
 
-            // @FIXME: Fix invalid value - possibly caused by the use of NonEmptyDict on the backend.
-            if (config.postProcessing.showDownloadDir === null) {
-                config.postProcessing.showDownloadDir = '';
-            }
-
             // Use destructuring to remove the unwanted keys.
             const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
             // Assign the object with the keys removed to our copied object.
