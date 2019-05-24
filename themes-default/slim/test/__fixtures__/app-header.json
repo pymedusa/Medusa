@@ -54,7 +54,8 @@
       "fanartBackgroundOpacity": 0.4,
       "appArgs": [
         "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
+        "--datadir",
+        "C:\\Medusa\\Data"
       ],
       "emby": {
         "enabled": true,
