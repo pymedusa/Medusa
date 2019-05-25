@@ -336,12 +336,45 @@ const manageRoutes = [{
     }
 }];
 
+const errorlogsSubMenu = function() {
+    const { $route, $store } = this;
+    const level = $route.params.level || $route.query.level;
+    const { config } = $store.state;
+    if (!(level && config.logs !== undefined)) {
+        return [];
+    }
+    const { loggingLevels, numErrors, numWarnings } = config.logs;
+
+    return [
+        {
+            title: 'Clear Errors',
+            path: 'errorlogs/clearerrors/',
+            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            icon: 'ui-icon ui-icon-trash'
+        },
+        {
+            title: 'Clear Warnings',
+            path: `errorlogs/clearerrors/?level=${loggingLevels.warning}`,
+            requires: numWarnings >= 1 && Number(level) === loggingLevels.warning,
+            icon: 'ui-icon ui-icon-trash'
+        },
+        {
+            title: 'Submit Errors',
+            path: 'errorlogs/submit_errors/',
+            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            class: 'submiterrors',
+            confirm: true,
+            icon: 'ui-icon ui-icon-arrowreturnthick-1-n'
+        }
+    ];
+};
 const errorLogsRoutes = [{
     path: '/errorlogs',
     name: 'errorlogs',
     meta: {
         title: 'Logs & Errors',
-        topMenu: 'system'
+        topMenu: 'system',
+        subMenu: errorlogsSubMenu
     }
 }, {
     path: '/errorlogs/viewlog',
