@@ -151,7 +151,7 @@ class AliasHandler(BaseRequestHandler):
                                      [series_identifier.indexer.id,
                                       series_identifier.id,
                                       data['name'],
-                                      data.get('season')])
+                                      data.get('season', -1)])
 
         if cache_db_con.connection.total_changes - last_changes <= 0:
             return self._conflict('Unable to create alias')
