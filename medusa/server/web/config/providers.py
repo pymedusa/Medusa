@@ -36,8 +36,7 @@ class ConfigProviders(Config):
         """Render the Provider configuration page."""
         t = PageTemplate(rh=self, filename='config_providers.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='providers')
+        return t.render(controller='config', action='providers')
 
     @staticmethod
     def canAddTorrentRssProvider(name, url, cookies, title_tag):

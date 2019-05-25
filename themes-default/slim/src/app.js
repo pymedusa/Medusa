@@ -21,7 +21,8 @@ import {
     ScrollButtons,
     SelectList,
     Show,
-    ShowSelector
+    ShowSelector,
+    SubMenu
 } from './components';
 
 Vue.config.devtools = true;
@@ -56,7 +57,8 @@ const globalComponents = [
     ScrollButtons,
     SelectList,
     Show,
-    ShowSelector
+    ShowSelector,
+    SubMenu
 ];
 
 globalComponents.forEach(component => {

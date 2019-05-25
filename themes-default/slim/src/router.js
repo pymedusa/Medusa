@@ -8,6 +8,82 @@ const IRC = () => import('./components/irc.vue');
 const Login = () => import('./components/login.vue');
 const NotFound = () => import('./components/http/404.vue');
 
+const showSubMenu = function() {
+    const { $route, $store } = this;
+    const { config, notifiers } = $store.state;
+
+    const indexerName = $route.params.indexer || $route.query.indexername;
+    const showId = $route.params.id || $route.query.seriesid;
+
+    const show = $store.getters.getCurrentShow;
+    const { showQueueStatus } = show;
+
+    const queuedActionStatus = action => {
+        if (!showQueueStatus) {
+            return false;
+        }
+        return Boolean(showQueueStatus.find(status => status.action === action && status.active === true));
+    };
+
+    const isBeingAdded = queuedActionStatus('isBeingAdded');
+    const isBeingUpdated = queuedActionStatus('isBeingUpdated');
+    const isBeingSubtitled = queuedActionStatus('isBeingSubtitled');
+
+    let menu = [{
+        title: 'Edit',
+        path: `home/editShow?indexername=${indexerName}&seriesid=${showId}`,
+        icon: 'ui-icon ui-icon-pencil'
+    }];
+    if (!isBeingAdded && !isBeingUpdated) {
+        menu = menu.concat([
+            {
+                title: show.config.paused ? 'Resume' : 'Pause',
+                path: `home/togglePause?indexername=${indexerName}&seriesid=${showId}`,
+                icon: `ui-icon ui-icon-${show.config.paused ? 'play' : 'pause'}`
+            },
+            {
+                title: 'Remove',
+                path: `home/deleteShow?indexername=${indexerName}&seriesid=${showId}`,
+                confirm: 'removeshow',
+                icon: 'ui-icon ui-icon-trash'
+            },
+            {
+                title: 'Re-scan files',
+                path: `home/refreshShow?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-refresh'
+            },
+            {
+                title: 'Force Full Update',
+                path: `home/updateShow?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-transfer-e-w'
+            },
+            {
+                title: 'Update show in KODI',
+                path: `home/updateKODI?indexername=${indexerName}&seriesid=${showId}`,
+                requires: notifiers.kodi.enabled && notifiers.kodi.update.library,
+                icon: 'menu-icon-kodi'
+            },
+            {
+                title: 'Update show in Emby',
+                path: `home/updateEMBY?indexername=${indexerName}&seriesid=${showId}`,
+                requires: notifiers.emby.enabled,
+                icon: 'menu-icon-emby'
+            },
+            {
+                title: 'Preview Rename',
+                path: `home/testRename?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-tag'
+            },
+            {
+                title: 'Download Subtitles',
+                path: `home/subtitleShow?indexername=${indexerName}&seriesid=${showId}`,
+                requires: config.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
+                icon: 'menu-icon-backlog'
+            }
+        ]);
+    }
+    return menu;
+};
 const homeRoutes = [{
     path: '/home',
     name: 'home',
@@ -26,13 +102,15 @@ const homeRoutes = [{
     path: '/home/displayShow',
     name: 'show',
     meta: {
-        topMenu: 'home'
+        topMenu: 'home',
+        subMenu: showSubMenu
     }
 }, {
     path: '/home/snatchSelection',
     name: 'snatchSelection',
     meta: {
-        topMenu: 'home'
+        topMenu: 'home',
+        subMenu: showSubMenu
     }
 }, {
     path: '/home/testRename',
@@ -80,6 +158,16 @@ const homeRoutes = [{
     }
 }];
 
+const configSubMenu = [
+    { title: 'General', path: 'config/general/', icon: 'menu-icon-config' },
+    { title: 'Backup/Restore', path: 'config/backuprestore/', icon: 'menu-icon-backup' },
+    { title: 'Search Settings', path: 'config/search/', icon: 'menu-icon-manage-searches' },
+    { title: 'Search Providers', path: 'config/providers/', icon: 'menu-icon-provider' },
+    { title: 'Subtitles Settings', path: 'config/subtitles/', icon: 'menu-icon-backlog' },
+    { title: 'Post Processing', path: 'config/postProcessing/', icon: 'menu-icon-postprocess' },
+    { title: 'Notifications', path: 'config/notifications/', icon: 'menu-icon-notification' },
+    { title: 'Anime', path: 'config/anime/', icon: 'menu-icon-anime' }
+];
 const configRoutes = [{
     path: '/config',
     name: 'config',
@@ -87,6 +175,7 @@ const configRoutes = [{
         title: 'Help & Info',
         header: 'Medusa Configuration',
         topMenu: 'config',
+        subMenu: configSubMenu,
         converted: true
     },
     component: Config
@@ -96,7 +185,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Anime',
         header: 'Anime',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/backuprestore',
@@ -104,7 +194,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Backup/Restore',
         header: 'Backup/Restore',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/general',
@@ -112,7 +203,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - General',
         header: 'General Configuration',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/notifications',
@@ -120,7 +212,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Notifications',
         header: 'Notifications',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/postProcessing',
@@ -128,7 +221,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Post Processing',
         header: 'Post Processing',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     },
     component: ConfigPostProcessing
 }, {
@@ -137,7 +231,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Providers',
         header: 'Search Providers',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/search',
@@ -145,7 +240,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Episode Search',
         header: 'Search Settings',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/subtitles',
@@ -153,7 +249,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Subtitles',
         header: 'Subtitles',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }];
 
@@ -237,13 +334,18 @@ const scheduleRoute = {
     }
 };
 
+const historySubMenu = [
+    { title: 'Clear History', path: 'history/clearHistory', icon: 'ui-icon ui-icon-trash', confirm: 'clearhistory' },
+    { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', confirm: 'trimhistory' }
+];
 const historyRoute = {
     path: '/history',
     name: 'history',
     meta: {
         title: 'History',
         header: 'History',
-        topMenu: 'history'
+        topMenu: 'history',
+        subMenu: historySubMenu
     }
 };
 
@@ -312,12 +414,44 @@ const manageRoutes = [{
     }
 }];
 
+const errorlogsSubMenu = function() {
+    const { $route, $store } = this;
+    const level = $route.params.level || $route.query.level;
+    const { config } = $store.state;
+    if (!(level && config.logs !== undefined)) {
+        return [];
+    }
+    const { loggingLevels, numErrors, numWarnings } = config.logs;
+
+    return [
+        {
+            title: 'Clear Errors',
+            path: 'errorlogs/clearerrors/',
+            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            icon: 'ui-icon ui-icon-trash'
+        },
+        {
+            title: 'Clear Warnings',
+            path: `errorlogs/clearerrors/?level=${loggingLevels.warning}`,
+            requires: numWarnings >= 1 && Number(level) === loggingLevels.warning,
+            icon: 'ui-icon ui-icon-trash'
+        },
+        {
+            title: 'Submit Errors',
+            path: 'errorlogs/submit_errors/',
+            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            confirm: 'submiterrors',
+            icon: 'ui-icon ui-icon-arrowreturnthick-1-n'
+        }
+    ];
+};
 const errorLogsRoutes = [{
     path: '/errorlogs',
     name: 'errorlogs',
     meta: {
         title: 'Logs & Errors',
-        topMenu: 'system'
+        topMenu: 'system',
+        subMenu: errorlogsSubMenu
     }
 }, {
     path: '/errorlogs/viewlog',

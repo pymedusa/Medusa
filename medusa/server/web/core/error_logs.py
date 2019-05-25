@@ -76,30 +76,6 @@ class ErrorLogs(WebRoot):
         """Initialize class with default constructor."""
         super(ErrorLogs, self).__init__(*args, **kwargs)
 
-    def _create_menu(self, level):
-        return [
-            {  # Clear Errors
-                'title': 'Clear Errors',
-                'path': 'errorlogs/clearerrors/',
-                'requires': self._has_errors() and level == logging.ERROR,
-                'icon': 'ui-icon ui-icon-trash'
-            },
-            {  # Clear Warnings
-                'title': 'Clear Warnings',
-                'path': 'errorlogs/clearerrors/?level={level}'.format(level=logging.WARNING),
-                'requires': self._has_warnings() and level == logging.WARNING,
-                'icon': 'ui-icon ui-icon-trash'
-            },
-            {  # Submit Errors
-                'title': 'Submit Errors',
-                'path': 'errorlogs/submit_errors/',
-                'requires': self._has_errors() and level == logging.ERROR,
-                'class': 'submiterrors',
-                'confirm': True,
-                'icon': 'ui-icon ui-icon-arrowreturnthick-1-n'
-            },
-        ]
-
     def index(self, level=logging.ERROR, **kwargs):
         """Render default index page."""
         try:
@@ -108,16 +84,7 @@ class ErrorLogs(WebRoot):
             level = logging.ERROR
 
         t = PageTemplate(rh=self, filename='errorlogs.mako')
-        return t.render(submenu=self._create_menu(level), logLevel=level,
-                        controller='errorlogs', action='index')
-
-    @staticmethod
-    def _has_errors():
-        return bool(ErrorViewer.errors)
-
-    @staticmethod
-    def _has_warnings():
-        return bool(WarningViewer.errors)
+        return t.render(logLevel=level, controller='errorlogs', action='index')
 
     def clearerrors(self, level=logging.ERROR):
         """Clear the errors or warnings."""

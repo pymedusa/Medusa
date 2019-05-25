@@ -89,7 +89,6 @@ class PageTemplate(MakoTemplate):
             'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
