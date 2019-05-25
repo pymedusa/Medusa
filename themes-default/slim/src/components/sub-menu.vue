@@ -34,9 +34,14 @@ export default {
     computed: {
         subMenu() {
             const { rawSubMenu, $route } = this;
-            const subMenu = $route.meta.subMenu || rawSubMenu;
+            let subMenu = $route.meta.subMenu || rawSubMenu;
+            if (typeof subMenu === 'function') {
+                subMenu = subMenu.call(this);
+            }
             if (!rawSubMenu) {
-                subMenu.reverse();
+                // Filters `requires = false` and reverses the array
+                const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
+                return subMenu.reduceRight(reducer, []);
             }
             return subMenu.filter(item => item.requires === undefined || item.requires);
         },
