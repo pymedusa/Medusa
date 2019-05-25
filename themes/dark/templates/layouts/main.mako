@@ -65,9 +65,7 @@
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
             <app-header></app-header>
-            % if submenu:
             <sub-menu></sub-menu>
-            % endif
             <%include file="/partials/alerts.mako"/>
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
