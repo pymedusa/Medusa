@@ -44,8 +44,7 @@ const showSubMenu = function() {
             {
                 title: 'Remove',
                 path: `home/deleteShow?indexername=${indexerName}&seriesid=${showId}`,
-                class: 'removeshow',
-                confirm: true,
+                confirm: 'removeshow',
                 icon: 'ui-icon ui-icon-trash'
             },
             {
@@ -336,8 +335,8 @@ const scheduleRoute = {
 };
 
 const historySubMenu = [
-    { title: 'Clear History', path: 'history/clearHistory', icon: 'ui-icon ui-icon-trash', class: 'clearhistory', confirm: true },
-    { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', class: 'trimhistory', confirm: true }
+    { title: 'Clear History', path: 'history/clearHistory', icon: 'ui-icon ui-icon-trash', confirm: 'clearhistory' },
+    { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', confirm: 'trimhistory' }
 ];
 const historyRoute = {
     path: '/history',
@@ -441,8 +440,7 @@ const errorlogsSubMenu = function() {
             title: 'Submit Errors',
             path: 'errorlogs/submit_errors/',
             requires: numErrors >= 1 && Number(level) === loggingLevels.error,
-            class: 'submiterrors',
-            confirm: true,
+            confirm: 'submiterrors',
             icon: 'ui-icon ui-icon-arrowreturnthick-1-n'
         }
     ];

@@ -7,7 +7,7 @@
                     :key="`sub-menu-${menuItem.title}`"
                     :href="menuItem.path"
                     class="btn-medusa top-5 bottom-5"
-                    @[clickEventCond(menuItem)].native.prevent="confirmDialog($event, menuItem.class)"
+                    @[clickEventCond(menuItem)].native.prevent="confirmDialog($event, menuItem.confirm)"
                 >
                     <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
                 </app-link>
