@@ -8,6 +8,83 @@ const IRC = () => import('./components/irc.vue');
 const Login = () => import('./components/login.vue');
 const NotFound = () => import('./components/http/404.vue');
 
+const showSubMenu = function() {
+    const { $route, $store } = this;
+    const { config, notifiers } = $store.state;
+
+    const indexerName = $route.params.indexer || $route.query.indexername;
+    const showId = $route.params.id || $route.query.seriesid;
+
+    const show = $store.getters.getCurrentShow;
+    const { showQueueStatus } = show;
+
+    const queuedActionStatus = action => {
+        if (!showQueueStatus) {
+            return false;
+        }
+        return Boolean(showQueueStatus.find(status => status.action === action && status.active === true));
+    };
+
+    const isBeingAdded = queuedActionStatus('isBeingAdded');
+    const isBeingUpdated = queuedActionStatus('isBeingUpdated');
+    const isBeingSubtitled = queuedActionStatus('isBeingSubtitled');
+
+    let menu = [{
+        title: 'Edit',
+        path: `home/editShow?indexername=${indexerName}&seriesid=${showId}`,
+        icon: 'ui-icon ui-icon-pencil'
+    }];
+    if (!isBeingAdded && !isBeingUpdated) {
+        menu = menu.concat([
+            {
+                title: show.config.paused ? 'Resume' : 'Pause',
+                path: `home/togglePause?indexername=${indexerName}&seriesid=${showId}`,
+                icon: `ui-icon ui-icon-${show.config.paused ? 'play' : 'pause'}`
+            },
+            {
+                title: 'Remove',
+                path: `home/deleteShow?indexername=${indexerName}&seriesid=${showId}`,
+                class: 'removeshow',
+                confirm: true,
+                icon: 'ui-icon ui-icon-trash'
+            },
+            {
+                title: 'Re-scan files',
+                path: `home/refreshShow?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-refresh'
+            },
+            {
+                title: 'Force Full Update',
+                path: `home/updateShow?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-transfer-e-w'
+            },
+            {
+                title: 'Update show in KODI',
+                path: `home/updateKODI?indexername=${indexerName}&seriesid=${showId}`,
+                requires: notifiers.kodi.enabled && notifiers.kodi.update.library,
+                icon: 'menu-icon-kodi'
+            },
+            {
+                title: 'Update show in Emby',
+                path: `home/updateEMBY?indexername=${indexerName}&seriesid=${showId}`,
+                requires: notifiers.emby.enabled,
+                icon: 'menu-icon-emby'
+            },
+            {
+                title: 'Preview Rename',
+                path: `home/testRename?indexername=${indexerName}&seriesid=${showId}`,
+                icon: 'ui-icon ui-icon-tag'
+            },
+            {
+                title: 'Download Subtitles',
+                path: `home/subtitleShow?indexername=${indexerName}&seriesid=${showId}`,
+                requires: config.subtitles.enabled && !isBeingSubtitled && show.config.subtitlesEnabled,
+                icon: 'menu-icon-backlog'
+            }
+        ]);
+    }
+    return menu;
+};
 const homeRoutes = [{
     path: '/home',
     name: 'home',
@@ -26,13 +103,15 @@ const homeRoutes = [{
     path: '/home/displayShow',
     name: 'show',
     meta: {
-        topMenu: 'home'
+        topMenu: 'home',
+        subMenu: showSubMenu
     }
 }, {
     path: '/home/snatchSelection',
     name: 'snatchSelection',
     meta: {
-        topMenu: 'home'
+        topMenu: 'home',
+        subMenu: showSubMenu
     }
 }, {
     path: '/home/testRename',
