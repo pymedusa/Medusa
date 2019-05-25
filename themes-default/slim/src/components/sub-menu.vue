@@ -42,7 +42,7 @@ export default {
         },
         showSelectorVisible() {
             const { $route } = this;
-            return $route.name === 'displayShow';
+            return $route.name === 'show';
         },
         curShowSlug() {
             const { $route, showSelectorVisible } = this;
