@@ -80,6 +80,16 @@ const homeRoutes = [{
     }
 }];
 
+const configSubMenu = [
+    { title: 'General', path: 'config/general/', icon: 'menu-icon-config' },
+    { title: 'Backup/Restore', path: 'config/backuprestore/', icon: 'menu-icon-backup' },
+    { title: 'Search Settings', path: 'config/search/', icon: 'menu-icon-manage-searches' },
+    { title: 'Search Providers', path: 'config/providers/', icon: 'menu-icon-provider' },
+    { title: 'Subtitles Settings', path: 'config/subtitles/', icon: 'menu-icon-backlog' },
+    { title: 'Post Processing', path: 'config/postProcessing/', icon: 'menu-icon-postprocess' },
+    { title: 'Notifications', path: 'config/notifications/', icon: 'menu-icon-notification' },
+    { title: 'Anime', path: 'config/anime/', icon: 'menu-icon-anime' }
+];
 const configRoutes = [{
     path: '/config',
     name: 'config',
@@ -87,6 +97,7 @@ const configRoutes = [{
         title: 'Help & Info',
         header: 'Medusa Configuration',
         topMenu: 'config',
+        subMenu: configSubMenu,
         converted: true
     },
     component: Config
@@ -96,7 +107,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Anime',
         header: 'Anime',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/backuprestore',
@@ -104,7 +116,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Backup/Restore',
         header: 'Backup/Restore',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/general',
@@ -112,7 +125,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - General',
         header: 'General Configuration',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/notifications',
@@ -120,7 +134,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Notifications',
         header: 'Notifications',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/postProcessing',
@@ -128,7 +143,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Post Processing',
         header: 'Post Processing',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     },
     component: ConfigPostProcessing
 }, {
@@ -137,7 +153,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Providers',
         header: 'Search Providers',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/search',
@@ -145,7 +162,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Episode Search',
         header: 'Search Settings',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }, {
     path: '/config/subtitles',
@@ -153,7 +171,8 @@ const configRoutes = [{
     meta: {
         title: 'Config - Subtitles',
         header: 'Subtitles',
-        topMenu: 'config'
+        topMenu: 'config',
+        subMenu: configSubMenu
     }
 }];
 
