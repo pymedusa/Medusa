@@ -33,8 +33,7 @@ class ConfigSearch(Config):
         """
         t = PageTemplate(rh=self, filename='config_search.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='search')
+        return t.render(controller='config', action='search')
 
     def saveSearch(self, use_nzbs=None, use_torrents=None, nzb_dir=None, sab_username=None, sab_password=None,
                    sab_apikey=None, sab_category=None, sab_category_anime=None, sab_category_backlog=None,

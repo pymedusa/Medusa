@@ -6,6 +6,7 @@
 - Added BTDB torrent provider ([#6678](https://github.com/pymedusa/Medusa/pull/6678))
 
 #### Improvements
+- Converted the sub-menu into a Vue SFC ([#6724](https://github.com/pymedusa/Medusa/pull/6724))
 
 #### Fixes
 - Fixed lists not being saved when used with comma separated items ([#6428](https://github.com/pymedusa/Medusa/pull/6428))

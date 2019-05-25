@@ -33,13 +33,8 @@ class History(WebRoot):
         history = self.history.get(limit)
 
         t = PageTemplate(rh=self, filename='history.mako')
-        submenu = [
-            {'title': 'Clear History', 'path': 'history/clearHistory', 'icon': 'ui-icon ui-icon-trash', 'class': 'clearhistory', 'confirm': True},
-            {'title': 'Trim History', 'path': 'history/trimHistory', 'icon': 'menu-icon-cut', 'class': 'trimhistory', 'confirm': True},
-        ]
-
         return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        submenu=submenu[::-1], controller='history', action='index')
+                        controller='history', action='index')
 
     def clearHistory(self):
         # @TODO: Replace this with DELETE /api/v2/history
