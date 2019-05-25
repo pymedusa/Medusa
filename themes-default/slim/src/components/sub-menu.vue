@@ -3,10 +3,10 @@
         <div id="sub-menu-container" class="row shadow">
             <div id="sub-menu" class="submenu-default hidden-print col-md-12">
                 <template v-for="menuItem in subMenu">
-                    <app-link v-if="!menuItem.confirm" :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5">
+                    <app-link v-if="!menuItem.confirm" :key="`sub-menu-${menuItem.title}`" :href="menuItem.path" class="btn-medusa top-5 bottom-5">
                         <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
                     </app-link>
-                    <app-link v-else :key="menuItem.title" :href="menuItem.path" class="btn-medusa top-5 bottom-5" @click.native.prevent="confirmDialog($event, menuItem.class)">
+                    <app-link v-else :key="`sub-menu-${menuItem.title}`" :href="menuItem.path" class="btn-medusa top-5 bottom-5" @click.native.prevent="confirmDialog($event, menuItem.class)">
                         <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
                     </app-link>
                 </template>
