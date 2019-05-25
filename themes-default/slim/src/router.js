@@ -256,13 +256,18 @@ const scheduleRoute = {
     }
 };
 
+const historySubMenu = [
+    { title: 'Clear History', path: 'history/clearHistory', icon: 'ui-icon ui-icon-trash', class: 'clearhistory', confirm: true },
+    { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', class: 'trimhistory', confirm: true }
+];
 const historyRoute = {
     path: '/history',
     name: 'history',
     meta: {
         title: 'History',
         header: 'History',
-        topMenu: 'history'
+        topMenu: 'history',
+        subMenu: historySubMenu
     }
 };
 
