@@ -46,7 +46,8 @@ import {
     ShowSelector,
     SnatchSelection,
     StateSwitch,
-    Status
+    Status,
+    SubMenu
 } from './components';
 
 if (window) {
@@ -108,6 +109,7 @@ if (window) {
     window.components.push(SnatchSelection);
     window.components.push(StateSwitch);
     window.components.push(Status);
+    window.components.push(SubMenu);
 }
 
 const UTIL = {

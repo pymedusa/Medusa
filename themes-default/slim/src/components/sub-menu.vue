@@ -1,4 +1,4 @@
-<script type="text/x-template" id="sub-menu-template">
+<template>
     <div v-if="subMenu.length > 0" id="sub-menu-wrapper">
         <div id="sub-menu-container" class="row shadow">
             <div id="sub-menu" class="submenu-default hidden-print col-md-12">
@@ -18,27 +18,26 @@
         <!-- This fixes some padding issues on screens larger than 1281px -->
         <div class="btn-group"></div>
     </div>
-</script>
-<%!
-    import json
-%>
-<% raw_sub_menu = json.dumps(submenu[::-1]) %>
+</template>
 <script>
-const SubMenuComponent = {
+import { AppLink, ShowSelector } from './helpers';
+
+export default {
     name: 'sub-menu',
-    template: '#sub-menu-template',
-    data() {
-        return {
-            // Python conversions
-            // @TODO: Add the submenu definitions to VueRouter's routes object
-            rawSubMenu: ${raw_sub_menu}
-        };
+    components: {
+        AppLink,
+        ShowSelector
+    },
+    props: {
+        rawSubMenu: Array
     },
     computed: {
         subMenu() {
             const { rawSubMenu, $route } = this;
             const subMenu = $route.meta.subMenu || rawSubMenu;
-            subMenu.reverse();
+            if (!rawSubMenu) {
+                subMenu.reverse();
+            }
             return subMenu.filter(item => item.requires === undefined || item.requires);
         },
         showSelectorVisible() {
@@ -70,10 +69,8 @@ const SubMenuComponent = {
             if (action === 'removeshow') {
                 const showName = document.querySelector('#showtitle').dataset.showname;
                 options.title = 'Remove Show';
-                <%text>
                 options.text = `Are you sure you want to remove <span class="footerhighlight">${showName}</span> from the database?<br><br>
                                 <input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span>`;
-                </%text>
                 options.confirm = $element => {
                     window.location.href = $element[0].href + (document.querySelector('#deleteFiles').checked ? '&full=1' : '');
                 };
@@ -96,8 +93,6 @@ const SubMenuComponent = {
         }
     }
 };
-
-window.components.push(SubMenuComponent);
 </script>
 <style scoped>
 /* Theme-specific styling adds the rest */
