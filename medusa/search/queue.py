@@ -127,7 +127,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return False
 
     def is_show_in_queue(self, show):
-        """Verify if the show is queued in this queue as a ForcedSearchQueueItem or FailedQueueItem."""
+        """Verify if the show is queued in this queue as a BacklogQueueItem, ManualSearchQueueItem or FailedQueueItem."""
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.show.indexerid == show:
                 return True
@@ -139,7 +139,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
         @param series_obj: Series object.
 
-        @return: A list of ForcedSearchQueueItem or FailedQueueItem items
+        @return: A list of BacklogQueueItem, FailedQueueItem or FailedQueueItem items
         """
         ep_obj_list = []
         for cur_item in self.queue:
@@ -311,134 +311,6 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         except Exception as error:
             self.success = False
             log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
-
-        if self.success is None:
-            self.success = False
-
-        self.finish()
-
-
-class ForcedSearchQueueItem(generic_queue.QueueItem):
-    """Forced search queue item class."""
-
-    def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
-        """
-        Initialize class of a QueueItem used to queue forced and manual searches.
-
-        :param show: A show object
-        :param segment: A list of episode objects.
-        :param down_cur_quality: Not sure what it's used for. Maybe legacy.
-        :param manual_search: Passed as True (bool) when the search should be performed without snatching a result
-        :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
-        :return: The run() method searches and snatches the episode(s) if possible or it only searches and saves results to cache tables.
-        """
-        generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
-        self.priority = generic_queue.QueuePriorities.HIGH
-        # SEARCHQUEUE-MANUAL-12345
-        # SEARCHQUEUE-FORCED-12345
-        self.name = '{search_type}-{indexerid}'.format(
-            search_type=('FORCED', 'MANUAL')[bool(manual_search)],
-            indexerid=show.indexerid
-        )
-
-        self.success = None
-        self.started = None
-        self.results = None
-
-        self.show = show
-        self.segment = segment
-        self.down_cur_quality = down_cur_quality
-        self.manual_search = manual_search
-        self.manual_search_type = manual_search_type
-
-    def run(self):
-        """Run forced search thread."""
-        generic_queue.QueueItem.run(self)
-        self.started = True
-
-        try:
-            log.info(
-                'Beginning {search_type} {season_pack}search for: {ep}', {
-                    'search_type': ('forced', 'manual')[bool(self.manual_search)],
-                    'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                    'ep': self.segment[0].pretty_name()
-                }
-            )
-
-            search_result = search_providers(self.show, self.segment, True, self.down_cur_quality,
-                                             self.manual_search, self.manual_search_type)
-
-            if not self.manual_search and search_result:
-                for result in search_result:
-                    # Just use the first result for now
-                    if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        log.info(
-                            'Downloading {name} with {seeders} seeders and {leechers} leechers '
-                            'and size {size} from {provider}', {
-                                'name': result.name,
-                                'seeders': result.seeders,
-                                'leechers': result.leechers,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    else:
-                        log.info(
-                            'Downloading {name} with size: {size} from {provider}', {
-                                'name': result.name,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-
-                    # Set the search_type for the result.
-                    result.search_type = SearchType.FORCED_SEARCH
-
-                    # Create the queue item
-                    snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
-
-                    # Add the queue item to the queue
-                    app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
-
-                    self.success = False
-                    while snatch_queue_item.success is False:
-                        if snatch_queue_item.started and snatch_queue_item.success:
-                            self.success = True
-                        time.sleep(1)
-
-                    # Give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
-
-            elif self.manual_search and search_result:
-                self.results = search_result
-                self.success = True
-
-                if self.manual_search_type == 'season':
-                    ui.notifications.message('We have found season packs for {show_name}'
-                                             .format(show_name=self.show.name),
-                                             'These should become visible in the manual select page.')
-                else:
-                    ui.notifications.message('We have found results for {ep}'
-                                             .format(ep=self.segment[0].pretty_name()),
-                                             'These should become visible in the manual select page.')
-
-            else:
-                ui.notifications.message('No results were found')
-                log.info(
-                    'Unable to find {search_type} {season_pack}results for: {ep}', {
-                        'search_type': ('forced', 'manual')[bool(self.manual_search)],
-                        'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                        'ep': self.segment[0].pretty_name()
-                    }
-                )
-
-        # TODO: Remove catch all exception.
-        except Exception:
-            self.success = False
-            log.debug(traceback.format_exc())
-
-        # Keep a list with the 100 last executed searches
-        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
         if self.success is None:
             self.success = False
