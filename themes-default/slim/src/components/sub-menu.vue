@@ -28,22 +28,16 @@ export default {
         AppLink,
         ShowSelector
     },
-    props: {
-        rawSubMenu: Array
-    },
     computed: {
         subMenu() {
-            const { rawSubMenu, $route } = this;
-            let subMenu = $route.meta.subMenu || rawSubMenu;
+            const { $route } = this;
+            let subMenu = $route.meta.subMenu || [];
             if (typeof subMenu === 'function') {
                 subMenu = subMenu.call(this);
             }
-            if (!rawSubMenu) {
-                // Filters `requires = false` and reverses the array
-                const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
-                return subMenu.reduceRight(reducer, []);
-            }
-            return subMenu.filter(item => item.requires === undefined || item.requires);
+            // Filters `requires = false` and reverses the array
+            const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
+            return subMenu.reduceRight(reducer, []);
         },
         showSelectorVisible() {
             const { $route } = this;
