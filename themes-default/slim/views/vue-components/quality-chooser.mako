@@ -1,28 +1,27 @@
 <script type="text/x-template" id="quality-chooser-template">
     <div id="quality_chooser_wrapper">
         <select v-model.number="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
-            <option value="keep" v-if="keep">&lt; Keep &gt;</option>
-            <option :value.number="0">Custom</option>
-            <option v-for="preset in qualityPresets" :value.number="preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
+            <option v-if="keep" value="keep">&lt; Keep &gt;</option>
+            <option :value="0">Custom</option>
+            <option v-for="preset in qualityPresets" :value="preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
         </select>
         <div id="customQualityWrapper">
             <div style="padding-left: 0;" v-show="selectedQualityPreset === 0">
                 <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
                 <div style="padding-right: 40px; text-align: left; float: left;">
                     <h5>Allowed</h5>
-                    <select v-model="allowedQualities" name="allowed_qualities" multiple="multiple" :size="allowedQualityList.length" class="form-control form-control-inline input-sm">
-                        <option v-for="quality in allowedQualityList" :value="quality">{{qualityStrings[quality]}}</option>
+                    <select v-model.number="allowedQualities" name="allowed_qualities" multiple="multiple" :size="validQualities.length" class="form-control form-control-inline input-sm">
+                        <option v-for="quality in validQualities" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model="preferredQualities" name="preferred_qualities" multiple="multiple" :size="preferredQualityList.length" class="form-control form-control-inline input-sm" :disabled="allowedQualities.length === 0">
-                        <option v-for="quality in preferredQualityList" :value="quality">{{qualityStrings[quality]}}</option>
+                    <select v-model.number="preferredQualities" name="preferred_qualities" multiple="multiple" :size="validQualities.length" class="form-control form-control-inline input-sm" :disabled="allowedQualities.length === 0">
+                        <option v-for="quality in validQualities" :value="quality">{{qualityStrings[quality]}}</option>
                     </select>
                 </div>
             </div>
             <div style="clear:both;"></div>
-            ## @TODO: This needs cleaning up. Vue v2.1.0 introduces `v-else-if` which might be useful in this case
             <div v-if="selectedQualityPreset !== 'keep'">
                 <div v-if="(allowedQualities.length + preferredQualities.length) >= 1" id="qualityExplanation">
                     <h5><b>Quality setting explanation:</b></h5>
@@ -35,9 +34,9 @@
                 <div v-else>Please select at least one allowed quality.</div>
             </div>
             <div v-if="seriesSlug && (allowedQualities.length + preferredQualities.length) >= 1">
-                <h5 class="red-text" id="backloggedEpisodes" v-html="backloggedEpisodes"></h5>
+                <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
             </div>
-            <div id="archive" v-if="archive">
+            <div v-if="archive" id="archive">
                 <h5>
                     <b>Archive downloaded episodes that are not currently in
                     <a target="_blank" href="manage/backlogOverview/" style="color: blue; text-decoration: underline;">backlog</a>.</b>
@@ -86,9 +85,7 @@ const QualityChooserComponent = {
         keep: {
             type: String,
             default: null,
-            validator(value) {
-                return ['keep', 'show'].includes(value);
-            }
+            validator: value => ['keep', 'show'].includes(value)
         }
     },
     data() {
@@ -100,6 +97,7 @@ const QualityChooserComponent = {
             qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
+            lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
@@ -115,43 +113,49 @@ const QualityChooserComponent = {
     computed: {
         allowedExplanation() {
             const allowed = this.allowedQualities;
-            return allowed.map(quality => this.qualityStrings[quality])
+            return allowed.map(quality => this.qualityStrings[quality]);
         },
         preferredExplanation() {
             const preferred = this.preferredQualities;
-            return preferred.map(quality => this.qualityStrings[quality])
+            return preferred.map(quality => this.qualityStrings[quality]);
         },
         allowedPreferredExplanation() {
             const allowed = this.allowedExplanation;
             const preferred = this.preferredExplanation;
-            return allowed.concat(preferred.filter(item => allowed.indexOf(item) < 0))
+            return allowed.concat(
+                preferred.filter(item => !allowed.includes(item))
+            );
         },
-        allowedQualityList() {
-            return Object.keys(this.qualityStrings)
-                .filter(val => val > ${Quality.NA});
-        },
-        preferredQualityList() {
+        validQualities() {
             return Object.keys(this.qualityStrings)
                 .filter(val => val > ${Quality.NA});
         }
     },
     asyncComputed: {
         async backloggedEpisodes() {
-            // Skip if no seriesSlug as that means were on a addShow page
-            if (!this.seriesSlug) return;
+            const { seriesSlug, allowedQualities, preferredQualities } = this;
 
-            const allowedQualities = this.allowedQualities;
-            const preferredQualities = this.preferredQualities;
+            // Skip if no seriesSlug as that means were on a addShow page
+            if (!seriesSlug) return {};
 
             // Skip if no qualities are selected
-            if (!allowedQualities.length && !preferredQualities.length) return;
+            if (allowedQualities.length === 0 && preferredQualities.length === 0) return {};
 
             // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
-            const url = 'series/' + this.seriesSlug +
+            const url = 'series/' + seriesSlug +
                         '/legacy/backlogged' +
-                        '?allowed=' + allowedQualities +
-                        '&preferred=' + preferredQualities;
-            const response = await api.get(url);
+                        '?allowed=' + allowedQualities.join(',') +
+                        '&preferred=' + preferredQualities.join(',');
+            let status = false; // Set to `false` for red text, `true` for normal color
+            let response;
+            try {
+                response = await api.get(url);
+            } catch (error) {
+                return {
+                    status,
+                    html: '<b>Failed to get backlog prediction</b><br />' + String(error)
+                };
+            }
             const newBacklogged = response.data.new;
             const existingBacklogged = response.data.existing;
             const variation = Math.abs(newBacklogged - existingBacklogged);
@@ -160,6 +164,7 @@ const QualityChooserComponent = {
                 html = 'No qualities selected';
             } else if (newBacklogged === existingBacklogged) {
                 html += 'This change won\'t affect your backlogged episodes';
+                status = true;
             } else {
                 html += '<br />New backlog: <b>' + newBacklogged + '</b> episodes';
                 html += '<br /><br />';
@@ -175,7 +180,10 @@ const QualityChooserComponent = {
                 html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.';
             }
 
-            return html;
+            return {
+                status,
+                html
+            };
         }
     },
     mounted() {
@@ -190,9 +198,8 @@ const QualityChooserComponent = {
 
             if (response.status === 201) {
                 this.archivedStatus = 'Successfully archived episodes';
-                // @FIXME: This does nothing.
                 // Recalculate backlogged episodes after we archive it
-                // this.$forceUpdate();
+                this.$asyncComputed.backloggedEpisodes.update();
             } else if (response.status === 204) {
                 this.archivedStatus = 'No episodes to be archived';
             }
@@ -204,32 +211,62 @@ const QualityChooserComponent = {
             // If empty skip
             if (preset === undefined || preset === null) return;
 
-            // If preset is custom set to last preset
-            if (parseInt(preset, 10) === 0 || !(this.qualityPresets.includes(preset))) preset = oldPreset;
+            // If preset is custom, set to last preset
+            if (parseInt(preset, 10) === 0 || !this.qualityPresets.includes(preset)) {
+                // [Mass Edit] If changing from `keep`, restore the original value
+                preset = oldPreset === 'keep' ? this.overallQuality : oldPreset;
+            }
 
-            // Convert values to unsigned int, and filter selected/prefrred qualities
-            this.allowedQualities = Object.keys(this.qualityStrings)
-                .map(quality => parseInt(quality, 10))
-                .filter(quality => ( (preset & quality) >>> 0 ) > 0);
-            this.preferredQualities = Object.keys(this.qualityStrings)
-                .map(quality => parseInt(quality, 10))
-                .filter(quality => ( (preset & (quality << 16)) >>> 0 ) > 0);
+            // Convert values to unsigned int, and filter selected/preferred qualities
+            const reducer = (results, quality) => {
+                quality = parseInt(quality, 10);
+                // Allowed
+                if (( (preset & quality) >>> 0 ) > 0) {
+                    results[0].push(quality);
+                }
+                // Preferred
+                if (( (preset & (quality << 16)) >>> 0 ) > 0) {
+                    results[1].push(quality);
+                }
+                return results;
+            };
+            const qualities = Object.keys(this.qualityStrings).reduce(reducer, [[], []]);
+            this.allowedQualities = qualities[0];
+            this.preferredQualities = qualities[1];
         }
     },
     watch: {
+        /*
+        FIXME: Remove this watch and the `this.lock` hack.
+        This is causing the preset selector to change from `Custom` to a preset,
+        when the correct qualities for that preset are selected.
+        */
         overallQuality(newValue) {
+            if (this.lock) {
+                return;
+            }
             const { qualityPresets, keep, setQualityFromPreset } = this;
-            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (qualityPresets.includes(newValue) ? newValue : 0),
+            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (qualityPresets.includes(newValue) ? newValue : 0);
             setQualityFromPreset(this.selectedQualityPreset, newValue);
         },
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
         allowedQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:allowed', this.allowedQualities.map(quality => parseInt(quality, 10)));
+            this.lock = true; // FIXME: Remove this hack, see above
+            this.$emit('update:quality:allowed', newQuality);
+            // FIXME: Remove this hack, see above
+            this.$nextTick(() => {
+                this.lock = false;
+            });
         },
         preferredQualities(newQuality, oldQuality) {
-            this.$emit('update:quality:preferred', this.preferredQualities.map(quality => parseInt(quality, 10)));
+            this.lock = true; // FIXME: Remove this hack, see above
+            this.$emit('update:quality:preferred', newQuality);
+            // FIXME: Remove this hack, see above
+            this.$nextTick(() => {
+                this.lock = false;
+            });
         }
     }
 };
