@@ -28,7 +28,7 @@ jobs:
       script:
         - ./.github/build-themes-check.sh
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
-        - yarn xo
+        - yarn lint
         - yarn lint-css
         - yarn test
         - yarn coverage

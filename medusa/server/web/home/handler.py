@@ -257,28 +257,6 @@ class Home(WebRoot):
         })
 
     @staticmethod
-    # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
-    def haveKODI():
-        return app.USE_KODI and app.KODI_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/plex, check if enabled === true
-    def havePLEX():
-        return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/emby, check if enabled === true
-    def haveEMBY():
-        return app.USE_EMBY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/torrents, check if enabled === true
-    def haveTORRENT():
-        return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
-                    (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
-                     app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
-
-    @staticmethod
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
         host = config.clean_url(host)
 
@@ -807,61 +785,6 @@ class Home(WebRoot):
         )
 
         t = PageTemplate(rh=self, filename='displayShow.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil',
-        }]
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'menu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'menu-icon-emby',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'menu-icon-backlog',
-                    })
 
         ep_cats = {}
 
@@ -892,7 +815,6 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1],
             show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
@@ -1085,61 +1007,6 @@ class Home(WebRoot):
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil'
-        }]
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'submenu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'ui-icon ui-icon-comment',
-                    })
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -1225,7 +1092,7 @@ class Home(WebRoot):
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
         return t.render(
-            submenu=submenu[::-1], show=series_obj,
+            show=series_obj,
             provider_results=provider_results, episode_history=episode_history,
             season=season, episode=episode, manual_search_type=manual_search_type,
             controller='home', action='snatchSelection'
