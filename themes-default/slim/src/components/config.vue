@@ -35,7 +35,7 @@
             <tr><td><i class="icon16-config-log"></i> Log Folder:</td><td>{{config.logDir}}</td></tr>
             <tr v-if="config.appArgs"><td><i class="icon16-config-arguments"></i> Arguments:</td><td><pre>{{config.appArgs.join(' ')}}</pre></td></tr>
             <tr v-if="config.webRoot"><td><i class="icon16-config-dir"></i> Web Root:</td><td>{{config.webRoot}}</td></tr>
-            <tr v-if="config.runsInDocker"><td><i class="icon16-config-docker"></i> Runs in docker:</td><td>{{config.runsInDocker ? 'yes' : 'no'}}</td></tr>
+            <tr v-if="config.runsInDocker"><td><i class="icon16-config-docker"></i> Runs in Docker:</td><td>Yes</td></tr>
             <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
             <tr><td><i class="icon16-config-web"></i> Website:</td><td><app-link :href="config.githubUrl">{{config.githubUrl}}</app-link></td></tr>
