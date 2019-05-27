@@ -1,23 +1,59 @@
 <template>
-    <div id="quality_chooser_wrapper">
-        <select v-model.number="selectedQualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
+    <div>
+        <select
+            v-model.number="selectedQualityPreset"
+            name="quality_preset"
+            class="form-control form-control-inline input-sm"
+        >
             <option v-if="keep" value="keep">&lt; Keep &gt;</option>
             <option :value="0">Custom</option>
-            <option v-for="preset in qualityPresets" :value="preset" :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''">{{qualityPresetStrings[preset]}}</option>
+            <option
+                v-for="preset in qualityPresets"
+                :key="`quality-preset-${preset}`"
+                :value="preset"
+                :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''"
+            >
+                {{ qualityPresetStrings[preset] }}
+            </option>
         </select>
         <div id="customQualityWrapper">
             <div style="padding-left: 0;" v-show="selectedQualityPreset === 0">
                 <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
                 <div style="padding-right: 40px; text-align: left; float: left;">
                     <h5>Allowed</h5>
-                    <select v-model.number="allowedQualities" name="allowed_qualities" multiple="multiple" :size="validQualities.length" class="form-control form-control-inline input-sm">
-                        <option v-for="quality in validQualities" :value="quality">{{qualityStrings[quality]}}</option>
+                    <select
+                        v-model.number="allowedQualities"
+                        name="allowed_qualities"
+                        multiple="multiple"
+                        :size="validQualities.length"
+                        class="form-control form-control-inline input-sm"
+                    >
+                        <option
+                            v-for="quality in validQualities"
+                            :key="`quality-list-${quality}`"
+                            :value="quality"
+                        >
+                            {{ qualityStrings[quality] }}
+                        </option>
                     </select>
                 </div>
                 <div style="text-align: left; float: left;">
                     <h5>Preferred</h5>
-                    <select v-model.number="preferredQualities" name="preferred_qualities" multiple="multiple" :size="validQualities.length" class="form-control form-control-inline input-sm" :disabled="allowedQualities.length === 0">
-                        <option v-for="quality in validQualities" :value="quality">{{qualityStrings[quality]}}</option>
+                    <select
+                        v-model.number="preferredQualities"
+                        name="preferred_qualities"
+                        multiple="multiple"
+                        :size="validQualities.length"
+                        class="form-control form-control-inline input-sm"
+                        :disabled="allowedQualities.length === 0"
+                    >
+                        <option
+                            v-for="quality in validQualities"
+                            :key="`quality-list-${quality}`"
+                            :value="quality"
+                        >
+                            {{ qualityStrings[quality] }}
+                        </option>
                     </select>
                 </div>
             </div>
@@ -25,10 +61,19 @@
             <div v-if="selectedQualityPreset !== 'keep'">
                 <div v-if="(allowedQualities.length + preferredQualities.length) >= 1" id="qualityExplanation">
                     <h5><b>Quality setting explanation:</b></h5>
-                    <h5 v-if="preferredQualities.length === 0">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">{{allowedExplanation.join(', ')}}</label></h5>
+                    <h5 v-if="preferredQualities.length === 0">
+                        This will download <b>any</b> of these qualities and then stops searching:
+                        <label id="allowedExplanation">{{ allowedExplanation.join(', ') }}</label>
+                    </h5>
                     <template v-else>
-                    <h5>Downloads <b>any</b> of these qualities: <label id="allowedPreferredExplanation">{{allowedExplanation.join(', ')}}</label></h5>
-                    <h5>But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">{{preferredExplanation.join(', ')}}</label></h5>
+                        <h5>
+                            Downloads <b>any</b> of these qualities:
+                            <label id="allowedPreferredExplanation">{{ allowedExplanation.join(', ') }}</label>
+                        </h5>
+                        <h5>
+                            But it will stop searching when one of these is downloaded:
+                            <label id="preferredExplanation">{{ preferredExplanation.join(', ') }}</label>
+                        </h5>
                     </template>
                 </div>
                 <div v-else>Please select at least one allowed quality.</div>
@@ -43,8 +88,14 @@
                     <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
-                <button @click.prevent="archiveEpisodes" :disabled="archiveButton.disabled" class="btn-medusa btn-inline">{{archiveButton.text}}</button>
-                <h5>{{archivedStatus}}</h5>
+                <button
+                    @click.prevent="archiveEpisodes"
+                    :disabled="archiveButton.disabled"
+                    class="btn-medusa btn-inline"
+                >
+                    {{ archiveButton.text }}
+                </button>
+                <h5>{{ archivedStatus }}</h5>
             </div>
         </div>
     </div>
@@ -89,6 +140,7 @@ export default {
             // qualityPresetStrings: ${convert(qualityPresetStrings)},
 
             // JS only
+            // eslint-disable-next-line no-warning-comments
             lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
@@ -128,10 +180,14 @@ export default {
             const { seriesSlug, allowedQualities, preferredQualities } = this;
 
             // Skip if no seriesSlug as that means were on a addShow page
-            if (!seriesSlug) return {};
+            if (!seriesSlug) {
+                return {};
+            }
 
             // Skip if no qualities are selected
-            if (allowedQualities.length === 0 && preferredQualities.length === 0) return {};
+            if (allowedQualities.length === 0 && preferredQualities.length === 0) {
+                return {};
+            }
 
             // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
             const url = 'series/' + seriesSlug +
@@ -155,7 +211,7 @@ export default {
             if (newBacklogged === -1 || existingBacklogged === -1) {
                 html = 'No qualities selected';
             } else if (newBacklogged === existingBacklogged) {
-                html += 'This change won\'t affect your backlogged episodes';
+                html += "This change won't affect your backlogged episodes";
                 status = true;
             } else {
                 html += '<br />New backlog: <b>' + newBacklogged + '</b> episodes';
@@ -201,7 +257,9 @@ export default {
         },
         setQualityFromPreset(preset, oldPreset) {
             // If empty skip
-            if (preset === undefined || preset === null) return;
+            if (preset === undefined || preset === null) {
+                return;
+            }
 
             // If preset is custom, set to last preset
             if (parseInt(preset, 10) === 0 || !this.qualityPresets.includes(preset)) {
@@ -213,11 +271,11 @@ export default {
             const reducer = (results, quality) => {
                 quality = parseInt(quality, 10);
                 // Allowed
-                if (( (preset & quality) >>> 0 ) > 0) {
+                if (( (preset & quality) >>> 0 ) > 0) { // eslint-disable-line space-in-parens
                     results[0].push(quality);
                 }
                 // Preferred
-                if (( (preset & (quality << 16)) >>> 0 ) > 0) {
+                if (( (preset & (quality << 16)) >>> 0 ) > 0) { // eslint-disable-line space-in-parens
                     results[1].push(quality);
                 }
                 return results;
@@ -228,6 +286,7 @@ export default {
         }
     },
     watch: {
+        // eslint-disable-next-line no-warning-comments
         /*
         FIXME: Remove this watch and the `this.lock` hack.
         This is causing the preset selector to change from `Custom` to a preset,
@@ -244,7 +303,8 @@ export default {
         selectedQualityPreset(preset, oldPreset) {
             this.setQualityFromPreset(preset, oldPreset);
         },
-        allowedQualities(newQuality, oldQuality) {
+        /* eslint-disable no-warning-comments */
+        allowedQualities(newQuality) {
             this.lock = true; // FIXME: Remove this hack, see above
             this.$emit('update:quality:allowed', newQuality);
             // FIXME: Remove this hack, see above
@@ -252,7 +312,7 @@ export default {
                 this.lock = false;
             });
         },
-        preferredQualities(newQuality, oldQuality) {
+        preferredQualities(newQuality) {
             this.lock = true; // FIXME: Remove this hack, see above
             this.$emit('update:quality:preferred', newQuality);
             // FIXME: Remove this hack, see above
@@ -260,6 +320,7 @@ export default {
                 this.lock = false;
             });
         }
+        /* eslint-enable no-warning-comments */
     }
 };
 </script>
