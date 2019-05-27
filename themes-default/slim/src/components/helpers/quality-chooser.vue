@@ -9,11 +9,10 @@
             <option :value="0">Custom</option>
             <option
                 v-for="preset in qualityPresets"
-                :key="`quality-preset-${preset}`"
-                :value="preset"
-                :style="qualityPresetStrings[preset].endsWith('0p') ? 'padding-left: 15px;' : ''"
+                :key="`quality-preset-${preset.key}`"
+                :value="preset.value"
             >
-                {{ qualityPresetStrings[preset] }}
+                {{ preset.name }}
             </option>
         </select>
         <div id="customQualityWrapper">
@@ -30,10 +29,10 @@
                     >
                         <option
                             v-for="quality in validQualities"
-                            :key="`quality-list-${quality}`"
-                            :value="quality"
+                            :key="`quality-list-${quality.key}`"
+                            :value="quality.value"
                         >
-                            {{ qualityStrings[quality] }}
+                            {{ quality.name }}
                         </option>
                     </select>
                 </div>
@@ -49,10 +48,10 @@
                     >
                         <option
                             v-for="quality in validQualities"
-                            :key="`quality-list-${quality}`"
-                            :value="quality"
+                            :key="`quality-list-${quality.key}`"
+                            :value="quality.value"
                         >
-                            {{ qualityStrings[quality] }}
+                            {{ quality.name }}
                         </option>
                     </select>
                 </div>
@@ -63,16 +62,16 @@
                     <h5><b>Quality setting explanation:</b></h5>
                     <h5 v-if="preferredQualities.length === 0">
                         This will download <b>any</b> of these qualities and then stops searching:
-                        <label id="allowedExplanation">{{ allowedExplanation.join(', ') }}</label>
+                        <label id="allowedExplanation">{{ explanation.allowed.join(', ') }}</label>
                     </h5>
                     <template v-else>
                         <h5>
                             Downloads <b>any</b> of these qualities:
-                            <label id="allowedPreferredExplanation">{{ allowedExplanation.join(', ') }}</label>
+                            <label id="allowedPreferredExplanation">{{ explanation.allowed.join(', ') }}</label>
                         </h5>
                         <h5>
                             But it will stop searching when one of these is downloaded:
-                            <label id="preferredExplanation">{{ preferredExplanation.join(', ') }}</label>
+                            <label id="preferredExplanation">{{ explanation.preferred.join(', ') }}</label>
                         </h5>
                     </template>
                 </div>
@@ -101,6 +100,10 @@
     </div>
 </template>
 <script>
+import { mapGetters, mapState } from 'vuex';
+
+import { api } from '../../api';
+import { waitFor } from '../../utils';
 import AppLink from './app-link';
 
 export default {
@@ -120,20 +123,13 @@ export default {
         }
     },
     data() {
-        // FIXME: Python conversions
-        // const qualityPresets = ${convert(qualityPresets)};
         return {
-            // qualityStrings: ${convert(Quality.qualityStrings)},
-            // qualityPresets,
-            // qualityPresetStrings: ${convert(qualityPresetStrings)},
-
-            // JS only
             // eslint-disable-next-line no-warning-comments
             lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
             seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
-            selectedQualityPreset: this.keep === 'keep' ? 'keep' : (qualityPresets.includes(this.overallQuality) ? this.overallQuality : 0),
+            selectedQualityPreset: null, // Initialized on mount
             archive: false,
             archivedStatus: '',
             archiveButton: {
@@ -143,24 +139,31 @@ export default {
         };
     },
     computed: {
-        allowedExplanation() {
-            const allowed = this.allowedQualities;
-            return allowed.map(quality => this.qualityStrings[quality]);
-        },
-        preferredExplanation() {
-            const preferred = this.preferredQualities;
-            return preferred.map(quality => this.qualityStrings[quality]);
-        },
-        allowedPreferredExplanation() {
-            const allowed = this.allowedExplanation;
-            const preferred = this.preferredExplanation;
-            return allowed.concat(
-                preferred.filter(item => !allowed.includes(item))
-            );
+        ...mapState({
+            qualityValues: state => state.consts.qualities.values,
+            qualityPresets: state => state.consts.qualities.presets
+        }),
+        ...mapGetters([
+            'getQualityPreset',
+            'splitQuality'
+        ]),
+        explanation() {
+            const { allowedQualities, preferredQualities, qualityValues } = this;
+            return qualityValues
+                .reduce((result, { value, name }) => {
+                    const isPreferred = preferredQualities.includes(value);
+                    // If this quality is preferred but not allowed, add it to allowed
+                    if (allowedQualities.includes(value) || isPreferred) {
+                        result.allowed.push(name);
+                    }
+                    if (isPreferred) {
+                        result.preferred.push(name);
+                    }
+                    return result;
+                }, { allowed: [], preferred: [] });
         },
         validQualities() {
-            return Object.keys(this.qualityStrings)
-                .filter(val => val > /* ${Quality.NA} */ 0);
+            return this.qualityValues.filter(({ key }) => key !== 'na');
         }
     },
     asyncComputed: {
@@ -222,10 +225,17 @@ export default {
             };
         }
     },
-    mounted() {
-        this.setQualityFromPreset(this.selectedQualityPreset, this.overallQuality);
+    async mounted() {
+        await waitFor(() => this.qualityValues.length > 0, 100, 3000);
+
+        const { isQualityPreset, keep, overallQuality } = this;
+        this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(overallQuality) ? overallQuality : 0);
+        this.setQualityFromPreset(this.selectedQualityPreset, overallQuality);
     },
     methods: {
+        isQualityPreset(quality) {
+            return this.getQualityPreset({ value: quality }) !== undefined;
+        },
         async archiveEpisodes() {
             this.archivedStatus = 'Archiving...';
 
@@ -250,27 +260,17 @@ export default {
             }
 
             // If preset is custom, set to last preset
-            if (parseInt(preset, 10) === 0 || !this.qualityPresets.includes(preset)) {
+            if (preset === 0 || !this.isQualityPreset(preset)) {
+                if (oldPreset === null) {
+                    return;
+                }
                 // [Mass Edit] If changing from `keep`, restore the original value
                 preset = oldPreset === 'keep' ? this.overallQuality : oldPreset;
             }
 
-            // Convert values to unsigned int, and filter selected/preferred qualities
-            const reducer = (results, quality) => {
-                quality = parseInt(quality, 10);
-                // Allowed
-                if (( (preset & quality) >>> 0 ) > 0) { // eslint-disable-line space-in-parens
-                    results[0].push(quality);
-                }
-                // Preferred
-                if (( (preset & (quality << 16)) >>> 0 ) > 0) { // eslint-disable-line space-in-parens
-                    results[1].push(quality);
-                }
-                return results;
-            };
-            const qualities = Object.keys(this.qualityStrings).reduce(reducer, [[], []]);
-            this.allowedQualities = qualities[0];
-            this.preferredQualities = qualities[1];
+            const { allowed, preferred } = this.splitQuality(preset);
+            this.allowedQualities = allowed;
+            this.preferredQualities = preferred;
         }
     },
     watch: {
@@ -280,12 +280,16 @@ export default {
         This is causing the preset selector to change from `Custom` to a preset,
         when the correct qualities for that preset are selected.
         */
-        overallQuality(newValue) {
+        async overallQuality(newValue) {
             if (this.lock) {
                 return;
             }
-            const { qualityPresets, keep, setQualityFromPreset } = this;
-            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (qualityPresets.includes(newValue) ? newValue : 0);
+
+            // Wait for the store to get populated.
+            await waitFor(() => this.qualityValues.length > 0, 100, 3000);
+
+            const { isQualityPreset, keep, setQualityFromPreset } = this;
+            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(newValue) ? newValue : 0);
             setQualityFromPreset(this.selectedQualityPreset, newValue);
         },
         selectedQualityPreset(preset, oldPreset) {
