@@ -113,7 +113,6 @@
             window.username = '';
             % endif
         </script>
-        <%include file="/vue-components/quality-chooser.mako"/>
         <script>
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
