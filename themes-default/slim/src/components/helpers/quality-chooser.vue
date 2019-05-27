@@ -53,17 +53,9 @@
 /*
 <%!
     import json
-    from medusa import app
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%
-if show is not UNDEFINED:
-    __quality = int(show.quality)
-else:
-    __quality = int(app.QUALITY_DEFAULT)
-allowed_qualities, preferred_qualities = Quality.split_quality(__quality)
-overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
-
 def convert(obj):
     ## This converts the keys to strings as keys can't be ints
     if isinstance(obj, dict):
@@ -80,8 +72,7 @@ export default {
     props: {
         overallQuality: {
             type: Number,
-            // FIXME: Python conversion
-            // default: ${overall_quality}
+            default: window.qualityChooserInitialQuality
         },
         keep: {
             type: String,
