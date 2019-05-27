@@ -39,6 +39,13 @@ module.exports = {
                 SwitchCase: 1
             }
         ],
+        quotes: [
+            'error',
+            'single',
+            {
+                avoidEscape: true
+            }
+        ],
         'object-curly-spacing': [
             'error',
             'always'
