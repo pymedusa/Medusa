@@ -84,7 +84,7 @@
             <div v-if="archive" id="archive">
                 <h5>
                     <b>Archive downloaded episodes that are not currently in
-                    <a target="_blank" href="manage/backlogOverview/" style="color: blue; text-decoration: underline;">backlog</a>.</b>
+                    <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
                     <br />Avoids unnecessarily increasing your backlog
                     <br />
                 </h5>
@@ -101,25 +101,13 @@
     </div>
 </template>
 <script>
-/*
-<%!
-    import json
-    from medusa.common import Quality, qualityPresets, qualityPresetStrings
-%>
-<%
-def convert(obj):
-    ## This converts the keys to strings as keys can't be ints
-    if isinstance(obj, dict):
-        new_obj = {}
-        for key in obj:
-            new_obj[str(key)] = obj[key]
-        obj = new_obj
+import AppLink from './app-link';
 
-    return json.dumps(obj)
-%>
-*/
 export default {
     name: 'quality-chooser',
+    components: {
+        AppLink
+    },
     props: {
         overallQuality: {
             type: Number,
@@ -326,4 +314,8 @@ export default {
 </script>
 
 <style scoped>
+.backlog-link {
+    color: blue;
+    text-decoration: underline;
+}
 </style>
