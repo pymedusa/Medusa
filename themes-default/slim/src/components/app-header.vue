@@ -199,6 +199,19 @@ export default {
             });
         }
     },
+    destroyed() {
+        // Revert `mounted()`
+        const { $el } = this;
+
+        // Hover Dropdown for Nav
+        $($el).off('mouseenter mouseleave', 'ul.nav li.dropdown');
+
+        // @TODO Replace this with a real touchscreen check
+        // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
+        if ((navigator.maxTouchPoints || 0) < 2) {
+            $($el).off('click', '.dropdown-toggle');
+        }
+    },
     methods: {
         confirmDialog(event, action) {
             const options = {

@@ -222,7 +222,8 @@ const configRoutes = [{
         title: 'Config - Post Processing',
         header: 'Post Processing',
         topMenu: 'config',
-        subMenu: configSubMenu
+        subMenu: configSubMenu,
+        converted: true
     },
     component: ConfigPostProcessing
 }, {
@@ -319,7 +320,8 @@ const addRecommendedRoute = {
     meta: {
         title: 'Add Recommended Shows',
         header: 'Add Recommended Shows',
-        topMenu: 'home'
+        topMenu: 'home',
+        converted: true
     },
     component: AddRecommended
 };
@@ -488,7 +490,8 @@ const ircRoute = {
     name: 'IRC',
     meta: {
         title: 'IRC',
-        topMenu: 'system'
+        topMenu: 'system',
+        converted: true
     },
     component: IRC
 };
