@@ -162,6 +162,8 @@ const state = {
         unread: null
     },
     logs: {
+        debug: null,
+        dbDebug: null,
         loggingLevels: {},
         numErrors: null,
         numWarnings: null

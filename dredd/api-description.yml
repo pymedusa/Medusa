@@ -1472,6 +1472,10 @@ definitions:
           logs:
             type: object
             properties:
+              debug:
+                type: boolean
+              dbDebug:
+                type: boolean
               loggingLevels:
                 type: object
                 properties:
