@@ -1,5 +1,5 @@
 <template>
-    <div class="row">
+    <div>
         <div class="col-md-12 pull-right">
             <div class="logging-filter-control pull-right">
                 <!-- Toggle auto update -->
@@ -48,18 +48,17 @@
                 </div>
             </div>
         </div>
-        <div :class="['col-md-12', config.fanartBackground && 'fanartOpacity']">
-            <pre><!--
-                --><div class="notepad"><!--
-                    --><app-link :href="rawViewLink"><!--
-                        --><img src="images/notepad.png"/><!--
-                    --></app-link><!--
-                --></div><!--
-                --><div v-for="(line, index) in logLines" :key="`line-${index}`"><!--
-                    -->{{ line | formatLine }}<!--
-                --></div><!--
-            --></pre>
-        </div>
+
+        <pre class="col-md-12" :class="{ fanartOpacity: config.fanartBackground }"><!--
+            --><div class="notepad"><!--
+                --><app-link :href="rawViewLink"><!--
+                    --><img src="images/notepad.png"/><!--
+                --></app-link><!--
+            --></div><!--
+            --><div v-for="(line, index) in logLines" :key="`line-${index}`"><!--
+                -->{{ line | formatLine }}<!--
+            --></div><!--
+        --></pre>
 
         <backstretch :slug="config.randomShowSlug" />
     </div>

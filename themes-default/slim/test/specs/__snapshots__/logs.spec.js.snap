@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Logs.test.js renders 1`] = `
-<div
-  class="row"
->
+<div>
   <div
     class="col-md-12 pull-right"
   >
@@ -255,27 +253,26 @@ exports[`Logs.test.js renders 1`] = `
     </div>
   </div>
    
-  <div
+  <pre
     class="col-md-12"
   >
-    <pre>
-      <div
-        class="notepad"
+    <div
+      class="notepad"
+    >
+      <app-link-stub
+        href="null/api/v2/log?level=INFO&thread=&period=one_day&query=&limit=1000&api_key=null&raw=true"
+        placeholder="indexer-to-name"
       >
-        <app-link-stub
-          href="null/api/v2/log?level=INFO&thread=&period=one_day&query=&limit=1000&api_key=null&raw=true"
-          placeholder="indexer-to-name"
-        >
-          <img
-            src="images/notepad.png"
-          />
-        </app-link-stub>
-      </div>
-      <div>
-        2019-05-28 19:18:16 WARNING	CHECKVERSION :: [0a31350] git symbolic-ref -q HEAD returned no data
-      </div>
-      <div>
-        2019-05-28 19:01:54 ERROR	TORNADO :: [fab3029] Uncaught exception in APIv2: RuntimeError("generator didn't yield")
+        <img
+          src="images/notepad.png"
+        />
+      </app-link-stub>
+    </div>
+    <div>
+      2019-05-28 19:18:16 WARNING	CHECKVERSION :: [0a31350] git symbolic-ref -q HEAD returned no data
+    </div>
+    <div>
+      2019-05-28 19:01:54 ERROR	TORNADO :: [fab3029] Uncaught exception in APIv2: RuntimeError("generator didn't yield")
 Request: POST /api/v2/log (127.0.0.1)
 With body:
 {
@@ -301,9 +298,8 @@ Traceback (most recent call last):
   File "C:\\Python\\Python37\\lib\\contextlib.py", line 114, in __enter__
     raise RuntimeError("generator didn't yield") from None
 RuntimeError: generator didn't yield
-      </div>
-    </pre>
-  </div>
+    </div>
+  </pre>
    
   <backstretch-stub />
 </div>
