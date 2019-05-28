@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import threading
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
@@ -56,6 +58,23 @@ log_periods = {
     'three_days': 3,
     'one_week': 7,
 }
+
+
+@contextmanager
+def rename_thread(new_name=None):
+    """Context manager to rename a thread (if it's truthy), and revert it when done."""
+    if not new_name:
+        try:
+            yield
+        finally:
+            return
+
+    original_name = threading.current_thread().name
+    threading.current_thread().name = '{0} :: [{1}]'.format(original_name, new_name)
+    try:
+        yield
+    finally:
+        threading.current_thread().name = original_name
 
 
 class LogHandler(BaseRequestHandler):
@@ -129,9 +148,16 @@ class LogHandler(BaseRequestHandler):
         if data['level'] not in LOGGING_LEVELS:
             return self._bad_request('Invalid log level')
 
+        thread = data.get('thread', '').upper()
+        if thread and thread not in ('VUE',):
+            return self._bad_request('Invalid thread name')
+
         message = data['message']
         args = data.get('args', [])
         kwargs = data.get('kwargs', {})
         level = LOGGING_LEVELS[data['level']]
-        log.log(level, message, exc_info=False, *args, **kwargs)
+
+        with rename_thread(new_name=thread):
+            log.log(level, message, exc_info=False, *args, **kwargs)
+
         return self._created()
