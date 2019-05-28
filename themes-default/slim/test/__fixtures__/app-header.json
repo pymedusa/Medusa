@@ -18,6 +18,8 @@
         "latest": "2018-07-03"
       },
       "logs": {
+        "debug": true,
+        "dbDebug": false,
         "numWarnings": 0,
         "numErrors": 0,
         "loggingLevels": {
