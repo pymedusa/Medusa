@@ -453,8 +453,10 @@ const errorLogsRoutes = [{
     meta: {
         title: 'Logs',
         header: 'Log File',
-        topMenu: 'system'
-    }
+        topMenu: 'system',
+        converted: true
+    },
+    component: () => import('./components/logs.vue')
 }];
 
 const newsRoute = {
