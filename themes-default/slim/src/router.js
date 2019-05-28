@@ -1,13 +1,5 @@
 import VueRouter from 'vue-router';
 
-const AddRecommended = () => import('./components/add-recommended.vue');
-const AddShows = () => import('./components/add-shows.vue');
-const Config = () => import('./components/config.vue');
-const ConfigPostProcessing = () => import('./components/config-post-processing.vue');
-const IRC = () => import('./components/irc.vue');
-const Login = () => import('./components/login.vue');
-const NotFound = () => import('./components/http/404.vue');
-
 const showSubMenu = function() {
     const { $route, $store } = this;
     const { config, notifiers } = $store.state;
@@ -178,7 +170,7 @@ const configRoutes = [{
         subMenu: configSubMenu,
         converted: true
     },
-    component: Config
+    component: () => import('./components/config.vue')
 }, {
     path: '/config/anime',
     name: 'configAnime',
@@ -225,7 +217,7 @@ const configRoutes = [{
         subMenu: configSubMenu,
         converted: true
     },
-    component: ConfigPostProcessing
+    component: () => import('./components/config-post-processing.vue')
 }, {
     path: '/config/providers',
     name: 'configSearchProviders',
@@ -264,7 +256,7 @@ const addShowRoutes = [{
         topMenu: 'home',
         converted: true
     },
-    component: AddShows
+    component: () => import('./components/add-shows.vue')
 }, {
     path: '/addShows/addExistingShows',
     name: 'addExistingShows',
@@ -311,7 +303,7 @@ const loginRoute = {
     meta: {
         title: 'Login'
     },
-    component: Login
+    component: () => import('./components/login.vue')
 };
 
 const addRecommendedRoute = {
@@ -323,7 +315,7 @@ const addRecommendedRoute = {
         topMenu: 'home',
         converted: true
     },
-    component: AddRecommended
+    component: () => import('./components/add-recommended.vue')
 };
 
 const scheduleRoute = {
@@ -493,7 +485,7 @@ const ircRoute = {
         topMenu: 'system',
         converted: true
     },
-    component: IRC
+    component: () => import('./components/irc.vue')
 };
 
 const notFoundRoute = {
@@ -503,7 +495,7 @@ const notFoundRoute = {
         title: '404',
         header: '404 - page not found'
     },
-    component: NotFound
+    component: () => import('./components/http/404.vue')
 };
 
 // @NOTE: Redirect can only be added once all routes are vue
