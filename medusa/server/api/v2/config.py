@@ -7,6 +7,7 @@ import logging
 import pkgutil
 import platform
 import sys
+from random import choice
 
 from medusa import (
     app,
@@ -509,6 +510,10 @@ class DataGenerator(object):
         section_data['subtitles'] = {}
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+
+        # Pick a random series to show as background.
+        # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
+        section_data['randomShowSlug'] = getattr(choice(app.showList), 'slug', None) if app.FANART_BACKGROUND and app.showList else ''
 
         section_data['showDefaults'] = {}
         section_data['showDefaults']['status'] = app.STATUS_DEFAULT
