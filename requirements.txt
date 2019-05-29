@@ -24,7 +24,7 @@ Js2Py==0.63
 jsonrpclib-pelix==0.4.0
 knowit==0.2.4
 Mako==1.0.10
-markdown2==2.3.7
+markdown2==2.3.8
 profilehooks==1.11.0
 PyGithub==1.43.7
 PyJWT==1.7.1
