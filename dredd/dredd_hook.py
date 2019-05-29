@@ -11,6 +11,12 @@ import os
 import sys
 
 try:
+    from builtins import print as real_print
+except ImportError:
+    # Python 2
+    from __builtin__ import print as real_print
+
+try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
@@ -37,6 +43,19 @@ stash = {
     'web-password': 'testpass',
     'api-key': '1234567890ABCDEF1234567890ABCDEF',
 }
+
+hook_log = os.path.join(current_dir, 'hook.log')
+try:
+    os.remove(hook_log)
+except OSError:
+    pass
+
+
+def print(*args, **kwargs):
+    """Override builtin print to write to a file, because nothing prints to `stdout`."""
+    with io.open(hook_log, 'a', encoding='utf-8') as fh:
+        kwargs['file'] = fh
+        return real_print(*args, **kwargs)
 
 
 @hooks.before_all
