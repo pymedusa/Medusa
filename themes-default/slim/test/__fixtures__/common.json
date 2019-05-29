@@ -81,6 +81,8 @@
         "latest": "2018-07-03"
       },
       "logs": {
+        "debug": true,
+        "dbDebug": false,
         "numWarnings": 0,
         "numErrors": 0,
         "loggingLevels": {
@@ -117,7 +119,8 @@
       "fanartBackgroundOpacity": 0.4,
       "appArgs": [
         "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
+        "--datadir",
+        "C:\\Medusa\\Data"
       ],
       "emby": {
         "enabled": true,

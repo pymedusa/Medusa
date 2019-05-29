@@ -1,12 +1,12 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
+export const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * Calculate the combined value of the selected qualities.
  * @param {number[]} allowedQualities - Array of allowed qualities.
- * @param {number[]} preferredQualities - Array of preferred qualities.
- * @returns {number} - An unsigned integer.
+ * @param {number[]} [preferredQualities=[]] - Array of preferred qualities.
+ * @returns {number} An unsigned integer.
  */
-const combineQualities = (allowedQualities, preferredQualities) => {
+export const combineQualities = (allowedQualities, preferredQualities = []) => {
     const reducer = (accumulator, currentValue) => accumulator | currentValue;
     const allowed = allowedQualities.reduce(reducer, 0);
     const preferred = preferredQualities.reduce(reducer, 0);
@@ -20,7 +20,7 @@ const combineQualities = (allowedQualities, preferredQualities) => {
  * @param {boolean} [useDecimal=false] - Use decimal instead of binary prefixes (e.g. kilo = 1000 instead of 1024)
  * @returns {string} The converted size.
  */
-const humanFileSize = (bytes, useDecimal = false) => {
+export const humanFileSize = (bytes, useDecimal = false) => {
     if (bytes === undefined) {
         return;
     }
@@ -39,8 +39,29 @@ const humanFileSize = (bytes, useDecimal = false) => {
     return `${bytes.toFixed(2)} ${units[u]}`;
 };
 
-export {
-    combineQualities,
-    humanFileSize,
-    isDevelopment
+/**
+ * A simple wait function.
+ * @param {number} ms - Time to wait.
+ * @returns {Promise<number>} Resolves when done waiting.
+ */
+export const wait = /* istanbul ignore next */ ms => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Returns when `check` evaluates as truthy.
+ * @param {function} check - Function to evaluate every poll interval.
+ * @param {number} [poll=100] - Interval to check, in milliseconds.
+ * @param {number} [timeout=3000] - Timeout to stop waiting after, in milliseconds.
+ * @returns {Promise<number>} The approximate amount of time waited, in milliseconds.
+ * @throws Will throw an error when the timeout has been exceeded.
+ */
+export const waitFor = /* istanbul ignore next */ async (check, poll = 100, timeout = 3000) => {
+    let ms = 0;
+    while (!check()) {
+        await wait(poll); // eslint-disable-line no-await-in-loop
+        ms += poll;
+        if (ms > timeout) {
+            throw new Error(`waitFor timed out (${timeout}ms)`);
+        }
+    }
+    return ms;
 };

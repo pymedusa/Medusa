@@ -94,7 +94,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<input type="hidden" id="background-series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
+<backstretch :slug="${'config.randomShowSlug' if historyResults else ''}"></backstretch>
 
 <div class="row">
     <div class="col-md-6">

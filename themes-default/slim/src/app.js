@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Vuex, { mapState } from 'vuex';
+import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
@@ -77,7 +77,6 @@ const app = new Vue({
             pageComponent: false
         };
     },
-    computed: Object.assign(mapState(['auth', 'config']), {}),
     mounted() {
         if (isDevelopment) {
             console.log('App Mounted!');

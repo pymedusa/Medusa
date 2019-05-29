@@ -130,27 +130,33 @@
                                     </tr>
 
                                     <!-- Preset -->
-                                    <tr v-if="getPreset(combineQualities(show.config.qualities.allowed)).length > 0">
-                                    <td class="showLegend">Quality: </td><td>
-                                    <quality-pill :quality="combineQualities(show.config.qualities.allowed)"></quality-pill>
-                                    </td></tr>
+                                    <tr v-if="getPreset(combinedQualities) !== null">
+                                        <td class="showLegend">Quality:</td>
+                                        <td><quality-pill :quality="combinedQualities" /></td>
+                                    </tr>
 
                                     <!-- Custom quality -->
-                                    <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && show.config.qualities.allowed">
-                                    <td class="showLegend">Quality allowed:</td><td>
-                                        <template v-for="(curQuality, $index) in show.config.qualities.allowed">
-                                            <template v-if="$index > 0">&comma;</template>
-                                            <quality-pill :quality="curQuality" :key="'allowed-' + curQuality"></quality-pill>
-                                        </template>
-                                    </td></tr>
+                                    <template v-else>
+                                        <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
+                                            <td class="showLegend">Allowed Qualities:</td>
+                                            <td>
+                                                <template v-for="(curQuality, $index) in show.config.qualities.allowed"><!--
+                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                    --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
+                                                </template>
+                                            </td>
+                                        </tr>
 
-                                    <tr v-if="!getPreset(combineQualities(show.config.qualities.allowed)).length > 0 && combineQualities(show.config.qualities.preferred) > 0">
-                                        <td class="showLegend">Quality preferred:</td><td>
-                                            <template v-for="(curQuality, $index) in show.config.qualities.preferred">
-                                            <template v-if="$index > 0">&comma;</template>
-                                            <quality-pill :quality="curQuality" :key="'preferred-' + curQuality"></quality-pill>
-                                        </template>
-                                    </td></tr>
+                                        <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
+                                            <td class="showLegend">Preferred Qualities:</td>
+                                            <td>
+                                                <template v-for="(curQuality, $index) in show.config.qualities.preferred"><!--
+                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                    --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
 
                                     <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font> on {{ show.network }}</td></tr>
                                     <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
@@ -270,7 +276,7 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
-import { humanFileSize } from '../utils';
+import { combineQualities, humanFileSize } from '../utils';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -341,8 +347,7 @@ export default {
         }),
         ...mapGetters({
             show: 'getCurrentShow',
-            getPreset: 'getPreset',
-            combineQualities: 'combineQualities'
+            getPreset: 'getPreset'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -455,9 +460,14 @@ export default {
             }
 
             return defaultOptions;
+        },
+        combinedQualities() {
+            const { allowed, preferred } = this.show.config.qualities;
+            return combineQualities(allowed, preferred);
         }
     },
     methods: {
+        combineQualities,
         humanFileSize,
         setQuality(quality, showSlug, episodes) {
             const patchData = {};
