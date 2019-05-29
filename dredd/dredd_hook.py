@@ -86,8 +86,18 @@ def configure_transaction(transaction):
 
     request = response.get('x-request', {})
     body = request.get('body')
+    body_update = request.get('body-update')
     if body is not None:
         transaction['request']['body'] = json.dumps(evaluate(body))
+    elif body_update is not None:
+        try:
+            orig_body = json.loads(transaction['request']['body'])
+        except ValueError:
+            orig_body = {}
+
+        # Use the current request body and update it with the new values
+        new_body = dict(orig_body, **evaluate(body_update))
+        transaction['request']['body'] = json.dumps(new_body)
 
     path_params = request.get('path-params')
     if path_params:

@@ -854,6 +854,9 @@ paths:
       responses:
         201:
           description: Log message successfully created
+          x-request:
+            body-update:
+              thread: ''
           x-expect:
             no-body: true
         400:
