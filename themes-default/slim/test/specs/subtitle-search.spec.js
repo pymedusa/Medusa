@@ -20,7 +20,7 @@ describe('SubtitleSearch', () => {
             localVue,
             store,
             propsData: {
-                show: show,
+                show,
                 season: 4,
                 episode: 6
             }
@@ -38,7 +38,7 @@ describe('SubtitleSearch', () => {
             localVue,
             store,
             propsData: {
-                show: show,
+                show,
                 season: 4,
                 episode: 6
             }
@@ -57,7 +57,7 @@ describe('SubtitleSearch', () => {
             localVue,
             store,
             propsData: {
-                show: show,
+                show,
                 season: 4,
                 episode: 6
             }
