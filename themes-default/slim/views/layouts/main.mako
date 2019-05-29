@@ -114,7 +114,9 @@
             % endif
 
             // [Temporary] Used by the QualityChooser component on some pages
-            window.qualityChooserInitialQuality = ${int(show.quality) if show is not UNDEFINED else int(app.QUALITY_DEFAULT)};
+            % if show is not UNDEFINED:
+                window.qualityChooserInitialQuality = ${int(show.quality)};
+            % endif
         </script>
         <script>
             if ('${bool(app.DEVELOPER)}' === 'True') {

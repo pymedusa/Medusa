@@ -141,12 +141,16 @@ export default {
     computed: {
         ...mapState({
             qualityValues: state => state.consts.qualities.values,
-            qualityPresets: state => state.consts.qualities.presets
+            qualityPresets: state => state.consts.qualities.presets,
+            defaultQuality: state => state.config.showDefaults.quality
         }),
         ...mapGetters([
             'getQualityPreset',
             'splitQuality'
         ]),
+        initialQuality() {
+            return this.overallQuality === undefined ? this.defaultQuality : this.overallQuality;
+        },
         explanation() {
             const { allowedQualities, preferredQualities, qualityValues } = this;
             return qualityValues
@@ -228,9 +232,9 @@ export default {
     async mounted() {
         await waitFor(() => this.qualityValues.length > 0, 100, 3000);
 
-        const { isQualityPreset, keep, overallQuality } = this;
-        this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(overallQuality) ? overallQuality : 0);
-        this.setQualityFromPreset(this.selectedQualityPreset, overallQuality);
+        const { isQualityPreset, keep, initialQuality } = this;
+        this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(initialQuality) ? initialQuality : 0);
+        this.setQualityFromPreset(this.selectedQualityPreset, initialQuality);
     },
     methods: {
         isQualityPreset(quality) {
@@ -261,7 +265,7 @@ export default {
 
             // [Mass Edit] If changing to/from `keep`, restore the original value
             if ([preset, oldPreset].some(val => val === 'keep')) {
-                preset = this.overallQuality;
+                preset = this.initialQuality;
             // If preset is custom, set to last preset (provided it's not null)
             } else if ((preset === 0 || !this.isQualityPreset(preset)) && oldPreset !== null) {
                 preset = oldPreset;
