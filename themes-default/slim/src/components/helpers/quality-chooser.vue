@@ -259,13 +259,12 @@ export default {
                 return;
             }
 
-            // If preset is custom, set to last preset
-            if (preset === 0 || !this.isQualityPreset(preset)) {
-                if (oldPreset === null) {
-                    return;
-                }
-                // [Mass Edit] If changing from `keep`, restore the original value
-                preset = oldPreset === 'keep' ? this.overallQuality : oldPreset;
+            // [Mass Edit] If changing to/from `keep`, restore the original value
+            if ([preset, oldPreset].some(val => val === 'keep')) {
+                preset = this.overallQuality;
+            // If preset is custom, set to last preset (provided it's not null)
+            } else if ((preset === 0 || !this.isQualityPreset(preset)) && oldPreset !== null) {
+                preset = oldPreset;
             }
 
             const { allowed, preferred } = this.splitQuality(preset);
@@ -297,6 +296,11 @@ export default {
         },
         /* eslint-disable no-warning-comments */
         allowedQualities(newQuality) {
+            // Deselecting all allowed qualities clears the preferred selection
+            if (newQuality.length === 0 && this.preferredQualities.length > 0) {
+                this.preferredQualities = [];
+            }
+
             this.lock = true; // FIXME: Remove this hack, see above
             this.$emit('update:quality:allowed', newQuality);
             // FIXME: Remove this hack, see above
