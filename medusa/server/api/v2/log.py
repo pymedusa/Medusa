@@ -41,13 +41,14 @@ valid_thread_names = [
     'SHOWQUEUE-SEASON-UPDATE',
     'SHOWQUEUE-UPDATE',
     'SHOWUPDATER',
-    'Thread',
+    'THREAD',
     'TORNADO',
     'TORRENTCHECKER',
     'TRAKTCHECKER',
 ]
 
-multi_thread_names = {
+thread_name_overrides = {
+    'THREAD': 'Thread',
     'SHOWQUEUE': {name for name in valid_thread_names if name and name.startswith('SHOWQUEUE-')},
     'SEARCHQUEUE': {name for name in valid_thread_names if name and name.startswith('SEARCHQUEUE-')},
 }
@@ -96,7 +97,7 @@ class LogHandler(BaseRequestHandler):
         thread_name = self.get_argument('thread', '').upper()
         if thread_name not in valid_thread_names:
             return self._bad_request('Invalid thread name {0}'.format(thread_name))
-        thread_name = multi_thread_names.get(thread_name, thread_name) or None
+        thread_name = thread_name_overrides.get(thread_name, thread_name) or None
 
         try:
             period = log_periods.get(self.get_argument('period', 'all'))
