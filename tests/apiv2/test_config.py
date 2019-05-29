@@ -79,6 +79,10 @@ def config_main(monkeypatch, app_config):
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
     config_data['recentShows'] = app.SHOWS_RECENT
 
+    # Pick a random series to show as background.
+    # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
+    config_data['randomShowSlug'] = ''
+
     config_data['showDefaults'] = {}
     config_data['showDefaults']['status'] = app.STATUS_DEFAULT
     config_data['showDefaults']['statusAfter'] = app.STATUS_DEFAULT_AFTER
@@ -94,6 +98,8 @@ def config_main(monkeypatch, app_config):
     config_data['news']['unread'] = app.NEWS_UNREAD
 
     config_data['logs'] = {}
+    config_data['logs']['debug'] = bool(app.DEBUG)
+    config_data['logs']['dbDebug'] = bool(app.DBDEBUG)
     config_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
     config_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
     config_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)

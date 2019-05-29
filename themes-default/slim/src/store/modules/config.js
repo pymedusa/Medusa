@@ -162,6 +162,8 @@ const state = {
         unread: null
     },
     logs: {
+        debug: null,
+        dbDebug: null,
         loggingLevels: {},
         numErrors: null,
         numWarnings: null
@@ -218,6 +220,7 @@ const state = {
     anonRedirect: null,
     logDir: null,
     recentShows: [],
+    randomShowSlug: null, // @TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
     showDefaults: {
         status: null,
         statusAfter: null,

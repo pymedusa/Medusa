@@ -7,6 +7,7 @@ import logging
 import pkgutil
 import platform
 import sys
+from random import choice
 
 from medusa import (
     app,
@@ -510,6 +511,10 @@ class DataGenerator(object):
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
 
+        # Pick a random series to show as background.
+        # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
+        section_data['randomShowSlug'] = getattr(choice(app.showList), 'slug', None) if app.FANART_BACKGROUND and app.showList else ''
+
         section_data['showDefaults'] = {}
         section_data['showDefaults']['status'] = app.STATUS_DEFAULT
         section_data['showDefaults']['statusAfter'] = app.STATUS_DEFAULT_AFTER
@@ -525,6 +530,8 @@ class DataGenerator(object):
         section_data['news']['unread'] = app.NEWS_UNREAD
 
         section_data['logs'] = {}
+        section_data['logs']['debug'] = bool(app.DEBUG)
+        section_data['logs']['dbDebug'] = bool(app.DBDEBUG)
         section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
         section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
         section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)

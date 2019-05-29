@@ -14,6 +14,8 @@
     <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
     <input type="hidden" id="series-slug" value="${show.slug}" />
 
+    <backstretch slug="${show.slug}"></backstretch>
+
     <show-header @reflow="reflowLayout" type="show"
         :show-id="id" :show-indexer="indexer"
     ></show-header>
