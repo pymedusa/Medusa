@@ -8,6 +8,7 @@
 #### Improvements
 - Converted the sub-menu into a Vue SFC ([#6724](https://github.com/pymedusa/Medusa/pull/6724))
 - Converted View Log page into a Vue SFC ([#6738](https://github.com/pymedusa/Medusa/pull/6738))
+- Converted the Quality Chooser into a Vue SFC ([#6737](https://github.com/pymedusa/Medusa/pull/6737))
 
 #### Fixes
 - Fixed lists not being saved when used with comma separated items ([#6428](https://github.com/pymedusa/Medusa/pull/6428))
