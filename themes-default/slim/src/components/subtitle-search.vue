@@ -28,7 +28,7 @@
             <template slot="table-column" slot-scope="props">
                 <span v-if="props.column.label == 'Download'">
                     <span>{{props.column.label}}</span>
-                    <span class="btn-medusa btn-xs pull-right" @click="destroy">hide</span>
+                    <span class="btn-medusa btn-xs pull-right" @click="$destroy">hide</span>
                 </span>
                 <span v-else>
                     {{props.column.label}}
@@ -131,9 +131,13 @@ export default {
     mounted() {
         this.displayQuestion = true;
     },
+    destroyed() {
+        // Remove the element from the DOM
+        this.$el.parentNode.removeChild(this.$el);
+    },
     methods: {
         autoSearch() {
-            const { destroy, episode, season, show } = this;
+            const { episode, season, show } = this;
 
             this.displayQuestion = false;
             const url = `home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
@@ -158,7 +162,7 @@ export default {
                     // Destroy this component.
                     this.loadingMessage = '';
                     this.loading = false;
-                    destroy();
+                    this.$destroy();
                 });
         },
         manualSearch() {
@@ -175,16 +179,10 @@ export default {
                     }
                 }).catch(error => {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
-                    this.destroy();
+                    this.$destroy();
                 }).finally(() => {
                     this.loading = false;
                 });
-        },
-        destroy() {
-            // Destroy the vue listeners, etc
-            this.$destroy();
-            // Remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
         },
         pickSubtitle(subtitleId) {
             // Download and save this subtitle with the episode.
@@ -213,7 +211,7 @@ export default {
                     // Destroy this component.
                     this.loadingMessage = '';
                     this.loading = false;
-                    this.destroy();
+                    this.$destroy();
                 });
         }
     }
