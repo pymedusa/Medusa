@@ -2,6 +2,7 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
 import { QualityPill } from '../../src/components';
+import constsModule from '../../src/store/modules/consts';
 import { generatePropTest } from '../helpers/generators';
 import fixtures from '../__fixtures__/common';
 
@@ -15,7 +16,12 @@ describe('QualityPill.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        store = new Store({ state });
+        store = new Store({
+            modules: {
+                consts: constsModule
+            }
+        });
+        store.replaceState(state);
     });
 
     const pillTestCase = generatePropTest(QualityPill);
@@ -56,6 +62,10 @@ describe('QualityPill.test.js', () => {
 
         pillTestCase(localVue, store, 'All 720p and all 1080p, allowed', {
             quality: 8 | 32 | 64 | 128 | 256 | 512
+        });
+
+        pillTestCase(localVue, store, 'All 4K and all 8K, allowed', {
+            quality: 1024 | 2048 | 4096 | 8192 | 16384 | 32768
         });
 
         pillTestCase(localVue, store, 'WEB-DL 720p + 4K UHD WEB-DL, allowed', {
@@ -118,6 +128,16 @@ describe('QualityPill.test.js', () => {
 
         pillTestCase(localVue, store, 'Custom quality lists, with show title', {
             quality: (2 | 8 | 64 | 256 | 512) | ((2048 | 4096) << 16),
+            showTitle: true
+        });
+
+        pillTestCase(localVue, store, '720p Preset', {
+            quality: 328,
+            showTitle: true
+        });
+
+        pillTestCase(localVue, store, '1080p Preset', {
+            quality: 672,
             showTitle: true
         });
     });

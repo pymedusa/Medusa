@@ -35,13 +35,17 @@ SEARCH_STATUS_SEARCHING = 'searching'
 
 
 def get_quality_class(ep_obj):
-    """Find the quality class for the episode."""
-    if ep_obj.quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_obj.quality]
-    else:
-        quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
+    """
+    Find the quality class for the episode.
 
-    return quality_class
+    Matches the logic in `medusa/server/api/v2/config.py` @ `DataGenerator.data_consts`
+    """
+    if ep_obj.quality in Quality.qualityStrings:
+        quality_class = Quality.qualityStrings[ep_obj.quality]
+    else:
+        quality_class = Quality.qualityStrings[Quality.UNKNOWN]
+
+    return quality_class.lower().replace('_', '')
 
 
 def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):

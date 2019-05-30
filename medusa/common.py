@@ -202,29 +202,6 @@ class Quality(object):
         ANYBLURAY: 'BluRay'
     }
 
-    cssClassStrings = {
-        NA: 'na',
-        UNKNOWN: 'Unknown',
-        SDTV: 'SDTV',
-        SDDVD: 'SDDVD',
-        HDTV: 'HD720p',
-        RAWHDTV: 'RawHD',
-        FULLHDTV: 'HD1080p',
-        HDWEBDL: 'HD720p',
-        FULLHDWEBDL: 'HD1080p',
-        HDBLURAY: 'HD720p',
-        FULLHDBLURAY: 'HD1080p',
-        UHD_4K_TV: 'UHD-4K',
-        UHD_8K_TV: 'UHD-8K',
-        UHD_4K_WEBDL: 'UHD-4K',
-        UHD_8K_WEBDL: 'UHD-8K',
-        UHD_4K_BLURAY: 'UHD-4K',
-        UHD_8K_BLURAY: 'UHD-8K',
-        ANYHDTV: 'any-hd',
-        ANYWEBDL: 'any-hd',
-        ANYBLURAY: 'any-hd'
-    }
-
     @staticmethod
     def combine_qualities(allowed_qualities, preferred_qualities):
         any_quality = 0
