@@ -26,6 +26,8 @@ from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
+from six import iteritems, text_type
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -34,18 +36,19 @@ SEARCH_STATUS_QUEUED = 'queued'
 SEARCH_STATUS_SEARCHING = 'searching'
 
 
+# Get key names from `common.Quality` class (for the quality values and any-sets)
+# Copied from `medusa/server/api/v2/config.py` @ `DataGenerator.data_consts`
+quality_key_map = {
+    value: text_type(key).lower().replace('_', '')
+    for (key, value)
+    in iteritems(Quality.__dict__)
+    if isinstance(value, int) and not key.startswith('__')
+}
+
+
 def get_quality_class(ep_obj):
-    """
-    Find the quality class for the episode.
-
-    Matches the logic in `medusa/server/api/v2/config.py` @ `DataGenerator.data_consts`
-    """
-    if ep_obj.quality in Quality.qualityStrings:
-        quality_class = Quality.qualityStrings[ep_obj.quality]
-    else:
-        quality_class = Quality.qualityStrings[Quality.UNKNOWN]
-
-    return quality_class.lower().replace('_', '')
+    """Find the quality class for the episode."""
+    return quality_key_map.get(ep_obj.quality, quality_key_map[Quality.UNKNOWN])
 
 
 def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):
