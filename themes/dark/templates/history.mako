@@ -94,7 +94,9 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<backstretch :slug="${'config.randomShowSlug' if historyResults else ''}"></backstretch>
+% if historyResults:
+<backstretch :slug="config.randomShowSlug"></backstretch>
+% endif
 
 <div class="row">
     <div class="col-md-6">
