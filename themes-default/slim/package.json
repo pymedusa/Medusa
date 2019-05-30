@@ -38,7 +38,7 @@
     "babel-loader": "8.0.6",
     "bootstrap": "3.4.1",
     "browser-env": "3.2.6",
-    "clean-webpack-plugin": "2.0.2",
+    "clean-webpack-plugin": "3.0.0",
     "codecov": "3.5.0",
     "copy-webpack-plugin": "5.0.3",
     "country-language": "0.1.7",
