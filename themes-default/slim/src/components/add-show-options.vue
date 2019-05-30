@@ -25,7 +25,7 @@
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -38,7 +38,7 @@
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
     </div>
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import { apiRoute } from '../api';
 import { combineQualities } from '../utils';
 import { ConfigToggleSlider } from './helpers';
@@ -237,15 +237,17 @@ export default {
             defaultConfig: state => state.config.showDefaults,
             namingForceFolders: state => state.config.namingForceFolders,
             subtitlesEnabled: state => state.config.subtitles.enabled,
-            episodeStatuses: state => state.statuses
+            episodeStatuses: state => state.consts.statuses
         }),
+        ...mapGetters([
+            'getStatus'
+        ]),
         defaultEpisodeStatusOptions() {
-            const { strings, values } = this.episodeStatuses;
-            const { skipped, wanted, ignored } = values;
-            return [skipped, wanted, ignored].map(value => ({
-                value,
-                text: strings[value]
-            }));
+            if (this.episodeStatuses.length === 0) {
+                return [];
+            }
+            // Get status objects, in this order
+            return ['skipped', 'wanted', 'ignored'].map(key => this.getStatus({ key }));
         },
         /**
          * Calculate the combined value of the selected qualities.
