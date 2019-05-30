@@ -77,7 +77,7 @@
                 </div>
                 <div v-else>Please select at least one allowed quality.</div>
             </div>
-            <div v-if="seriesSlug && (allowedQualities.length + preferredQualities.length) >= 1">
+            <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
                 <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
             </div>
             <div v-if="archive" id="archive">
@@ -120,6 +120,9 @@ export default {
             type: String,
             default: null,
             validator: value => ['keep', 'show'].includes(value)
+        },
+        showSlug: {
+            type: String
         }
     },
     data() {
@@ -128,7 +131,6 @@ export default {
             lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
-            seriesSlug: $('#series-slug').attr('value'), // This should be moved to medusa-lib
             selectedQualityPreset: null, // Initialized on mount
             archive: false,
             archivedStatus: '',
@@ -172,10 +174,10 @@ export default {
     },
     asyncComputed: {
         async backloggedEpisodes() {
-            const { seriesSlug, allowedQualities, preferredQualities } = this;
+            const { showSlug, allowedQualities, preferredQualities } = this;
 
-            // Skip if no seriesSlug as that means were on a addShow page
-            if (!seriesSlug) {
+            // Skip if no showSlug, as that means we're on a addShow page
+            if (!showSlug) {
                 return {};
             }
 
@@ -184,15 +186,15 @@ export default {
                 return {};
             }
 
-            // @TODO: $('#series-slug').attr('value') needs to be replaced with this.series.slug
-            const url = 'series/' + seriesSlug +
-                        '/legacy/backlogged' +
-                        '?allowed=' + allowedQualities.join(',') +
-                        '&preferred=' + preferredQualities.join(',');
+            const url = `series/${showSlug}/legacy/backlogged`;
+            const params = {
+                allowed: allowedQualities.join(','),
+                preferred: preferredQualities.join(',')
+            };
             let status = false; // Set to `false` for red text, `true` for normal color
             let response;
             try {
-                response = await api.get(url);
+                response = await api.get(url, { params });
             } catch (error) {
                 return {
                     status,
@@ -243,7 +245,7 @@ export default {
         async archiveEpisodes() {
             this.archivedStatus = 'Archiving...';
 
-            const url = 'series/' + this.seriesSlug + '/operation';
+            const url = `series/${this.showSlug}/operation`;
             const response = await api.post(url, { type: 'ARCHIVE_EPISODES' });
 
             if (response.status === 201) {
