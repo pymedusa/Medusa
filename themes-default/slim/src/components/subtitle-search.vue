@@ -66,10 +66,13 @@
 
 import { mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
+import { apiRoute } from '../api';
+import { StateSwitch } from './helpers';
 
 export default {
     name: 'subtitle-search',
     components: {
+        StateSwitch,
         VueGoodTable
     },
     props: {
@@ -127,7 +130,18 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config
-        })
+        }),
+        subtitleParams() {
+            const { episode, show, season } = this;
+            const params = {
+                indexername: show.indexer,
+                seriesid: show.id[show.indexer],
+                season,
+                episode
+            }
+
+            return params;
+        },
     },
     mounted() {
         this.displayQuestion = true;
@@ -139,7 +153,7 @@ export default {
             this.displayQuestion = false;
             this.loadingMessage = 'Searching for subtitles and downloading if available... ';
             this.loading = true;
-            apiRoute('home/searchEpisodeSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
+            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
@@ -167,7 +181,7 @@ export default {
             this.displayQuestion = false;
             this.loading = true;
             this.loadingMessage = 'Searching for subtitles... ';
-            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
+            apiRoute('home/manualSearchSubtitles', { params: subtitleParams }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
@@ -181,11 +195,16 @@ export default {
         pickSubtitle(subtitleId) {
             // Download and save this subtitle with the episode.
             const { season, episode } = this;
+            const params = {
+                ...subtitleParams, // This is the computed property
+                picked_id: subtitleId // eslint-disable-line camelcase
+            }
 
             this.displayQuestion = false;
             this.loadingMessage = 'downloading subtitle... ';
             this.loading = true;
-            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode, subtitleId) }) // eslint-disable-line no-undef
+
+            apiRoute('home/manualSearchSubtitles', { params }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)
@@ -206,21 +225,6 @@ export default {
                     this.loading = false;
                     this.close();
                 });
-        },
-        getSubtitleParams(season, episode, subtitleId) {
-            const { show } = this;
-            const params = {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
-                season,
-                episode
-            }
-
-            if (subtitleId) {
-                params['picked_id'] = subtitleId; // eslint-disable-line dot-notation
-            }
-
-            return params;
         },
         close() {
             this.$emit('close', this);
