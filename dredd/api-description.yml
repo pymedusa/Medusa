@@ -2566,8 +2566,7 @@ parameters:
     type: string
     enum:
       - main
-      - statuses
-      - qualities
+      - consts
       - metadata
       - search
       - notifiers
