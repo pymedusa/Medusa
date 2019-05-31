@@ -33,14 +33,6 @@ Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
 
-// Load x-template components
-window.components.forEach(component => {
-    if (isDevelopment) {
-        console.debug(`Registering ${component.name}`);
-    }
-    Vue.component(component.name, component);
-});
-
 // Global components
 const globalComponents = [
     AnidbReleaseGroupUi,
@@ -63,6 +55,17 @@ const globalComponents = [
 
 globalComponents.forEach(component => {
     Vue.component(component.name, component);
+});
+
+// Load x-template components
+window.components.forEach(component => {
+    // Skip already registered components
+    if (!Object.keys(Vue.options.components).includes(component.name)) {
+        if (isDevelopment) {
+            console.debug(`Registering ${component.name}`);
+        }
+        Vue.component(component.name, component);
+    }
 });
 
 const app = new Vue({
