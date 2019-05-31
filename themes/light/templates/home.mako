@@ -90,11 +90,17 @@
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
+                    ## Checking with Mako as well, so we don't import the home page layout multiple times.
+                    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
                     <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % endif
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
             <template v-else>
+                ## Checking with Mako as well, so we don't import the home page layout multiple times.
+                % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
                 <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                % endif
             </template>
         </div>
     </div>
