@@ -84,12 +84,20 @@ const app = new Vue({
 
         if (!document.location.pathname.includes('/login')) {
             const { $store } = this;
-            $store.dispatch('login', { username: window.username });
-            $store.dispatch('getConfig');
-
-            if (isDevelopment) {
-                console.log('App Loaded!');
-            }
+            Promise.all([
+                $store.dispatch('login', { username: window.username }),
+                $store.dispatch('getConfig')
+            ]).then(([_, config]) => {
+                if (isDevelopment) {
+                    console.log('App Loaded!');
+                }
+                // Legacy - send config.main to jQuery (received by index.js)
+                const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                window.dispatchEvent(event);
+            }).catch(error => {
+                console.debug(error);
+                alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+            });
         }
     }
 }).$mount('#vue-wrap');
