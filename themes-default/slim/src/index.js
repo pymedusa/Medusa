@@ -144,24 +144,6 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
         $(document).ready(UTIL.init);
-
-        MEDUSA.config.indexers.indexerIdToName = indexerId => {
-            if (!indexerId) {
-                return '';
-            }
-            return Object.keys(MEDUSA.config.indexers.config.indexers).filter(indexer => { // eslint-disable-line array-callback-return
-                if (MEDUSA.config.indexers.config.indexers[indexer].id === parseInt(indexerId, 10)) {
-                    return MEDUSA.config.indexers.config.indexers[indexer].name;
-                }
-            })[0];
-        };
-
-        MEDUSA.config.indexers.nameToIndexerId = name => {
-            if (!name) {
-                return '';
-            }
-            return MEDUSA.config.indexers.config.indexers[name];
-        };
     }).catch(error => {
         console.debug(error);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
