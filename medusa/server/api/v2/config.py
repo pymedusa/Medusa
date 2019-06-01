@@ -19,6 +19,7 @@ from medusa import (
     ws,
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED
+from medusa.helpers.utils import to_camel_case
 from medusa.indexers.indexer_config import get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
@@ -34,6 +35,7 @@ from medusa.server.api.v2.base import (
 )
 
 from six import iteritems, itervalues, text_type
+from six.moves import map
 
 from tornado.escape import json_decode
 
@@ -448,7 +450,8 @@ class DataGenerator(object):
         """Get the available section names."""
         return [
             name[5:]
-            for (name, function) in inspect.getmembers(cls, predicate=inspect.isfunction)
+            for (name, function)
+            in inspect.getmembers(cls, predicate=lambda f: inspect.isfunction(f) or inspect.ismethod(f))
             if name.startswith('data_')
         ]
 
@@ -596,72 +599,65 @@ class DataGenerator(object):
 
         return section_data
 
-    @staticmethod
-    def data_qualities():
-        """Qualities."""
+    # The consts info only needs to be generated once.
+    _generated_data_consts = {}
+
+    @classmethod
+    def data_consts(cls):
+        """Constant values - values that will never change during runtime."""
+        if cls._generated_data_consts:
+            return cls._generated_data_consts
+
         section_data = {}
 
-        section_data['values'] = {}
-        section_data['values']['na'] = common.Quality.NA
-        section_data['values']['unknown'] = common.Quality.UNKNOWN
-        section_data['values']['sdtv'] = common.Quality.SDTV
-        section_data['values']['sddvd'] = common.Quality.SDDVD
-        section_data['values']['hdtv'] = common.Quality.HDTV
-        section_data['values']['rawhdtv'] = common.Quality.RAWHDTV
-        section_data['values']['fullhdtv'] = common.Quality.FULLHDTV
-        section_data['values']['hdwebdl'] = common.Quality.HDWEBDL
-        section_data['values']['fullhdwebdl'] = common.Quality.FULLHDWEBDL
-        section_data['values']['hdbluray'] = common.Quality.HDBLURAY
-        section_data['values']['fullhdbluray'] = common.Quality.FULLHDBLURAY
-        section_data['values']['uhd4ktv'] = common.Quality.UHD_4K_TV
-        section_data['values']['uhd4kwebdl'] = common.Quality.UHD_4K_WEBDL
-        section_data['values']['uhd4kbluray'] = common.Quality.UHD_4K_BLURAY
-        section_data['values']['uhd8ktv'] = common.Quality.UHD_8K_TV
-        section_data['values']['uhd8kwebdl'] = common.Quality.UHD_8K_WEBDL
-        section_data['values']['uhd8kbluray'] = common.Quality.UHD_8K_BLURAY
+        section_data['qualities'] = {}
 
-        section_data['anySets'] = {}
-        section_data['anySets']['anyhdtv'] = common.Quality.ANYHDTV
-        section_data['anySets']['anywebdl'] = common.Quality.ANYWEBDL
-        section_data['anySets']['anybluray'] = common.Quality.ANYBLURAY
+        def make_quality(value, name, key=None):
+            return {
+                'value': value,
+                'key': key or Quality.quality_keys.get(value),
+                'name': name
+            }
 
-        section_data['presets'] = {}
-        section_data['presets']['any'] = common.ANY
-        section_data['presets']['sd'] = common.SD
-        section_data['presets']['hd'] = common.HD
-        section_data['presets']['hd720p'] = common.HD720p
-        section_data['presets']['hd1080p'] = common.HD1080p
-        section_data['presets']['uhd'] = common.UHD
-        section_data['presets']['uhd4k'] = common.UHD_4K
-        section_data['presets']['uhd8k'] = common.UHD_8K
+        section_data['qualities']['values'] = [
+            make_quality(value, name)
+            for (value, name)
+            in sorted(iteritems(common.Quality.qualityStrings))
+        ]
 
-        section_data['strings'] = {}
-        section_data['strings']['values'] = common.Quality.qualityStrings
-        section_data['strings']['anySets'] = common.Quality.combinedQualityStrings
-        section_data['strings']['presets'] = common.qualityPresetStrings
-        section_data['strings']['cssClass'] = common.Quality.cssClassStrings
+        section_data['qualities']['anySets'] = [
+            make_quality(value, name)
+            for (value, name)
+            in sorted(iteritems(common.Quality.combined_quality_strings))
+        ]
 
-        return section_data
+        section_data['qualities']['presets'] = [
+            make_quality(value, name, name.lower().replace('-', ''))
+            for (value, name)
+            in sorted(
+                iteritems(common.qualityPresetStrings),
+                # Sort presets based on the order defined in `qualityPresets`
+                key=lambda i: common.qualityPresets.index(i[0])
+            )
+        ]
 
-    @staticmethod
-    def data_statuses():
-        """Statuses."""
-        section_data = {}
+        section_data['statuses'] = [
+            {
+                'value': value,
+                'key': to_camel_case(key.lower()),
+                'name': common.statusStrings[value],
+            }
+            for (value, key)
+            in map(
+                lambda key: (getattr(common, key), key),
+                # Sorted by value
+                ('UNSET', 'UNAIRED', 'SNATCHED', 'WANTED', 'DOWNLOADED', 'SKIPPED', 'ARCHIVED',
+                 'IGNORED', 'SNATCHED_PROPER', 'SUBTITLED', 'FAILED', 'SNATCHED_BEST')
+            )
+        ]
 
-        section_data['values'] = {}
-        section_data['values']['unset'] = common.UNSET
-        section_data['values']['unaired'] = common.UNAIRED
-        section_data['values']['snatched'] = common.SNATCHED
-        section_data['values']['wanted'] = common.WANTED
-        section_data['values']['downloaded'] = common.DOWNLOADED
-        section_data['values']['skipped'] = common.SKIPPED
-        section_data['values']['archived'] = common.ARCHIVED
-        section_data['values']['ignored'] = common.IGNORED
-        section_data['values']['snatchedProper'] = common.SNATCHED_PROPER
-        section_data['values']['subtitled'] = common.SUBTITLED
-        section_data['values']['failed'] = common.FAILED
-        section_data['values']['snatchedBest'] = common.SNATCHED_BEST
-        section_data['strings'] = common.statusStrings
+        # Save it for next time
+        cls._generated_data_consts = section_data
 
         return section_data
 
