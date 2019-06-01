@@ -224,9 +224,9 @@ export default {
         },
         close() {
             this.$emit('close', this);
-            // destroy the vue listeners, etc
+            // Destroy the vue listeners, etc
             this.$destroy();
-            // remove the element from the DOM
+            // Remove the element from the DOM
             this.$el.parentNode.removeChild(this.$el);
         }
     }

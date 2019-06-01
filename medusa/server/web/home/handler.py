@@ -1553,20 +1553,20 @@ class Home(WebRoot):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
         if not all([showSlug, eps, status]):
             error_message = 'You must specify a show and at least one episode'
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                'message': error_message
-                })
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
         status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                'message': error_message
-                })
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
         identifier = SeriesIdentifier.from_slug(showSlug)
         if not identifier:
@@ -1580,16 +1580,16 @@ class Home(WebRoot):
         series_obj = Series.find_by_identifier(identifier)
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                'message': error_message
-                })
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
         segments = {}
         trakt_data = []
-        if eps:
 
+        if eps:
             sql_l = []
             for cur_ep in eps.split('|'):
 
@@ -1718,10 +1718,10 @@ class Home(WebRoot):
             if segments:
                 ui.notifications.message('Retry Search started', msg)
 
-            return json.dumps({
-                'result': 'success',
+        return json.dumps({
+            'result': 'success',
             'message': ''
-            })
+        })
 
     def testRename(self, indexername=None, seriesid=None):
         if not indexername or not seriesid:
