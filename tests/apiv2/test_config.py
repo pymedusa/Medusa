@@ -256,10 +256,15 @@ def test_config_get_consts(http_client, create_url, auth_headers):
 
     # when
     response = yield http_client.fetch(url, **auth_headers)
+    data = json.loads(response.body)
 
     # then
     assert response.code == 200
-    assert expected_schema == gen_schema(json.loads(response.body))
+    assert expected_schema == gen_schema(data)
+    assert len(common.Quality.qualityStrings) == len(data['qualities']['values'])
+    assert len(common.Quality.combined_quality_strings) == len(data['qualities']['anySets'])
+    assert len(common.qualityPresetStrings) == len(data['qualities']['presets'])
+    assert len(common.statusStrings) == len(data['statuses'])
 
 
 @pytest.fixture
