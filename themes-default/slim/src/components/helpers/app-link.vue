@@ -12,7 +12,7 @@
     </component>
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import router from '../../router';
 
 export default {
@@ -30,14 +30,11 @@ export default {
     },
     computed: {
         ...mapState(['config']),
+        ...mapGetters(['indexerIdToName']),
         indexerName() {
-            const { config, indexerId } = this;
-            const { indexers } = config.indexers.config;
-            if (!indexerId) {
-                return undefined;
-            }
             // Returns `undefined` if not found
-            return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
+            const { indexerId, indexerIdToName } = this;
+            return indexerIdToName(indexerId);
         },
         computedBase() {
             return document.querySelectorAll('base')[0].getAttribute('href');
