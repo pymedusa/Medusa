@@ -349,7 +349,8 @@ export default {
         }),
         ...mapGetters({
             show: 'getCurrentShow',
-            getPreset: 'getPreset'
+            getPreset: 'getPreset',
+            getOverviewStatus: 'getOverviewStatus'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -473,16 +474,12 @@ export default {
             return combineQualities(allowed, preferred);
         }
     },
-    methods: {
-        combineQualities,
-        humanFileSize,
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
+    mounted() {
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
             });
         });
-
         this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
             // Show has changed. Meaning we should reflow the layout.
             if (slug) {
@@ -490,8 +487,9 @@ export default {
                 this.$nextTick(() => reflowLayout());
             }
         }, { deep: true });
-        },
+    },
     methods: {
+        combineQualities,
         humanFileSize,
         changeStatusClicked() {
             const { changeStatusOptions, changeQualityOptions, selectedStatus, selectedQuality } = this;

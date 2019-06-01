@@ -6,6 +6,7 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
  * @param {number[]} [preferredQualities=[]] - Array of preferred qualities.
  * @returns {number} An unsigned integer.
  */
+
 export const combineQualities = (allowedQualities, preferredQualities = []) => {
     const reducer = (accumulator, currentValue) => accumulator | currentValue;
     const allowed = allowedQualities.reduce(reducer, 0);

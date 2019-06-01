@@ -259,7 +259,7 @@ const getters = {
         } else {
             return arrayExclude(globalRequired, seriesRequired);
         }
-    }
+    },
     // Get an indexer's name using its ID.
     indexerIdToName: state => indexerId => {
         if (!indexerId) {
