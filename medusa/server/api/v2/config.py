@@ -636,7 +636,7 @@ class DataGenerator(object):
         section_data['qualities']['anySets'] = [
             make_quality(value, name)
             for (value, name)
-            in sorted(iteritems(common.Quality.combinedQualityStrings))
+            in sorted(iteritems(common.Quality.combined_quality_strings))
         ]
 
         section_data['qualities']['presets'] = [

@@ -176,7 +176,7 @@ class Quality(object):
         UHD_8K_BLURAY: '8K UHD BluRay',
     }
 
-    sceneQualityStrings = {
+    scene_quality_strings = {
         NA: 'N/A',
         UNKNOWN: 'Unknown',
         SDTV: '',
@@ -196,10 +196,10 @@ class Quality(object):
         UHD_8K_BLURAY: '4320p BluRay',
     }
 
-    combinedQualityStrings = {
+    combined_quality_strings = {
         ANYHDTV: 'HDTV',
         ANYWEBDL: 'WEB-DL',
-        ANYBLURAY: 'BluRay'
+        ANYBLURAY: 'BluRay',
     }
 
     @staticmethod
