@@ -24,8 +24,6 @@ import os
 import platform
 import re
 import uuid
-from builtins import object
-from builtins import str
 from functools import reduce
 
 import knowit
@@ -33,12 +31,9 @@ import knowit
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
-from six import PY3, viewitems
+from six import text_type, viewitems
 
-if PY3:
-    long = int
-
-INSTANCE_ID = str(uuid.uuid1())
+INSTANCE_ID = text_type(uuid.uuid1())
 VERSION = '0.3.1'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
@@ -200,6 +195,30 @@ class Quality(object):
         ANYHDTV: 'HDTV',
         ANYWEBDL: 'WEB-DL',
         ANYBLURAY: 'BluRay',
+    }
+
+    # A reverse map from quality values and any-sets to "keys"
+    quality_keys = {
+        NA: 'na',
+        UNKNOWN: 'unknown',
+        SDTV: 'sdtv',
+        SDDVD: 'sddvd',
+        HDTV: 'hdtv',
+        RAWHDTV: 'rawhdtv',
+        FULLHDTV: 'fullhdtv',
+        HDWEBDL: 'hdwebdl',
+        FULLHDWEBDL: 'fullhdwebdl',
+        HDBLURAY: 'hdbluray',
+        FULLHDBLURAY: 'fullhdbluray',
+        UHD_4K_TV: 'uhd4ktv',
+        UHD_4K_WEBDL: 'uhd4kwebdl',
+        UHD_4K_BLURAY: 'uhd4kbluray',
+        UHD_8K_TV: 'uhd8ktv',
+        UHD_8K_WEBDL: 'uhd8kwebdl',
+        UHD_8K_BLURAY: 'uhd8kbluray',
+        ANYHDTV: 'anyhdtv',
+        ANYWEBDL: 'anywebdl',
+        ANYBLURAY: 'anybluray',
     }
 
     @staticmethod

@@ -7,7 +7,6 @@ import json
 import logging
 import threading
 import time
-from builtins import zip
 from datetime import datetime
 
 from dateutil import parser
@@ -26,7 +25,7 @@ from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
-from six import iteritems, text_type
+from six.moves import zip
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -34,21 +33,6 @@ log.logger.addHandler(logging.NullHandler())
 SEARCH_STATUS_FINISHED = 'finished'
 SEARCH_STATUS_QUEUED = 'queued'
 SEARCH_STATUS_SEARCHING = 'searching'
-
-
-# Get key names from `common.Quality` class (for the quality values and any-sets)
-# Copied from `medusa/server/api/v2/config.py` @ `DataGenerator.data_consts`
-quality_key_map = {
-    value: text_type(key).lower().replace('_', '')
-    for (key, value)
-    in iteritems(Quality.__dict__)
-    if isinstance(value, int) and not key.startswith('__')
-}
-
-
-def get_quality_class(ep_obj):
-    """Find the quality class for the episode."""
-    return quality_key_map.get(ep_obj.quality, quality_key_map[Quality.UNKNOWN])
 
 
 def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):
@@ -109,8 +93,10 @@ def get_episodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
+            # TODO: `quality_name` and `quality_style` should both be removed
+            # when converting forced/manual episode search to Vue (use QualityPill component directly)
             'quality_name': Quality.qualityStrings[ep.quality],
-            'quality_style': get_quality_class(ep),
+            'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
             'overview': Overview.overviewStrings[series_obj.get_overview(
                 ep.status, ep.quality,
                 manually_searched=ep.manually_searched

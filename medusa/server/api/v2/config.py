@@ -612,18 +612,10 @@ class DataGenerator(object):
 
         section_data['qualities'] = {}
 
-        # Get key names from `common.Quality` class (for the quality values and any-sets)
-        quality_key_map = {
-            value: text_type(key).lower().replace('_', '')
-            for (key, value)
-            in iteritems(common.Quality.__dict__)
-            if isinstance(value, int) and not key.startswith('__')
-        }
-
         def make_quality(value, name, key=None):
             return {
                 'value': value,
-                'key': key or quality_key_map.get(value),
+                'key': key or Quality.quality_keys.get(value),
                 'name': name
             }
 
