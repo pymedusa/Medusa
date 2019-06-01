@@ -227,7 +227,7 @@ export default {
                 });
         },
         close() {
-            this.$emit('close', this);
+            this.$emit('close');
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM
