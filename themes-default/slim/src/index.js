@@ -56,7 +56,8 @@ import {
     ShowSelector,
     SnatchSelection,
     StateSwitch,
-    Status
+    Status,
+    SubMenu
 } from './components';
 
 if (window) {
@@ -120,6 +121,7 @@ if (window) {
     window.components.push(SnatchSelection);
     window.components.push(StateSwitch);
     window.components.push(Status);
+    window.components.push(SubMenu);
 }
 
 const UTIL = {
@@ -152,32 +154,18 @@ const {
     pathname
 } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
-    api.get('config/main').then(response => {
-        $.extend(MEDUSA.config, response.data);
-        MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
-        MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
+    const configLoaded = event => {
+        const data = event.detail;
+
+        const themeSpinner = data.themeName === 'dark' ? '-dark' : '';
+        MEDUSA.config = {
+            ...MEDUSA.config,
+            ...data,
+            themeSpinner,
+            loading: '<img src="images/loading16' + themeSpinner + '.gif" height="16" width="16" />'
+        };
 
         $(document).ready(UTIL.init);
-
-        MEDUSA.config.indexers.indexerIdToName = indexerId => {
-            if (!indexerId) {
-                return '';
-            }
-            return Object.keys(MEDUSA.config.indexers.config.indexers).filter(indexer => { // eslint-disable-line array-callback-return
-                if (MEDUSA.config.indexers.config.indexers[indexer].id === parseInt(indexerId, 10)) {
-                    return MEDUSA.config.indexers.config.indexers[indexer].name;
-                }
-            })[0];
-        };
-
-        MEDUSA.config.indexers.nameToIndexerId = name => {
-            if (!name) {
-                return '';
-            }
-            return MEDUSA.config.indexers.config.indexers[name];
-        };
-    }).catch(error => {
-        console.debug(error);
-        alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
-    });
+    };
+    window.addEventListener('medusa-config-loaded', configLoaded, { once: true });
 }

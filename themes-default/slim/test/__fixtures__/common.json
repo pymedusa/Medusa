@@ -15,9 +15,17 @@
         "major": 44,
         "minor": 11
       },
-      "sourceUrl": "https://github.com/pymedusa/Medusa",
       "pid": 1234,
       "pythonVersion": "2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)]",
+      "sslVersion": "OpenSSL 1.1.0j  20 Nov 2018",
+      "os": "Windows-10-10.0.17763-SP0",
+      "locale": "en_US.UTF8",
+      "localUser": "User",
+      "programDir": "C:\\Medusa\\",
+      "configFile": "C:\\Medusa\\Data\\config.ini",
+      "dbPath": "C:\\Medusa\\Data\\main.db",
+      "cacheDir": "C:\\Medusa\\Data\\cache",
+      "logDir": "C:\\Medusa\\Data\\Logs",
       "postProcessing": {
         "postponeIfSyncFiles": true,
         "showDownloadDir": "C:\\Downloads\\TV",
@@ -81,6 +89,8 @@
         "latest": "2018-07-03"
       },
       "logs": {
+        "debug": true,
+        "dbDebug": false,
         "numWarnings": 0,
         "numErrors": 0,
         "loggingLevels": {
@@ -95,7 +105,10 @@
         "enabled": true,
         "method": "qbittorrent"
       },
+      "sourceUrl": "https://github.com/pymedusa/Medusa",
       "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
+      "githubUrl": "https://github.com/pymedusa/pymedusa.github.io",
+      "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
       "recentShows": [
         {
           "showId": 253463,
@@ -117,7 +130,8 @@
       "fanartBackgroundOpacity": 0.4,
       "appArgs": [
         "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
+        "--datadir",
+        "C:\\Medusa\\Data"
       ],
       "emby": {
         "enabled": true,

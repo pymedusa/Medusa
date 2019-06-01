@@ -100,7 +100,7 @@ export default {
             $('.show-grid').isotope({
                 filter() {
                     const name = $(this).attr('data-name').toLowerCase();
-                    return name.indexOf($('#filterShowName').val().toLowerCase()) > -1;
+                    return name.includes($('#filterShowName').val().toLowerCase());
                 }
             });
         }, 500));

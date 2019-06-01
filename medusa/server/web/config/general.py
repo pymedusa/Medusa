@@ -33,8 +33,7 @@ class ConfigGeneral(Config):
     def index(self):
         t = PageTemplate(rh=self, filename='config_general.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='index')
+        return t.render(controller='config', action='index')
 
     @staticmethod
     def generate_api_key():

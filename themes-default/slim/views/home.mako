@@ -5,7 +5,6 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
-    from random import choice
     import re
 %>
 <%block name="metas">
@@ -13,12 +12,8 @@
 </%block>
 <%block name="scripts">
 <script type="text/x-template" id="home-template">
-<%
-    # pick a random series to show as background
-    random_show = choice(app.showList) if app.showList else None
-%>
 <div>
-    <input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
+    <backstretch :slug="config.randomShowSlug"></backstretch>
 
     <div class="row" v-if="layout === 'poster'">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
@@ -95,11 +90,17 @@
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
+                    ## Checking with Mako as well, so we don't import the home page layout multiple times.
+                    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
                     <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % endif
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
             <template v-else>
+                ## Checking with Mako as well, so we don't import the home page layout multiple times.
+                % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
                 <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                % endif
             </template>
         </div>
     </div>

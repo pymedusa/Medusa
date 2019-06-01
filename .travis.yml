@@ -28,7 +28,7 @@ jobs:
       script:
         - ./.github/build-themes-check.sh
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
-        - yarn xo
+        - yarn lint
         - yarn lint-css
         - yarn test
         - yarn coverage
@@ -66,7 +66,7 @@ jobs:
       script:
         - yarn test-api
       after_failure:
-        - cat ./dredd/data/Logs/application.log
+        - cat ./dredd/hook.log
     # dredd tests (py3.6) start here
     - name: 'Dredd tests (py3.6)'
       python: '3.6'
@@ -81,7 +81,7 @@ jobs:
       script:
         - yarn test-api
       after_failure:
-        - cat ./dredd/data/Logs/application.log
+        - cat ./dredd/hook.log
 notifications:
   slack:
     secure: >-

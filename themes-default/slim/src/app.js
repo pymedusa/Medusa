@@ -1,7 +1,5 @@
 import Vue from 'vue';
-import Vuex, {
-    mapState
-} from 'vuex';
+import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
@@ -30,7 +28,8 @@ import {
     ScrollButtons,
     SelectList,
     Show,
-    ShowSelector
+    ShowSelector,
+    SubMenu
 } from './components';
 
 Vue.config.devtools = true;
@@ -43,15 +42,6 @@ Vue.use(AsyncComputed);
 Vue.use(Snotify);
 Vue.use(VModal);
 Vue.use(Tooltip);
-
-// Load x-template components
-window.components.forEach(component => {
-    if (isDevelopment) {
-        console.debug(`Registering ${component.name}`);
-    }
-
-    Vue.component(component.name, component);
-});
 
 // Global components
 const globalComponents = [
@@ -69,11 +59,23 @@ const globalComponents = [
     ScrollButtons,
     SelectList,
     Show,
-    ShowSelector
+    ShowSelector,
+    SubMenu
 ];
 
 globalComponents.forEach(component => {
     Vue.component(component.name, component);
+});
+
+// Load x-template components
+window.components.forEach(component => {
+    // Skip already registered components
+    if (!Object.keys(Vue.options.components).includes(component.name)) {
+        if (isDevelopment) {
+            console.debug(`Registering ${component.name}`);
+        }
+        Vue.component(component.name, component);
+    }
 });
 
 const app = new Vue({
@@ -87,24 +89,27 @@ const app = new Vue({
             pageComponent: false
         };
     },
-    computed: Object.assign(mapState(['auth', 'config']), {}),
     mounted() {
         if (isDevelopment) {
             console.log('App Mounted!');
         }
 
         if (!document.location.pathname.includes('/login')) {
-            const {
-                $store
-            } = this;
-            $store.dispatch('login', {
-                username: window.username
+            const { $store } = this;
+            Promise.all([
+                $store.dispatch('login', { username: window.username }),
+                $store.dispatch('getConfig')
+            ]).then(([_, config]) => {
+                if (isDevelopment) {
+                    console.log('App Loaded!');
+                }
+                // Legacy - send config.main to jQuery (received by index.js)
+                const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                window.dispatchEvent(event);
+            }).catch(error => {
+                console.debug(error);
+                alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
             });
-            $store.dispatch('getConfig');
-
-            if (isDevelopment) {
-                console.log('App Loaded!');
-            }
         }
     }
 }).$mount('#vue-wrap');

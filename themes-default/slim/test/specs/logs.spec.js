@@ -1,12 +1,14 @@
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { Config } from '../../src/components';
+import { Logs } from '../../src/components';
 import fixtures from '../__fixtures__/common';
+import exampleLogs from '../__fixtures__/example-logs';
 
-describe('Config.test.js', () => {
+describe('Logs.test.js', () => {
     let localVue;
     let store;
+    let routerBase;
 
     beforeEach(() => {
         localVue = createLocalVue();
@@ -15,12 +17,23 @@ describe('Config.test.js', () => {
 
         const { state } = fixtures;
         store = new Store({ state });
+
+        routerBase = '/'; // This might be '/webroot'
     });
 
     it('renders', () => {
-        const wrapper = shallowMount(Config, {
+        const router = new VueRouter({
+            base: routerBase,
+            mode: 'history'
+        });
+        const wrapper = shallowMount(Logs, {
             localVue,
-            store
+            store,
+            router
+        });
+
+        wrapper.setData({
+            logLines: exampleLogs
         });
 
         expect(wrapper.element).toMatchSnapshot();

@@ -22,19 +22,14 @@ const mutations = {
 
 const getters = {
     getPreset: state => value => {
-        return Object.keys(state.presets)
-            .filter(key => {
-                return state.presets[key] === value;
-            })
-            .map(key => {
+        for (const [pKey, pValue] of Object.entries(state.presets)) {
+            if (pValue === value) {
                 return {
-                    [key]: state.presets[key]
+                    [pKey]: pValue
                 };
-            });
-    },
-    combineQualities: () => qualities => {
-        const reducer = (accumulator, currentValue) => accumulator | currentValue;
-        return qualities.reduce(reducer, 0);
+            }
+        }
+        return null;
     }
 };
 

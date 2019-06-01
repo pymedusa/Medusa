@@ -156,6 +156,7 @@ class DelugeDAPI(GenericClient):
         log.info('Checking DelugeD torrent status.')
 
         if not self.connect():
+            log.warning('Error while fetching torrents status')
             return
 
         torrent_data = self.drpc.get_all_torrents()

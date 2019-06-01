@@ -6,6 +6,8 @@
 - Added BTDB torrent provider ([#6678](https://github.com/pymedusa/Medusa/pull/6678))
 
 #### Improvements
+- Converted the sub-menu into a Vue SFC ([#6724](https://github.com/pymedusa/Medusa/pull/6724))
+- Converted View Log page into a Vue SFC ([#6738](https://github.com/pymedusa/Medusa/pull/6738))
 
 #### Fixes
 - Fixed lists not being saved when used with comma separated items ([#6428](https://github.com/pymedusa/Medusa/pull/6428))
@@ -20,6 +22,8 @@
 - Fixed exception in Elite-Tracker provider when no result is found ([#6680](https://github.com/pymedusa/Medusa/pull/6680))
 - Fixed exception in API v2 when an incorrect API key was provided, or none was provided ([#6703](https://github.com/pymedusa/Medusa/pull/6703))
 - Removed legacy log-censoring code for Newznab providers ([#6705](https://github.com/pymedusa/Medusa/pull/6705))
+- Fixed DelugeD remove torrents when ratio is reached (Python 2.7) ([#6702](https://github.com/pymedusa/Medusa/pull/6702))
+- Fixed home page slow down issue ([#6754](https://github.com/pymedusa/Medusa/pull/6754))
 
 ## 0.3.1 (2019-03-20)
 

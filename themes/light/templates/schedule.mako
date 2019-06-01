@@ -103,7 +103,7 @@ window.app = new Vue({
 
 <%block name="content">
 <% random_series = choice(results) if results else '' %>
-<input type="hidden" id="background-series-slug" value="${choice(results)['series_slug'] if results else ''}" />
+<backstretch slug="${choice(results)['series_slug'] if results else ''}"></backstretch>
 
 <div class="row">
     <div class="col-md-12">

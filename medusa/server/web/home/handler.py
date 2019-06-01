@@ -7,6 +7,7 @@ import os
 import time
 from builtins import str
 from datetime import date, datetime
+from textwrap import dedent
 
 from medusa import (
     app,
@@ -167,42 +168,34 @@ class Home(WebRoot):
 
     @staticmethod
     def show_statistics():
-        main_db_con = db.DBConnection()
-
+        pre_today = [SKIPPED, WANTED, FAILED]
         snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         downloaded = [DOWNLOADED, ARCHIVED]
 
-        # FIXME: This inner join is not multi indexer friendly.
-        sql_result = main_db_con.select(
-            """
+        def query_in(items):
+            return '({0})'.format(','.join(map(str, items)))
+
+        query = dedent("""\
             SELECT showid, indexer,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_quality}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_quality}
               ) AS ep_snatched,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_download}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_download}
               ) AS ep_downloaded,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     ((airdate <= {today} AND (status = {skipped} OR
-                                               status = {wanted} OR
-                                               status = {failed})) OR
-                      (status IN {status_quality}) OR
-                      (status IN {status_download}))
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND (
+                  (airdate <= {today} AND status IN {status_pre_today})
+                  OR status IN {status_both}
+                )
               ) AS ep_total,
               (SELECT airdate FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -220,17 +213,15 @@ class Home(WebRoot):
                ORDER BY airdate DESC
                LIMIT 1
               ) AS ep_airs_prev,
-              (SELECT SUM(file_size) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer
-              ) AS show_size
+              SUM(file_size) AS show_size
             FROM tv_episodes tv_eps
             GROUP BY showid, indexer
-            """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
-                       status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
-                       skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
-                       today=date.today().toordinal())
-        )
+        """).format(status_quality=query_in(snatched), status_download=query_in(downloaded),
+                    status_pre_today=query_in(pre_today), status_both=query_in(snatched + downloaded),
+                    skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, today=date.today().toordinal())
+
+        main_db_con = db.DBConnection()
+        sql_result = main_db_con.select(query)
 
         show_stat = {}
         max_download_count = 1000
@@ -251,28 +242,6 @@ class Home(WebRoot):
         return json.dumps({
             'pid': app.PID if app.started else ''
         })
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
-    def haveKODI():
-        return app.USE_KODI and app.KODI_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/plex, check if enabled === true
-    def havePLEX():
-        return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/emby, check if enabled === true
-    def haveEMBY():
-        return app.USE_EMBY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/torrents, check if enabled === true
-    def haveTORRENT():
-        return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
-                    (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
-                     app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
 
     @staticmethod
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
@@ -793,61 +762,6 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename='index.mako')
 
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil',
-        }]
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'menu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'menu-icon-emby',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'menu-icon-backlog',
-                    })
 
         indexer_id = int(series_obj.indexer)
         series_id = int(series_obj.series_id)
@@ -869,7 +783,6 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1],
             controller='home', action='displayShow',
         )
 
@@ -1057,61 +970,6 @@ class Home(WebRoot):
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil'
-        }]
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'submenu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'ui-icon ui-icon-comment',
-                    })
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -1197,7 +1055,7 @@ class Home(WebRoot):
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
         return t.render(
-            submenu=submenu[::-1], show=series_obj,
+            show=series_obj,
             provider_results=provider_results, episode_history=episode_history,
             season=season, episode=episode, manual_search_type=manual_search_type,
             controller='home', action='snatchSelection'
@@ -1695,20 +1553,20 @@ class Home(WebRoot):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
         if not all([showSlug, eps, status]):
             error_message = 'You must specify a show and at least one episode'
-            ui.notifications.error('Error', error_message)
-            return json.dumps({
-                'result': 'error',
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
                 'message': error_message
-            })
+                })
 
         status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
-            ui.notifications.error('Error', error_message)
-            return json.dumps({
-                'result': 'error',
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
                 'message': error_message
-            })
+                })
 
         identifier = SeriesIdentifier.from_slug(showSlug)
         if not identifier:
@@ -1722,11 +1580,11 @@ class Home(WebRoot):
         series_obj = Series.find_by_identifier(identifier)
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
-            ui.notifications.error('Error', error_message)
-            return json.dumps({
-                'result': 'error',
+                ui.notifications.error('Error', error_message)
+                return json.dumps({
+                    'result': 'error',
                 'message': error_message
-            })
+                })
 
         segments = {}
         trakt_data = []
@@ -1860,10 +1718,10 @@ class Home(WebRoot):
             if segments:
                 ui.notifications.message('Retry Search started', msg)
 
-        return json.dumps({
-            'result': 'success',
+            return json.dumps({
+                'result': 'success',
             'message': ''
-        })
+            })
 
     def testRename(self, indexername=None, seriesid=None):
         if not indexername or not seriesid:
