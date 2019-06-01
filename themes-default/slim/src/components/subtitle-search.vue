@@ -1,8 +1,8 @@
 <template>
-<!-- template for the modal component -->
-<tr class='subtitle-search-wrapper'>
-    <td colspan='9999' transition="expand">
-        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"></state-switch></span>
+<!-- template for the subtitle-search component -->
+<tr class="subtitle-search-wrapper">
+    <td colspan="9999">
+        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"/></span>
         <div v-if="displayQuestion" class="search-question">
             <div class="question">
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -12,60 +12,60 @@
                 <button type="button" class="btn-medusa btn-success" @click="manualSearch">Manual</button>
             </div>
         </div>
-        <!-- <h3>Subtitle results</h3> -->
-            <vue-good-table v-if="subtitles.length"
-                :columns="columns"
-                :rows="subtitles"
-                :search-options="{
-                    enabled: false
-                }"
-                :sort-options="{
-                    enabled: true,
-                    initialSortBy: { field: 'score', type: 'desc' }
-                }"
-                styleClass="vgt-table condensed subtitle-table"
-                >
-                <template slot="table-column" slot-scope="props">
-                    <span v-if="props.column.label == 'Download'">
-                        <span>{{props.column.label}}</span>
-                        <span class="btn-medusa btn-xs pull-right" @click="destroy">hide</span>
-                    </span>
-                    <span v-else>
-                        {{props.column.label}}
-                    </span>
-                </template>
-                <template slot="table-row" slot-scope="props">
-                    <span v-if="props.column.field == 'provider'">
-                        <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16"/>
-                        <span :title="props.row.provider">{{props.row.provider}}</span>
-                    </span>
-                    <span v-else-if="props.column.field == 'lang'">
-                        <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11"/>
-                    </span>
-                    <span v-else-if="props.column.field == 'filename'">
-                        <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                            <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16"/>
-                            <span class="subtitle-name">{{props.row.filename}}</span>
-                            <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>
-                        </a>
-                    </span>
-                    <span v-else-if="props.column.field == 'download'">
-                        <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                            <img src="images/download.png" width="16" height="16"/>
-                        </a>
-                    </span>
-                    <span v-else>
-                        {{props.formattedRow[props.column.field]}}
-                    </span>
-                </template>
-            </vue-good-table>
+
+        <vue-good-table v-if="subtitles.length"
+            :columns="columns"
+            :rows="subtitles"
+            :search-options="{
+                enabled: false
+            }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: { field: 'score', type: 'desc' }
+            }"
+            styleClass="vgt-table condensed subtitle-table"
+        >
+            <template v-slot:table-column="props">
+                <span v-if="props.column.label === 'Download'">
+                    <span>{{props.column.label}}</span>
+                    <span class="btn-medusa btn-xs pull-right" @click="close">hide</span>
+                </span>
+                <span v-else>
+                    {{props.column.label}}
+                </span>
+            </template>
+            <template v-slot:table-row="props">
+                <span v-if="props.column.field === 'provider'">
+                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16"/>
+                    <span :title="props.row.provider">{{props.row.provider}}</span>
+                </span>
+                <span v-else-if="props.column.field === 'lang'">
+                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11"/>
+                </span>
+                <span v-else-if="props.column.field === 'filename'">
+                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16"/>
+                        <span class="subtitle-name">{{props.row.filename}}</span>
+                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>
+                    </a>
+                </span>
+                <span v-else-if="props.column.field === 'download'">
+                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img src="images/download.png" width="16" height="16"/>
+                    </a>
+                </span>
+                <span v-else>
+                    {{props.formattedRow[props.column.field]}}
+                </span>
+            </template>
+        </vue-good-table>
     </td>
 </tr>
 </template>
 <script>
 
 import { mapState } from 'vuex';
-import { VueGoodTable  } from 'vue-good-table';
+import { VueGoodTable } from 'vue-good-table';
 
 export default {
     name: 'subtitle-search',
@@ -107,21 +107,22 @@ export default {
                 type: 'number'
             }, {
                 label: 'Missing Matches',
-                field: (rowObj) => {
+                field: rowObj => {
                     if (rowObj.missing_guess) {
-                        return rowObj.missing_guess.join(', ')
+                        return rowObj.missing_guess.join(', ');
                     }
                 },
                 type: 'array'
             }, {
                 label: 'Download',
-                field: 'download'
+                field: 'download',
+                sortable: false
             }],
             subtitles: [],
             displayQuestion: false,
             loading: false,
             loadingMessage: ''
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -130,91 +131,15 @@ export default {
     },
     mounted() {
         this.displayQuestion = true;
-
-        // If manual search, replace handler
-            // url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
-            // $.getJSON(url, data => {
-            //     // Delete existing rows in the modal
-            //     const existingRows = $('#subtitle_results tr').length;
-            //     if (existingRows > 1) {
-            //         for (let x = existingRows - 1; x > 0; x--) {
-            //             $('#subtitle_results tr').eq(x).remove();
-            //         }
-            //     }
-            //     // Add the release to the modal title
-            //     $('h4#manualSubtitleSearchModalTitle.modal-title').text(data.release);
-            //     if (data.result === 'success') {
-            //         $.each(data.subtitles, (index, subtitle) => {
-            //             // For each subtitle found create the row string and append to the modal
-            //             const provider = '<img src="images/subtitles/' + subtitle.provider + '.png" width="16" height="16" style="vertical-align:middle;"/>';
-            //             const flag = '<img src="images/subtitles/flags/' + subtitle.lang + '.png" width="16" height="11"/>';
-            //             let missingGuess = '';
-            //             for (let i = 0; i < subtitle.missing_guess.length; i++) {
-            //                 let value = subtitle.missing_guess[i];
-            //                 if (missingGuess) {
-            //                     missingGuess += ', ';
-            //                 }
-            //                 value = value.charAt(0).toUpperCase() + value.slice(1);
-            //                 missingGuess += value.replace(/(_[a-z])/g, $1 => {
-            //                     return $1.toUpperCase().replace('_', ' ');
-            //                 });
-            //             }
-            //             let subtitleScore = subtitle.score;
-            //             const subtitleName = subtitle.filename.substring(0, 99);
-            //             // If hash match, don't show missingGuess
-            //             if (subtitle.sub_score >= subtitle.max_score) {
-            //                 missingGuess = '';
-            //             }
-            //             // If hearing impaired, add an icon next to subtitle filename
-            //             let hearingImpairedTitle = '';
-            //             let hearingImpairedImage = '';
-            //             if (subtitle.hearing_impaired) {
-            //                 hearingImpairedTitle = 'hearing impaired ';
-            //                 hearingImpairedImage = '<img src="images/hearing_impaired.png" width="16" height="16"/> ';
-            //             }
-            //             // If perfect match, add a checkmark next to subtitle filename
-            //             let checkmark = '';
-            //             if (subtitle.sub_score >= subtitle.min_score) {
-            //                 checkmark = ' <img src="images/save.png" width="16" height="16"/>';
-            //             }
-            //             const subtitleLink = '<a href="#" id="pickSub" title="Download ' + hearingImpairedTitle + 'subtitle: ' + subtitle.filename + '" subtitleID="subtitleid-' + subtitle.id + '">' + hearingImpairedImage + subtitleName + checkmark + '</a>';
-            //             // Make subtitle score always between 0 and 10
-            //             if (subtitleScore > 10) {
-            //                 subtitleScore = 10;
-            //             } else if (subtitleScore < 0) {
-            //                 subtitleScore = 0;
-            //             }
-            //             const row = '<tr style="font-size: 95%;">' +
-            //                       '<td style="white-space:nowrap;">' + provider + ' ' + subtitle.provider + '</td>' +
-            //                       '<td>' + flag + '</td>' +
-            //                       '<td title="' + subtitle.sub_score + '/' + subtitle.min_score + '"> ' + subtitleScore + '</td>' +
-            //                       '<td class="tvShow"> ' + subtitleLink + '</td>' +
-            //                       '<td>' + missingGuess + '</td>' +
-            //                       '</tr>';
-            //             $('#subtitle_results').append(row);
-            //             // Allow the modal to be resizable
-            //             $('.modal-content').resizable({
-            //                 alsoResize: '.modal-body'
-            //             });
-            //             // Allow the modal to be draggable
-            //             $('.modal-dialog').draggable({
-            //                 cancel: '.text'
-            //             });
-            //             // After all rows are added, show the modal with results found
-            //             subtitlesResultModal.modal('show');
-            //         });
-            //     }
-            // }
-
     },
     methods: {
         autoSearch() {
-            const { destroy, episode, season, show } = this;
+            const { episode, season } = this;
+
             this.displayQuestion = false;
-            const url = `home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
-            this.loadingMessage = 'Searching for subtitles and downloading if available... '
+            this.loadingMessage = 'Searching for subtitles and downloading if available... ';
             this.loading = true;
-            apiRoute(url)
+            apiRoute('home/searchEpisodeSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
@@ -230,44 +155,37 @@ export default {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
                 })
                 .finally(() => {
-                    // Destroy this component.
+                    // Cleanup
                     this.loadingMessage = '';
                     this.loading = false;
-                    destroy();
+                    this.close();
                 });
         },
         manualSearch() {
-            const { show, season, episode } = this;
+            const { season, episode, getSubtitleParams } = this;
+
             this.displayQuestion = false;
             this.loading = true;
             this.loadingMessage = 'Searching for subtitles... ';
-            const url = `home/manualSearchSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}`;
-            apiRoute(url)
+            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
                     }
                 }).catch(error => {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
-                    this.destory();
                 }).finally(() => {
                     this.loading = false;
                 });
         },
-        destroy() {
-            // destroy the vue listeners, etc
-            this.$destroy();
-            // remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
-        },
         pickSubtitle(subtitleId) {
             // Download and save this subtitle with the episode.
-            const { show, season, episode } = this;
+            const { season, episode } = this;
+
             this.displayQuestion = false;
             this.loadingMessage = 'downloading subtitle... ';
             this.loading = true;
-            const url = `home/manualSearchSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${season}&episode=${episode}&picked_id=${subtitleId}`;
-            apiRoute(url)
+            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode, subtitleId) }) // eslint-disable-line no-undef
                 .then(response => {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)
@@ -283,50 +201,58 @@ export default {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
                 })
                 .finally(() => {
-                    // Destroy this component.
+                    // Cleanup
                     this.loadingMessage = '';
                     this.loading = false;
-                    destroy();
+                    this.close();
                 });
+        },
+        getSubtitleParams(season, episode, subtitleId) {
+            const { show } = this;
+            const params = {
+                indexername: show.indexer,
+                seriesid: show.id[show.indexer],
+                season,
+                episode
+            }
+
+            if (subtitleId) {
+                params['picked_id'] = subtitleId; // eslint-disable-line dot-notation
+            }
+
+            return params;
+        },
+        close() {
+            this.$emit('close', this);
+            // destroy the vue listeners, etc
+            this.$destroy();
+            // remove the element from the DOM
+            this.$el.parentNode.removeChild(this.$el);
         }
     }
 };
 </script>
-<style>
-.v--modal-overlay .v--modal-box {
-    overflow: inherit!important;
-}
-table.subtitle-table tr {
-    background-color: rgb(190, 222, 237);
-}
+<style scoped>
 .subtitle-search-wrapper {
     display: table-row;
     column-span: all;
 }
-tr.subtitle-search-wrapper > td {
+
+.subtitle-search-wrapper >>> table.subtitle-table tr {
+    background-color: rgb(190, 222, 237);
+}
+
+.subtitle-search-wrapper > td {
     padding: 0;
 }
-/* always present */
-.expand-transition {
-  transition: all .3s ease;
-  height: 30px;
-  padding: 10px;
-  background-color: #eee;
-  overflow: hidden;
-}
-/* .expand-enter defines the starting state for entering */
-/* .expand-leave defines the ending state for leaving */
-.expand-enter, .expand-leave {
-  height: 0;
-  padding: 0 10px;
-  opacity: 0;
-}
+
 .search-question, .loading-message {
     background-color: rgb(51, 51, 51);
     color: rgb(255,255,255);
     padding: 10px;
     line-height: 55px;
 }
+
 span.subtitle-name {
     color: rgb(0, 0, 0);
 }
