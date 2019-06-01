@@ -228,6 +228,10 @@ export default {
         },
         close() {
             this.$emit('close', this);
+            // Destroy the vue listeners, etc
+            this.$destroy();
+            // Remove the element from the DOM
+            this.$el.parentNode.removeChild(this.$el);
         }
     }
 };
