@@ -401,8 +401,6 @@ export default {
                 this.namingExample = result + '.ext';
             });
 
-            console.debug('Result of naming pattern check: ' + this.namingExample);
-
             // Test naming
             this.checkNaming(pattern, false, this.animeType);
 

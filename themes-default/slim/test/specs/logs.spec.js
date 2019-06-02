@@ -26,12 +26,19 @@ describe('Logs.test.js', () => {
             base: routerBase,
             mode: 'history'
         });
+
+        const mockedFetchLogs = jest.fn(() => true);
+
         const wrapper = shallowMount(Logs, {
             localVue,
             store,
-            router
+            router,
+            methods: {
+                fetchLogs: mockedFetchLogs
+            }
         });
 
+        expect(mockedFetchLogs).toHaveBeenCalledTimes(1);
         wrapper.setData({
             logLines: exampleLogs
         });
