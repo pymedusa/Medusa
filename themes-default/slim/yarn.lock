@@ -11818,6 +11818,11 @@ timsort@^0.3.0:
   resolved "https://registry.yarnpkg.com/timsort/-/timsort-0.3.0.tgz#405411a8e7e6339fe64db9a234de11dc31e02bd4"
   integrity sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q=
 
+tiny-cookie@^1.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/tiny-cookie/-/tiny-cookie-1.0.1.tgz#753786079c642a3c3d0b2accad600f8de119ac2a"
+  integrity sha1-dTeGB5xkKjw9CyrMrWAPjeEZrCo=
+
 tmp@^0.0.33:
   version "0.0.33"
   resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.0.33.tgz#6d34335889768d21b2bcda0aa277ced3b1bfadf9"
@@ -12500,6 +12505,13 @@ vue-async-computed@3.6.1:
   resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.6.1.tgz#6b790e2125347c678d1b82b10a5b03b41d7b86d0"
   integrity sha512-8FFDTqfdvKrzK5Fr7nNHZgP6sQ2hTUELTrLn25i8VW/g06MztD+FOe1gs0RYVpRkPlcrykf2hbJxNYra1c4OGg==
 
+vue-cookie@1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/vue-cookie/-/vue-cookie-1.1.4.tgz#b8b46d112bda9f93a2f47017c2ed5282d2064fda"
+  integrity sha1-uLRtESvan5Oi9HAXwu1SgtIGT9o=
+  dependencies:
+    tiny-cookie "^1.0"
+
 vue-eslint-parser@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-5.0.0.tgz#00f4e4da94ec974b821a26ff0ed0f7a78402b8a1"
@@ -12544,6 +12556,11 @@ vue-jest@3.0.4:
     source-map "^0.5.6"
     tsconfig "^7.0.0"
     vue-template-es2015-compiler "^1.6.0"
+
+vue-js-modal@1.3.28:
+  version "1.3.28"
+  resolved "https://registry.yarnpkg.com/vue-js-modal/-/vue-js-modal-1.3.28.tgz#fc83d8884802b22d6eb2ba5f5c4f7ec33d71a766"
+  integrity sha512-ory5ymvMVDnyd/+i+DY4OZN1W8aS4gyPYwU8yvfhTc1sNTNEReBNd94MmBCOjJRihsaEl5daeWTKvsjujnqlsw==
 
 vue-js-toggle-button@1.3.2:
   version "1.3.2"
