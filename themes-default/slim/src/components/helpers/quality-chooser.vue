@@ -15,87 +15,90 @@
                 {{ preset.name }}
             </option>
         </select>
-        <div id="customQualityWrapper">
-            <div style="padding-left: 0;" v-show="selectedQualityPreset === 0">
-                <p><b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.</p>
-                <div style="padding-right: 40px; text-align: left; float: left;">
-                    <h5>Allowed</h5>
-                    <select
-                        v-model.number="allowedQualities"
-                        name="allowed_qualities"
-                        multiple="multiple"
-                        :size="validQualities.length"
-                        class="form-control form-control-inline input-sm"
-                    >
-                        <option
-                            v-for="quality in validQualities"
-                            :key="`quality-list-${quality.key}`"
-                            :value="quality.value"
-                        >
-                            {{ quality.name }}
-                        </option>
-                    </select>
-                </div>
-                <div style="text-align: left; float: left;">
-                    <h5>Preferred</h5>
-                    <select
-                        v-model.number="preferredQualities"
-                        name="preferred_qualities"
-                        multiple="multiple"
-                        :size="validQualities.length"
-                        class="form-control form-control-inline input-sm"
-                        :disabled="allowedQualities.length === 0"
-                    >
-                        <option
-                            v-for="quality in validQualities"
-                            :key="`quality-list-${quality.key}`"
-                            :value="quality.value"
-                        >
-                            {{ quality.name }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div style="clear:both;"></div>
-            <div v-if="selectedQualityPreset !== 'keep'">
-                <div v-if="(allowedQualities.length + preferredQualities.length) >= 1" id="qualityExplanation">
-                    <h5><b>Quality setting explanation:</b></h5>
-                    <h5 v-if="preferredQualities.length === 0">
-                        This will download <b>any</b> of these qualities and then stops searching:
-                        <label id="allowedExplanation">{{ explanation.allowed.join(', ') }}</label>
-                    </h5>
-                    <template v-else>
-                        <h5>
-                            Downloads <b>any</b> of these qualities:
-                            <label id="allowedPreferredExplanation">{{ explanation.allowed.join(', ') }}</label>
-                        </h5>
-                        <h5>
-                            But it will stop searching when one of these is downloaded:
-                            <label id="preferredExplanation">{{ explanation.preferred.join(', ') }}</label>
-                        </h5>
-                    </template>
-                </div>
-                <div v-else>Please select at least one allowed quality.</div>
-            </div>
-            <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
-                <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
-            </div>
-            <div v-if="archive" id="archive">
-                <h5>
-                    <b>Archive downloaded episodes that are not currently in
-                    <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
-                    <br />Avoids unnecessarily increasing your backlog
-                    <br />
-                </h5>
-                <button
-                    @click.prevent="archiveEpisodes"
-                    :disabled="archiveButton.disabled"
-                    class="btn-medusa btn-inline"
+
+        <div v-show="selectedQualityPreset === 0" id="customQualityWrapper">
+            <p>
+                <b><strong>Preferred</strong></b> qualities will replace those in <b><strong>allowed</strong></b>, even if they are lower.
+            </p>
+            <div>
+                <h5>Allowed</h5>
+                <select
+                    v-model.number="allowedQualities"
+                    name="allowed_qualities"
+                    multiple="multiple"
+                    :size="validQualities.length"
+                    class="form-control form-control-inline input-sm"
                 >
-                    {{ archiveButton.text }}
-                </button>
-                <h5>{{ archivedStatus }}</h5>
+                    <option
+                        v-for="quality in validQualities"
+                        :key="`quality-list-${quality.key}`"
+                        :value="quality.value"
+                    >
+                        {{ quality.name }}
+                    </option>
+                </select>
             </div>
+            <div>
+                <h5>Preferred</h5>
+                <select
+                    v-model.number="preferredQualities"
+                    name="preferred_qualities"
+                    multiple="multiple"
+                    :size="validQualities.length"
+                    class="form-control form-control-inline input-sm"
+                    :disabled="allowedQualities.length === 0"
+                >
+                    <option
+                        v-for="quality in validQualities"
+                        :key="`quality-list-${quality.key}`"
+                        :value="quality.value"
+                    >
+                        {{ quality.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div v-if="selectedQualityPreset !== 'keep'">
+            <div v-if="(allowedQualities.length + preferredQualities.length) >= 1" id="qualityExplanation">
+                <h5><b>Quality setting explanation:</b></h5>
+                <h5 v-if="preferredQualities.length === 0">
+                    This will download <b>any</b> of these qualities and then stops searching:
+                    <label id="allowedExplanation">{{ explanation.allowed.join(', ') }}</label>
+                </h5>
+                <template v-else>
+                    <h5>
+                        Downloads <b>any</b> of these qualities:
+                        <label id="allowedPreferredExplanation">{{ explanation.allowed.join(', ') }}</label>
+                    </h5>
+                    <h5>
+                        But it will stop searching when one of these is downloaded:
+                        <label id="preferredExplanation">{{ explanation.preferred.join(', ') }}</label>
+                    </h5>
+                </template>
+            </div>
+            <div v-else>Please select at least one allowed quality.</div>
+        </div>
+
+        <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
+            <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
+        </div>
+
+        <div v-if="archive" id="archive">
+            <h5>
+                <b>Archive downloaded episodes that are not currently in
+                <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
+                <br />Avoids unnecessarily increasing your backlog
+                <br />
+            </h5>
+            <button
+                @click.prevent="archiveEpisodes"
+                :disabled="archiveButton.disabled"
+                class="btn-medusa btn-inline"
+            >
+                {{ archiveButton.text }}
+            </button>
+            <h5>{{ archivedStatus }}</h5>
         </div>
     </div>
 </template>
@@ -328,6 +331,17 @@ export default {
 </script>
 
 <style scoped>
+/* Put both custom quality selectors in the same row */
+#customQualityWrapper > div {
+    display: inline-block;
+    text-align: left;
+}
+
+/* Put some distance between the two selectors */
+#customQualityWrapper > div:first-of-type {
+    padding-right: 30px;
+}
+
 .backlog-link {
     color: blue;
     text-decoration: underline;
