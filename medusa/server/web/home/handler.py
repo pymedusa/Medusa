@@ -7,6 +7,7 @@ import os
 import time
 from builtins import str
 from datetime import date, datetime
+from textwrap import dedent
 
 from medusa import (
     app,
@@ -171,42 +172,34 @@ class Home(WebRoot):
 
     @staticmethod
     def show_statistics():
-        main_db_con = db.DBConnection()
-
+        pre_today = [SKIPPED, WANTED, FAILED]
         snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         downloaded = [DOWNLOADED, ARCHIVED]
 
-        # FIXME: This inner join is not multi indexer friendly.
-        sql_result = main_db_con.select(
-            """
+        def query_in(items):
+            return '({0})'.format(','.join(map(str, items)))
+
+        query = dedent("""\
             SELECT showid, indexer,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_quality}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_quality}
               ) AS ep_snatched,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_download}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_download}
               ) AS ep_downloaded,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     ((airdate <= {today} AND (status = {skipped} OR
-                                               status = {wanted} OR
-                                               status = {failed})) OR
-                      (status IN {status_quality}) OR
-                      (status IN {status_download}))
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND (
+                  (airdate <= {today} AND status IN {status_pre_today})
+                  OR status IN {status_both}
+                )
               ) AS ep_total,
               (SELECT airdate FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -224,17 +217,15 @@ class Home(WebRoot):
                ORDER BY airdate DESC
                LIMIT 1
               ) AS ep_airs_prev,
-              (SELECT SUM(file_size) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer
-              ) AS show_size
+              SUM(file_size) AS show_size
             FROM tv_episodes tv_eps
             GROUP BY showid, indexer
-            """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
-                       status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
-                       skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
-                       today=date.today().toordinal())
-        )
+        """).format(status_quality=query_in(snatched), status_download=query_in(downloaded),
+                    status_pre_today=query_in(pre_today), status_both=query_in(snatched + downloaded),
+                    skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, today=date.today().toordinal())
+
+        main_db_con = db.DBConnection()
+        sql_result = main_db_con.select(query)
 
         show_stat = {}
         max_download_count = 1000

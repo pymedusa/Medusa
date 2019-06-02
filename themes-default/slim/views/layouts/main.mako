@@ -136,10 +136,20 @@
                     mounted() {
                         if (this.$root === this && !document.location.pathname.includes('/login')) {
                             const { store, username } = window;
-                            /* This is used by the `app-header` component
-                            to only show the logout button if a username is set */
-                            store.dispatch('login', { username });
-                            store.dispatch('getConfig').then(() => this.$emit('loaded'));
+                            Promise.all([
+                                /* This is used by the `app-header` component
+                                to only show the logout button if a username is set */
+                                store.dispatch('login', { username }),
+                                store.dispatch('getConfig')
+                            ]).then(([_, config]) => {
+                                this.$emit('loaded');
+                                // Legacy - send config.main to jQuery (received by index.js)
+                                const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                                window.dispatchEvent(event);
+                            }).catch(error => {
+                                console.debug(error);
+                                alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+                            });
                         }
 
                         this.$once('loaded', () => {

@@ -241,6 +241,22 @@ const mutations = {
 };
 
 const getters = {
+    // Get an indexer's name using its ID.
+    indexerIdToName: state => indexerId => {
+        if (!indexerId) {
+            return undefined;
+        }
+        const { indexers } = state.indexers.config;
+        return Object.keys(indexers).find(name => indexers[name].id === parseInt(indexerId, 10));
+    },
+    // Get an indexer's ID using its name.
+    indexerNameToId: state => indexerName => {
+        if (!indexerName) {
+            return undefined;
+        }
+        const { indexers } = state.indexers.config;
+        return indexers[name].id;
+    },
     layout: state => layout => {
         return state.layout[layout];
     }

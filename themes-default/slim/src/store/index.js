@@ -5,15 +5,14 @@ import {
     auth,
     clients,
     config,
+    consts,
     defaults,
     metadata,
     notifications,
     notifiers,
-    qualities,
     search,
     shows,
-    socket,
-    statuses
+    socket
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -31,15 +30,14 @@ const store = new Store({
         auth,
         clients,
         config,
+        consts,
         defaults,
         metadata,
         notifications,
         notifiers,
-        qualities,
         search,
         shows,
-        socket,
-        statuses
+        socket
     },
     state: {},
     mutations: {},

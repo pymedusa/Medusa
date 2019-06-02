@@ -24,14 +24,12 @@ exports[`Config.test.js renders 1`] = `
                 Branch:
                 
         <span>
-          <a
-            class=""
+          <app-link-stub
             href="https://github.com/pymedusa/Medusa/tree/master"
-            rel="noreferrer"
-            target="_blank"
+            placeholder="indexer-to-name"
           >
             master
-          </a>
+          </app-link-stub>
         </span>
          
         <br />
@@ -39,14 +37,12 @@ exports[`Config.test.js renders 1`] = `
                 Commit:
                 
         <span>
-          <a
-            class=""
+          <app-link-stub
             href="https://github.com/pymedusa/Medusa/commit/f5973b28465246e67465d7d86bdc8aa74d13e659"
-            rel="noreferrer"
-            target="_blank"
+            placeholder="indexer-to-name"
           >
             f5973b28465246e67465d7d86bdc8aa74d13e659
-          </a>
+          </app-link-stub>
         </span>
          
         <br />
@@ -54,14 +50,12 @@ exports[`Config.test.js renders 1`] = `
                 Version:
                 
         <span>
-          <a
-            class=""
+          <app-link-stub
             href="https://github.com/pymedusa/Medusa/releases/tag/v0.2.8"
-            rel="noreferrer"
-            target="_blank"
+            placeholder="indexer-to-name"
           >
             v0.2.8
-          </a>
+          </app-link-stub>
         </span>
          
         <br />
@@ -94,7 +88,7 @@ exports[`Config.test.js renders 1`] = `
          SSL Version:
       </td>
       <td>
-        
+        OpenSSL 1.1.0j  20 Nov 2018
       </td>
     </tr>
      
@@ -106,7 +100,7 @@ exports[`Config.test.js renders 1`] = `
          OS:
       </td>
       <td>
-        
+        Windows-10-10.0.17763-SP0
       </td>
     </tr>
      
@@ -118,7 +112,7 @@ exports[`Config.test.js renders 1`] = `
          Locale:
       </td>
       <td>
-        
+        en_US.UTF8
       </td>
     </tr>
      
@@ -150,7 +144,7 @@ exports[`Config.test.js renders 1`] = `
          User:
       </td>
       <td>
-        
+        User
       </td>
     </tr>
      
@@ -162,7 +156,7 @@ exports[`Config.test.js renders 1`] = `
          Program Folder:
       </td>
       <td>
-        
+        C:\\Medusa\\
       </td>
     </tr>
      
@@ -174,7 +168,7 @@ exports[`Config.test.js renders 1`] = `
          Config File:
       </td>
       <td>
-        
+        C:\\Medusa\\Data\\config.ini
       </td>
     </tr>
      
@@ -186,7 +180,7 @@ exports[`Config.test.js renders 1`] = `
          Database File:
       </td>
       <td>
-        
+        C:\\Medusa\\Data\\main.db
       </td>
     </tr>
      
@@ -198,7 +192,7 @@ exports[`Config.test.js renders 1`] = `
          Cache Folder:
       </td>
       <td>
-        
+        C:\\Medusa\\Data\\cache
       </td>
     </tr>
      
@@ -210,7 +204,7 @@ exports[`Config.test.js renders 1`] = `
          Log Folder:
       </td>
       <td>
-        
+        C:\\Medusa\\Data\\Logs
       </td>
     </tr>
      
@@ -260,11 +254,12 @@ exports[`Config.test.js renders 1`] = `
          Website:
       </td>
       <td>
-        <a
-          class=""
+        <app-link-stub
+          href="https://github.com/pymedusa/pymedusa.github.io"
+          placeholder="indexer-to-name"
         >
-          
-        </a>
+          https://github.com/pymedusa/pymedusa.github.io
+        </app-link-stub>
       </td>
     </tr>
      
@@ -276,11 +271,12 @@ exports[`Config.test.js renders 1`] = `
          Wiki:
       </td>
       <td>
-        <a
-          class=""
+        <app-link-stub
+          href="https://github.com/pymedusa/Medusa/wiki"
+          placeholder="indexer-to-name"
         >
-          
-        </a>
+          https://github.com/pymedusa/Medusa/wiki
+        </app-link-stub>
       </td>
     </tr>
      
@@ -292,14 +288,12 @@ exports[`Config.test.js renders 1`] = `
          Source:
       </td>
       <td>
-        <a
-          class=""
+        <app-link-stub
           href="https://github.com/pymedusa/Medusa"
-          rel="noreferrer"
-          target="_blank"
+          placeholder="indexer-to-name"
         >
           https://github.com/pymedusa/Medusa
-        </a>
+        </app-link-stub>
       </td>
     </tr>
      
@@ -311,11 +305,9 @@ exports[`Config.test.js renders 1`] = `
          IRC Chat:
       </td>
       <td>
-        <a
-          class=""
+        <app-link-stub
           href="irc://irc.freenode.net/#pymedusa"
-          rel="noreferrer"
-          target="_blank"
+          placeholder="indexer-to-name"
         >
           <i>
             #pymedusa
@@ -324,7 +316,7 @@ exports[`Config.test.js renders 1`] = `
           <i>
             irc.freenode.net
           </i>
-        </a>
+        </app-link-stub>
       </td>
     </tr>
   </table>

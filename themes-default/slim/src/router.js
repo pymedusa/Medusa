@@ -412,16 +412,18 @@ const errorlogsSubMenu = function() {
     const { $route, $store } = this;
     const level = $route.params.level || $route.query.level;
     const { config } = $store.state;
-    if (!(level && config.logs !== undefined)) {
+    const { loggingLevels, numErrors, numWarnings } = config.logs;
+    if (Object.keys(loggingLevels).length === 0) {
         return [];
     }
-    const { loggingLevels, numErrors, numWarnings } = config.logs;
+
+    const isLevelError = (level === undefined || Number(level) === loggingLevels.error);
 
     return [
         {
             title: 'Clear Errors',
             path: 'errorlogs/clearerrors/',
-            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            requires: numErrors >= 1 && isLevelError,
             icon: 'ui-icon ui-icon-trash'
         },
         {
@@ -433,7 +435,7 @@ const errorlogsSubMenu = function() {
         {
             title: 'Submit Errors',
             path: 'errorlogs/submit_errors/',
-            requires: numErrors >= 1 && Number(level) === loggingLevels.error,
+            requires: numErrors >= 1 && isLevelError,
             confirm: 'submiterrors',
             icon: 'ui-icon ui-icon-arrowreturnthick-1-n'
         }

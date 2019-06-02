@@ -173,6 +173,17 @@ export default {
     mounted() {
         const { $el } = this;
 
+        // Auto close menus when clicking a RouterLink
+        $el.clickCloseMenus = event => {
+            const { target } = event;
+            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
+                const dropdown = target.closest('.dropdown');
+                dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
+                dropdown.querySelector('.dropdown-menu').style.display = 'none';
+            }
+        };
+        $el.addEventListener('click', $el.clickCloseMenus, { passive: true });
+
         // Hover Dropdown for Nav
         $($el).on({
             mouseenter(event) {
@@ -202,6 +213,9 @@ export default {
     destroyed() {
         // Revert `mounted()`
         const { $el } = this;
+
+        // Auto close menus when clicking a RouterLink
+        $el.removeEventListener('click', $el.clickCloseMenus);
 
         // Hover Dropdown for Nav
         $($el).off('mouseenter mouseleave', 'ul.nav li.dropdown');

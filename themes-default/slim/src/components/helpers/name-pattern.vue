@@ -139,12 +139,12 @@
                             <tr class="even">
                                 <td>&nbsp;</td>
                                 <td>%D</td>
-                                <td>{{ getDateFormat('D')}}</td>
+                                <td>{{ getDateFormat('d')}}</td>
                             </tr>
                             <tr>
                                 <td>&nbsp;</td>
                                 <td>%Y</td>
-                                <td>{{ getDateFormat('YY')}}</td>
+                                <td>{{ getDateFormat('yyyy')}}</td>
                             </tr>
                             <tr>
                                 <td class="align-right"><b>Post-Processing Date:</b></td>
@@ -154,12 +154,12 @@
                             <tr class="even">
                                 <td>&nbsp;</td>
                                 <td>%CD</td>
-                                <td>{{ getDateFormat('D')}}</td>
+                                <td>{{ getDateFormat('d')}}</td>
                             </tr>
                             <tr>
                                 <td>&nbsp;</td>
                                 <td>%CY</td>
-                                <td>{{ getDateFormat('YY')}}</td>
+                                <td>{{ getDateFormat('yyyy')}}</td>
                             </tr>
                             <tr>
                                 <td class="align-right"><b>Quality:</b></td>
@@ -400,8 +400,6 @@ export default {
             this.testNaming(pattern, false, this.animeType).then(result => {
                 this.namingExample = result + '.ext';
             });
-
-            console.debug('Result of naming pattern check: ' + this.namingExample);
 
             // Test naming
             this.checkNaming(pattern, false, this.animeType);

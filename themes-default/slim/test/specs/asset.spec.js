@@ -22,7 +22,7 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.html().includes('https://default_website.tld/img.png')).toEqual(true);
+        expect(wrapper.attributes().src).toEqual('https://default_website.tld/img.png');
     });
 
     it('renders image with API v2 path for network', () => {
@@ -36,6 +36,6 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.html().includes('/api/v2/series/tvdb1000/asset/network?api_key=')).toEqual(true);
+        expect(wrapper.attributes().src).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/network?api_key='));
     });
 });
