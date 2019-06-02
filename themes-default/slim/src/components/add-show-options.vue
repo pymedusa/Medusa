@@ -7,7 +7,11 @@
                         <span>Quality</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <quality-chooser :overall-quality="defaultConfig.quality" @update:quality:allowed="quality.allowed = $event" @update:quality:preferred="quality.preferred = $event"></quality-chooser>
+                        <quality-chooser
+                            :overall-quality="defaultConfig.quality"
+                            @update:quality:allowed="quality.allowed = $event"
+                            @update:quality:preferred="quality.preferred = $event"
+                        />
                     </div>
                 </div>
             </div>
@@ -86,15 +90,18 @@
 import { mapState, mapGetters } from 'vuex';
 import { apiRoute } from '../api';
 import { combineQualities } from '../utils';
-import { ConfigToggleSlider } from './helpers';
+import {
+    ConfigToggleSlider,
+    QualityChooser
+} from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 
 export default {
     name: 'add-show-options',
     components: {
         AnidbReleaseGroupUi,
-        ConfigToggleSlider
-        // @TODO: Add `QualityChooser`
+        ConfigToggleSlider,
+        QualityChooser
     },
     props: {
         showName: {
