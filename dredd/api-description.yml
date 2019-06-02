@@ -1075,7 +1075,7 @@ definitions:
                 items:
                   type: integer
                   format: int32
-              prefered:
+              preferred:
                 type: array
                 items:
                   type: integer
