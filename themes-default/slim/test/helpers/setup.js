@@ -12,6 +12,9 @@ const baseElement = document.createElement('base');
 baseElement.setAttribute('href', 'http://localhost:8081');
 document.head.append(baseElement);
 
+document.body.setAttribute('web-root', '');
+document.body.setAttribute('api-key', '1234567890ABCDEF1234567890ABCDEF');
+
 // Setup jQuery
 global.$ = $;
 global.jQuery = $;
