@@ -12,23 +12,27 @@ import yaml
 from .units import units
 
 
+def format_property(context, o):
+    """Convert properties to string."""
+    if isinstance(o, timedelta):
+        return format_duration(o, context['profile'])
+
+    if isinstance(o, babelfish.language.Language):
+        return format_language(o, context['profile'])
+
+    if hasattr(o, 'units'):
+        return format_quantity(o, context['profile'])
+
+    return text_type(o)
+
+
 def get_json_encoder(context):
     """Return json encoder that handles all needed object types."""
     class StringEncoder(json.JSONEncoder):
         """String json encoder."""
 
         def default(self, o):
-            """Convert properties to string."""
-            if isinstance(o, timedelta):
-                return format_duration(o, context['profile'])
-
-            if isinstance(o, babelfish.language.Language):
-                return format_language(o, context['profile'])
-
-            if hasattr(o, 'units'):
-                return format_quantity(o, context['profile'])
-
-            return text_type(o)
+            return format_property(context, o)
 
     return StringEncoder
 
