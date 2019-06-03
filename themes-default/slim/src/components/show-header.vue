@@ -348,11 +348,11 @@ export default {
             statuses: state => state.consts.statuses,
             search: state => state.search,
             configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config,
+            config: state => state.config
         }),
         ...mapGetters({
             show: 'getCurrentShow',
-            getOverviewStatus: 'getOverviewStatus'
+            getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
         }),
