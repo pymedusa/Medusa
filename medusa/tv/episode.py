@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import os.path
+import json
 import re
 import time
 import traceback
@@ -24,6 +25,7 @@ from medusa import (
     post_processor,
     subtitles,
 )
+from medusa.cache import episode_metadata
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
@@ -72,6 +74,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
+from medusa.server.api.v2.base import json_default_encoder
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
     get_scene_numbering,
@@ -439,9 +442,24 @@ class Episode(TV):
         """
         return os.path.isfile(location or self._location)
 
+    @staticmethod
+    @episode_metadata.cache_on_arguments()
+    def get_episode_metadata(location, file_size):
+        """Dogpile cache helper method for getting the knowit metadata for an episodes location."""
+        log.debug('Retrieving episode metadata using knowit. For file location: {location} and filesize {size}',
+                  {'location': location, 'size': file_size})
+        return knowit.know(location)
+
     def metadata(self):
         """Return the video metadata."""
-        return knowit.know(self.location)
+        if not self.location:
+            return
+        try:
+            return self.get_episode_metadata(self.location, self.file_size)
+        except Exception as error:
+            import traceback
+            print(traceback.format_exc())
+            pass
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
