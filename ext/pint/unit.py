@@ -15,7 +15,8 @@ import copy
 import operator
 from numbers import Number
 
-from .util import UnitsContainer, SharedRegistryObject, fix_str_conversions
+from .util import (
+    PrettyIPython, UnitsContainer, SharedRegistryObject, fix_str_conversions)
 
 from .compat import string_types, NUMERIC_TYPES, long_type
 from .formatting import siunitx_format_unit
@@ -23,7 +24,7 @@ from .definitions import UnitDefinition
 
 
 @fix_str_conversions
-class _Unit(SharedRegistryObject):
+class _Unit(PrettyIPython, SharedRegistryObject):
     """Implements a class to describe a unit supporting math operations.
 
     :type units: UnitsContainer, str, Unit or Quantity.
@@ -47,7 +48,7 @@ class _Unit(SharedRegistryObject):
             inst._units = units._units
         else:
             raise TypeError('units must be of type str, Unit or '
-                            'UnitsContainer; not {0}.'.format(type(units)))
+                            'UnitsContainer; not {}.'.format(type(units)))
 
         inst.__used = False
         inst.__handling = None
@@ -71,7 +72,7 @@ class _Unit(SharedRegistryObject):
         return format(self)
 
     def __repr__(self):
-        return "<Unit('{0}')>".format(self._units)
+        return "<Unit('{}')>".format(self._units)
 
     def __format__(self, spec):
         spec = spec or self.default_format
@@ -109,13 +110,6 @@ class _Unit(SharedRegistryObject):
             units = self._units
 
         return '%s' % (units.format_babel(spec, **kwspec))
-
-    # IPython related code
-    def _repr_html_(self):
-        return self.__format__('H')
-
-    def _repr_latex_(self):
-        return "$" + self.__format__('L') + "$"
 
     @property
     def dimensionless(self):
@@ -262,6 +256,37 @@ class _Unit(SharedRegistryObject):
                     out.add(sname)
         return frozenset(out)
 
+    def from_(self, value, strict=True, name='value'):
+        """Converts a numerical value or quantity to this unit
+
+        :param value: a Quantity (or numerical value if strict=False) to convert
+        :param strict: boolean to indicate that only quanities are accepted
+        :param name: descriptive name to use if an exception occurs
+        :return: The converted value as this unit
+        :raises:
+            :class:`ValueError` if strict and one of the arguments is not a Quantity.
+        """
+        if self._check(value):
+            if not isinstance(value, self._REGISTRY.Quantity):
+                value = self._REGISTRY.Quantity(1, value)
+            return value.to(self)
+        elif strict:
+            raise ValueError("%s must be a Quantity" % value)
+        else:
+            return value * self
+
+    def m_from(self, value, strict=True, name='value'):
+        """Converts a numerical value or quantity to this unit, then returns
+        the magnitude of the converted value
+
+        :param value: a Quantity (or numerical value if strict=False) to convert
+        :param strict: boolean to indicate that only quanities are accepted
+        :param name: descriptive name to use if an exception occurs
+        :return: The magnitude of the converted value
+        :raises:
+            :class:`ValueError` if strict and one of the arguments is not a Quantity.
+        """
+        return self.from_(value, strict=strict, name=name).magnitude
 
 def build_unit_class(registry):
 

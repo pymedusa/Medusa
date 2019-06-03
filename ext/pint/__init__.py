@@ -18,11 +18,18 @@ import pkg_resources
 from .formatting import formatter
 from .registry import (UnitRegistry, LazyRegistry)
 from .errors import (DimensionalityError, OffsetUnitCalculusError,
-                   UndefinedUnitError)
+                   UndefinedUnitError, UnitStrippedWarning)
 from .util import pi_theorem, logger
 
 from .context import Context
 
+import sys
+try:
+    from pintpandas import PintType, PintArray
+    _HAS_PINTPANDAS = True
+except Exception:
+    _HAS_PINTPANDAS = False
+    _, _pintpandas_error, _ = sys.exc_info()
 
 try:                # pragma: no cover
     __version__ = pkg_resources.get_distribution('pint').version
