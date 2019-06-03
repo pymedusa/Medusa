@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 import re
-
 from datetime import timedelta
+
 from six import text_type
 
 from ..property import Property

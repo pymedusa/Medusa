@@ -441,7 +441,16 @@ class Episode(TV):
 
     def metadata(self):
         """Return the video metadata."""
-        return knowit.know(self.location)
+        try:
+            return knowit.know(self.location)
+        except knowit.KnowitException as error:
+            log.warning(
+                'An error occurred while parsing: {path}\n'
+                'KnowIt reported:\n{report}', {
+                    'path': self.location,
+                    'report': error,
+                })
+            return {}
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""

@@ -282,7 +282,13 @@ def get_embedded_subtitles(video_path):
     :return:
     :rtype: set of babelfish.Language
     """
-    knowledge = knowit.know(video_path)
+    try:
+        knowledge = knowit.know(video_path)
+    except knowit.KnowitException as error:
+        logger.warning('An error occurred while parsing: {0}\n'
+                       'KnowIt reported:\n{1}'.format(video_path, error))
+        return set()
+
     tracks = knowledge.get('subtitle', [])
     found_languages = {s['language'] for s in tracks if 'language' in s}
     if found_languages:

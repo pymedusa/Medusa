@@ -19,6 +19,7 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import logging
 import operator
 import os
 import platform
@@ -28,10 +29,14 @@ from functools import reduce
 
 import knowit
 
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
 from six import text_type, viewitems
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
 VERSION = '0.3.1'
@@ -388,7 +393,7 @@ class Quality(object):
     @staticmethod
     def quality_from_file_meta(file_path):
         """
-        Get quality file file metadata.
+        Get quality from file metadata.
 
         :param file_path: File path to analyse
         :return: Quality prefix
@@ -396,7 +401,16 @@ class Quality(object):
         if not os.path.isfile(file_path):
             return Quality.UNKNOWN
 
-        knowledge = knowit.know(file_path)
+        try:
+            knowledge = knowit.know(file_path)
+        except knowit.KnowitException as error:
+            log.warning(
+                'An error occurred while parsing: {path}\n'
+                'KnowIt reported:\n{report}', {
+                    'path': file_path,
+                    'report': error,
+                })
+            return Quality.UNKNOWN
 
         if not knowledge:
             return Quality.UNKNOWN
