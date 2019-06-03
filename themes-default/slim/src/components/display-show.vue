@@ -119,12 +119,12 @@
                     </span>
 
                     <span v-else-if="props.column.field == 'subtitles'">
-                        <div v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
-                            <div class="subtitles" v-for="flag in props.row.subtitles" :key="flag">
+                        <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                            <div v-for="flag in props.row.subtitles" :key="flag">
                                 <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode='props.row.episode' + '&lang=' + flag">
                                     <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
                                 </app-link>
-                                <img v-if="flag === 'und'" :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                                <img v-if="flag === 'und'" :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
                             </div>
                         </div>
                     </span>
@@ -1249,7 +1249,6 @@ td.col-footer {
     line-height: 40px;
 }
 
-
 /** Style the modal. This should be saved somewhere, where we create one modal template with slots, and style that.*/
 .modal-container {
     border: 1px solid rgb(17, 17, 17);
@@ -1279,6 +1278,14 @@ td.col-footer {
 .modal-footer {
     border-top: none;
     text-align: center;
+}
+
+.subtitles > div {
+    float: left;
+}
+
+.subtitles > div:not(:last-child) {
+    margin-right: 2px;
 }
 
 </style>
