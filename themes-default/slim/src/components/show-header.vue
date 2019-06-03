@@ -334,8 +334,8 @@ export default {
     data() {
         return {
             jumpToSeason: 'jump',
-            selectedStatus: null,
-            selectedQuality: null
+            selectedStatus: 'Change status to:',
+            selectedQuality: 'Change quality to:'
         };
     },
     computed: {
