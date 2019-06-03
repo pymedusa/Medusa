@@ -180,6 +180,8 @@ export default {
                 const dropdown = target.closest('.dropdown');
                 dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
                 dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                // Also collapse the main nav if it's open
+                $('#main_nav').collapse('hide');
             }
         };
         $el.addEventListener('click', $el.clickCloseMenus, { passive: true });
