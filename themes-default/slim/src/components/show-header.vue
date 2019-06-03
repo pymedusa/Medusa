@@ -130,7 +130,7 @@
                                     </tr>
 
                                     <!-- Preset -->
-                                    <tr v-if="getPreset(combinedQualities) !== null">
+                                    <tr v-if="getQualityPreset({ value: combinedQualities }) !== undefined">
                                         <td class="showLegend">Quality:</td>
                                         <td><quality-pill :quality="combinedQualities" /></td>
                                     </tr>
@@ -244,14 +244,16 @@
                         <div class="pull-lg-right top-5">
 
                             <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option v-for="option in changeStatusOptions" :key="option.value" :value="option.value">
-                                    {{option.text}}
+                                <option>Change status to:</option>
+                                <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
+                                    {{ status.name }}
                                 </option>
                             </select>
 
                             <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option v-for="option in changeQualityOptions" :key="option.value" :value="option.value">
-                                    {{option.text}}
+                                <option>Change quality to:</option>
+                                <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
+                                    {{ quality.name }}
                                 </option>
                             </select>
                             <input type="hidden" id="series-slug" :value="show.id.slug" />
@@ -342,15 +344,17 @@ export default {
             indexerConfig: state => state.config.indexers.config.indexers,
             failedDownloads: state => state.config.failedDownloads,
             displaySpecials: state => state.config.layout.show.specials,
-            qualities: state => state.qualities,
+            qualities: state => state.consts.qualities.values,
+            statuses: state => state.consts.statuses,
             search: state => state.search,
             configLoaded: state => state.config.fanartBackground !== null,
             config: state => state.config,
         }),
         ...mapGetters({
             show: 'getCurrentShow',
-            getPreset: 'getPreset',
             getOverviewStatus: 'getOverviewStatus'
+            getQualityPreset: 'getQualityPreset',
+            getStatus: 'getStatus'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -434,37 +438,18 @@ export default {
             return summary;
         },
         changeStatusOptions() {
-            const { failedDownloads } = this;
+            const { failedDownloads, getStatus, statuses } = this;
 
-            const defaultOptions = [
-                { text: 'Change status to:', value: null },
-                { text: 'Wanted', value: 3 },
-                { text: 'Skipped', value: 5 },
-                { text: 'Ignored', value: 7 },
-                { text: 'Downloaded', value: 4 },
-                { text: 'Archived', value: 6 }
-            ];
-
-            if (failedDownloads.enabled) {
-                defaultOptions.push({ text: 'Failed', value: 11 });
+            if (statuses.length === 0) {
+                return [];
             }
 
-            return defaultOptions;
-        },
-        changeQualityOptions() {
-            const { qualities } = this;
+            // Get status objects, in this order
+            const defaultOptions = ['wanted', 'skipped', 'ignored', 'downloaded', 'archived']
+                .map(key => getStatus({ key }));
 
-            const defaultOptions = [
-                { text: 'Change quality to:', value: null }
-            ];
-
-            if (qualities.strings) {
-                Object.keys(qualities.strings.values).forEach(key => {
-                    defaultOptions.push({
-                        text: qualities.strings.values[key],
-                        value: Number(key)
-                    });
-                });
+            if (failedDownloads.enabled) {
+                defaultOptions.push(getStatus({ key: 'failed' }));
             }
 
             return defaultOptions;

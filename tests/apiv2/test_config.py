@@ -12,7 +12,7 @@ from medusa.indexers.indexer_config import get_indexer_config
 
 import pytest
 
-from six import iteritems, itervalues, text_type
+from six import integer_types, iteritems, itervalues, string_types, text_type
 
 from tornado.httpclient import HTTPError
 
@@ -225,6 +225,45 @@ def test_config_get_not_found(http_client, create_url, auth_headers, config_main
 
     # then
     assert 404 == error.value.code
+
+
+@pytest.mark.gen_test
+def test_config_get_consts(http_client, create_url, auth_headers):
+    # given
+
+    def gen_schema(data):
+        if isinstance(data, dict):
+            return {k: gen_schema(v) for (k, v) in iteritems(data)}
+        if isinstance(data, list):
+            return [json.loads(v) for v in set([json.dumps(gen_schema(v)) for v in data])]
+        if isinstance(data, string_types):
+            return 'str'
+        if isinstance(data, integer_types):
+            return 'int'
+        return type(data).__name__
+
+    expected_schema = gen_schema({
+        'qualities': {
+            'values': [{'value': 8, 'key': 'hdtv', 'name': 'HDTV'}],
+            'anySets': [{'value': 40, 'key': 'anyhdtv', 'name': 'ANYHDTV'}],
+            'presets': [{'value': 65518, 'key': 'any', 'name': 'ANY'}],
+        },
+        'statuses': [{'value': 3, 'key': 'wanted', 'name': 'Wanted'}],
+    })
+
+    url = create_url('/config/consts')
+
+    # when
+    response = yield http_client.fetch(url, **auth_headers)
+    data = json.loads(response.body)
+
+    # then
+    assert response.code == 200
+    assert expected_schema == gen_schema(data)
+    assert len(common.Quality.qualityStrings) == len(data['qualities']['values'])
+    assert len(common.Quality.combined_quality_strings) == len(data['qualities']['anySets'])
+    assert len(common.qualityPresetStrings) == len(data['qualities']['presets'])
+    assert len(common.statusStrings) == len(data['statuses'])
 
 
 @pytest.fixture

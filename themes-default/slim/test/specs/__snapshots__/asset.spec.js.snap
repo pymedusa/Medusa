@@ -8,6 +8,6 @@ exports[`Asset.test.js renders default content for network 1`] = `
 
 exports[`Asset.test.js renders image with API v2 path for network 1`] = `
 <img
-  src="null/api/v2/series/tvdb1000/asset/network?api_key=null"
+  src="/api/v2/series/tvdb1000/asset/network?api_key=1234567890ABCDEF1234567890ABCDEF"
 />
 `;

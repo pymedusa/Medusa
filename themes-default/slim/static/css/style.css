@@ -1957,7 +1957,6 @@ config*.mako
 }
 
 #config .nocheck,
-#config div #customQuality,
 .metadataDiv {
     padding-left: 20px;
 }
@@ -3367,27 +3366,6 @@ div.formpaginate .next {
 div.field-pair input {
     margin-right: 6px;
     float: left;
-}
-
-/* step 3 related */
-#customQuality {
-    display: block;
-    padding: 10px 0;
-    overflow: hidden;
-    clear: both;
-}
-
-#customQualityWrapper div.component-group-desc {
-    float: left;
-    width: 172px;
-    margin-right: 10px;
-}
-
-#customQualityWrapper div.component-group-desc p {
-    width: 85%;
-    margin: 0.8em 0;
-    font-size: 1.13em;
-    color: rgb(102, 102, 102);
 }
 
 /* =======================================================================
