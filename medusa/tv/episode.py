@@ -450,8 +450,7 @@ class Episode(TV):
                     'path': self.location,
                     'report': error,
                 })
-
-        return {}
+            return {}
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
