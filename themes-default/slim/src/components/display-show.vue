@@ -7,7 +7,7 @@
         <input type="hidden" id="series-slug" value="" />
 
         <show-header @reflow="reflowLayout" type="show"
-            :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate"
+            :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate" @update-overview-status="filterByOverviewStatus = $event"
         ></show-header>
 
         <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
@@ -350,7 +350,8 @@ export default {
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisode: null,
-            backlogSearchEpisodes: []
+            backlogSearchEpisodes: [],
+            filterByOverviewStatus: false
         };
     },
     computed: {
@@ -375,8 +376,25 @@ export default {
             return themeName || 'light';
         },
         orderSeasons() {
-            const { invertTable, show } = this;
-            const sortedSeasons = show.seasons.sort((a,b) => a.season - b.season);
+            // TODO: Make use of the getOverviewStatus function in the const module, to properly map the statuses.
+            const { filterByOverviewStatus, invertTable, show } = this;
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season);
+
+            // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
+            if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
+                const filteredSortedSeasons = [];
+                for (const season of sortedSeasons) {
+                    const { episodes, ...res } = season;
+                    const filteredEpisodes = episodes.filter(episode => {
+                        const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episode.status);
+                        return filteredStatus && filteredStatus.checked;
+                    });
+                    filteredSortedSeasons.push(Object.assign({
+                        episodes: filteredEpisodes
+                    }, res));
+                }
+                sortedSeasons = filteredSortedSeasons;
+            }
 
             if (invertTable) {
                 return sortedSeasons.reverse();
@@ -516,7 +534,7 @@ export default {
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
-                .then( _ => {
+                .then(_ => {
                     console.info(`patched show ${show.id.slug} with quality ${quality}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
                         getEpisodes({ id, indexer, season });
@@ -891,17 +909,17 @@ export default {
                     id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
                     alt: foundInXem ? '[xem]' : '[medusa]',
                     src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
-                    title: xemSeasons.reduce(function(a, b) {
+                    title: xemSeasons.reduce((a, b) => {
                         return a.concat(allSceneExceptions[b]);
-                    }, []).join(', '),
-                }
+                    }, []).join(', ')
+                };
             }
 
             return bindData;
         },
         toggleColumn(index) {
             // Set hidden to inverse of what it currently is
-            this.$set( this.columns[ index ], 'hidden', ! this.columns[ index ].hidden );
+            this.$set(this.columns[index], 'hidden', !this.columns[index].hidden);
         },
         getCookie(key) {
             const cookie = this.$cookie.get(key);
@@ -917,7 +935,7 @@ export default {
             patchData[episode.slug] = { watched };
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
-                .then( _ => {
+                .then(_ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
                     getEpisodes({ id, indexer, season: episode.season });
                 }).catch(error => {
