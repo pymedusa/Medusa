@@ -233,13 +233,13 @@
             <div id="col-show-episodes-controls" class="col-md-12">
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
-                        <div id="key-padding" class="pull-left top-5">
-
-                            <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                            <label v-if="show.seasons" for="allowed"><span class="allowed"><input type="checkbox" id="allowed" checked="checked" @input="showHideRows('allowed')" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                            <label v-if="show.seasons" for="preferred"><span class="preferred"><input type="checkbox" id="preferred" checked="checked" @input="showHideRows('preferred')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                            <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                            <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                        <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
+                            <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
+                                <span :class="status.id">
+                                    <input type="checkbox" :id="status.id" v-model="status.checked" @change="$emit('update-overview-status', overviewStatus)"/>
+                                    {{status.name}}: <b>{{episodeSummary[status.name]}}</b>
+                                </span>
+                            </label>
                         </div>
                         <div class="pull-lg-right top-5">
 
@@ -335,7 +335,34 @@ export default {
         return {
             jumpToSeason: 'jump',
             selectedStatus: 'Change status to:',
-            selectedQuality: 'Change quality to:'
+            selectedQuality: 'Change quality to:',
+            overviewStatus: [
+                {
+                    id: 'wanted',
+                    checked: true,
+                    name: 'Wanted'
+                },
+                {
+                    id: 'allowed',
+                    checked: true,
+                    name: 'Allowed'
+                },
+                {
+                    id: 'preferred',
+                    checked: true,
+                    name: 'Preferred'
+                },
+                {
+                    id: 'skipped',
+                    checked: true,
+                    name: 'Skipped'
+                },
+                {
+                    id: 'snatched',
+                    checked: true,
+                    name: 'Snatched'
+                }
+            ]
         };
     },
     computed: {
@@ -416,7 +443,7 @@ export default {
             return [];
         },
         episodeSummary() {
-            const { show } = this;
+            const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
                 Skipped: 0,
@@ -427,12 +454,11 @@ export default {
                 Snatched: 0,
                 'Snatched (Proper)': 0,
                 'Snatched (Best)': 0,
-                Unset: 0,
-                Archived: 0
+                Unset: 0
             };
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
-                    summary[this.getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1
+                    summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
                 });
             });
             return summary;
@@ -483,32 +509,6 @@ export default {
                 newQuality: selectedQuality,
                 statusOptions: changeStatusOptions,
                 qualityOptions: changeQualityOptions
-            });
-        },
-        showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
-                if (status) {
-                    $(element).show();
-                } else {
-                    $(element).hide();
-                }
-            });
-
-            // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
-                let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
-                    numRows++;
-                });
-                if (numRows === 0) {
-                    $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
-                } else {
-                    $(element).show();
-                    $('#' + seasonNo + '-cols').show();
-                }
             });
         },
         toggleSpecials() {
