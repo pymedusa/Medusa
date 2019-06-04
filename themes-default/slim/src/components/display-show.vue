@@ -386,8 +386,9 @@ export default {
                 for (const season of sortedSeasons) {
                     const { episodes, ...res } = season;
                     const filteredEpisodes = episodes.filter(episode => {
-                        const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episode.status);
-                        return filteredStatus && filteredStatus.checked;
+                        const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config.qualities);
+                        const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episodeOverviewStatus);
+                        return !filteredStatus || filteredStatus.checked;
                     });
                     filteredSortedSeasons.push(Object.assign({
                         episodes: filteredEpisodes
