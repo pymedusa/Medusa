@@ -51,13 +51,14 @@ def install_requires():
     pkg_name_pattern = re.compile(r'#egg=(.+)(?:&|$)')
 
     with open(os.path.join(here, 'requirements.txt'), 'r') as r:
-        requirements = r.read().split('\n')[:-1]
+        requirements = r.read().splitlines(keepends=False)
 
-    return [
-        r if not r.startswith('https://')
-        else (pkg_name_pattern.search(r).group(1) + ' @ ' + r)
-        for r in requirements
-    ]
+    def make_item(req):
+        if not req.startswith('https://'):
+            return req
+        return pkg_name_pattern.search(req).group(1) + ' @ ' + req
+
+    return [make_item(req) for req in requirements if req]
 
 
 def packages():

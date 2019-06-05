@@ -1,6 +1,7 @@
 """Check Medusa app version before release"""
 from __future__ import print_function, unicode_literals
 
+import io
 import os
 import re
 import subprocess
@@ -58,15 +59,16 @@ class Version(object):
 
 
 def search_file_for_version():
+    """Get the app version from the code."""
     version_file = VERSION_FILE.split('/')
     filename = os.path.abspath(os.path.join(TRAVIS_BUILD_DIR, *version_file))
-    with open(filename, 'r') as fh:
-        data = fh.readlines()
+    with io.open(filename, 'r', encoding='utf-8') as fh:
+        for line in fh:
+            match = VERSION_LINE_REGEXP.match(line)
+            if match:
+                return Version(match.group(1))
 
-    for line in data:
-        match = VERSION_LINE_REGEXP.findall(line)
-        if match:
-            return Version(match[0])
+    raise ValueError('Failed to get the app version!')
 
 
 # Are we merging either develop or a release branch into master in a pull request?
