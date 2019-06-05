@@ -1,6 +1,16 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 0.3.2 (2019-06-05)
+
+#### New Features
 - Added nCore torrent provider ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
 - Added Gimmepeers torrent provider (credits to @mystycs) ([#6635](https://github.com/pymedusa/Medusa/pull/6635))
 - Added BTDB torrent provider ([#6678](https://github.com/pymedusa/Medusa/pull/6678))
