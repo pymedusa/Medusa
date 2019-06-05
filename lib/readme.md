@@ -14,7 +14,6 @@ lib | `shutil_custom` | - | **`medusa`** | **Custom**
 lib | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb/tree/5d26c8c146891225c05651821ef34ced0c118221) | **`medusa`** | -
 lib | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 lib | `traktor` | - | **`medusa`** | **Custom**
-lib | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | **Modified**: [Upstream PR](https://github.com/pymedusa/tvdbv2/pull/2)
 
 Notes:
  - `lib` compatible with python2 and python3

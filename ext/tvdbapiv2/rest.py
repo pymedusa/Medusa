@@ -22,8 +22,6 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 
-from contextlib2 import suppress
-
 from requests.exceptions import RequestException
 
 from six import text_type
@@ -58,8 +56,10 @@ class RESTClientObject(object):
         except RequestException as error:
             status = 0
             msg = "{0}\n{1}".format(type(error).__name__, text_type(error))
-            with suppress(AttributeError):
+            try:
                 status = error.response.status_code
+            except AttributeError:
+                pass
             raise ApiException(status=status, reason=msg)
         else:
             return r
