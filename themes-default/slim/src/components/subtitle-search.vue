@@ -1,5 +1,4 @@
 <template>
-<!-- template for the subtitle-search component -->
 <tr class="subtitle-search-wrapper">
     <td colspan="9999">
         <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"/></span>
