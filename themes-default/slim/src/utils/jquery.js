@@ -1,17 +1,7 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
-import padStart from 'lodash/padstart';
-
-export {
-    addQTip,
-    attachImdbTooltip,
-    isDevelopment,
-    updateSearchIcons
-};
-
 /**
  * Attach a jquery qtip to elements with the .imdbstars class.
  */
-const attachImdbTooltip = () => {
+export const attachImdbTooltip = () => {
     $('.imdbstars').qtip({
         content: {
             text() {
@@ -43,8 +33,8 @@ const attachImdbTooltip = () => {
 /**
  * Attach a default qtip to elements with the addQTip class.
  */
-const addQTip = () => {
-    $('.addQTip').each(function () {
+export const addQTip = () => {
+    $('.addQTip').each(() => {
         $(this).css({
             'cursor': 'help', // eslint-disable-line quote-props
             'text-shadow': '0px 0px 0.5px #666'
@@ -70,14 +60,14 @@ const addQTip = () => {
             }
         });
     });
-}
+};
 
 /**
  * Start checking for running searches.
  * @param {String} showSlug - Show slug
  * @param {Object} vm - vue instance
  */
-const updateSearchIcons = (showSlug, vm) => {
+export const updateSearchIcons = (showSlug, vm) => {
     if ($.fn.updateSearchIconsStarted || !showSlug) {
         return;
     }
@@ -132,7 +122,6 @@ const updateSearchIcons = (showSlug, vm) => {
                     enableLink(img);
                 }
             }
-
         });
     };
 
@@ -144,7 +133,7 @@ const updateSearchIcons = (showSlug, vm) => {
 
         api.get(`search/${showSlug}`) // eslint-disable-line no-undef
             .then(response => {
-                if (response.data.results && response.data.results.length) {
+                if (response.data.results && response.data.results.length > 0) {
                     pollInterval = 5000;
                 } else {
                     pollInterval = 15000;
@@ -156,9 +145,8 @@ const updateSearchIcons = (showSlug, vm) => {
                 pollInterval = 30000;
             }).finally(() => {
                 setTimeout(checkManualSearches, pollInterval);
-            })
-
-    }
+            });
+    };
 
     checkManualSearches();
-}
+};
