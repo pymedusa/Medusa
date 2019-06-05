@@ -66,6 +66,7 @@ ext | `subliminal` | [6ac2fa2](https://github.com/Diaoul/subliminal/tree/6ac2fa2
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
+ext | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | -
 ext | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests`, `CacheControl` | -
 ext | `validators` | [0.13.0](https://pypi.org/project/validators/0.13.0/) | **`medusa`** | -
