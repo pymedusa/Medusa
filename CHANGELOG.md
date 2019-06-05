@@ -1,4 +1,4 @@
-## Unreleased
+## 0.3.2 (2019-06-05)
 
 #### New Features
 - Added nCore torrent provider ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
