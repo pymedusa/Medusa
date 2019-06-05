@@ -21,7 +21,6 @@ import socket
 import sys
 import threading
 import zlib
-from builtins import bytes
 from time import time, sleep
 
 from .aniDBerrors import *
@@ -213,7 +212,13 @@ class AniDBLink(threading.Thread):
         command.started = time()
         data = command.raw_data()
 
-        self.sock.sendto(bytes(data, "ASCII"), self.target)
+        # Encode data to bytes if needed
+        try:
+            data = data.encode("ASCII")
+        except AttributeError:  # On Python 3: 'bytes' object has no attribute 'encode'
+            pass
+
+        self.sock.sendto(data, self.target)
         if command.command == 'AUTH':
             logger.debug("NetIO > sensitive data is not logged!")
 

@@ -1,9 +1,22 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ShowSelector.test.js renders "loading..." with empty show array 1`] = `
-<span>
-  Loading...
-</span>
+<div
+  class="show-selector form-inline hidden-print"
+>
+  <div
+    class="select-show-group pull-left top-5 bottom-5"
+  >
+    <select
+      class="select-show form-control input-sm-custom"
+      disabled="disabled"
+    >
+      <option>
+        Loading...
+      </option>
+    </select>
+  </div>
+</div>
 `;
 
 exports[`ShowSelector.test.js renders with articles(The|A|An) ignored 1`] = `

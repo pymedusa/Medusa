@@ -259,7 +259,12 @@ window.app = new Vue({
                         </config-template>
 
                         <config-template label-for="qualityPreset" label="Quality">
-                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                            <quality-chooser
+                                :overall-quality="combinedQualities"
+                                :show-slug="seriesSlug"
+                                @update:quality:allowed="series.config.qualities.allowed = $event"
+                                @update:quality:preferred="series.config.qualities.preferred = $event"
+                            ></quality-chooser>
                         </config-template>
 
                         <config-template label-for="defaultEpStatusSelect" label="Default Episode Status">

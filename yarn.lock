@@ -73,19 +73,10 @@ assertion-error@^1.1.0:
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
 
-async@2.6.1:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.6.1.tgz#b245a23ca71930044ec53fa46aa00a3e87c6a610"
-  integrity sha512-fNEiL2+AZt6AlAw/29Cr0UDe4sRAHCpEHh54WMz+Bb7QfNcFw4h3loofyJpLeQs4Yx7yuqu/2dLgM5hKOs6HlQ==
-  dependencies:
-    lodash "^4.17.10"
-
-async@2.6.2:
-  version "2.6.2"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.6.2.tgz#18330ea7e6e313887f5d2f2a904bac6fe4dd5381"
-  integrity sha512-H1qVYh1MYhEEFLsP97cVKqCGo7KfCyTt6uEWqsTBr9SO84oK9Uwbyd/yCW+6rKJLHksBNUVWZDAjfS+Ccx0Bbg==
-  dependencies:
-    lodash "^4.17.11"
+async@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.0.1.tgz#dfeb34657d1e63c94c0eee424297bf8a2c9a8182"
+  integrity sha512-ZswD8vwPtmBZzbn9xyi8XBQWXH3AvOQ43Za1KWYq7JeycrZuUYzx01KvHcVbXltjqH4y0MWrQ33008uLTqXuDw==
 
 async@~1.0.0:
   version "1.0.0"
@@ -356,29 +347,29 @@ drange@^1.0.2:
   resolved "https://registry.yarnpkg.com/drange/-/drange-1.1.1.tgz#b2aecec2aab82fcef11dbbd7b9e32b83f8f6c0b8"
   integrity sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==
 
-dredd-transactions@8.1.3:
-  version "8.1.3"
-  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-8.1.3.tgz#251778bf70c49f666e66e6b1eebb1f128e12c12d"
-  integrity sha512-+utgc8QwFOq52yE5RxEknFW8luKqpBS2O41dZYe0XF8+CCPWPFmsW8rUNFRAzYWbAySxjjGc9Y9Htrdi412j1Q==
+dredd-transactions@9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-9.0.0.tgz#521151e710104539a4dcea65df818de4aeee8932"
+  integrity sha512-cIDDVE//Xe55WPDGoCUHZYxetCKRRbYIxkq1fmMfwdurPgP/rdPlCW6rehzsegXhiGtQ/HEy0YrCqB/X9voyMA==
   dependencies:
     fury "3.0.0-beta.10"
     fury-adapter-apib-parser "0.14.0"
-    fury-adapter-oas3-parser "0.7.4"
+    fury-adapter-oas3-parser "0.7.7"
     fury-adapter-swagger "0.25.1"
     uri-template "1.0.1"
 
-dredd@11.1.4:
-  version "11.1.4"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.1.4.tgz#aa6245c6e1bd22bb36bcdafb776b72935c39d02b"
-  integrity sha512-631RsifLqnBPwTgSNasXMaTx0+59xmFR1iBnomxC3mYQpjp3xTsfIWw/HUK+t/KEEn2IQ5dF6RGwIxlSlL+xyg==
+dredd@11.2.6:
+  version "11.2.6"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.6.tgz#34367e9a43493104357b9433781c4d5cc7400216"
+  integrity sha512-nRq9NjFSwQPNJXkHrhZOqN4CKEwOos7mrxNhj0PdBIVZmUyfWIGS30jazDTqTgVYp9/Qy3EFk8PigBV7v/9KOw==
   dependencies:
-    async "2.6.2"
+    async "3.0.1"
     caseless "0.12.0"
     chai "4.2.0"
     clone "2.1.2"
     cross-spawn "6.0.5"
-    dredd-transactions "8.1.3"
-    gavel "3.1.2"
+    dredd-transactions "9.0.0"
+    gavel "5.0.0"
     glob "7.1.4"
     html "1.0.0"
     htmlencode "0.0.4"
@@ -598,10 +589,10 @@ fury-adapter-apib-parser@0.14.0:
     deckardcain "^0.4.0"
     drafter "2.0.0-pre.1"
 
-fury-adapter-oas3-parser@0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/fury-adapter-oas3-parser/-/fury-adapter-oas3-parser-0.7.4.tgz#4994d082c482db9f9098814641a698c7066872dc"
-  integrity sha512-NP7uef3+z6+ws/KEJXMAVEeNPiwGbND0yUOZFPkpH13j1aMK5KZrq9JC9dUhWJOzH2uOmVg2uJ/lvkEvv2GnaQ==
+fury-adapter-oas3-parser@0.7.7:
+  version "0.7.7"
+  resolved "https://registry.yarnpkg.com/fury-adapter-oas3-parser/-/fury-adapter-oas3-parser-0.7.7.tgz#d780aa01b098e0650e7cf814aa893f8bce7c2747"
+  integrity sha512-0ak3iBmQi/MUB5cdJ2SbWqyn9vCr9y0K6K5sFdqn/IMeJqfsgKPkf2YJiUGLSM2gF4xZa540aH0lMvlbWUDovA==
   dependencies:
     media-typer "^1.0.1"
     ramda "0.26.1"
@@ -630,13 +621,13 @@ fury@3.0.0-beta.10:
     minim "^0.23.1"
     minim-parse-result "^0.11.1"
 
-gavel@3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/gavel/-/gavel-3.1.2.tgz#1ebe2650cd1b7bbeebd3ce4063e7535b332b4d38"
-  integrity sha512-fClZULLHQ7daOUYnC95c3OtQjGIckkB7/uNmUeLH4MiAIIjc1m9B1dbt/A5ZhJ5e/qA/8Ym9CxseeUHPl+Kh3A==
+gavel@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/gavel/-/gavel-5.0.0.tgz#7fb63c027ef2caa84d626df5cc8f3b5429f1c929"
+  integrity sha512-mAlGsE1zEnsMxyzDT77uQvfDYQGWBlaYzWKXPsbrBMxTWKhBI1aU6UoDdGT+22VuJzmT2Ltmc8zMdNHD7jq4gQ==
   dependencies:
     amanda "1.0.1"
-    async "2.6.1"
+    async "3.0.1"
     caseless "0.12.0"
     clone "2.1.2"
     commander "2.20.0"
@@ -990,7 +981,7 @@ lodash.isequal@^4.0.0:
   resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
   integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
 
-lodash@^4.15.0, lodash@^4.17.0, lodash@^4.17.10, lodash@^4.17.11:
+lodash@^4.15.0, lodash@^4.17.0, lodash@^4.17.11:
   version "4.17.11"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
   integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
