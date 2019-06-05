@@ -16,7 +16,7 @@ ext | `cfscrape` | [2.0.5](https://pypi.org/project/cfscrape/2.0.5/) | **`medusa
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
-ext | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`**, `tvdbapiv2` | -
+ext | <code><b>contextlib2</b>.py</code> | [0.5.5](https://pypi.org/project/contextlib2/0.5.5/) | **`medusa`** | -
 ext | <code><b>decorator</b>.py</code> | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `dogpile.cache`, `validators` | -
 ext | `deluge-client` | [1.7.1](https://pypi.org/project/deluge-client/1.7.1/) | **`medusa`** | Module: `deluge_client`
 ext | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | -
@@ -47,7 +47,7 @@ ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `p
 ext | <code><b>profilehooks</b>.py</code> | [1.11.0](https://pypi.org/project/profilehooks/1.11.0/) | **`medusa`** | -
 **ext2 ext3** | `PyGithub` | [1.43.7](https://pypi.org/project/PyGithub/1.43.7/) | **`medusa`** | Module: `github`
 ext | `pyjsparser` | [2.5.2](https://pypi.org/project/pyjsparser/2.5.2/) | `Js2Py` | -
-ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub`, `tvdbapiv2` | Module: `jwt`
+ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub` | Module: `jwt`
 ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | -
 ext | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
@@ -66,7 +66,7 @@ ext | `subliminal` | [6ac2fa2](https://github.com/Diaoul/subliminal/tree/6ac2fa2
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
-ext | `tvdbapiv2` | pymedusa/[3a51858](https://github.com/pymedusa/tvdbv2/tree/3a51858640cfcb960be635e91394cbce1d73e036) | **`medusa`** | -
+ext | `tvdbapiv2` | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `CacheControl`, `requests` | -
 ext | `validators` | [0.13.0](https://pypi.org/project/validators/0.13.0/) | **`medusa`** | -
