@@ -1,6 +1,16 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+
+-----
+
+## 0.3.2 (2019-06-05)
+
+#### New Features
 - Added nCore torrent provider ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
 - Added Gimmepeers torrent provider (credits to @mystycs) ([#6635](https://github.com/pymedusa/Medusa/pull/6635))
 - Added BTDB torrent provider ([#6678](https://github.com/pymedusa/Medusa/pull/6678))
@@ -8,6 +18,7 @@
 #### Improvements
 - Converted the sub-menu into a Vue SFC ([#6724](https://github.com/pymedusa/Medusa/pull/6724))
 - Converted View Log page into a Vue SFC ([#6738](https://github.com/pymedusa/Medusa/pull/6738))
+- Converted the Quality Chooser into a Vue SFC ([#6737](https://github.com/pymedusa/Medusa/pull/6737))
 
 #### Fixes
 - Fixed lists not being saved when used with comma separated items ([#6428](https://github.com/pymedusa/Medusa/pull/6428))

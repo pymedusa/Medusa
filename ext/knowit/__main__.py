@@ -39,35 +39,29 @@ def build_argument_parser():
     opts.add_argument(dest='videopath', help='Path to the video to introspect', nargs='*')
 
     provider_opts = opts.add_argument_group('Providers')
-    provider_opts.add_argument('-p', '--provider', dest='provider', default=None,
+    provider_opts.add_argument('-p', '--provider', dest='provider',
                                help='The provider to be used: mediainfo, ffmpeg or enzyme.')
 
-    input_opts = opts.add_argument_group('Input')
-    input_opts.add_argument('-E', '--fail-on-error', action='store_true', dest='fail_on_error', default=False,
-                            help='Fail when errors are found on the media file.')
-
     output_opts = opts.add_argument_group('Output')
-    output_opts.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
-                             help='Display debug output')
-    output_opts.add_argument('-r', '--raw', action='store_true', dest='raw', default=False,
-                             help='Display raw properties')
-    output_opts.add_argument('--report', action='store_true', dest='report', default=False,
+    output_opts.add_argument('--debug', action='store_true', dest='debug',
+                             help='Print useful information for debugging knowit and for reporting bugs.')
+    output_opts.add_argument('--report', action='store_true', dest='report',
                              help='Parse media and report all non-detected values')
-    output_opts.add_argument('-y', '--yaml', action='store_true', dest='yaml', default=False,
+    output_opts.add_argument('-y', '--yaml', action='store_true', dest='yaml',
                              help='Display output in yaml format')
-    output_opts.add_argument('-N', '--no-units', action='store_true', dest='no_units', default=False,
+    output_opts.add_argument('-N', '--no-units', action='store_true', dest='no_units',
                              help='Display output without units')
-    output_opts.add_argument('-P', '--profile', dest='profile', default='default',
+    output_opts.add_argument('-P', '--profile', dest='profile',
                              help='Display values according to specified profile: code, default, human, technical')
 
     conf_opts = opts.add_argument_group('Configuration')
-    conf_opts.add_argument('--mediainfo', dest='mediainfo', default=None,
+    conf_opts.add_argument('--mediainfo', dest='mediainfo',
                            help='The location to search for MediaInfo binaries')
-    conf_opts.add_argument('--ffmpeg', dest='ffmpeg', default=None,
+    conf_opts.add_argument('--ffmpeg', dest='ffmpeg',
                            help='The location to search for FFmpeg (ffprobe) binaries')
 
     information_opts = opts.add_argument_group('Information')
-    information_opts.add_argument('--version', dest='version', action='store_true', default=False,
+    information_opts.add_argument('--version', dest='version', action='store_true',
                                   help='Display knowit version.')
 
     return opts
@@ -109,7 +103,7 @@ def main(args=None):
     args = args or sys.argv[1:]
     options = argument_parser.parse_args(args)
 
-    if options.verbose:
+    if options.debug:
         logger.setLevel(logging.DEBUG)
         logging.getLogger('enzyme').setLevel(logging.INFO)
     else:
@@ -133,6 +127,8 @@ def main(args=None):
                 logger.exception('OS error when processing video')
             except UnicodeError:
                 logger.exception('Character encoding error when processing video')
+            except api.KnowitException as e:
+                logger.error(e)
             if options.report and i % 20 == 19 and report:
                 console.info('Unknown values so far:')
                 console.info(dump(report, options, vars(options)))
@@ -146,38 +142,9 @@ def main(args=None):
                 console.info('Knowit %s knows everything. :-)', __version__)
 
     elif options.version:
-        console.info('+-------------------------------------------------------+')
-        _print_centered('KnowIt {0}'.format(__version__))
-        console.info('+-------------------------------------------------------+')
-
-        first = True
-        for key, info in api.dependencies(vars(options)).items():
-            if not first:
-                _print_centered('')
-            first = False
-
-            version, location = info
-            if version:
-                _print_centered('{0} {1}'.format(key, version))
-                if location:
-                    _print_centered(location)
-            elif not location:
-                _print_centered('{0} not available'.format(key, version))
-            else:
-                _print_centered(key)
-                _print_centered(location)
-
-        console.info('+-------------------------------------------------------+')
-        console.info('|      Please report any bug or feature request at      |')
-        console.info('|     https://github.com/ratoaq2/knowit/issues.         |')
-        console.info('+-------------------------------------------------------+')
+        console.info(api.debug_info())
     else:
         argument_parser.print_help()
-
-
-def _print_centered(value):
-    value = value[-52:]
-    console.info('| {msg:^53} |'.format(msg=value))
 
 
 if __name__ == '__main__':

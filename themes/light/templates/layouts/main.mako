@@ -112,8 +112,12 @@
             % else:
             window.username = '';
             % endif
+
+            // [Temporary] Used by the QualityChooser component on some pages
+            % if show is not UNDEFINED:
+                window.qualityChooserInitialQuality = ${int(show.quality)};
+            % endif
         </script>
-        <%include file="/vue-components/quality-chooser.mako"/>
         <script>
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
