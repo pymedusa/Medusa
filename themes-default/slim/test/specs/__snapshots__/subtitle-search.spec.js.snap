@@ -6,7 +6,6 @@ exports[`SubtitleSearch renders empty subtitle component 1`] = `
 >
   <td
     colspan="9999"
-    transition="expand"
   >
     <!---->
      
@@ -23,7 +22,6 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
 >
   <td
     colspan="9999"
-    transition="expand"
   >
     <!---->
      
@@ -1939,7 +1937,6 @@ exports[`SubtitleSearch renders subtitle component with question 1`] = `
 >
   <td
     colspan="9999"
-    transition="expand"
   >
     <!---->
      
