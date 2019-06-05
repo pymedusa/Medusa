@@ -5,13 +5,14 @@
 from __future__ import unicode_literals
 
 import logging
+import re
 import time
 from collections import defaultdict
 from os.path import join
 
 import adba
 
-from medusa import app, db, helpers
+from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -138,51 +139,25 @@ def get_all_scene_exceptions(series_obj):
 def get_scene_exceptions_by_name(show_name):
     """Look for a series_id, season and indexer for a given series scene exception."""
     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
-    # TODO: Make the query more linient. For example. `Jojo's Bizarre Adventure Stardust Crusaders` will not match
-    # while `Jojo's Bizarre Adventure - Stardust Crusaders` is available.
     if show_name is None:
         logger.debug('Scene exception lookup failed because no show name was provided')
         return [(None, None, None)]
 
+    normed_name = re.sub(r'\W+', '%', show_name, flags=re.UNICODE).strip('%')
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     scene_exceptions = cache_db_con.select(
         'SELECT indexer, indexer_id, season '
         'FROM scene_exceptions '
-        'WHERE show_name = ? ORDER BY season ASC',
-        [show_name])
+        'WHERE show_name LIKE ? ORDER BY season ASC',
+        [normed_name])
 
     if scene_exceptions:
         # FIXME: Need to add additional layer indexer.
         return [(int(exception['indexer_id']), int(exception['season']), int(exception['indexer']))
                 for exception in scene_exceptions]
 
-    result = []
-    scene_exceptions = cache_db_con.select(
-        'SELECT show_name, indexer, indexer_id, season '
-        'FROM scene_exceptions'
-    )
-
-    for exception in scene_exceptions:
-        indexer = int(exception['indexer'])
-        indexer_id = int(exception['indexer_id'])
-        season = int(exception['season'])
-        exception_name = exception['show_name']
-
-        sanitized_name = helpers.sanitize_scene_name(exception_name)
-        show_names = (
-            exception_name.lower(),
-            sanitized_name.lower().replace('.', ' '),
-        )
-
-        if show_name.lower() in show_names:
-            logger.debug(
-                'Scene exception lookup got indexer ID {cur_indexer},'
-                ' using that', {'cur_indexer': indexer_id}
-            )
-            result.append((indexer_id, season, indexer))
-
-    return result or [(None, None, None)]
+    return [(None, None, None)]
 
 
 def update_scene_exceptions(series_obj, scene_exceptions, season=-1):

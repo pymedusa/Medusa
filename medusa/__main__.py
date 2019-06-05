@@ -264,7 +264,7 @@ class Application(object):
             if self.run_as_daemon:
                 pid_dir = os.path.dirname(self.pid_file)
                 if not os.access(pid_dir, os.F_OK):
-                    sys.exit('PID dir: %s doesn\'t exist. Exiting.' % pid_dir)
+                    sys.exit("PID dir: %s doesn't exist. Exiting." % pid_dir)
                 if not os.access(pid_dir, os.W_OK):
                     sys.exit('PID dir: %s must be writable (write permissions). Exiting.' % pid_dir)
 
@@ -996,8 +996,6 @@ class Application(object):
                 if updater:
                     app.APP_VERSION = updater.current_version
 
-            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
-
             # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
 
@@ -1112,6 +1110,8 @@ class Application(object):
             # fix up any db problems
             main_db_con = db.DBConnection()
             db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
+
+            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = main_db_con.checkDBVersion()
 
             # checks that require DB existence
             app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()

@@ -221,24 +221,29 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         3: 'Really strange this one',
         4: 'Missing time zone for network: USA Network',
         5: "AttributeError: 'NoneType' object has no attribute 'findall'",
+        6: 'Am I a duplicate?',
     }
     for line in itervalues(lines):
         logger.warning(line)
     loglines = list(read_loglines)
 
     raw_issues = [
-        (1, '[APP SUBMITTED]: Really strange that one', False),
-        (2, 'Some Issue like This', False),
-        (3, 'Fix Some Issue like This', True),  # Pull request
-        (4, '[APP SUBMITTED]: Missing time zone for network: Hub Network', False),
-        (5, '[APP SUBMITTED]: Missing time zone for network: USA Network', False),
-        (6, "AttributeError: 'NoneType' object has no attribute 'findall'", False),
-        (7, "AttributeError: 'NoneType' object has no attribute 'lower'", False),
+        # (number, title, labels, pull_request)
+        (1, '[APP SUBMITTED]: Really strange that one', [], False),
+        (2, 'Some Issue like This', [], False),
+        (3, 'Fix Some Issue like This', [], True),  # Pull request
+        (4, '[APP SUBMITTED]: Missing time zone for network: Hub Network', [], False),
+        (5, '[APP SUBMITTED]: Missing time zone for network: USA Network', [], False),
+        (6, "AttributeError: 'NoneType' object has no attribute 'findall'", [], False),
+        (7, "AttributeError: 'NoneType' object has no attribute 'lower'", [], False),
+        (8, 'Am I a duplicate?', ['Bug', 'Duplicate'], False),
+        (9, 'Am I a duplicate?', [], False),
+        (10, 'Am I a duplicate?', ['Duplicate'], False),
     ]
     issues = dict()
-    for (number, title, pull_request) in raw_issues:
+    for (number, title, labels, pull_request) in raw_issues:
         kwargs = {} if not pull_request else {'pull_request': 'mock'}
-        issues[number] = create_github_issue(title=title, number=number, **kwargs)
+        issues[number] = create_github_issue(title=title, number=number, labels=labels, **kwargs)
 
     monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: itervalues(issues))
 
@@ -247,6 +252,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         lines[3]: issues[1],
         lines[4]: issues[5],
         lines[5]: issues[6],
+        lines[6]: issues[9],
     }
 
     # When

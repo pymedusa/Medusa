@@ -475,7 +475,7 @@ class HomeAddShows(Home):
                 log.error("Unable to create the folder {path}, can't add the show",
                           {'path': show_dir})
                 ui.notifications.error('Unable to add show',
-                                       'Unable to create the folder {path}, can\'t add the show'.format(path=show_dir))
+                                       "Unable to create the folder {path}, can't add the show".format(path=show_dir))
                 # Don't redirect to default page because user wants to see the new show
                 return json_response(
                     result=False,

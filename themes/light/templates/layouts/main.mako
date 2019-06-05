@@ -65,9 +65,7 @@
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
             <app-header></app-header>
-            % if submenu:
             <sub-menu></sub-menu>
-            % endif
             <%include file="/partials/alerts.mako"/>
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
@@ -114,9 +112,12 @@
             % else:
             window.username = '';
             % endif
+
+            // [Temporary] Used by the QualityChooser component on some pages
+            % if show is not UNDEFINED:
+                window.qualityChooserInitialQuality = ${int(show.quality)};
+            % endif
         </script>
-        <%include file="/vue-components/sub-menu.mako"/>
-        <%include file="/vue-components/quality-chooser.mako"/>
         <script>
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
@@ -139,10 +140,20 @@
                     mounted() {
                         if (this.$root === this && !document.location.pathname.includes('/login')) {
                             const { store, username } = window;
-                            /* This is used by the `app-header` component
-                            to only show the logout button if a username is set */
-                            store.dispatch('login', { username });
-                            store.dispatch('getConfig').then(() => this.$emit('loaded'));
+                            Promise.all([
+                                /* This is used by the `app-header` component
+                                to only show the logout button if a username is set */
+                                store.dispatch('login', { username }),
+                                store.dispatch('getConfig')
+                            ]).then(([_, config]) => {
+                                this.$emit('loaded');
+                                // Legacy - send config.main to jQuery (received by index.js)
+                                const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                                window.dispatchEvent(event);
+                            }).catch(error => {
+                                console.debug(error);
+                                alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+                            });
                         }
 
                         this.$once('loaded', () => {

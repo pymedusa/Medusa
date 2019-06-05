@@ -1,6 +1,8 @@
 # coding=utf-8
 """Configuration for pytest."""
 from __future__ import unicode_literals
+
+import json
 import logging
 import os
 from logging.handlers import RotatingFileHandler
@@ -299,16 +301,17 @@ def github_repo():
 
 @pytest.fixture
 def create_github_issue(monkeypatch):
-    def create(title, body=None, locked=False, number=1, **kwargs):
+    def create(title, body=None, locked=False, number=1, labels=[], **kwargs):
         raw_data = {
             'title': title,
             'body': body,
             'number': number,
-            'locked': locked
+            'locked': locked,
+            'labels': [dict(name=label) for label in labels]
         }
         raw_data.update(kwargs)
         # Set url to a unique value, because that's how issues are compared
-        raw_data['url'] = text_type(hash(tuple(raw_data.values())))
+        raw_data['url'] = text_type(hash(json.dumps(raw_data)))
         return Issue(Mock(), Mock(), raw_data, True)
 
     return create

@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 from datetime import date
+from textwrap import dedent
 
 from medusa import db
 from medusa.common import (
@@ -31,77 +32,74 @@ class StatsHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, identifier, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query statistics.
 
         :param identifier:
         :param path_param:
         :type path_param: str
         """
-        main_db_con = db.DBConnection()
-
+        pre_today = [SKIPPED, WANTED, FAILED]
         snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         downloaded = [DOWNLOADED, ARCHIVED]
 
-        # FIXME: This inner join is not multi indexer friendly.
-        sql_result = main_db_con.select(
-            """
+        def query_in(items):
+            return '({0})'.format(','.join(map(str, items)))
+
+        query = dedent("""\
             SELECT indexer AS indexerId, showid AS seriesId,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_quality}
-              ) AS epSnatched,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_download}
-              ) AS epDownloaded,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     ((airdate <= {today} AND (status = {skipped} OR
-                                               status = {wanted} OR
-                                               status = {failed})) OR
-                      (status IN {status_quality}) OR
-                      (status IN {status_download}))
-              ) AS epTotal,
-              (SELECT airdate FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     airdate >= {today} AND
-                     (status = {unaired} OR status = {wanted})
-               ORDER BY airdate ASC
-               LIMIT 1
-              ) AS epAirsNext,
-              (SELECT airdate FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     airdate > 1 AND
-                     status <> {unaired}
-               ORDER BY airdate DESC
-               LIMIT 1
-              ) AS epAirsPrev,
-              (SELECT SUM(file_size) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer
-              ) AS seriesSize
+                SUM(
+                    season > 0 AND
+                    episode > 0 AND
+                    airdate > 1 AND
+                    status IN {status_quality}
+                ) AS epSnatched,
+                SUM(
+                    season > 0 AND
+                    episode > 0 AND
+                    airdate > 1 AND
+                    status IN {status_download}
+                ) AS epDownloaded,
+                SUM(
+                    season > 0 AND
+                    episode > 0 AND
+                    airdate > 1 AND (
+                        (airdate <= {today} AND status IN {status_pre_today}) OR
+                        status IN {status_both}
+                    )
+                ) AS epTotal,
+                (SELECT airdate FROM tv_episodes
+                WHERE showid=tv_eps.showid AND
+                        indexer=tv_eps.indexer AND
+                        airdate >= {today} AND
+                        (status = {unaired} OR status = {wanted})
+                ORDER BY airdate ASC
+                LIMIT 1
+                ) AS epAirsNext,
+                (SELECT airdate FROM tv_episodes
+                WHERE showid=tv_eps.showid AND
+                        indexer=tv_eps.indexer AND
+                        airdate > 1 AND
+                        status <> {unaired}
+                ORDER BY airdate DESC
+                LIMIT 1
+                ) AS epAirsPrev,
+                SUM(file_size) AS seriesSize
             FROM tv_episodes tv_eps
             GROUP BY showid, indexer
-            """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
-                       status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
-                       skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
-                       today=date.today().toordinal())
+        """).format(
+            status_quality=query_in(snatched),
+            status_download=query_in(downloaded),
+            status_both=query_in(snatched + downloaded),
+            today=date.today().toordinal(),
+            status_pre_today=query_in(pre_today),
+            skipped=SKIPPED,
+            wanted=WANTED,
+            unaired=UNAIRED,
         )
+
+        main_db_con = db.DBConnection()
+        sql_result = main_db_con.select(query)
 
         stats_data = {}
         stats_data['seriesStat'] = list()

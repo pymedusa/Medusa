@@ -72,6 +72,14 @@ cmil = 5.067075e-10 * m ** 2 = circular_mils
 darcy = 9.869233e-13 * m ** 2
 hectare = 100 * are = ha
 
+# Concentration
+[concentration] = [substance] / [volume]
+molar = mol / (1e-3 * m ** 3) = M
+
+# Activity
+[activity] = [substance] / [time]
+katal = mole / second = kat
+
 # EM
 esu = 1 * erg**0.5 * centimeter**0.5 = statcoulombs = statC = franklin = Fr
 esu_per_second = 1 * esu / second = statampere
@@ -113,7 +121,7 @@ international_steam_table_calorie = 4.1868 * joule
 ton_TNT = 4.184e9 * joule = tTNT
 US_therm = 1.054804e8 * joule
 watt_hour = watt * hour = Wh = watthour
-hartree = 4.35974394e-18 * joule = E_h = hartree_energy
+hartree = 4.35974394e-18 * joule = = Eh = E_h = hartree_energy
 toe = 41.868e9 * joule = tonne_of_oil_equivalent
 
 # Force
@@ -163,6 +171,17 @@ bag = 94 * lb
 denier =  gram / (9000 * meter)
 tex = gram / (1000 * meter)
 dtex = decitex
+
+# These are Indirect yarn numbering systems (length/unit mass)
+jute = lb / (14400 * yd) = Tj
+Ne = 1/590.5 / tex
+Nm = 1/1000 / tex
+
+@context textile
+    # Allow switching between Direct count system (i.e. tex) and
+    # Indirect count system (i.e. Ne, Nm)
+    [mass] / [length] <-> [length] / [mass]: 1 / value
+@end
 
 # Photometry
 lumen = candela * steradian = lm

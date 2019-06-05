@@ -69,7 +69,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type, viewitems
+from six import viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags
@@ -928,7 +928,7 @@ class PostProcessor(object):
             if current_quality in preferred:
                 return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
+                return True, "New quality is Allowed and we don't have a current Preferred. Accepting quality"
             elif new_quality > current_quality:
                 return True, 'New quality is higher than current Allowed. Accepting quality'
             elif new_quality < current_quality:
@@ -947,34 +947,20 @@ class PostProcessor(object):
         if not app.EXTRA_SCRIPTS:
             return
 
-        def _attempt_to_encode(item, _encoding):
-            if isinstance(item, text_type):
-                try:
-                    item = item.encode(_encoding)
-                except UnicodeEncodeError:
-                    pass  # ignore it
-                finally:
-                    return item
-
-        encoding = app.SYS_ENCODING
-
-        file_path = _attempt_to_encode(self.file_path, encoding)
-        ep_location = _attempt_to_encode(ep_obj.location, encoding)
+        ep_location = ep_obj.location
+        file_path = self.file_path
         indexer_id = str(ep_obj.series.indexerid)
         season = str(ep_obj.season)
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
 
         for cur_script_name in app.EXTRA_SCRIPTS:
-            cur_script_name = _attempt_to_encode(cur_script_name, encoding)
 
             # generate a safe command line string to execute the script and provide all the parameters
-            script_cmd = [piece for piece in re.split(r'(\'.*?\'|".*?"| )', cur_script_name) if piece.strip()]
-            script_cmd[0] = os.path.abspath(script_cmd[0])
-            self.log(u'Absolute path to script: {0}'.format(script_cmd[0]), logger.DEBUG)
+            script_cmd = [piece for piece in cur_script_name.split(' ') if piece.strip()]
+            self.log(u'Running extra script: {0}'.format(cur_script_name), logger.INFO)
 
             script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
-
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
             try:
@@ -990,7 +976,7 @@ class PostProcessor(object):
                 self.log(u'Script result: {0}'.format(out), logger.DEBUG)
 
             except Exception as error:
-                self.log(u'Unable to run extra_script: {0!r}'.format(error))
+                self.log(u'Unable to run extra script: {0!r}'.format(error))
 
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""

@@ -234,6 +234,9 @@ window.app = new Vue({
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
+
+<backstretch slug="${show.slug}"></backstretch>
+
 <h1 class="header">
     Edit Show
     <span v-show="series.title"> - <app-link :href="showUrl">{{series.title}}</app-link></span>
@@ -256,7 +259,12 @@ window.app = new Vue({
                         </config-template>
 
                         <config-template label-for="qualityPreset" label="Quality">
-                                <quality-chooser :overall-quality="combinedQualities" @update:quality:allowed="series.config.qualities.allowed = $event" @update:quality:preferred="series.config.qualities.preferred = $event"></quality-chooser>
+                            <quality-chooser
+                                :overall-quality="combinedQualities"
+                                :show-slug="seriesSlug"
+                                @update:quality:allowed="series.config.qualities.allowed = $event"
+                                @update:quality:preferred="series.config.qualities.preferred = $event"
+                            ></quality-chooser>
                         </config-template>
 
                         <config-template label-for="defaultEpStatusSelect" label="Default Episode Status">

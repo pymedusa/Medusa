@@ -34,14 +34,15 @@ def initialize():
     _urllib3_disable_warnings()
     _strptime_workaround()
     _monkey_patch_bdecode()
+    _monkey_patch_cfscrape()
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
 
 
 def _check_python_version():
-    if sys.version_info < (2, 7):
-        print('Sorry, requires Python 2.7.x')
+    if sys.version_info < (2, 7) or (3,) < sys.version_info < (3, 5):
+        print('Sorry, requires Python 2.7.x or Python 3.5 and above')
         sys.exit(1)
 
 
@@ -176,6 +177,12 @@ def _monkey_patch_bdecode():
         return result
 
     bencode.bdecode = _patched_bdecode
+
+
+def _monkey_patch_cfscrape():
+    """Monkeypatch `cfscrape.CloudflareScraper.solve_challenge` to solve the challenge without requiring Node.js."""
+    from medusa.init.cfscrape import patch_cfscrape
+    patch_cfscrape()
 
 
 def _configure_guessit():

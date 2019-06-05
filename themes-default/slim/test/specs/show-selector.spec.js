@@ -1,6 +1,6 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowSelector } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
@@ -15,12 +15,11 @@ describe('ShowSelector.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         store = new Store({ state });
     });
 
     it('renders "loading..." with empty show array', () => {
-        const wrapper = mount(ShowSelector, {
+        const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
                 shows() {
@@ -40,7 +39,7 @@ describe('ShowSelector.test.js', () => {
     });
 
     it('renders with shows', () => {
-        const wrapper = mount(ShowSelector, {
+        const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
                 shows() {
@@ -63,7 +62,7 @@ describe('ShowSelector.test.js', () => {
     });
 
     it('renders with articles(The|A|An) ignored', () => {
-        const wrapper = mount(ShowSelector, {
+        const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
                 shows() {
@@ -86,7 +85,7 @@ describe('ShowSelector.test.js', () => {
     });
 
     it('renders with split sections', () => {
-        const wrapper = mount(ShowSelector, {
+        const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
                 shows() {
@@ -109,7 +108,7 @@ describe('ShowSelector.test.js', () => {
     });
 
     it('renders without placeholder', () => {
-        const wrapper = mount(ShowSelector, {
+        const wrapper = shallowMount(ShowSelector, {
             localVue,
             computed: {
                 shows() {

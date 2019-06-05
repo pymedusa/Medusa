@@ -1,7 +1,6 @@
 dry-run: null
 hookfiles: dredd/dredd_hook.py
 language: python
-sandbox: false
 server: python dredd/dredd_hook.py
 server-wait: 20
 init: false
@@ -9,15 +8,13 @@ names: false
 only: []
 output: []
 header: []
-sorted: false
+sorted: true
 user: null
 inline-errors: false
 details: false
 method: []
 color: true
-level: info
-timestamp: false
-silent: false
+loglevel: warning
 path: []
 hooks-worker-timeout: 5000
 hooks-worker-connect-timeout: 1500
@@ -27,6 +24,5 @@ hooks-worker-term-timeout: 5000
 hooks-worker-term-retry: 500
 hooks-worker-handler-host: localhost
 hooks-worker-handler-port: 61321
-config: dredd.yml
 blueprint: dredd/api-description.yml
 endpoint: 'http://localhost:8081'

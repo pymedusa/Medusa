@@ -94,7 +94,9 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<input type="hidden" id="background-series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
+% if historyResults:
+<backstretch :slug="config.randomShowSlug"></backstretch>
+% endif
 
 <div class="row">
     <div class="col-md-6">
@@ -155,7 +157,7 @@ window.app = new Vue({
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
-                        <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${"""<quality-pill :quality="0" :override="{ class: 'quality Proper', text: 'Proper' }"></quality-pill>""" if hItem.proper_tags else ''} </app-link></td>
+                        <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${"""<quality-pill :quality="0" :override="{ class: 'quality proper', text: 'Proper' }"></quality-pill>""" if hItem.proper_tags else ''} </app-link></td>
                         <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if hItem.action == SUBTITLED else ''}>
                         % if hItem.action == SUBTITLED:
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -224,7 +226,7 @@ window.app = new Vue({
                         </td>
                         <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
-                            <span><app-link indexer-id="${hItem.index.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${"""<quality-pill :quality="0" :override="{ class: 'quality Proper', text: 'Proper' }"></quality-pill>""" if proper_tags else ''}</app-link></span>
+                            <span><app-link indexer-id="${hItem.index.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${"""<quality-pill :quality="0" :override="{ class: 'quality proper', text: 'Proper' }"></quality-pill>""" if proper_tags else ''}</app-link></span>
                         </td>
                         <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):

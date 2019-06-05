@@ -854,6 +854,9 @@ paths:
       responses:
         201:
           description: Log message successfully created
+          x-request:
+            body-update:
+              thread: ''
           x-expect:
             no-body: true
         400:
@@ -1072,7 +1075,7 @@ definitions:
                 items:
                   type: integer
                   format: int32
-              prefered:
+              preferred:
                 type: array
                 items:
                   type: integer
@@ -1472,6 +1475,10 @@ definitions:
           logs:
             type: object
             properties:
+              debug:
+                type: boolean
+              dbDebug:
+                type: boolean
               loggingLevels:
                 type: object
                 properties:
@@ -2559,8 +2566,7 @@ parameters:
     type: string
     enum:
       - main
-      - statuses
-      - qualities
+      - consts
       - metadata
       - search
       - notifiers

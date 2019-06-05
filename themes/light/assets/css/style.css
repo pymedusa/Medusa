@@ -1953,7 +1953,6 @@ config*.mako
 }
 
 #config .nocheck,
-#config div #customQuality,
 .metadataDiv {
     padding-left: 20px;
 }
@@ -2495,10 +2494,6 @@ a.whitelink {
 /* =======================================================================
 Global
 ========================================================================== */
-
-.logging-filter-controll {
-    padding-top: 24px;
-}
 
 span.path {
     padding: 3px 6px;
@@ -3369,27 +3364,6 @@ div.field-pair input {
     float: left;
 }
 
-/* step 3 related */
-#customQuality {
-    display: block;
-    padding: 10px 0;
-    overflow: hidden;
-    clear: both;
-}
-
-#customQualityWrapper div.component-group-desc {
-    float: left;
-    width: 172px;
-    margin-right: 10px;
-}
-
-#customQualityWrapper div.component-group-desc p {
-    width: 85%;
-    margin: 0.8em 0;
-    font-size: 1.13em;
-    color: rgb(102, 102, 102);
-}
-
 /* =======================================================================
 tablesorter.css
 ========================================================================== */
@@ -4054,27 +4028,7 @@ div#searchNotification {
     box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
 
-/* =======================================================================
-viewLog.mako
-========================================================================== */
-div .notepad {
-    position: absolute;
-    right: 15px;
-    opacity: 0.1;
-    zoom: 1;
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-    -webkit-transition: opacity 0.5s; /* Safari */
-    transition: opacity 0.5s;
-}
-
-div .notepad:hover {
-    opacity: 0.4;
-}
-
-div.notepad img {
-    width: 50px;
-}
+/* ========================================================================== */
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
@@ -4095,11 +4049,6 @@ div.notepad img {
     .checkbox-inline.pull-xs-left {
         margin-right: 10px;
     }
-}
-
-/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
-.log-filter {
-    margin-top: 20px;
 }
 
 /* ========================================================================

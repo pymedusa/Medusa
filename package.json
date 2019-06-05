@@ -10,13 +10,9 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "lint": "node ./themes-default/helper.js lint",
-    "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
-    "install": "yarn run lint"
+    "test-api": "dredd --config dredd/dredd.yml"
   },
   "devDependencies": {
-    "dredd": "8.0.5",
-    "execa": "1.0.0",
-    "yargs": "13.2.2"
+    "dredd": "11.2.6"
   }
 }

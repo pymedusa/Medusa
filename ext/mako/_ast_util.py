@@ -680,6 +680,10 @@ class SourceGenerator(NodeVisitor):
     def visit_Num(self, node):
         self.write(repr(node.n))
 
+    # newly needed in Python 3.8
+    def visit_Constant(self, node):
+        self.write(repr(node.value))
+
     def visit_Tuple(self, node):
         self.write('(')
         idx = -1

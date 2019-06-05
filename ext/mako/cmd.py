@@ -24,7 +24,7 @@ def _exit():
 
 def cmdline(argv=None):
 
-    parser = ArgumentParser("usage: %prog [FILENAME]")
+    parser = ArgumentParser()
     parser.add_argument(
         "--var", default=[], action="append",
         help="variable (can be used multiple times, use name=value)")
@@ -35,14 +35,20 @@ def cmdline(argv=None):
         "template is read from stdin, the value defaults to be "
         "the current directory, otherwise it defaults to be the "
         "parent directory of the file provided.")
+    parser.add_argument(
+        "--output-encoding", default=None,
+        help="force output encoding")
     parser.add_argument('input', nargs='?', default='-')
 
     options = parser.parse_args(argv)
+
+    output_encoding = options.output_encoding
+
     if options.input == '-':
         lookup_dirs = options.template_dir or ["."]
         lookup = TemplateLookup(lookup_dirs)
         try:
-            template = Template(sys.stdin.read(), lookup=lookup)
+            template = Template(sys.stdin.read(), lookup=lookup, output_encoding=output_encoding)
         except:
             _exit()
     else:
@@ -52,7 +58,7 @@ def cmdline(argv=None):
         lookup_dirs = options.template_dir or [dirname(filename)]
         lookup = TemplateLookup(lookup_dirs)
         try:
-            template = Template(filename=filename, lookup=lookup)
+            template = Template(filename=filename, lookup=lookup, output_encoding=output_encoding)
         except:
             _exit()
 
