@@ -6,6 +6,7 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
  * @param {number[]} [preferredQualities=[]] - Array of preferred qualities.
  * @returns {number} An unsigned integer.
  */
+
 export const combineQualities = (allowedQualities, preferredQualities = []) => {
     const reducer = (accumulator, currentValue) => accumulator | currentValue;
     const allowed = allowedQualities.reduce(reducer, 0);
@@ -37,6 +38,78 @@ export const humanFileSize = (bytes, useDecimal = false) => {
     } while (Math.abs(bytes) >= thresh && u < units.length - 1);
 
     return `${bytes.toFixed(2)} ${units[u]}`;
+};
+
+/**
+ * Map dateformat of pythons datetime.strftime() to that of javascripts dateFns.
+ * @param {String} dateFormatString - pythons strftime format
+ * @returns {String} mapped format that can be used by dateFns
+ */
+export const mapDateFormat = dateFormatString => {
+    const dateMap = new Map(
+        [
+            ['%a', 'ddd'],
+            ['%A', 'dddd'],
+            ['%w', 'E'],
+            ['%d', 'DD'],
+            ['%-d', 'DD'],
+            ['%b', 'MMM'],
+            ['%B', 'MMMM'],
+            ['%m', 'MM'],
+            ['%-m', 'M'],
+            ['%y', 'YY'],
+            ['%Y', 'YYYY'],
+            ['%H', 'HH'],
+            ['%-H', 'H'],
+            ['%I', 'hh'],
+            ['%-I', 'h'],
+            ['%p', 'A'],
+            ['%M', 'mm'],
+            ['%-M', 'm'],
+            ['%S', 'ss'],
+            ['%-S', 's']
+        ]
+    );
+
+    dateMap.forEach((value, key, _) => {
+        dateFormatString = dateFormatString.replace(key, value);
+    });
+
+    return dateFormatString;
+};
+
+/**
+ * Create an array with unique strings
+ * @param {Array} array - array with strings
+ * @returns {Array} array with unique strings
+ */
+export const arrayUnique = array => {
+    const a = array.concat();
+    for (let i = 0; i < a.length; ++i) {
+        for (let j = i + 1; j < a.length; ++j) {
+            if (a[i] === a[j]) {
+                a.splice(j--, 1);
+            }
+        }
+    }
+    return a;
+};
+
+/**
+ * Exclude strings out of the array `exclude` compared to the strings in the array baseArray.
+ * @param {Array} baseArray - array of strings
+ * @param {Array} exclude - array of strings which we want to exclude in baseArray
+ * @returns {Array} reduced array
+ */
+export const arrayExclude = (baseArray, exclude) => {
+    const newArray = [];
+    for (const item of baseArray) {
+        if (!exclude.includes(item)) {
+            newArray.push(item);
+        }
+    }
+
+    return newArray;
 };
 
 /**
