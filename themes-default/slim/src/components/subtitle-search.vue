@@ -138,17 +138,17 @@ export default {
                 seriesid: show.id[show.indexer],
                 season,
                 episode
-            }
+            };
 
             return params;
-        },
+        }
     },
     mounted() {
         this.displayQuestion = true;
     },
     methods: {
         autoSearch() {
-            const { episode, season } = this;
+            const { subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loadingMessage = 'Searching for subtitles and downloading if available... ';
@@ -176,7 +176,7 @@ export default {
                 });
         },
         manualSearch() {
-            const { season, episode, getSubtitleParams } = this;
+            const { subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loading = true;
@@ -194,11 +194,11 @@ export default {
         },
         pickSubtitle(subtitleId) {
             // Download and save this subtitle with the episode.
-            const { season, episode } = this;
+            const { subtitleParams } = this;
             const params = {
                 ...subtitleParams, // This is the computed property
                 picked_id: subtitleId // eslint-disable-line camelcase
-            }
+            };
 
             this.displayQuestion = false;
             this.loadingMessage = 'downloading subtitle... ';
