@@ -1,6 +1,6 @@
 import {
     combineQualities
-} from '../../src/utils';
+} from '../../src/utils/core';
 
 describe('combineQualities', () => {
     const testCases = [

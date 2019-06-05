@@ -19,7 +19,7 @@ import axios from 'axios';
 import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
-import { isDevelopment } from './utils';
+import { isDevelopment } from './utils/core';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import {
     AddShowOptions,

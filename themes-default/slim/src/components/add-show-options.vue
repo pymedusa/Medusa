@@ -85,7 +85,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import { apiRoute } from '../api';
-import { combineQualities } from '../utils';
+import { combineQualities } from '../utils/core';
 import { ConfigToggleSlider } from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 
