@@ -1,7 +1,7 @@
 <template>
 <tr class="subtitle-search-wrapper">
     <td colspan="9999">
-        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"/></span>
+        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
         <div v-if="displayQuestion" class="search-question">
             <div class="question">
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        <vue-good-table v-if="subtitles.length"
+        <vue-good-table v-if="subtitles.length > 0"
             :columns="columns"
             :rows="subtitles"
             :search-options="{
@@ -35,22 +35,22 @@
             </template>
             <template v-slot:table-row="props">
                 <span v-if="props.column.field === 'provider'">
-                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16"/>
+                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16" />
                     <span :title="props.row.provider">{{props.row.provider}}</span>
                 </span>
                 <span v-else-if="props.column.field === 'lang'">
-                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11"/>
+                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11" />
                 </span>
                 <span v-else-if="props.column.field === 'filename'">
-                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16"/>
+                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16" />
                         <span class="subtitle-name">{{props.row.filename}}</span>
-                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>
+                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16" />
                     </a>
                 </span>
                 <span v-else-if="props.column.field === 'download'">
-                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img src="images/download.png" width="16" height="16"/>
+                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img src="images/download.png" width="16" height="16" />
                     </a>
                 </span>
                 <span v-else>
@@ -195,7 +195,7 @@ export default {
             // Download and save this subtitle with the episode.
             const { subtitleParams } = this;
             const params = {
-                ...subtitleParams, // This is the computed property
+                ...subtitleParams,
                 picked_id: subtitleId // eslint-disable-line camelcase
             };
 
