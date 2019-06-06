@@ -80,7 +80,7 @@ export const mapDateFormat = dateFormatString => {
 
 /**
  * Create an array with unique strings
- * @param {Array} array - array with strings
+ * @param {string[]} array - array with strings
  * @returns {Array} array with unique strings
  */
 export const arrayUnique = array => {
