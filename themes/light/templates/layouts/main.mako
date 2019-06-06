@@ -82,6 +82,7 @@
 
         ## These contain all the Webpack-imported modules
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
         <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
