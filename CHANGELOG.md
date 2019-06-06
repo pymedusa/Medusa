@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
 
 -----
 
