@@ -72,8 +72,7 @@ const webpackConfig = (env, mode) => ({
     resolve: {
         extensions: ['.js', '.vue', '.json'],
         alias: {
-            vue$: 'vue/dist/vue.esm.js',
-            jquery: path.resolve(__dirname, 'node_modules/jquery')
+            vue$: 'vue/dist/vue.esm.js'
         }
     },
     performance: {
@@ -91,6 +90,8 @@ const webpackConfig = (env, mode) => ({
         },
         splitChunks: {
             chunks: 'all',
+            maxInitialRequests: Infinity,
+            minSize: 0,
             cacheGroups: {
                 runtime: {
                     name: 'medusa-runtime',
@@ -98,6 +99,11 @@ const webpackConfig = (env, mode) => ({
                     minChunks: 2,
                     priority: 0,
                     reuseExistingChunk: true
+                },
+                'date-fns': {
+                    name: 'vendors~date-fns',
+                    test: /[\\/]node_modules[\\/]date-fns[\\/]/,
+                    priority: -5
                 },
                 vendors: {
                     name: 'vendors',
