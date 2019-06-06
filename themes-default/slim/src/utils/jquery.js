@@ -34,16 +34,16 @@ export const attachImdbTooltip = () => {
  * Attach a default qtip to elements with the addQTip class.
  */
 export const addQTip = () => {
-    $('.addQTip').each(() => {
-        $(this).css({
-            'cursor': 'help', // eslint-disable-line quote-props
+    $('.addQTip').each((_, element) => {
+        $(element).css({
+            cursor: 'help',
             'text-shadow': '0px 0px 0.5px #666'
         });
 
-        const my = $(this).data('qtip-my') || 'left center';
-        const at = $(this).data('qtip-at') || 'middle right';
+        const my = $(element).data('qtip-my') || 'left center';
+        const at = $(element).data('qtip-at') || 'middle right';
 
-        $(this).qtip({
+        $(element).qtip({
             show: {
                 solo: true
             },
@@ -89,7 +89,7 @@ export const updateSearchIcons = (showSlug, vm) => {
      * @param {*} vm - Vue instance
      */
     const updateImages = results => {
-        $.each(results, (index, ep) => {
+        $.each(results, (_, ep) => {
             // Get td element for current ep
             const loadingImage = 'loading16.gif';
             const queuedImage = 'queued.png';
