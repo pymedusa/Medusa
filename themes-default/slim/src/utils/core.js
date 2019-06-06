@@ -6,7 +6,6 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
  * @param {number[]} [preferredQualities=[]] - Array of preferred qualities.
  * @returns {number} An unsigned integer.
  */
-
 export const combineQualities = (allowedQualities, preferredQualities = []) => {
     const reducer = (accumulator, currentValue) => accumulator | currentValue;
     const allowed = allowedQualities.reduce(reducer, 0);
@@ -40,65 +39,108 @@ export const humanFileSize = (bytes, useDecimal = false) => {
     return `${bytes.toFixed(2)} ${units[u]}`;
 };
 
+// Maps Python date/time tokens to date-fns tokens
+// Python: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
+// date-fns: https://date-fns.org/v2.0.0-alpha.27/docs/format
+const datePresetMap = {
+    '%a': 'ccc', // Weekday name, short
+    '%A': 'cccc', // Weekday name, full
+    '%w': 'c', // Weekday number
+    '%d': 'dd', // Day of the month, zero-padded
+    '%b': 'LLL', // Month name, short
+    '%B': 'LLLL', // Month name, full
+    '%m': 'MM', // Month number, zero-padded
+    '%y': 'yy', // Year without century, zero-padded
+    '%Y': 'yyyy', // Year with century
+    '%H': 'HH', // Hour (24-hour clock), zero-padded
+    '%I': 'hh', // Hour (12-hour clock), zero-padded
+    '%p': 'a', // AM / PM
+    '%M': 'mm', // Minute, zero-padded
+    '%S': 'ss', // Second, zero-padded
+    '%f': 'SSSSSS', // Microsecond, zero-padded
+    '%z': 'xx', // UTC offset in the form +HHMM or -HHMM
+    // '%Z': '', // [UNSUPPORTED] Time zone name
+    '%j': 'DDD', // Day of the year, zero-padded
+    '%U': 'II', // Week number of the year (Sunday as the first day of the week), zero padded
+    '%W': 'ww', // Week number of the year (Monday as the first day of the week)
+    '%c': 'Pp', // Locale's appropriate date and time representation
+    '%x': 'P', // Locale's appropriate date representation
+    '%X': 'p', // Locale's appropriate time representation
+    '%%': '%' // Literal '%' character
+};
+
 /**
- * Map dateformat of pythons datetime.strftime() to that of javascripts dateFns.
- * @param {String} dateFormatString - pythons strftime format
- * @returns {String} mapped format that can be used by dateFns
+ * Convert a Python date format to a DateFns compatible date format.
+ * Automatically escapes non-token characters.
+ * @param {string} format - The Python date format.
+ * @returns {string} The new format.
  */
-export const mapDateFormat = dateFormatString => {
-    const dateMap = new Map(
-        [
-            ['%a', 'ddd'],
-            ['%A', 'dddd'],
-            ['%w', 'E'],
-            ['%d', 'DD'],
-            ['%-d', 'DD'],
-            ['%b', 'MMM'],
-            ['%B', 'MMMM'],
-            ['%m', 'MM'],
-            ['%-m', 'M'],
-            ['%y', 'YY'],
-            ['%Y', 'YYYY'],
-            ['%H', 'HH'],
-            ['%-H', 'H'],
-            ['%I', 'hh'],
-            ['%-I', 'h'],
-            ['%p', 'A'],
-            ['%M', 'mm'],
-            ['%-M', 'm'],
-            ['%S', 'ss'],
-            ['%-S', 's']
-        ]
-    );
+export const convertDateFormat = format => {
+    let newFormat = '';
+    let index = 0;
+    let escaping = false;
+    while (index < format.length) {
+        const chr = format.charAt(index);
+        // Escape single quotes
+        if (chr === "'") {
+            newFormat += chr + chr;
+        } else if (chr === '%') {
+            if (escaping) {
+                escaping = false;
+                newFormat += "'";
+            }
 
-    dateMap.forEach((value, key, _) => {
-        dateFormatString = dateFormatString.replace(key, value);
-    });
+            ++index;
+            if (index > format.length) {
+                throw new Error(`Single % at end of format string: ${format}`);
+            }
+            const chr2 = format.charAt(index);
+            const tokenKey = chr + chr2;
+            const token = datePresetMap[tokenKey];
+            if (token === undefined) {
+                throw new Error(`Unrecognized token "${tokenKey}" in format string: ${format}`);
+            }
+            newFormat += token;
+        // Only letters need to escaped
+        } else if (/[^a-z]/i.test(chr)) {
+            if (escaping) {
+                escaping = false;
+                newFormat += "'";
+            }
+            newFormat += chr;
+        // Escape anything else
+        } else {
+            if (!escaping) {
+                escaping = true;
+                newFormat += "'";
+            }
+            newFormat += chr;
+        }
 
-    return dateFormatString;
+        ++index;
+
+        if (index === format.length && escaping) {
+            newFormat += "'";
+        }
+    }
+    return newFormat;
 };
 
 /**
  * Create an array with unique strings
- * @param {Array} array - array with strings
- * @returns {Array} array with unique strings
+ * @param {string[]} array - array with strings
+ * @returns {string[]} array with unique strings
  */
 export const arrayUnique = array => {
-    const a = array.concat();
-    for (let i = 0; i < a.length; ++i) {
-        for (let j = i + 1; j < a.length; ++j) {
-            if (a[i] === a[j]) {
-                a.splice(j--, 1);
-            }
-        }
-    }
-    return a;
+    return array.reduce((result, item) => {
+        return result.includes(item) ? result : result.concat(item);
+    }, []);
 };
 
 /**
  * Exclude strings out of the array `exclude` compared to the strings in the array baseArray.
- * @param {Array} baseArray - array of strings
- * @param {Array} exclude - array of strings which we want to exclude in baseArray
+ * @param {string[]} baseArray - array of strings
+ * @param {string[]} exclude - array of strings which we want to exclude in baseArray
  * @returns {Array} reduced array
  */
 export const arrayExclude = (baseArray, exclude) => {
