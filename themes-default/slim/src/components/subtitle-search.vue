@@ -152,7 +152,7 @@ export default {
             this.displayQuestion = false;
             this.loadingMessage = 'Searching for subtitles and downloading if available... ';
             this.loading = true;
-            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams }) // eslint-disable-line no-undef
+            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams })
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
@@ -180,7 +180,7 @@ export default {
             this.displayQuestion = false;
             this.loading = true;
             this.loadingMessage = 'Searching for subtitles... ';
-            apiRoute('home/manualSearchSubtitles', { params: subtitleParams }) // eslint-disable-line no-undef
+            apiRoute('home/manualSearchSubtitles', { params: subtitleParams })
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
@@ -203,7 +203,7 @@ export default {
             this.loadingMessage = 'downloading subtitle... ';
             this.loading = true;
 
-            apiRoute('home/manualSearchSubtitles', { params }) // eslint-disable-line no-undef
+            apiRoute('home/manualSearchSubtitles', { params })
                 .then(response => {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)
