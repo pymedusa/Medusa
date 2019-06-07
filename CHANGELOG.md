@@ -6,6 +6,8 @@
 
 #### Fixes
 - Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
+- Fixed Jackett providers returning empty torrents on magnet redirect ([#6790](https://github.com/pymedusa/Medusa/pull/6790))
+- Fixed error when using KnowIt with MediaInfo ([#6796](https://github.com/pymedusa/Medusa/pull/6796))
 
 -----
 
