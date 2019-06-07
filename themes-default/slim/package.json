@@ -90,7 +90,7 @@
     "mini-css-extract-plugin": "0.7.0",
     "nyc": "14.1.1",
     "optimize-css-assets-webpack-plugin": "5.0.1",
-    "stylelint": "10.0.1",
+    "stylelint": "10.1.0",
     "stylelint-config-standard": "18.3.0",
     "vue-jest": "3.0.4",
     "vue-loader": "15.7.0",
