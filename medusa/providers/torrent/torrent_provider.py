@@ -152,7 +152,7 @@ class TorrentProvider(GenericProvider):
         log.debug('Retrieving redirect URL for {url}', {'url': url})
 
         try:
-            response = session.get(url, stream=True)
+            response = self.session.get(url, stream=True)
             if response:
                 response.close()
                 return response.url
@@ -160,7 +160,7 @@ class TorrentProvider(GenericProvider):
         # Jackett redirects to a magnet causing InvalidSchema.
         # Use an alternative method to get the redirect URL.
         except InvalidSchema:
-            response = session.get(url, allow_redirects=False)
+            response = self.session.get(url, allow_redirects=False)
             if response and response.headers.get('Location'):
                 return response.headers['Location']
 
