@@ -62,20 +62,6 @@ class BeyondhdProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
 
-                """
-                    search: 
-                    description: 
-                    uploader: 
-                    imdb: 
-                    tmdb: 
-                    categories[]: 2
-                    sd: 1
-                    sorting: created_at
-                    direction: desc
-                    qty: 100
-                    doSearch: Search
-                """
-
                 search_params = {
                     'categories[]': 2,
                     'sorting': 'created_at',
