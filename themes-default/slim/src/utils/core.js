@@ -141,7 +141,7 @@ export const arrayUnique = array => {
  * Exclude strings out of the array `exclude` compared to the strings in the array baseArray.
  * @param {string[]} baseArray - array of strings
  * @param {string[]} exclude - array of strings which we want to exclude in baseArray
- * @returns {Array} reduced array
+ * @returns {string[]} reduced array
  */
 export const arrayExclude = (baseArray, exclude) => {
     return baseArray.filter(item => !exclude.includes(item));
