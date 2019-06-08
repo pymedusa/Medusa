@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added new provider Beyond-hd ([#6802](https://github.com/pymedusa/Medusa/pull/6802))
 
 #### Improvements
 
