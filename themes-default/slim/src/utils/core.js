@@ -144,14 +144,7 @@ export const arrayUnique = array => {
  * @returns {Array} reduced array
  */
 export const arrayExclude = (baseArray, exclude) => {
-    const newArray = [];
-    for (const item of baseArray) {
-        if (!exclude.includes(item)) {
-            newArray.push(item);
-        }
-    }
-
-    return newArray;
+    return baseArray.filter(item => !exclude.includes(item));
 };
 
 /**
