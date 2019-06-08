@@ -1,8 +1,7 @@
 <template>
-<!-- template for the subtitle-search component -->
 <tr class="subtitle-search-wrapper">
     <td colspan="9999">
-        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading"/></span>
+        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
         <div v-if="displayQuestion" class="search-question">
             <div class="question">
                 <p>Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -13,7 +12,7 @@
             </div>
         </div>
 
-        <vue-good-table v-if="subtitles.length"
+        <vue-good-table v-if="subtitles.length > 0"
             :columns="columns"
             :rows="subtitles"
             :search-options="{
@@ -36,22 +35,22 @@
             </template>
             <template v-slot:table-row="props">
                 <span v-if="props.column.field === 'provider'">
-                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16"/>
+                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16" />
                     <span :title="props.row.provider">{{props.row.provider}}</span>
                 </span>
                 <span v-else-if="props.column.field === 'lang'">
-                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11"/>
+                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11" />
                 </span>
                 <span v-else-if="props.column.field === 'filename'">
-                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16"/>
+                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16" />
                         <span class="subtitle-name">{{props.row.filename}}</span>
-                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16"/>
+                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16" />
                     </a>
                 </span>
                 <span v-else-if="props.column.field === 'download'">
-                    <a :title="`Download ${props.row.hearing_impaired ? 'hearing impaired ' : ' '} subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img src="images/download.png" width="16" height="16"/>
+                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                        <img src="images/download.png" width="16" height="16" />
                     </a>
                 </span>
                 <span v-else>
@@ -66,10 +65,13 @@
 
 import { mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
+import { apiRoute } from '../api';
+import { StateSwitch } from './helpers';
 
 export default {
     name: 'subtitle-search',
     components: {
+        StateSwitch,
         VueGoodTable
     },
     props: {
@@ -127,19 +129,30 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config
-        })
+        }),
+        subtitleParams() {
+            const { episode, show, season } = this;
+            const params = {
+                indexername: show.indexer,
+                seriesid: show.id[show.indexer],
+                season,
+                episode
+            };
+
+            return params;
+        }
     },
     mounted() {
         this.displayQuestion = true;
     },
     methods: {
         autoSearch() {
-            const { episode, season } = this;
+            const { subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loadingMessage = 'Searching for subtitles and downloading if available... ';
             this.loading = true;
-            apiRoute('home/searchEpisodeSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
+            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams })
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
@@ -162,12 +175,12 @@ export default {
                 });
         },
         manualSearch() {
-            const { season, episode, getSubtitleParams } = this;
+            const { subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loading = true;
             this.loadingMessage = 'Searching for subtitles... ';
-            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode) }) // eslint-disable-line no-undef
+            apiRoute('home/manualSearchSubtitles', { params: subtitleParams })
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
@@ -180,12 +193,17 @@ export default {
         },
         pickSubtitle(subtitleId) {
             // Download and save this subtitle with the episode.
-            const { season, episode } = this;
+            const { subtitleParams } = this;
+            const params = {
+                ...subtitleParams,
+                picked_id: subtitleId // eslint-disable-line camelcase
+            };
 
             this.displayQuestion = false;
             this.loadingMessage = 'downloading subtitle... ';
             this.loading = true;
-            apiRoute('home/manualSearchSubtitles', { params: getSubtitleParams(season, episode, subtitleId) }) // eslint-disable-line no-undef
+
+            apiRoute('home/manualSearchSubtitles', { params })
                 .then(response => {
                     if (response.data.result === 'success') {
                         // Update the show, as we have new information (subtitles)
@@ -207,23 +225,8 @@ export default {
                     this.close();
                 });
         },
-        getSubtitleParams(season, episode, subtitleId) {
-            const { show } = this;
-            const params = {
-                indexername: show.indexer,
-                seriesid: show.id[show.indexer],
-                season,
-                episode
-            }
-
-            if (subtitleId) {
-                params['picked_id'] = subtitleId; // eslint-disable-line dot-notation
-            }
-
-            return params;
-        },
         close() {
-            this.$emit('close', this);
+            this.$emit('close');
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM

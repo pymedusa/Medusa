@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 import re
-
 from logging import NullHandler, getLogger
+
 import babelfish
 
 from ..rule import Rule
@@ -31,4 +31,3 @@ class LanguageRule(Rule):
                 except babelfish.Error:
                     pass
             logger.info('Invalid %s: %r', self.description, name)
-        return babelfish.Language('und')

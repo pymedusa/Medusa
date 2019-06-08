@@ -244,14 +244,14 @@
                         <div class="pull-lg-right top-5">
 
                             <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option>Change status to:</option>
+                                <option :value="null">Change status to:</option>
                                 <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
                                     {{ status.name }}
                                 </option>
                             </select>
 
                             <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option>Change quality to:</option>
+                                <option :value="null">Change quality to:</option>
                                 <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
                                     {{ quality.name }}
                                 </option>

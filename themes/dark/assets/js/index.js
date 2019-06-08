@@ -12,4 +12,4 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var jque
 
 /***/ })
 
-},[["./src/index.js","vendors","medusa-runtime"]]]);
+},[["./src/index.js","vendors","medusa-runtime","vendors~date-fns"]]]);

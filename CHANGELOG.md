@@ -1,6 +1,19 @@
 ## Unreleased
 
 #### New Features
+
+#### Improvements
+
+#### Fixes
+- Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
+- Fixed Jackett providers returning empty torrents on magnet redirect ([#6790](https://github.com/pymedusa/Medusa/pull/6790))
+- Fixed error when using KnowIt with MediaInfo ([#6796](https://github.com/pymedusa/Medusa/pull/6796))
+
+-----
+
+## 0.3.2 (2019-06-05)
+
+#### New Features
 - Added nCore torrent provider ([#6537](https://github.com/pymedusa/Medusa/pull/6537))
 - Added Gimmepeers torrent provider (credits to @mystycs) ([#6635](https://github.com/pymedusa/Medusa/pull/6635))
 - Added BTDB torrent provider ([#6678](https://github.com/pymedusa/Medusa/pull/6678))

@@ -13,9 +13,6 @@
     "test-api": "dredd --config dredd/dredd.yml"
   },
   "devDependencies": {
-    "dredd": "11.1.4"
-  },
-  "dependencies": {
-    "vue-good-table": "2.16.3"
+    "dredd": "11.2.6"
   }
 }
