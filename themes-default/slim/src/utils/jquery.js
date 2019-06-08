@@ -1,3 +1,5 @@
+import { api } from '../api';
+
 /**
  * Attach a jquery qtip to elements with the .imdbstars class.
  */
@@ -131,7 +133,7 @@ export const updateSearchIcons = (showSlug, vm) => {
     const checkManualSearches = () => {
         let pollInterval = 5000;
 
-        api.get(`search/${showSlug}`) // eslint-disable-line no-undef
+        api.get(`search/${showSlug}`)
             .then(response => {
                 if (response.data.results && response.data.results.length > 0) {
                     pollInterval = 5000;
