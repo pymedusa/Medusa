@@ -20,6 +20,8 @@ from medusa.common import (
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.show.show import Show
 
+from six.moves import map
+
 
 class StatsHandler(BaseRequestHandler):
     """Statistics request handler."""
