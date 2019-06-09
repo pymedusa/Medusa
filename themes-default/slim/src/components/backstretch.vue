@@ -2,7 +2,7 @@
 import { mapState } from 'vuex';
 
 import { webRoot, apiKey } from '../api';
-import { waitFor } from '../utils';
+import { waitFor } from '../utils/core';
 
 export default {
     name: 'backstretch',
