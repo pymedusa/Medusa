@@ -1,5 +1,6 @@
 import {
-    combineQualities
+    combineQualities,
+    convertDateFormat
 } from '../../src/utils/core';
 
 describe('combineQualities', () => {
@@ -16,5 +17,20 @@ describe('combineQualities', () => {
             const actual = combineQualities(allowed, preferred);
             expect(actual).toEqual(expected);
         });
+    });
+});
+
+describe('convertDateFormat', () => {
+    it('converts simple Python date format', () => {
+        expect(convertDateFormat('%Y-%m-%d %H:%M:%S')).toEqual('yyyy-MM-dd HH:mm:ss');
+    });
+
+    it('escapes non-token characters', () => {
+        expect(convertDateFormat("It's%% %Y-%m-%d %H:%M:%S t2 100%% hello")).toEqual("'It''s'% yyyy-MM-dd HH:mm:ss 't'2 100% 'hello'");
+    });
+
+    it('throws error when invalid tokens are found', () => {
+        expect(() => convertDateFormat('%u')).toThrow('Unrecognized token');
+        expect(() => convertDateFormat('%d %')).toThrow('Single % at end of format string');
     });
 });

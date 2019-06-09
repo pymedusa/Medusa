@@ -91,7 +91,7 @@ export const convertDateFormat = format => {
             }
 
             ++index;
-            if (index > format.length) {
+            if (index === format.length) {
                 throw new Error(`Single % at end of format string: ${format}`);
             }
             const chr2 = format.charAt(index);
