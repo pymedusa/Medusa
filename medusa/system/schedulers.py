@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Helper functions to get info about running schedulers."""
 from __future__ import unicode_literals
 
 from medusa import app
@@ -98,10 +99,22 @@ def _queued_show_to_json(item):
 
 
 def generate_schedulers():
+    """
+    Generate a JSON-pickable list of scheduler dictionaries.
+
+    :returns: list of scheduler dictionaries
+    """
     return [_scheduler_to_json(*scheduler) for scheduler in all_schedulers]
 
 
 def scheduler_by_key(key):
+    """
+    Get a JSON-pickable scheduler dictionary by its key.
+
+    :param key: the key of the scheduler to get
+    :returns: a scheduler dictionary
+    :raises KeyError: if the scheduler could not be found
+    """
     try:
         scheduler_tuple = next(item for item in all_schedulers if item[0] == key)
     except StopIteration:
@@ -111,6 +124,11 @@ def scheduler_by_key(key):
 
 
 def generate_show_queue():
+    """
+    Generate a JSON-pickable list of items in the show queue.
+
+    :returns: list of show queue items
+    """
     if not app.show_queue_scheduler:
         return []
 
