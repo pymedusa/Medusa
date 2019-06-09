@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for BeyondHDProvider."""
+"""Provider code for Beyond-hd."""
 
 from __future__ import unicode_literals
 
