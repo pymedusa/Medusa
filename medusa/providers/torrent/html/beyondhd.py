@@ -1,6 +1,6 @@
 # coding=utf-8
 
-"""Provider code for GimmePeers."""
+"""Provider code for BeyondHDProvider."""
 
 from __future__ import unicode_literals
 
@@ -19,12 +19,12 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class BeyondhdProvider(TorrentProvider):
+class BeyondHDProvider(TorrentProvider):
     """Beyond-hd Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(BeyondhdProvider, self).__init__('Beyond-HD')
+        super(BeyondHDProvider, self).__init__('Beyond-HD')
 
         self.username = None
         self.password = None
@@ -186,4 +186,4 @@ class BeyondhdProvider(TorrentProvider):
         return True
 
 
-provider = BeyondhdProvider()
+provider = BeyondHDProvider()
