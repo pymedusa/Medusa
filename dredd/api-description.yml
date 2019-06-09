@@ -2565,8 +2565,8 @@ parameters:
     description: The configuration to retrieve
     type: string
     enum:
+      - main # Keep main first, as the tests use it
       - consts
-      - main
       - metadata
       - notifiers
       - search
