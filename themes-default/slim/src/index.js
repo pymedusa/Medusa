@@ -50,9 +50,12 @@ import {
     Status,
     SubMenu
 } from './components';
+import globalVueShim from './global-vue-shim';
 
 if (window) {
     window.isDevelopment = isDevelopment;
+    // @TODO: Remove this before v1.0.0
+    window.globalVueShim = globalVueShim;
 
     // Adding libs to window so mako files can use them
     window.$ = $;
