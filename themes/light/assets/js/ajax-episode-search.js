@@ -56,7 +56,7 @@ function updateImages(data) {
                 let qualityPill = '';
                 if (ep.quality_style !== 'na') {
                     // @FIXME: (sharkykh) This is a hack to get the scoped style to work.
-                    const qualityPillScopeId = window.components.find(c => c.name === 'quality-pill')._scopeId;
+                    const qualityPillScopeId = window.componentQualityPill._scopeId;
                     qualityPill = ' <span ' + qualityPillScopeId + ' class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
                 }
                 htmlContent = ep.status + qualityPill;
