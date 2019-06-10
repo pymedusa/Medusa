@@ -1,8 +1,6 @@
 // @TODO: Remove this file before v1.0.0
 import Vue from 'vue';
-import Vuex from 'vuex';
 import VueMeta from 'vue-meta';
-import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 
@@ -158,8 +156,7 @@ export default () => {
         console.debug('Loading local Vue');
     }
 
-    Vue.use(Vuex);
-    Vue.use(VueRouter);
+    // Register plugins
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
     Vue.use(Snotify);

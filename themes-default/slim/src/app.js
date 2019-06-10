@@ -1,19 +1,16 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
-import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 
 import { registerGlobalComponents } from './global-vue-shim';
-import store from './store';
 import router from './router';
+import store from './store';
 import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
 
-Vue.use(Vuex);
-Vue.use(VueRouter);
+// Register plugins
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
 
@@ -22,8 +19,8 @@ registerGlobalComponents();
 
 const app = new Vue({
     name: 'App',
-    store,
     router,
+    store,
     data() {
         return {
             globalLoading: false,

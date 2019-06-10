@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import VueRouter from 'vue-router';
 
 const showSubMenu = function() {
@@ -525,6 +526,8 @@ const routes = [
     ircRoute,
     notFoundRoute
 ];
+
+Vue.use(VueRouter);
 
 const router = new VueRouter({
     base: document.body.getAttribute('web-root') + '/',
