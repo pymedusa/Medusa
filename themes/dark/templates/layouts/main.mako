@@ -72,7 +72,7 @@
                     <%block name="content" />
                 </component>
             </div><!-- /content -->
-            <%include file="/partials/footer.mako" />
+            <app-footer v-if="$store.state.auth.isAuthenticated"></app-footer>
             <scroll-buttons></scroll-buttons>
 
           </div><!-- /globalLoading wrapper -->
