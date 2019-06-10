@@ -18,6 +18,9 @@ from medusa.common import (
     WANTED
 )
 from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.show.show import Show
+
+from six.moves import map
 
 
 class StatsHandler(BaseRequestHandler):
@@ -28,93 +31,102 @@ class StatsHandler(BaseRequestHandler):
     #: identifier
     identifier = ('identifier', r'\w+')
     #: path param
-    path_param = ('path_param', r'\w+')
+    path_param = None
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, identifier, path_param=None):
+    def get(self, identifier):
         """Query statistics.
 
-        :param identifier:
-        :param path_param:
-        :type path_param: str
+        :param identifier: The type of statistics to query
+        :type identifier: str
         """
-        pre_today = [SKIPPED, WANTED, FAILED]
-        snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-        downloaded = [DOWNLOADED, ARCHIVED]
+        if not identifier or identifier == 'overall':
+            data = overall_stats()
+        elif identifier == 'show':
+            data = per_show_stats()
+        else:
+            return self._not_found('Statistics not found')
 
-        def query_in(items):
-            return '({0})'.format(','.join(map(str, items)))
+        return self._ok(data=data)
 
-        query = dedent("""\
-            SELECT indexer AS indexerId, showid AS seriesId,
-                SUM(
-                    season > 0 AND
-                    episode > 0 AND
+
+def overall_stats():
+    """Generate overall library statistics."""
+    return Show.overall_stats()
+
+
+def per_show_stats():
+    """Generate per-show library statistics."""
+    pre_today = [SKIPPED, WANTED, FAILED]
+    snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+    downloaded = [DOWNLOADED, ARCHIVED]
+
+    def query_in(items):
+        return '({0})'.format(','.join(map(str, items)))
+
+    query = dedent("""\
+        SELECT indexer AS indexerId, showid AS seriesId,
+            SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_quality}
+            ) AS epSnatched,
+            SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_download}
+            ) AS epDownloaded,
+            SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND (
+                    (airdate <= {today} AND status IN {status_pre_today}) OR
+                    status IN {status_both}
+                )
+            ) AS epTotal,
+            (SELECT airdate FROM tv_episodes
+            WHERE showid=tv_eps.showid AND
+                    indexer=tv_eps.indexer AND
+                    airdate >= {today} AND
+                    (status = {unaired} OR status = {wanted})
+            ORDER BY airdate ASC
+            LIMIT 1
+            ) AS epAirsNext,
+            (SELECT airdate FROM tv_episodes
+            WHERE showid=tv_eps.showid AND
+                    indexer=tv_eps.indexer AND
                     airdate > 1 AND
-                    status IN {status_quality}
-                ) AS epSnatched,
-                SUM(
-                    season > 0 AND
-                    episode > 0 AND
-                    airdate > 1 AND
-                    status IN {status_download}
-                ) AS epDownloaded,
-                SUM(
-                    season > 0 AND
-                    episode > 0 AND
-                    airdate > 1 AND (
-                        (airdate <= {today} AND status IN {status_pre_today}) OR
-                        status IN {status_both}
-                    )
-                ) AS epTotal,
-                (SELECT airdate FROM tv_episodes
-                WHERE showid=tv_eps.showid AND
-                        indexer=tv_eps.indexer AND
-                        airdate >= {today} AND
-                        (status = {unaired} OR status = {wanted})
-                ORDER BY airdate ASC
-                LIMIT 1
-                ) AS epAirsNext,
-                (SELECT airdate FROM tv_episodes
-                WHERE showid=tv_eps.showid AND
-                        indexer=tv_eps.indexer AND
-                        airdate > 1 AND
-                        status <> {unaired}
-                ORDER BY airdate DESC
-                LIMIT 1
-                ) AS epAirsPrev,
-                SUM(file_size) AS seriesSize
-            FROM tv_episodes tv_eps
-            GROUP BY showid, indexer
-        """).format(
-            status_quality=query_in(snatched),
-            status_download=query_in(downloaded),
-            status_both=query_in(snatched + downloaded),
-            today=date.today().toordinal(),
-            status_pre_today=query_in(pre_today),
-            skipped=SKIPPED,
-            wanted=WANTED,
-            unaired=UNAIRED,
-        )
+                    status <> {unaired}
+            ORDER BY airdate DESC
+            LIMIT 1
+            ) AS epAirsPrev,
+            SUM(file_size) AS seriesSize
+        FROM tv_episodes tv_eps
+        GROUP BY showid, indexer
+    """).format(
+        status_quality=query_in(snatched),
+        status_download=query_in(downloaded),
+        status_both=query_in(snatched + downloaded),
+        today=date.today().toordinal(),
+        status_pre_today=query_in(pre_today),
+        skipped=SKIPPED,
+        wanted=WANTED,
+        unaired=UNAIRED,
+    )
 
-        main_db_con = db.DBConnection()
-        sql_result = main_db_con.select(query)
+    main_db_con = db.DBConnection()
+    sql_result = main_db_con.select(query)
 
-        stats_data = {}
-        stats_data['seriesStat'] = list()
-        stats_data['maxDownloadCount'] = 1000
-        for cur_result in sql_result:
-            stats_data['seriesStat'].append(dict(cur_result))
-            if cur_result['epTotal'] > stats_data['maxDownloadCount']:
-                stats_data['maxDownloadCount'] = cur_result['epTotal']
+    stats_data = {}
+    stats_data['seriesStat'] = []
+    stats_data['maxDownloadCount'] = 1000
+    for cur_result in sql_result:
+        stats_data['seriesStat'].append(cur_result)
+        if cur_result['epTotal'] > stats_data['maxDownloadCount']:
+            stats_data['maxDownloadCount'] = cur_result['epTotal']
 
-        stats_data['maxDownloadCount'] *= 100
-
-        if identifier is not None:
-            if identifier not in stats_data:
-                return self._bad_request('{key} is a invalid path'.format(key=identifier))
-
-            stats_data = stats_data[identifier]
-
-        return self._ok(data=stats_data)
+    stats_data['maxDownloadCount'] *= 100
+    return stats_data
