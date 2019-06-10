@@ -6,8 +6,95 @@ import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 
+import {
+    AddShowOptions,
+    AnidbReleaseGroupUi,
+    AppHeader,
+    AppLink,
+    Asset,
+    Backstretch,
+    ConfigTemplate,
+    ConfigTextbox,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
+    FileBrowser,
+    Home,
+    LanguageSelect,
+    ManualPostProcess,
+    PlotInfo,
+    QualityChooser,
+    QualityPill,
+    RootDirs,
+    ScrollButtons,
+    SelectList,
+    Show,
+    ShowSelector,
+    SnatchSelection,
+    StateSwitch,
+    Status,
+    SubMenu
+} from './components';
 import store from './store';
 import { isDevelopment } from './utils/core';
+
+/**
+ * Register global components and x-template components.
+ */
+export const registerGlobalComponents = () => {
+    // Start with the x-template components
+    let { components } = window;
+
+    // Add global components (in use by `main.mako`)
+    // @TODO: These should be registered in an `App.vue` component when possible,
+    //        along with some of the `main.mako` template
+    components = components.concat([
+        AppHeader,
+        ScrollButtons,
+        SubMenu
+    ]);
+
+    // Add global components
+    // @TODO: Instead of globally registering these,
+    //        they should be registered in each component that uses them
+    components = components.concat([
+        AddShowOptions,
+        AnidbReleaseGroupUi,
+        AppLink,
+        Asset,
+        Backstretch,
+        ConfigTemplate,
+        ConfigTextbox,
+        ConfigTextboxNumber,
+        ConfigToggleSlider,
+        FileBrowser,
+        LanguageSelect,
+        PlotInfo,
+        QualityChooser,
+        QualityPill,
+        RootDirs,
+        SelectList,
+        ShowSelector,
+        StateSwitch
+    ]);
+
+    // Add components for pages that use `pageComponent`
+    // @TODO: These need to be converted to Vue SFCs
+    components = components.concat([
+        Home,
+        ManualPostProcess,
+        Show,
+        SnatchSelection,
+        Status
+    ]);
+
+    // Register the components
+    components.forEach(component => {
+        if (isDevelopment) {
+            console.debug(`Registering ${component.name}`);
+        }
+        Vue.component(component.name, component);
+    });
+};
 
 export default () => {
     const warningTemplate = (name, state) =>
@@ -75,15 +162,7 @@ export default () => {
     Vue.use(VueRouter);
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
-
-    // Register components
-    window.components.forEach(component => {
-        if (isDevelopment) {
-            console.debug(`Registering ${component.name}`);
-        }
-        Vue.component(component.name, component);
-    });
-
-    // Global components
     Vue.use(Snotify);
+
+    registerGlobalComponents();
 };

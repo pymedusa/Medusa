@@ -15,35 +15,7 @@ import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import {
-    AddShowOptions,
-    AnidbReleaseGroupUi,
-    AppHeader,
-    AppLink,
-    Asset,
-    Backstretch,
-    ConfigTemplate,
-    ConfigTextbox,
-    ConfigTextboxNumber,
-    ConfigToggleSlider,
-    FileBrowser,
-    Home,
-    LanguageSelect,
-    ManualPostProcess,
-    NamePattern,
-    PlotInfo,
-    QualityChooser,
-    QualityPill,
-    RootDirs,
-    ScrollButtons,
-    SelectList,
-    Show,
-    ShowSelector,
-    SnatchSelection,
-    StateSwitch,
-    Status,
-    SubMenu
-} from './components';
+import { QualityPill } from './components';
 import globalVueShim from './global-vue-shim';
 
 if (window) {
@@ -73,35 +45,11 @@ if (window) {
     window.webRoot = webRoot;
     window.apiKey = apiKey;
 
-    // Push pages that load via a vue file but still use `el` for mounting
+    // @FIXME: (sharkykh) This component is used in a hack/workaround in `static/js/ajax-episode-search.js`
+    window.componentQualityPill = QualityPill;
+
+    // Push x-template components to this array to register them globally
     window.components = [];
-    window.components.push(AddShowOptions);
-    window.components.push(AnidbReleaseGroupUi);
-    window.components.push(AppHeader);
-    window.components.push(AppLink);
-    window.components.push(Asset);
-    window.components.push(Backstretch);
-    window.components.push(ConfigTemplate);
-    window.components.push(ConfigTextbox);
-    window.components.push(ConfigTextboxNumber);
-    window.components.push(ConfigToggleSlider);
-    window.components.push(FileBrowser);
-    window.components.push(Home);
-    window.components.push(LanguageSelect);
-    window.components.push(ManualPostProcess);
-    window.components.push(NamePattern);
-    window.components.push(PlotInfo);
-    window.components.push(QualityChooser);
-    window.components.push(QualityPill); // This component is also used in a hack/workaround in `./static/js/ajax-episode-search.js`
-    window.components.push(RootDirs);
-    window.components.push(ScrollButtons);
-    window.components.push(SelectList);
-    window.components.push(Show);
-    window.components.push(ShowSelector);
-    window.components.push(SnatchSelection);
-    window.components.push(StateSwitch);
-    window.components.push(Status);
-    window.components.push(SubMenu);
 }
 
 const UTIL = {

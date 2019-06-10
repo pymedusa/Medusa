@@ -3,27 +3,11 @@ import Vuex from 'vuex';
 import VueRouter from 'vue-router';
 import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
+
+import { registerGlobalComponents } from './global-vue-shim';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils/core';
-import {
-    AnidbReleaseGroupUi,
-    AppHeader,
-    AppLink,
-    Asset,
-    Backstretch,
-    Config,
-    FileBrowser,
-    LanguageSelect,
-    NamePattern,
-    PlotInfo,
-    RootDirs,
-    ScrollButtons,
-    SelectList,
-    Show,
-    ShowSelector,
-    SubMenu
-} from './components';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
@@ -33,47 +17,13 @@ Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
 
-// Global components
-const globalComponents = [
-    AnidbReleaseGroupUi,
-    AppHeader,
-    AppLink,
-    Asset,
-    Backstretch,
-    Config,
-    FileBrowser,
-    LanguageSelect,
-    NamePattern,
-    PlotInfo,
-    RootDirs,
-    ScrollButtons,
-    SelectList,
-    Show,
-    ShowSelector,
-    SubMenu
-];
-
-globalComponents.forEach(component => {
-    Vue.component(component.name, component);
-});
-
-// Load x-template components
-window.components.forEach(component => {
-    // Skip already registered components
-    if (!Object.keys(Vue.options.components).includes(component.name)) {
-        if (isDevelopment) {
-            console.debug(`Registering ${component.name}`);
-        }
-        Vue.component(component.name, component);
-    }
-});
+// @TODO: Remove this before v1.0.0
+registerGlobalComponents();
 
 const app = new Vue({
     name: 'App',
     store,
     router,
-    components: {
-    },
     data() {
         return {
             globalLoading: false,
