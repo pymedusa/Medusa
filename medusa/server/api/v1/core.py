@@ -1303,9 +1303,14 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = 'manual'
 
-        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
-            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
-            failed=self.failed, proc_type=self.type
+        data = app.post_processor_scheduler.action.run(
+            path=self.path,
+            process_method=self.process_method,
+            force=self.force_replace,
+            is_priority=self.is_priority,
+            delete_on=self.delete_files,
+            failed=self.failed,
+            proc_type=self.type
         )
 
         if not self.return_data:

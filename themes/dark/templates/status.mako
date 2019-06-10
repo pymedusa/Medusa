@@ -17,7 +17,7 @@
         'Show Queue': 'show_queue_scheduler',
         'Search Queue': 'search_queue_scheduler',
         'Proper Finder': 'proper_finder_scheduler',
-        'Post Process': 'auto_post_processor_scheduler',
+        'Post Process': 'post_processor_scheduler',
         'Subtitles Finder': 'subtitles_finder_scheduler',
         'Trakt Checker': 'trakt_checker_scheduler',
         'Torrent Checker': 'torrent_checker_scheduler',

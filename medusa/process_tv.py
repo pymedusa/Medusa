@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import shutil
 import stat
@@ -14,6 +15,7 @@ from medusa.clients import torrent
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
@@ -22,6 +24,47 @@ from six import iteritems
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+
+class PostProcessorRunner(object):
+    """Post Processor Scheduler Action."""
+
+    def __init__(self):
+        """Init method."""
+        self.amActive = False
+
+    def run(self, **kwargs):
+        """Run the postprocessor."""
+        path = kwargs.pop('path', app.TV_DOWNLOAD_DIR)
+        process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
+
+        if not os.path.isdir(path):
+            result = ("Post-processing attempted but directory doesn't exist: "
+                      '{folder}').format(folder=path)
+            log.warning(result)
+            return result
+
+        if not os.path.isabs(path):
+            result = ('Post-processing attempted but directory is relative '
+                      '(and probably not what you really want to process): '
+                      '{folder}').format(folder=path)
+            log.warning(result)
+            return result
+
+        if app.post_processor_scheduler.action.amActive:
+            result = 'Post-processor is already running.'
+            log.info(result)
+            return result
+
+        try:
+            self.amActive = True
+            return ProcessResult(path, process_method).process(**kwargs)
+        finally:
+            self.amActive = False
 
 
 class ProcessResult(object):
@@ -151,7 +194,7 @@ class ProcessResult(object):
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
-            self.log('Successfully processed.')
+            self.log('Post-processing completed.')
 
             # Clean Kodi library
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():

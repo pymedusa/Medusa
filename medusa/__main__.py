@@ -65,15 +65,18 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler,
-    helpers, logger as app_logger, metadata, name_cache, naming, network_timezones,
-    providers, scheduler, show_queue, show_updater, subtitles, trakt_checker
+    app, cache, db, event_queue, exception_handler, helpers,
+    logger as app_logger, metadata, name_cache, naming,
+    network_timezones, process_tv, providers, scheduler,
+    show_queue, show_updater, subtitles, trakt_checker
 )
 from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
-    check_setting_str, load_provider_setting, save_provider_setting
+    CheckSection, ConfigMigrator, check_setting_bool,
+    check_setting_float, check_setting_int,
+    check_setting_list, check_setting_str,
+    load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
@@ -1191,11 +1194,11 @@ class Application(object):
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
-                                                                    cycleTime=update_interval,
-                                                                    threadName='POSTPROCESSOR',
-                                                                    silent=not app.PROCESS_AUTOMATICALLY,
-                                                                    run_delay=update_interval)
+            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
+                                                               cycleTime=update_interval,
+                                                               threadName='POSTPROCESSOR',
+                                                               silent=not app.PROCESS_AUTOMATICALLY,
+                                                               run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
@@ -1333,12 +1336,12 @@ class Application(object):
 
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
-                app.auto_post_processor_scheduler.silent = False
-                app.auto_post_processor_scheduler.enable = True
+                app.post_processor_scheduler.silent = False
+                app.post_processor_scheduler.enable = True
             else:
-                app.auto_post_processor_scheduler.enable = False
-                app.auto_post_processor_scheduler.silent = True
-            app.auto_post_processor_scheduler.start()
+                app.post_processor_scheduler.enable = False
+                app.post_processor_scheduler.silent = True
+            app.post_processor_scheduler.start()
 
             # start the subtitles finder
             if app.USE_SUBTITLES:
@@ -1383,7 +1386,7 @@ class Application(object):
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.auto_post_processor_scheduler,
+                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
