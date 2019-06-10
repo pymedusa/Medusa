@@ -9,17 +9,11 @@ import '../vendor/css/open-sans.css';
 
 import Vue from 'vue';
 import Vuex from 'vuex';
-import VueMeta from 'vue-meta';
-import VueRouter from 'vue-router';
-import VueNativeSock from 'vue-native-websocket';
-import AsyncComputed from 'vue-async-computed';
 import { ToggleButton } from 'vue-js-toggle-button';
-import Snotify from 'vue-snotify';
 import axios from 'axios';
 import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
-import { isDevelopment } from './utils/core';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
 import {
     AddShowOptions,
@@ -53,7 +47,6 @@ import {
 import globalVueShim from './global-vue-shim';
 
 if (window) {
-    window.isDevelopment = isDevelopment;
     // @TODO: Remove this before v1.0.0
     window.globalVueShim = globalVueShim;
 
@@ -62,12 +55,7 @@ if (window) {
     window.jQuery = $;
     window.Vue = Vue;
     window.Vuex = Vuex;
-    window.VueMeta = VueMeta;
-    window.VueRouter = VueRouter;
-    window.VueNativeSock = VueNativeSock;
-    window.AsyncComputed = AsyncComputed;
     window.ToggleButton = ToggleButton;
-    window.Snotify = Snotify;
     window.axios = axios;
     window._ = { debounce };
     window.store = store;
@@ -84,7 +72,6 @@ if (window) {
     };
     window.webRoot = webRoot;
     window.apiKey = apiKey;
-    window.apiRoot = webRoot + '/api/v2/';
 
     // Push pages that load via a vue file but still use `el` for mounting
     window.components = [];
