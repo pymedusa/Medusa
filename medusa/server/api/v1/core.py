@@ -31,16 +31,39 @@ from collections import OrderedDict
 from datetime import date, datetime
 
 from medusa import (
-    app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    app,
+    classes,
+    db,
+    helpers,
+    image_cache,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
 from medusa.common import (
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
-    SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings,
+    ARCHIVED,
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    UNSET,
+    WANTED,
+    statusStrings,
 )
 from medusa.helper.common import (
-    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
-    timeFormat, try_int,
+    dateFormat,
+    dateTimeFormat,
+    pretty_file_size,
+    sanitize_filename,
+    timeFormat,
+    try_int,
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string

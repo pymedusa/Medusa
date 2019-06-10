@@ -37,7 +37,7 @@ class PostProcessorRunner(object):
         """Init method."""
         self.amActive = False
 
-    def run(self, **kwargs):
+    def run(self, force=False, **kwargs):
         """Run the postprocessor."""
         path = kwargs.pop('path', app.TV_DOWNLOAD_DIR)
         process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
@@ -62,7 +62,7 @@ class PostProcessorRunner(object):
 
         try:
             self.amActive = True
-            return ProcessResult(path, process_method).process(**kwargs)
+            return ProcessResult(path, process_method).process(force=force, **kwargs)
         finally:
             self.amActive = False
 
