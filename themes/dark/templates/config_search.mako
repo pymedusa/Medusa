@@ -10,6 +10,8 @@ def js_bool(value):
     return 'true' if value else 'false'
 %>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -261,7 +263,8 @@ window.app = new Vue({
             },
         };
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         stateSearch() {
             return this.$store.state.search;
         },
@@ -298,7 +301,7 @@ window.app = new Vue({
             }
             return true;
         }
-    },
+    }),
     beforeMount() {
         $('#config-components').tabs();
     },
