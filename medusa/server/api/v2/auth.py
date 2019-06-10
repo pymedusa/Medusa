@@ -30,9 +30,9 @@ class AuthHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def _check_authentication(self):
+    def pre_async_check(self):
         """Override authentication check for the authentication endpoint."""
-        return None
+        return
 
     def post(self, *args, **kwargs):
         """Request JWT."""

@@ -4,9 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import re
-import sys
 import traceback
-from concurrent.futures import ThreadPoolExecutor
 
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
@@ -16,11 +14,11 @@ from mako.template import Template as MakoTemplate
 from medusa import (
     app,
     db,
-    exception_handler,
     helpers,
     logger,
 )
 from medusa.server.api.v1.core import function_mapper
+from medusa.server.threaded_handler import ThreadedRequestHandler
 
 from requests.compat import urljoin
 
@@ -30,9 +28,7 @@ from six import (
     viewitems,
 )
 
-from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
-from tornado.gen import coroutine
 from tornado.web import (
     HTTPError,
     RequestHandler,
@@ -196,62 +192,36 @@ class BaseHandler(RequestHandler):
         return True
 
 
-class WebHandler(BaseHandler):
+class WebHandler(BaseHandler, ThreadedRequestHandler):
     """Base Handler for the web server."""
-
-    # Python 3.5 doesn't support thread_name_prefix
-    if sys.version_info[:2] == (3, 5):
-        executor = ThreadPoolExecutor()
-    else:
-        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
 
     @authenticated
-    @coroutine
-    def get(self, route, *args, **kwargs):
+    def call_route(self, route):
         try:
             # route -> method obj
             route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
             method = getattr(self, route)
 
-            results = yield self.async_call(method)
-            self.finish(results)
-
-        except Exception:
-            logger.log(u'Failed doing web ui get request {route!r}: {error}'.format
-                       (route=route, error=traceback.format_exc()), logger.DEBUG)
-            raise HTTPError(404)
-
-    @authenticated
-    @coroutine
-    def post(self, route, *args, **kwargs):
-        try:
-            # route -> method obj
-            route = route.strip('/').replace('.', '_').replace('-', '_') or 'index'
-            method = getattr(self, route)
-
-            results = yield self.async_call(method)
-            self.finish(results)
-
-        except Exception:
-            logger.log(u'Failed doing web ui post request {route!r}: {error}'.format
-                       (route=route, error=traceback.format_exc()), logger.DEBUG)
-            raise HTTPError(404)
-
-    @run_on_executor
-    def async_call(self, function):
-        try:
+            # prepare arguments
             kwargs = self.request.arguments
             for arg, value in iteritems(kwargs):
                 if len(value) == 1:
                     kwargs[arg] = self.get_argument(arg)
 
-            result = function(**kwargs)
-            return result
-        except Exception as e:
-            exception_handler.handle(e)
+            return method(**kwargs)
+        except Exception:
+            logger.log(u'Failed doing Web UI {method} request {route!r}\n{tb}'.format
+                       (method=self.request.method, route=route, tb=traceback.format_exc()), logger.DEBUG)
+            raise HTTPError(404)
+
+    def get(self, route, *args, **kwargs):
+        return self.call_route(route)
+
+    def post(self, route, *args, **kwargs):
+        return self.call_route(route)
 
 
 @route('(.*)(/?)')

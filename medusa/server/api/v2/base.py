@@ -6,13 +6,10 @@ from __future__ import unicode_literals
 import base64
 import json
 import logging
-import sys
 import traceback
 from collections import OrderedDict
-from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from functools import partial
-from types import MethodType
 
 from babelfish.language import Language
 
@@ -20,76 +17,19 @@ import jwt
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.server.threaded_handler import ThreadedRequestHandler
 
-from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
+from six import ensure_text, iteritems, string_types, text_type, viewitems
 from six.moves import collections_abc
 
-from tornado.concurrent import Future as TornadoFuture
-from tornado.gen import coroutine
 from tornado.httputil import url_concat
-from tornado.ioloop import IOLoop
-from tornado.web import HTTPError, RequestHandler
+from tornado.web import HTTPError
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-# Python 3.5 doesn't support thread_name_prefix
-if sys.version_info[:2] == (3, 5):
-    executor = ThreadPoolExecutor()
-else:
-    executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
 
-
-def make_async(instance, method):
-    """
-    Wrap a method with an async wrapper.
-
-    :param instance: A RequestHandler class instance.
-    :param type: instance of RequestHandler
-    :param method: The method to wrap.
-    :type method: callable
-    :return: An instance-bound async-wrapped method.
-    :rtype: callable
-    """
-    @coroutine
-    def async_call(self, *args, **kwargs):
-        """Call the actual HTTP method asynchronously."""
-        content = self._check_authentication()
-        if content is not None:
-            self.finish(content)
-            return
-
-        # Authentication check passed, run the method in a thread
-        if PY2:
-            # On Python 2, the original exception stack trace is not passed from the executor.
-            # This is a workaround based on https://stackoverflow.com/a/27413025/7597273
-            tornado_future = TornadoFuture()
-
-            def wrapper():
-                try:
-                    result = method(*args, **kwargs)
-                except:  # noqa: E722 [do not use bare 'except']
-                    tornado_future.set_exc_info(sys.exc_info())
-                else:
-                    tornado_future.set_result(result)
-
-            # `executor.submit()` returns a `concurrent.futures.Future`; wait for it to finish, but ignore the result
-            yield executor.submit(wrapper)
-            # When this future is yielded, any stored exceptions are raised (with the correct stack trace).
-            content = yield tornado_future
-        else:
-            # On Python 3+, exceptions contain their original stack trace.
-            prepared = partial(method, *args, **kwargs)
-            content = yield IOLoop.current().run_in_executor(executor, prepared)
-
-        self.finish(content)
-
-    # This creates a bound method `instance.async_call`,
-    # so that it could substitute the original method in the class instance.
-    return MethodType(async_call, instance)
-
-
-class BaseRequestHandler(RequestHandler):
+class BaseRequestHandler(ThreadedRequestHandler):
     """A base class used for shared RequestHandler methods."""
 
     DEFAULT_ALLOWED_METHODS = ('OPTIONS', )
@@ -105,7 +45,7 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def _check_authentication(self):
+    def pre_async_check(self):
         """Check if JWT or API key is provided and valid."""
         if self.request.method == 'OPTIONS':
             return
@@ -133,18 +73,6 @@ class BaseRequestHandler(RequestHandler):
                 return self._unauthorized('Invalid user/pass.')
         else:
             return self._unauthorized('Invalid token.')
-
-    def initialize(self):
-        """
-        Override the request method to use the async dispatcher.
-
-        This function is called for each request.
-        """
-        name = self.request.method.lower()
-        # Wrap the original method with the code needed to run it asynchronously
-        method = make_async(self, getattr(self, name))
-        # Bind the wrapped method to self.<name>
-        setattr(self, name, method)
 
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""

@@ -77,6 +77,7 @@ from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
 from medusa.search.queue import BacklogQueueItem
+from medusa.server.threaded_handler import ThreadedRequestHandler
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
@@ -87,8 +88,6 @@ from medusa.updater.version_checker import CheckVersion
 from requests.compat import unquote_plus
 
 from six import binary_type, iteritems, itervalues, string_types, text_type, viewitems
-
-from tornado.web import RequestHandler
 
 
 if sys.version_info[0] == 2:
@@ -123,7 +122,7 @@ result_type_map = {
 }
 
 
-class ApiHandler(RequestHandler):
+class ApiHandler(ThreadedRequestHandler):
     """Api class that returns json results."""
 
     version = 7  # use an int since float-point is unpredictable
@@ -179,7 +178,7 @@ class ApiHandler(RequestHandler):
             output_callback = output_callback_dict['default']
 
         try:
-            self.finish(output_callback(out_dict))
+            return output_callback(out_dict)
         except Exception:
             pass
 
