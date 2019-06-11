@@ -48,10 +48,12 @@ const actions = {
         // @TODO: Add real JWT login
         const apiLogin = credentials => Promise.resolve(credentials);
 
-        apiLogin(credentials).then(user => {
-            return commit(LOGIN_SUCCESS, user);
+        return apiLogin(credentials).then(user => {
+            commit(LOGIN_SUCCESS, user);
+            return { success: true };
         }).catch(error => {
             commit(LOGIN_FAILED, { error, credentials });
+            return { success: false, error };
         });
     },
     logout(context) {

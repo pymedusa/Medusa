@@ -26,7 +26,7 @@
     </div>
 </template>
 <script>
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 
 export default {
     name: 'addRecommended',
@@ -41,5 +41,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

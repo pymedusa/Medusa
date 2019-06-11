@@ -77,7 +77,7 @@ window.app = new Vue({
                 api.get('alias-source').then(response => {
                     updateExceptionData(response.data);
                 }).catch(error => {
-                    log.error('Trying to get scene exceptions failed with error: ' + error);
+                    console.error('Trying to get scene exceptions failed with error: ' + error);
                     sceneRefresh.showSpinner = false;
                     sceneRefresh.inProgress = false;
                     sceneRefresh.message = 'Trying to get scene exceptions failed with error: ' + error;
@@ -85,7 +85,7 @@ window.app = new Vue({
 
                 sceneRefresh.message = 'Finished updating scene exceptions.';
             }).catch(error => {
-                log.error('Trying to update scene exceptions failed with error: ' + error);
+                console.error('Trying to update scene exceptions failed with error: ' + error);
                 sceneRefresh.message = 'Trying to update scene exceptions failed with error: ' + error;
                 sceneRefresh.inProgress = false;
             }).finally(() => {
@@ -124,7 +124,7 @@ window.app = new Vue({
         api.get('alias-source').then(response => {
             updateExceptionData(response.data);
         }).catch(error => {
-            log.error('Trying to get scene exceptions failed with error: ' + error);
+            console.error('Trying to get scene exceptions failed with error: ' + error);
         });
     }
 });

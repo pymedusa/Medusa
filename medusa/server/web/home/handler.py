@@ -2,12 +2,12 @@
 
 from __future__ import unicode_literals
 
-import ast
 import json
 import os
 import time
 from builtins import str
 from datetime import date, datetime
+from textwrap import dedent
 
 from medusa import (
     app,
@@ -34,7 +34,6 @@ from medusa.common import (
     DOWNLOADED,
     FAILED,
     IGNORED,
-    Overview,
     Quality,
     SKIPPED,
     SNATCHED,
@@ -82,6 +81,7 @@ from medusa.scene_numbering import (
     set_scene_numbering,
     xem_refresh,
 )
+from medusa.search import SearchType
 from medusa.search.manual import (
     SEARCH_STATUS_FINISHED,
     SEARCH_STATUS_QUEUED,
@@ -94,7 +94,7 @@ from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
     ForcedSearchQueueItem,
-    ManualSnatchQueueItem,
+    SnatchQueueItem,
 )
 from medusa.server.web.core import (
     PageTemplate,
@@ -104,7 +104,8 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.version_checker import CheckVersion
+from medusa.tv.series import Series, SeriesIdentifier
+from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import (
     quote_plus,
@@ -171,42 +172,34 @@ class Home(WebRoot):
 
     @staticmethod
     def show_statistics():
-        main_db_con = db.DBConnection()
-
+        pre_today = [SKIPPED, WANTED, FAILED]
         snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
         downloaded = [DOWNLOADED, ARCHIVED]
 
-        # FIXME: This inner join is not multi indexer friendly.
-        sql_result = main_db_con.select(
-            b"""
+        def query_in(items):
+            return '({0})'.format(','.join(map(str, items)))
+
+        query = dedent("""\
             SELECT showid, indexer,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_quality}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_quality}
               ) AS ep_snatched,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     status IN {status_download}
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND
+                status IN {status_download}
               ) AS ep_downloaded,
-              (SELECT COUNT(*) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer AND
-                     season > 0 AND
-                     episode > 0 AND
-                     airdate > 1 AND
-                     ((airdate <= {today} AND (status = {skipped} OR
-                                               status = {wanted} OR
-                                               status = {failed})) OR
-                      (status IN {status_quality}) OR
-                      (status IN {status_download}))
+              SUM(
+                season > 0 AND
+                episode > 0 AND
+                airdate > 1 AND (
+                  (airdate <= {today} AND status IN {status_pre_today})
+                  OR status IN {status_both}
+                )
               ) AS ep_total,
               (SELECT airdate FROM tv_episodes
                WHERE showid=tv_eps.showid AND
@@ -224,69 +217,35 @@ class Home(WebRoot):
                ORDER BY airdate DESC
                LIMIT 1
               ) AS ep_airs_prev,
-              (SELECT SUM(file_size) FROM tv_episodes
-               WHERE showid=tv_eps.showid AND
-                     indexer=tv_eps.indexer
-              ) AS show_size
+              SUM(file_size) AS show_size
             FROM tv_episodes tv_eps
             GROUP BY showid, indexer
-            """.format(status_quality='({statuses})'.format(statuses=','.join([str(x) for x in snatched])),
-                       status_download='({statuses})'.format(statuses=','.join([str(x) for x in downloaded])),
-                       skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, failed=FAILED,
-                       today=date.today().toordinal())
-        )
+        """).format(status_quality=query_in(snatched), status_download=query_in(downloaded),
+                    status_pre_today=query_in(pre_today), status_both=query_in(snatched + downloaded),
+                    skipped=SKIPPED, wanted=WANTED, unaired=UNAIRED, today=date.today().toordinal())
+
+        main_db_con = db.DBConnection()
+        sql_result = main_db_con.select(query)
 
         show_stat = {}
         max_download_count = 1000
         for cur_result in sql_result:
-            show_stat[(cur_result[b'indexer'], cur_result[b'showid'])] = cur_result
-            if cur_result[b'ep_total'] > max_download_count:
-                max_download_count = cur_result[b'ep_total']
+            show_stat[(cur_result['indexer'], cur_result['showid'])] = cur_result
+            if cur_result['ep_total'] > max_download_count:
+                max_download_count = cur_result['ep_total']
 
         max_download_count *= 100
 
         return show_stat, max_download_count
 
     def is_alive(self, *args, **kwargs):
-        if 'callback' in kwargs and '_' in kwargs:
-            callback, _ = kwargs['callback'], kwargs['_']
-        else:
-            return 'Error: Unsupported Request. Send jsonp request with \'callback\' variable in the query string.'
-
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-        self.set_header('Content-Type', 'text/javascript')
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'x-requested-with')
 
-        return '{callback}({msg});'.format(
-            callback=callback,
-            msg=json.dumps({
-                'msg': '{pid}'.format(
-                    pid=app.PID if app.started else 'nope')
-            })
-        )
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
-    def haveKODI():
-        return app.USE_KODI and app.KODI_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/plex, check if enabled === true
-    def havePLEX():
-        return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/emby, check if enabled === true
-    def haveEMBY():
-        return app.USE_EMBY
-
-    @staticmethod
-    # @TODO: Replace with /api/v2/config/torrents, check if enabled === true
-    def haveTORRENT():
-        return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
-                    (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
-                     app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
+        return json.dumps({
+            'pid': app.PID if app.started else ''
+        })
 
     @staticmethod
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
@@ -303,7 +262,7 @@ class Home(WebRoot):
             if authed:
                 return 'Success. Connected and authenticated'
             else:
-                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth!r}'.format(
+                return 'Authentication failed. SABnzbd expects {access!r} as authentication method, {auth}'.format(
                     access=acces_msg, auth=auth_msg)
         else:
             return 'Unable to connect to host'
@@ -574,30 +533,20 @@ class Home(WebRoot):
 
     @staticmethod
     def loadShowNotifyLists():
-        main_db_con = db.DBConnection()
-        rows = main_db_con.select(
-            b'SELECT show_id, show_name, notify_list '
-            b'FROM tv_shows '
-            b'ORDER BY show_name ASC'
-        )
-
         data = {}
         size = 0
-        for r in rows:
+        for show in app.showList:
             notify_list = {
                 'emails': '',
                 'prowlAPIs': '',
             }
-            if r[b'notify_list']:
-                # First, handle legacy format (emails only)
-                if not r[b'notify_list'][0] == '{':
-                    notify_list['emails'] = r[b'notify_list']
-                else:
-                    notify_list = dict(ast.literal_eval(r[b'notify_list']))
+            if show.notify_list:
+                notify_list = show.notify_list
 
-            data[r[b'show_id']] = {
-                'id': r[b'show_id'],
-                'name': r[b'show_name'],
+            data[show.identifier.slug] = {
+                'id': show.show_id,
+                'name': show.name,
+                'slug': show.identifier.slug,
                 'list': notify_list['emails'],
                 'prowl_notify_list': notify_list['prowlAPIs']
             }
@@ -608,42 +557,23 @@ class Home(WebRoot):
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
         entries = {'emails': '', 'prowlAPIs': ''}
-        main_db_con = db.DBConnection()
 
-        # Get current data
-        sql_results = main_db_con.select(
-            b'SELECT notify_list '
-            b'FROM tv_shows '
-            b'WHERE show_id = ?',
-            [show]
-        )
-        for subs in sql_results:
-            if subs[b'notify_list']:
-                # First, handle legacy format (emails only)
-                if not subs[b'notify_list'][0] == '{':
-                    entries['emails'] = subs[b'notify_list']
-                else:
-                    entries = dict(ast.literal_eval(subs[b'notify_list']))
+        series_identifier = SeriesIdentifier.from_slug(show)
+        series_obj = Series.find_by_identifier(series_identifier)
+
+        if series_obj:
+            if series_obj.notify_list:
+                entries = series_obj.notify_list
 
         if emails is not None:
             entries['emails'] = emails
-            if not main_db_con.action(
-                    b'UPDATE tv_shows '
-                    b'SET notify_list = ? '
-                    b'WHERE show_id = ?',
-                    [str(entries), show]
-            ):
-                return 'ERROR'
+            series_obj.notify_list = entries
 
         if prowlAPIs is not None:
             entries['prowlAPIs'] = prowlAPIs
-            if not main_db_con.action(
-                    b'UPDATE tv_shows '
-                    b'SET notify_list = ? '
-                    b'WHERE show_id = ?',
-                    [str(entries), show]
-            ):
-                return 'ERROR'
+            series_obj.notify_list = entries
+
+        series_obj.save_to_db()
 
         return 'OK'
 
@@ -670,6 +600,14 @@ class Home(WebRoot):
             return 'Pushbullet notification succeeded. Check your device to make sure it worked'
         else:
             return 'Error sending Pushbullet notification: {0}'.format(result.get('error'))
+
+    @staticmethod
+    def testJoin(api=None, device=None):
+        result = notifiers.join_notifier.test_notify(api, device)
+        if result.get('success'):
+            return 'Join notification succeeded. Check your device to make sure it worked'
+        else:
+            return 'Error sending Join notification: {0}'.format(result.get('error'))
 
     @staticmethod
     def getPushbulletDevices(api=None):
@@ -747,7 +685,7 @@ class Home(WebRoot):
                 return restart_rendered
             else:
                 return self._genericMessage('Update Failed',
-                                            'Update wasn\'t successful, not restarting. Check your log for more information.')
+                                            "Update wasn't successful, not restarting. Check your log for more information.")
         else:
             return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
@@ -792,7 +730,7 @@ class Home(WebRoot):
                 'message': 'downgrade',
             })
         else:
-            logger.log(u'Checkout branch couldn\'t compare DB version.', logger.WARNING)
+            logger.log(u"Checkout branch couldn't compare DB version.", logger.WARNING)
             return json.dumps({
                 'status': 'error',
                 'message': 'General exception',
@@ -826,131 +764,25 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            b'SELECT DISTINCT season '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            b'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
         min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
 
+        main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season >= ? '
-            b'ORDER BY season DESC, episode DESC',
+            'SELECT * '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? AND season >= ? '
+            'ORDER BY season DESC, episode DESC',
             [series_obj.indexer, series_obj.series_id, min_season]
         )
 
         t = PageTemplate(rh=self, filename='displayShow.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil',
-        }]
 
-        try:
-            show_loc = (series_obj.location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
-
-        show_message = ''
-
-        if app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
-
-        elif app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-            show_message = 'The information on this page is in the process of being updated.'
-
-        elif app.show_queue_scheduler.action.isBeingRefreshed(series_obj):
-            show_message = 'The episodes below are currently being refreshed from disk'
-
-        elif app.show_queue_scheduler.action.isBeingSubtitled(series_obj):
-            show_message = 'Currently downloading subtitles for this show'
-
-        elif app.show_queue_scheduler.action.isInRefreshQueue(series_obj):
-            show_message = 'This show is queued to be refreshed.'
-
-        elif app.show_queue_scheduler.action.isInUpdateQueue(series_obj):
-            show_message = 'This show is queued and awaiting an update.'
-
-        elif app.show_queue_scheduler.action.isInSubtitleQueue(series_obj):
-            show_message = 'This show is queued and awaiting subtitles download.'
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'menu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'menu-icon-emby',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'menu-icon-backlog',
-                    })
-
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'], manually_searched=cur_result[b'manually_searched'])
+            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
             if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
+                ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -974,15 +806,12 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
-            show=series_obj, sql_results=sql_results, season_results=season_results,
-            bwl=bwl, ep_counts=ep_counts,
-            ep_cats=ep_cats, all_scene_exceptions=' | '.join(series_obj.exceptions),
+            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
             scene_numbering=get_scene_numbering_for_show(series_obj),
             xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='displayShow',
+            controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None):
@@ -1001,49 +830,56 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection('cache.db')
             cached_result = main_db_con.action(
-                b'SELECT * '
-                b'FROM \'{provider}\' '
-                b'WHERE rowid = ?'.format(provider=provider),
+                'SELECT * '
+                "FROM '{provider}' "
+                'WHERE rowid = ?'.format(provider=provider),
                 [rowid],
                 fetchone=True
             )
         except Exception as msg:
-            error_message = 'Couldn\'t read cached results. Error: {error}'.format(error=msg)
+            error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
             return self._genericMessage('Error', error_message)
 
-        if not cached_result or not all([cached_result[b'url'],
-                                         cached_result[b'quality'],
-                                         cached_result[b'name'],
-                                         cached_result[b'indexer'],
-                                         cached_result[b'indexerid'],
-                                         cached_result[b'season'] is not None,
+        if not cached_result or not all([cached_result['url'],
+                                         cached_result['quality'],
+                                         cached_result['name'],
+                                         cached_result['indexer'],
+                                         cached_result['indexerid'],
+                                         cached_result['season'] is not None,
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
         try:
-            series_obj = Show.find_by_id(app.showList, cached_result[b'indexer'], cached_result[b'indexerid'])
+            series_obj = Show.find_by_id(app.showList, cached_result['indexer'], cached_result['indexerid'])
         except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(cached_result[b'indexerid']))
+            return self._genericMessage('Error', 'Invalid show ID: {0}'.format(cached_result['indexerid']))
 
         if not series_obj:
             return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, '
-                                                 'did you remove the show?'.format(cached_result[b'indexerid']))
+                                                 'did you remove the show?'.format(cached_result['indexerid']))
 
         # Create a list of episode object(s)
         # Multi-episode: |1|2|
         # Single-episode: |1|
         # Season pack: || so we need to get all episodes from season and create all ep objects
         ep_objs = []
-        result_episodes = cached_result[b'episodes'].strip('|')
+        result_episodes = cached_result['episodes'].strip('|')
         if result_episodes:
             for episode in result_episodes.split('|'):
-                ep_objs.append(series_obj.get_episode(int(cached_result[b'season']), int(episode)))
+                ep_objs.append(series_obj.get_episode(int(cached_result['season']), int(episode)))
         else:
-            ep_objs.extend(series_obj.get_all_episodes([int(cached_result[b'season'])]))
+            ep_objs.extend(series_obj.get_all_episodes([int(cached_result['season'])]))
+
+        search_result = providers.get_provider_class(provider).get_result(ep_objs)
+
+        # Map the db fields to result attributes
+        search_result.update_from_db(series_obj, ep_objs, cached_result)
+
+        search_result.search_type = SearchType.MANUAL_SEARCH
 
         # Create the queue item
-        snatch_queue_item = ManualSnatchQueueItem(series_obj, ep_objs, provider, cached_result)
+        snatch_queue_item = SnatchQueueItem(search_result.series, search_result.episodes, search_result)
 
         # Add the queue item to the queue
         app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
@@ -1101,9 +937,9 @@ class Home(WebRoot):
 
         for provider, last_update in iteritems(last_prov_updates):
             table_exists = main_db_con.select(
-                b'SELECT name '
-                b'FROM sqlite_master '
-                b'WHERE type=\'table\' AND name=?',
+                'SELECT name '
+                'FROM sqlite_master '
+                "WHERE type='table' AND name=?",
                 [provider]
             )
             if not table_exists:
@@ -1111,9 +947,9 @@ class Home(WebRoot):
             # Check if the cache table has a result for this show + season + ep wich has a later timestamp, then last_update
             # FIXME: This will need to be adjusted when indexer field is added to the providers.
             needs_update = main_db_con.select(
-                b'SELECT * '
-                b'FROM \'{provider}\' '
-                b'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
+                'SELECT * '
+                "FROM '{provider}' "
+                'WHERE episodes LIKE ? AND season = ? AND indexer = ? AND indexerid = ?  AND time > ?'.format(provider=provider),
                 ['%|{episodes}|%'.format(episodes=sql_episode), season, series_obj.indexer, series_obj.series_id, int(last_update)]
             )
 
@@ -1162,72 +998,6 @@ class Home(WebRoot):
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
-        submenu = [{
-            'title': 'Edit',
-            'path': 'home/editShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-            'icon': 'ui-icon ui-icon-pencil'
-        }]
-
-        try:
-            show_loc = (series_obj.location, True)
-        except ShowDirectoryNotFoundException:
-            show_loc = (series_obj._location, False)  # pylint: disable=protected-access
-
-        show_message = app.show_queue_scheduler.action.getQueueActionMessage(series_obj)
-
-        if not app.show_queue_scheduler.action.isBeingAdded(series_obj):
-            if not app.show_queue_scheduler.action.isBeingUpdated(series_obj):
-                submenu.append({
-                    'title': 'Resume' if series_obj.paused else 'Pause',
-                    'path': 'home/togglePause?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-{state}'.format(state='play' if series_obj.paused else 'pause'),
-                })
-                submenu.append({
-                    'title': 'Remove',
-                    'path': 'home/deleteShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'class': 'removeshow',
-                    'confirm': True,
-                    'icon': 'ui-icon ui-icon-trash',
-                })
-                submenu.append({
-                    'title': 'Re-scan files',
-                    'path': 'home/refreshShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Force Full Update',
-                    'path': 'home/updateShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-transfer-e-w',
-                })
-                submenu.append({
-                    'title': 'Update show in KODI',
-                    'path': 'home/updateKODI?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveKODI(),
-                    'icon': 'submenu-icon-kodi',
-                })
-                submenu.append({
-                    'title': 'Update show in Emby',
-                    'path': 'home/updateEMBY?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'requires': self.haveEMBY(),
-                    'icon': 'ui-icon ui-icon-refresh',
-                })
-                submenu.append({
-                    'title': 'Preview Rename',
-                    'path': 'home/testRename?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                    'icon': 'ui-icon ui-icon-tag',
-                })
-
-                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
-                        series_obj) and series_obj.subtitles:
-                    submenu.append({
-                        'title': 'Download Subtitles',
-                        'path': 'home/subtitleShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj),
-                        'icon': 'ui-icon ui-icon-comment',
-                    })
-
-        bwl = None
-        if series_obj.is_anime:
-            bwl = series_obj.release_groups
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
 
@@ -1253,19 +1023,19 @@ class Home(WebRoot):
         episode_history = []
         try:
             main_db_con = db.DBConnection()
-            episode_status_result = main_db_con.action(
-                b'SELECT date, action, quality, provider, resource, size '
-                b'FROM history '
-                b'WHERE indexer_id = ? '
-                b'AND showid = ? '
-                b'AND season = ? '
-                b'AND episode = ? '
-                b'AND action in (?, ?, ?, ?, ?) '
-                b'ORDER BY date DESC',
+            episode_status_result = main_db_con.select(
+                'SELECT date, action, quality, provider, resource, size '
+                'FROM history '
+                'WHERE indexer_id = ? '
+                'AND showid = ? '
+                'AND season = ? '
+                'AND episode = ? '
+                'AND action in (?, ?, ?, ?, ?) '
+                'ORDER BY date DESC',
                 [indexer_id, series_id, season, episode,
                  DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
             )
-            episode_history = [dict(row) for row in episode_status_result]
+            episode_history = episode_status_result
             for i in episode_history:
                 i['status'] = i['action']
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
@@ -1312,59 +1082,11 @@ class Home(WebRoot):
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        # There is some logic for this in the partials/showheader.mako page.
-        main_db_con = db.DBConnection()
-        season_results = main_db_con.select(
-            b'SELECT DISTINCT season '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season IS NOT NULL '
-            b'ORDER BY season DESC',
-            [series_obj.indexer, series_obj.series_id]
-        )
-
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
-
-        sql_results = main_db_con.select(
-            b'SELECT * '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? AND season >= ? '
-            b'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
-        ep_counts = {
-            Overview.SKIPPED: 0,
-            Overview.WANTED: 0,
-            Overview.QUAL: 0,
-            Overview.GOOD: 0,
-            Overview.UNAIRED: 0,
-            Overview.SNATCHED: 0,
-            Overview.SNATCHED_PROPER: 0,
-            Overview.SNATCHED_BEST: 0
-        }
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result[b'status'], cur_result[b'quality'],
-                                                 manually_searched=cur_result[b'manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result[b'season'],
-                                                     episode=cur_result[b'episode'])] = cur_ep_cat
-                ep_counts[cur_ep_cat] += 1
-
         return t.render(
-            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
-            show=series_obj, provider_results=provider_results, episode=episode,
-            bwl=bwl, season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=' | '.join(series_obj.exceptions),
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
-            title=series_obj.name, controller='home', action='snatchSelection',
-            episode_history=episode_history, season_results=season_results, sql_results=sql_results,
-            ep_counts=ep_counts, ep_cats=ep_cats
+            show=series_obj,
+            provider_results=provider_results, episode_history=episode_history,
+            season=season, episode=episode, manual_search_type=manual_search_type,
+            controller='home', action='snatchSelection'
         )
 
     @staticmethod
@@ -1420,7 +1142,6 @@ class Home(WebRoot):
         preferred_qualities = preferred_qualities or []
         exceptions = exceptions_list or set()
 
-        anidb_failed = False
         errors = 0
 
         if not indexername or not seriesid:
@@ -1490,11 +1211,11 @@ class Home(WebRoot):
             except IndexerShowNotFoundInLanguage:
                 errors += 1
                 status = 'Could not change language to'
-            except IndexerException as e:
+            except IndexerException as error:
                 errors += 1
                 status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {error}'.format(
-                    error=e.message,
+                msg += u' Please try again later. Error: {error!r}'.format(
+                    error=error,
                 )
             else:
                 language = indexer_lang
@@ -1559,10 +1280,10 @@ class Home(WebRoot):
                 series_obj.season_folders = season_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(series_obj)
-                except CantRefreshShowException as e:
+                except CantRefreshShowException as error:
                     errors += 1
-                    logger.log("Unable to refresh show '{show}': {error}".format
-                               (show=series_obj.name, error=e.message), logger.WARNING)
+                    logger.log("Unable to refresh show '{show}': {error!r}".format
+                               (show=series_obj.name, error=error), logger.WARNING)
 
             # Check if we should erase parsed cached results for that show
             do_erase_parsed_cache = False
@@ -1619,10 +1340,10 @@ class Home(WebRoot):
                 if (do_update or changed_location) and os.path.isdir(new_location):
                     try:
                         app.show_queue_scheduler.action.refreshShow(series_obj)
-                    except CantRefreshShowException as e:
+                    except CantRefreshShowException as error:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
-                                   (show=series_obj.name, error=e.message), logger.WARNING)
+                        logger.log("Unable to refresh show '{show}'. Error: {error!r}".format
+                                   (show=series_obj.name, error=error), logger.WARNING)
 
             # Save all settings changed while in series_obj.lock
             series_obj.save_to_db()
@@ -1632,29 +1353,29 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as e:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to update show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to update show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(series_obj, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
                 name_cache.build_name_cache(series_obj)
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene exceptions for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(series_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException:
+            except CantUpdateShowException as error:
                 errors += 1
-                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
-                           (show=series_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to force an update on scene numbering for show '{show}': {error!r}".format
+                           (show=series_obj.name, error=error), logger.WARNING)
 
             # Must erase cached DB results when toggling scene numbering
             self.erase_cache(series_obj)
@@ -1666,10 +1387,10 @@ class Home(WebRoot):
             # Need to refresh show as we updated scene numbering or changed show format
             try:
                 app.show_queue_scheduler.action.refreshShow(series_obj)
-            except CantRefreshShowException as e:
+            except CantRefreshShowException as error:
                 errors += 1
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
-                           'Error: {error}'.format(show=series_obj.name, error=e.message), logger.WARNING)
+                           'Error: {error!r}'.format(show=series_obj.name, error=error), logger.WARNING)
 
         if directCall:
             return errors
@@ -1693,17 +1414,17 @@ class Home(WebRoot):
             for cur_provider in providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
-                    b'SELECT name '
-                    b'FROM sqlite_master '
-                    b'WHERE type=\'table\' AND name=?',
+                    'SELECT name '
+                    'FROM sqlite_master '
+                    "WHERE type='table' AND name=?",
                     [cur_provider.get_id()]
                 )
                 if not table_exists:
                     continue
                 try:
                     main_db_con.action(
-                        b'DELETE FROM \'{provider}\' '
-                        b'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
+                        "DELETE FROM '{provider}' "
+                        'WHERE indexerid = ?'.format(provider=cur_provider.get_id()),
                         [series_obj.series_id]
                     )
                 except Exception:
@@ -1912,7 +1633,7 @@ class Home(WebRoot):
 
                 ep_obj = series_obj.get_episode(season_no, episode_no)
                 if not ep_obj:
-                    return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
+                    return self._genericMessage('Error', "Episode couldn't be retrieved")
 
                 status = int(status)
                 if status in [WANTED, FAILED]:
@@ -1934,13 +1655,13 @@ class Home(WebRoot):
                             ep_obj.status in snatched_qualities + [DOWNLOADED] or
                             os.path.isfile(ep_obj.location)):
                         logger.log('Refusing to change status of {series} {episode} to DOWNLOADED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED or the file is missing'.format(
+                                   " because it's not SNATCHED/DOWNLOADED or the file is missing".format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
                     if status == FAILED and ep_obj.status not in snatched_qualities + [DOWNLOADED, ARCHIVED]:
                         logger.log('Refusing to change status of {series} {episode} to FAILED'
-                                   ' because it\'s not SNATCHED/DOWNLOADED/ARCHIVED'.format(
+                                   " because it's not SNATCHED/DOWNLOADED/ARCHIVED".format(
                                        series=series_obj.name, episode=cur_ep), logger.WARNING)
                         continue
 
@@ -2040,9 +1761,9 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Show not in show list')
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
+            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         ep_obj_list = series_obj.get_all_episodes(has_location=True)
         ep_obj_list = [x for x in ep_obj_list if x.location]
@@ -2075,9 +1796,9 @@ class Home(WebRoot):
             return self._genericMessage('Error', error_message)
 
         try:
-            series_obj.location  # @UnusedVariable
+            series_obj.validate_location  # @UnusedVariable
         except ShowDirectoryNotFoundException:
-            return self._genericMessage('Error', 'Can\'t rename episodes when the show dir is missing.')
+            return self._genericMessage('Error', "Can't rename episodes when the show dir is missing.")
 
         if eps is None:
             return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
@@ -2089,26 +1810,26 @@ class Home(WebRoot):
             # this is probably the worst possible way to deal with double eps
             # but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
-                b'SELECT location '
-                b'FROM tv_episodes '
-                b'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
+                'SELECT location '
+                'FROM tv_episodes '
+                'WHERE indexer = ? AND showid = ? AND season = ? AND episode = ? AND 5=5',
                 [indexer_name_to_id(indexername), seriesid, season_no, episode_no])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
                            (episode=cur_ep), logger.WARNING)
                 continue
             related_eps_result = main_db_con.select(
-                b'SELECT season, episode '
-                b'FROM tv_episodes '
-                b'WHERE location = ? AND episode != ?',
-                [ep_result[0][b'location'], episode_no]
+                'SELECT season, episode '
+                'FROM tv_episodes '
+                'WHERE location = ? AND episode != ?',
+                [ep_result[0]['location'], episode_no]
             )
 
             root_ep_obj = series_obj.get_episode(season_no, episode_no)
             root_ep_obj.related_episodes = []
 
             for cur_related_ep in related_eps_result:
-                related_ep_obj = series_obj.get_episode(cur_related_ep[b'season'], cur_related_ep[b'episode'])
+                related_ep_obj = series_obj.get_episode(cur_related_ep['season'], cur_related_ep['episode'])
                 if related_ep_obj not in root_ep_obj.related_episodes:
                     root_ep_obj.related_episodes.append(related_ep_obj)
 
@@ -2276,7 +1997,7 @@ class Home(WebRoot):
         if series_obj.is_anime and forAbsolute is None:
             return json.dumps({
                 'success': False,
-                'errorMessage': 'You can\'t use the Scene numbering for anime shows. '
+                'errorMessage': "You can't use the Scene numbering for anime shows. "
                                 'Use the Scene Absolute field, to configure a diverging episode number.',
                 'sceneSeason': None,
                 'sceneAbsolute': None,
@@ -2284,7 +2005,7 @@ class Home(WebRoot):
         elif not series_obj.is_anime and (forSeason is None or forEpisode is None):
             return json.dumps({
                 'success': False,
-                'errorMessage': 'You can\'t use the Scene Absolute for non-anime shows. '
+                'errorMessage': "You can't use the Scene Absolute for non-anime shows. "
                                 'Use the scene field, to configure a diverging episode number.',
                 'sceneSeason': None,
                 'sceneAbsolute': None,

@@ -20,15 +20,15 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """Trakt don't support this method."""
         pass
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """Trakt don't support this method."""
         pass
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """Trakt don't support this method."""
         pass
 
@@ -92,7 +92,7 @@ class Notifier(object):
                 trakt_api.request('sync/collection', data, method='POST')
 
             except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt: {0}', error.message)
+                log.debug('Unable to update Trakt: {0!r}', error)
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
@@ -176,7 +176,7 @@ class Notifier(object):
                 trakt_api.request(trakt_url, data, method='POST')
 
             except (TokenExpiredException, TraktException, AuthException) as error:
-                log.debug('Unable to update Trakt watchlist: {0}', error.message)
+                log.debug('Unable to update Trakt watchlist: {0!r}', error)
                 return False
 
         return True
@@ -244,5 +244,5 @@ class Notifier(object):
             else:
                 return 'Test notice sent successfully to Trakt'
         except (TokenExpiredException, TraktException, AuthException) as error:
-            log.warning('Unable to test TRAKT: {0}', error.message)
-            return 'Test notice failed to Trakt: {0}'.format(error.message)
+            log.warning('Unable to test TRAKT: {0!r}', error)
+            return 'Test notice failed to Trakt: {0!r}'.format(error)

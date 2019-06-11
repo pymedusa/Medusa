@@ -15,8 +15,6 @@ failed.db*
 autoProcessTV.cfg
 server.crt
 server.key
-medusa.egg-info
-.eggs
 
 #  Medusa Test Related   #
 ######################
@@ -66,9 +64,12 @@ Thumbs.db
 *~
 *.torrent
 
-# Unrar Executable   #
+# Python build related #
 ######################
-lib/unrar2/UnRAR.exe
+build/
+dist/
+pymedusa.egg-info
+.eggs
 
 # Grunt/Gulp/Node build related #
 ######################
@@ -88,4 +89,4 @@ yarn-error.log
 
 # Contrib #
 ######################
-contrib/
+/contrib/

@@ -7,10 +7,81 @@
       }
     },
     "config": {
+      "gitUsername": null,
+      "branch": "master",
+      "commitHash": "f5973b28465246e67465d7d86bdc8aa74d13e659",
+      "release": "v0.2.8",
+      "databaseVersion": {
+        "major": 44,
+        "minor": 11
+      },
       "pid": 1234,
+      "pythonVersion": "2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)]",
+      "sslVersion": "OpenSSL 1.1.0j  20 Nov 2018",
+      "os": "Windows-10-10.0.17763-SP0",
+      "locale": "en_US.UTF8",
+      "localUser": "User",
+      "programDir": "C:\\Medusa\\",
+      "configFile": "C:\\Medusa\\Data\\config.ini",
+      "dbPath": "C:\\Medusa\\Data\\main.db",
+      "cacheDir": "C:\\Medusa\\Data\\cache",
+      "logDir": "C:\\Medusa\\Data\\Logs",
       "postProcessing": {
+        "postponeIfSyncFiles": true,
+        "showDownloadDir": "C:\\Downloads\\TV",
+        "reflinkAvailable": false,
+        "addShowsWithoutDir": false,
+        "naming": {
+          "enableCustomNamingSports": false,
+          "multiEp": 16,
+          "pattern": "Season %S/%S.N.S%0SE%0E.%RT.%SQ.N-%RG",
+          "patternAnime": "%SN - S%0SE%0E - [%QN] [%RG]",
+          "animeNamingType": 3,
+          "stripYear": false,
+          "patternAirByDate": "%SN - %A.D - %EN",
+          "enableCustomNamingAirByDate": false,
+          "enableCustomNamingAnime": false,
+          "patternSports": "%SN - %A-D - %EN",
+          "animeMultiEp": 1
+        },
+        "renameEpisodes": true,
+        "moveAssociatedFiles": false,
+        "extraScriptsUrl": "https://github.com/pymedusa/Medusa/wiki/Post-Processing#extra-scripts",
+        "deleteRarContent": false,
+        "extraScripts": [],
+        "noDelete": false,
+        "allowedExtensions": [
+          "nfo",
+          "srt",
+          "sub",
+          "idx"
+        ],
         "processMethod": "copy",
-        "postponeIfNoSubs": true
+        "processAutomatically": true,
+        "autoPostprocessorFrequency": 30,
+        "fileTimestampTimezone": "local",
+        "syncFiles": [
+          "!ut",
+          "!sync",
+          "lftp-pget-status",
+          "part",
+          "bts",
+          "!qb",
+          "!qB"
+        ],
+        "unpack": false,
+        "postponeIfNoSubs": true,
+        "createMissingShowDirs": true,
+        "nfoRename": true,
+        "multiEpStrings": {
+          "32": "Extend (Limited, E-prefixed)",
+          "1": "Repeat",
+          "2": "Extend",
+          "4": "Duplicate",
+          "8": "Extend (Limited)",
+          "16": "Repeat (Separated)"
+        },
+        "airdateEpisodes": false
       },
       "news": {
         "unread": 1,
@@ -18,6 +89,8 @@
         "latest": "2018-07-03"
       },
       "logs": {
+        "debug": true,
+        "dbDebug": false,
         "numWarnings": 0,
         "numErrors": 0,
         "loggingLevels": {
@@ -32,7 +105,10 @@
         "enabled": true,
         "method": "qbittorrent"
       },
-      "donationsUrl": "https:\/\/github.com\/pymedusa\/Medusa\/wiki\/Donations",
+      "sourceUrl": "https://github.com/pymedusa/Medusa",
+      "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
+      "githubUrl": "https://github.com/pymedusa/pymedusa.github.io",
+      "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
       "recentShows": [
         {
           "showId": 253463,
@@ -54,7 +130,8 @@
       "fanartBackgroundOpacity": 0.4,
       "appArgs": [
         "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
+        "--datadir",
+        "C:\\Medusa\\Data"
       ],
       "emby": {
         "enabled": true,
@@ -128,6 +205,414 @@
               "identifier": "tvmaze"
             }
           }
+        }
+      },
+      "namingForceFolders": false,
+      "showDefaults": {
+        "status": 5,
+        "statusAfter": 7,
+        "seasonFolders": false,
+        "scene": false,
+        "anime": false,
+        "quality": 328,
+        "subtitles": false
+      }
+    },
+    "consts": {
+      "qualities": {
+        "values": [
+          {
+            "value": 0,
+            "key": "na",
+            "name": "N/A"
+          },
+          {
+            "value": 1,
+            "key": "unknown",
+            "name": "Unknown"
+          },
+          {
+            "value": 2,
+            "key": "sdtv",
+            "name": "SDTV"
+          },
+          {
+            "value": 4,
+            "key": "sddvd",
+            "name": "SD DVD"
+          },
+          {
+            "value": 8,
+            "key": "hdtv",
+            "name": "720p HDTV"
+          },
+          {
+            "value": 16,
+            "key": "rawhdtv",
+            "name": "RawHD"
+          },
+          {
+            "value": 32,
+            "key": "fullhdtv",
+            "name": "1080p HDTV"
+          },
+          {
+            "value": 64,
+            "key": "hdwebdl",
+            "name": "720p WEB-DL"
+          },
+          {
+            "value": 128,
+            "key": "fullhdwebdl",
+            "name": "1080p WEB-DL"
+          },
+          {
+            "value": 256,
+            "key": "hdbluray",
+            "name": "720p BluRay"
+          },
+          {
+            "value": 512,
+            "key": "fullhdbluray",
+            "name": "1080p BluRay"
+          },
+          {
+            "value": 1024,
+            "key": "uhd4ktv",
+            "name": "4K UHD TV"
+          },
+          {
+            "value": 2048,
+            "key": "uhd4kwebdl",
+            "name": "4K UHD WEB-DL"
+          },
+          {
+            "value": 4096,
+            "key": "uhd4kbluray",
+            "name": "4K UHD BluRay"
+          },
+          {
+            "value": 8192,
+            "key": "uhd8ktv",
+            "name": "8K UHD TV"
+          },
+          {
+            "value": 16384,
+            "key": "uhd8kwebdl",
+            "name": "8K UHD WEB-DL"
+          },
+          {
+            "value": 32768,
+            "key": "uhd8kbluray",
+            "name": "8K UHD BluRay"
+          }
+        ],
+        "anySets": [
+          {
+            "value": 40,
+            "key": "anyhdtv",
+            "name": "HDTV"
+          },
+          {
+            "value": 192,
+            "key": "anywebdl",
+            "name": "WEB-DL"
+          },
+          {
+            "value": 768,
+            "key": "anybluray",
+            "name": "BluRay"
+          }
+        ],
+        "presets": [
+          {
+            "value": 65518,
+            "key": "any",
+            "name": "Any"
+          },
+          {
+            "value": 6,
+            "key": "sd",
+            "name": "SD"
+          },
+          {
+            "value": 1000,
+            "key": "hd",
+            "name": "HD"
+          },
+          {
+            "value": 328,
+            "key": "hd720p",
+            "name": "HD720p"
+          },
+          {
+            "value": 672,
+            "key": "hd1080p",
+            "name": "HD1080p"
+          },
+          {
+            "value": 64512,
+            "key": "uhd",
+            "name": "UHD"
+          },
+          {
+            "value": 7168,
+            "key": "uhd4k",
+            "name": "UHD-4K"
+          },
+          {
+            "value": 57344,
+            "key": "uhd8k",
+            "name": "UHD-8K"
+          }
+        ]
+      },
+      "statuses": [
+        {
+          "value": -1,
+          "key": "unset",
+          "name": "Unset"
+        },
+        {
+          "value": 1,
+          "key": "unaired",
+          "name": "Unaired"
+        },
+        {
+          "value": 2,
+          "key": "snatched",
+          "name": "Snatched"
+        },
+        {
+          "value": 3,
+          "key": "wanted",
+          "name": "Wanted"
+        },
+        {
+          "value": 4,
+          "key": "downloaded",
+          "name": "Downloaded"
+        },
+        {
+          "value": 5,
+          "key": "skipped",
+          "name": "Skipped"
+        },
+        {
+          "value": 6,
+          "key": "archived",
+          "name": "Archived"
+        },
+        {
+          "value": 7,
+          "key": "ignored",
+          "name": "Ignored"
+        },
+        {
+          "value": 9,
+          "key": "snatchedProper",
+          "name": "Snatched (Proper)"
+        },
+        {
+          "value": 10,
+          "key": "subtitled",
+          "name": "Subtitled"
+        },
+        {
+          "value": 11,
+          "key": "failed",
+          "name": "Failed"
+        },
+        {
+          "value": 12,
+          "key": "snatchedBest",
+          "name": "Snatched (Best)"
+        }
+      ]
+    },
+    "metadata": {
+      "metadataProviders": {
+        "kodi_12plus": {
+          "seasonAllBanner": true,
+          "name": "KODI 12+",
+          "showMetadata": true,
+          "poster": true,
+          "episodeMetadata": true,
+          "example": {
+            "seasonBanners": "season##-banner.jpg",
+            "fanart": "fanart.jpg",
+            "seasonAllBanner": "season-all-banner.jpg",
+            "episodeMetadata": "Season##\\<i>filename</i>.nfo",
+            "showMetadata": "tvshow.nfo",
+            "seasonAllPoster": "season-all-poster.jpg",
+            "poster": "poster.jpg",
+            "episodeThumbnails": "Season##\\<i>filename</i>-thumb.jpg",
+            "seasonPosters": "season##-poster.jpg",
+            "banner": "banner.jpg"
+          },
+          "fanart": true,
+          "seasonAllPoster": true,
+          "seasonBanners": true,
+          "episodeThumbnails": true,
+          "seasonPosters": true,
+          "banner": true,
+          "id": "kodi_12plus"
+        },
+        "kodi": {
+          "seasonAllBanner": false,
+          "name": "KODI",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "season##-banner.jpg",
+            "fanart": "fanart.jpg",
+            "seasonAllBanner": "season-all-banner.jpg",
+            "episodeMetadata": "Season##\\<i>filename</i>.nfo",
+            "showMetadata": "tvshow.nfo",
+            "seasonAllPoster": "season-all.tbn",
+            "poster": "folder.jpg",
+            "episodeThumbnails": "Season##\\<i>filename</i>.tbn",
+            "seasonPosters": "season##.tbn",
+            "banner": "folder.jpg"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "kodi"
+        },
+        "mediabrowser": {
+          "seasonAllBanner": false,
+          "name": "MediaBrowser",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "Season##\\banner.jpg",
+            "fanart": "backdrop.jpg",
+            "seasonAllBanner": "<i>not supported</i>",
+            "episodeMetadata": "Season##\\metadata\\<i>filename</i>.xml",
+            "showMetadata": "series.xml",
+            "seasonAllPoster": "<i>not supported</i>",
+            "poster": "folder.jpg",
+            "episodeThumbnails": "Season##\\metadata\\<i>filename</i>.jpg",
+            "seasonPosters": "Season##\\folder.jpg",
+            "banner": "banner.jpg"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "mediabrowser"
+        },
+        "wdtv": {
+          "seasonAllBanner": false,
+          "name": "WDTV",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "<i>not supported</i>",
+            "fanart": "<i>not supported</i>",
+            "seasonAllBanner": "<i>not supported</i>",
+            "episodeMetadata": "Season##\\<i>filename</i>.xml",
+            "showMetadata": "<i>not supported</i>",
+            "seasonAllPoster": "<i>not supported</i>",
+            "poster": "folder.jpg",
+            "episodeThumbnails": "Season##\\<i>filename</i>.metathumb",
+            "seasonPosters": "Season##\\folder.jpg",
+            "banner": "<i>not supported</i>"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "wdtv"
+        },
+        "tivo": {
+          "seasonAllBanner": false,
+          "name": "TIVO",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "<i>not supported</i>",
+            "fanart": "<i>not supported</i>",
+            "seasonAllBanner": "<i>not supported</i>",
+            "episodeMetadata": "Season##\\.meta\\<i>filename</i>.ext.txt",
+            "showMetadata": "<i>not supported</i>",
+            "seasonAllPoster": "<i>not supported</i>",
+            "poster": "<i>not supported</i>",
+            "episodeThumbnails": "<i>not supported</i>",
+            "seasonPosters": "<i>not supported</i>",
+            "banner": "<i>not supported</i>"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "tivo"
+        },
+        "mede8er": {
+          "seasonAllBanner": false,
+          "name": "Mede8er",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "Season##\\banner.jpg",
+            "fanart": "fanart.jpg",
+            "seasonAllBanner": "<i>not supported</i>",
+            "episodeMetadata": "Season##\\<i>filename</i>.xml",
+            "showMetadata": "series.xml",
+            "seasonAllPoster": "<i>not supported</i>",
+            "poster": "folder.jpg",
+            "episodeThumbnails": "Season##\\<i>filename</i>.jpg",
+            "seasonPosters": "Season##\\folder.jpg",
+            "banner": "banner.jpg"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "mede8er"
+        },
+        "sony_ps3": {
+          "seasonAllBanner": false,
+          "name": "Sony PS3",
+          "showMetadata": false,
+          "poster": false,
+          "episodeMetadata": false,
+          "example": {
+            "seasonBanners": "<i>not supported</i>",
+            "fanart": "<i>not supported</i>",
+            "seasonAllBanner": "<i>not supported</i>",
+            "episodeMetadata": "<i>not supported</i>",
+            "showMetadata": "<i>not supported</i>",
+            "seasonAllPoster": "<i>not supported</i>",
+            "poster": "cover.jpg",
+            "episodeThumbnails": "Season##\\<i>filename</i>.ext.cover.jpg",
+            "seasonPosters": "<i>not supported</i>",
+            "banner": "<i>not supported</i>"
+          },
+          "fanart": false,
+          "seasonAllPoster": false,
+          "seasonBanners": false,
+          "episodeThumbnails": false,
+          "seasonPosters": false,
+          "banner": false,
+          "id": "sony_ps3"
         }
       }
     }

@@ -28,7 +28,8 @@ def read_themes():
     """Read the theme folder and create a Theme object for every entry, if valid."""
     themes = []
     theme_root = os.path.join(app.PROG_DIR, 'themes')
-    themes_from_fs = [os.path.join(theme_root, theme_dir) for theme_dir in os.listdir(theme_root) if os.path.isdir(os.path.join(theme_root, theme_dir))]
+    themes_from_fs = [os.path.join(theme_root, theme_dir) for theme_dir in os.listdir(theme_root)
+                      if os.path.isdir(os.path.join(theme_root, theme_dir))]
     for theme_path in themes_from_fs:
         # validate the directory structure
         try:
@@ -70,7 +71,8 @@ def validate_theme(theme_path):
                             'Please refer to the medusa theming documentation.'.format(check_folder=check_folder))
 
     try:
-        package_json = json.load(open(os.path.join(theme_path, 'package.json')))
+        with open(os.path.join(theme_path, 'package.json')) as pj:
+            package_json = json.load(pj)
     except IOError:
         raise Exception('Cannot read package.json. Please refer to the medusa theming documentation.')
 
@@ -79,7 +81,8 @@ def validate_theme(theme_path):
         raise Exception("As a bare minimum you'll need at least to provide the 'name' and and 'version' key. "
                         'Please refer to the medusa theming documentation.')
 
-    if not os.path.isdir(os.path.join(theme_path, 'templates')) and not os.path.isfile(os.path.join(theme_path, 'index.html')):
+    if (not os.path.isdir(os.path.join(theme_path, 'templates')) and
+            not os.path.isfile(os.path.join(theme_path, 'index.html'))):
         raise Exception('You need to have at least a templates folder with mako temnplates, '
                         "or an index.html in your [theme's] root. Please refer to the medusa theming documentation.")
 

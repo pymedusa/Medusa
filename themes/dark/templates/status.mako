@@ -4,7 +4,7 @@
     from medusa import helpers
     from medusa.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat
-    from random import choice
+    from six import iteritems
 %>
 <%block name="scripts">
 <script type="text/x-template" id="status-template">
@@ -23,14 +23,8 @@
         'Torrent Checker': 'torrent_checker_scheduler',
     }
 %>
-
-<%
-    # pick a random series to show as background
-    random_show = choice(app.showList) if app.showList else None
-%>
 <div>
-    <input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
-    <input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+    <backstretch :slug="config.randomShowSlug"></backstretch>
 
     <div id="config-content">
         <h2 class="header">Scheduler</h2>
@@ -49,14 +43,14 @@
                 </tr>
             </thead>
             <tbody>
-                % for schedulerName, scheduler in schedulerList.iteritems():
+                % for schedulerName, scheduler in iteritems(schedulerList):
                 <% service = getattr(app, scheduler) %>
             <tr>
                 <td>${schedulerName}</td>
-                % if service.isAlive():
-                <td style="background-color:rgb(0, 128, 0);">${service.isAlive()}</td>
+                % if service.is_alive():
+                <td style="background-color:rgb(0, 128, 0);">${service.is_alive()}</td>
                 % else:
-                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
+                <td style="background-color:rgb(255, 0, 0);">${service.is_alive()}</td>
                 % endif
                 % if scheduler == 'backlog_search_scheduler':
                     <% searchQueue = getattr(app, 'search_queue_scheduler') %>
@@ -212,15 +206,17 @@
                     % endif
                 </tr>
                 % endif
+                % for cur_index, cur_dir in enumerate(rootDir):
                 <tr>
-                    <td rowspan=${len(rootDir)}>Media Root Directories</td>
-                    % for cur_dir in rootDir:
-                        <td>${cur_dir}</td>
-                        % if rootDir[cur_dir] is not False:
-                            <td align="middle">${rootDir[cur_dir]}</td>
-                        % else:
-                            <td align="middle"><i>Missing</i></td>
-                        % endif
+                    % if cur_index == 0:
+                    <td rowspan="${len(rootDir)}">Media Root Directories</td>
+                    % endif
+                    <td>${cur_dir}</td>
+                    % if rootDir[cur_dir] is not False:
+                        <td align="middle">${rootDir[cur_dir]}</td>
+                    % else:
+                        <td align="middle"><i>Missing</i></td>
+                    % endif
                 </tr>
                 % endfor
             </tbody>

@@ -1,7 +1,8 @@
 <script>
 import { mapState } from 'vuex';
 import debounce from 'lodash/debounce';
-import AppLink from './app-link.vue';
+import { api } from '../api';
+import { AppLink } from './helpers';
 
 export default {
     name: 'home',
@@ -99,7 +100,7 @@ export default {
             $('.show-grid').isotope({
                 filter() {
                     const name = $(this).attr('data-name').toLowerCase();
-                    return name.indexOf($('#filterShowName').val().toLowerCase()) > -1;
+                    return name.includes($('#filterShowName').val().toLowerCase());
                 }
             });
         }, 500));
@@ -118,14 +119,14 @@ export default {
             api.patch('config/main', {
                 selectedRootIndex: parseInt($(this).val(), 10)
             }).then(response => {
-                log.info(response);
+                console.info(response);
                 window.location.reload();
             }).catch(error => {
-                log.info(error);
+                console.info(error);
             });
         });
 
-        const imgLazyLoad = new LazyLoad({
+        const imgLazyLoad = new LazyLoad({ // eslint-disable-line no-undef
             // Example of options object -> see options section
             threshold: 500
         });
@@ -141,7 +142,7 @@ export default {
             // This needs to be refined to work a little faster.
             $('.progressbar').each(function() {
                 const percentage = $(this).data('progress-percentage');
-                const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20; // eslint-disable-line no-nested-ternary
+                const classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
                 $(this).progressbar({
                     value: percentage
                 });
@@ -433,9 +434,9 @@ export default {
                             }
                         }
                     }).then(response => {
-                        log.info(response);
+                        console.info(response);
                     }).catch(error => {
-                        log.error(error);
+                        console.error(error);
                     });
                 }
             });
@@ -445,3 +446,7 @@ export default {
     }
 };
 </script>
+
+<style>
+
+</style>

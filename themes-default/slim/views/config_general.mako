@@ -17,7 +17,39 @@ window.app = {};
 window.app = new Vue({
     store,
     router,
-    el: '#vue-wrap'
+    el: '#vue-wrap',
+    mounted() {
+        if ($('input[name="proxy_setting"]').val().length === 0) {
+            $('input[id="proxy_indexers"]').prop('checked', false);
+            $('label[for="proxy_indexers"]').hide();
+        }
+
+        $('#theme_name').on('change', function() {
+            api.patch('config/main', {
+                theme: {
+                    name: $(this).val()
+                }
+            }).then(response => {
+                console.info(response);
+                window.location.reload();
+            }).catch(error => {
+                console.error(error);
+            });
+        });
+
+        $('input[name="proxy_setting"]').on('input', function() {
+            if ($(this).val().length === 0) {
+                $('input[id="proxy_indexers"]').prop('checked', false);
+                $('label[for="proxy_indexers"]').hide();
+            } else {
+                $('label[for="proxy_indexers"]').show();
+            }
+        });
+
+        $('#log_dir').fileBrowser({
+            title: 'Select log file folder location'
+        });
+    }
 });
 </script>
 </%block>
@@ -349,7 +381,7 @@ window.app = new Vue({
                                     <select class="form-control input-sm ${'' if not app.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not app.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not app.FUZZY_DATING else '_na'}">
                                         <option value="%x" ${'selected="selected"' if app.DATE_PRESET == '%x' else ''}>Use System Default</option>
                                         % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
+                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${sbdatetime.now().sbfdate(d_preset=cur_preset)}</option>
                                         % endfor
                                     </select>
                                 </span>

@@ -34,7 +34,7 @@ class SeriesHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', 'DELETE', )
+    allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
     def get(self, series_slug, path_param=None):
         """Query series information.
@@ -49,7 +49,11 @@ class SeriesHandler(BaseRequestHandler):
 
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
-            data = [s.to_json(detailed=detailed) for s in Series.find_series(predicate=filter_series)]
+            fetch = self._parse_boolean(self.get_argument('fetch', default=False))
+            data = [
+                s.to_json(detailed=detailed, fetch=fetch)
+                for s in Series.find_series(predicate=filter_series)
+            ]
             return self._paginate(data, sort='title')
 
         identifier = SeriesIdentifier.from_slug(series_slug)
@@ -61,7 +65,8 @@ class SeriesHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         detailed = self._parse_boolean(self.get_argument('detailed', default=True))
-        data = series.to_json(detailed=detailed)
+        fetch = self._parse_boolean(self.get_argument('fetch', default=False))
+        data = series.to_json(detailed=detailed, fetch=fetch)
         if path_param:
             if path_param not in data:
                 return self._bad_request("Invalid path parameter '{0}'".format(path_param))
@@ -125,17 +130,20 @@ class SeriesHandler(BaseRequestHandler):
             'config.scene': BooleanField(series, 'scene'),
             'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
-            'config.location': StringField(series, '_location'),
+            'config.location': StringField(series, 'location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
             'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
             'config.release.requiredWords': ListField(series, 'release_required_words'),
             'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
+            'config.release.requiredWordsExclude': BooleanField(series, 'rls_require_exclude'),
+            'config.release.ignoredWordsExclude': BooleanField(series, 'rls_ignore_exclude'),
             'language': StringField(series, 'lang'),
             'config.qualities.allowed': ListField(series, 'qualities_allowed'),
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
+            'config.airdateOffset': IntegerField(series, 'airdate_offset'),
         }
 
         for key, value in iter_nested_items(data):
@@ -151,7 +159,7 @@ class SeriesHandler(BaseRequestHandler):
         if ignored:
             log.warning('Series patch ignored {items!r}', {'items': ignored})
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
     def delete(self, series_slug, path_param=None):
         """Delete the series."""

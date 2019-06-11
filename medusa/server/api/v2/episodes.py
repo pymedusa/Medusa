@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa.helper.exceptions import EpisodeDeletedException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -36,7 +37,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', )
+    allowed_methods = ('GET', 'PATCH', 'DELETE',)
 
     def get(self, series_slug, episode_slug, path_param):
         """Query episode information.
@@ -105,7 +106,7 @@ class EpisodeHandler(BaseRequestHandler):
 
         accepted = self._patch_episode(episode, data)
 
-        self._ok(data=accepted)
+        return self._ok(data=accepted)
 
     def _patch_multi(self, series, request_data):
         """Patch multiple episodes."""
@@ -126,7 +127,7 @@ class EpisodeHandler(BaseRequestHandler):
 
             statuses[slug] = {'status': 200}
 
-        self._multi_status(data=statuses)
+        return self._multi_status(data=statuses)
 
     @staticmethod
     def _patch_episode(episode, data):
@@ -156,3 +157,31 @@ class EpisodeHandler(BaseRequestHandler):
             )
 
         return accepted
+
+    def delete(self, series_slug, episode_slug, **kwargs):
+        """Delete the episode."""
+        if not series_slug:
+            return self._method_not_allowed('Deleting multiple series are not allowed')
+
+        identifier = SeriesIdentifier.from_slug(series_slug)
+        if not identifier:
+            return self._bad_request('Invalid series identifier')
+
+        series = Series.find_by_identifier(identifier)
+        if not series:
+            return self._not_found('Series not found')
+
+        episode_number = EpisodeNumber.from_slug(episode_slug)
+        if not episode_number:
+            return self._bad_request('Invalid episode number')
+
+        episode = Episode.find_by_series_and_episode(series, episode_number)
+        if not episode:
+            return self._not_found('Episode not found')
+
+        try:
+            episode.delete_episode()
+        except EpisodeDeletedException:
+            return self._no_content()
+        else:
+            return self._conflict('Unable to delete episode')

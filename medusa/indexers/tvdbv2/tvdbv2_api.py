@@ -301,8 +301,8 @@ class TVDBv2(BaseIndexer):
                 'could not get any episodes. Did a {search_type} search. Exception: {e}'.format
                 (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.reason)
             )
-        except RequestException as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {e}'.format(e=e.message))
+        except RequestException as error:
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {error!r}'.format(error=error))
 
         if not results:
             log.debug('Series results incomplete')
@@ -455,7 +455,7 @@ class TVDBv2(BaseIndexer):
                 sid, accept_language=self.config['language']
             )
         except (ApiException, RequestException) as error:
-            log.info('Could not get image count for show id: {0} with reason: {1!r}', sid, error.message)
+            log.info('Could not get image count for show id: {0} with reason: {1!r}', sid, error)
             return
 
         for image_type, image_count in viewitems(self._object_to_dict(series_images_count)):

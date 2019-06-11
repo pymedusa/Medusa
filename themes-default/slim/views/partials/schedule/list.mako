@@ -5,7 +5,6 @@
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import indexer_id_to_name
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
 <table id="showListTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
@@ -42,6 +41,8 @@
                 show_div = 'listing-current'
             else:
                 show_div = 'listing-default'
+    else:
+        cur_ep_enddate = cur_result['localtime']
 %>
         <tr class="${show_div}">
             <td align="center" nowrap="nowrap" class="triggerhighlight">
@@ -72,7 +73,7 @@
             ${run_time}min
             </td>
             <td align="center" class="triggerhighlight">
-                ${renderQualityPill(cur_result['quality'], showTitle=True)}
+                <quality-pill :quality="${cur_result['quality']}" show-title></quality-pill>
             </td>
             <td align="center" style="vertical-align: middle;" class="triggerhighlight">
             % if cur_result['imdb_id']:

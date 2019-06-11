@@ -11,8 +11,7 @@ from base64 import b16encode, b32decode
 from os.path import join
 from random import shuffle
 
-import bencode
-from bencode.BTL import BTFailure
+from bencode import BencodeDecodeError, bdecode
 
 from feedparser.util import FeedParserDict
 
@@ -22,6 +21,8 @@ from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import remove_file_failed
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
+
+from requests.exceptions import InvalidSchema
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -36,6 +37,8 @@ class TorrentProvider(GenericProvider):
 
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
+        self.minseed = 0
+        self.minleech = 0
 
     def is_active(self):
         """Check if provider is enabled."""
@@ -60,10 +63,6 @@ class TorrentProvider(GenericProvider):
         elif isinstance(item, (list, tuple)) and len(item) > 2:
             size = item[2]
         else:
-            size = -1
-
-        # Make sure we didn't select seeds/leechers by accident
-        if not size or size < 1024 * 1024:
             size = -1
 
         return try_int(size, -1)
@@ -117,11 +116,12 @@ class TorrentProvider(GenericProvider):
 
         try:
             with open(file_name, 'rb') as f:
-                meta_info = bencode.bdecode(f.read())
+                # `bencode.bdecode` is monkeypatched in `medusa.init`
+                meta_info = bdecode(f.read(), allow_extra_data=True)
             return 'info' in meta_info and meta_info['info']
-        except BTFailure as e:
+        except BencodeDecodeError as error:
             log.debug('Failed to validate torrent file: {name}. Error: {error}',
-                      {'name': file_name, 'error': e})
+                      {'name': file_name, 'error': error})
 
         remove_file_failed(file_name)
         log.debug('{result} is not a valid torrent file',
@@ -148,12 +148,21 @@ class TorrentProvider(GenericProvider):
         return pubdate
 
     def get_redirect_url(self, url):
-        """Get the address that the provided URL redirects to."""
+        """Get the final address that the provided URL redirects to."""
         log.debug('Retrieving redirect URL for {url}', {'url': url})
 
-        response = self.session.get(url, allow_redirects=False)
-        if response and response.headers.get('Location'):
-            return response.headers['Location']
+        try:
+            response = self.session.get(url, stream=True)
+            if response:
+                response.close()
+                return response.url
+
+        # Jackett redirects to a magnet causing InvalidSchema.
+        # Use an alternative method to get the redirect URL.
+        except InvalidSchema:
+            response = self.session.get(url, allow_redirects=False)
+            if response and response.headers.get('Location'):
+                return response.headers['Location']
 
         log.debug('Unable to retrieve redirect URL for {url}', {'url': url})
         return url

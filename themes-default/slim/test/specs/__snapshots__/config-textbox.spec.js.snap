@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfigTextbox.test.js renders 1`] = `
+<div
+  id="config-textbox"
+>
+  <div
+    class="form-group"
+  >
+    <div
+      class="row"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="test-id"
+      >
+        <span>
+          test-label
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <input
+          class="form-control input-sm max-input350"
+          id="test-id"
+          name="test-id"
+          placeholder=""
+          type="text"
+        />
+         
+        <p>
+          explanation 1
+        </p>
+        <p>
+          explanation 2
+        </p>
+         
+      </div>
+    </div>
+  </div>
+</div>
+`;

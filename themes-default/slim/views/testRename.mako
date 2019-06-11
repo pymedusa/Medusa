@@ -15,7 +15,7 @@ window.app = {};
 window.app = new Vue({
     store,
     router,
-    el: '#vue-wrap'
+    el: '#vue-wrap',
     mounted() {
         $('.seriesCheck').on('click', function() {
             const serCheck = this;
@@ -72,7 +72,9 @@ window.app = new Vue({
     % endif
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
-<input type="hidden" id="series-slug" value="${show.slug}" />
+
+<backstretch slug="${show.slug}"></backstretch>
+
 <h1 class="header">{{ $route.meta.header }}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>

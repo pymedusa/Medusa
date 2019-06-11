@@ -48,10 +48,6 @@ class HDTorrentsProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
@@ -117,6 +113,9 @@ class HDTorrentsProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -150,7 +149,7 @@ class HDTorrentsProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -158,7 +157,7 @@ class HDTorrentsProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text()
                     pubdate = self.parse_pubdate(pubdate_raw)

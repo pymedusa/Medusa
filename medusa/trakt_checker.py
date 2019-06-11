@@ -113,8 +113,8 @@ class TraktChecker(object):
         trakt_library = []
         try:
             trakt_library = self._request('sync/collection/shows')
-        except (TraktException, AuthException, TokenExpiredException) as e:
-            log.info('Unable to retrieve shows from Trakt collection. Error: {error}', {'error': e.message})
+        except (TraktException, AuthException, TokenExpiredException) as error:
+            log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
 
         if not trakt_library:
             log.info('No shows found in your Trakt library. Nothing to sync')
@@ -152,18 +152,18 @@ class TraktChecker(object):
             # Remove all episodes from the Trakt collection for this show
             try:
                 self.remove_episode_trakt_collection(filter_show=show_obj)
-            except (TraktException, AuthException, TokenExpiredException) as e:
-                log.info("Unable to remove all episodes from show '{show}' from Trakt library. Error: {error}", {
+            except (TraktException, AuthException, TokenExpiredException) as error:
+                log.info("Unable to remove all episodes from show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
-                    'error': e.message
+                    'error': error
                 })
 
             try:
                 self._request('sync/collection/remove', data, method='POST')
-            except (TraktException, AuthException, TokenExpiredException) as e:
-                log.info("Unable to remove show '{show}' from Trakt library. Error: {error}", {
+            except (TraktException, AuthException, TokenExpiredException) as error:
+                log.info("Unable to remove show '{show}' from Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
-                    'error': e.message
+                    'error': error
                 })
 
     def add_show_trakt_library(self, show_obj):
@@ -195,10 +195,10 @@ class TraktChecker(object):
 
             try:
                 self._request('sync/collection', data, method='POST')
-            except (TraktException, AuthException, TokenExpiredException) as e:
-                log.info("Unable to add show '{show}' to Trakt library. Error: {error}", {
+            except (TraktException, AuthException, TokenExpiredException) as error:
+                log.info("Unable to add show '{show}' to Trakt library. Error: {error!r}", {
                     'show': show_obj.name,
-                    'error': e.message
+                    'error': error
                 })
                 return
 
@@ -224,46 +224,45 @@ class TraktChecker(object):
             params = []
             main_db_con = db.DBConnection()
             statuses = [DOWNLOADED, ARCHIVED]
-            sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
-                            b'e.season, e.episode, e.status ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
-                            b's.indexer_id = e.showid and e.location = "" ' \
-                            b'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
+            sql_selection = 'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
+                            'e.season, e.episode, e.status ' \
+                            'FROM tv_episodes AS e, tv_shows AS s WHERE e.indexer = s.indexer AND ' \
+                            's.indexer_id = e.showid and e.location = "" ' \
+                            'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
             if filter_show:
-                sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
+                sql_selection += ' AND s.indexer_id = ? AND e.indexer = ?'
                 params = [filter_show.series_id, filter_show.indexer]
 
             sql_result = main_db_con.select(sql_selection, statuses + params)
-            episodes = [dict(e) for e in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
-                    if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
-                                        season=cur_episode[b'season'], episode=cur_episode[b'episode'],
+                    if self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['indexer_id'],
+                                        season=cur_episode['season'], episode=cur_episode['episode'],
                                         list_type='Collection'):
                         log.info("Removing episode '{show}' {ep} from Trakt collection", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['indexer_id'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/collection/remove', data, method='POST')
                         self._get_show_collection()
-                    except (TraktException, AuthException, TokenExpiredException) as e:
-                        log.info('Unable to remove episodes from Trakt collection. Error: {error}', {
-                            'error': e.message
+                    except (TraktException, AuthException, TokenExpiredException) as error:
+                        log.info('Unable to remove episodes from Trakt collection. Error: {error!r}', {
+                            'error': error
                         })
 
     def add_episode_trakt_collection(self):
@@ -275,42 +274,41 @@ class TraktChecker(object):
 
             main_db_con = db.DBConnection()
             statuses = [DOWNLOADED, ARCHIVED]
-            sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
-                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(['?'] * len(statuses)))
+            sql_selection = 'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid ' \
+                            "AND e.status in ({0}) AND e.location <> ''".format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(e) for e in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
-                                            season=cur_episode[b'season'], episode=cur_episode[b'episode'],
+                    if not self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['indexer_id'],
+                                            season=cur_episode['season'], episode=cur_episode['episode'],
                                             list_type='Collection'):
                         log.info("Adding episode '{show}' {ep} to Trakt collection", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['indexer_id'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/collection', data, method='POST')
                         self._get_show_collection()
-                    except (TraktException, AuthException, TokenExpiredException) as e:
-                        log.info('Unable to add episodes to Trakt collection. Error: {error}', {'error': e.message})
+                    except (TraktException, AuthException, TokenExpiredException) as error:
+                        log.info('Unable to add episodes to Trakt collection. Error: {error!r}', {'error': error})
 
     def sync_watchlist(self):
         """Sync Trakt watchlist."""
@@ -338,43 +336,42 @@ class TraktChecker(object):
 
             main_db_con = db.DBConnection()
             statuses = [DOWNLOADED, ARCHIVED]
-            sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer ' \
-                            b'AND s.indexer_id = e.showid AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
+            sql_selection = 'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer ' \
+                            'AND s.indexer_id = e.showid AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(i) for i in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
 
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
-                                        season=cur_episode[b'season'], episode=cur_episode[b'episode']):
+                    if self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['showid'],
+                                        season=cur_episode['season'], episode=cur_episode['episode']):
                         log.info("Removing episode '{show}' {ep} from Trakt watchlist", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'],
-                                           title, cur_episode[b'startyear'],
-                                           cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['showid'], cur_episode['indexer'],
+                                           title, cur_episode['startyear'],
+                                           cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/watchlist/remove', data, method='POST')
                         self._get_episode_watchlist()
-                    except (TraktException, AuthException, TokenExpiredException) as e:
-                        log.info('Unable to remove episodes from Trakt watchlist. Error: {error}', {
-                            'error': e.message
+                    except (TraktException, AuthException, TokenExpiredException) as error:
+                        log.info('Unable to remove episodes from Trakt watchlist. Error: {error!r}', {
+                            'error': error
                         })
 
     def add_episode_watchlist(self):
@@ -383,41 +380,40 @@ class TraktChecker(object):
 
             main_db_con = db.DBConnection()
             statuses = [SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED]
-            sql_selection = b'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s ' \
-                            b'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
-                            b'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
+            sql_selection = 'SELECT s.indexer, s.startyear, e.showid, s.show_name, e.season, e.episode ' \
+                            'FROM tv_episodes AS e, tv_shows AS s ' \
+                            'WHERE e.indexer = s.indexer AND s.indexer_id = e.showid AND s.paused = 0 ' \
+                            'AND e.status in ({0})'.format(','.join(['?'] * len(statuses)))
 
             sql_result = main_db_con.select(sql_selection, statuses)
-            episodes = [dict(i) for i in sql_result]
 
-            if episodes:
+            if sql_result:
                 trakt_data = []
 
-                for cur_episode in episodes:
+                for cur_episode in sql_result:
                     # Check if TRAKT supports that indexer
-                    if not get_trakt_indexer(cur_episode[b'indexer']):
+                    if not get_trakt_indexer(cur_episode['indexer']):
                         continue
 
-                    if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
-                                            season=cur_episode[b'season'], episode=cur_episode[b'episode']):
+                    if not self._check_list(indexer=cur_episode['indexer'], indexer_id=cur_episode['showid'],
+                                            season=cur_episode['season'], episode=cur_episode['episode']):
                         log.info("Adding episode '{show}' {ep} to Trakt watchlist", {
-                            'show': cur_episode[b'show_name'],
-                            'ep': episode_num(cur_episode[b'season'],
-                                              cur_episode[b'episode'])
+                            'show': cur_episode['show_name'],
+                            'ep': episode_num(cur_episode['season'],
+                                              cur_episode['episode'])
                         })
-                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
-                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'], title,
-                                           cur_episode[b'startyear'], cur_episode[b'season'], cur_episode[b'episode']))
+                        title = get_title_without_year(cur_episode['show_name'], cur_episode['startyear'])
+                        trakt_data.append((cur_episode['showid'], cur_episode['indexer'], title,
+                                           cur_episode['startyear'], cur_episode['season'], cur_episode['episode']))
 
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/watchlist', data, method='POST')
                         self._get_episode_watchlist()
-                    except (TraktException, AuthException, TokenExpiredException) as e:
-                        log.info('Unable to add episode to Trakt watchlist. Error: {error}', {
-                            'error': e.message
+                    except (TraktException, AuthException, TokenExpiredException) as error:
+                        log.info('Unable to add episode to Trakt watchlist. Error: {error!r}', {
+                            'error': error
                         })
 
     def add_show_watchlist(self):
@@ -440,8 +436,8 @@ class TraktChecker(object):
                     try:
                         data = {'shows': trakt_data}
                         self._request('sync/watchlist', data, method='POST')
-                    except (TraktException, AuthException, TokenExpiredException) as e:
-                        log.info('Unable to add shows to Trakt watchlist. Error: {error}', {'error': e.message})
+                    except (TraktException, AuthException, TokenExpiredException) as error:
+                        log.info('Unable to add shows to Trakt watchlist. Error: {error!r}', {'error': error})
                     self._get_show_watchlist()
 
     def remove_from_library(self):
@@ -460,10 +456,10 @@ class TraktChecker(object):
 
                         try:
                             progress = self._request('shows/{0}/progress/watched'.format(trakt_id or show.imdb_id))
-                        except (TraktException, AuthException, TokenExpiredException) as e:
-                            log.info("Unable to check if show '{show}' is ended/completed. Error: {error}", {
+                        except (TraktException, AuthException, TokenExpiredException) as error:
+                            log.info("Unable to check if show '{show}' is ended/completed. Error: {error!r}", {
                                 'show': show.name,
-                                'error': e.message
+                                'error': error
                             })
                             continue
                         else:
@@ -659,8 +655,8 @@ class TraktChecker(object):
         """Get shows watchlist."""
         try:
             self.show_watchlist = self._request('sync/watchlist/shows')
-        except (TraktException, AuthException, TokenExpiredException) as e:
-            log.info(u'Unable to retrieve shows from Trakt watchlist. Error: {error}', {'error': e.message})
+        except (TraktException, AuthException, TokenExpiredException) as error:
+            log.info(u'Unable to retrieve shows from Trakt watchlist. Error: {error!r}', {'error': error})
             return False
         return True
 
@@ -668,8 +664,8 @@ class TraktChecker(object):
         """Get episodes watchlist."""
         try:
             self.episode_watchlist = self._request('sync/watchlist/episodes')
-        except (TraktException, AuthException, TokenExpiredException) as e:
-            log.info(u'Unable to retrieve episodes from Trakt watchlist. Error: {error}', {'error': e.message})
+        except (TraktException, AuthException, TokenExpiredException) as error:
+            log.info(u'Unable to retrieve episodes from Trakt watchlist. Error: {error!r}', {'error': error})
             return False
         return True
 
@@ -677,8 +673,8 @@ class TraktChecker(object):
         """Get show collection."""
         try:
             self.collection_list = self._request('sync/collection/shows')
-        except (TraktException, AuthException, TokenExpiredException) as e:
-            log.info('Unable to retrieve shows from Trakt collection. Error: {error}', {'error': e.message})
+        except (TraktException, AuthException, TokenExpiredException) as error:
+            log.info('Unable to retrieve shows from Trakt collection. Error: {error!r}', {'error': error})
             return False
         return True
 

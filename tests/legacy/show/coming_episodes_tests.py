@@ -15,8 +15,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Test coming episodes."""
-
-from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 

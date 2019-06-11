@@ -1,12 +1,14 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
-import AppLink from './app-link.vue';
+import { mapState, mapGetters, mapActions } from 'vuex';
+import { AppLink } from './helpers';
+import ShowHeader from './show-header.vue';
 
 export default {
     name: 'snatchSelection',
     template: '#snatch-selection-template',
     components: {
-        AppLink
+        AppLink,
+        ShowHeader
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -24,47 +26,37 @@ export default {
         ...mapState({
             shows: state => state.shows.shows
         }),
-        ...mapGetters([
-            'getShowById'
-        ]),
+        ...mapGetters({
+            getShowById: 'getShowById',
+            show: 'getCurrentShow'
+        }),
         indexer() {
             return this.$route.query.indexername;
         },
         id() {
-            return this.$route.query.seriesid;
+            return Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.$route.query.season;
+            return Number(this.$route.query.season) || undefined;
         },
         episode() {
-            return this.$route.query.episode;
-        },
-        show() {
-            const { indexer, id, getShowById, shows, $store } = this;
-            const { defaults } = $store.state;
-
-            if (shows.length === 0 || !indexer || !id) {
-                return defaults.show;
-            }
-
-            const show = getShowById({ indexer, id });
-            if (!show) {
-                return defaults.show;
-            }
-
-            return show;
+            return Number(this.$route.query.episode) || undefined;
         }
     },
-    created() {
-        const { indexer, id, $store } = this;
-        // Needed for the title
-        $store.dispatch('getShow', { indexer, id });
-    },
     methods: {
+        ...mapActions({
+            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+        }),
+        /**
+         * Attaches IMDB tooltip,
+         * Moves summary and checkbox controls backgrounds
+         */
         reflowLayout() {
             this.$nextTick(() => {
                 this.moveSummaryBackground();
             });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
         },
         /**
          * Adjust the summary background position and size on page load and resize
@@ -78,15 +70,33 @@ export default {
         }
     },
     mounted() {
-        window.addEventListener('load', () => {
-            // Adjust the summary background position and size
-            this.reflowLayout();
+        const {
+            indexer,
+            id,
+            show,
+            getShow,
+            $store
+        } = this;
+
+        // Let's tell the store which show we currently want as current.
+        $store.commit('currentShow', {
+            indexer,
+            id
         });
 
-        attachImdbTooltip(); // eslint-disable-line no-undef
+        // We need the show info, so let's get it.
+        if (!show || !show.id.slug) {
+            getShow({ id, indexer, detailed: false });
+        }
 
-        window.addEventListener('resize', () => {
-            this.reflowLayout();
+        this.$watch('show', () => {
+            this.$nextTick(() => this.reflowLayout());
+        });
+
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
         });
 
         const updateSpinner = function(message, showSpinner) {
@@ -133,12 +143,6 @@ export default {
             });
         });
 
-        $.fn.generateStars = function() {
-            return this.each((index, element) => {
-                $(element).html($('<span/>').width($(element).text() * 12));
-            });
-        };
-
         function initTableSorter(table) {
             // Nasty hack to re-initialize tablesorter after refresh
             $(table).tablesorter({
@@ -180,8 +184,6 @@ export default {
             });
         }
 
-        $('.imdbstars').generateStars();
-
         function checkCacheUpdates(repeat) {
             let pollInterval = 5000;
             repeat = repeat || true;
@@ -198,8 +200,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -290,8 +294,10 @@ export default {
             });
 
             if (!checkParams) {
-                console.log(```Something went wrong in getthing the paramaters from dom. indexerName: ${indexerName},
-                            seriesId: ${seriesId}, season: ${season}, episode: ${episode}```);
+                console.log(
+                    'Something went wrong in getting the paramaters from dom.' +
+                    ` indexerName: ${indexerName}, seriesId: ${seriesId}, season: ${season}, episode: ${episode}`
+                );
                 return;
             }
 
@@ -354,3 +360,7 @@ export default {
     }
 };
 </script>
+
+<style>
+
+</style>

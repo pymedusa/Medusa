@@ -1,34 +1,47 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
+    clients,
     config,
+    consts,
     defaults,
     metadata,
     notifications,
-    qualities,
+    notifiers,
+    search,
     shows,
     socket,
-    statuses
+    stats,
+    system
 } from './modules';
-import { SOCKET_ONMESSAGE } from './mutation-types';
-
-const { Store } = Vuex;
+import {
+    SOCKET_ONOPEN,
+    SOCKET_ONCLOSE,
+    SOCKET_ONERROR,
+    SOCKET_ONMESSAGE,
+    SOCKET_RECONNECT,
+    SOCKET_RECONNECT_ERROR
+} from './mutation-types';
 
 Vue.use(Vuex);
 
 const store = new Store({
     modules: {
         auth,
+        clients,
         config,
+        consts,
         defaults,
         metadata,
         notifications,
-        qualities,
+        notifiers,
+        search,
         shows,
         socket,
-        statuses
+        stats,
+        system
     },
     state: {},
     mutations: {},
@@ -41,7 +54,7 @@ const passToStoreHandler = function(eventName, event, next) {
     const target = eventName.toUpperCase();
     const eventData = event.data;
 
-    if (target === SOCKET_ONMESSAGE) {
+    if (target === 'SOCKET_ONMESSAGE') {
         const message = JSON.parse(eventData);
         const { data, event } = message;
 
@@ -75,7 +88,15 @@ Vue.use(VueNativeSock, websocketUrl, {
     reconnection: true, // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 2, // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 1000, // (Number) how long to initially wait before attempting a new (1000)
-    passToStoreHandler // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    passToStoreHandler, // (Function|<false-y>) Handler for events triggered by the WebSocket (false)
+    mutations: {
+        SOCKET_ONOPEN,
+        SOCKET_ONCLOSE,
+        SOCKET_ONERROR,
+        SOCKET_ONMESSAGE,
+        SOCKET_RECONNECT,
+        SOCKET_RECONNECT_ERROR
+    }
 });
 
 export default store;

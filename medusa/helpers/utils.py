@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 from builtins import str
 from collections import Iterable
 from datetime import datetime
-from distutils.util import strtobool
 
 from dateutil import tz
 
@@ -66,8 +65,27 @@ def truth_to_bool(value):
     return bool(strtobool(str(value))) if value else False
 
 
+def strtobool(val):
+    """
+    Convert a string representation of truth to true (1) or false (0).
+
+    Ported from: https://is.gd/FSeBX8
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
+    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = val.lower()
+    if val in ('y', 'yes', 't', 'true', 'on', '1'):
+        return 1
+    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
+        return 0
+    else:
+        raise ValueError('invalid truth value %r' % (val,))
+
+
 def to_timestamp(dt):
-    """Return POSIX timestamp corresponding to the datetime instance.
+    """
+    Return POSIX timestamp corresponding to the datetime instance.
 
     :param dt: datetime (possibly aware)
     :return: seconds since epoch as float
@@ -79,3 +97,24 @@ def to_timestamp(dt):
         dt_utc = dt.astimezone(tz.gettz('UTC'))
 
     return (dt_utc - epoch).total_seconds()
+
+
+def to_camel_case(snake_str):
+    """Convert a snake formatted string to camel case."""
+    components = snake_str.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def timedelta_in_milliseconds(td):
+    """
+    Return the value of the timedelta object in milliseconds.
+
+    :param td: timedelta
+    :type td: timedelta
+    :return: the value of the timedelta in milliseconds
+    :rtype: int
+    """
+    if not td:
+        return 0
+
+    return int(td.total_seconds() * 1000)

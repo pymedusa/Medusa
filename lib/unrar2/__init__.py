@@ -33,21 +33,31 @@ similar to the C interface provided by UnRAR. There is also a
 higher level interface which makes some common operations easier.
 """
 
-__version__ = '0.99.6'
+from __future__ import print_function
 
-try:
-    WindowsError
-    in_windows = True
-except NameError:
-    in_windows = False
+__version__ = '0.99.7'
 
-if in_windows:
-    from windows import RarFileImplementation
+import fnmatch
+import logging
+import time
+import weakref
+import platform
+import sys
+
+string_types = (str,) if sys.version_info[0] >= 3 else (str, unicode)
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
+if platform.system() == "Windows":
+    from .windows import RarFileImplementation
+
+    log.debug('Using Windows implementation')
 else:
-    from unix import RarFileImplementation
-    
-    
-import fnmatch, time, weakref
+    from .unix import RarFileImplementation
+
+    log.debug('Using Unix implementation')
+
 
 class RarInfo(object):
     """Represents a file header in an archive. Don't instantiate directly.
@@ -76,14 +86,14 @@ class RarInfo(object):
         self.comment = data['comment']
 
     def __str__(self):
-        try :
-            arcName = self.rarfile.archiveName
+        try:
+            arc_name = self.rarfile.archiveName
         except ReferenceError:
-            arcName = "[ARCHIVE_NO_LONGER_LOADED]"
-        return '<RarInfo "%s" in "%s">' % (self.filename, arcName)
+            arc_name = "[ARCHIVE_NO_LONGER_LOADED]"
+        return '<RarInfo "%s" in "%s">' % (self.filename, arc_name)
+
 
 class RarFile(RarFileImplementation):
-
     def __init__(self, archiveName, password=None):
         """Instantiate the archive.
 
@@ -93,7 +103,7 @@ class RarFile(RarFileImplementation):
         Properties:
             comment - comment associated with the archive
 
-        >>> print RarFile('test.rar').comment
+        >>> print(RarFile('tests/test.rar').comment)
         This is a test.
         """
         self.archiveName = archiveName
@@ -106,13 +116,13 @@ class RarFile(RarFileImplementation):
         """Iterate over all the files in the archive, generating RarInfos.
 
         >>> import os
-        >>> for fileInArchive in RarFile('test.rar').infoiter():
-        ...     print os.path.split(fileInArchive.filename)[-1],
-        ...     print fileInArchive.isdir,
-        ...     print fileInArchive.size,
-        ...     print fileInArchive.comment,
-        ...     print tuple(fileInArchive.datetime)[0:5],
-        ...     print time.strftime('%a, %d %b %Y %H:%M', fileInArchive.datetime)
+        >>> for fileInArchive in RarFile('tests/test.rar').infoiter():
+        ...     print(os.path.split(fileInArchive.filename)[-1], end=' ')
+        ...     print(fileInArchive.isdir, end=' ')
+        ...     print(fileInArchive.size, end=' ')
+        ...     print(fileInArchive.comment, end=' ')
+        ...     print(tuple(fileInArchive.datetime)[0:5], end=' ')
+        ...     print(time.strftime('%a, %d %b %Y %H:%M', fileInArchive.datetime))
         test True 0 None (2003, 6, 30, 1, 59) Mon, 30 Jun 2003 01:59
         test.txt False 20 None (2003, 6, 30, 2, 1) Mon, 30 Jun 2003 02:01
         this.py False 1030 None (2002, 2, 8, 16, 47) Fri, 08 Feb 2002 16:47
@@ -136,9 +146,9 @@ class RarFile(RarFileImplementation):
         """
         checker = condition2checker(condition)
         return RarFileImplementation.read_files(self, checker)
-        
 
-    def extract(self,  condition='*', path='.', withSubpath=True, overwrite=True):
+    def extract(self, condition='*', path='.', withSubpath=True,
+                overwrite=True):
         """Extract specific files from archive to disk.
         
         If "condition" is a list of numbers, then extract files which have those positions in infolist.
@@ -155,26 +165,29 @@ class RarFile(RarFileImplementation):
         
         Returns list of RarInfos for extracted files."""
         checker = condition2checker(condition)
-        return RarFileImplementation.extract(self, checker, path, withSubpath, overwrite)
+        return RarFileImplementation.extract(self, checker, path, withSubpath,
+                                             overwrite)
 
     def get_volume(self):
         """Determine which volume is it in a multi-volume archive. Returns None if it's not a 
         multi-volume archive, 0-based volume number otherwise."""
         return RarFileImplementation.get_volume(self)
 
+
 def condition2checker(condition):
     """Converts different condition types to callback"""
-    if type(condition) in [str, unicode]:
+    if isinstance(condition, string_types):
         def smatcher(info):
             return fnmatch.fnmatch(info.filename, condition)
+
         return smatcher
-    elif type(condition) in [list, tuple] and type(condition[0]) in [int, long]:
+    elif isinstance(condition, (list, tuple)) and isinstance(condition[0],
+                                                             integer_types):
         def imatcher(info):
             return info.index in condition
+
         return imatcher
     elif callable(condition):
         return condition
     else:
         raise TypeError
-
-

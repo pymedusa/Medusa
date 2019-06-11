@@ -76,12 +76,12 @@ class GenericProvider(object):
         self.anime_only = False
         self.bt_cache_urls = [
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
             'https://cache.torrentgalaxy.org/get/{info_hash}',
+            'https://www.seedpeer.me/torrent/{info_hash}',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -195,11 +195,11 @@ class GenericProvider(object):
         results = []
 
         for proper_candidate in proper_candidates:
-            series_obj = Show.find_by_id(app.showList, proper_candidate[b'indexer'], proper_candidate[b'showid'])
+            series_obj = Show.find_by_id(app.showList, proper_candidate['indexer'], proper_candidate['showid'])
 
             if series_obj:
                 self.series = series_obj
-                episode_obj = series_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
+                episode_obj = series_obj.get_episode(proper_candidate['season'], proper_candidate['episode'])
 
                 for term in self.proper_strings:
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
@@ -238,9 +238,33 @@ class GenericProvider(object):
             ))
         )
 
+    def search_results_in_cache(self, episodes):
+        """
+        Search episodes based on param in cache.
+
+        Search the cache (db) for this provider
+        :param episodes: List of Episode objects
+
+        :return: A dict of search results, ordered by episode number
+        """
+        return self.cache.find_episodes(episodes)
+
     def find_search_results(self, series, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
-        """Search episodes based on param."""
+        """
+        Search episodes based on param.
+
+        Search the provider using http queries.
+        :param series: Series object
+        :param episodes: List of Episode objects
+        :param search_mode: 'eponly' or 'sponly'
+        :param forced_search: Flag if the search was triggered by a forced search
+        :param download_current_quality: Flag if we want to include an already downloaded quality in the new search
+        :param manual_search: Flag if the search was triggered by a manual search
+        :param manual_search_type: How the manual search was started: For example an 'episode' or 'season'
+
+        :return: A dict of search results, ordered by episode number.
+        """
         self._check_auth()
         self.series = series
 
@@ -249,18 +273,6 @@ class GenericProvider(object):
         season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
 
         for episode in episodes:
-            if not manual_search:
-                cache_results = self.cache.find_needed_episodes(
-                    episode, forced_search=forced_search, down_cur_quality=download_current_quality
-                )
-                if cache_results:
-                    for episode_no in cache_results:
-                        if episode_no not in results:
-                            results[episode_no] = cache_results[episode_no]
-                        else:
-                            results[episode_no] += cache_results[episode_no]
-                    continue
-
             search_strings = []
             if season_search:
                 search_strings = self._get_season_search_strings(episode)
@@ -322,8 +334,9 @@ class GenericProvider(object):
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
-                                                         ).parse(search_result.name)
+                search_result.parsed_result = NameParser(
+                    parse_method=('normal', 'anime')[series.is_anime]).parse(
+                        search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',
                           {'release_name': search_result.name, 'error': error})
@@ -380,11 +393,21 @@ class GenericProvider(object):
                             continue
 
                         # Compare the episodes and season from the result with what was searched.
-                        if not [searched_episode for searched_episode in episodes
-                                if searched_episode.season == search_result.parsed_result.season_number and
-                                (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.series.is_scene] in
-                                search_result.parsed_result.episode_numbers]:
+                        wanted_ep = False
+                        for searched_ep in episodes:
+                            if searched_ep.series.is_scene:
+                                season = searched_ep.scene_season
+                                episode = searched_ep.scene_episode
+                            else:
+                                season = searched_ep.season
+                                episode = searched_ep.episode
+
+                            if (season == search_result.parsed_result.season_number
+                                    and episode in search_result.parsed_result.episode_numbers):
+                                wanted_ep = True
+                                break
+
+                        if not wanted_ep:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
                                 'snatch, skipping it', search_result.name
@@ -418,13 +441,13 @@ class GenericProvider(object):
                         )
 
                         if len(sql_results) == 2:
-                            if int(sql_results[0][b'season']) == 0 and int(sql_results[1][b'season']) != 0:
-                                search_result.actual_season = int(sql_results[1][b'season'])
-                                search_result.actual_episodes = [int(sql_results[1][b'episode'])]
+                            if int(sql_results[0]['season']) == 0 and int(sql_results[1]['season']) != 0:
+                                search_result.actual_season = int(sql_results[1]['season'])
+                                search_result.actual_episodes = [int(sql_results[1]['episode'])]
                                 search_result.same_day_special = True
-                            elif int(sql_results[1][b'season']) == 0 and int(sql_results[0][b'season']) != 0:
-                                search_result.actual_season = int(sql_results[0][b'season'])
-                                search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                            elif int(sql_results[1]['season']) == 0 and int(sql_results[0]['season']) != 0:
+                                search_result.actual_season = int(sql_results[0]['season'])
+                                search_result.actual_episodes = [int(sql_results[0]['episode'])]
                                 search_result.same_day_special = True
                         elif len(sql_results) != 1:
                             log.warning(
@@ -436,8 +459,8 @@ class GenericProvider(object):
 
                         # @TODO: Need to verify and test this.
                         if search_result.result_wanted and not search_result.same_day_special:
-                            search_result.actual_season = int(sql_results[0][b'season'])
-                            search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                            search_result.actual_season = int(sql_results[0]['season'])
+                            search_result.actual_episodes = [int(sql_results[0]['episode'])]
 
         cl = []
         # Iterate again over the search results, and see if there is anything we want.
@@ -471,6 +494,7 @@ class GenericProvider(object):
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
+
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:
@@ -574,12 +598,25 @@ class GenericProvider(object):
                         matched_time = int(round(float(matched_time.strip())))
 
                     seconds = parse('{0} {1}'.format(matched_time, matched_granularity))
+                    if seconds is None:
+                        log.warning('Failed parsing human time: {0} {1}', matched_time, matched_granularity)
+                        raise ValueError('Failed parsing human time: {0} {1}'.format(matched_time, matched_granularity))
+
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             if fromtimestamp:
                 dt = datetime.fromtimestamp(int(pubdate), tz=tz.gettz('UTC'))
             else:
-                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
+                day_offset = 0
+                if 'yesterday at' in pubdate.lower() or 'today at' in pubdate.lower():
+                    # Extract a time
+                    time = re.search(r'(?P<time>[0-9:]+)', pubdate)
+                    if time:
+                        if 'yesterday' in pubdate:
+                            day_offset = 1
+                        pubdate = time.group('time').strip()
+
+                dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True) - timedelta(days=day_offset)
 
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
@@ -623,7 +660,7 @@ class GenericProvider(object):
         episode_string = show_scene_name + self.search_separator
 
         # If the show name is a season scene exception, we want to use the indexer episode number.
-        if (episode.scene_season > 1 and
+        if (episode.scene_season > 0 and
                 show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.series, episode.scene_season)):
             # This is apparently a season exception, let's use the scene_episode instead of absolute
             ep = episode.scene_episode
@@ -631,11 +668,9 @@ class GenericProvider(object):
             ep = episode.scene_absolute_number
 
         episode_string += '{episode:0>2}'.format(episode=ep)
-        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
 
         if add_string:
             episode_string += self.search_separator + add_string
-            episode_string_fallback += self.search_separator + add_string
 
         search_string['Episode'].append(episode_string.strip())
 

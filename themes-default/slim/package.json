@@ -1,14 +1,14 @@
 {
-  "manifest_version": 1,
   "version": "0.1.0",
   "name": "slim",
   "author": "p0psicles",
   "scripts": {
-    "lint": "xo",
+    "lint": "eslint **/*.{js,vue}",
+    "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "install": "yarn run lint",
-    "test": "cross-env NODE_ENV=test nyc ava",
+    "test": "cross-env NODE_ENV=test nyc --clean jest --coverage",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
@@ -25,145 +25,146 @@
       }
     }
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "7.0.0-rc.1",
-    "@babel/plugin-proposal-object-rest-spread": "7.0.0-rc.1",
-    "@babel/polyfill": "7.0.0-rc.1",
-    "@babel/preset-env": "7.0.0-rc.1",
-    "@babel/register": "7.0.0-rc.1",
-    "@vue/test-utils": "1.0.0-beta.24",
-    "ava": "1.0.0-beta.7",
-    "axios": "0.18.0",
-    "babel-loader": "8.0.0-beta.6",
-    "babel-plugin-istanbul": "5.0.1",
-    "bootstrap": "3.3.7",
-    "browser-env": "3.2.5",
-    "clean-webpack-plugin": "0.1.19",
-    "codecov": "3.0.4",
-    "copy-webpack-plugin": "4.5.2",
-    "cross-env": "5.2.0",
-    "css-loader": "1.0.0",
-    "eslint": "5.4.0",
-    "eslint-config-xo": "0.24.2",
-    "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.80",
-    "file-loader": "2.0.0",
-    "filemanager-webpack-plugin": "2.0.2",
-    "glob": "7.1.3",
-    "gulp": "3.9.1",
-    "gulp-changed": "3.2.0",
-    "gulp-imagemin": "4.1.0",
-    "imagemin-pngquant": "6.0.0",
-    "jquery": "3.3.1",
-    "lodash": "4.17.10",
-    "mini-css-extract-plugin": "0.4.2",
-    "nyc": "13.0.1",
-    "require-extension-hooks": "0.3.3",
-    "require-extension-hooks-babel": "1.0.0-beta.1",
-    "require-extension-hooks-vue": "1.1.0",
-    "run-sequence": "2.2.1",
-    "vue": "2.5.17",
-    "vue-async-computed": "3.4.1",
-    "vue-js-toggle-button": "1.3.0",
-    "vue-loader": "15.4.1",
-    "vue-meta": "1.5.3",
-    "vue-native-websocket": "2.0.8",
-    "vue-router": "3.0.1",
-    "vue-snotify": "3.2.1",
-    "vue-template-compiler": "2.5.17",
-    "vue-truncate-collapsed": "2.1.0",
-    "vuex": "3.0.1",
-    "webpack": "4.17.1",
-    "webpack-cli": "3.1.0",
-    "xo": "0.22.0"
+  "resolutions": {
+    "**/jquery": "3.4.1",
+    "**/date-fns": "2.0.0-alpha.31"
   },
-  "xo": {
-    "space": 4,
-    "extends": [
-      "plugin:vue/essential"
-    ],
-    "extensions": [
-      "vue"
+  "dependencies": {
+    "axios": "0.19.0",
+    "bootstrap": "3.4.1",
+    "country-language": "0.1.7",
+    "date-fns": "2.0.0-alpha.31",
+    "is-visible": "2.2.0",
+    "jquery": "3.4.1",
+    "lodash": "4.17.11",
+    "tablesorter": "2.31.1",
+    "vue": "2.6.10",
+    "vue-async-computed": "3.7.0",
+    "vue-cookie": "1.1.4",
+    "vue-good-table": "https://github.com/p0psicles/vue-good-table#master",
+    "vue-js-modal": "1.3.31",
+    "vue-js-toggle-button": "1.3.2",
+    "vue-meta": "1.6.0",
+    "vue-native-websocket": "2.0.13",
+    "vue-router": "3.0.6",
+    "vue-scrollto": "2.15.0",
+    "vue-snotify": "3.2.1",
+    "vue-template-compiler": "2.6.10",
+    "vue-truncate-collapsed": "2.1.0",
+    "vuex": "3.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.4.5",
+    "@babel/plugin-syntax-dynamic-import": "7.2.0",
+    "@babel/preset-env": "7.4.5",
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
+    "@vue/test-utils": "1.0.0-beta.29",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "10.0.1",
+    "babel-loader": "8.0.6",
+    "browser-env": "3.2.6",
+    "clean-webpack-plugin": "3.0.0",
+    "codecov": "3.5.0",
+    "copy-webpack-plugin": "5.0.3",
+    "cross-env": "5.2.0",
+    "css-loader": "2.1.1",
+    "eslint": "5.16.0",
+    "eslint-config-xo": "0.26.0",
+    "eslint-import-resolver-webpack": "0.11.1",
+    "eslint-plugin-eslint-comments": "3.1.1",
+    "eslint-plugin-import": "2.17.3",
+    "eslint-plugin-jest": "22.6.4",
+    "eslint-plugin-unicorn": "9.0.0",
+    "eslint-plugin-vue": "5.2.2",
+    "file-loader": "4.0.0",
+    "filemanager-webpack-plugin": "2.0.5",
+    "glob": "7.1.4",
+    "gulp": "4.0.2",
+    "gulp-changed": "4.0.0",
+    "gulp-imagemin": "6.0.0",
+    "imagemin-pngquant": "8.0.0",
+    "jest": "24.8.0",
+    "jest-haste-map": "24.8.0",
+    "jest-resolve": "24.8.0",
+    "jest-serializer-vue": "2.0.2",
+    "mini-css-extract-plugin": "0.7.0",
+    "nyc": "14.1.1",
+    "optimize-css-assets-webpack-plugin": "5.0.1",
+    "stylelint": "10.0.1",
+    "stylelint-config-standard": "18.3.0",
+    "vue-jest": "3.0.4",
+    "vue-loader": "15.7.0",
+    "webpack": "4.33.0",
+    "webpack-cli": "3.3.3"
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "processors": [
+      [
+        "@mapbox/stylelint-processor-arbitrary-tags",
+        {
+          "fileFilterRegex": [
+            ".vue$"
+          ]
+        }
+      ]
     ],
     "rules": {
-      "object-curly-spacing": [
-        "error",
-        "always"
-      ],
-      "space-before-function-paren": [
-        "error",
-        "never"
-      ],
-      "unicorn/catch-error-name": [
-        "error",
+      "indentation": [
+        4,
         {
-          "name": "error"
+          "ignore": [
+            "inside-parens"
+          ],
+          "message": "Please use 4 spaces for indentation.",
+          "severity": "error"
         }
       ],
-      "valid-jsdoc": [
-        "error"
-      ]
+      "no-empty-source": null,
+      "no-descending-specificity": null
     },
-    "envs": [
-      "browser"
-    ],
-    "globals": [
-      "PNotify",
-      "LazyLoad",
-      "_",
-      "log",
-      "$",
-      "MEDUSA",
-      "api",
-      "apiv1",
-      "apiRoute",
-      "jQuery",
-      "axios",
-      "webRoot",
-      "apiRoot",
-      "apiKey",
-      "Vuex",
-      "dateFns"
-    ],
-    "ignores": [
-      "static/js/lib/**",
-      "static/js/*.min.js",
-      "static/js/vender.js"
-    ],
-    "esnext": true
+    "ignoreFiles": [
+      "static/css/lib/**",
+      "static/css/*.min.css"
+    ]
   },
-  "ava": {
-    "require": [
-      "esm",
-      "@babel/register",
-      "@babel/polyfill",
+  "jest": {
+    "setupFiles": [
       "./test/helpers/setup.js"
     ],
-    "files": [
-      "test/specs/**/*.spec.js"
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
     ],
-    "sources": [
-      "src/**/*.vue",
-      "src/**/*.js"
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      ".*\\.(vue)$": "vue-jest"
+    },
+    "snapshotSerializers": [
+      "jest-serializer-vue"
     ],
-    "concurrency": 5,
-    "failWithoutAssertions": true,
-    "powerAssert": true
+    "coverageReporters": [
+      "json"
+    ]
   },
   "nyc": {
-    "require": [
-      "@babel/register",
-      "@babel/polyfill"
-    ],
     "sourceMap": false,
     "instrument": false,
     "extension": [
       ".vue"
     ],
+    "include": [
+      "src/**/*.vue",
+      "src/**/*.js"
+    ],
     "reporter": [
       "lcov",
       "text"
-    ]
+    ],
+    "tempDirectory": "./coverage"
   }
 }

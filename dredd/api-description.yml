@@ -36,7 +36,6 @@ paths:
           required: true
           description: Only id (with indexer information) should be specified
           schema:
-            $ref: '#/definitions/Series'
             example:
               id:
                 tvdb: 301824
@@ -75,6 +74,7 @@ paths:
           description: Filter series based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/fetch'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -323,6 +323,35 @@ paths:
               {"status": 2, "quality": 4}
             path-params:
               id: e999
+    delete:
+      summary: Delete a specific episode from a given series
+      description: Delete a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id-delete'
+          name: id
+      responses:
+        204:
+          description: Episode is deleted successfully
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: 123456
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: s9999e9999
+        409:
+          $ref: '#/responses/error'
+          description: Unable to delete episode
+          x-disabled: true
   /series/{seriesid}/episodes/{id}/{field}:
     get:
       summary: Return a specific field from a given episode
@@ -421,7 +450,6 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Operation'
             example:
               type: ARCHIVE_EPISODES
       responses:
@@ -528,12 +556,14 @@ paths:
         200:
           description: The alias information
           schema: {}
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
         400:
           $ref: '#/responses/error'
           description: Invalid field
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -556,6 +586,7 @@ paths:
           description: The alias information
           schema:
             $ref: '#/definitions/Alias'
+          x-disabled: true
           x-request:
             path-params:
               id: "${stash['alias-id']}"
@@ -708,7 +739,6 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Operation'
             example:
               type: REFRESH
       responses:
@@ -824,6 +854,9 @@ paths:
       responses:
         201:
           description: Log message successfully created
+          x-request:
+            body-update:
+              thread: ''
           x-expect:
             no-body: true
         400:
@@ -911,6 +944,9 @@ definitions:
         type: string
         description: "Air time"
         example: "Thursday 8:00 PM"
+      airsFormatValid:
+        type: boolean
+        description: "Tests the airs format"
       language:
         type: string
         description: Language code
@@ -918,11 +954,40 @@ definitions:
       showType:
         type: string
         enum: [series, anime, sports]
-      akas:
+      imdbInfo:
         type: object
-        description: Also known as
-        additionalProperties:
-          type: string
+        description: "Object with additional show information retrieved from imdb"
+        properties:
+          akas:
+            type: string
+          certificates:
+            type: string
+          countries:
+            type: string
+          countryCodes:
+            type: string
+          genres:
+            type: string
+          imdbId:
+            type: string
+          imdbInfoId:
+            type: integer
+          indexer:
+            type: integer
+          indexerId:
+            type: integer
+          lastUpdate:
+            type: integer
+          plot:
+            type: string
+          rating:
+            type: string
+          runtimes:
+            type: integer
+          title:
+            type: string
+          votes:
+            type: integer
       year:
         type: object
         properties:
@@ -998,6 +1063,9 @@ definitions:
             type: string
             description: Series home folder
             example: "/library/My Series"
+          locationValid:
+            type: boolean
+            description: Result of a stat on the configured location
           qualities:
             type: object
             description: Qualities settings
@@ -1007,7 +1075,7 @@ definitions:
                 items:
                   type: integer
                   format: int32
-              prefered:
+              preferred:
                 type: array
                 items:
                   type: integer
@@ -1061,6 +1129,15 @@ definitions:
                 description: Required release words
                 items:
                   type: string
+              requiredWordsExclude:
+                type: boolean
+                description: Exclude required words from global required words list
+              ignoredWordsExclude:
+                type: boolean
+                description: Exclude ignored words from global ignored words list
+          airdateOffset:
+            type: integer
+            description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
       seasons:
         type: array
         description: Episodes grouped by season. Available in detailed view.
@@ -1075,6 +1152,20 @@ definitions:
         minimum: 0
         maximum: 10000
         description: Total number of episodes. Available in detailed view
+      size:
+        type: integer
+        description: Show size on disk calculated from the shows configured location
+      showQueueStatus:
+        type: array
+        description: Array of objects with information on the different queues used for operations on a show.
+        items:
+          type: object
+      xemNumbering:
+        type: array
+        description: Array of objects with xem indexer to scene mappings
+        items:
+          type: object
+          example: '"xemNumbering": [{"source": {"season": 6, "episode": 34}, "destination": {"season": 2, "episode": 16}}'
   Episode:
     type: object
     properties:
@@ -1343,6 +1434,8 @@ definitions:
             type: string
           webRoot:
             type: string
+          runsInDocker:
+            type: boolean
           torrents:
             type: object
             properties:
@@ -1372,7 +1465,7 @@ definitions:
                 type: string
               method:
                 type: string
-                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
           news:
             type: object
             properties:
@@ -1382,6 +1475,10 @@ definitions:
           logs:
             type: object
             properties:
+              debug:
+                type: boolean
+              dbDebug:
+                type: boolean
               loggingLevels:
                 type: object
                 properties:
@@ -1478,7 +1575,557 @@ definitions:
                 type: string
               multiEpStrings:
                 type: object
-
+      search:
+        type: object
+        properties:
+          general:
+            type: object
+            properties:
+              randomizeProviders:
+                type: boolean
+              downloadPropers:
+                type: boolean
+              checkPropersInterval:
+                type: string
+              propersSearchDays:
+                type: integer
+              backlogDays:
+                type: integer
+              backlogFrequency:
+                type: integer
+              minBacklogFrequency:
+                type: integer
+              dailySearchFrequency:
+                type: integer
+              minDailySearchFrequency:
+                type: integer
+              removeFromClient:
+                type: boolean
+              torrentCheckerFrequency:
+                type: integer
+              minTorrentCheckerFrequency:
+                type: integer
+              usenetRetention:
+                type: integer
+              trackersList:
+                type: array
+              allowHighPriority:
+                type: boolean
+              useFailedDownloads:
+                type: boolean
+              deleteFailed:
+                type: boolean
+              cacheTrimming:
+                type: boolean
+              maxCacheAge:
+                type: integer
+          filters:
+            type: object
+            properties:
+              ignored:
+                type: array
+              undesired:
+                type: array
+              preferred:
+                type: array
+              required:
+                type: array
+              ignoredSubsList:
+                type: array
+              ignoreUnknownSubs:
+                type: boolean
+          showDownloadDir:
+            type: string
+          processAutomatically:
+            type: boolean
+          postponeIfSyncFiles:
+            type: boolean
+          postponeIfNoSubs:
+            type: boolean
+          renameEpisodes:
+            type: boolean
+          createMissingShowDirs:
+            type: boolean
+          addShowsWithoutDir:
+            type: boolean
+          moveAssociatedFiles:
+            type: boolean
+          nfoRename:
+            type: boolean
+          airdateEpisodes:
+            type: boolean
+          unpack:
+            type: boolean
+          deleteRarContent:
+            type: boolean
+          noDelete:
+            type: boolean
+          processMethod:
+            type: string
+          reflinkAvailable:
+            type: boolean
+          autoPostprocessorFrequency:
+            type: integer
+          syncFiles:
+            type: array
+          fileTimestampTimezone:
+            type: string
+          allowedExtensions:
+            type: array
+          extraScripts:
+            type: array
+          extraScriptsUrl:
+            type: string
+          multiEpStrings:
+            type: object
+      notifiers:
+        type: object
+        properties:
+          kodi:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              alwaysOn:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+              update:
+                type: object
+                properties:
+                  library:
+                    type: boolean
+                  full:
+                    type: boolean
+                  onlyFirst:
+                    type: boolean
+              host:
+                type: array
+              username:
+                type: string
+              password:
+                type: string
+              libraryCleanPending:
+                type: boolean
+              cleanLibrary:
+                type: boolean
+          plex:
+            type: object
+            properties:
+              server:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  updateLibrary:
+                    type: boolean
+                  host:
+                    type: array
+                  https:
+                    type: boolean
+                  username:
+                    type: string
+                  password:
+                    type: string
+                  token:
+                    type: string
+              client:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  username:
+                    type: string
+                  host:
+                    type: array
+                  notifyOnSnatch:
+                    type: boolean
+                  notifyOnDownload:
+                    type: boolean
+                  notifyOnSubtitleDownload:
+                    type: boolean
+          emby:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              apiKey:
+                type: string
+          nmj:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              database:
+                type: string
+              mount:
+                type: string
+          nmjv2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              dbloc:
+                type: string
+              database:
+                type: string
+          synologyIndex:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          synology:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pyTivo:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              name:
+                type: string
+              shareName:
+                type: string
+          growl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              password:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          prowl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: array
+              messageTitle:
+                type: string
+              priority:
+                type: integer
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          libnotify:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushover:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              apiKey:
+                type: string
+              userKey:
+                type: string
+              device:
+                type: array
+              sound:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          boxcar2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              accessToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushalot:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              authToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushbullet:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          join:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              device:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          freemobile:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          telegram:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          twitter:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dmto:
+                type: string
+              username:
+                type: string
+              password:
+                type: string
+              prefix:
+                type: string
+              directMessage:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          trakt:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              pinUrl:
+                type: string
+              username:
+                type: string
+              accessToken:
+                type: string
+              timeout:
+                type: integer
+              defaultIndexer:
+                type: integer
+              sync:
+                type: boolean
+              syncRemove:
+                type: boolean
+              syncWatchlist:
+                type: boolean
+              methodAdd:
+                type: integer
+              removeWatchlist:
+                type: boolean
+              removeSerieslist:
+                type: boolean
+              removeShowFromApplication:
+                type: boolean
+              startPaused:
+                type: boolean
+              blacklistName:
+                type: string
+          email:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              port:
+                type: integer
+              from:
+                type: string
+              tls:
+                type: boolean
+              username:
+                type: string
+              password:
+                type: string
+              addressList:
+                type: array
+              subject:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          slack:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              webhook:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+      clients:
+        type: object
+        properties:
+          nzb:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dir:
+                type: string
+              method:
+                type: string
+              nzbget:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  host:
+                    type: string
+                  priority:
+                    type: integer
+                  useHttps:
+                    type: boolean
+                  username:
+                    type: string
+              sabnzbd:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  forced:
+                    type: boolean
+                  host:
+                    type: string
+                  username:
+                    type: string
+          torrents:
+            type: object
+            properties:
+              username:
+                type: string
+              seedTime:
+                type: integer
+              rpcurl:
+                type: string
+              authType:
+                type: string
+              paused:
+                type: boolean
+              host:
+                type: string
+              path:
+                type: string
+              verifySSL:
+                type: boolean
+              highBandwidth:
+                type: boolean
+              enabled:
+                type: boolean
+              label:
+                type: string
+              labelAnime:
+                type: string
+              method:
+                type: string
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
   Log:
     type: object
     properties:
@@ -1540,7 +2187,6 @@ definitions:
         x-nullable: true
       type:
         type: string
-        enum: [null, local]
         x-nullable: true
     example:
       series: tvdb301824
@@ -1829,6 +2475,12 @@ parameters:
     required: false
     description: Whether response should contain detailed information
     type: boolean
+  fetch:
+    name: fetch
+    in: query
+    required: false
+    description: Whether response should fetch external information
+    type: boolean
   page:
     name: page
     in: query
@@ -1862,6 +2514,13 @@ parameters:
     required: true
     description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
     x-example: s01e01
+    type: string
+  episode-id-delete:
+    name: episode-id-delete
+    in: path
+    required: true
+    description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
+    x-example: s01e02
     type: string
   alias-id:
     name: alias-id
@@ -1906,10 +2565,12 @@ parameters:
     description: The configuration to retrieve
     type: string
     enum:
-      - main
-      - statuses
-      - qualities
+      - main # Keep main first, as the tests use it
+      - consts
       - metadata
+      - notifiers
+      - search
+      - system
   log-level:
     name: level
     in: query

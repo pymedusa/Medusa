@@ -7,7 +7,6 @@
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
@@ -115,7 +114,7 @@
                 else:
                     den = 1
                     download_stat_tip = "Unaired"
-                progressbar_percent = nom * 100 / den
+                progressbar_percent = nom * 100 // den
             %>
                 <tr>
                 % if cur_airs_next:
@@ -176,7 +175,7 @@
                             <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                         </app-link>
                     </td>
-                    <td align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+                    <td align="center"><quality-pill :quality="${cur_show.quality}" show-title></quality-pill></td>
                     <td align="center">
                         ## This first span is used for sorting and is never displayed to user
                         <span style="display: none;">${download_stat}</span>

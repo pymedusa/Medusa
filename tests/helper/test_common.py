@@ -45,23 +45,10 @@ def test_http_code_description(p):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0 - bytes test cases
+    {  # p0 - special test cases
         None: False,
         42: False,
         b'': False,
-        b'filename': False,
-        b'.syncthingfilename': True,
-        b'.syncthing.filename': True,
-        b'.syncthing-filename': True,
-        b'.!sync': True,
-        b'file.!sync': True,
-        b'file.!sync.ext': False,
-        b'.lftp-pget-status': True,
-        b'file.lftp-pget-status': True,
-        b'file.lftp-pget-status.ext': False,
-        b'.part': True,
-        b'file.part': True,
-        b'file.part.ext': False,
     },
     {  # p1 - unicode test cases
         '': False,
@@ -88,17 +75,9 @@ def test_is_sync_file(p, app_config):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0 - bytes test cases
+    {  # p0 - special test cases
         None: False,
         42: False,
-        b'': False,
-        b'filename': False,
-        b'.nzb': True,
-        b'file.nzb': True,
-        b'file.nzb.part': False,
-        b'.torrent': True,
-        b'file.torrent': True,
-        b'file.torrent.part': False,
     },
     {  # p1 - unicode test cases
         '': False,
@@ -151,22 +130,9 @@ def test_pretty_file_size(p):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0 - bytes test cases
+    {  # p0 - special test cases
         None: None,
         42: 42,
-        b'': b'',
-        b'.': b'.',
-        b'filename': b'filename',
-        b'.bashrc': b'.bashrc',
-        b'.nzb': b'.nzb',
-        b'file.nzb': b'file',
-        b'file.name.nzb': b'file.name',
-        b'.torrent': b'.torrent',
-        b'file.torrent': b'file',
-        b'file.name.torrent': b'file.name',
-        b'.avi': b'.avi',
-        b'file.avi': b'file',
-        b'file.name.avi': b'file.name',
     },
     {  # p1 - unicode test cases
         '': '',
@@ -190,7 +156,7 @@ def test_remove_extension(p):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0 - bytes test cases
+    {  # p0 - special test cases
         (None, None): None,
         (None, b''): None,
         (42, None): 42,
@@ -199,19 +165,6 @@ def test_remove_extension(p):
         (b'', b''): b'',
         (b'.', None): b'.',
         (b'.', b''): b'.',
-        (b'.', b'avi'): b'.',
-        (b'filename', None): b'filename',
-        (b'filename', b''): b'filename',
-        (b'filename', b'avi'): b'filename',
-        (b'.bashrc', None): b'.bashrc',
-        (b'.bashrc', b''): b'.bashrc',
-        (b'.bashrc', b'avi'): b'.bashrc',
-        (b'file.mkv', None): b'file.None',
-        (b'file.mkv', b''): b'file.',
-        (b'file.mkv', b'avi'): b'file.avi',
-        (b'file.name.mkv', None): b'file.name.None',
-        (b'file.name.mkv', b''): b'file.name.',
-        (b'file.name.mkv', b'avi'): b'file.name.avi',
     },
     {  # p1 - unicode test cases
         (None, ''): None,
@@ -239,21 +192,17 @@ def test_remove_extension(p):
         ('.bashrc', None): '.bashrc',
         ('.bashrc', b''): '.bashrc',
         ('.bashrc', ''): '.bashrc',
-        ('.bashrc', b'avi'): '.bashrc',
         ('.bashrc', 'avi'): '.bashrc',
         ('file.mkv', ''): b'file.',
         ('file.mkv', 'avi'): b'file.avi',
         ('file.mkv', None): 'file.None',
-        ('file.mkv', b''): 'file.',
         ('file.mkv', ''): 'file.',
-        ('file.mkv', b'avi'): 'file.avi',
         ('file.mkv', 'avi'): 'file.avi',
         ('file.name.mkv', ''): b'file.name.',
         ('file.name.mkv', 'avi'): b'file.name.avi',
         ('file.name.mkv', None): 'file.name.None',
-        ('file.name.mkv', b''): 'file.name.',
         ('file.name.mkv', ''): 'file.name.',
-        ('file.name.mkv', b'avi'): 'file.name.avi',
+        ('file.name.mkv', ''): 'file.name.',
         ('file.name.mkv', 'avi'): 'file.name.avi',
     }
 ])
@@ -263,17 +212,10 @@ def test_replace_extension(p):
 
 
 @pytest.mark.parametrize('value,expected', [
-    # bytes test cases
-    (None, b''),
-    (42, b''),
-    (b'', b''),
-    (b'filename', b'filename'),
-    (b'fi\\le/na*me', b'fi-le-na-me'),
-    (b'fi:le"na<me', b'filename'),
-    (b'fi>le|na?me', b'filename'),
-    (b' . file\u2122name. .', b'file-u2122name'),
-    (b' . file\tname. .', b'filename'),
-    (b' . file\x00as\x08df\x1fname. .', b'fileasdfname'),
+    # special test cases
+    (None, ''),
+    (42, ''),
+    (b'', ''),
 
     # unicode test cases
     ('', ''),
@@ -373,6 +315,8 @@ def test_convert_size():
     assert sut.convert_size(100, -1) == 100
     # returns integer sizes for floats too
     assert sut.convert_size(1.312, -1) == 1
+    # return integer variant when passed as str
+    assert sut.convert_size('1024', -1) == 1024
 
     # without a default value, failures return None
     assert sut.convert_size('pancakes') is None

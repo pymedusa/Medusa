@@ -22,9 +22,6 @@ log.logger.addHandler(logging.NullHandler())
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
-# Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 12
-
 
 class MainSanityCheck(db.DBSanityCheck):
     def check(self):
@@ -59,7 +56,7 @@ class MainSanityCheck(db.DBSanityCheck):
         sql_results = self.connection.select(query)
         if sql_results:
             for sql_result in sql_results:
-                proper_release = sql_result[b'resource']
+                proper_release = sql_result['resource']
                 log.debug(u'Found old propers without proper tags: {0}',
                           proper_release)
                 parse_result = NameParser()._parse_string(proper_release)
@@ -80,10 +77,10 @@ class MainSanityCheck(db.DBSanityCheck):
             for sql_result in sql_results:
                 log.warning(u'Found deleted episode id {0} from show ID {1}'
                             u' with subtitle data. Erasing reference...',
-                            sql_result[b'episode_id'], sql_result[b'showid'])
+                            sql_result['episode_id'], sql_result['showid'])
                 self.connection.action("UPDATE tv_episodes SET subtitles = '', "
                                        "subtitles_searchcount = 0, subtitles_lastsearch = '' "
-                                       'WHERE episode_id = %i' % (sql_result[b'episode_id'])
+                                       'WHERE episode_id = %i' % (sql_result['episode_id'])
                                        )
 
     def fix_duplicate_episodes(self):
@@ -96,17 +93,17 @@ class MainSanityCheck(db.DBSanityCheck):
 
             log.debug('Duplicate episode detected! showid: {0!s}'
                       ' season: {1!s} episode: {2!s} count: {3!s}',
-                      cur_duplicate[b'showid'], cur_duplicate[b'season'],
-                      cur_duplicate[b'episode'], cur_duplicate[b'count'])
+                      cur_duplicate['showid'], cur_duplicate['season'],
+                      cur_duplicate['episode'], cur_duplicate['count'])
             cur_dupe_results = self.connection.select(
                 'SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? and episode = ? ORDER BY episode_id DESC LIMIT ?',
-                [cur_duplicate[b'indexer'], cur_duplicate[b'showid'], cur_duplicate[b'season'], cur_duplicate[b'episode'],
-                 int(cur_duplicate[b'count']) - 1]
+                [cur_duplicate['indexer'], cur_duplicate['showid'], cur_duplicate['season'], cur_duplicate['episode'],
+                 int(cur_duplicate['count']) - 1]
             )
 
             for cur_dupe_id in cur_dupe_results:
-                log.info('Deleting duplicate episode with episode_id: {0!s}', cur_dupe_id[b'episode_id'])
-                self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_dupe_id[b'episode_id']])
+                log.info('Deleting duplicate episode with episode_id: {0!s}', cur_dupe_id['episode_id'])
+                self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_dupe_id['episode_id']])
 
     def fix_orphan_episodes(self):
 
@@ -117,11 +114,11 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_orphan in sql_results:
             log.debug(u'Orphan episode detected! episode_id: {0!s}'
-                      u' showid: {1!s}', cur_orphan[b'episode_id'],
-                      cur_orphan[b'showid'])
+                      u' showid: {1!s}', cur_orphan['episode_id'],
+                      cur_orphan['showid'])
             log.info(u'Deleting orphan episode with episode_id: {0!s}',
-                     cur_orphan[b'episode_id'])
-            self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_orphan[b'episode_id']])
+                     cur_orphan['episode_id'])
+            self.connection.action('DELETE FROM tv_episodes WHERE episode_id = ?', [cur_orphan['episode_id']])
 
     def fix_missing_table_indexes(self):
         if not self.connection.select("PRAGMA index_info('idx_tv_episodes_showid_airdate')"):
@@ -154,9 +151,9 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_unaired in sql_results:
             log.info(u'Fixing unaired episode status for episode_id: {0!s}',
-                     cur_unaired[b'episode_id'])
+                     cur_unaired['episode_id'])
             self.connection.action('UPDATE tv_episodes SET status = ? WHERE episode_id = ?',
-                                   [common.UNAIRED, cur_unaired[b'episode_id']])
+                                   [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
         for old_status, new_status in iteritems(STATUS_MAP):
@@ -167,12 +164,12 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for cur_ep in sql_results:
             log.debug(u'MALFORMED episode status detected! episode_id: {0!s}'
-                      u' showid: {1!s}', cur_ep[b'episode_id'],
-                      cur_ep[b'showid'])
+                      u' showid: {1!s}', cur_ep['episode_id'],
+                      cur_ep['showid'])
             log.info(u'Fixing malformed episode status with'
-                     u' episode_id: {0!s}', cur_ep[b'episode_id'])
+                     u' episode_id: {0!s}', cur_ep['episode_id'])
             self.connection.action('UPDATE tv_episodes SET status = ? WHERE episode_id = ?',
-                                   [common.UNSET, cur_ep[b'episode_id']])
+                                   [common.UNSET, cur_ep['episode_id']])
 
     def fix_invalid_airdates(self):
 
@@ -182,12 +179,12 @@ class MainSanityCheck(db.DBSanityCheck):
 
         for bad_airdate in sql_results:
             log.debug(u'Bad episode airdate detected! episode_id: {0!s}'
-                      u' showid: {1!s}', bad_airdate[b'episode_id'],
-                      bad_airdate[b'showid'])
+                      u' showid: {1!s}', bad_airdate['episode_id'],
+                      bad_airdate['showid'])
             log.info(u'Fixing bad episode airdate for episode_id: {0!s}',
-                     bad_airdate[b'episode_id'])
+                     bad_airdate['episode_id'])
             self.connection.action("UPDATE tv_episodes SET airdate = '1' WHERE episode_id = ?",
-                                   [bad_airdate[b'episode_id']])
+                                   [bad_airdate['episode_id']])
 
     def fix_subtitles_codes(self):
 
@@ -203,20 +200,20 @@ class MainSanityCheck(db.DBSanityCheck):
             langs = []
 
             log.debug(u'Checking subtitle codes for episode_id: {0!s},'
-                      u' codes: {1!s}', sql_result[b'episode_id'],
-                      sql_result[b'subtitles'])
+                      u' codes: {1!s}', sql_result['episode_id'],
+                      sql_result['subtitles'])
 
-            for subcode in sql_result[b'subtitles'].split(','):
+            for subcode in sql_result['subtitles'].split(','):
                 if not len(subcode) == 3 or subcode not in subtitles.subtitle_code_filter():
                     log.debug(u'Fixing subtitle codes for episode_id: {0!s},'
                               u' invalid code: {1!s}',
-                              sql_result[b'episode_id'], subcode)
+                              sql_result['episode_id'], subcode)
                     continue
 
                 langs.append(subcode)
 
             self.connection.action('UPDATE tv_episodes SET subtitles = ?, subtitles_lastsearch = ? WHERE episode_id = ?;',
-                                   [','.join(langs), datetime.datetime.now().strftime(dateTimeFormat), sql_result[b'episode_id']])
+                                   [','.join(langs), datetime.datetime.now().strftime(dateTimeFormat), sql_result['episode_id']])
 
     def fix_show_nfo_lang(self):
         self.connection.action("UPDATE tv_shows SET lang = '' WHERE lang = 0 OR lang = '0';")
@@ -257,7 +254,7 @@ class InitialSchema(db.SchemaUpgrade):
                 self.connection.action(query)
 
         else:
-            cur_db_version = self.checkDBVersion()
+            cur_db_version = self.checkMajorDBVersion()
 
             if cur_db_version < MIN_DB_VERSION:
                 log.error(
@@ -283,38 +280,38 @@ class InitialSchema(db.SchemaUpgrade):
 
 class AddVersionToTvEpisodes(InitialSchema):
     def test(self):
-        return self.checkDBVersion() >= 40
+        return self.checkMajorDBVersion() >= 40
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Adding column version to tv_episodes and history')
         self.addColumn('tv_episodes', 'version', 'NUMERIC', '-1')
         self.addColumn('tv_episodes', 'release_group', 'TEXT', '')
         self.addColumn('history', 'version', 'NUMERIC', '-1')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AddDefaultEpStatusToTvShows(AddVersionToTvEpisodes):
     def test(self):
-        return self.checkDBVersion() >= 41
+        return self.checkMajorDBVersion() >= 41
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Adding column default_ep_status to tv_shows')
         self.addColumn('tv_shows', 'default_ep_status', 'NUMERIC', '-1')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
     def test(self):
-        return self.checkDBVersion() >= 42
+        return self.checkMajorDBVersion() >= 42
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Converting column indexer and default_ep_status field types to numeric')
         self.connection.action('DROP TABLE IF EXISTS tmp_tv_shows')
@@ -330,14 +327,14 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
         self.connection.action('INSERT INTO tv_shows SELECT * FROM tmp_tv_shows')
         self.connection.action('DROP TABLE tmp_tv_shows')
 
-        self.incDBVersion()
+        self.incMajorDBVersion()
 
 
 class AddMinorVersion(AlterTVShowsFieldTypes):
     def test(self):
-        return self.checkDBVersion() >= 43 and self.hasColumn(b'db_version', b'db_minor_version')
+        return self.checkMajorDBVersion() >= 43 and self.hasColumn('db_version', 'db_minor_version')
 
-    def incDBVersion(self):
+    def incMajorDBVersion(self):
         warnings.warn('Deprecated: Use inc_major_version or inc_minor_version instead', DeprecationWarning)
 
     def inc_major_version(self):
@@ -346,6 +343,8 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         minor_version = 0
         self.connection.action('UPDATE db_version SET db_version = ?, db_minor_version = ?;',
                                [major_version, minor_version])
+        log.info(u'[MAIN-DB] Updated major version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
     def inc_minor_version(self):
@@ -353,18 +352,18 @@ class AddMinorVersion(AlterTVShowsFieldTypes):
         minor_version += 1
         self.connection.action('UPDATE db_version SET db_version = ?, db_minor_version = ?;',
                                [major_version, minor_version])
+        log.info(u'[MAIN-DB] Updated minor version to: {}.{}', *self.connection.version)
+
         return self.connection.version
 
     def execute(self):
-        utils.backup_database(self.connection.path, self.checkDBVersion())
+        utils.backup_database(self.connection.path, self.checkMajorDBVersion())
 
         log.info(u'Add minor version numbers to database')
-        self.addColumn(b'db_version', b'db_minor_version')
+        self.addColumn('db_version', 'db_minor_version')
 
         self.inc_major_version()
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class TestIncreaseMajorVersion(AddMinorVersion):
@@ -390,8 +389,6 @@ class TestIncreaseMajorVersion(AddMinorVersion):
         self.inc_major_version()
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddProperTags(TestIncreaseMajorVersion):
     """Adds column proper_tags to history table."""
@@ -415,8 +412,6 @@ class AddProperTags(TestIncreaseMajorVersion):
         # Call the update old propers once
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddManualSearched(AddProperTags):
@@ -445,8 +440,6 @@ class AddManualSearched(AddProperTags):
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddInfoHash(AddManualSearched):
     """Adds column info_hash to history table."""
@@ -465,8 +458,6 @@ class AddInfoHash(AddManualSearched):
             self.addColumn('history', 'info_hash', 'TEXT', None)
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPlot(AddInfoHash):
@@ -491,8 +482,6 @@ class AddPlot(AddInfoHash):
 
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
 
 class AddResourceSize(AddPlot):
     """Adds column size to history table."""
@@ -511,8 +500,6 @@ class AddResourceSize(AddPlot):
             self.addColumn('history', 'size', 'NUMERIC', -1)
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddPKIndexerMapping(AddResourceSize):
@@ -536,8 +523,6 @@ class AddPKIndexerMapping(AddResourceSize):
         self.connection.action('DROP TABLE IF EXISTS new_indexer_mapping;')
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerInteger(AddPKIndexerMapping):
@@ -566,8 +551,6 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action('DROP TABLE IF EXISTS new_tv_episodoes;')
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class AddIndexerIds(AddIndexerInteger):
@@ -643,11 +626,11 @@ class AddIndexerIds(AddIndexerInteger):
 
                 # check for double
                 for series in all_series:
-                    if series[b'indexer_id'] not in series_dict:
-                        series_dict[series[b'indexer_id']] = series[b'indexer']
+                    if series['indexer_id'] not in series_dict:
+                        series_dict[series['indexer_id']] = series['indexer']
                     else:
                         log.warning(u'Found a duplicate series id for indexer_id: {0} and indexer: {1}',
-                                    series[b'indexer_id'], series[b'indexer'])
+                                    series['indexer_id'], series['indexer'])
 
         # Check if it's required for the main.db tables.
         for migration_config in (('blacklist', 'show_id', 'indexer_id'),
@@ -680,8 +663,6 @@ class AddIndexerIds(AddIndexerInteger):
                     [indexer_id, series_id])
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
         # Flag the image migration.
         from medusa import app
@@ -737,7 +718,7 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         log.info(u'Splitting the composite status into status and quality')
         sql_results = self.connection.select('SELECT status from tv_episodes GROUP BY status;')
         for episode in sql_results:
-            composite_status = episode[b'status']
+            composite_status = episode['status']
             status, quality = utils.split_composite_status(composite_status)
             self.connection.action('UPDATE tv_episodes SET status = ?, quality = ? WHERE status = ?;',
                                    [status, quality, composite_status])
@@ -746,14 +727,12 @@ class AddSeparatedStatusQualityFields(AddIndexerIds):
         log.info(u'Removing the quality from the action field, as this is a composite status')
         sql_results = self.connection.select('SELECT action FROM history GROUP BY action;')
         for item in sql_results:
-            composite_action = item[b'action']
+            composite_action = item['action']
             status, quality = utils.split_composite_status(composite_action)
             self.connection.action('UPDATE history SET action = ? WHERE action = ?;',
                                    [status, composite_action])
 
         self.inc_minor_version()
-
-        log.info(u'Updated to: {}.{}', *self.connection.version)
 
 
 class ShiftQualities(AddSeparatedStatusQualityFields):
@@ -771,8 +750,6 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         self.shift_history_qualities()
         self.inc_minor_version()
 
-        log.info(u'Updated to: {}.{}', *self.connection.version)
-
     def shift_tv_qualities(self):
         """
         Shift all qualities << 1.
@@ -782,7 +759,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         log.info('Shift qualities in tv_shows one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM tv_shows GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
 
             # UNKNOWN quality value is 65536 (1 << 16) instead of 32768 (1 << 15) after the shift
@@ -807,7 +784,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         sql_results = self.connection.select('SELECT quality FROM tv_episodes WHERE quality != 0 GROUP BY quality'
                                              ' ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
             new_quality = quality << 1
 
             if quality == 32768:  # Old UNKNOWN quality (1 << 15)
@@ -829,7 +806,7 @@ class ShiftQualities(AddSeparatedStatusQualityFields):
         log.info('Shift qualities in history one place to the left.')
         sql_results = self.connection.select('SELECT quality FROM history GROUP BY quality ORDER BY quality DESC;')
         for result in sql_results:
-            quality = result[b'quality']
+            quality = result['quality']
 
             if quality == 32768:  # Old UNKNOWN quality (1 << 15)
                 new_quality = common.Quality.UNKNOWN
@@ -884,4 +861,40 @@ class AddEpisodeWatchedField(ShiftQualities):
         )
 
         self.connection.action('DROP TABLE tmp_tv_episodes;')
+        self.inc_minor_version()
+
+
+class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
+    """Add tv_show airdate_offset field."""
+
+    def test(self):
+        """Test if the version is at least 44.13"""
+        return self.connection.version >= (44, 13)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new airdate_offset field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'airdate_offset'):
+            self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+    """Add release ignore and require exclude option flags."""
+
+    def test(self):
+        """Test if the version is at least 44.14"""
+        return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding release ignore and require exclude option flags to the tv_shows table')
+        if not self.hasColumn('tv_shows', 'rls_require_exclude'):
+            self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
+            self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
         self.inc_minor_version()

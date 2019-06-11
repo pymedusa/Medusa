@@ -4,7 +4,8 @@
         "noImplicitAny": true
     },
     "include": [
-        "./static/js/*.js"
+        "./static/js/*.js",
+        "./src/**/*.{vue,js}"
     ],
     "exclude": [
         "node_modules"

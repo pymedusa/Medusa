@@ -25,6 +25,7 @@ from dateutil import parser
 from medusa import app
 from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.search import SearchType
 
 from six import itervalues
 
@@ -85,7 +86,7 @@ class SearchResult(object):
         self.proper_tags = ''
 
         # manually_searched
-        self.manually_searched = False
+        self._manually_searched = False
 
         # content
         self.content = None
@@ -127,7 +128,8 @@ class SearchResult(object):
         # to store a single episode number, as an int.
         self._actual_episode = None
 
-        # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
+        # Search type. Use the medusa.search.SearchType enum, as value.
+        # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH, SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
 
     @property
@@ -163,6 +165,24 @@ class SearchResult(object):
             DeprecationWarning,
         )
         self.series = value
+
+    @property
+    def manually_searched(self):
+        """
+        Shortcut to check if the result was retrieved using a manual search.
+
+        Preferably this property is not used, and the self.search_type property is directly evaluated.
+        """
+        return self._manually_searched or self.search_type == SearchType.MANUAL_SEARCH
+
+    @manually_searched.setter
+    def manually_searched(self, value):
+        """
+        Shortcut to check if the result was retrieved using a manual search.
+
+        Preferably this property is not used, and the self.search_type property is directly evaluated.
+        """
+        self._manually_searched = value
 
     def __str__(self):
 
@@ -211,7 +231,7 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.series:
+        if self.actual_season is not None and self.series:
             if self.actual_episodes:
                 self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
             else:
@@ -221,6 +241,21 @@ class SearchResult(object):
     def finish_search_result(self, provider):
         self.size = provider._get_size(self.item)
         self.pubdate = provider._get_pubdate(self.item)
+
+    def update_from_db(self, show, episodes, cached_result):
+        """Update local attributes from the cached result, recovered from db."""
+        self.series = show
+        self.episodes = episodes
+        self.url = cached_result['url']
+        self.quality = int(cached_result['quality'])
+        self.name = cached_result['name']
+        self.size = int(cached_result['size'])
+        self.seeders = int(cached_result['seeders'])
+        self.leechers = int(cached_result['leechers'])
+        self.release_group = cached_result['release_group']
+        self.version = int(cached_result['version'])
+        self.proper_tags = cached_result['proper_tags'].split('|') \
+            if cached_result['proper_tags'] else ''
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__

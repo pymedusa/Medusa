@@ -2,7 +2,7 @@
 """Provider test code for Generic Provider."""
 from __future__ import unicode_literals
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from dateutil import tz
 
@@ -127,6 +127,16 @@ sut = GenericProvider('FakeProvider')
         'timezone': 'US/Eastern',
         'fromtimestamp': True
     },
+    {  # p22: hd-space test human date like 'yesterday at 12:00:00'
+        'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
+        'human_time': False
+    },
+    {  # p23: hd-space test human date like 'today at 12:00:00'
+        'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
+        'human_time': False
+    },
 ])
 def test_parse_pubdate(p):
     # Given
@@ -217,7 +227,7 @@ def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []
@@ -257,7 +267,7 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []
@@ -300,7 +310,7 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     expected = p['expected']
 
     monkeypatch_function_return([(
-        b'medusa.scene_exceptions.get_season_scene_exceptions',
+        'medusa.scene_exceptions.get_season_scene_exceptions',
         p['season_scene_name_exceptions']
     )])
 

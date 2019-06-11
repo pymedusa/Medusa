@@ -107,28 +107,18 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import AppLink from './app-link.vue';
+import { AppLink } from './helpers';
 
 export default {
     name: 'app-header',
     components: {
         AppLink
     },
-    data() {
-        return {
-            topMenuMapping: [
-                ['system', ['/home/restart', '/home/status', '/errorlogs', '/changes', '/news', '/IRC']],
-                ['home', ['/home', '/addShows', '/addRecommended']],
-                ['config', ['/config']],
-                ['history', ['/history']],
-                ['schedule', ['/schedule']],
-                ['manage', ['/manage']],
-                ['login', ['/login']]
-            ]
-        };
-    },
     computed: {
-        ...mapState(['config']),
+        ...mapState([
+            'config',
+            'notifiers'
+        ]),
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
             username: state => state.auth.user.username,
@@ -144,20 +134,7 @@ export default {
             });
         },
         topMenu() {
-            // This is a workaround, until we're able to use VueRouter to determine that.
-            // The possible `topmenu` values are: config, history, schedule, system, home, manage, login [unused]
-            const { topMenuMapping } = this;
-            const { pathname } = window.location;
-
-            for (const item of topMenuMapping) {
-                const [topMenu, routes] = item; // Unpacking
-                for (const route of routes) {
-                    if (pathname.includes(route)) {
-                        return topMenu;
-                    }
-                }
-            }
-            return null;
+            return this.$route.meta.topMenu;
         },
         toolsBadgeCount() {
             const { config } = this;
@@ -176,8 +153,9 @@ export default {
             return '';
         },
         linkVisible() {
-            const { config } = this;
-            const { plex, kodi, emby, torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { config, notifiers } = this;
+            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { kodi, plex, emby } = notifiers;
 
             return {
                 plex: plex.server.enabled && plex.server.host.length !== 0,
@@ -194,6 +172,19 @@ export default {
     },
     mounted() {
         const { $el } = this;
+
+        // Auto close menus when clicking a RouterLink
+        $el.clickCloseMenus = event => {
+            const { target } = event;
+            if (target.matches('#main_nav a.router-link, #main_nav a.router-link *')) {
+                const dropdown = target.closest('.dropdown');
+                dropdown.querySelector('.dropdown-toggle').setAttribute('aria-expanded', false);
+                dropdown.querySelector('.dropdown-menu').style.display = 'none';
+                // Also collapse the main nav if it's open
+                $('#main_nav').collapse('hide');
+            }
+        };
+        $el.addEventListener('click', $el.clickCloseMenus, { passive: true });
 
         // Hover Dropdown for Nav
         $($el).on({
@@ -219,6 +210,22 @@ export default {
                     window.location.href = $target.attr('href');
                 }
             });
+        }
+    },
+    destroyed() {
+        // Revert `mounted()`
+        const { $el } = this;
+
+        // Auto close menus when clicking a RouterLink
+        $el.removeEventListener('click', $el.clickCloseMenus);
+
+        // Hover Dropdown for Nav
+        $($el).off('mouseenter mouseleave', 'ul.nav li.dropdown');
+
+        // @TODO Replace this with a real touchscreen check
+        // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
+        if ((navigator.maxTouchPoints || 0) < 2) {
+            $($el).off('click', '.dropdown-toggle');
         }
     },
     methods: {

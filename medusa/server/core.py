@@ -40,6 +40,8 @@ from medusa.server.web import (
 from medusa.server.web.core.base import AuthenticatedStaticFileHandler
 from medusa.ws.handler import WebSocketUIHandler
 
+import six
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import (
@@ -50,6 +52,7 @@ from tornado.web import (
 )
 
 from tornroutes import route
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -271,6 +274,11 @@ class AppWebServer(threading.Thread):
         return route.get_routes()
 
     def run(self):
+        # Start event loop in python3
+        if six.PY3:
+            import asyncio
+            asyncio.set_event_loop(asyncio.new_event_loop())
+
         if self.enable_https:
             protocol = 'https'
             self.server = HTTPServer(self.app, ssl_options={'certfile': self.https_cert, 'keyfile': self.https_key})
@@ -285,25 +293,26 @@ class AppWebServer(threading.Thread):
 
         try:
             self.server.listen(self.options['port'], self.options['host'])
-        except Exception:
+        except Exception as ex:
             if app.LAUNCH_BROWSER and not self.daemon:
                 app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 log.info('Launching browser and exiting')
-            log.info('Could not start the web server on port {port}, already in use!', {
-                'port': self.options['port']
+            log.info('Could not start the web server on port {port}. Exception: {ex}', {
+                'port': self.options['port'],
+                'ex': ex
             })
             os._exit(1)  # pylint: disable=protected-access
 
         try:
             self.io_loop = IOLoop.current()
-            IOLoop.current().start()
+            self.io_loop.start()
         except (IOError, ValueError):
             # Ignore errors like 'ValueError: I/O operation on closed kqueue fd'. These might be thrown during a reload.
             pass
 
     def shutDown(self):
         self.alive = False
-        IOLoop.current().stop()
+        self.io_loop.stop()
 
     def log_request(self, handler):
         """
@@ -314,16 +323,23 @@ class AppWebServer(threading.Thread):
         if not app.WEB_LOG:
             return
 
+        level = None
         if handler.get_status() < 400:
             level = logging.INFO
         elif handler.get_status() < 500:
-            # Don't log normal RESTful responses as warnings
+            # Don't log normal APIv2 RESTful responses as warnings
             if isinstance(handler, BaseRequestHandler):
                 level = logging.INFO
             else:
                 level = logging.WARNING
         else:
-            level = logging.ERROR
+            # If a real exception was raised in APIv2,
+            # let `BaseRequestHandler.log_exception` handle the logging
+            if not isinstance(handler, BaseRequestHandler):
+                level = logging.ERROR
+
+        if level is None:
+            return
 
         log.log(
             level,

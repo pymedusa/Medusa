@@ -1,16 +1,19 @@
 const path = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+
 const pkg = require('./package.json');
 
 const { cssThemes } = pkg.config;
 
 /**
  * Helper function to queue actions for each theme.
+ *
  * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
  * @returns {Object[]} - The actions for each theme.
  */
@@ -19,6 +22,7 @@ const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
 /**
  * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
  * To be used in-conjunction-with `perTheme`.
+ *
  * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
  * @param {string} [search] - Glob-like string to match files. (default: `**`)
  * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
@@ -32,6 +36,7 @@ const copyAssets = (type, search = '**') => {
 
 /**
  * Make a `package.json` for a theme.
+ *
  * @param {string} themeName - Theme name
  * @param {string} currentContent - Current package.json contents
  * @returns {string} - New content
@@ -45,7 +50,14 @@ const makeThemeMetadata = (themeName, currentContent) => {
     }, undefined, 2);
 };
 
-const webpackConfig = mode => ({
+/**
+ * Generate the Webpack configuration object.
+ *
+ * @param {*} env - The environment data, as passed from the `--env` command line argument.
+ * @param {*} mode - The mode, as passed from the `--mode` command line argument.
+ * @returns {Object} Webpack configuration object.
+ */
+const webpackConfig = (env, mode) => ({
     devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
         // Exports all window. objects for mako files
@@ -68,7 +80,7 @@ const webpackConfig = mode => ({
     },
     stats: {
         // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
-        excludeAssets: /(\.\.\/)+themes\/.*/,
+        excludeAssets: /(\.\.[\\/])+themes[\\/].*/,
         // When `false`, hides extra information about assets collected by children (e.g. plugins)
         children: false
     },
@@ -78,18 +90,28 @@ const webpackConfig = mode => ({
         },
         splitChunks: {
             chunks: 'all',
-            name: 'vendors',
+            maxInitialRequests: Infinity,
+            minSize: 0,
             cacheGroups: {
-                styles: {
-                    test: /\.css$/,
-                    priority: 10
+                runtime: {
+                    name: 'medusa-runtime',
+                    test: /[\\/]src[\\/]/,
+                    minChunks: 2,
+                    priority: 0,
+                    reuseExistingChunk: true
                 },
-                // These are the default cacheGroups!
+                'date-fns': {
+                    name: 'vendors~date-fns',
+                    test: /[\\/]node_modules[\\/]date-fns[\\/]/,
+                    priority: -5
+                },
                 vendors: {
-                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendors',
+                    test: /[\\/](vendor|node_modules)[\\/]/,
                     priority: -10
                 },
                 default: {
+                    name: 'vendors',
                     minChunks: 2,
                     priority: -20,
                     reuseExistingChunk: true
@@ -111,6 +133,7 @@ const webpackConfig = mode => ({
             },
             {
                 test: /\.js$/,
+                exclude: /[\\/]node_modules[\\/]/,
                 loader: 'babel-loader'
             },
             {
@@ -155,13 +178,14 @@ const webpackConfig = mode => ({
         ]
     },
     plugins: [
-        new CleanWebpackPlugin(['dist']),
+        new CleanWebpackPlugin(),
         // This fixes Bootstrap being unable to use jQuery
         new ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
+        new OptimizeCssAssetsPlugin({}),
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
@@ -222,4 +246,11 @@ const webpackConfig = mode => ({
     ]
 });
 
-module.exports = (_env, argv) => webpackConfig(argv.mode);
+/**
+ * See: https://webpack.js.org/configuration/configuration-types/#exporting-a-function
+ *
+ * @param {*} env - An environment. See the environment options CLI documentation for syntax examples.
+ * @param {*} argv - An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
+ * @returns {Object} - Webpack configuration object.
+ */
+module.exports = (env = {}, argv = {}) => webpackConfig(env, argv.mode || process.env.NODE_ENV);

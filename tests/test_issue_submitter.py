@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.server.web.core.error_logs.py."""
+from __future__ import unicode_literals
 
 import logging
 
@@ -11,6 +12,7 @@ from medusa.logger import LogLine
 from mock.mock import Mock
 import pytest
 
+from six import itervalues
 
 sut = IssueSubmitter()
 
@@ -219,32 +221,38 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
         3: 'Really strange this one',
         4: 'Missing time zone for network: USA Network',
         5: "AttributeError: 'NoneType' object has no attribute 'findall'",
+        6: 'Am I a duplicate?',
     }
-    for line in lines.values():
+    for line in itervalues(lines):
         logger.warning(line)
     loglines = list(read_loglines)
 
     raw_issues = [
-        (1, '[APP SUBMITTED]: Really strange that one', False),
-        (2, 'Some Issue like This', False),
-        (3, 'Fix Some Issue like This', True),  # Pull request
-        (4, '[APP SUBMITTED]: Missing time zone for network: Hub Network', False),
-        (5, '[APP SUBMITTED]: Missing time zone for network: USA Network', False),
-        (6, "AttributeError: 'NoneType' object has no attribute 'findall'", False),
-        (7, "AttributeError: 'NoneType' object has no attribute 'lower'", False),
+        # (number, title, labels, pull_request)
+        (1, '[APP SUBMITTED]: Really strange that one', [], False),
+        (2, 'Some Issue like This', [], False),
+        (3, 'Fix Some Issue like This', [], True),  # Pull request
+        (4, '[APP SUBMITTED]: Missing time zone for network: Hub Network', [], False),
+        (5, '[APP SUBMITTED]: Missing time zone for network: USA Network', [], False),
+        (6, "AttributeError: 'NoneType' object has no attribute 'findall'", [], False),
+        (7, "AttributeError: 'NoneType' object has no attribute 'lower'", [], False),
+        (8, 'Am I a duplicate?', ['Bug', 'Duplicate'], False),
+        (9, 'Am I a duplicate?', [], False),
+        (10, 'Am I a duplicate?', ['Duplicate'], False),
     ]
     issues = dict()
-    for (number, title, pull_request) in raw_issues:
+    for (number, title, labels, pull_request) in raw_issues:
         kwargs = {} if not pull_request else {'pull_request': 'mock'}
-        issues[number] = create_github_issue(title=title, number=number, **kwargs)
+        issues[number] = create_github_issue(title=title, number=number, labels=labels, **kwargs)
 
-    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: issues.values())
+    monkeypatch.setattr(github_repo, 'get_issues', lambda *args, **kwargs: itervalues(issues))
 
     expected = {
         lines[1]: issues[2],
         lines[3]: issues[1],
         lines[4]: issues[5],
         lines[5]: issues[6],
+        lines[6]: issues[9],
     }
 
     # When
@@ -252,7 +260,7 @@ def test_find_similar_issues(monkeypatch, logger, github_repo, read_loglines, cr
     actual = sut.find_similar_issues(github_repo, loglines)
 
     # Then
-    assert len(set(issues.values())) == len(issues)  # all issues should be different
+    assert len(list(issues.values())) == len(issues)  # all issues should be different
     assert expected == actual
 
 

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/post_processor.py."""
+from __future__ import unicode_literals
 from medusa.common import Quality
 from medusa.name_parser.parser import NameParser
 from medusa.post_processor import PostProcessor

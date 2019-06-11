@@ -14,6 +14,8 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
 
+import six
+
 
 def blacklist():
     """Blacklisted patterns.
@@ -36,26 +38,26 @@ def blacklist():
     return rebulk
 
 
-def format_():
-    """Format property.
+def source():
+    """Source property.
 
     :return:
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='format', tags='video-codec-prefix')
+    rebulk.defaults(name='source', tags='video-codec-prefix')
 
-    # More accurate formats
+    # More accurate sources
     rebulk.regex('BD-?Rip', 'BD(?=-?Mux)', value='BDRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
-    rebulk.regex('BD(?!\d)', value='BDRip', validator=seps_surround,
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
+    rebulk.regex(r'BD(?!\d)', value='BDRip', validator=seps_surround,
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('BR-?Rip', 'BR(?=-?Mux)', value='BRRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
     rebulk.regex('DVD-?Rip', value='DVDRip',
-                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+                 conflict_solver=lambda match, other: other if other.name == 'source' else '__default__')
 
-    rebulk.regex('DVD\d', value='DVD')
+    rebulk.regex(r'DVD\d', value='DVD')
 
     return rebulk
 
@@ -69,7 +71,8 @@ def screen_size():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
     rebulk.defaults(name='screen_size', validator=seps_surround)
 
-    rebulk.regex(r'(?:\d{3,}(?:x|\*))?4320(?:p?x?)', value='4320p')
+    # Discarded:
+    rebulk.regex(r'(?:\d{3,}(?:x|\*))?4320(?:p?x?)', value='4320p', private=True)
 
     return rebulk
 
@@ -102,11 +105,14 @@ def container():
     rebulk.defaults(name='container',
                     tags=['extension'],
                     conflict_solver=lambda match, other: other
-                    if other.name in ['format', 'video_codec'] or
+                    if other.name in ['source', 'video_codec'] or
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
-    nzb = [b'nzb']
+    if six.PY3:
+        nzb = ['nzb']
+    else:
+        nzb = [b'nzb']
 
     rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 
@@ -114,8 +120,8 @@ def container():
                     validator=seps_surround,
                     formatter=lambda s: s.upper(),
                     conflict_solver=lambda match, other: match
-                    if other.name in ['format',
-                                      'video_codec'] or other.name == 'container' and 'extension' in other.tags
+                    if other.name in ['source', 'video_codec'] or
+                    other.name == 'container' and 'extension' in other.tags
                     else '__default__')
 
     rebulk.string(*nzb, tags=['nzb'])

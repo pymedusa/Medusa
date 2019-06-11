@@ -18,13 +18,12 @@
 import logging
 import logging.handlers
 import os
-import threading
-
-from datetime import timedelta
-from time import time, sleep
 import sys
-
+import threading
 from configparser import ConfigParser
+from datetime import timedelta
+from time import sleep, time
+
 from six.moves.queue import Queue
 
 from .aniDBlink import AniDBLink
@@ -33,6 +32,9 @@ from .aniDBerrors import *
 from .aniDBAbstracter import Anime, Episode
 
 version = 100
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 def StartLogging():
@@ -118,7 +120,7 @@ class Connection(threading.Thread):
 
     def handle_response(self, response):
         if response.rescode in ('501', '506') and response.req.command != 'AUTH':
-            logging.debug("seems like the last command got a not authed error back trying to reconnect now")
+            logger.debug("seems like the last command got a not authed error back trying to reconnect now")
             if self._reAuthenticate():
                 response.req.resp = None
                 self.handle(response.req, response.req.callback)
@@ -151,7 +153,7 @@ class Connection(threading.Thread):
             if callback:
                 callback(resp)
 
-        logging.debug("handling(" + str(self.counter) + "-" + str(self.link.delay) + ") command " + str(command.command))
+        logger.debug("handling({counter}-{delay}) command {command}".format(counter=self.counter, delay=self.link.delay, command=command.command))
 
         # make live request
         command.authorize(self.mode, self.link.new_tag(), self.link.session, callback_wrapper)
@@ -174,16 +176,16 @@ class Connection(threading.Thread):
 
     def authed(self, reAuthenticate=False):
         self.lock.acquire()
-        authed = (self.link.session is not None)
+        authed = (self.link.session not in (None, ''))
         if not authed and (reAuthenticate or self.keepAlive):
             self._reAuthenticate()
-            authed = (self.link.session is not None)
+            authed = (self.link.session not in (None, ''))
         self.lock.release()
         return authed
 
     def _reAuthenticate(self):
         if self._username and self._password:
-            logging.info("auto re authenticating !")
+            logger.info("auto re authenticating !")
             resp = self.auth(self._username, self._password)
             if resp.rescode != '500':
                 return True
@@ -192,11 +194,11 @@ class Connection(threading.Thread):
 
     def _keep_alive(self):
         self.lastKeepAliveCheck = time()
-        logging.info("auto check !")
+        logger.info("auto check !")
         # check every 30 minutes if the session is still valid
         # if not reauthenticate
         if self.lastAuth and time() - self.lastAuth > 1800:
-            logging.info("auto uptime !")
+            logger.info("auto uptime !")
             self.uptime()  # this will update the self.link.session and will refresh the session if it is still alive
 
             if self.authed():  # if we are authed we set the time
@@ -207,7 +209,7 @@ class Connection(threading.Thread):
         # issue a ping every 20 minutes after the last package
         # this ensures the connection will be kept alive
         if self.link.lastpacket and time() - self.link.lastpacket > 1200:
-            logging.info("auto ping !")
+            logger.info("auto ping !")
             self.ping()
 
     def run(self):
@@ -253,6 +255,8 @@ class Connection(threading.Thread):
                 if timeelapsed < timeoutduration:
                     # we are logged in and within timeout so set up session key and assume valid
                     self.link.session = config.get('DEFAULT', 'sessionkey')
+                    if not self.link.session:
+                        needauth = True
                 else:
                     needauth = True
             else:
@@ -262,19 +266,19 @@ class Connection(threading.Thread):
 
         if needauth:
             self.lastAuth = time()
-            logging.debug('No valid session, so authenticating')
+            logger.debug('No valid session, so authenticating')
             try:
                 self.handle(AuthCommand(username, password, 3, self.clientname, self.clientver, nat, 1, 'utf8', mtu), callback)
-            except Exception as e:
-                logging.debug('Auth command with exception %s', e)
+            except Exception as error:
+                logger.debug('Auth command with exception %r', error)
                 # we force a config file with logged out to ensure a known state if an exception occurs, forcing us to log in again
-                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'exception': str(e),
+                config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': str(self.link.session or ''), 'exception': str(error),
                                      'lastcommandtime': repr(time())}
                 with open(self.SessionFile, 'w') as configfile:
                     config.write(configfile)
-                return e
-            logging.debug('Successfully authenticated and recording session details')
-            config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': self.link.session, 'lastcommandtime': repr(time())}
+                return error
+            logger.debug('Successfully authenticated and recording session details')
+            config['DEFAULT'] = {'loggedin': 'yes', 'sessionkey': str(self.link.session or ''), 'lastcommandtime': repr(time())}
             with open(self.SessionFile, 'w') as configfile:
                 config.write(configfile)
         return
@@ -294,9 +298,9 @@ class Connection(threading.Thread):
             config['DEFAULT']['loggedin'] = 'no'
             with open(self.SessionFile, 'w') as configfile:
                 config.write(configfile)
-            logging.debug('Logging out')
+            logger.debug('Logging out')
             return result
-        logging.debug('Not logging out')
+        logger.debug('Not logging out')
         return
 
     def stayloggedin(self):
@@ -309,7 +313,7 @@ class Connection(threading.Thread):
         with open(self.SessionFile, 'w') as configfile:
             config.write(configfile)
         self.link._do_delay()
-        logging.debug('Staying logged in')
+        logger.debug('Staying logged in')
         return
 
     def push(self, notify, msg, buddy=None, callback=None):

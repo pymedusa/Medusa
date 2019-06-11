@@ -2,10 +2,6 @@
 
 from __future__ import unicode_literals
 
-from builtins import str
-
-from medusa.helper.encoding import ss
-
 from six import text_type
 
 
@@ -14,19 +10,17 @@ def ex(e):
     :param e: The exception to convert into a unicode string
     :return: A unicode string from the exception text if it exists
     """
-
-    message = u''
-
+    message = ''
     if not e or not e.args:
         return message
 
     for arg in e.args:
         if arg is not None:
-            if isinstance(arg, (str, text_type)):
-                fixed_arg = ss(arg)
+            if isinstance(arg, text_type):
+                fixed_arg = arg
             else:
                 try:
-                    fixed_arg = u'error %s' % ss(str(arg))
+                    fixed_arg = 'Error: {0!r}'.format(arg)
                 except Exception:
                     fixed_arg = None
 
@@ -35,9 +29,9 @@ def ex(e):
                     message = fixed_arg
                 else:
                     try:
-                        message = u'{} : {}'.format(message, fixed_arg)
-                    except UnicodeError:
-                        message = u'{} : {}'.format(
+                        message = '{0}: {1}'.format(message, fixed_arg)
+                    except UnicodeDecodeError:
+                        message = '{0}: {1}'.format(
                             text_type(message, errors='replace'),
                             text_type(fixed_arg, errors='replace'))
 

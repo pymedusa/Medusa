@@ -19,43 +19,30 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import logging
 import operator
 import os
 import platform
 import re
 import uuid
-from builtins import object
-from builtins import str
 from functools import reduce
-
-from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
-from six import PY3, viewitems
+from six import text_type, viewitems
 
-if PY3:
-    long = int
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
-# If some provider has an issue with functionality of Medusa, other than user
-# agents, it's best to come talk to us rather than block.  It is no different
-# than us going to a provider if we have questions or issues.
-# Be a team player here. This is disabled, and was only added for testing,
-# it has no config.ini or web ui setting.
-# To enable, set SPOOF_USER_AGENT = True
-SPOOF_USER_AGENT = False
-INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.2.8'
+INSTANCE_ID = text_type(uuid.uuid1())
+VERSION = '0.3.2'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-ua_settings.DB = os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib/fake_useragent/ua.json'))
-UA_POOL = UserAgent()
-if SPOOF_USER_AGENT:
-    USER_AGENT = UA_POOL.random
 
 cpu_presets = {
     'HIGH': 5,
@@ -189,7 +176,7 @@ class Quality(object):
         UHD_8K_BLURAY: '8K UHD BluRay',
     }
 
-    sceneQualityStrings = {
+    scene_quality_strings = {
         NA: 'N/A',
         UNKNOWN: 'Unknown',
         SDTV: '',
@@ -209,33 +196,34 @@ class Quality(object):
         UHD_8K_BLURAY: '4320p BluRay',
     }
 
-    combinedQualityStrings = {
+    combined_quality_strings = {
         ANYHDTV: 'HDTV',
         ANYWEBDL: 'WEB-DL',
-        ANYBLURAY: 'BluRay'
+        ANYBLURAY: 'BluRay',
     }
 
-    cssClassStrings = {
+    # A reverse map from quality values and any-sets to "keys"
+    quality_keys = {
         NA: 'na',
-        UNKNOWN: 'Unknown',
-        SDTV: 'SDTV',
-        SDDVD: 'SDDVD',
-        HDTV: 'HD720p',
-        RAWHDTV: 'RawHD',
-        FULLHDTV: 'HD1080p',
-        HDWEBDL: 'HD720p',
-        FULLHDWEBDL: 'HD1080p',
-        HDBLURAY: 'HD720p',
-        FULLHDBLURAY: 'HD1080p',
-        UHD_4K_TV: 'UHD-4K',
-        UHD_8K_TV: 'UHD-8K',
-        UHD_4K_WEBDL: 'UHD-4K',
-        UHD_8K_WEBDL: 'UHD-8K',
-        UHD_4K_BLURAY: 'UHD-4K',
-        UHD_8K_BLURAY: 'UHD-8K',
-        ANYHDTV: 'any-hd',
-        ANYWEBDL: 'any-hd',
-        ANYBLURAY: 'any-hd'
+        UNKNOWN: 'unknown',
+        SDTV: 'sdtv',
+        SDDVD: 'sddvd',
+        HDTV: 'hdtv',
+        RAWHDTV: 'rawhdtv',
+        FULLHDTV: 'fullhdtv',
+        HDWEBDL: 'hdwebdl',
+        FULLHDWEBDL: 'fullhdwebdl',
+        HDBLURAY: 'hdbluray',
+        FULLHDBLURAY: 'fullhdbluray',
+        UHD_4K_TV: 'uhd4ktv',
+        UHD_4K_WEBDL: 'uhd4kwebdl',
+        UHD_4K_BLURAY: 'uhd4kbluray',
+        UHD_8K_TV: 'uhd8ktv',
+        UHD_8K_WEBDL: 'uhd8kwebdl',
+        UHD_8K_BLURAY: 'uhd8kbluray',
+        ANYHDTV: 'anyhdtv',
+        ANYWEBDL: 'anywebdl',
+        ANYBLURAY: 'anybluray',
     }
 
     @staticmethod
@@ -259,6 +247,22 @@ class Quality(object):
                 preferred_qualities.append(cur_qual)
 
         return sorted(allowed_qualities), sorted(preferred_qualities)
+
+    @staticmethod
+    def is_valid_combined_quality(quality):
+        """
+        Check quality value to make sure it is a valid combined quality.
+
+        :param quality: Quality to check
+        :type quality: int
+        :return: True if valid, False if not
+        """
+        for cur_qual in Quality.qualityStrings:
+            if cur_qual & quality:
+                quality -= cur_qual
+            if cur_qual << 16 & quality:
+                quality -= cur_qual << 16
+        return quality == 0
 
     @staticmethod
     def name_quality(name, anime=False, extend=True):
@@ -389,7 +393,7 @@ class Quality(object):
     @staticmethod
     def quality_from_file_meta(file_path):
         """
-        Get quality file file metadata.
+        Get quality from file metadata.
 
         :param file_path: File path to analyse
         :return: Quality prefix
@@ -397,7 +401,16 @@ class Quality(object):
         if not os.path.isfile(file_path):
             return Quality.UNKNOWN
 
-        knowledge = knowit.know(file_path)
+        try:
+            knowledge = knowit.know(file_path)
+        except knowit.KnowitException as error:
+            log.warning(
+                'An error occurred while parsing: {path}\n'
+                'KnowIt reported:\n{report}', {
+                    'path': file_path,
+                    'report': error,
+                })
+            return Quality.UNKNOWN
 
         if not knowledge:
             return Quality.UNKNOWN
@@ -556,7 +569,7 @@ class Quality(object):
         :param search_type: The search type, that started this method
         :return: True if the old quality should be replaced with new quality
         """
-        if ep_status and ep_status not in (DOWNLOADED, SNATCHED, SNATCHED_PROPER):
+        if not ep_status or ep_status not in (DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             if not force:
                 return False, 'Episode status is not Downloaded, Snatched or Snatched Proper. Ignoring new quality'
 
@@ -619,42 +632,45 @@ class Quality(object):
         """Check if new quality is wanted."""
         return new_quality in allowed_qualities + preferred_qualities
 
-    # Map guessit screen sizes and formats to our Quality values
+    # Map guessit screen sizes and sources to our Quality values
     guessit_map = {
         '720p': {
             'HDTV': HDTV,
-            'WEB-DL': HDWEBDL,
-            'WEBRip': HDWEBDL,
-            'BluRay': HDBLURAY,
+            'Web': HDWEBDL,
+            'Blu-ray': HDBLURAY,
         },
         '1080i': RAWHDTV,
         '1080p': {
             'HDTV': FULLHDTV,
-            'WEB-DL': FULLHDWEBDL,
-            'WEBRip': FULLHDWEBDL,
-            'BluRay': FULLHDBLURAY
+            'Web': FULLHDWEBDL,
+            'Blu-ray': FULLHDBLURAY
         },
-        '4K': {
+        '2160p': {
             'HDTV': UHD_4K_TV,
-            'WEB-DL': UHD_4K_WEBDL,
-            'WEBRip': UHD_4K_WEBDL,
-            'BluRay': UHD_4K_BLURAY
+            'Web': UHD_4K_WEBDL,
+            'Blu-ray': UHD_4K_BLURAY
+        },
+        '4320p': {
+            'HDTV': UHD_8K_TV,
+            'Web': UHD_8K_WEBDL,
+            'Blu-ray': UHD_8K_BLURAY
         }
     }
 
-    # Consolidate the guessit-supported screen sizes of each format
-    to_guessit_format_list = [
-        ANYHDTV | UHD_4K_TV,
-        ANYWEBDL | UHD_4K_WEBDL,
-        ANYBLURAY | UHD_4K_BLURAY
-    ]
+    # Consolidate the guessit-supported screen sizes of each source
+    to_guessit_source_map = {
+        ANYHDTV | UHD_4K_TV | UHD_8K_TV: 'HDTV',
+        ANYWEBDL | UHD_4K_WEBDL | UHD_8K_WEBDL: 'Web',
+        ANYBLURAY | UHD_4K_BLURAY | UHD_8K_BLURAY: 'Blu-ray'
+    }
 
-    # Consolidate the formats of each guessit-supported screen size
+    # Consolidate the sources of each guessit-supported screen size
     to_guessit_screen_size_map = {
         HDTV | HDWEBDL | HDBLURAY: '720p',
         RAWHDTV: '1080i',
         FULLHDTV | FULLHDWEBDL | FULLHDBLURAY: '1080p',
-        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '4K',
+        UHD_4K_TV | UHD_4K_WEBDL | UHD_4K_BLURAY: '2160p',
+        UHD_8K_TV | UHD_8K_WEBDL | UHD_8K_BLURAY: '4320p',
     }
 
     @staticmethod
@@ -668,74 +684,74 @@ class Quality(object):
         :rtype: int
         """
         screen_size = guess.get('screen_size')
-        fmt = guess.get('format')
+        source = guess.get('source')
 
         if not screen_size or isinstance(screen_size, list):
             return Quality.UNKNOWN
 
-        format_map = Quality.guessit_map.get(screen_size)
-        if not format_map:
+        source_map = Quality.guessit_map.get(screen_size)
+        if not source_map:
             return Quality.UNKNOWN
 
-        if isinstance(format_map, int):
-            return format_map
+        if isinstance(source_map, int):
+            return source_map
 
-        if not fmt or isinstance(fmt, list):
+        if not source or isinstance(source, list):
             return Quality.UNKNOWN
 
-        quality = format_map.get(fmt)
+        quality = source_map.get(source)
         return quality if quality is not None else Quality.UNKNOWN
 
     @staticmethod
     def to_guessit(quality):
-        """Return a guessit dict containing 'screen_size and format' from a Quality.
+        """
+        Return a guessit dict containing 'screen_size and source' from a Quality.
 
         :param quality: a quality
         :type quality: int
-        :return: dict {'screen_size': <screen_size>, 'format': <format>}
+        :return: dict {'screen_size': <screen_size>, 'source': <source>}
         :rtype: dict (str, str)
         """
         if quality not in Quality.qualityStrings:
             quality = Quality.UNKNOWN
 
         screen_size = Quality.to_guessit_screen_size(quality)
-        fmt = Quality.to_guessit_format(quality)
+        source = Quality.to_guessit_source(quality)
         result = dict()
         if screen_size:
             result['screen_size'] = screen_size
-        if fmt:
-            result['format'] = fmt
+        if source:
+            result['source'] = source
 
         return result
 
     @staticmethod
-    def to_guessit_format(quality):
-        """Return a guessit format from a Quality.
+    def to_guessit_source(quality):
+        """
+        Return a guessit source from a Quality.
 
         :param quality: the quality
         :type quality: int
-        :return: guessit format
+        :return: guessit source
         :rtype: str
         """
-        for quality_set in Quality.to_guessit_format_list:
-            if quality_set & quality:  # If quality_set contains quality
-                # Remove all 4K (and above) formats as they are bigger than Quality.ANYBLURAY,
-                #   and they are not part of an "ANY*" bit set
-                key = quality_set & (Quality.UHD_4K_TV - 1)
-                return Quality.combinedQualityStrings.get(key)
+        for quality_set, source in viewitems(Quality.to_guessit_source_map):
+            if quality_set & quality:
+                return source
 
     @staticmethod
     def to_guessit_screen_size(quality):
-        """Return a guessit screen_size from a Quality.
+        """
+        Return a guessit screen_size from a Quality.
 
         :param quality: the quality
         :type quality: int
         :return: guessit screen_size
         :rtype: str
         """
-        for key, value in viewitems(Quality.to_guessit_screen_size_map):
-            if quality & key:
-                return value
+        for quality_set, screen_size in viewitems(Quality.to_guessit_screen_size_map):
+            if quality_set & quality:
+                return screen_size
 
 
 HD720p = Quality.combine_qualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])

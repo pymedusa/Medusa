@@ -38,4 +38,4 @@ class SeriesAssetHandler(BaseRequestHandler):
         if not media:
             return self._not_found('{kind} not found'.format(kind=asset_type.capitalize()))
 
-        self._ok(stream=media, content_type=asset.media_type)
+        return self._ok(stream=media, content_type=asset.media_type)

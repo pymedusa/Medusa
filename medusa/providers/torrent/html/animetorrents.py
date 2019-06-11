@@ -53,10 +53,6 @@ class AnimeTorrentsProvider(TorrentProvider):
         # Proper Strings
         self.proper_strings = []
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
@@ -153,7 +149,7 @@ class AnimeTorrentsProvider(TorrentProvider):
                     seeders, leechers, _ = [int(value.strip()) for value in slc.split('/')] if slc else (0, 0, 0)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

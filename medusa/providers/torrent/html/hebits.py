@@ -47,10 +47,6 @@ class HeBitsProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = False
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -122,7 +118,7 @@ class HeBitsProvider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile('details\.php')).find('b').get_text()
+                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile(r'details\.php')).find('b').get_text()
                     if '/' in heb_eng_title:
                         title = heb_eng_title.split('/')[1].strip()
                     elif '\\' in heb_eng_title:
@@ -130,7 +126,7 @@ class HeBitsProvider(TorrentProvider):
                     else:
                         continue
 
-                    download_id = row.find('div', class_='bTitle').find(href=re.compile('download\.php'))['href']
+                    download_id = row.find('div', class_='bTitle').find(href=re.compile(r'download\.php'))['href']
 
                     if not all([title, download_id]):
                         continue
@@ -141,7 +137,7 @@ class HeBitsProvider(TorrentProvider):
                     leechers = try_int(row.find('div', class_='bDowning').get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

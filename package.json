@@ -10,54 +10,9 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "yarn run build && yarn run test-css && yarn run test-api",
-    "build": "node ./themes-default/helper.js lint",
-    "coverage": "nyc ava && yarn report-coverage",
-    "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
-    "test-css": "stylelint ./themes-default/**/static/css/*.css ./themes-default/**/src/components/**/*.vue",
-    "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
-    "security": "snyk test",
-    "install": "yarn run build"
+    "test-api": "dredd --config dredd/dredd.yml"
   },
   "devDependencies": {
-    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
-    "ava": "0.25.0",
-    "codecov": "3.0.4",
-    "dredd": "5.1.11",
-    "execa": "1.0.0",
-    "nyc": "12.0.2",
-    "stylelint": "9.5.0",
-    "stylelint-config-standard": "18.2.0",
-    "yargs": "12.0.1"
-  },
-  "stylelint": {
-    "extends": "stylelint-config-standard",
-    "processors": [
-      [
-        "@mapbox/stylelint-processor-arbitrary-tags",
-        {
-          "fileFilterRegex": [
-            ".vue$"
-          ]
-        }
-      ]
-    ],
-    "rules": {
-      "indentation": [
-        4,
-        {
-          "ignore": [
-            "inside-parens"
-          ],
-          "message": "Please use 4 spaces for indentation.",
-          "severity": "error"
-        }
-      ],
-      "no-descending-specificity": null
-    },
-    "ignoreFiles": [
-      "themes-default/**/static/css/lib/**",
-      "themes-default/**/static/css/*.min.css"
-    ]
+    "dredd": "11.2.6"
   }
 }

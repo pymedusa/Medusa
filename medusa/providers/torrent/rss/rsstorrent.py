@@ -131,7 +131,8 @@ class TorrentRssProvider(TorrentProvider):
             else:
                 torrent_file = self.session.get_content(url)
                 try:
-                    bdecode(torrent_file)
+                    # `bencode.bdecode` is monkeypatched in `medusa.init`
+                    bdecode(torrent_file, allow_extra_data=True)
                 except Exception as error:
                     self.dump_html(torrent_file)
                     return {'result': False,

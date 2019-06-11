@@ -130,8 +130,8 @@ class WDTVMetadata(generic.GenericMetadata):
         If no season folder exists, None is returned
         """
 
-        dir_list = [x for x in os.listdir(show_obj.location) if
-                    os.path.isdir(os.path.join(show_obj.location, x))]
+        dir_list = [x for x in os.listdir(show_obj.validate_location) if
+                    os.path.isdir(os.path.join(show_obj.validate_location, x))]
 
         season_dir_regex = r'^Season\s+(\d+)$'
 
@@ -159,7 +159,7 @@ class WDTVMetadata(generic.GenericMetadata):
         log.debug('Using {location}/folder.jpg as season dir for season {number}',
                   {'location': season_dir, 'number': season})
 
-        return os.path.join(show_obj.location, season_dir, 'folder.jpg')
+        return os.path.join(show_obj.validate_location, season_dir, 'folder.jpg')
 
     def _ep_data(self, ep_obj):
         """

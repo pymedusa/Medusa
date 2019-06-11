@@ -37,10 +37,6 @@ class BJShareProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ['session']
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.max_back_pages = 2
@@ -114,7 +110,8 @@ class BJShareProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    log.debug('Search string: {0}'.format(search_string.decode('utf-8')))
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 # Remove season / episode from search (not supported by tracker)
                 search_str = re.sub(r'\d+$' if anime else r'[S|E]\d\d', '', search_string).strip()
@@ -184,11 +181,11 @@ class BJShareProvider(TorrentProvider):
                 group_index = -2 if 'group_torrent' in result_class else 0
                 try:
                     title = result.select('a[href^="torrents.php?id="]')[0].get_text()
-                    title = re.sub('\s+', ' ', title).strip()  # clean empty lines and multiple spaces
+                    title = re.sub(r'\s+', ' ', title).strip()  # clean empty lines and multiple spaces
 
                     if 'group' in result_class or 'torrent' in result_class:
                         # get international title if available
-                        title = re.sub('.* \[(.*?)\](.*)', r'\1\2', title)
+                        title = re.sub(r'.* \[(.*?)\](.*)', r'\1\2', title)
 
                     if 'group' in result_class:
                         group_title = title
@@ -197,7 +194,7 @@ class BJShareProvider(TorrentProvider):
                     for serie in self.absolute_numbering:
                         if serie in title:
                             # remove season from title when its in absolute format
-                            title = re.sub('S\d{2}E(\d{2,4})', r'\1', title)
+                            title = re.sub(r'S\d{2}E(\d{2,4})', r'\1', title)
                             break
 
                     download_url = urljoin(self.url, result.select('a[href^="torrents.php?action=download"]')[0]['href'])
@@ -208,7 +205,7 @@ class BJShareProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers') + group_index].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -231,7 +228,7 @@ class BJShareProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
-                    torrent_name = re.sub('\s+', ' ', torrent_name)
+                    torrent_name = re.sub(r'\s+', ' ', torrent_name)
 
                     items.append({
                         'title': torrent_name,

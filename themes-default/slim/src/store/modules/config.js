@@ -1,3 +1,4 @@
+import { api } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
 
 const state = {
@@ -66,13 +67,16 @@ const state = {
             categoryBacklog: null,
             categoryAnimeBacklog: null,
             host: null,
-            username: null
+            username: null,
+            password: null,
+            apiKey: null
         }
     },
     configFile: null,
     fanartBackground: null,
     trimZero: null,
     animeSplitHome: null,
+    gitUsername: null,
     branch: null,
     commitHash: null,
     indexers: {
@@ -140,30 +144,9 @@ const state = {
     rootDirs: [],
     fanartBackgroundOpacity: null,
     appArgs: [],
-    emby: {
-        enabled: null,
-        host: null
-    },
     comingEpsDisplayPaused: null,
     sortArticle: null,
     timePreset: null,
-    plex: {
-        client: {
-            host: [],
-            username: null,
-            enabled: null
-        },
-        server: {
-            updateLibrary: null,
-            host: [],
-            enabled: null,
-            notify: {
-                download: null,
-                subtitleDownload: null,
-                snatch: null
-            }
-        }
-    },
     subtitles: {
         enabled: null
     },
@@ -173,29 +156,14 @@ const state = {
         period: null
     },
     posterSortby: null,
-    kodi: {
-        enabled: null,
-        alwaysOn: null,
-        libraryCleanPending: null,
-        cleanLibrary: null,
-        host: [],
-        notify: {
-            snatch: null,
-            download: null,
-            subtitleDownload: null
-        },
-        update: {
-            library: null,
-            full: null,
-            onlyFirst: null
-        }
-    },
     news: {
         lastRead: null,
         latest: null,
         unread: null
     },
     logs: {
+        debug: null,
+        dbDebug: null,
         loggingLevels: {},
         numErrors: null,
         numWarnings: null
@@ -251,7 +219,17 @@ const state = {
     os: null,
     anonRedirect: null,
     logDir: null,
-    recentShows: []
+    recentShows: [],
+    randomShowSlug: null, // @TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
+    showDefaults: {
+        status: null,
+        statusAfter: null,
+        quality: null,
+        subtitles: null,
+        seasonFolders: null,
+        anime: null,
+        scene: null
+    }
 };
 
 const mutations = {
@@ -263,6 +241,22 @@ const mutations = {
 };
 
 const getters = {
+    // Get an indexer's name using its ID.
+    indexerIdToName: state => indexerId => {
+        if (!indexerId) {
+            return undefined;
+        }
+        const { indexers } = state.indexers.config;
+        return Object.keys(indexers).find(name => indexers[name].id === parseInt(indexerId, 10));
+    },
+    // Get an indexer's ID using its name.
+    indexerNameToId: state => indexerName => {
+        if (!indexerName) {
+            return undefined;
+        }
+        const { indexers } = state.indexers.config;
+        return indexers[name].id;
+    },
     layout: state => layout => {
         return state.layout[layout];
     }

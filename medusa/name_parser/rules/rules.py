@@ -31,21 +31,20 @@ from __future__ import unicode_literals
 import copy
 import logging
 import re
-from builtins import range
 
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
-from guessit.rules.properties import website
-from guessit.rules.properties.release_group import clean_groupname
 
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
+import six
+from six.moves import range
 
 log = logging.getLogger(__name__)
 
-simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
+simple_separator = ('.', 'and', ',.', '.,', '.,.', ',', '.&.', ' & ')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
 
 
@@ -54,7 +53,10 @@ class BlacklistedReleaseGroup(Rule):
 
     priority = POST_PROCESS
     consequence = RemoveMatch
-    blacklist = (b'private', b'req', b'no.rar', b'season')
+    if six.PY3:
+        blacklist = ('private', 'req', 'no.rar', 'season')
+    else:
+        blacklist = (b'private', b'req', b'no.rar', b'season')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -74,36 +76,35 @@ class FixAnimeReleaseGroup(Rule):
     Anime release group is at the beginning and inside square brackets. If this pattern is found at the start of the
     filepart, use it as a release group.
 
-    guessit -t episode "[RealGroup].Show.Name.-.462.[720p].[10bit].[SOMEPERSON].[Something]"
+    guessit -t episode "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
 
     without this fix:
-        For: [RealGroup].Show.Name.-.462.[720p].[10bit].[SOMEPERSON].[Something]
+        For: [AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]
         GuessIt found: {
             "title": "Show Name",
-            "season": 4,
-            "episode": 62,
+            "episode": 3,
+            "language": "English",
             "screen_size": "720p",
-            "video_profile": "10bit",
-            "release_group": "[SOMEPERSON].[Something]",
+            "source": "Web",
+            "release_group": "JRR",
             "type": "episode"
         }
 
     with this fix:
-        For: [RealGroup].Show.Name.-.462.[720p].[10bit].[SOMEPERSON].[Something]
+        For: [AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]
         GuessIt found: {
             "title": "Show Name",
-            "season": 4,
-            "episode": 62,
+            "episode": 3,
+            "language": "English",
             "screen_size": "720p",
-            "video_profile": "10bit",
-            "release_group": "RealGroup",
+            "source": "Web",
+            "release_group": "AnimeRG",
             "type": "episode"
         }
     """
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    website_rebulk = website.website()
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -122,6 +123,11 @@ class FixAnimeReleaseGroup(Rule):
             # get the group (e.g.: [abc]) at the beginning of this filepart
             group = matches.markers.at_index(filepart.start, index=0, predicate=lambda marker: marker.name == 'group')
             if not group or matches.at_match(group):
+                continue
+
+            # don't use websites as release group
+            websites = matches.named('website')
+            if websites and any(ws for ws in websites if ws.value in group.value):
                 continue
 
             if (not matches.tagged('anime') and not matches.named('video_profile') and
@@ -149,110 +155,47 @@ class FixAnimeReleaseGroup(Rule):
             return to_remove, to_append
 
 
-class FixSeasonRangeWithGap(Rule):
-    """Fix season range with gap.
+class FixInvalidAbsoluteReleaseGroups(Rule):
+    """Fix invalid release groups due to absolute episode numbers range.
 
-    guessit -t episode "Show.Name.-.Season.1.3.4-.Mp4.1080p"
+    Some release names have season/episode defined twice (relative and absolute), and the ending
+    absolute episode becomes the release_group. This fix will remove the invalid release_group
+    and add the correct absolute episode ranges.
 
-    Without this fix:
-        For: Show.Name.-.Season.1.3.4-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": 1,
-            "episode": [
-                3,
-                4
-            ],
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
+    e.g.: "Show.Name.s16e03-05.313-315"
 
-    with this fix:
-        For: Show.Name.-.Season.1.3.4-.Mp4.1080p
-        GuessIt found: {
-            "title": "Show Name",
-            "season": [1, 3, 4]
-            "container": "MP4",
-            "screen_size": "1080p",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [AppendMatch, RemoveMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        to_append = []
-        fileparts = matches.markers.named('path')
-        for filepart in marker_sorted(fileparts, matches):
-            season = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'season', index=0)
-            if not season:
-                continue
-
-            episodes = matches.range(season.end, filepart.end,
-                                     predicate=lambda match: match.name == 'episode' and 'weak-episode' in match.tags)
-            if not episodes:
-                continue
-
-            if len(episodes) != len(matches.holes(season.end, episodes[-1].start, predicate=lambda hole: hole.raw in simple_separator)):
-                continue
-
-            for episode in episodes:
-                new_season = copy.copy(episode)
-                new_season.name = 'season'
-                to_append.append(new_season)
-                to_remove.append(episode)
-
-        return to_append, to_remove
-
-
-class FixInvalidTitleOrAlternativeTitle(Rule):
-    """Fix invalid title/alternative title due to absolute episode numbers range.
-
-    Some release names have season/episode defined twice (relative and absolute), and one of them becomes an
-    alternative_title or a suffix in the title. This fix will remove the invalid alternative_title or the
-    invalid title's suffix.
-
-    e.g.: "Show Name - 313-314 - s16e03-04"
-
-    guessit -t episode "Show Name - 313-314 - s16e03-04"
+    guessit -t episode "Show.Name.s16e03-05.313-315"
 
     without this fix:
-        For: Show Name - 313-314 - s16e03-04
+        For: Show.Name.s16e03-05.313-315
         GuessIt found: {
             "title": "Show Name",
-            "alternative_title": "313-314",
             "season": 16,
             "episode": [
                 3,
-                4
+                4,
+                5
             ],
+            "absolute_episode": 313,
+            "release_group": "315",
             "type": "episode"
         }
 
 
     with this fix:
-        For: Show Name - 313-314 - s16e03-04
+        For: Show.Name.s16e03-05.313-315
         GuessIt found: {
             "title": "Show Name",
             "season": 16,
-            "absolute_episode": [
-                313,
-                314
-            ],
             "episode": [
                 3,
-                4
+                4,
+                5
+            ],
+            "absolute_episode": [
+                313,
+                314,
+                315
             ],
             "type": "episode"
         }
@@ -261,7 +204,6 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
     absolute_re = re.compile(r'([\W|_]*)(?P<absolute_episode_start>\d{2,4})(?:-(?P<absolute_episode_end>\d{3,4}))?\W*$')
-    properties = ('title', 'alternative_title', 'episode_title')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -274,50 +216,42 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
         """
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            # retrieve all problematic titles
-            problematic_titles = matches.range(filepart.start, filepart.end,
-                                               predicate=lambda match: match.name in self.properties)
+            # retrieve all problematic groups
+            problematic_groups = matches.range(filepart.start, filepart.end,
+                                               predicate=lambda match: match.name == 'release_group')
 
             to_remove = []
             to_append = []
 
-            for title in problematic_titles:
-                m = self.absolute_re.search(title.raw)
+            for group in problematic_groups:
+                filename = fileparts[-1].raw
+                m = self.absolute_re.search(filename)
                 if not m:
                     continue
 
-                # Remove the problematic title
-                to_remove.append(title)
-
-                # Remove the title suffix
-                new_value = title.raw[0: m.start()]
-                if new_value:
-                    # Add the correct title
-                    new_title = copy.copy(title)
-                    new_title.value = cleanup(new_value)
-                    new_title.end = title.start + m.start()
-                    to_append.append(new_title)
+                # Remove the problematic group
+                to_remove.append(group)
 
                 # and add the absolute episode range
                 g = m.groupdict()
-                if not g['absolute_episode_end'] and title.name != 'alternative_title':
+                if not g['absolute_episode_end']:
                     continue
 
                 absolute_episode_start = int(g['absolute_episode_start'])
                 absolute_episode_end = int(g['absolute_episode_end'] or g['absolute_episode_start'])
                 for i in range(absolute_episode_start, absolute_episode_end + 1):
-                    episode = copy.copy(title)
+                    episode = copy.copy(group)
                     episode.name = 'absolute_episode'
                     episode.value = i
                     if i == absolute_episode_start:
-                        episode.start = title.start + m.start('absolute_episode_start')
-                        episode.end = title.start + m.end('absolute_episode_start')
+                        episode.start = group.start + m.start('absolute_episode_start')
+                        episode.end = group.start + m.end('absolute_episode_start')
                     elif i < absolute_episode_end:
-                        episode.start = title.start + m.end('absolute_episode_start')
-                        episode.end = title.start + m.start('absolute_episode_end')
+                        episode.start = group.start + m.end('absolute_episode_start')
+                        episode.end = group.start + m.start('absolute_episode_end')
                     else:
-                        episode.start = title.start + m.start('absolute_episode_end')
-                        episode.end = title.start + m.end('absolute_episode_end')
+                        episode.start = group.start + m.start('absolute_episode_end')
+                        episode.end = group.start + m.end('absolute_episode_end')
 
                     to_append.append(episode)
 
@@ -399,8 +333,12 @@ class CreateAliasWithAlternativeTitles(Rule):
             for alternative_title in alternative_titles:
                 holes = matches.holes(start=previous.end, end=alternative_title.start)
                 # if the separator is a dash, add an extra space before and after
-                separators = [b' ' + h.value + b' ' if h.value == b'-' else h.value for h in holes]
-                separator = b' '.join(separators) if separators else b' '
+                if six.PY3:
+                    separators = [' ' + h.value + ' ' if h.value == '-' else h.value for h in holes]
+                    separator = ' '.join(separators) if separators else ' '
+                else:
+                    separators = [b' ' + h.value + b' ' if h.value == b'-' else h.value for h in holes]
+                    separator = b' '.join(separators) if separators else b' '
                 alias.value += separator + alternative_title.value
 
                 previous = alternative_title
@@ -425,8 +363,8 @@ class CreateAliasWithCountryOrYear(Rule):
             "country": "UNITED STATES",
             "season": 3,
             "screen_size": "720p",
-            "format": "BluRay",
-            "video_codec": "h264",
+            "source": "Blu-ray",
+            "video_codec": "H.264",
             "release_group": "SuperGroup",
             "type": "episode"
         }
@@ -439,8 +377,8 @@ class CreateAliasWithCountryOrYear(Rule):
             "country": "UNITED STATES",
             "season": 3,
             "screen_size": "720p",
-            "format": "BluRay",
-            "video_codec": "h264",
+            "source": "Blu-ray",
+            "video_codec": "H.264",
             "release_group": "SuperGroup",
             "type": "episode"
         }
@@ -459,6 +397,10 @@ class CreateAliasWithCountryOrYear(Rule):
         :type context: dict
         :return:
         """
+        # Don't add additional alias if we already have one from the previous rules
+        if matches.named('alias'):
+            return
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
@@ -483,7 +425,10 @@ class CreateAliasWithCountryOrYear(Rule):
             if next_match:
                 alias = copy.copy(title)
                 alias.name = 'alias'
-                alias.value = alias.value + b' ' + re.sub(r'\W*', b'', after_title.raw)
+                if six.PY3:
+                    alias.value = alias.value + ' ' + re.sub(r'\W*', '', after_title.raw)
+                else:
+                    alias.value = alias.value + b' ' + re.sub(r'\W*', b'', after_title.raw)
                 alias.end = after_title.end
                 alias.raw_end = after_title.raw_end
                 return [alias]
@@ -505,10 +450,10 @@ class FixTvChaosUkWorkaround(Rule):
             "title": "Show Name",
             "season": 1,
             "video_codec": [
-                "XviD",
-                "h264"
+                "Xvid",
+                "H.264"
             ],
-            "format": "HDTV",
+            "source": "HDTV",
             "type": "episode"
         }
 
@@ -517,8 +462,8 @@ class FixTvChaosUkWorkaround(Rule):
         GuessIt found: {
             "title": "Show Name",
             "season": 1,
-            "video_codec": "XviD",
-            "format": "HDTV",
+            "video_codec": "Xvid",
+            "source": "HDTV",
             "type": "episode"
         }
     """
@@ -539,21 +484,21 @@ class FixTvChaosUkWorkaround(Rule):
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            m_x264 = matches.ending(filepart.end, predicate=lambda match: match.name == 'video_codec' and match.value == 'h264', index=0)
+            m_x264 = matches.ending(filepart.end, predicate=lambda match: match.name == 'video_codec' and match.value == 'H.264', index=0)
             if not m_x264:
                 continue
 
-            m_hdtv = matches.previous(m_x264, predicate=lambda match: match.name == 'format' and match.value == 'HDTV', index=0)
+            m_hdtv = matches.previous(m_x264, predicate=lambda match: match.name == 'source' and match.value == 'HDTV', index=0)
             if not m_hdtv:
                 continue
 
             video_codecs = matches.range(filepart.start, filepart.end, lambda match: match.name == 'video_codec')
-            formats = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'format')
+            sources = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'source')
             if len(video_codecs) > 1:
                 to_remove.append(m_x264)
-                if len(formats) <= 1:
+                if len(sources) <= 1:
                     m_hdtv.tags.append('tvchaosuk')
-            if len(formats) > 1:
+            if len(sources) > 1:
                 to_remove.append(m_hdtv)
                 if len(video_codecs) <= 1:
                     m_x264.tags.append('tvchaosuk')
@@ -704,17 +649,22 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
-        weak_duplicate = matches.tagged('weak-duplicate', index=0)
+        season = matches.named('season')
+        year = matches.named('year')
+        valid_season = bool(season) and (not year or season[0].value != year[0].value)
+        anime_type = context.get('show_type') == 'anime'
+
         # only for shows that seems to be animes
-        if context.get('show_type') == 'normal' or not weak_duplicate:
+        if not anime_type and valid_season:
             return
 
-        # if it's not detected as anime and season (weak_duplicate) is not 0, then skip.
-        if not matches.named('video_profile') and not matches.tagged('anime') and weak_duplicate.value > 0:
+        # if it's not detected as anime and season is valid, then skip.
+        if not matches.named('video_profile') and not matches.tagged('anime') and valid_season:
             is_anime = False
             groups = matches.markers.named('group')
             for group in groups:
-                screen_size = matches.range(group.start, group.end, index=0, predicate=lambda match: match.name == 'screen_size')
+                screen_size = matches.range(group.start, group.end, index=0,
+                                            predicate=lambda match: match.name == 'screen_size')
                 if screen_size:
                     is_anime = True
                     screen_size.tags.append('anime')
@@ -729,31 +679,22 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
             if not season:
                 continue
 
-            episode = matches.next(season, index=0,
-                                   predicate=lambda match: (match.name == 'episode' and
-                                                            match.end <= filepart.end and
-                                                            match.raw.isdigit()))
+            episodes = matches.named('episode')
+            if episodes:
+                to_append = []
+                to_remove = []
+                for episode in episodes:
+                    if 'anime' in episode.tags or (anime_type and not valid_season):
+                        absolute_episode = copy.copy(episode)
+                        absolute_episode.name = 'absolute_episode'
+                        to_append.append(absolute_episode)
 
-            # there should be season and episode and the episode should start right after the season and both raw values
-            # should be digit
-            if season and episode and season.end == episode.start:
-                # then make them an absolute episode:
-                absolute_episode = copy.copy(episode)
-                absolute_episode.name = 'absolute_episode'
-                absolute_episode.start = season.start
-                # raw value contains the season and episode altogether
-                absolute_episode.value = int(episode.parent.raw if episode.parent else episode.raw)
-
-                # always keep episode (subliminal needs it)
-                corrected_episode = copy.copy(absolute_episode)
-                corrected_episode.name = 'episode'
-                corrected_episode.start = season.start
-
-                to_remove = [season, episode]
-                to_append = [absolute_episode, corrected_episode]
-
-                episode_title = matches.next(episode, index=0, predicate=lambda match: match.name == 'episode_title' and match.value.isdigit())
-                if episode_title:
+                episode_title = matches.next(
+                    episode,
+                    index=0,
+                    predicate=lambda match: match.name == 'episode_title' and match.value.isdigit(),
+                )
+                if episode_title and to_append:
                     if matches.input_string[episode.end:episode_title.start + 1] in range_separator:
                         end_value = int(episode_title.value)
                         for i in range(absolute_episode.value + 1, end_value + 1):
@@ -872,20 +813,20 @@ class PartsAsEpisodeNumbers(Rule):
             "title": "Show Name",
             "part": 3,
             "screen_size": "720p",
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "Group",
             "type": "episode"
         }
 
-    without the rule:
+    with the rule:
         For: Show.Name.Part.3.720p.HDTV.x264-Group
         GuessIt found: {
             "title": "Show Name",
             "episode": 3,
             "screen_size": "720p",
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "Group",
             "type": "episode"
         }
@@ -915,10 +856,49 @@ class PartsAsEpisodeNumbers(Rule):
         return to_rename
 
 
-class FixMultipleReleaseGroups(Rule):
-    """Fix multiple release groups.
+class RemoveInvalidEpisodeSeparator(Rule):
+    """Remove invalid episode title between absolute episode ranges.
 
-    TODO: Document
+    e.g.: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+
+    guessit -t episode "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
+
+    without the rule:
+        For: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+        GuessIt found: {
+            "release_group": "Zero-Raws",
+            "title": "Show Name",
+            "episode": [
+                493,
+                ...
+                507
+            ],
+            "episode_title": "&",
+            "screen_size": "720p",
+            "aspect_ratio": 1.778,
+            "subtitle_language": "French",
+            "video_codec": "H.264",
+            "audio_codec": "AAC",
+            "type": "episode"
+        }
+
+    with the rule:
+        For: [Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)
+        GuessIt found: {
+            "release_group": "Zero-Raws",
+            "title": "Show Name",
+            "episode": [
+                493,
+                ...
+                507
+            ],
+            "screen_size": "720p",
+            "aspect_ratio": 1.778,
+            "subtitle_language": "French",
+            "video_codec": "H.264",
+            "audio_codec": "AAC",
+            "type": "episode"
+        }
     """
 
     priority = POST_PROCESS
@@ -933,23 +913,87 @@ class FixMultipleReleaseGroups(Rule):
         :type context: dict
         :return:
         """
-        # In case of duplicated titles, keep only the first one
-        release_groups = matches.named('release_group')
+        episode_title = matches.named('episode_title')
 
-        if len(release_groups) > 1:
-            selected = [r for r in release_groups if r.pattern]
-            if selected:
-                selected = selected[0]
-            else:
-                selected = release_groups[0] if matches.tagged('anime') else release_groups[-1]
-            # Safety:
-            # Only remove matches that are different from the first match
-            to_remove = matches.named('release_group', predicate=lambda match: match.span != selected.span)
-            return to_remove
+        if len(episode_title) == 1:
+            previous = matches.previous(episode_title[0], predicate=lambda match: match.name == 'absolute_episode')
+            next_match = matches.next(episode_title[0], predicate=lambda match: match.name == 'absolute_episode')
+            if previous and next_match and episode_title[0].raw in simple_separator:
+                to_remove = episode_title
+                return to_remove
 
 
-class FixMultipleFormats(Rule):
-    """Fix multiple formats.
+class FixParentFolderReplacingTitle(Rule):
+    """Fix folder name replacing title when it ends with digits.
+
+    Note: Keep our fix although it is fixed upstream.
+    Related bug report: https://github.com/guessit-io/guessit/issues/565
+    e.g.: /Comedy 23/Funny.Show.S4E19.mkv
+
+    guessit -t episode "/Comedy 23/Funny.Show.S4E19.mkv"
+    without the rule:
+        For: /Comedy 23/Funny.Show.S4E19.mkv
+        GuessIt found: {
+            "title": "Comedy",
+            "episode_title": "Funny Show",
+            "season": 4,
+            "episode": 19,
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+    with the rule:
+        For: /Comedy 23/Funny.Show.S4E19.mkv
+        GuessIt found: {
+            "title": "Funny Show",
+            "season": 4,
+            "episode": 19,
+            "container": "mkv",
+            "mimetype": "video/x-matroska",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    ends_with_digit = re.compile(r'(_|\W)\d+$')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        fileparts = matches.markers.named('path')
+        parts_len = len(fileparts)
+        if parts_len < 2:
+            return
+
+        episode_title = matches.named('episode_title')
+        if episode_title:
+            second_part = fileparts[parts_len - 2].value
+            if self.ends_with_digit.search(second_part):
+                title = matches.named('title')
+                if not title:
+                    episode_title[0].name = 'title'
+                    to_append = episode_title
+                    to_remove = None
+                    return to_remove, to_append
+
+                if second_part.startswith(title[0].value):
+                    season = matches.named('season')
+                    if season and not second_part.endswith(str(season[-1].initiator.value)):
+                        episode_title[0].name = 'title'
+                        to_append = episode_title
+                        to_remove = title
+                        return to_remove, to_append
+
+
+class FixMultipleSources(Rule):
+    """Fix multiple sources.
 
     Related to guessit bug: https://github.com/guessit-io/guessit/issues/327
 
@@ -965,14 +1009,14 @@ class FixMultipleFormats(Rule):
             "episode": 1,
             "episode_title": "eps2 0 unm4sk",
             "part": 1,
-            "format": [
+            "source": [
                 "Telecine",
-                "WEB-DL"
+                "Web"
             ],
             "screen_size": "1080p",
-            "audio_codec": "DolbyDigital",
+            "audio_codec": "Dolby Digital",
             "audio_channels": "5.1",
-            "video_codec": "h264",
+            "video_codec": "H.264",
             "release_group": "GROUP",
             "type": "episode"
         }
@@ -986,11 +1030,11 @@ class FixMultipleFormats(Rule):
             "episode": 1,
             "episode_title": "eps2 0 unm4sk",
             "part": 1,
-            "format": "WEB-DL",
+            "source": "Web",
             "screen_size": "1080p",
-            "audio_codec": "DolbyDigital",
+            "audio_codec": "Dolby Digital",
             "audio_channels": "5.1",
-            "video_codec": "h264",
+            "video_codec": "H.264",
             "release_group": "GROUP",
             "type": "episode"
         }
@@ -1010,22 +1054,22 @@ class FixMultipleFormats(Rule):
         """
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
-            formats = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'format')
-            if len(formats) < 2:
+            sources = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'source')
+            if len(sources) < 2:
                 continue
 
-            for candidate in reversed(formats):
+            for candidate in reversed(sources):
                 previous = matches.previous(candidate, predicate=lambda match: match.name == 'screen_size')
                 next_range = matches.range(candidate.end, filepart.end,
                                            lambda match: match.name in ('audio_codec', 'video_codec', 'release_group'))
-                # If we have at least 3 matches near by, then discard the other formats
+                # If we have at least 3 matches near by, then discard the other sources
                 if len(previous) + len(next_range) > 1:
-                    invalid_formats = {f.value for f in formats[0:-1]}
-                    to_remove = matches.named('format', predicate=lambda m: m.value in invalid_formats)
+                    invalid_sources = {f.value for f in sources[0:-1]}
+                    to_remove = matches.named('source', predicate=lambda m: m.value in invalid_sources)
                     return to_remove
 
                 if matches.conflicting(candidate):
-                    to_remove = matches.named('format', predicate=lambda m: m.value in candidate.value)
+                    to_remove = matches.named('source', predicate=lambda m: m.value in candidate.value)
                     return to_remove
 
 
@@ -1042,8 +1086,8 @@ class CreateProperTags(Rule):
             "episode": 8,
             "other": "Proper",
             "proper_count": 2,
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "GROUP",
             "type": "episode"
         }
@@ -1057,8 +1101,8 @@ class CreateProperTags(Rule):
             "other": "Proper",
             "proper_count": 2,
             "proper_tag": ["REPACK", "PROPER"]
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "GROUP",
             "type": "episode"
         }
@@ -1086,35 +1130,10 @@ class CreateProperTags(Rule):
         return to_append
 
 
-class ScreenSizeStandardizer(Rule):
-    """Standardize the screen size.
-
-    Fix 360i, 480i, 576i, etc which are detected as progressive.
-    Rename 4K to 2160p
-    """
-
-    priority = POST_PROCESS
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        for screen_size in matches.named('screen_size'):
-            if screen_size.raw.lower().endswith('i'):
-                screen_size.value = screen_size.value.replace('p', 'i')
-            elif screen_size.value == '4K':
-                screen_size.value = '2160p'
-
-
 class AudioCodecStandardizer(Rule):
-    """DolbyDigital is AC3.
+    """Dolby Digital is AC3.
 
-    Rename DolbyDigital to AC3
+    Rename Dolby Digital to AC3
     """
 
     priority = POST_PROCESS
@@ -1131,7 +1150,7 @@ class AudioCodecStandardizer(Rule):
         """
         to_remove = []
         to_append = []
-        for audio_codec in matches.named('audio_codec', predicate=lambda m: m.value in ('DolbyDigital', )):
+        for audio_codec in matches.named('audio_codec', predicate=lambda m: m.value in ('Dolby Digital', )):
             new_codec = copy.copy(audio_codec)
             new_codec.value = 'AC3'
             to_remove.append(audio_codec)
@@ -1140,8 +1159,8 @@ class AudioCodecStandardizer(Rule):
         return to_remove, to_append
 
 
-class FormatStandardizer(Rule):
-    """DVB renamed to PDTV."""
+class SourceStandardizer(Rule):
+    """Digital TV renamed to PDTV."""
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
@@ -1157,11 +1176,11 @@ class FormatStandardizer(Rule):
         """
         to_remove = []
         to_append = []
-        for source in matches.named('format', predicate=lambda m: m.value in ('DVB', )):
-            new_format = copy.copy(source)
-            new_format.value = 'PDTV'
+        for source in matches.named('source', predicate=lambda m: m.value in ('Digital TV', )):
+            new_source = copy.copy(source)
+            new_source.value = 'PDTV'
             to_remove.append(source)
-            to_append.append(new_format)
+            to_append.append(new_source)
 
         return to_remove, to_append
 
@@ -1182,10 +1201,10 @@ class VideoEncoderRule(Rule):
         :return:
         """
         to_append = []
-        for video_codec in matches.named('video_codec', lambda m: m.value in ('h264', 'h265') and 'x26' in m.raw.lower()):
+        for video_codec in matches.named('video_codec', lambda m: m.value in ('H.264', 'H.265') and 'x26' in m.raw.lower()):
             encoder = copy.copy(video_codec)
             encoder.name = 'video_encoder'
-            encoder.value = encoder.value.replace('h', 'x')
+            encoder.value = encoder.value.replace('H.', 'x')
             to_append.append(encoder)
 
         return to_append
@@ -1207,7 +1226,7 @@ class AvoidMultipleValuesRule(Rule):
         :return:
         """
         to_remove = []
-        for name in ('episode_title', 'format', 'release_group', 'title'):
+        for name in ('episode_title', 'source', 'release_group', 'title'):
             values = matches.named(name)
             unique_values = {v.value for v in values}
             if len(unique_values) > 1:
@@ -1238,8 +1257,8 @@ class ReleaseGroupPostProcessor(Rule):
             "season": 2,
             "episode": 14,
             "screen_size": "1080p",
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "GROUP[TRASH]",
             "type": "episode"
         }
@@ -1252,8 +1271,8 @@ class ReleaseGroupPostProcessor(Rule):
             "season": 2,
             "episode": 14,
             "screen_size": "1080p",
-            "format": "HDTV",
-            "video_codec": "h264",
+            "source": "HDTV",
+            "video_codec": "H.264",
             "release_group": "GROUP",
             "type": "episode"
         }
@@ -1320,18 +1339,24 @@ class ReleaseGroupPostProcessor(Rule):
         for release_group in release_groups:
             value = release_group.value
             for regex in self.regexes:
-                value = regex.sub(b' ', value).strip()
+                if six.PY3:
+                    value = regex.sub(' ', value).strip()
+                else:
+                    value = regex.sub(b' ', value).strip()
                 if not value:
                     break
 
             if value and matches.tagged('scene') and not matches.next(release_group):
-                value = value.split(b'-')[0]
+                if six.PY3:
+                    value = value.split('-')[0]
+                else:
+                    value = value.split(b'-')[0]
 
             if release_group.value != value:
                 to_remove.append(release_group)
                 if value:
                     new_release_group = copy.copy(release_group)
-                    new_release_group.value = clean_groupname(value)
+                    new_release_group.value = value
                     to_append.append(new_release_group)
 
         return to_remove, to_append
@@ -1353,20 +1378,19 @@ def rules():
         BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
         FixAnimeReleaseGroup,
-        FixInvalidTitleOrAlternativeTitle,
-        FixSeasonRangeWithGap,
+        FixInvalidAbsoluteReleaseGroups,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
         PartsAsEpisodeNumbers,
+        RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
-        FixMultipleFormats,
-        FixMultipleReleaseGroups,
-        ScreenSizeStandardizer,
+        FixParentFolderReplacingTitle,
+        FixMultipleSources,
         AudioCodecStandardizer,
-        FormatStandardizer,
+        SourceStandardizer,
         VideoEncoderRule,
         CreateProperTags,
         AvoidMultipleValuesRule,

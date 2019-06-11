@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.tv identifiers."""
+from __future__ import unicode_literals
 
 import re
 from medusa.server.api.v2.base import BaseRequestHandler

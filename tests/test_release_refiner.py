@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.refiners.release.py."""
+from __future__ import unicode_literals
 
 import os
 
@@ -18,10 +19,10 @@ def data():
             'episode': 2,
             'title': 'Episode Title',
             'year': 2012,
-            'format': 'HDTV',
+            'source': 'HDTV',
             'resolution': '1080p',
             'release_group': 'Group',
-            'video_codec': 'h265',
+            'video_codec': 'H.265',
             'audio_codec': 'AC3'
         },
         'another_release_name': 'Different.Show.2013.S03E04.Another.Episode.720p.BluRay.x264-NoGroup',
@@ -32,7 +33,7 @@ def data():
             'episode': 2,
             'title': None,
             'year': None,
-            'format': None,
+            'source': None,
             'resolution': None,
             'release_group': None,
             'video_codec': None,
@@ -48,7 +49,7 @@ def _to_properties(video):
         'episode': video.episode,
         'title': video.title,
         'year': video.year,
-        'format': video.format,
+        'source': video.source,
         'resolution': video.resolution,
         'release_group': video.release_group,
         'video_codec': video.video_codec,

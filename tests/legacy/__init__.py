@@ -15,3 +15,4 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 """Tests for base package."""
+from __future__ import unicode_literals

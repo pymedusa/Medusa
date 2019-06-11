@@ -64,6 +64,8 @@ from medusa.indexers.indexer_exceptions import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.tv import Series
 
+from requests import RequestException
+
 from six import binary_type, text_type, viewitems
 
 from traktor import TraktException
@@ -587,8 +589,8 @@ class QueueItemAdd(ShowQueueItem):
             self.show.load_imdb_info()
         except ImdbAPIError as error:
             log.info('Something wrong on IMDb api: {0}', error)
-        except Exception as error:
-            log.error('Error loading IMDb info: {0}', error)
+        except RequestException as error:
+            log.warning('Error loading IMDb info: {0}', error)
 
         try:
             self.show.save_to_db()
@@ -714,7 +716,7 @@ class QueueItemRename(ShowQueueItem):
         )
 
         try:
-            self.show.location
+            self.show.validate_location
         except ShowDirectoryNotFoundException:
             log.warning(
                 "Can't perform rename on {series_name} when the show dir is missing.",
@@ -829,7 +831,7 @@ class QueueItemUpdate(ShowQueueItem):
                 '{id}: Something wrong on IMDb api: {error_msg}',
                 {'id': self.show.series_id, 'error_msg': error}
             )
-        except Exception as error:
+        except RequestException as error:
             log.warning(
                 '{id}: Error loading IMDb info: {error_msg}',
                 {'id': self.show.series_id, 'error_msg': error}
@@ -994,7 +996,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                 '{id}: Something wrong on IMDb api: {error_msg}',
                 {'id': self.show.series_id, 'error_msg': error}
             )
-        except Exception as error:
+        except RequestException as error:
             log.warning(
                 '{id}: Error loading IMDb info: {error_msg}',
                 {'id': self.show.series_id, 'error_msg': error}

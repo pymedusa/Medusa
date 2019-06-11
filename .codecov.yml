@@ -48,7 +48,8 @@ coverage:
         if_ci_failed: failure
       backend:
         flags:
-          - backend
+          - backend_py27
+          - backend_py36
         target: 0%
         threshold: 5.0%
         if_no_uploads: error

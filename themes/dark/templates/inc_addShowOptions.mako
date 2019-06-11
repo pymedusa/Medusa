@@ -6,7 +6,7 @@
 %>
         <div class="field-pair alt">
             <label for="customQuality" class="clearfix">
-                <span class="component-title">Preferred Quality</span>
+                <span class="component-title">Quality</span>
                 <span class="component-desc">
                     <quality-chooser></quality-chooser>
                 </span>
@@ -62,7 +62,7 @@
                 <span class="component-title">Anime</span>
                 <span class="component-desc">
                     <input type="checkbox" name="anime" id="anime" ${'checked="checked"' if app.ANIME_DEFAULT else ''} />
-                    <p>Is this show an Anime?<p>
+                    <p>Is this show an Anime?</p>
                 </span>
             </label>
         </div>

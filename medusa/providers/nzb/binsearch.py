@@ -51,7 +51,7 @@ class BinSearchProvider(NZBProvider):
         # Miscellaneous Options
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, **kwargs):
         """
@@ -272,7 +272,7 @@ class BinSearchProvider(NZBProvider):
             return None
 
         # Validate that the result has the content of a valid nzb.
-        if not BinSearchProvider.nzb_check_segment.search(response.content):
+        if not BinSearchProvider.nzb_check_segment.search(response.text):
             log.warning('Result returned from BinSearch was not a valid NZB')
             return None
 

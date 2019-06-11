@@ -18,6 +18,8 @@
         "latest": "2018-07-03"
       },
       "logs": {
+        "debug": true,
+        "dbDebug": false,
         "numWarnings": 0,
         "numErrors": 0,
         "loggingLevels": {
@@ -32,7 +34,7 @@
         "enabled": true,
         "method": "qbittorrent"
       },
-      "donationsUrl": "https:\/\/github.com\/pymedusa\/Medusa\/wiki\/Donations",
+      "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
       "recentShows": [
         {
           "showId": 253463,
@@ -54,7 +56,8 @@
       "fanartBackgroundOpacity": 0.4,
       "appArgs": [
         "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
+        "--datadir",
+        "C:\\Medusa\\Data"
       ],
       "emby": {
         "enabled": true,
@@ -129,6 +132,188 @@
             }
           }
         }
+      }
+    },
+    "notifiers": {
+      "growl": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true
+      },
+      "slack": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": false
+      },
+      "twitter": {
+        "enabled": true,
+        "prefix": "Medusa",
+        "notifyOnDownload": false,
+        "directMessage": false,
+        "notifyOnSubtitleDownload": false,
+        "notifyOnSnatch": false
+      },
+      "kodi": {
+        "alwaysOn": true,
+        "username": "",
+        "password": "",
+        "libraryCleanPending": false,
+        "enabled": true,
+        "update": {
+          "onlyFirst": true,
+          "full": true,
+          "library": false
+        },
+        "cleanLibrary": true,
+        "host": [],
+        "notifyOnDownload": true,
+        "notifyOnSubtitleDownload": true,
+        "notifyOnSnatch": true
+      },
+      "telegram": {
+        "enabled": true,
+        "api": "",
+        "notifyOnDownload": false,
+        "notifyOnSubtitleDownload": false,
+        "notifyOnSnatch": false,
+        "id": ""
+      },
+      "pushover": {
+        "sound": "pushover",
+        "apiKey": "",
+        "enabled": true,
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "device": [
+          "device1"
+        ],
+        "userKey": "",
+        "notifyOnSnatch": false
+      },
+      "pyTivo": {
+        "shareName": "",
+        "host": "",
+        "enabled": false,
+        "name": ""
+      },
+      "prowl": {
+        "enabled": false,
+        "priority": 0,
+        "api": [
+          ""
+        ],
+        "notifyOnDownload": false,
+        "notifyOnSubtitleDownload": false,
+        "messageTitle": "Medusa",
+        "notifyOnSnatch": false
+      },
+      "synology": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": false
+      },
+      "plex": {
+        "client": {
+          "notifyOnSubtitleDownload": false,
+          "notifyOnDownload": false,
+          "host": [],
+          "notifyOnSnatch": false,
+          "enabled": true
+        },
+        "server": {
+          "updateLibrary": false,
+          "host": [
+            ""
+          ],
+          "enabled": true,
+          "https": false
+        }
+      },
+      "emby": {
+        "enabled": true
+      },
+      "email": {
+        "tls": false,
+        "from": "",
+        "enabled": true,
+        "host": "",
+        "addressList": [],
+        "notifyOnDownload": false,
+        "notifyOnSubtitleDownload": false,
+        "notifyOnSnatch": false,
+        "port": 25,
+        "subject": ""
+      },
+      "pushbullet": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true,
+        "api": ""
+      },
+      "join": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true,
+        "api": ""
+      },
+      "nmjv2": {
+        "enabled": false
+      },
+      "libnotify": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": false
+      },
+      "boxcar2": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true,
+        "accessToken": ""
+      },
+      "trakt": {
+        "username": "",
+        "removeWatchlist": false,
+        "accessToken": "",
+        "enabled": true,
+        "sync": false,
+        "syncWatchlist": false,
+        "methodAdd": 0,
+        "removeShowFromApplication": false,
+        "defaultIndexer": 1,
+        "timeout": 30,
+        "syncRemove": false,
+        "startPaused": false,
+        "removeSerieslist": false,
+        "pinUrl": "https://trakt.tv/pin/4562"
+      },
+      "nmj": {
+        "host": "",
+        "enabled": true
+      },
+      "freemobile": {
+        "enabled": true,
+        "api": "",
+        "notifyOnDownload": false,
+        "notifyOnSubtitleDownload": false,
+        "notifyOnSnatch": false,
+        "id": ""
+      },
+      "pushalot": {
+        "notifyOnSubtitleDownload": false,
+        "notifyOnDownload": false,
+        "notifyOnSnatch": false,
+        "enabled": true,
+        "authToken": ""
+      },
+      "synologyIndex": {
+        "enabled": false
       }
     }
   }

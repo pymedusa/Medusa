@@ -10,12 +10,7 @@
         <meta name="robots" content="noindex, nofollow">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!-- These values come from css/dark.css and css/light.css -->
-        % if app.THEME_NAME == "dark":
         <meta name="theme-color" content="#333333">
-        % elif app.THEME_NAME == "light":
-        <meta name="theme-color" content="#333333">
-        % endif
         <title>Medusa${(' - ' + title) if title and title != 'FixME' else ''}</title>
         <base href="${base_url}">
         <%block name="metas" />
@@ -52,7 +47,6 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
@@ -71,9 +65,7 @@
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
             <app-header></app-header>
-            % if submenu:
             <sub-menu></sub-menu>
-            % endif
             <%include file="/partials/alerts.mako"/>
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
@@ -88,23 +80,21 @@
         </div>
         <%block name="load_main_app" />
 
-        ## This contains all the Webpack-imported modules
+        ## These contain all the Webpack-imported modules
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/date_fns.min.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/add-shows/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/add-shows/popular-shows.js?${sbPID}"></script>
@@ -112,13 +102,6 @@
         <script type="text/javascript" src="js/add-shows/trending-shows.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/common/init.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/home/restart.js?${sbPID}"></script>
-
-        <script type="text/javascript" src="js/manage/failed-downloads.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/index.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
 
@@ -130,9 +113,12 @@
             % else:
             window.username = '';
             % endif
+
+            // [Temporary] Used by the QualityChooser component on some pages
+            % if show is not UNDEFINED:
+                window.qualityChooserInitialQuality = ${int(show.quality)};
+            % endif
         </script>
-        <%include file="/vue-components/sub-menu.mako"/>
-        <%include file="/vue-components/quality-chooser.mako"/>
         <script>
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
@@ -150,14 +136,25 @@
                                 pageComponent: false
                             };
                         }
+                        return {};
                     },
                     mounted() {
                         if (this.$root === this && !document.location.pathname.includes('/login')) {
                             const { store, username } = window;
-                            /* This is used by the `app-header` component
-                            to only show the logout button if a username is set */
-                            store.dispatch('login', { username });
-                            store.dispatch('getConfig').then(() => this.$emit('loaded'));
+                            Promise.all([
+                                /* This is used by the `app-header` component
+                                to only show the logout button if a username is set */
+                                store.dispatch('login', { username }),
+                                store.dispatch('getConfig')
+                            ]).then(([_, config]) => {
+                                this.$emit('loaded');
+                                // Legacy - send config.main to jQuery (received by index.js)
+                                const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
+                                window.dispatchEvent(event);
+                            }).catch(error => {
+                                console.debug(error);
+                                alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
+                            });
                         }
 
                         this.$once('loaded', () => {
@@ -186,9 +183,7 @@
                 });
 
                 // Global components
-                Vue.use(ToggleButton);
                 Vue.use(Snotify);
-                Vue.component('truncate', Truncate);
             }
         </script>
         <%block name="scripts" />

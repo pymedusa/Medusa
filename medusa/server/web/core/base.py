@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import re
+import sys
 import time
 import traceback
 from builtins import str
@@ -42,7 +43,6 @@ from tornado.web import (
 )
 
 from tornroutes import route
-
 
 mako_lookup = None
 mako_cache = None
@@ -83,14 +83,12 @@ class PageTemplate(MakoTemplate):
             'sbHttpsPort': app.WEB_PORT,
             'sbHttpsEnabled': app.ENABLE_HTTPS,
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
-            'sbThemeName': app.THEME_NAME,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
             'sbStartTime': rh.startTime,
             'sbPID': str(app.PID),
             'title': 'FixME',
             'header': 'FixME',
-            'submenu': [],
             'controller': 'FixME',
             'action': 'FixME',
             'show': UNDEFINED,
@@ -211,7 +209,11 @@ class BaseHandler(RequestHandler):
 class WebHandler(BaseHandler):
     """Base Handler for the web server."""
 
-    executor = ThreadPoolExecutor(thread_name_prefix='Thread')
+    # Python 3.5 doesn't support thread_name_prefix
+    if sys.version_info[:2] == (3, 5):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = ThreadPoolExecutor(thread_name_prefix='Thread')
 
     def __init__(self, *args, **kwargs):
         super(WebHandler, self).__init__(*args, **kwargs)
@@ -299,24 +301,24 @@ class WebRoot(WebHandler):
         def titler(x):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
 
-        main_db_con = db.DBConnection(row_type='dict')
+        main_db_con = db.DBConnection()
         shows = sorted(app.showList, key=lambda x: titler(x.name.lower()))
         episodes = {}
 
         results = main_db_con.select(
-            b'SELECT episode, season, indexer, showid '
-            b'FROM tv_episodes '
-            b'ORDER BY season ASC, episode ASC'
+            'SELECT episode, season, indexer, showid '
+            'FROM tv_episodes '
+            'ORDER BY season ASC, episode ASC'
         )
 
         for result in results:
-            if result[b'showid'] not in episodes:
-                episodes[result[b'showid']] = {}
+            if result['showid'] not in episodes:
+                episodes[result['showid']] = {}
 
-            if result[b'season'] not in episodes[result[b'showid']]:
-                episodes[result[b'showid']][result[b'season']] = []
+            if result['season'] not in episodes[result['showid']]:
+                episodes[result['showid']][result['season']] = []
 
-            episodes[result[b'showid']][result[b'season']].append(result[b'episode'])
+            episodes[result['showid']][result['season']].append(result['episode'])
 
         if len(app.API_KEY) == 32:
             apikey = app.API_KEY

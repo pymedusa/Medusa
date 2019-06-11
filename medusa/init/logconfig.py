@@ -4,7 +4,11 @@ from __future__ import unicode_literals
 
 import logging
 from builtins import object
-from inspect import getargspec
+
+try:
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
 
 from six import text_type
 
@@ -15,7 +19,7 @@ class StyleAdapter(logging.LoggerAdapter):
     adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and
                        not attr.startswith('__')}
     adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
-    reserved_keywords = getargspec(logging.Logger._log).args[1:]
+    reserved_keywords = getfullargspec(logging.Logger._log).args[1:]
 
     def __init__(self, target_logger, extra=None):
         """Constructor.

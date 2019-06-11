@@ -94,7 +94,7 @@ class ComingEpisodes(object):
             [today, next_week] + status_list
         )
 
-        done_shows_list = [int(result[b'showid']) for result in results]
+        done_shows_list = [int(result['showid']) for result in results]
         placeholder = ','.join(['?'] * len(done_shows_list))
         placeholder2 = ','.join(['?'] * len([DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER]))
 
@@ -127,8 +127,6 @@ class ComingEpisodes(object):
             'AND e.status NOT IN (' + ','.join(['?'] * len(status_list)) + ')',
             [today, recently, WANTED, UNAIRED] + status_list
         )
-
-        results = [dict(result) for result in results]
 
         for index, item in enumerate(results):
             item['series_slug'] = str(SeriesIdentifier.from_id(int(item['indexer']), item['indexer_id']))

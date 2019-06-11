@@ -72,8 +72,12 @@ def update_network_dict():
         return
 
     cache_db_con = db.DBConnection('cache.db')
+    sql_result = cache_db_con.select('SELECT network_name, timezone FROM network_timezones;')
 
-    network_list = dict(cache_db_con.select('SELECT * FROM network_timezones;'))
+    network_list = {
+        row['network_name']: row['timezone']
+        for row in sql_result
+    }
 
     queries = []
     for network, timezone in iteritems(remote_networks):
@@ -104,11 +108,16 @@ def load_network_dict():
     """Load network timezones from db into dict network_dict (global dict)."""
     try:
         cache_db_con = db.DBConnection('cache.db')
-        cur_network_list = cache_db_con.select('SELECT * FROM network_timezones;')
-        if not cur_network_list:
+        sql_result = cache_db_con.select('SELECT network_name, timezone FROM network_timezones;')
+        if not sql_result:
             update_network_dict()
-            cur_network_list = cache_db_con.select('SELECT * FROM network_timezones;')
-        d = dict(cur_network_list)
+            sql_result = cache_db_con.select('SELECT network_name, timezone FROM network_timezones;')
+
+        d = {
+            row['network_name']: row['timezone']
+            for row in sql_result
+        }
+
     except Exception:
         d = {}
     # pylint: disable=global-statement

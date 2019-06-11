@@ -7,9 +7,11 @@ cache:
     - node_modules
 before_install:
   - python .github/check_version.py
+  - sudo rm -f /etc/boto.cfg
 install: false
 script: false
 jobs:
+  fast_finish: true
   include:
     # test stage + frontend tests start here
     - stage: test
@@ -19,35 +21,44 @@ jobs:
       install:
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
         - 'export PATH="$HOME/.yarn/bin:$PATH"'
-        - yarn install --ignore-scripts
         - >-
           cd $TRAVIS_BUILD_DIR/themes-default/slim &&
           yarn install --ignore-scripts &&
           cd $TRAVIS_BUILD_DIR
       script:
         - ./.github/build-themes-check.sh
-        - yarn test-css
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
-        - yarn xo
+        - yarn lint
+        - yarn lint-css
         - yarn test
         - yarn coverage
-    # backend tests start here
-    - name: 'Backend tests'
-      python:
-        - 2.7.10
+    # backend tests (py2.7) start here
+    - name: 'Backend tests (py2.7)'
+      python: '2.7.10'
+      env:
+        - TOXENV=py27,lint
       install:
         - pip install --upgrade pip
         - pip install --upgrade tox
       script:
         - tox -v --recreate
-    # dredd tests start here
-    - name: 'Dredd tests'
-      python:
-        - 2.7.10
+    # backend tests (py3.6) start here
+    - name: 'Backend tests (py3.6)'
+      python: '3.6'
+      env:
+        - TOXENV=py36
+      install:
+        - pip install --upgrade pip
+        - pip install --upgrade tox
+      script:
+        - tox -v --recreate
+    # dredd tests (py2.7) start here
+    - name: 'Dredd tests (py2.7)'
+      python: '2.7.10'
       install:
         - pip install --upgrade pip
         - pip install dredd_hooks
-        - pip install 'PyYAML<4'
+        - pip install 'PyYAML>=5.1'
         - pip install six
         - nvm install v10.7.0
         - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
@@ -55,7 +66,22 @@ jobs:
       script:
         - yarn test-api
       after_failure:
-        - cat ./dredd/data/Logs/application.log
+        - cat ./dredd/hook.log
+    # dredd tests (py3.6) start here
+    - name: 'Dredd tests (py3.6)'
+      python: '3.6'
+      install:
+        - pip install --upgrade pip
+        - pip install dredd_hooks
+        - pip install 'PyYAML>=5.1'
+        - pip install six
+        - nvm install v10.7.0
+        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
+        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
+      script:
+        - yarn test-api
+      after_failure:
+        - cat ./dredd/hook.log
 notifications:
   slack:
     secure: >-
