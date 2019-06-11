@@ -32,7 +32,7 @@ const app = new Vue({
             console.log('App Mounted!');
         }
 
-        if (!document.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
             Promise.all([
                 $store.dispatch('login', { username: window.username }),
