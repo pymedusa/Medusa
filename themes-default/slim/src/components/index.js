@@ -6,6 +6,7 @@ export { default as AppHeader } from './app-header.vue';
 export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
 export { default as ConfigPostProcessing } from './config-post-processing.vue';
+export { default as EditShow } from './edit-show.vue';
 export { default as Home } from './home.vue';
 export { default as IRC } from './irc.vue';
 export { default as Login } from './login.vue';
