@@ -2565,11 +2565,12 @@ parameters:
     description: The configuration to retrieve
     type: string
     enum:
-      - main
+      - main # Keep main first, as the tests use it
       - consts
       - metadata
-      - search
       - notifiers
+      - search
+      - system
   log-level:
     name: level
     in: query

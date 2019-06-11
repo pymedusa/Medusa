@@ -7,8 +7,9 @@ import pkgutil
 import platform
 import sys
 
-from medusa import app, classes, common, db, logger, metadata
+from medusa import app, classes, common, db, helpers, logger, metadata
 from medusa.indexers.indexer_config import get_indexer_config
+from medusa.system.schedulers import all_schedulers
 
 import pytest
 
@@ -304,6 +305,35 @@ def test_config_get_metadata(http_client, create_url, auth_headers, config_metad
     expected = config_metadata
 
     url = create_url('/config/metadata')
+
+    # when
+    response = yield http_client.fetch(url, **auth_headers)
+
+    # then
+    assert response.code == 200
+    assert expected == json.loads(response.body)
+
+
+@pytest.fixture
+def config_system(monkeypatch, app_config):
+    def memory_usage_mock(*args, **kwargs):
+        return '124.86 MB'
+    monkeypatch.setattr(helpers, 'memory_usage', memory_usage_mock)
+
+    section_data = {}
+    section_data['memoryUsage'] = memory_usage_mock()
+    section_data['schedulers'] = [{'key': scheduler[0], 'name': scheduler[1]} for scheduler in all_schedulers]
+    section_data['showQueue'] = []
+
+    return section_data
+
+
+@pytest.mark.gen_test
+def test_config_get_system(http_client, create_url, auth_headers, config_system):
+    # given
+    expected = config_system
+
+    url = create_url('/config/system')
 
     # when
     response = yield http_client.fetch(url, **auth_headers)

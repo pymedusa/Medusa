@@ -5,6 +5,7 @@ import AsyncComputed from 'vue-async-computed';
 import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
+import { isDevelopment } from './utils/core';
 import {
     isDevelopment
 } from './utils';

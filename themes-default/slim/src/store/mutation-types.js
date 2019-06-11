@@ -15,6 +15,7 @@ const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
+const ADD_STATS = 'ℹ️ Statistics added to store';
 
 export {
     LOGIN_PENDING,
@@ -34,4 +35,6 @@ export {
     ADD_CONFIG,
     ADD_SHOW,
     ADD_SHOW_EPISODE
+    ADD_SHOW
+    ADD_STATS
 };

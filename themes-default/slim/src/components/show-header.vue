@@ -275,7 +275,7 @@ import { getLanguage } from 'country-language';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
-import { combineQualities, humanFileSize } from '../utils';
+import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../jquery-wrappers';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
