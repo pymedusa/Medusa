@@ -74,12 +74,12 @@ const actions = {
      */
     getShow(context, { indexer, id, detailed, fetch }) {
         return new Promise((resolve, reject) => {
-        const { commit } = context;
-        const params = {};
+            const { commit } = context;
+            const params = {};
 
-        if (detailed !== undefined) {
-            params.detailed = Boolean(detailed);
-        }
+            if (detailed !== undefined) {
+                params.detailed = Boolean(detailed);
+            }
 
             if (fetch !== undefined) {
                 params.fetch = Boolean(fetch);
@@ -87,12 +87,12 @@ const actions = {
 
             api.get('/series/' + indexer + id, { params })
                 .then(res => {
-            commit(ADD_SHOW, res.data);
+                    commit(ADD_SHOW, res.data);
                     resolve(res.data);
                 })
                 .catch(error => {
                     reject(error);
-        });
+                });
         });
     },
     /**
@@ -110,18 +110,18 @@ const actions = {
             return (() => {
                 const limit = 1000;
                 const page = 1;
-            const params = {
+                const params = {
                     limit,
                     page
-            };
+                };
 
                 // Get first page
                 api.get('/series', { params })
                     .then(response => {
                         const totalPages = Number(response.headers['x-pagination-total']);
                         response.data.forEach(show => {
-                    commit(ADD_SHOW, show);
-                });
+                            commit(ADD_SHOW, show);
+                        });
 
                         // Optionally get additional pages
                         const pageRequests = [];
@@ -131,9 +131,9 @@ const actions = {
                             pageRequests.push(api.get('/series', { params: newPage }).then(response => {
                                 response.data.forEach(show => {
                                     commit(ADD_SHOW, show);
-            });
+                                });
                             }));
-        }
+                        }
 
                         return Promise.all(pageRequests);
                     })
