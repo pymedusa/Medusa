@@ -10,8 +10,6 @@ import {
 } from './utils';
 import VModal from 'vue-js-modal';
 import VueCookie from 'vue-cookie';
-import Tooltip from 'vue-directive-tooltip';
-import 'vue-directive-tooltip/css/index.css';
 
 import {
     AnidbReleaseGroupUi,
@@ -41,7 +39,6 @@ Vue.use(VueRouter);
 Vue.use(AsyncComputed);
 Vue.use(Snotify);
 Vue.use(VModal);
-Vue.use(Tooltip);
 
 // Global components
 const globalComponents = [
