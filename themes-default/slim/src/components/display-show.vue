@@ -207,10 +207,11 @@
 
 <script>
 import formatDate from 'date-fns/format';
-import parse from 'date-fns/parse'
+import parse from 'date-fns/parse';
+import parseISO from 'date-fns/parseISO';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, mapDateFormat } from '../utils';
+import { humanFileSize, convertDateFormat } from '../utils/core';
 import { addQTip, updateSearchIcons } from '../jquery-wrappers';
 import { VueGoodTable  } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
@@ -573,7 +574,8 @@ export default {
                 return new Date(row.airDate).toLocaleString();
             }
 
-            return formatDate(parse(row.airDate), mapDateFormat(`${config.datePreset} ${config.timePreset}`));
+            const fdate = parseISO(row.airDate);
+            return formatDate(fdate, convertDateFormat(`${config.datePreset} ${config.timePreset}`));
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
