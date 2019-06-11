@@ -15,7 +15,6 @@ import debounce from 'lodash/debounce';
 import store from './store';
 import router from './router';
 import { apiRoute, apiv1, api, webRoot, apiKey } from './api';
-import { QualityPill } from './components';
 import globalVueShim from './global-vue-shim';
 
 if (window) {
@@ -44,9 +43,6 @@ if (window) {
     };
     window.webRoot = webRoot;
     window.apiKey = apiKey;
-
-    // @FIXME: (sharkykh) This component is used in a hack/workaround in `static/js/ajax-episode-search.js`
-    window.componentQualityPill = QualityPill;
 
     // Push x-template components to this array to register them globally
     window.components = [];

@@ -51,7 +51,9 @@ export const registerGlobalComponents = () => {
         SubMenu
     ]);
 
-    // Add global components
+    // Add global components (in use by pages/components that are not SFCs yet)
+    // Use this when it's not possible to use `components: { ... }` in a component's definition.
+    // If a component that uses any of these is a SFC, please use the `components` key when defining it.
     // @TODO: Instead of globally registering these,
     //        they should be registered in each component that uses them
     components = components.concat([
@@ -68,7 +70,7 @@ export const registerGlobalComponents = () => {
         LanguageSelect,
         PlotInfo,
         QualityChooser,
-        QualityPill,
+        QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
         RootDirs,
         SelectList,
         ShowSelector,
@@ -85,7 +87,7 @@ export const registerGlobalComponents = () => {
         Status
     ]);
 
-    // Register the components
+    // Register the components globally
     components.forEach(component => {
         if (isDevelopment) {
             console.debug(`Registering ${component.name}`);
