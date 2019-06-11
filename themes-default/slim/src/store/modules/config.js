@@ -1,6 +1,6 @@
 import { api } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
-import { arrayUnique, arrayExclude } from '../../utils';
+import { arrayUnique, arrayExclude } from '../../utils/core';
 
 const state = {
     wikiUrl: null,

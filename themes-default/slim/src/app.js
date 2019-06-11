@@ -6,9 +6,6 @@ import Snotify from 'vue-snotify';
 import store from './store';
 import router from './router';
 import { isDevelopment } from './utils/core';
-import {
-    isDevelopment
-} from './utils';
 import VModal from 'vue-js-modal';
 import VueCookie from 'vue-cookie';
 

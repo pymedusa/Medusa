@@ -1,8 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize } from '../utils';
+import { humanFileSize } from '../utils/core';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -19,7 +18,7 @@ export default {
                 title: 'Medusa'
             };
         }
-        
+
         const { title } = this.show;
         return {
             title,
@@ -78,7 +77,7 @@ export default {
             if (!seasons) {
                 return [];
             }
-            
+
             if (invertTable) {
                 return this.show.seasons.slice().reverse();
             } else {
@@ -414,7 +413,7 @@ export default {
         },
         getSceneAbsoluteNumbering(episode) {
             const { show } = this;
-            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;  
+            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;
             const xemAbsolute = xemAbsoluteNumbering[episode.absoluteNumber];
 
             if (Object.keys(sceneAbsoluteNumbering).length > 0) {
