@@ -1,9 +1,17 @@
 ## Unreleased
 
 #### New Features
-- Added new provider Beyond-hd ([#6802](https://github.com/pymedusa/Medusa/pull/6802))
 
 #### Improvements
+
+#### Fixes
+
+-----
+
+## 0.3.3 (2019-06-12)
+
+#### New Features
+- Added new provider Beyond-hd ([#6802](https://github.com/pymedusa/Medusa/pull/6802))
 
 #### Fixes
 - Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
@@ -55,7 +63,7 @@
 #### New Features
 - Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
 - Added feature to search episodes early or late compared to their scheduled airdate ([#5874](https://github.com/pymedusa/Medusa/pull/5874))
-- Added per show required/preferred words exclude option ([#4982](https://github.com/pymedusa/Medusa/pull/6033))
+- Added per show required/preferred words exclude option ([#6033](https://github.com/pymedusa/Medusa/pull/6033))
 
 #### Improvements
 - Vueified the partial mako template showheader.mako into show-header.vue ([#6189](https://github.com/pymedusa/Medusa/pull/6189))
