@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed Jackett providers returning empty torrents on magnet redirect (2) ([#6827](https://github.com/pymedusa/Medusa/pull/6827))
 
 -----
 
