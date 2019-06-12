@@ -1,9 +1,7 @@
-## Unreleased
+## 0.3.3 (2019-06-12)
 
 #### New Features
 - Added new provider Beyond-hd ([#6802](https://github.com/pymedusa/Medusa/pull/6802))
-
-#### Improvements
 
 #### Fixes
 - Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
