@@ -1,4 +1,4 @@
-https://codeload.github.com/pymedusa/adba/tar.gz/4d7388c815ee7f54c5479028bd1435083403a18c#egg=adba
+https://codeload.github.com/pymedusa/adba/tar.gz/112c04b50d318802b4a0c7924f8e26aaf9e60a5b#egg=adba
 https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
 beautifulsoup4==4.7.1
 bencode.py==2.0.0
@@ -23,7 +23,7 @@ imdbpie==5.6.4
 Js2Py==0.63
 jsonrpclib-pelix==0.4.0
 https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e#egg=knowit
-Mako==1.0.10
+Mako==1.0.12
 markdown2==2.3.7
 profilehooks==1.11.0
 PyGithub==1.43.7
@@ -38,4 +38,5 @@ six==1.12.0
 https://codeload.github.com/Diaoul/subliminal/tar.gz/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
+https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284#egg=tvdbapiv2
 validators==0.13.0

@@ -89,7 +89,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import { apiRoute } from '../api';
-import { combineQualities } from '../utils';
+import { combineQualities } from '../utils/core';
 import {
     ConfigToggleSlider,
     QualityChooser

@@ -1,0 +1,21 @@
+recursive-include medusa *.py
+graft themes
+
+graft ext
+graft ext2
+graft ext3
+graft lib
+graft lib2
+graft lib3
+
+graft runscripts
+
+include CHANGELOG.md
+include COPYING.txt
+include readme.md
+include requirements.txt
+include SickBeard.py
+include start.py
+
+global-exclude __pycache__
+global-exclude *.py[cod]

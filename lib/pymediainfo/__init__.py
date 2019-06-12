@@ -3,10 +3,10 @@ import os
 import re
 import locale
 import json
-import ctypes
 import sys
 from pkg_resources import get_distribution, DistributionNotFound
 import xml.etree.ElementTree as ET
+from ctypes import *
 
 try:
     import pathlib
@@ -21,7 +21,7 @@ else:
 try:
     __version__ = get_distribution("pymediainfo").version
 except DistributionNotFound:
-    __version__ = '4.0'
+    __version__ = '3.2.1'
     pass
 
 class Track(object):
@@ -49,21 +49,16 @@ class Track(object):
 
     All available attributes can be obtained by calling :func:`to_data`.
     """
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
     def __getattribute__(self, name):
         try:
             return object.__getattribute__(self, name)
         except:
             pass
         return None
-    def __getstate__(self):
-        return self.__dict__
-    def __setstate__(self, state):
-        self.__dict__ = state
     def __init__(self, xml_dom_fragment):
+        self.xml_dom_fragment = xml_dom_fragment
         self.track_type = xml_dom_fragment.attrib['type']
-        for el in xml_dom_fragment:
+        for el in self.xml_dom_fragment:
             node_name = el.tag.lower().strip().strip('_')
             if node_name == 'id':
                 node_name = 'track_id'
@@ -91,7 +86,7 @@ class Track(object):
                     except:
                         pass
     def __repr__(self):
-        return("<Track track_id='{}', track_type='{}'>".format(self.track_id, self.track_type))
+        return("<Track track_id='{0}', track_type='{1}'>".format(self.track_id, self.track_type))
     def to_data(self):
         """
         Returns a dict representation of the track attributes.
@@ -135,37 +130,21 @@ class MediaInfo(object):
     :param str xml: XML output obtained from MediaInfo.
     :param str encoding_errors: option to pass to :func:`str.encode`'s `errors`
         parameter before parsing `xml`.
-    :raises xml.etree.ElementTree.ParseError: if passed invalid XML.
-    :var tracks: A list of :py:class:`Track` objects which the media file contains.
-        For instance:
-
-        >>> mi = pymediainfo.MediaInfo.parse("/path/to/file.mp4")
-        >>> for t in mi.tracks:
-        ...     print(t)
-        <Track track_id='None', track_type='General'>
-        <Track track_id='1', track_type='Text'>
+    :raises xml.etree.ElementTree.ParseError: if passed invalid XML (Python ≥ 2.7).
+    :raises xml.parsers.expat.ExpatError: if passed invalid XML (Python 2.6).
     """
-    def __eq__(self, other):
-        return self.tracks == other.tracks
     def __init__(self, xml, encoding_errors="strict"):
-        xml_dom = ET.fromstring(xml.encode("utf-8", encoding_errors))
-        self.tracks = []
-        # This is the case for libmediainfo < 18.03
-        # https://github.com/sbraz/pymediainfo/issues/57
-        # https://github.com/MediaArea/MediaInfoLib/commit/575a9a32e6960ea34adb3bc982c64edfa06e95eb
-        if xml_dom.tag == "File":
-            xpath = "track"
-        else:
-            xpath = "File/track"
-        for xml_track in xml_dom.iterfind(xpath):
-            self.tracks.append(Track(xml_track))
+        self.xml_dom = MediaInfo._parse_xml_data_into_dom(xml, encoding_errors)
+    @staticmethod
+    def _parse_xml_data_into_dom(xml_data, encoding_errors="strict"):
+        return ET.fromstring(xml_data.encode("utf-8", encoding_errors))
     @staticmethod
     def _get_library(library_file=None):
         os_is_nt = os.name in ("nt", "dos", "os2", "ce")
         if os_is_nt:
-            lib_type = ctypes.WinDLL
+            lib_type = WinDLL
         else:
-            lib_type = ctypes.CDLL
+            lib_type = CDLL
         if library_file is None:
             if os_is_nt:
                 library_names = ("MediaInfo.dll",)
@@ -185,22 +164,7 @@ class MediaInfo(object):
             library_names = (library_file,)
         for i, library in enumerate(library_names, start=1):
             try:
-                lib = lib_type(library)
-                # Define arguments and return types
-                lib.MediaInfo_Inform.restype = ctypes.c_wchar_p
-                lib.MediaInfo_New.argtypes = []
-                lib.MediaInfo_New.restype  = ctypes.c_void_p
-                lib.MediaInfo_Option.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_wchar_p]
-                lib.MediaInfo_Option.restype = ctypes.c_wchar_p
-                lib.MediaInfo_Inform.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
-                lib.MediaInfo_Inform.restype = ctypes.c_wchar_p
-                lib.MediaInfo_Open.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p]
-                lib.MediaInfo_Open.restype = ctypes.c_size_t
-                lib.MediaInfo_Delete.argtypes = [ctypes.c_void_p]
-                lib.MediaInfo_Delete.restype  = None
-                lib.MediaInfo_Close.argtypes = [ctypes.c_void_p]
-                lib.MediaInfo_Close.restype = None
-                return lib
+                return lib_type(library)
             except OSError:
                 # If we've tried all possible filenames
                 if i == len(library_names):
@@ -219,8 +183,7 @@ class MediaInfo(object):
             return False
     @classmethod
     def parse(cls, filename, library_file=None, cover_data=False,
-            encoding_errors="strict", parse_speed=0.5, text=False,
-            full=True, legacy_stream_display=False):
+            encoding_errors="strict", parse_speed=0.5):
         """
         Analyze a media file using libmediainfo.
         If libmediainfo is located in a non-standard location, the `library_file` parameter can be used:
@@ -239,14 +202,8 @@ class MediaInfo(object):
             this option takes values between 0 and 1.
             A higher value will yield more precise results in some cases
             but will also increase parsing time.
-        :param bool text: if ``True``, MediaInfo's text output will be returned instead
-            of a :class:`MediaInfo` object.
-        :param bool full: display additional tags, including computer-readable values
-            for sizes and durations.
-        :param bool legacy_stream_display: display additional information about streams.
         :type filename: str or pathlib.Path
-        :rtype: str if `text` is ``True``.
-        :rtype: :class:`MediaInfo` otherwise.
+        :rtype: MediaInfo
         :raises FileNotFoundError: if passed a non-existent file
             (Python ≥ 3.3), does not work on Windows.
         :raises IOError: if passed a non-existent file (Python < 3.3),
@@ -266,6 +223,20 @@ class MediaInfo(object):
             # Test whether the file is readable
             with open(filename, "rb"):
                 pass
+        # Define arguments and return types
+        lib.MediaInfo_Inform.restype = c_wchar_p
+        lib.MediaInfo_New.argtypes = []
+        lib.MediaInfo_New.restype  = c_void_p
+        lib.MediaInfo_Option.argtypes = [c_void_p, c_wchar_p, c_wchar_p]
+        lib.MediaInfo_Option.restype = c_wchar_p
+        lib.MediaInfo_Inform.argtypes = [c_void_p, c_size_t]
+        lib.MediaInfo_Inform.restype = c_wchar_p
+        lib.MediaInfo_Open.argtypes = [c_void_p, c_wchar_p]
+        lib.MediaInfo_Open.restype = c_size_t
+        lib.MediaInfo_Delete.argtypes = [c_void_p]
+        lib.MediaInfo_Delete.restype  = None
+        lib.MediaInfo_Close.argtypes = [c_void_p]
+        lib.MediaInfo_Close.restype = None
         # Obtain the library version
         lib_version = lib.MediaInfo_Option(None, "Info_Version", "")
         lib_version = tuple(int(_) for _ in re.search("^MediaInfoLib - v(\\S+)", lib_version).group(1).split("."))
@@ -287,21 +258,45 @@ class MediaInfo(object):
         if (sys.version_info < (3,) and os.name == "posix"
                 and locale.getlocale() == (None, None)):
             locale.setlocale(locale.LC_CTYPE, locale.getdefaultlocale())
-        lib.MediaInfo_Option(None, "Inform", "" if text else xml_option)
-        lib.MediaInfo_Option(None, "Complete", "1" if full else "")
+        lib.MediaInfo_Option(None, "Inform", xml_option)
+        lib.MediaInfo_Option(None, "Complete", "1")
         lib.MediaInfo_Option(None, "ParseSpeed", str(parse_speed))
-        lib.MediaInfo_Option(None, "LegacyStreamDisplay", "1" if legacy_stream_display else "")
         if lib.MediaInfo_Open(handle, filename) == 0:
-            raise RuntimeError("An eror occured while opening {}"
+            raise RuntimeError("An eror occured while opening {0}"
                     " with libmediainfo".format(filename))
-        output = lib.MediaInfo_Inform(handle, 0)
+        xml = lib.MediaInfo_Inform(handle, 0)
         # Delete the handle
         lib.MediaInfo_Close(handle)
         lib.MediaInfo_Delete(handle)
-        if text:
-            return output
+        return cls(xml, encoding_errors)
+    def _populate_tracks(self):
+        self._tracks = []
+        iterator = "findall" if sys.version_info < (2, 7) else "iterfind"
+        # This is the case for libmediainfo < 18.03
+        # https://github.com/sbraz/pymediainfo/issues/57
+        # https://github.com/MediaArea/MediaInfoLib/commit/575a9a32e6960ea34adb3bc982c64edfa06e95eb
+        if self.xml_dom.tag == "File":
+            xpath = "track"
         else:
-            return cls(output, encoding_errors)
+            xpath = "File/track"
+        for xml_track in getattr(self.xml_dom, iterator)(xpath):
+            self._tracks.append(Track(xml_track))
+    @property
+    def tracks(self):
+        """
+        A list of :py:class:`Track` objects which the media file contains.
+
+        For instance:
+
+        >>> mi = pymediainfo.MediaInfo.parse("/path/to/file.mp4")
+        >>> for t in mi.tracks:
+        ...     print(t)
+        <Track track_id='None', track_type='General'>
+        <Track track_id='1', track_type='Text'>
+        """
+        if not hasattr(self, "_tracks"):
+            self._populate_tracks()
+        return self._tracks
     def to_data(self):
         """
         Returns a dict representation of the object's :py:class:`Tracks <Track>`.
