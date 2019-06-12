@@ -39,12 +39,9 @@ class BeyondHDProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
-        self.freeleech = True
-
-        # Torrent Stats
 
         # Cache
-        self.cache = tv.Cache(self)  # only poll PrivateHD every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, *args, **kwargs):
         """
