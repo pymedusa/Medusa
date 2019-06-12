@@ -1,6 +1,6 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { ProvidePlugin } = require('webpack');
+const { NormalModuleReplacementPlugin, ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
@@ -182,6 +182,12 @@ const makeConfig = (theme, isProd) => ({
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
+        // Disable other themes' styles in SFCs
+        new NormalModuleReplacementPlugin(
+            // Match vue SFC styles where the theme name differs from the current theme (`&theme=[name]`)
+            new RegExp(String.raw`\?vue&type=style.+&theme=(?!${theme.name})(&|.*$)`),
+            'lodash/noop'
+        ),
         new OptimizeCssAssetsPlugin({}),
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
