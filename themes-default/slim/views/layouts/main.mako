@@ -81,6 +81,7 @@
         <%block name="load_main_app" />
 
         ## These contain all the Webpack-imported modules
+        ## When adding/removing JS files, don't forget to update `apiBuilder.mako`
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
         <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
         <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
