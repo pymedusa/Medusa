@@ -12,34 +12,27 @@ const pkg = require('./package.json');
 const { cssThemes } = pkg.config;
 
 /**
- * Helper function to queue actions for each theme.
- *
- * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
- * @returns {Object[]} - The actions for each theme.
- */
-const perTheme = action => cssThemes.map(theme => action(theme));
-
-/**
  * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
- * To be used in-conjunction-with `perTheme`.
  *
- * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
- * @param {string} [search] - Glob-like string to match files. (default: `**`)
- * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
+ * @param {object} theme Theme object.
+ * @param {string} theme.name Theme name.
+ * @param {string} theme.css Theme CSS file name.
+ * @param {string} theme.dest Relative path to theme root folder.
+ * @param {string} type Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist/{theme.name}`.
+ * @param {string} [search=**] Glob-like string to match files. (default: `**`)
+ * @returns {object} A `FileManagerPlugin.onEnd.copy` item.
  */
-const copyAssets = (type, search = '**') => {
-    return theme => ({
-        source: `./dist/${type}/${search}`,
-        destination: path.resolve(theme.dest, 'assets', type)
-    });
-};
+const copyAssets = (theme, type, search = '**') => ({
+    source: `./dist/${theme.name}/${type}/${search}`,
+    destination: path.resolve(theme.dest, 'assets', type)
+});
 
 /**
  * Make a `package.json` for a theme.
  *
- * @param {string} themeName - Theme name
- * @param {string} currentContent - Current package.json contents
- * @returns {string} - New content
+ * @param {string} themeName Theme name
+ * @param {string} currentContent Current package.json contents
+ * @returns {string} New content
  */
 const makeThemeMetadata = (themeName, currentContent) => {
     const { version, author } = JSON.parse(currentContent);
@@ -51,23 +44,27 @@ const makeThemeMetadata = (themeName, currentContent) => {
 };
 
 /**
- * Generate the Webpack configuration object.
+ * Generate a Webpack configuration object for a theme.
  *
- * @param {*} env - The environment data, as passed from the `--env` command line argument.
- * @param {*} mode - The mode, as passed from the `--mode` command line argument.
- * @returns {Object} Webpack configuration object.
+ * @param {object} theme Theme object.
+ * @param {string} theme.name Theme name.
+ * @param {string} theme.css Theme CSS file name.
+ * @param {string} theme.dest Relative path to theme root folder.
+ * @param {boolean} isProd Is this a production build?
+ * @returns {object} Webpack configuration object.
  */
-const webpackConfig = (env, mode) => ({
-    devtool: mode === 'production' ? 'source-map' : 'eval',
+const makeConfig = (theme, isProd) => ({
+    name: theme.name,
+    devtool: isProd ? 'source-map' : 'eval',
     entry: {
-        // Exports all window. objects for mako files
+        // Exports all `window` objects for mako files
         index: path.resolve(__dirname, 'src/index.js'),
         // Main Vue app
         app: path.resolve(__dirname, 'src/app.js')
     },
     output: {
         filename: 'js/[name].js',
-        path: path.resolve(__dirname, 'dist')
+        path: path.resolve(__dirname, 'dist', theme.name)
     },
     resolve: {
         extensions: ['.js', '.vue', '.json'],
@@ -127,7 +124,7 @@ const webpackConfig = (env, mode) => ({
                     loader: 'vue-loader',
                     options: {
                         // This is a workaround because vue-loader can't get the webpack mode
-                        productionMode: mode === 'production'
+                        productionMode: isProd
                     }
                 }]
             },
@@ -194,9 +191,9 @@ const webpackConfig = (env, mode) => ({
         new FileManagerPlugin({
             onEnd: {
                 copy: [
-                    ...perTheme(copyAssets('js')),
-                    ...perTheme(copyAssets('css')),
-                    ...perTheme(copyAssets('fonts'))
+                    copyAssets(theme, 'js'),
+                    copyAssets(theme, 'css'),
+                    copyAssets(theme, 'fonts')
                 ]
             }
         }),
@@ -204,53 +201,59 @@ const webpackConfig = (env, mode) => ({
         // Don't use for assets emitted by Webpack because this plugin runs before the bundle is created.
         new CopyWebpackPlugin([
             // Templates
-            ...perTheme(theme => ({
+            {
                 context: './views/',
                 from: '**',
                 to: path.resolve(theme.dest, 'templates')
-            })),
+            },
             // Create package.json
-            ...perTheme(theme => ({
+            {
                 from: 'package.json',
                 to: path.resolve(theme.dest, 'package.json'),
                 toType: 'file',
                 transform: content => makeThemeMetadata(theme.name, content)
-            })),
+            },
             // Root files: index.html
-            ...perTheme(theme => ({
+            {
                 from: 'index.html',
                 to: path.resolve(theme.dest),
                 toType: 'dir'
-            })),
+            },
             // Old JS files
-            ...perTheme(theme => ({
+            {
                 context: './static/',
                 from: 'js/**',
                 to: path.resolve(theme.dest, 'assets')
-            })),
+            },
             // Old CSS files
-            ...perTheme(theme => ({
+            {
                 context: './static/',
                 from: 'css/**',
                 // Ignore theme-specific files as they are handled by the next entry
-                ignore: ['css/dark.css', 'css/light.css'],
+                ignore: cssThemes.map(theme => `css/${theme.css}`),
                 to: path.resolve(theme.dest, 'assets')
-            })),
+            },
             // Old CSS files - themed.css
-            ...perTheme(theme => ({
+            {
                 from: `static/css/${theme.css}`,
                 to: path.resolve(theme.dest, 'assets', 'css', 'themed.css'),
                 toType: 'file'
-            }))
+            }
         ])
     ]
 });
 
 /**
- * See: https://webpack.js.org/configuration/configuration-types/#exporting-a-function
+ * Generate the Webpack configuration object.
+ * @see https://webpack.js.org/configuration/configuration-types/#exporting-a-function
  *
- * @param {*} env - An environment. See the environment options CLI documentation for syntax examples.
- * @param {*} argv - An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
- * @returns {Object} - Webpack configuration object.
+ * @param {object} [env={}] An environment. See the environment options CLI documentation for syntax examples.
+ * @param {object} [argv={}] An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
+ * @returns {object[]} Webpack configurations.
  */
-module.exports = (env = {}, argv = {}) => webpackConfig(env, argv.mode || process.env.NODE_ENV);
+// eslint-disable-next-line no-unused-vars
+module.exports = (env = {}, argv = {}) => {
+    const isProd = (argv.mode || process.env.NODE_ENV) === 'production';
+    const configs = cssThemes.map(theme => makeConfig(theme, isProd));
+    return configs;
+};
