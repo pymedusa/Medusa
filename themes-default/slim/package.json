@@ -12,18 +12,18 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
-    "cssThemes": {
-      "light": {
+    "cssThemes": [
+      {
         "name": "light",
         "css": "light.css",
         "dest": "../../themes/light"
       },
-      "dark": {
+      {
         "name": "dark",
         "css": "dark.css",
         "dest": "../../themes/dark"
       }
-    }
+    ]
   },
   "resolutions": {
     "**/jquery": "3.4.1",

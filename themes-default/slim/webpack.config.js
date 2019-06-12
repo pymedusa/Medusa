@@ -17,7 +17,7 @@ const { cssThemes } = pkg.config;
  * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
  * @returns {Object[]} - The actions for each theme.
  */
-const perTheme = action => Object.values(cssThemes).map(theme => action(theme));
+const perTheme = action => cssThemes.map(theme => action(theme));
 
 /**
  * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
