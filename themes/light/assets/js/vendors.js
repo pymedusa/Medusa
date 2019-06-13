@@ -470,7 +470,7 @@ eval("/*!\n * Determine if an object is a Buffer\n *\n * @author   Feross Aboukh
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./node_modules/bootstrap/dist/css/bootstrap.min.css?");
+eval("// extracted by extract-css-chunks-webpack-plugin\n\n//# sourceURL=webpack:///./node_modules/bootstrap/dist/css/bootstrap.min.css?");
 
 /***/ }),
 
@@ -971,7 +971,7 @@ eval("__webpack_require__.r(__webpack_exports__);\nvar re_color = /^rgb\\((\\d+)
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./node_modules/tablesorter/dist/css/theme.blue.min.css?");
+eval("// extracted by extract-css-chunks-webpack-plugin\n\n//# sourceURL=webpack:///./node_modules/tablesorter/dist/css/theme.blue.min.css?");
 
 /***/ }),
 
@@ -1173,7 +1173,7 @@ eval("/*!\n  * vue-scrollto v2.15.0\n  * (c) 2019 Randjelovic Igor\n  * @license
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./node_modules/vue-snotify/styles/material.css?");
+eval("// extracted by extract-css-chunks-webpack-plugin\n\n//# sourceURL=webpack:///./node_modules/vue-snotify/styles/material.css?");
 
 /***/ }),
 
@@ -1278,7 +1278,7 @@ eval("module.exports = function(module) {\n\tif (!module.webpackPolyfill) {\n\t\
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack:///./vendor/css/open-sans.css?");
+eval("// extracted by extract-css-chunks-webpack-plugin\n\n//# sourceURL=webpack:///./vendor/css/open-sans.css?");
 
 /***/ }),
 

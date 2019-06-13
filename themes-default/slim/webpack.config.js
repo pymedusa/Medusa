@@ -2,7 +2,7 @@ const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { NormalModuleReplacementPlugin, ProvidePlugin } = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -164,10 +164,13 @@ const makeConfig = ({ theme, isProd, stats }) => ({
                         // Handle regular `.css` files
                         use: [
                             {
-                                loader: MiniCssExtractPlugin.loader,
+                                loader: ExtractCssChunks.loader,
                                 options: {
                                     // Fixes loading fonts from the fonts folder
                                     publicPath: '../'
+                                    // Options for later down the line
+                                    // hot: true, // If you want HMR
+                                    // reloadAll: true // When desperation kicks in - this is a brute force HMR flag
                                 }
                             },
                             'css-loader'
@@ -200,8 +203,9 @@ const makeConfig = ({ theme, isProd, stats }) => ({
             'lodash/noop'
         ),
         new OptimizeCssAssetsPlugin({}),
-        new MiniCssExtractPlugin({
-            filename: 'css/[name].css'
+        new ExtractCssChunks({
+            filename: 'css/[name].css',
+            orderWarning: true // Disable to remove warnings about conflicting order between imports
         }),
         // Copy bundled assets for each theme
         // Only use for assets emitted by Webpack.
