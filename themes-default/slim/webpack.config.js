@@ -12,53 +12,65 @@ const pkg = require('./package.json');
 // Verify that `loadsh/noop` is available
 require.resolve('lodash/noop');
 
-const { cssThemes } = pkg.config;
+class Theme {
+    /**
+     * @param {object} theme Theme object.
+     * @param {string} theme.name Theme name.
+     * @param {string} theme.css Theme CSS file name.
+     * @param {string} theme.dest Relative path to theme root folder.
+     */
+    constructor({ name, css, dest } = {}) {
+        this.name = name;
+        this.css = css;
+        this.dest = dest;
+    }
+
+    /**
+     * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
+     *
+     * @param {string} type Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist/{theme.name}`.
+     * @param {string} [search=**] Glob-like string to match files. (default: `**`)
+     * @returns {object} A `FileManagerPlugin.onEnd.copy` item.
+     */
+    copyAssets(type, search = '**') {
+        return {
+            source: `./dist/${this.name}/${type}/${search}`,
+            destination: path.resolve(this.dest, 'assets', type)
+        };
+    }
+
+    /**
+     * Make a `package.json` for a theme.
+     *
+     * @param {string} currentContent Current package.json contents
+     * @returns {string} New content
+     */
+    makeMetadata(currentContent) {
+        const { name } = this;
+        const { version, author } = JSON.parse(currentContent);
+        return JSON.stringify({
+            name,
+            version,
+            author
+        }, undefined, 2);
+    }
+}
 
 /**
- * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
- *
- * @param {object} theme Theme object.
- * @param {string} theme.name Theme name.
- * @param {string} theme.css Theme CSS file name.
- * @param {string} theme.dest Relative path to theme root folder.
- * @param {string} type Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist/{theme.name}`.
- * @param {string} [search=**] Glob-like string to match files. (default: `**`)
- * @returns {object} A `FileManagerPlugin.onEnd.copy` item.
+ * @type {Theme[]} Themes
  */
-const copyAssets = (theme, type, search = '**') => ({
-    source: `./dist/${theme.name}/${type}/${search}`,
-    destination: path.resolve(theme.dest, 'assets', type)
-});
-
-/**
- * Make a `package.json` for a theme.
- *
- * @param {string} themeName Theme name
- * @param {string} currentContent Current package.json contents
- * @returns {string} New content
- */
-const makeThemeMetadata = (themeName, currentContent) => {
-    const { version, author } = JSON.parse(currentContent);
-    return JSON.stringify({
-        name: themeName,
-        version,
-        author
-    }, undefined, 2);
-};
+const cssThemes = pkg.config.cssThemes.map(theme => new Theme(theme));
 
 /**
  * Generate a Webpack configuration object for a theme.
  *
+ * @param {Theme} theme Theme object.
  * @param {object} opts Config options.
- * @param {object} opts.theme Theme object.
- * @param {string} opts.theme.name Theme name.
- * @param {string} opts.theme.css Theme CSS file name.
- * @param {string} opts.theme.dest Relative path to theme root folder.
  * @param {boolean} opts.isProd Is this a production build?
  * @param {boolean} opts.stats Print extra build stats?
  * @returns {object} Webpack configuration object.
  */
-const makeConfig = ({ theme, isProd, stats }) => ({
+const makeConfig = (theme, { isProd, stats }) => ({
     name: theme.name,
     devtool: isProd ? 'source-map' : 'eval',
     entry: {
@@ -212,9 +224,9 @@ const makeConfig = ({ theme, isProd, stats }) => ({
         new FileManagerPlugin({
             onEnd: {
                 copy: [
-                    copyAssets(theme, 'js'),
-                    copyAssets(theme, 'css'),
-                    copyAssets(theme, 'fonts')
+                    theme.copyAssets('js'),
+                    theme.copyAssets('css'),
+                    theme.copyAssets('fonts')
                 ]
             }
         }),
@@ -232,7 +244,7 @@ const makeConfig = ({ theme, isProd, stats }) => ({
                 from: 'package.json',
                 to: path.resolve(theme.dest, 'package.json'),
                 toType: 'file',
-                transform: content => makeThemeMetadata(theme.name, content)
+                transform: content => theme.makeMetadata(content)
             },
             // Root files: index.html
             {
@@ -275,6 +287,6 @@ const makeConfig = ({ theme, isProd, stats }) => ({
 module.exports = (env = {}, argv = {}) => {
     const isProd = (argv.mode || process.env.NODE_ENV) === 'production';
     const stats = Boolean(env.stats);
-    const configs = cssThemes.map(theme => makeConfig({ theme, isProd, stats }));
+    const configs = cssThemes.map(theme => makeConfig(theme, { isProd, stats }));
     return configs;
 };
