@@ -46,14 +46,16 @@ const makeThemeMetadata = (themeName, currentContent) => {
 /**
  * Generate a Webpack configuration object for a theme.
  *
- * @param {object} theme Theme object.
- * @param {string} theme.name Theme name.
- * @param {string} theme.css Theme CSS file name.
- * @param {string} theme.dest Relative path to theme root folder.
- * @param {boolean} isProd Is this a production build?
+ * @param {object} opts Config options.
+ * @param {object} opts.theme Theme object.
+ * @param {string} opts.theme.name Theme name.
+ * @param {string} opts.theme.css Theme CSS file name.
+ * @param {string} opts.theme.dest Relative path to theme root folder.
+ * @param {boolean} opts.isProd Is this a production build?
+ * @param {boolean} opts.stats Print extra build stats?
  * @returns {object} Webpack configuration object.
  */
-const makeConfig = (theme, isProd) => ({
+const makeConfig = ({ theme, isProd, stats }) => ({
     name: theme.name,
     devtool: isProd ? 'source-map' : 'eval',
     entry: {
@@ -77,9 +79,16 @@ const makeConfig = (theme, isProd) => ({
     },
     stats: {
         // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
-        excludeAssets: /(\.\.[\\/])+themes[\\/].*/,
-        // When `false`, hides extra information about assets collected by children (e.g. plugins)
-        children: false
+        excludeAssets: [
+            /^(\.\.[\\/])+themes[\\/].*/,
+            // Use `--env.stats` to show these assets
+            ...(stats ? [] : [
+                /^fonts[\\/].*/
+            ])
+        ],
+        // Use `--env.stats` to show these stats
+        modules: stats,
+        entrypoints: stats
     },
     optimization: {
         runtimeChunk: {
@@ -256,9 +265,9 @@ const makeConfig = (theme, isProd) => ({
  * @param {object} [argv={}] An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
  * @returns {object[]} Webpack configurations.
  */
-// eslint-disable-next-line no-unused-vars
 module.exports = (env = {}, argv = {}) => {
     const isProd = (argv.mode || process.env.NODE_ENV) === 'production';
-    const configs = cssThemes.map(theme => makeConfig(theme, isProd));
+    const stats = Boolean(env.stats);
+    const configs = cssThemes.map(theme => makeConfig({ theme, isProd, stats }));
     return configs;
 };
