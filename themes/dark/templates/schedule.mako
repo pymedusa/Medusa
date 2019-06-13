@@ -7,12 +7,15 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
-    computed: Object.assign(Vuex.mapState(['shows']), {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         header() {
             return this.$route.meta.header;
         },

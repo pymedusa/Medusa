@@ -9,6 +9,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -18,7 +20,8 @@ window.app = new Vue({
         return {
         };
     },
-    computed: Object.assign(Vuex.mapState([]), {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         period: {
             get() {
                 return this.config.backlogOverview.period;

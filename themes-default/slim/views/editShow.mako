@@ -1,6 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -180,7 +182,8 @@ window.app = new Vue({
             return newArray;
         }
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         availableLanguages() {
             if (this.config.indexers.config.main.validLanguages) {
                 return this.config.indexers.config.main.validLanguages.join(',');
@@ -225,7 +228,7 @@ window.app = new Vue({
                 return arrayExclude(globalRequired, seriesRequired);
             }
         }
-    }
+    })
 });
 </script>
 </%block>
