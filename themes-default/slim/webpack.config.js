@@ -120,18 +120,19 @@ const makeConfig = (theme, isProd) => ({
         rules: [
             {
                 test: /\.vue$/,
-                use: [{
-                    loader: 'vue-loader',
-                    options: {
-                        // This is a workaround because vue-loader can't get the webpack mode
-                        productionMode: isProd
-                    }
-                }]
+                loader: 'vue-loader',
+                options: {
+                    // This is a workaround because vue-loader can't get the webpack mode
+                    productionMode: isProd
+                }
             },
             {
                 test: /\.js$/,
                 exclude: /[\\/]node_modules[\\/]/,
-                loader: 'babel-loader'
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: true
+                }
             },
             {
                 // This rule may get either actual `.css` files or the style blocks from `.vue` files.
@@ -164,13 +165,11 @@ const makeConfig = (theme, isProd) => ({
             },
             {
                 test: /\.(woff2?|ttf|eot|svg)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'fonts'
-                    }
-                }]
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: 'fonts'
+                }
             }
         ]
     },
