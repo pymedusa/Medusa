@@ -1,11 +1,18 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { NormalModuleReplacementPlugin, ProvidePlugin } = require('webpack');
+const {
+    NormalModuleReplacementPlugin,
+    ProvidePlugin,
+    version: WEBPACK_VERSION
+} = require('webpack');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+
+const { version: VUE_VERSION } = require('vue/package.json');
+const { version: VUE_LOADER_VERSION } = require('vue-loader/package.json');
 
 const pkg = require('./package.json');
 
@@ -151,7 +158,9 @@ const makeConfig = (theme, { isProd, stats }) => ({
                 loader: 'vue-loader',
                 options: {
                     // This is a workaround because vue-loader can't get the webpack mode
-                    productionMode: isProd
+                    productionMode: isProd,
+                    cacheDirectory: isProd ? undefined : path.join(__dirname, 'node_modules', '.cache', 'vue-loader'),
+                    cacheIdentifier: isProd ? undefined : [WEBPACK_VERSION, VUE_VERSION, VUE_LOADER_VERSION].join('|')
                 }
             },
             {
