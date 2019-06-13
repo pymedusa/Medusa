@@ -9,6 +9,9 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const pkg = require('./package.json');
 
+// Verify that `loadsh/noop` is available
+require.resolve('lodash/noop');
+
 const { cssThemes } = pkg.config;
 
 /**
