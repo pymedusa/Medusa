@@ -143,7 +143,7 @@ const makeConfig = ({ theme, isProd, stats }) => ({
                 exclude: /[\\/]node_modules[\\/]/,
                 loader: 'babel-loader',
                 options: {
-                    cacheDirectory: true
+                    cacheDirectory: !isProd
                 }
             },
             {
