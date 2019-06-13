@@ -162,33 +162,32 @@ const makeConfig = (theme, { isProd, stats }) => ({
                 // This rule may get either actual `.css` files or the style blocks from `.vue` files.
                 // Here we delegate each request to use the appropriate loaders.
                 test: /\.css$/,
-                oneOf: [
-                    {
-                        // Handle style blocks in `.vue` files
-                        // Based on this query: https://github.com/vuejs/vue-loader/blob/v15.2.7/lib/codegen/styleInjection.js#L27
-                        resourceQuery: /^\?vue&type=style/,
-                        use: [
+                // https://webpack.js.org/configuration/module/#ruleuse
+                use({ resourceQuery }) {
+                    // Handle style blocks in `.vue` files
+                    // Based on this query: https://github.com/vuejs/vue-loader/blob/v15.2.7/lib/codegen/styleInjection.js#L27
+                    if (/^\?vue&type=style/.test(resourceQuery)) {
+                        return [
                             'vue-style-loader',
                             'css-loader'
-                        ]
-                    },
-                    {
-                        // Handle regular `.css` files
-                        use: [
-                            {
-                                loader: ExtractCssChunks.loader,
-                                options: {
-                                    // Fixes loading fonts from the fonts folder
-                                    publicPath: '../'
-                                    // Options for later down the line
-                                    // hot: true, // If you want HMR
-                                    // reloadAll: true // When desperation kicks in - this is a brute force HMR flag
-                                }
-                            },
-                            'css-loader'
-                        ]
+                        ];
                     }
-                ]
+
+                    // Handle regular `.css` files
+                    return [
+                        {
+                            loader: ExtractCssChunks.loader,
+                            options: {
+                                // Fixes loading fonts from the fonts folder
+                                publicPath: '../'
+                                // Options for later down the line
+                                // hot: true, // If you want HMR
+                                // reloadAll: true // When desperation kicks in - this is a brute force HMR flag
+                            }
+                        },
+                        'css-loader'
+                    ];
+                }
             },
             {
                 test: /\.(woff2?|ttf|eot|svg)$/,
