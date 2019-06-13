@@ -6,7 +6,11 @@
     "lint": "eslint **/*.{js,vue}",
     "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
     "dev": "webpack --mode development",
+    "dev:light": "webpack --config-name light --mode development",
+    "dev:dark": "webpack --config-name dark --mode development",
     "build": "webpack --mode production",
+    "build:light": "webpack --config-name light --mode production",
+    "build:dark": "webpack --config-name dark --mode production",
     "install": "yarn run lint",
     "test": "cross-env NODE_ENV=test nyc --clean jest --coverage",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
