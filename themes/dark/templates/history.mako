@@ -15,6 +15,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -25,7 +27,8 @@ window.app = new Vue({
             limit: '${limit}'
         };
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         layout: {
             get() {
                 const { config } = this;
@@ -37,7 +40,7 @@ window.app = new Vue({
                 $store.dispatch('setLayout', { page, layout });
             }
         }
-    },
+    }),
     mounted() {
         const unwatch = this.$watch('layout', () => {
             unwatch();

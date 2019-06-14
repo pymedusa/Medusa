@@ -340,6 +340,7 @@ export default {
     },
     computed: {
         ...mapState({
+            config: state => state.config,
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
             failedDownloads: state => state.config.failedDownloads,
