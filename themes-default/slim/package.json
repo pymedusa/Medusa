@@ -6,24 +6,28 @@
     "lint": "eslint **/*.{js,vue}",
     "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
     "dev": "webpack --mode development",
+    "dev:light": "webpack --config-name light --mode development",
+    "dev:dark": "webpack --config-name dark --mode development",
     "build": "webpack --mode production",
+    "build:light": "webpack --config-name light --mode production",
+    "build:dark": "webpack --config-name dark --mode production",
     "install": "yarn run lint",
     "test": "cross-env NODE_ENV=test nyc --clean jest --coverage",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
-    "cssThemes": {
-      "light": {
+    "cssThemes": [
+      {
         "name": "light",
         "css": "light.css",
         "dest": "../../themes/light"
       },
-      "dark": {
+      {
         "name": "dark",
         "css": "dark.css",
         "dest": "../../themes/dark"
       }
-    }
+    ]
   },
   "resolutions": {
     "**/jquery": "3.4.1",
@@ -63,6 +67,7 @@
     "babel-eslint": "10.0.1",
     "babel-loader": "8.0.6",
     "browser-env": "3.2.6",
+    "cache-loader": "4.0.0",
     "clean-webpack-plugin": "3.0.0",
     "codecov": "3.5.0",
     "copy-webpack-plugin": "5.0.3",
@@ -76,6 +81,7 @@
     "eslint-plugin-jest": "22.6.4",
     "eslint-plugin-unicorn": "9.1.0",
     "eslint-plugin-vue": "5.2.2",
+    "extract-css-chunks-webpack-plugin": "4.5.2",
     "file-loader": "4.0.0",
     "filemanager-webpack-plugin": "2.0.5",
     "glob": "7.1.4",
@@ -85,7 +91,6 @@
     "imagemin-pngquant": "8.0.0",
     "jest": "24.8.0",
     "jest-serializer-vue": "2.0.2",
-    "mini-css-extract-plugin": "0.7.0",
     "nyc": "14.1.1",
     "optimize-css-assets-webpack-plugin": "5.0.1",
     "stylelint": "10.0.1",
