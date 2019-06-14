@@ -106,7 +106,7 @@
 import { mapGetters, mapState } from 'vuex';
 
 import { api } from '../../api';
-import { waitFor } from '../../utils';
+import { waitFor } from '../../utils/core';
 import AppLink from './app-link';
 
 export default {

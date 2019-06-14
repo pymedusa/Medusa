@@ -1,5 +1,3 @@
-import VueRouter from 'vue-router';
-
 const showSubMenu = function() {
     const { $route, $store } = this;
     const { config, notifiers } = $store.state;
@@ -170,7 +168,7 @@ const configRoutes = [{
         subMenu: configSubMenu,
         converted: true
     },
-    component: () => import('./components/config.vue')
+    component: () => import('../components/config.vue')
 }, {
     path: '/config/anime',
     name: 'configAnime',
@@ -217,7 +215,7 @@ const configRoutes = [{
         subMenu: configSubMenu,
         converted: true
     },
-    component: () => import('./components/config-post-processing.vue')
+    component: () => import('../components/config-post-processing.vue')
 }, {
     path: '/config/providers',
     name: 'configSearchProviders',
@@ -256,7 +254,7 @@ const addShowRoutes = [{
         topMenu: 'home',
         converted: true
     },
-    component: () => import('./components/add-shows.vue')
+    component: () => import('../components/add-shows.vue')
 }, {
     path: '/addShows/addExistingShows',
     name: 'addExistingShows',
@@ -303,7 +301,7 @@ const loginRoute = {
     meta: {
         title: 'Login'
     },
-    component: () => import('./components/login.vue')
+    component: () => import('../components/login.vue')
 };
 
 const addRecommendedRoute = {
@@ -315,7 +313,7 @@ const addRecommendedRoute = {
         topMenu: 'home',
         converted: true
     },
-    component: () => import('./components/add-recommended.vue')
+    component: () => import('../components/add-recommended.vue')
 };
 
 const scheduleRoute = {
@@ -458,7 +456,7 @@ const errorLogsRoutes = [{
         topMenu: 'system',
         converted: true
     },
-    component: () => import('./components/logs.vue')
+    component: () => import('../components/logs.vue')
 }];
 
 const newsRoute = {
@@ -489,7 +487,7 @@ const ircRoute = {
         topMenu: 'system',
         converted: true
     },
-    component: () => import('./components/irc.vue')
+    component: () => import('../components/irc.vue')
 };
 
 const notFoundRoute = {
@@ -499,7 +497,7 @@ const notFoundRoute = {
         title: '404',
         header: '404 - page not found'
     },
-    component: () => import('./components/http/404.vue')
+    component: () => import('../components/http/404.vue')
 };
 
 // @NOTE: Redirect can only be added once all routes are vue
@@ -510,7 +508,7 @@ const notFoundRedirect = {
 };
 */
 
-const routes = [
+export default [
     ...homeRoutes,
     ...configRoutes,
     ...addShowRoutes,
@@ -525,25 +523,3 @@ const routes = [
     ircRoute,
     notFoundRoute
 ];
-
-const router = new VueRouter({
-    base: document.body.getAttribute('web-root') + '/',
-    mode: 'history',
-    routes
-});
-
-router.beforeEach((to, from, next) => {
-    const { meta } = to;
-    const { title } = meta;
-
-    // If there's no title then it's not a .vue route
-    // or it's handling its own title
-    if (title) {
-        document.title = `${title} | Medusa`;
-    }
-
-    // Always call next otherwise the <router-view> will be empty
-    next();
-});
-
-export default router;

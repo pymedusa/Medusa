@@ -15,6 +15,7 @@ from medusa import (
     common,
     config,
     db,
+    helpers,
     logger,
     ws,
 )
@@ -32,6 +33,10 @@ from medusa.server.api.v2.base import (
     StringField,
     iter_nested_items,
     set_nested_value,
+)
+from medusa.system.schedulers import (
+    generate_schedulers,
+    generate_show_queue,
 )
 
 from six import iteritems, itervalues, text_type
@@ -911,6 +916,17 @@ class DataGenerator(object):
         section_data['slack']['notifyOnDownload'] = bool(app.SLACK_NOTIFY_DOWNLOAD)
         section_data['slack']['notifyOnSubtitleDownload'] = bool(app.SLACK_NOTIFY_SUBTITLEDOWNLOAD)
         section_data['slack']['webhook'] = app.SLACK_WEBHOOK
+
+        return section_data
+
+    @staticmethod
+    def data_system():
+        """System information."""
+        section_data = {}
+
+        section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
+        section_data['schedulers'] = generate_schedulers()
+        section_data['showQueue'] = generate_show_queue()
 
         return section_data
 

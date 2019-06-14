@@ -278,7 +278,7 @@ import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
-import { combineQualities, humanFileSize } from '../utils';
+import { combineQualities, humanFileSize } from '../utils/core';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 export default {
@@ -340,6 +340,7 @@ export default {
     },
     computed: {
         ...mapState({
+            config: state => state.config,
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
             failedDownloads: state => state.config.failedDownloads,
