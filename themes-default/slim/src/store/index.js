@@ -12,7 +12,9 @@ import {
     notifiers,
     search,
     shows,
-    socket
+    socket,
+    stats,
+    system
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -37,7 +39,9 @@ const store = new Store({
         notifiers,
         search,
         shows,
-        socket
+        socket,
+        stats,
+        system
     },
     state: {},
     mutations: {},

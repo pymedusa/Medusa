@@ -83,7 +83,6 @@ module.exports = {
                 'apiRoute': 'readonly',
                 'axios': 'readonly',
                 'webRoot': 'readonly',
-                'apiRoot': 'readonly',
                 'apiKey': 'readonly',
                 'Vuex': 'readonly',
             }

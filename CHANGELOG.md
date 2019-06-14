@@ -5,6 +5,23 @@
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.3.4 (2019-06-13)
+
+#### Fixes
+- Fixed Jackett providers returning empty torrents on magnet redirect (2) ([#6827](https://github.com/pymedusa/Medusa/pull/6827))
+- Fixed APIv2 exception when serializing allowed extensions to JSON ([#6835](https://github.com/pymedusa/Medusa/pull/6835))
+
+-----
+
+## 0.3.3 (2019-06-12)
+
+#### New Features
+- Added new provider Beyond-hd ([#6802](https://github.com/pymedusa/Medusa/pull/6802))
+
+#### Fixes
 - Fixed error when changing episode quality but not changing status ([#6784](https://github.com/pymedusa/Medusa/pull/6784))
 - Fixed Jackett providers returning empty torrents on magnet redirect ([#6790](https://github.com/pymedusa/Medusa/pull/6790))
 - Fixed error when using KnowIt with MediaInfo ([#6796](https://github.com/pymedusa/Medusa/pull/6796))
@@ -54,7 +71,7 @@
 #### New Features
 - Added support for Python 3 (>= 3.5.0) ([#4982](https://github.com/pymedusa/Medusa/pull/4982))
 - Added feature to search episodes early or late compared to their scheduled airdate ([#5874](https://github.com/pymedusa/Medusa/pull/5874))
-- Added per show required/preferred words exclude option ([#4982](https://github.com/pymedusa/Medusa/pull/6033))
+- Added per show required/preferred words exclude option ([#6033](https://github.com/pymedusa/Medusa/pull/6033))
 
 #### Improvements
 - Vueified the partial mako template showheader.mako into show-header.vue ([#6189](https://github.com/pymedusa/Medusa/pull/6189))

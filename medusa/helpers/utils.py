@@ -84,7 +84,8 @@ def strtobool(val):
 
 
 def to_timestamp(dt):
-    """Return POSIX timestamp corresponding to the datetime instance.
+    """
+    Return POSIX timestamp corresponding to the datetime instance.
 
     :param dt: datetime (possibly aware)
     :return: seconds since epoch as float
@@ -102,3 +103,18 @@ def to_camel_case(snake_str):
     """Convert a snake formatted string to camel case."""
     components = snake_str.split('_')
     return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def timedelta_in_milliseconds(td):
+    """
+    Return the value of the timedelta object in milliseconds.
+
+    :param td: timedelta
+    :type td: timedelta
+    :return: the value of the timedelta in milliseconds
+    :rtype: int
+    """
+    if not td:
+        return 0
+
+    return int(td.total_seconds() * 1000)

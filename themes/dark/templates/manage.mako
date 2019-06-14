@@ -7,11 +7,15 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: mapState(['config']),
     mounted() {
         $('.resetsorting').on('click', () => {
             $('table').trigger('filterReset');
