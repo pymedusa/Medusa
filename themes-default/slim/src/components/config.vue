@@ -61,6 +61,7 @@ export default {
 .infoTable tr td:first-child {
     vertical-align: top;
 }
+
 pre {
     padding: 5px;
 }
