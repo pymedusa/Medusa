@@ -13,7 +13,9 @@ script: false
 
 # Please read about YAML Anchors & Aliases: https://blog.daemonl.com/2016/02/yaml.html
 aliases:
-  # Please read about YAML Anchors & Aliases: https://blog.daemonl.com/2016/02/yaml.html
+  # There's no support for concatenation so we must do this
+  - &node_version '10.16.0'
+  - &nvm_install nvm install v10.16.0
   - &install_yarn_bin >-
       curl -o- -L https://yarnpkg.com/install.sh | bash &&
       export PATH="$HOME/.yarn/bin:$PATH"
@@ -29,7 +31,7 @@ aliases:
       - pip install dredd_hooks
       - pip install 'PyYAML>=5.1'
       - pip install six
-      - nvm install v10.16.0
+      - *nvm_install
       - *install_yarn_bin
       - yarn install --ignore-scripts
     script:
@@ -44,7 +46,7 @@ jobs:
     - stage: test
       name: 'Frontend tests'
       language: node_js
-      node_js: 10.16.0
+      node_js: *node_version
       install:
         - *install_yarn_bin
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
