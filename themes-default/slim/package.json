@@ -90,6 +90,7 @@
     "optimize-css-assets-webpack-plugin": "5.0.1",
     "stylelint": "10.1.0",
     "stylelint-config-standard": "18.3.0",
+    "timekeeper": "2.2.0",
     "vue-jest": "3.0.4",
     "vue-loader": "15.7.0",
     "webpack": "4.34.0",

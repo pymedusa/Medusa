@@ -36,7 +36,8 @@ const app = new Vue({
             const { $store } = this;
             Promise.all([
                 $store.dispatch('login', { username: window.username }),
-                $store.dispatch('getConfig')
+                $store.dispatch('getConfig'),
+                $store.dispatch('getStats')
             ]).then(([_, config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');

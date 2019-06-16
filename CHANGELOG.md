@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Converted the footer to a Vue component ([#4520](https://github.com/pymedusa/Medusa/pull/4520))
 
 #### Fixes
 

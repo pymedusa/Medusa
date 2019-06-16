@@ -7,6 +7,7 @@ import Snotify from 'vue-snotify';
 import {
     AddShowOptions,
     AnidbReleaseGroupUi,
+    AppFooter,
     AppHeader,
     AppLink,
     Asset,
@@ -46,6 +47,7 @@ export const registerGlobalComponents = () => {
     // @TODO: These should be registered in an `App.vue` component when possible,
     //        along with some of the `main.mako` template
     components = components.concat([
+        AppFooter,
         AppHeader,
         ScrollButtons,
         SubMenu
@@ -119,7 +121,8 @@ export default () => {
                     /* This is used by the `app-header` component
                     to only show the logout button if a username is set */
                     store.dispatch('login', { username }),
-                    store.dispatch('getConfig')
+                    store.dispatch('getConfig'),
+                    store.dispatch('getStats')
                 ]).then(([_, config]) => {
                     this.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
