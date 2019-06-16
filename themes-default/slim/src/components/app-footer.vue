@@ -8,8 +8,8 @@
                 Snatched
             </template>
             / <span class="footerhighlight">{{ stats.overall.episodes.total }}</span> Episodes Downloaded <span v-if="episodePercentage" class="footerhighlight">({{ episodePercentage }})</span>
-            | Daily Search: <span class="footerhighlight">{{ nextDailySearch }}</span>
-            | Backlog Search: <span class="footerhighlight">{{ nextBacklogSearch }}</span>
+            | Daily Search: <span class="footerhighlight">{{ schedulerNextRun('dailySearch') }}</span>
+            | Backlog Search: <span class="footerhighlight">{{ schedulerNextRun('backlog') }}</span>
             <div>
                 <template v-if="system.memoryUsage">
                 Memory used: <span class="footerhighlight">{{ system.memoryUsage }}</span> |
@@ -60,25 +60,37 @@ export default {
             const { datePreset, timePreset } = this.config;
             const preset = convertDateFormat(`${datePreset} ${timePreset}`);
             return formatDate(new Date(), preset);
-        },
-        nextDailySearch() {
-            const dailySearchScheduler = this.getScheduler('dailySearch');
-            const { nextRun } = dailySearchScheduler || {};
-            if (nextRun === undefined) {
-                return '??:??:??';
-            }
-            return this.formatTimeDuration(nextRun);
-        },
-        nextBacklogSearch() {
-            const backlogScheduler = this.getScheduler('backlog');
-            const { nextRun } = backlogScheduler || {};
-            if (nextRun === undefined) {
-                return '??:??:??';
-            }
-            return this.formatTimeDuration(nextRun);
         }
     },
     methods: {
+        /**
+         * Return a formatted next run time of the scheduler matching the provided key.
+         *
+         * @param {string} scheduler A scheduler key.
+         * @returns {string} The formatted next run time.
+         */
+        schedulerNextRun(scheduler) {
+            /** @type {import('../store/modules/system').Scheduler} */
+            const { nextRun } = this.getScheduler(scheduler);
+            // The next run can be `undefined` when the scheduler was not initialized
+            // on the backend, and `null` when the scheduler is not enabled.
+            if (nextRun === undefined) {
+                return '??:??:??';
+            }
+            if (nextRun === null) {
+                return 'Disabled';
+            }
+            return this.formatTimeDuration(nextRun);
+        },
+        /**
+         * Return a formatted string representing the provided duration.
+         *
+         * This function will not use any units greater than a day.
+         * @param {number} durationInMs Duration of time in milliseconds.
+         * @returns {string} The formatted duration.
+         *
+         * @example
+         */
         formatTimeDuration(durationInMs) {
             const days = parseInt(durationInMs / 86400000, 10);
             let daysText = '';
