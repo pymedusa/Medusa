@@ -249,9 +249,10 @@ export default {
     padding: 0;
 }
 
-.search-question, .loading-message {
+.search-question,
+.loading-message {
     background-color: rgb(51, 51, 51);
-    color: rgb(255,255,255);
+    color: rgb(255, 255, 255);
     padding: 10px;
     line-height: 55px;
 }
