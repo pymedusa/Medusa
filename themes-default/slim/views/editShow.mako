@@ -57,9 +57,9 @@ window.app = new Vue({
                 language: 'en'
             },
             defaultEpisodeStatusOptions: [
-                {text: 'Wanted', value: 'Wanted'},
-                {text: 'Skipped', value: 'Skipped'},
-                {text: 'Ignored', value: 'Ignored'}
+                { text: 'Wanted', value: 'Wanted' },
+                { text: 'Skipped', value: 'Skipped' },
+                { text: 'Ignored', value: 'Ignored' }
             ],
             seriesLoaded: false,
             saving: false

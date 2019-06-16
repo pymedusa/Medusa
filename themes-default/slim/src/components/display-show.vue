@@ -213,7 +213,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, convertDateFormat } from '../utils/core';
 import { addQTip, updateSearchIcons } from '../jquery-wrappers';
-import { VueGoodTable  } from 'vue-good-table';
+import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
@@ -407,7 +407,8 @@ export default {
     },
     created() {
         const { getShows } = this;
-        // Needed for the show-selector component
+        // Without getting any specific show data, we pick the show needed from the shows array.
+        // We need to get the complete list of shows anyway, as this is also needed for the show-selector component
         getShows();
     },
     mounted() {
@@ -833,11 +834,11 @@ export default {
                     showslug: show.id.slug,
                     episodes: [],
                     options: {}
-                }
+                };
                 episodes.forEach(episode => {
                     data.episodes.push(episode.slug);
-                    this.$refs[`search-${episode.slug}`].src = `images/loading16-dark.gif`;
-                })
+                    this.$refs[`search-${episode.slug}`].src = 'images/loading16-dark.gif';
+                });
             }
 
             api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
@@ -944,7 +945,7 @@ export default {
                 }).catch(error => {
                     console.error(String(error));
                 });
-        },
+        }
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
