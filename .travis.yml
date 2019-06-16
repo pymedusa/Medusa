@@ -46,13 +46,10 @@ jobs:
       node_js: 10.7.0
       install:
         - *install_yarn_bin
-        - >-
-          cd $TRAVIS_BUILD_DIR/themes-default/slim &&
-          yarn install --ignore-scripts &&
-          cd $TRAVIS_BUILD_DIR
-      script:
-        - ./.github/build-themes-check.sh
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
+        - yarn install --ignore-scripts
+      script:
+        - $TRAVIS_BUILD_DIR/.github/build-themes-check.sh
         - yarn lint
         - yarn lint-css
         - yarn test
