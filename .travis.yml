@@ -28,7 +28,7 @@ aliases:
       - pip install dredd_hooks
       - pip install 'PyYAML>=5.1'
       - pip install six
-      - nvm install v10.7.0
+      - nvm install v10.16.0
       - *install_yarn_bin
       - yarn install --ignore-scripts
     script:
@@ -43,7 +43,7 @@ jobs:
     - stage: test
       name: 'Frontend tests'
       language: node_js
-      node_js: 10.7.0
+      node_js: 10.16.0
       install:
         - *install_yarn_bin
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
@@ -58,13 +58,13 @@ jobs:
     - name: 'Backend tests (py2.7)'
       python: '2.7.10'
       env:
-        - TOXENV=py27,lint
+        - TOXENV=py27
       <<: *backend_tests
     # backend tests (py3.6) start here
     - name: 'Backend tests (py3.6)'
       python: '3.6'
       env:
-        - TOXENV=py36
+        - TOXENV=py36,lint
       <<: *backend_tests
     # dredd tests (py2.7) start here
     - name: 'Dredd tests (py2.7)'
