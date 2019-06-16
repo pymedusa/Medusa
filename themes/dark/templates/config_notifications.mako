@@ -9,6 +9,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -273,7 +275,8 @@ window.app = new Vue({
             }
         };
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         stateNotifiers() {
             return this.$store.state.notifiers;
         },
@@ -293,7 +296,7 @@ window.app = new Vue({
                 return { text: indexer, value: indexers[indexer].id }
             })
         }
-    },
+    }),
     created() {
         const { $store } = this;
         // Needed for the show-selector component

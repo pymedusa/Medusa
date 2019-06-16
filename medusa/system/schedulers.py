@@ -69,14 +69,13 @@ def _queued_show_to_json(item):
     except AttributeError:
         show_slug = None
 
+    show_title = None
+    show_dir = None
     try:
         show_title = item.show.name
     except AttributeError:
-        show_title = None
         if item.action_id == ShowQueueActions.ADD:
             show_dir = item.showDir
-        else:
-            show_dir = None
 
     if item.priority == QueuePriorities.LOW:
         priority = 'low'
@@ -132,7 +131,9 @@ def generate_show_queue():
     if not app.show_queue_scheduler:
         return []
 
-    queue = app.show_queue_scheduler.action.queue
+    # Make a shallow copy of the current queue.
+    queue = []
+    queue.extend(app.show_queue_scheduler.action.queue)
     if app.show_queue_scheduler.action.currentItem is not None:
         queue.insert(0, app.show_queue_scheduler.action.currentItem)
 
