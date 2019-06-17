@@ -160,7 +160,7 @@ class HDTorrentsProvider(TorrentProvider):
                     size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text()
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     item = {
                         'title': title,
