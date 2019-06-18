@@ -332,28 +332,28 @@ drange@^1.0.2:
   resolved "https://registry.yarnpkg.com/drange/-/drange-1.1.1.tgz#b2aecec2aab82fcef11dbbd7b9e32b83f8f6c0b8"
   integrity sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==
 
-dredd-transactions@9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-9.0.1.tgz#0692ed02f4284eb0b1a85b85c51dde5001ded476"
-  integrity sha512-9FegL7atAXv/wAKQ6fU98rNa2yQO7bLfTbzdaiQJMyI4wecgqoHEQKwAk/0PzOQ/1flqBvrCpgZf3RD4QY+GFg==
+dredd-transactions@9.0.2:
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/dredd-transactions/-/dredd-transactions-9.0.2.tgz#c365e21217028754fd32c79bd9b9b58a7f4b0d35"
+  integrity sha512-CrkADP7qiU9j8NX120WKWXdPNfOaGl8dJQKHAN+oMl8EM04uWbGaOxGvwC2BBcBqmIgcckrvqDDjZ50pYqpKEA==
   dependencies:
     fury "3.0.0-beta.11"
     fury-adapter-apib-parser "0.15.0"
-    fury-adapter-oas3-parser "0.8.0"
+    fury-adapter-oas3-parser "0.8.1"
     fury-adapter-swagger "0.26.0"
     uri-template "1.0.1"
 
-dredd@11.2.7:
-  version "11.2.7"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.7.tgz#31f9b487eca94ce52165bca20a48c8ae8ad14705"
-  integrity sha512-H9nfGWUdXLmpMO/SksZcznDUCDm4a2iTNpWgDJlfCo8XmaCQiX/TGnZCRLDbDrniCYV3YDs1VniLyWTqmYB2Ig==
+dredd@11.2.8:
+  version "11.2.8"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.8.tgz#6ae46331f3ec4782872848262947e09b6008a2bb"
+  integrity sha512-kBqchg58znGGNaefaxT8IzSi5Yk9DFdErJesUZssCKHQPs+TQ6R1wChbHMyWJKbbAoylB7Bk1t2fO+zYIlqBfg==
   dependencies:
     async "3.0.1"
     caseless "0.12.0"
     chai "4.2.0"
     clone "2.1.2"
     cross-spawn "6.0.5"
-    dredd-transactions "9.0.1"
+    dredd-transactions "9.0.2"
     gavel "5.0.0"
     glob "7.1.4"
     html "1.0.0"
@@ -549,10 +549,10 @@ fury-adapter-apib-parser@0.15.0:
     deckardcain "^0.4.0"
     drafter "2.0.0-pre.1"
 
-fury-adapter-oas3-parser@0.8.0:
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/fury-adapter-oas3-parser/-/fury-adapter-oas3-parser-0.8.0.tgz#80d0f0a055c276a44566f14ca51d3270dd315208"
-  integrity sha512-JDH253NSpzWSYR3YyHEJLcx0PeyAEO2YxzTCdVBlmpwVhwr5+jU1aj4CV8ad9hYrPw+Zt2nwvd1UauYsb/fXXw==
+fury-adapter-oas3-parser@0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/fury-adapter-oas3-parser/-/fury-adapter-oas3-parser-0.8.1.tgz#27e248a52bbf642d3dab3e3b0c19be6905654568"
+  integrity sha512-JHZ37FbOovhJmN74UXGOA73OsTlX3nuADy493/Xhn1AaGPVeKLhZjAIiJUbHnUh6ZSYdkVN7VKKN8VXtUuC7kw==
   dependencies:
     content-type "^1.0.4"
     ramda "0.26.1"
