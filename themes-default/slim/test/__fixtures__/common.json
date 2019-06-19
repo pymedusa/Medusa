@@ -10,7 +10,7 @@
       "gitUsername": null,
       "branch": "master",
       "commitHash": "f5973b28465246e67465d7d86bdc8aa74d13e659",
-      "release": "v0.2.8",
+      "release": "0.2.8",
       "databaseVersion": {
         "major": 44,
         "minor": 11

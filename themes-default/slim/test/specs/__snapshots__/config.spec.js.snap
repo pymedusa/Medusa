@@ -51,7 +51,7 @@ exports[`Config.test.js renders 1`] = `
                 
         <span>
           <app-link-stub
-            href="https://github.com/pymedusa/Medusa/releases/tag/vv0.2.8"
+            href="https://github.com/pymedusa/Medusa/releases/tag/v0.2.8"
             placeholder="indexer-to-name"
           >
             v0.2.8
