@@ -153,13 +153,11 @@ const webpackConfig = (env, mode) => ({
         rules: [
             {
                 test: /\.vue$/,
-                use: [{
-                    loader: 'vue-loader',
-                    options: {
-                        // This is a workaround because vue-loader can't get the webpack mode
-                        productionMode: mode === 'production'
-                    }
-                }]
+                loader: 'vue-loader',
+                options: {
+                    // This is a workaround because vue-loader can't get the webpack mode
+                    productionMode: mode === 'production'
+                }
             },
             {
                 test: /\.js$/,
@@ -197,13 +195,11 @@ const webpackConfig = (env, mode) => ({
             },
             {
                 test: /\.(woff2?|ttf|eot|svg)$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'fonts'
-                    }
-                }]
+                loader: 'file-loader',
+                options: {
+                    name: '[name].[ext]',
+                    outputPath: 'fonts'
+                }
             }
         ]
     },
