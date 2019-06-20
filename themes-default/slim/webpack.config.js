@@ -162,7 +162,10 @@ const webpackConfig = (env, mode) => ({
             {
                 test: /\.js$/,
                 exclude: /[\\/]node_modules[\\/]/,
-                loader: 'babel-loader'
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: mode !== 'production'
+                }
             },
             {
                 // This rule may get either actual `.css` files or the style blocks from `.vue` files.
