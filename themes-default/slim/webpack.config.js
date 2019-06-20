@@ -79,9 +79,9 @@ const perTheme = action => cssThemes.map(theme => action(theme));
 /**
  * Generate the Webpack configuration object.
  *
- * @param {*} env - The environment data, as passed from the `--env` command line argument.
- * @param {*} mode - The mode, as passed from the `--mode` command line argument.
- * @returns {Object} Webpack configuration object.
+ * @param {*} env The environment data, as passed from the `--env` command line argument.
+ * @param {*} mode The mode, as passed from the `--mode` command line argument.
+ * @returns {Object.<string, any>} Webpack configuration object.
  */
 const webpackConfig = (env, mode) => ({
     devtool: mode === 'production' ? 'source-map' : 'eval',
@@ -277,8 +277,8 @@ const webpackConfig = (env, mode) => ({
 /**
  * See: https://webpack.js.org/configuration/configuration-types/#exporting-a-function
  *
- * @param {*} env - An environment. See the environment options CLI documentation for syntax examples.
- * @param {*} argv - An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
- * @returns {Object} - Webpack configuration object.
+ * @param {*} env An environment. See the environment options CLI documentation for syntax examples.
+ * @param {*} argv An options map (argv). This describes the options passed to webpack, with keys such as output-filename and optimize-minimize.
+ * @returns {Object.<string, any>} Webpack configuration object.
  */
 module.exports = (env = {}, argv = {}) => webpackConfig(env, argv.mode || process.env.NODE_ENV);
