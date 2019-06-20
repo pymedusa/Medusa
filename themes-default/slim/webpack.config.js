@@ -120,6 +120,10 @@ const webpackConfig = (env, mode) => ({
         }
     },
     module: {
+        noParse: [
+            // No need to parse jQuery, because it doesn't have any imports
+            require.resolve('jquery')
+        ],
         rules: [
             {
                 test: /\.vue$/,
