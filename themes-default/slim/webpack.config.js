@@ -9,23 +9,52 @@ const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const pkg = require('./package.json');
 
-const { cssThemes } = pkg.config;
+class Theme {
+    /**
+     * @param {Object.<string, any>} theme Theme object.
+     * @param {string} theme.name Theme name.
+     * @param {string} theme.css Theme CSS file name.
+     * @param {string} theme.dest Relative path to theme root folder.
+     */
+    constructor({ name, css, dest }) {
+        this.name = name;
+        this.css = css;
+        this.dest = dest;
+    }
+
+    /**
+     * Make a `package.json` for a theme.
+     *
+     * @param {string} currentContent Current package.json contents
+     * @returns {string} New content
+     */
+    makeMetadata(currentContent) {
+        const { name } = this;
+        const { version, author } = JSON.parse(currentContent);
+        return JSON.stringify({
+            name,
+            version,
+            author
+        }, undefined, 2);
+    }
+}
 
 /**
- * Helper function to queue actions for each theme.
+ * Receives the `theme` object as a parameter.
  *
- * @param {function} action - Receives the `theme` object as a parameter. Should return an object.
- * @returns {Object[]} - The actions for each theme.
- */
-const perTheme = action => cssThemes.map(theme => action(theme));
+ * @callback action
+ * @param {Theme} theme Theme object.
+ * @returns {*} Return value for the provided `theme` object.
+*/
 
 /**
  * Helper function to simplify FileManagerPlugin configuration when copying assets from `./dist`.
  * To be used in-conjunction-with `perTheme`.
  *
- * @param {string} type - Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist`.
- * @param {string} [search] - Glob-like string to match files. (default: `**`)
- * @returns {function} - A function that receives the theme object from `perTheme` as a parameter.
+ * @param {string} type Asset type (e.g. `js`, `css`, `fonts`). Must be the same as the folder name in `./dist/{theme.name}`.
+ * @param {string} [search=**] Glob-like string to match files. (default: `**`)
+ * @returns {action} A function that receives the theme object from `perTheme` as a parameter,
+ *                   and returns a `FileManagerPlugin.onEnd.copy` item.
  */
 const copyAssets = (type, search = '**') => {
     return theme => ({
@@ -35,20 +64,17 @@ const copyAssets = (type, search = '**') => {
 };
 
 /**
- * Make a `package.json` for a theme.
- *
- * @param {string} themeName - Theme name
- * @param {string} currentContent - Current package.json contents
- * @returns {string} - New content
+ * @type {Theme[]} All the themes described on `package.json`.
  */
-const makeThemeMetadata = (themeName, currentContent) => {
-    const { version, author } = JSON.parse(currentContent);
-    return JSON.stringify({
-        name: themeName,
-        version,
-        author
-    }, undefined, 2);
-};
+const cssThemes = pkg.config.cssThemes.map(theme => new Theme(theme));
+
+/**
+ * Helper function to queue actions for each theme.
+ *
+ * @param {action} action Receives the `theme` object as a parameter. Should return an object.
+ * @returns {Object.<string, any>[]} The actions for each theme.
+ */
+const perTheme = action => cssThemes.map(theme => action(theme));
 
 /**
  * Generate the Webpack configuration object.
@@ -60,7 +86,7 @@ const makeThemeMetadata = (themeName, currentContent) => {
 const webpackConfig = (env, mode) => ({
     devtool: mode === 'production' ? 'source-map' : 'eval',
     entry: {
-        // Exports all window. objects for mako files
+        // Exports all `window` objects for mako files
         index: path.resolve(__dirname, 'src/index.js'),
         // Main Vue app
         app: path.resolve(__dirname, 'src/app.js')
@@ -218,7 +244,7 @@ const webpackConfig = (env, mode) => ({
                 from: 'package.json',
                 to: path.resolve(theme.dest, 'package.json'),
                 toType: 'file',
-                transform: content => makeThemeMetadata(theme.name, content)
+                transform: content => theme.makeMetadata(content)
             })),
             // Root files: index.html
             ...perTheme(theme => ({
@@ -237,7 +263,7 @@ const webpackConfig = (env, mode) => ({
                 context: './static/',
                 from: 'css/**',
                 // Ignore theme-specific files as they are handled by the next entry
-                ignore: ['css/dark.css', 'css/light.css'],
+                ignore: cssThemes.map(theme => `css/${theme.css}`),
                 to: path.resolve(theme.dest, 'assets')
             })),
             // Old CSS files - themed.css
