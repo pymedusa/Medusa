@@ -14,28 +14,14 @@ RUN \
 	# Update
 	apk update \
 	&& \
-	# Install build dependencies
-	apk add --no-cache --virtual=build-dependencies \
-		gcc \
-		libc-dev \
-		linux-headers \
-	&& \
 	# Runtime packages
 	apk add --no-cache \
 		mediainfo \
 		unrar \
 	&& \
-	# Install Python dependencies
-	pip install --upgrade \
-		psutil \
-	&& \
 	# Cleanup
-	apk del --purge \
-		build-dependencies \
-	&& \
 	rm -rf \
-		/var/cache/apk/ \
-		~/.cache
+		/var/cache/apk/
 
 # Install app
 COPY . /app/medusa/
