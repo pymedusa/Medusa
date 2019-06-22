@@ -71,7 +71,6 @@
 
                             <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
                                 <anidb-release-group-ui class="max-width" :blacklist="show.config.release.blacklist" :whitelist="show.config.release.whitelist" :all-groups="show.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
-                                    <anidb-release-group-ui class="max-width" :blacklist="show.config.release.blacklist" :whitelist="show.config.release.whitelist" :all-groups="show.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                             </config-template>
 
                             <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
