@@ -137,7 +137,7 @@
                 </div>
             </div>
             <br>
-            <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !showLoaded">
+            <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !show">
             </form>
         </div>
     </div>
@@ -146,13 +146,9 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
-import { ToggleButton } from 'vue-js-toggle-button';
 
 export default {
     name: 'editShow',
-    components: {
-        ToggleButton
-    },
     metaInfo() {
         if (!this.show || !this.show.title) {
             return {
@@ -187,7 +183,6 @@ export default {
                 { text: 'Skipped', value: 'Skipped' },
                 { text: 'Ignored', value: 'Ignored' }
             ],
-            showLoaded: false,
             saving: false
         };
     },
@@ -196,22 +191,14 @@ export default {
         // Without getting any specific show data, we pick the show needed from the shows array.
         getShows();
     },
-    mounted() {
-        const { $store, indexer, id } = this;
 
-        // Let's tell the store which show we currently want as current.
-        $store.commit('currentShow', {
-            indexer,
-            id
-        });
-    },
     methods: {
         ...mapActions({
             getShows: 'getShows'
         }),
         saveShow(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.showLoaded) {
+            if (!this.show) {
                 return;
             }
 
@@ -295,10 +282,11 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config
+            config: state => state.config,
+            defaultShow: state => state.defaults.show
         }),
         ...mapGetters({
-            show: 'getCurrentShow'
+            getShowByIdFromShows: 'getShowByIdFromShows'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -355,6 +343,10 @@ export default {
             }
 
             return arrayUnique(globalRequired.concat(showRequired));
+        },
+        show() {
+            const { defaultShow, id, indexer, getShowByIdFromShows, shows } = this;
+            return getShowByIdFromShows({ shows, id, indexer }) || defaultShow;
         }
     }
 };
