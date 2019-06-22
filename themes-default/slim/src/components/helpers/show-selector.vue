@@ -1,6 +1,6 @@
 <template>
     <div class="show-selector form-inline hidden-print">
-        <div class="select-show-group pull-left top-5 bottom-5">
+        <!-- <div class="select-show-group pull-left top-5 bottom-5">
             <select v-if="shows.length === 0" :class="selectClass" disabled>
                 <option>Loading...</option>
             </select>
@@ -15,14 +15,46 @@
                     <option v-for="show in showLists[whichList].shows" :key="show.id.slug" :value="show.id.slug">{{show.title}}</option>
                 </template>
             </select>
-        </div> <!-- end of select-show-group -->
+        </div> end of select-show-group -->
+        <v-super-select v-if="showLists && showLists.length > 0"
+            :items="showLists"
+            text-field="title"
+            value-field="title"
+            group-name-field="type"
+            children-field="shows"
+            inputHeight="35px"
+            :itemHeight="displayPosters ? 60 : 40"
+            v-model="selectedShow"
+        >
+            <template v-slot:group="{group}">
+                <div class="group-type">{{group.type}}</div>
+            </template>
+
+            <template v-slot:item="{item}">
+                <div :class="[displayPosters ? 'item-container-poster' : 'item-container']">
+                    <div v-if="displayPosters">
+                        <asset style="height: 60px" default="images/poster.png" :show-slug="item.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false"></asset>
+                    </div>
+                    <div class="item-right">
+                        <div>{{item.title}} <span v-if="item.imdbInfo && item.imdbInfo.year" style="color: blue">({{item.imdbInfo.year}})</span></div>
+                        <div v-if="displayPosters" class="item-title-additional">airs: {{item.airs}}</div>
+                        <div v-if="displayPosters" class="item-title-additional">status: {{item.status}}</div>
+                    </div>
+                </div>
+                            </template>
+        </v-super-select>
+
     </div> <!-- end of container -->
 </template>
 <script>
 import { mapState } from 'vuex';
+import VSuperSelect from "v-super-select";
 
 export default {
     name: 'show-selector',
+    components: {
+        VSuperSelect
+    },
     props: {
         showSlug: String,
         followSelection: {
@@ -39,7 +71,9 @@ export default {
         const selectedShowSlug = this.showSlug || this.placeholder;
         return {
             selectedShowSlug,
-            lock: false
+            lock: false,
+            displayPostersLimit: 250,
+            selectedShow: null
         };
     },
     computed: {
@@ -77,6 +111,7 @@ export default {
                     return 0;
                 });
             });
+
             return lists;
         },
         whichList() {
@@ -90,6 +125,19 @@ export default {
                 return 1;
             }
             return 0;
+        },
+        displayPosters() {
+            const { showLists, displayPostersLimit } = this;
+            return (showLists.flatMap(item => item.shows) || []).length <= displayPostersLimit;
+        }
+    },
+    methods: {
+        createTitle(show) {
+            let { title } = show;
+            if (show.imdbInfo && show.imdbInfo.year) {
+                title = `${title} (${show.imdbInfo.year})`;
+            }
+            return title;
         }
     },
     watch: {
@@ -121,7 +169,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 select.select-show {
     display: inline-block;
     height: 25px;
@@ -159,4 +207,51 @@ select.select-show {
         width: 100%;
     }
 }
+
+.group-type {
+    height: var(--itemHeight,40px);
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    font-weight: 600;
+    border-bottom: 1px solid #aeb0ab;
+    font-size: 14px;
+    margin-left: 17px;
+    margin-right: 5px;
+}
+
+.item-container-poster {
+    display: grid;
+    grid-template-columns: 50px 100%;
+    grid-template-rows: 100%;
+}
+
+.item-container {
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+}
+
+.item-right {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, auto);
+}
+
+.item-title-additional {
+    font-style: italic;
+    font-size: 80%;
+}
+
+.show-selector >>> .super-select-input {
+    padding: 4px 6px;
+}
+
+/* .show-selector >>> label.super-select-input > span.label {
+    display: none;
+} */
+
 </style>

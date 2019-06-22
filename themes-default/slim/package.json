@@ -38,6 +38,7 @@
     "jquery": "3.4.1",
     "lodash": "4.17.11",
     "tablesorter": "2.31.1",
+    "v-super-select": "0.2.0",
     "vue": "2.6.10",
     "vue-async-computed": "3.7.0",
     "vue-cookie": "1.1.4",

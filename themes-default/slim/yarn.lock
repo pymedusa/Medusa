@@ -3206,6 +3206,11 @@ core-js@^2.4.0:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.5.7.tgz#f972608ff0cead68b841a16a932d0b183791814e"
   integrity sha512-RszJCAxg/PP6uzXVXL6BsxSXx/B05oJAQ2vkJRjyjrEcNVycaqOmNb5OTxZPE3xa5gwZduqza6L9JOCenh/Ecw==
 
+core-js@^2.6.5:
+  version "2.6.9"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.9.tgz#6b4b214620c834152e179323727fc19741b084f2"
+  integrity sha512-HOpZf6eXmnl7la+cUdMnLvUxKNqLUzJvgIziQ0DiF3JwSImNphIqdGqzj6hIKyX04MmV0poclQ7+wjWvxQyR2A==
+
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
@@ -12334,6 +12339,21 @@ uuid@^3.0.1, uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
 
+v-debounce@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/v-debounce/-/v-debounce-0.1.2.tgz#cab75df7def2783215bf449ef85c69c2decf0a55"
+  integrity sha1-yrdd997yeDIVv0Se+Fxpwt7PClU=
+
+v-super-select@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/v-super-select/-/v-super-select-0.2.0.tgz#ce180f81def75efe19014462b1075d457f9b9089"
+  integrity sha512-UDqiY7Fw+L5YKpsW0hnB6kqA30MMJx846srRpK42dx0PZrpvSDokXbQm0fOgMl1Gxw8Dkesk3Pzw6dbim2QbWg==
+  dependencies:
+    core-js "^2.6.5"
+    v-debounce "^0.1.2"
+    vue "^2.6.10"
+    vue-virtual-scroll-list "^1.3.9"
+
 v8-compile-cache@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.0.2.tgz#a428b28bb26790734c4fc8bc9fa106fccebf6a6c"
@@ -12655,7 +12675,12 @@ vue-truncate-collapsed@2.1.0:
   dependencies:
     html-truncate "^1.2.2"
 
-vue@2.6.10:
+vue-virtual-scroll-list@^1.3.9:
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/vue-virtual-scroll-list/-/vue-virtual-scroll-list-1.3.9.tgz#ba3ce6425374fb323ea83ab33daa2727117808ed"
+  integrity sha512-K979Bk0Fmfxrjb9KIMhJmkIDrKLR/Y+N4B5ivJzzYoTRPGyz/JEe7jLn3vwzYt3YbU6a0KV7c0rf2DP7GGZh3g==
+
+vue@2.6.10, vue@^2.6.10:
   version "2.6.10"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.10.tgz#a72b1a42a4d82a721ea438d1b6bf55e66195c637"
   integrity sha512-ImThpeNU9HbdZL3utgMCq0oiMzAkt1mcgy3/E6zWC/G6AaQoeuFdsl9nDhTDU3X1R6FK7nsIUuRACVcjI+A2GQ==
