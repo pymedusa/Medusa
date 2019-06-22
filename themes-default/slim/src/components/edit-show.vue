@@ -147,7 +147,7 @@ import { mapState, mapActions } from 'vuex';
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
 
 export default {
-    name: 'editShow',
+    name: 'edit-show',
     metaInfo() {
         if (!this.show || !this.show.title) {
             return {
@@ -342,5 +342,6 @@ export default {
     }
 };
 </script>
+
 <style scoped>
 </style>
