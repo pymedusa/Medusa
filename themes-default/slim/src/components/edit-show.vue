@@ -1,6 +1,6 @@
 <template>
     <div id="config-content">
-    <backstretch slug="${show.slug}"></backstretch>
+    <backstretch :slug="show.id.slug"></backstretch>
 
     <h1 class="header">
         Edit Show
