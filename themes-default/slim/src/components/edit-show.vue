@@ -143,10 +143,36 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
+
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
+
+import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
+import Backstretch from './backstretch.vue';
+import {
+    AppLink,
+    ConfigTemplate,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
+    FileBrowser,
+    LanguageSelect,
+    QualityChooser,
+    SelectList
+} from './helpers';
 
 export default {
     name: 'edit-show',
+    components: {
+        AnidbReleaseGroupUi,
+        AppLink,
+        Backstretch,
+        ConfigTemplate,
+        ConfigTextboxNumber,
+        ConfigToggleSlider,
+        FileBrowser,
+        LanguageSelect,
+        QualityChooser,
+        SelectList
+    },
     metaInfo() {
         if (!this.show || !this.show.title) {
             return {
