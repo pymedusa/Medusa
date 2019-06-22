@@ -285,9 +285,6 @@ export default {
             config: state => state.config,
             defaultShow: state => state.defaults.show
         }),
-        ...mapGetters({
-            getShowByIdFromShows: 'getShowByIdFromShows'
-        }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
@@ -345,8 +342,8 @@ export default {
             return arrayUnique(globalRequired.concat(showRequired));
         },
         show() {
-            const { defaultShow, id, indexer, getShowByIdFromShows, shows } = this;
-            return getShowByIdFromShows({ shows, id, indexer }) || defaultShow;
+            const { defaultShow, id, indexer, shows } = this;
+            return shows.find(show => Number(show.id[indexer]) === Number(id)) || defaultShow;
         }
     }
 };

@@ -44,23 +44,6 @@ const getters = {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
         return show;
     },
-    /**
-     * Get a show from the show array (store.shows.shows).
-     *
-     * This is the only way of utilizing vuex and have vue detect changes in the mapped computed property.
-     * If we don't pass shows into this getter, and have it check state like `getShowbyId` then within the computed property
-     * vue will not detect any changes in `state.shows`. We would have to add another watch, for that. While the computed
-     * should be able to handle that.
-     * @param {object} _ - state by is not used
-     * @param {array} shows - array with shows
-     * @param {number} id - show's id
-     * @param {string} indexer - show's indexer
-     * @returns {object} show object or null
-     */
-    getShowByIdFromShows: _ => ({ shows, id, indexer }) => {
-        const show = shows.find(show => Number(show.id[indexer]) === Number(id));
-        return show;
-    },
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
     getSeason: state => ({ id, indexer, season }) => {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
