@@ -136,7 +136,7 @@
                 </div>
             </div>
             <br>
-            <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !show">
+            <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !show.id.slug">
             </form>
         </div>
     </div>
