@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
 
 export default {
@@ -291,11 +291,6 @@ export default {
         id() {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
-        // @TODO: Enable this once we remove this.series
-        // show() {
-        //     const { $store } = this;
-        //     return this.shows.length === 0 ? $store.defaults.show : this.shows.find(show => show.indexer === this.indexer && Number(show.id[show.indexer]) === Number(this.id));
-        // },
         availableLanguages() {
             if (this.config.indexers.config.main.validLanguages) {
                 return this.config.indexers.config.main.validLanguages.join(',');

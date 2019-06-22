@@ -102,7 +102,7 @@ setup(
     },
     cmdclass={'test': PyTest},
     tests_require=tests_runtime_require + [
-        'flake8>=3.5.0',
+        'flake8>=3.7.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',

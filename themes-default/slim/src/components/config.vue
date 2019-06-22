@@ -5,15 +5,15 @@
                 <td><i class="icon16-config-application"></i> Medusa Info:</td>
                 <td>
                     Branch:
-                    <span v-if="config.branch"><app-link :href="config.sourceUrl + '/tree/' + config.branch">{{config.branch}}</app-link></span>
+                    <span v-if="config.branch"><app-link :href="`${config.sourceUrl}/tree/${config.branch}`">{{config.branch}}</app-link></span>
                     <span v-else>Unknown</span>
                     <br>
                     Commit:
-                    <span v-if="config.commitHash"><app-link :href="config.sourceUrl + '/commit/' + config.commitHash">{{config.commitHash}}</app-link></span>
+                    <span v-if="config.commitHash"><app-link :href="`${config.sourceUrl}/commit/${config.commitHash}`">{{config.commitHash}}</app-link></span>
                     <span v-else>Unknown</span>
                     <br>
                     Version:
-                    <span v-if="config.release"><app-link :href="config.sourceUrl + '/releases/tag/' + config.release">{{config.release}}</app-link></span>
+                    <span v-if="config.release"><app-link :href="`${config.sourceUrl}/releases/tag/v${config.release}`">{{config.release}}</app-link></span>
                     <span v-else>Unknown</span>
                     <br>
                     Database:
@@ -61,6 +61,7 @@ export default {
 .infoTable tr td:first-child {
     vertical-align: top;
 }
+
 pre {
     padding: 5px;
 }
