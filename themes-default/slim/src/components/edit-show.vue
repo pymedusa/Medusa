@@ -252,7 +252,8 @@ export default {
     },
     methods: {
         ...mapActions([
-            'getShows'
+            'getShows',
+            'setShow'
         ]),
         saveShow(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
@@ -300,8 +301,8 @@ export default {
                 data.config.release.whitelist = this.show.config.release.whitelist;
             }
 
-            const { indexer, id, $store } = this;
-            $store.dispatch('setShow', { indexer, id, data, save: true }).then(() => {
+            const { indexer, id } = this;
+            this.setShow({ indexer, id, data, save: true }).then(() => {
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
