@@ -1,6 +1,6 @@
 <template>
     <div id="config-content">
-    <backstretch :slug="show.id.slug"></backstretch>
+    <backstretch :slug="show.id.slug" />
 
     <h1 class="header">
         Edit Show
@@ -15,12 +15,18 @@
                     <li><app-link href="#core-component-group2">Format</app-link></li>
                     <li><app-link href="#core-component-group3">Advanced</app-link></li>
                 </ul>
+
                 <div id="core-component-group1">
                     <div class="component-group">
                         <h3>Main Settings</h3>
                         <fieldset class="component-group-list">
                             <config-template label-for="location" label="Show Location">
-                                <file-browser name="location" title="Select Show Location" :initial-dir="show.config.location" @update="show.config.location = $event"></file-browser>
+                                <file-browser
+                                    name="location"
+                                    title="Select Show Location"
+                                    :initial-dir="show.config.location"
+                                    @update="show.config.location = $event"
+                                />
                             </config-template>
 
                             <config-template label-for="qualityPreset" label="Quality">
@@ -29,19 +35,32 @@
                                     :show-slug="show.id.slug"
                                     @update:quality:allowed="show.config.qualities.allowed = $event"
                                     @update:quality:preferred="show.config.qualities.preferred = $event"
-                                ></quality-chooser>
+                                />
                             </config-template>
 
                             <config-template label-for="defaultEpStatusSelect" label="Default Episode Status">
-                                <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm"
-                                    v-model="show.config.defaultEpisodeStatus">
-                                    <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
-                                    <p>This will set the status for future episodes.</p>
+                                <select
+                                    name="defaultEpStatus"
+                                    id="defaultEpStatusSelect"
+                                    class="form-control form-control-inline input-sm"
+                                    v-model="show.config.defaultEpisodeStatus"
+                                >
+                                    <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">
+                                        {{ option.text }}
+                                    </option>
                                 </select>
+                                <p>This will set the status for future episodes.</p>
                             </config-template>
 
                             <config-template label-for="indexerLangSelect" label="Info Language">
-                                    <language-select id="indexerLangSelect" @update-language="updateLanguage" :language="show.language" :available="availableLanguages" name="indexer_lang" class="form-control form-control-inline input-sm"></language-select>
+                                    <language-select
+                                        id="indexerLangSelect"
+                                        @update-language="updateLanguage"
+                                        :language="show.language"
+                                        :available="availableLanguages"
+                                        name="indexer_lang"
+                                        class="form-control form-control-inline input-sm"
+                                    />
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                             </config-template>
 
@@ -55,6 +74,7 @@
                         </fieldset>
                     </div>
                 </div>
+
                 <div id="core-component-group2">
                     <div class="component-group">
                         <h3>Format Settings</h3>
@@ -70,7 +90,13 @@
                             </config-toggle-slider>
 
                             <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
-                                <anidb-release-group-ui class="max-width" :blacklist="show.config.release.blacklist" :whitelist="show.config.release.whitelist" :all-groups="show.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                                <anidb-release-group-ui
+                                    class="max-width"
+                                    :blacklist="show.config.release.blacklist"
+                                    :whitelist="show.config.release.whitelist"
+                                    :all-groups="show.config.release.allgroups"
+                                    @change="onChangeReleaseGroupsAnime"
+                                />
                             </config-template>
 
                             <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
@@ -93,49 +119,82 @@
                         </fieldset>
                     </div>
                 </div>
+
                 <div id="core-component-group3">
                     <div class="component-group">
                         <h3>Advanced Settings</h3>
                         <fieldset class="component-group-list">
 
                             <config-template label-for="rls_ignore_words" label="Ignored words">
-                                    <select-list :list-items="show.config.release.ignoredWords" @change="onChangeIgnoredWords"></select-list>
+                                    <select-list
+                                        :list-items="show.config.release.ignoredWords"
+                                        @change="onChangeIgnoredWords"
+                                    />
                                     <div class="clear-left">
                                         <p>Search results with one or more words from this list will be ignored.</p>
                                     </div>
                             </config-template>
 
-                            <config-toggle-slider v-model="show.config.release.ignoredWordsExclude" label="Exclude ignored words" id="ignored_words_exclude">
+                            <config-toggle-slider
+                                v-model="show.config.release.ignoredWordsExclude"
+                                label="Exclude ignored words"
+                                id="ignored_words_exclude"
+                            >
                                 <div>Use the Ignored Words list to exclude these from the global ignored list</div>
                                 <p>Currently the effective list is: {{ effectiveIgnored }}</p>
                             </config-toggle-slider>
 
                             <config-template label-for="rls_require_words" label="Required words">
-                                    <select-list :list-items="show.config.release.requiredWords" @change="onChangeRequiredWords"></select-list>
+                                    <select-list
+                                        :list-items="show.config.release.requiredWords"
+                                        @change="onChangeRequiredWords"
+                                    />
                                         <p>Search results with no words from this list will be ignored.</p>
                             </config-template>
 
-                            <config-toggle-slider v-model="show.config.release.requiredWordsExclude" label="Exclude required words" id="required_words_exclude">
+                            <config-toggle-slider
+                                v-model="show.config.release.requiredWordsExclude"
+                                label="Exclude required words"
+                                id="required_words_exclude"
+                            >
                                 <p>Use the Required Words list to exclude these from the global required words list</p>
                                 <p>Currently the effective list is: {{ effectiveRequired }}</p>
                             </config-toggle-slider>
 
                             <config-template label-for="SceneName" label="Scene Exception">
-                                    <select-list :list-items="show.config.aliases" @change="onChangeAliases"></select-list>
+                                    <select-list
+                                        :list-items="show.config.aliases"
+                                        @change="onChangeAliases"
+                                    />
                                         <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
                             </config-template>
 
-                            <config-textbox-number :min="-168" :max="168" :step="1" v-model="show.config.airdateOffset"
-                                label="Airdate offset" id="airdate_offset" :explanations="['Amount of hours we want to start searching early (-1) or late (1) for new episodes.',
-                                'This only applies to daily searches.']">
-                            </config-textbox-number>
+                            <config-textbox-number
+                                :min="-168"
+                                :max="168"
+                                :step="1"
+                                v-model="show.config.airdateOffset"
+                                label="Airdate offset"
+                                id="airdate_offset"
+                                :explanations="[
+                                    'Amount of hours we want to start searching early (-1) or late (1) for new episodes.',
+                                    'This only applies to daily searches.'
+                                ]"
+                            />
 
                         </fieldset>
                     </div>
                 </div>
             </div>
+
             <br>
-            <input id="submit" type="submit" :value="saveButton" class="btn-medusa pull-left button" :disabled="saving || !show.id.slug">
+            <input
+                id="submit"
+                type="submit"
+                :value="saveButton"
+                class="btn-medusa pull-left button"
+                :disabled="saving || !show.id.slug"
+            />
             </form>
         </div>
     </div>
