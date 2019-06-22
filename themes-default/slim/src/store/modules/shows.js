@@ -40,10 +40,7 @@ const mutations = {
 };
 
 const getters = {
-    getShowById: state => ({ id, indexer }) => {
-        const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
-        return show;
-    },
+    getShowById: state => ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id)),
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
     getSeason: state => ({ id, indexer, season }) => {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
