@@ -688,14 +688,14 @@ class Manage(Home, WebRoot):
 
             exceptions_list = []
 
-            errors += self.editShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
-                                    preferred_qualities, exceptions_list,
-                                    defaultEpStatus=new_default_ep_status,
-                                    season_folders=new_season_folders,
-                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
-                                    subtitles=new_subtitles, anime=new_anime,
-                                    scene=new_scene, air_by_date=new_air_by_date,
-                                    directCall=True)
+            errors += self.massEditShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
+                                        preferred_qualities, exceptions_list,
+                                        defaultEpStatus=new_default_ep_status,
+                                        season_folders=new_season_folders,
+                                        paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
+                                        subtitles=new_subtitles, anime=new_anime,
+                                        scene=new_scene, air_by_date=new_air_by_date,
+                                        directCall=True)
 
         if errors:
             ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
