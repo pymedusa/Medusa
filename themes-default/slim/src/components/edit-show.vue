@@ -185,6 +185,66 @@ export default {
             saving: false
         };
     },
+    computed: {
+        ...mapState({
+            configLoaded: state => state.config.fanartBackground !== null,
+            config: state => state.config,
+            defaultShow: state => state.defaults.show
+        }),
+        ...mapGetters([
+            'getShowById'
+        ]),
+        indexer() {
+            return this.showIndexer || this.$route.query.indexername;
+        },
+        id() {
+            return this.showId || Number(this.$route.query.seriesid) || undefined;
+        },
+        show() {
+            const { defaultShow, getShowById, id, indexer } = this;
+            return getShowById({ indexer, id }) || defaultShow;
+        },
+        availableLanguages() {
+            if (this.config.indexers.config.main.validLanguages) {
+                return this.config.indexers.config.main.validLanguages.join(',');
+            }
+
+            return '';
+        },
+        combinedQualities() {
+            const { allowed, preferred } = this.show.config.qualities;
+            return combineQualities(allowed, preferred);
+        },
+        saveButton() {
+            return this.saving === false ? 'Save Changes' : 'Saving...';
+        },
+        globalIgnored() {
+            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
+        },
+        globalRequired() {
+            return this.$store.state.search.filters.required.map(x => x.toLowerCase());
+        },
+        effectiveIgnored() {
+            const { globalIgnored } = this;
+            const showIgnored = this.show.config.release.ignoredWords.map(x => x.toLowerCase());
+
+            if (this.show.config.release.ignoredWordsExclude) {
+                return arrayExclude(globalIgnored, showIgnored);
+            }
+
+            return arrayUnique(globalIgnored.concat(showIgnored));
+        },
+        effectiveRequired() {
+            const { globalRequired } = this;
+            const showRequired = this.show.config.release.requiredWords.map(x => x.toLowerCase());
+
+            if (this.show.config.release.requiredWordsExclude) {
+                return arrayExclude(globalRequired, showRequired);
+            }
+
+            return arrayUnique(globalRequired.concat(showRequired));
+        }
+    },
     created() {
         const { getShows } = this;
         // Without getting any specific show data, we pick the show needed from the shows array.
@@ -273,66 +333,6 @@ export default {
         },
         updateLanguage(value) {
             this.show.language = value;
-        }
-    },
-    computed: {
-        ...mapState({
-            configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config,
-            defaultShow: state => state.defaults.show
-        }),
-        ...mapGetters([
-            'getShowById'
-        ]),
-        indexer() {
-            return this.showIndexer || this.$route.query.indexername;
-        },
-        id() {
-            return this.showId || Number(this.$route.query.seriesid) || undefined;
-        },
-        availableLanguages() {
-            if (this.config.indexers.config.main.validLanguages) {
-                return this.config.indexers.config.main.validLanguages.join(',');
-            }
-
-            return '';
-        },
-        combinedQualities() {
-            const { allowed, preferred } = this.show.config.qualities;
-            return combineQualities(allowed, preferred);
-        },
-        saveButton() {
-            return this.saving === false ? 'Save Changes' : 'Saving...';
-        },
-        globalIgnored() {
-            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
-        },
-        globalRequired() {
-            return this.$store.state.search.filters.required.map(x => x.toLowerCase());
-        },
-        effectiveIgnored() {
-            const { globalIgnored } = this;
-            const showIgnored = this.show.config.release.ignoredWords.map(x => x.toLowerCase());
-
-            if (this.show.config.release.ignoredWordsExclude) {
-                return arrayExclude(globalIgnored, showIgnored);
-            }
-
-            return arrayUnique(globalIgnored.concat(showIgnored));
-        },
-        effectiveRequired() {
-            const { globalRequired } = this;
-            const showRequired = this.show.config.release.requiredWords.map(x => x.toLowerCase());
-
-            if (this.show.config.release.requiredWordsExclude) {
-                return arrayExclude(globalRequired, showRequired);
-            }
-
-            return arrayUnique(globalRequired.concat(showRequired));
-        },
-        show() {
-            const { defaultShow, getShowById, id, indexer } = this;
-            return getShowById({ indexer, id }) || defaultShow;
         }
     }
 };
