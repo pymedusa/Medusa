@@ -1,6 +1,5 @@
 <template>
     <div id="config-content">
-    <vue-snotify></vue-snotify>
     <backstretch slug="${show.slug}"></backstretch>
 
     <h1 class="header">
