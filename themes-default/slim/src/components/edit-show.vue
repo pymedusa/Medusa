@@ -4,7 +4,7 @@
 
     <h1 class="header">
         Edit Show
-        <span v-show="show.title"> - <app-link :href="showUrl">{{show.title}}</app-link></span>
+        <template v-if="show.title"> - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link></template>
     </h1>
 
         <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
@@ -303,11 +303,6 @@ export default {
         },
         saveButton() {
             return this.saving === false ? 'Save Changes' : 'Saving...';
-        },
-        showUrl() {
-            // @TODO: Change the URL generation to use `this.series`. Currently not possible because
-            // the values are not available at the time of app-link component creation.
-            return window.location.pathname.replace('editShow', 'displayShow') + window.location.search;
         },
         globalIgnored() {
             return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
