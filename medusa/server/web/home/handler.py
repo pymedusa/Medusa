@@ -1415,8 +1415,11 @@ class Home(WebRoot):
                 series_obj=series_obj))
 
     def editShow(self, indexername=None, seriesid=None):
-        t = PageTemplate(rh=self, filename='index.mako')
+        """
+        Render the editShow page.
 
+        [Converted to VueRouter]
+        """
         try:
             indexer_id = indexer_name_to_id(indexername)
             series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
@@ -1426,9 +1429,7 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        return t.render(
-            controller='home', action='editShow',
-        )
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     @staticmethod
     def erase_cache(series_obj):
