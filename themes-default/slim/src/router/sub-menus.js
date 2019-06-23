@@ -9,8 +9,8 @@ export const configSubMenu = [
     { title: 'Anime', path: 'config/anime/', icon: 'menu-icon-anime' }
 ];
 
-export const errorlogsSubMenu = function() {
-    const { $route, $store } = this;
+export const errorlogsSubMenu = vm => {
+    const { $route, $store } = vm;
     const level = $route.params.level || $route.query.level;
     const { config } = $store.state;
     const { loggingLevels, numErrors, numWarnings } = config.logs;
@@ -48,8 +48,8 @@ export const historySubMenu = [
     { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', confirm: 'trimhistory' }
 ];
 
-export const showSubMenu = function() {
-    const { $route, $store } = this;
+export const showSubMenu = vm => {
+    const { $route, $store } = vm;
     const { config, notifiers } = $store.state;
 
     const indexerName = $route.params.indexer || $route.query.indexername;

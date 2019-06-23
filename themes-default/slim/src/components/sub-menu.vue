@@ -34,7 +34,7 @@ export default {
             const { $route } = this;
             let subMenu = $route.meta.subMenu || [];
             if (typeof subMenu === 'function') {
-                subMenu = subMenu.call(this);
+                subMenu = subMenu(this);
             }
             // Filters `requires = false` and reverses the array
             const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
