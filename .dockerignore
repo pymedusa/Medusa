@@ -20,3 +20,7 @@ runscripts/
 tests/
 themes-default/
 venv/
+
+# Ignore Windows and MacOS specific files
+lib/native/**/*.dll
+lib/native/**/*.dylib
