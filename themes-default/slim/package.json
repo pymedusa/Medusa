@@ -94,7 +94,7 @@
     "vue-jest": "3.0.4",
     "vue-loader": "15.7.0",
     "webpack": "4.34.0",
-    "webpack-cli": "3.3.4"
+    "webpack-cli": "3.3.5"
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
