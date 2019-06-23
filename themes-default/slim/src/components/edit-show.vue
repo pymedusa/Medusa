@@ -334,6 +334,12 @@ export default {
         // Without getting any specific show data, we pick the show needed from the shows array.
         getShows();
     },
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#config-components').tabs();
+        });
+    },
     methods: {
         ...mapActions([
             'getShows',
