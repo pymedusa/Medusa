@@ -2,6 +2,12 @@ import Vue from 'vue';
 import { api } from '../../api';
 import { ADD_SHOW } from '../mutation-types';
 
+/**
+ * @typedef {object} ShowIdentifier
+ * @property {string} indexer The indexer name (e.g. `tvdb`)
+ * @property {number} id The show ID on the indexer (e.g. `12345`)
+ */
+
 const state = {
     shows: [],
     currentShow: {
@@ -40,7 +46,16 @@ const mutations = {
 };
 
 const getters = {
-    getShowById: state => ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id)),
+    getShowById: state => {
+        /**
+         * Get a show from the loaded shows state, identified by show ID and indexer name.
+         *
+         * @param {ShowIdentifier} show Show identifiers.
+         * @returns {object|undefined} Show object or undefined if not found.
+         */
+        const getShowById = ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id));
+        return getShowById;
+    },
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
     getSeason: state => ({ id, indexer, season }) => {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
@@ -58,18 +73,17 @@ const getters = {
 /**
  * An object representing request parameters for getting a show from the API.
  *
- * @typedef {Object} ShowParameteres
- * @property {string} indexer - The indexer name (e.g. `tvdb`)
- * @property {string} id - The show ID on the indexer (e.g. `12345`)
- * @property {boolean} detailed - Whether to fetch detailed information (seasons & episodes)
- * @property {boolean} fetch - Whether to fetch external information (for example AniDB release groups)
+ * @typedef {object} ShowGetParameters
+ * @property {boolean} detailed Fetch detailed information? (seasons & episodes).
+ * @property {boolean} fetch Fetch external information? (for example AniDB release groups).
  */
+
 const actions = {
     /**
      * Get show from API and commit it to the store.
      *
-     * @param {*} context - The store context.
-     * @param {ShowParameteres} parameters - Request parameters.
+     * @param {*} context The store context.
+     * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
     getShow(context, { indexer, id, detailed, fetch }) {
@@ -99,8 +113,8 @@ const actions = {
      * Get shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 10k shows.
-     * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
+     * @param {(ShowIdentifier&ShowGetParameters)[]} shows Shows to get. If not provided, gets the first 1k shows.
+     * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
         const { commit, dispatch } = context;
