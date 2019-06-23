@@ -90,11 +90,10 @@
                                 </config-toggle-slider>
 
                                 <config-template v-if="show.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
-                                    <anidb-release-group-ui
+                                    <anidb-release-group-ui v-if="indexer && id"
                                         class="max-width"
-                                        :blacklist="show.config.release.blacklist"
-                                        :whitelist="show.config.release.whitelist"
-                                        :all-groups="show.config.release.allgroups"
+                                        :show-indexer="indexer"
+                                        :show-id="id"
                                         @change="onChangeReleaseGroupsAnime"
                                     />
                                 </config-template>
