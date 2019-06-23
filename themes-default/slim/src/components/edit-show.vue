@@ -266,7 +266,6 @@ export default {
     },
     computed: {
         ...mapState({
-            configLoaded: state => state.config.fanartBackground !== null,
             config: state => state.config,
             defaultShow: state => state.defaults.show,
             episodeStatuses: state => state.consts.statuses
