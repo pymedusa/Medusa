@@ -121,9 +121,6 @@ export default {
         }
     },
     methods: {
-        ...mapActions([
-            'getShow'
-        ]),
         toggleItem(release) {
             this.allReleaseGroups = this.allReleaseGroups.map(x => {
                 if (x.id === release.id) {
