@@ -45,8 +45,8 @@
                                         class="form-control form-control-inline input-sm"
                                         v-model="show.config.defaultEpisodeStatus"
                                     >
-                                        <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">
-                                            {{ option.text }}
+                                        <option v-for="option in defaultEpisodeStatusOptions" :value="option.name" :key="option.value">
+                                            {{ option.name }}
                                         </option>
                                     </select>
                                     <p>This will set the status for future episodes.</p>
@@ -261,11 +261,6 @@ export default {
     },
     data() {
         return {
-            defaultEpisodeStatusOptions: [
-                { text: 'Wanted', value: 'Wanted' },
-                { text: 'Skipped', value: 'Skipped' },
-                { text: 'Ignored', value: 'Ignored' }
-            ],
             saving: false
         };
     },
@@ -273,10 +268,12 @@ export default {
         ...mapState({
             configLoaded: state => state.config.fanartBackground !== null,
             config: state => state.config,
-            defaultShow: state => state.defaults.show
+            defaultShow: state => state.defaults.show,
+            episodeStatuses: state => state.consts.statuses
         }),
         ...mapGetters([
-            'getShowById'
+            'getShowById',
+            'getStatus'
         ]),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -287,6 +284,13 @@ export default {
         show() {
             const { defaultShow, getShowById, id, indexer } = this;
             return getShowById({ indexer, id }) || defaultShow;
+        },
+        defaultEpisodeStatusOptions() {
+            if (this.episodeStatuses.length === 0) {
+                return [];
+            }
+            // Get status objects, in this order
+            return ['wanted', 'skipped', 'ignored'].map(key => this.getStatus({ key }));
         },
         availableLanguages() {
             if (this.config.indexers.config.main.validLanguages) {
