@@ -12,7 +12,7 @@ import traceback
 from medusa import app, common, failed_history, generic_queue, history, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, SNATCH_RESULT, SearchType
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
@@ -25,8 +25,8 @@ log.logger.addHandler(logging.NullHandler())
 
 search_queue_lock = threading.Lock()
 
-FORCED_SEARCH_HISTORY = []
-FORCED_SEARCH_HISTORY_SIZE = 100
+SEARCH_HISTORY = []
+SEARCH_HISTORY_SIZE = 100
 
 
 class SearchQueue(generic_queue.GenericQueue):
@@ -42,7 +42,7 @@ class SearchQueue(generic_queue.GenericQueue):
         """Check if item is in queue."""
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
-                                     ForcedSearchQueueItem, SnatchQueueItem)) \
+                                     SnatchQueueItem, ManualSearchQueueItem)) \
                     and cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
@@ -90,7 +90,7 @@ class SearchQueue(generic_queue.GenericQueue):
             # daily searches
             generic_queue.GenericQueue.add_item(self, item)
         elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
-                               SnatchQueueItem, ForcedSearchQueueItem)) \
+                               SnatchQueueItem, ManualSearchQueueItem)) \
                 and not self.is_in_queue(item.show, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -105,12 +105,12 @@ class SearchQueue(generic_queue.GenericQueue):
 
 
 class ForcedSearchQueue(generic_queue.GenericQueue):
-    """Search Queueu used for Forced Search, Failed Search."""
+    """Search Queueu used for Manual, Failed Search."""
 
     def __init__(self):
         """Initialize ForcedSearch Queue."""
         generic_queue.GenericQueue.__init__(self)
-        self.queue_name = 'SEARCHQUEUE'
+        self.queue_name = 'FORCEDSEARCHQUEUE'
 
     def is_in_queue(self, show, segment):
         """Verify if the show and segment (episode or number of episodes) are scheduled."""
@@ -122,14 +122,14 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
     def is_ep_in_queue(self, segment):
         """Verify if the show and segment (episode or number of episodes) are scheduled."""
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.segment == segment:
                 return True
         return False
 
     def is_show_in_queue(self, show):
         """Verify if the show is queued in this queue as a ForcedSearchQueueItem or FailedQueueItem."""
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.show.indexerid == show:
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.show.indexerid == show:
                 return True
         return False
 
@@ -143,7 +143,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         """
         ep_obj_list = []
         for cur_item in self.queue:
-            if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)):
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem, ManualSearchQueueItem)):
                 if series_obj and cur_item.show.identifier != series_obj.identifier:
                     continue
                 ep_obj_list.append(cur_item)
@@ -159,8 +159,11 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
 
     def is_forced_search_in_progress(self):
-        """Test of a forced search is currently running, it doesn't check what's in queue."""
-        if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
+        """Test of a forced search is currently running (can be backlog, manual or failed search).
+
+        it doesn't check what's in queue.
+        """
+        if isinstance(self.currentItem, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
             return True
         return False
 
@@ -170,15 +173,15 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         for cur_item in self.queue:
             if isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
-            elif isinstance(cur_item, ForcedSearchQueueItem) and not cur_item.manual_search:
-                length['forced_search'] += 1
-            elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.manual_search:
+            elif isinstance(cur_item, BacklogQueueItem) and not cur_item.manual_search:
+                length['backlog_search'] += 1
+            elif isinstance(cur_item, ManualSearchQueueItem):
                 length['manual_search'] += 1
         return length
 
     def add_item(self, item):
-        """Add a new ForcedSearchQueueItem or FailedQueueItem to the ForcedSearchQueue."""
-        if isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
+        """Add a new ManualSearchQueueItem or FailedQueueItem to the ForcedSearchQueue."""
+        if isinstance(item, (ManualSearchQueueItem, FailedQueueItem, BacklogQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual, snatch and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
@@ -435,7 +438,87 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
             log.debug(traceback.format_exc())
 
         # Keep a list with the 100 last executed searches
-        fifo(FORCED_SEARCH_HISTORY, self, FORCED_SEARCH_HISTORY_SIZE)
+        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
+
+        if self.success is None:
+            self.success = False
+
+        self.finish()
+
+
+class ManualSearchQueueItem(generic_queue.QueueItem):
+    """Manual search queue item class."""
+
+    def __init__(self, show, segment, manual_search_type='episode'):
+        """
+        Initialize class of a QueueItem used to queue forced and manual searches.
+
+        :param show: A show object
+        :param segment: A list of episode objects.
+        :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
+        :return: The run() method searches and snatches the episode(s) if possible or it only searches and saves results to cache tables.
+        """
+        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
+        self.priority = generic_queue.QueuePriorities.HIGH
+        self.name = '{search_type}-{indexerid}'.format(
+            search_type='MANUAL',
+            indexerid=show.indexerid
+        )
+
+        self.success = None
+        self.started = None
+        self.results = None
+
+        self.show = show
+        self.segment = segment
+        self.manual_search_type = manual_search_type
+
+    def run(self):
+        """Run forced search thread."""
+        generic_queue.QueueItem.run(self)
+        self.started = True
+
+        try:
+            log.info(
+                'Beginning {search_type} {season_pack}search for: {ep}', {
+                    'search_type': 'manual',
+                    'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
+                    'ep': self.segment[0].pretty_name()
+                }
+            )
+
+            search_result = search_providers(self.show, self.segment, True, True,
+                                             True, self.manual_search_type)
+
+            if search_result:
+                self.results = search_result
+                self.success = True
+
+                if self.manual_search_type == 'season':
+                    ui.notifications.message('We have found season packs for {show_name}'
+                                             .format(show_name=self.show.name),
+                                             'These should become visible in the manual select page.')
+                else:
+                    ui.notifications.message('We have found results for {ep}'
+                                             .format(ep=self.segment[0].pretty_name()),
+                                             'These should become visible in the manual select page.')
+
+            else:
+                ui.notifications.message('No results were found')
+                log.info(
+                    'Unable to find manual {season_pack}results for: {ep}', {
+                        'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
+                        'ep': self.segment[0].pretty_name()
+                    }
+                )
+
+        # TODO: Remove catch all exception.
+        except Exception:
+            self.success = False
+            log.debug(traceback.format_exc())
+
+        # Keep a list with the 100 last executed searches
+        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
         if self.success is None:
             self.success = False
@@ -595,8 +678,11 @@ class BacklogQueueItem(generic_queue.QueueItem):
                 self.success = False
                 log.debug(traceback.format_exc())
 
-        if self.success is None:
-            self.success = False
+            # Keep a list with the 100 last executed searches
+            fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
+
+            if self.success is None:
+                self.success = False
 
         self.finish()
 
@@ -693,7 +779,7 @@ class FailedQueueItem(generic_queue.QueueItem):
             log.info(traceback.format_exc())
 
         # ## Keep a list with the 100 last executed searches
-        fifo(FORCED_SEARCH_HISTORY, self, FORCED_SEARCH_HISTORY_SIZE)
+        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
         if self.success is None:
             self.success = False

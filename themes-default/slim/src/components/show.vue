@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { apiRoute } from '../api';
 import { AppLink, PlotInfo } from './helpers';
+import { humanFileSize } from '../utils/core';
 import ShowHeader from './show-header.vue';
 
 export default {
@@ -18,6 +18,7 @@ export default {
                 title: 'Medusa'
             };
         }
+
         const { title } = this.show;
         return {
             title,
@@ -39,7 +40,22 @@ export default {
         }
     },
     data() {
-        return {};
+
+        return {
+            invertTable: true,
+            isMobile: false,
+            search: '',
+            seasonColumns: ['season'],
+            seasonOptions: {
+                headings: {
+                    season: 'Season'
+                }
+            },
+            episodeColumns: [
+                'nfo', 'tbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
+                'size', 'airDate', 'download', 'airDate', 'subtitles', 'status', 'search'
+                ]
+        };
     },
     computed: {
         ...mapState({
@@ -54,6 +70,19 @@ export default {
         },
         id() {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
+        },
+        seasonsInverse() {
+            const { invertTable, show } = this;
+            const { seasons } = show;
+            if (!seasons) {
+                return [];
+            }
+
+            if (invertTable) {
+                return this.show.seasons.slice().reverse();
+            } else {
+                return this.show.seasons;
+            }
         }
     },
     mounted() {
@@ -203,28 +232,11 @@ export default {
             setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
         });
 
-        $('#showTable, #animeTable').tablesorter({
-            widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
-            widgetOptions: {
-                columnSelector_saveColumns: true, // eslint-disable-line camelcase
-                columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
-                columnSelector_mediaquery: false, // eslint-disable-line camelcase
-                columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
-            }
-        });
-
-        $('#popover').popover({
-            placement: 'bottom',
-            html: true, // Required if content has HTML
-            content: '<div id="popover-target"></div>'
-        }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
-            $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
-        });
-
         // Changes the button when clicked for collapsing/expanding the season to show/hide episodes
         document.querySelectorAll('.collapse.toggle').forEach(element => {
             element.addEventListener('hide.bs.collapse', () => {
                 // On hide
+                debugger;
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Show Episodes');
@@ -232,6 +244,7 @@ export default {
             });
             element.addEventListener('show.bs.collapse', () => {
                 // On show
+                debugger;
                 const reg = /collapseSeason-(\d+)/g;
                 const result = reg.exec(this.id);
                 $('#showseason-' + result[1]).text('Hide Episodes');
@@ -240,9 +253,10 @@ export default {
         });
 
         // Get the season exceptions and the xem season mappings.
-        getSeasonSceneExceptions();
+        // getSeasonSceneExceptions();
     },
     methods: {
+        humanFileSize,
         ...mapActions({
             getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
         }),
@@ -362,62 +376,95 @@ export default {
             });
             return false;
         },
-        // @TODO: OMG: This is just a basic json, in future it should be based on the CRUD route.
-        // Get the season exceptions and the xem season mappings.
-        getSeasonSceneExceptions() {
-            const { indexer, id } = this;
+        /**
+         * Check if any of the episodes in this season does not have the status "unaired".
+         * If that's the case we want to manual season search icon.
+         */
+        anyEpisodeNotUnaired(season) {
+            return season.episodes.filter(ep => ep.status !== 'Unaired').length > 0;
+        },
+        episodesInverse(season) {
+            const { invertTable } = this;
+            if (!season.episodes) {
+                return [];
+            }
+            if (invertTable) {
+                return season.episodes.slice().reverse();
+            } else {
+                return season.episodes;
+            }
+        },
+        /**
+         * Check if the season/episode combination exists in the scene numbering.
+         */
+        getSceneNumbering(episode) {
+            const { show } = this;
+            const { xemNumbering } = show;
 
-            if (!indexer || !id) {
-                console.warn('Unable to get season scene exceptions: Unknown series identifier');
-                return;
+            if (xemNumbering.length !== 0) {
+                const mapped = xemNumbering.filter(x => {
+                    return x.source.season === episode.season && x.source.episode === episode.episode;
+                });
+                if (mapped.length !== 0) {
+                    return mapped[0].destination;
+                }
+            }
+            return { season: 0, episode: 0 };
+        },
+        getSceneAbsoluteNumbering(episode) {
+            const { show } = this;
+            const { sceneAbsoluteNumbering, xemAbsoluteNumbering } = show;
+            const xemAbsolute = xemAbsoluteNumbering[episode.absoluteNumber];
+
+            if (Object.keys(sceneAbsoluteNumbering).length > 0) {
+                return sceneAbsoluteNumbering[episode.absoluteNumber];
+            } else if (xemAbsolute) {
+                return xemAbsolute;
+            }
+            return 0;
+        },
+        retryDownload(episode) {
+            const { config } = this;
+            return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        showSubtitleButton(episode) {
+            const { config, show } = this;
+            return (episode.season !== 0 && config.subtitles.enabled && show.config.subtitlesEnabled && !['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+        },
+        totalSeasonEpisodeSize(season) {
+            return season.episodes.filter(x => x.file && x.file.size > 0).reduce((a, b) => a + b.file.size, 0);
+        },
+        getSeasonExceptions(season) {
+            const { show } = this;
+            const { allSceneExceptions } = show;
+            let bindData = { class: 'display: none' };
+
+            // Map the indexer season to a xem mapped season.
+            // check if the season exception also exists in the xem numbering table
+
+            let xemSeasons = [];
+            let foundInXem = false;
+            if (show.xemNumbering.length > 0) {
+                const xemResult = show.xemNumbering.filter(x => x.source.season === season);
+                // Create an array with unique seasons
+                xemSeasons = [...new Set(xemResult.map(item => item.destination.season))];
+                foundInXem = Boolean(xemSeasons.length);
             }
 
-            apiRoute.get('home/getSeasonSceneExceptions', {
-                params: {
-                    indexername: indexer,
-                    seriesid: id
+            // Check if there is a season exception for this season
+            if (allSceneExceptions[season]) {
+                // if there is not a match on the xem table, display it as a medusa scene exception
+                bindData = {
+                    id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
+                    alt: foundInXem ? '[xem]' : '[medusa]',
+                    src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
+                    title: xemSeasons.reduce(function (a, b) {
+                        return a = a.concat(allSceneExceptions[b]);
+                    }, []).join(', '),
                 }
-            }).then(response => {
-                this.setSeasonSceneExceptions(response.data);
-            }).catch(error => {
-                console.error('Error getting season scene exceptions', error);
-            });
-        },
-        // Set the season exception based on using the get_xem_numbering_for_show() for animes if available in data.xemNumbering,
-        // or else try to map using just the data.season_exceptions.
-        setSeasonSceneExceptions(data) {
-            $.each(data.seasonExceptions, (season, nameExceptions) => {
-                let foundInXem = false;
-                // Check if it is a season name exception, we don't handle the show name exceptions here
-                if (season >= 0) {
-                    // Loop through the xem mapping, and check if there is a xem_season, that needs to show the season name exception
-                    $.each(data.xemNumbering, (indexerSeason, xemSeason) => {
-                        if (xemSeason === parseInt(season, 10)) {
-                            foundInXem = true;
-                            $('<img>', {
-                                id: 'xem-exception-season-' + xemSeason,
-                                alt: '[xem]',
-                                height: '16',
-                                width: '16',
-                                src: 'images/xem.png',
-                                title: nameExceptions.join(', ')
-                            }).appendTo('[data-season=' + indexerSeason + ']');
-                        }
-                    });
+            }
 
-                    // This is not a xem season exception, let's set the exceptions as a medusa exception
-                    if (!foundInXem) {
-                        $('<img>', {
-                            id: 'xem-exception-season-' + season,
-                            alt: '[medusa]',
-                            height: '16',
-                            width: '16',
-                            src: 'images/ico/favicon-16.png',
-                            title: nameExceptions.join(', ')
-                        }).appendTo('[data-season=' + season + ']');
-                    }
-                }
-            });
+            return bindData;
         }
     }
 };

@@ -73,10 +73,7 @@ from medusa.scene_exceptions import (
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
-    get_scene_absolute_numbering_for_show,
     get_scene_numbering,
-    get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show,
     get_xem_numbering_for_show,
     set_scene_numbering,
     xem_refresh,
@@ -93,7 +90,6 @@ from medusa.search.manual import (
 from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
-    ForcedSearchQueueItem,
     SnatchQueueItem,
 )
 from medusa.server.web.core import (
@@ -764,27 +760,8 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
+        t = PageTemplate(rh=self, filename='index.mako')
 
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(
-            'SELECT * '
-            'FROM tv_episodes '
-            'WHERE indexer = ? AND showid = ? AND season >= ? '
-            'ORDER BY season DESC, episode DESC',
-            [series_obj.indexer, series_obj.series_id, min_season]
-        )
-
-        t = PageTemplate(rh=self, filename='displayShow.mako')
-
-        ep_cats = {}
-
-        for cur_result in sql_results:
-            cur_ep_cat = series_obj.get_overview(cur_result['status'], cur_result['quality'], manually_searched=cur_result['manually_searched'])
-            if cur_ep_cat:
-                ep_cats['s{season}e{episode}'.format(season=cur_result['season'], episode=cur_result['episode'])] = cur_ep_cat
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
 
         indexer_id = int(series_obj.indexer)
         series_id = int(series_obj.series_id)
@@ -806,11 +783,6 @@ class Home(WebRoot):
         })
 
         return t.render(
-            show=series_obj, sql_results=sql_results, ep_cats=ep_cats,
-            scene_numbering=get_scene_numbering_for_show(series_obj),
-            xem_numbering=get_xem_numbering_for_show(series_obj, refresh_data=False),
-            scene_absolute_numbering=get_scene_absolute_numbering_for_show(series_obj),
-            xem_absolute_numbering=get_xem_absolute_numbering_for_show(series_obj),
             controller='home', action='displayShow',
         )
 
@@ -1601,45 +1573,47 @@ class Home(WebRoot):
         else:
             return self.redirect('/home/')
 
-    def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
+    def setStatus(self, showSlug=None, eps=None, status=None):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
-        if not all([indexername, seriesid, eps, status]):
+        if not all([showSlug, eps, status]):
             error_message = 'You must specify a show and at least one episode'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
         status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
-        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
+        identifier = SeriesIdentifier.from_slug(showSlug)
+        if not identifier:
+            error_message = 'Error', 'Show not in show list'
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+                'message': error_message
+            })
 
+        series_obj = Series.find_by_identifier(identifier)
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
-            if direct:
-                ui.notifications.error('Error', error_message)
-                return json.dumps({
-                    'result': 'error',
-                })
-            else:
-                return self._genericMessage('Error', error_message)
+            ui.notifications.error('Error', error_message)
+            return json.dumps({
+                'result': 'error',
+            'message': error_message
+            })
 
         segments = {}
         trakt_data = []
-        if eps:
 
+        if eps:
             sql_l = []
             for cur_ep in eps.split('|'):
 
@@ -1768,12 +1742,10 @@ class Home(WebRoot):
             if segments:
                 ui.notifications.message('Retry Search started', msg)
 
-        if direct:
-            return json.dumps({
-                'result': 'success',
-            })
-        else:
-            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
+        return json.dumps({
+            'result': 'success',
+            'message': ''
+        })
 
     def testRename(self, indexername=None, seriesid=None):
         if not indexername or not seriesid:
@@ -1863,7 +1835,6 @@ class Home(WebRoot):
 
     def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None, manual_search=None):
         """Search a ForcedSearch single episode using providers which are backlog enabled."""
-        down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
@@ -1874,7 +1845,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = BacklogQueueItem(ep_obj.series, [ep_obj])
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
@@ -1894,10 +1865,15 @@ class Home(WebRoot):
                 'result': 'failure',
             })
 
-    # ## Returns the current ep_queue_item status for the current viewed show.
-    # Possible status: Downloaded, Snatched, etc...
-    # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, indexername=None, seriesid=None):
+        """
+        Returns the current ep_queue_item status for the current viewed show.
+        Possible status: Downloaded, Snatched, etc...
+        Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
+        :param indexername: Name of indexer. For ex. 'tvdb', 'tmdb', 'tvmaze'
+        :param seriesid: Id of series as identified by the indexer
+        :return:
+        """
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
         episodes = collect_episodes_from_search_thread(series_obj)
@@ -1911,39 +1887,38 @@ class Home(WebRoot):
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
         ep_obj = series_obj.get_episode(season, episode)
-        if isinstance(ep_obj, str):
-            return json.dumps({
-                'result': 'failure',
-            })
 
         try:
             if lang:
                 logger.log('Manual re-downloading subtitles for {show} with language {lang}'.format
                            (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
-        except Exception:
+        except Exception as error:
             return json.dumps({
                 'result': 'failure',
+                'description': 'Error while downloading subtitles: {error}'.format(error=error)
             })
 
         if new_subtitles:
             new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
-            status = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
+            description = 'New subtitles downloaded: {languages}'.format(languages=', '.join(new_languages))
             result = 'success'
         else:
             new_languages = []
-            status = 'No subtitles downloaded'
+            description = 'No subtitles downloaded'
             result = 'failure'
 
-        ui.notifications.message(ep_obj.series.name, status)
+        ui.notifications.message(ep_obj.series.name, description)
         return json.dumps({
             'result': result,
-            'subtitles': ','.join(ep_obj.subtitles),
-            'new_subtitles': ','.join(new_languages),
+            'subtitles': ep_obj.subtitles,
+            'languages': new_languages,
+            'description': description
         })
 
-    def manual_search_subtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
+    def manualSearchSubtitles(self, indexername=None, seriesid=None, season=None, episode=None, release_id=None, picked_id=None):
         mode = 'downloading' if picked_id else 'searching'
+        description = ''
         logger.log('Starting to manual {mode} subtitles'.format(mode=mode))
         try:
             if release_id:
@@ -1964,17 +1939,26 @@ class Home(WebRoot):
         except IndexError:
             ui.notifications.message('Outdated list', 'Please refresh page and try again')
             logger.log('Outdated list. Please refresh page and try again', logger.WARNING)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Outdated list. Please refresh page and try again'
+            })
         except (ValueError, TypeError) as e:
             ui.notifications.message('Error', 'Please check logs')
             logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
                        (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Error while manual {mode} subtitles. Error: {error_msg}'.format(mode=mode, error_msg=e)
+            })
 
         if not os.path.isfile(video_path):
             ui.notifications.message(ep_obj.series.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
-            return json.dumps({'result': 'failure'})
+            return json.dumps({
+                'result': 'failure',
+                'description': 'Video file no longer exists: {video_file}'.format(video_file=video_path)
+            })
 
         if mode == 'searching':
             logger.log('Manual searching subtitles for: {0}'.format(release_name))
@@ -1983,7 +1967,11 @@ class Home(WebRoot):
                 ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
             else:
                 ui.notifications.message(ep_obj.series.name, 'No subtitle found')
-            result = 'success' if found_subtitles else 'failure'
+            if found_subtitles:
+                result = 'success'
+            else:
+                result = 'failure'
+                description = 'No subtitles found'
             subtitles_result = found_subtitles
         else:
             logger.log('Manual downloading subtitles for: {0}'.format(release_name))
@@ -1994,13 +1982,19 @@ class Home(WebRoot):
                                          'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
             else:
                 ui.notifications.message(ep_obj.series.name, 'Failed to download subtitle for {0}'.format(release_name))
-            result = 'success' if new_manual_subtitle else 'failure'
+            if new_manual_subtitle:
+                result = 'success'
+            else:
+                result = 'failure'
+                description = 'Failed to download subtitle for {0}'.format(release_name)
+
             subtitles_result = new_manual_subtitle
 
         return json.dumps({
             'result': result,
             'release': release_name,
-            'subtitles': subtitles_result
+            'subtitles': subtitles_result,
+            'description': description
         })
 
     def setSceneNumbering(self, indexername=None, seriesid=None, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
@@ -2016,6 +2010,12 @@ class Home(WebRoot):
 
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
+
+        if not series_obj:
+            return json.dumps({
+                'success': False,
+                'errorMessage': 'Could not find show {0} {1} to set scene numbering'.format(indexername, seriesid),
+            })
 
         # Check if this is an anime, because we can't set the Scene numbering for anime shows
         if series_obj.is_anime and forAbsolute is None:

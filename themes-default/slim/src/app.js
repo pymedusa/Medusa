@@ -1,4 +1,6 @@
 import Vue from 'vue';
+import VModal from 'vue-js-modal';
+import VueCookie from 'vue-cookie';
 
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
@@ -8,6 +10,8 @@ import { isDevelopment } from './utils/core';
 Vue.config.devtools = true;
 Vue.config.performance = true;
 
+Vue.use(VueCookie);
+Vue.use(VModal);
 registerPlugins();
 
 // @TODO: Remove this before v1.0.0

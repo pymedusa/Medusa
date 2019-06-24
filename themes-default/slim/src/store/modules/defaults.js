@@ -68,6 +68,7 @@ const state = {
             }
         },
         runtime: null,
+        seasonCount: null,
         showType: null,
         status: null,
         title: null,
@@ -75,7 +76,11 @@ const state = {
         year: {},
         size: null,
         showQueueStatus: [],
-        xemNumbering: []
+        xemNumbering: [],
+        xemAbsoluteNumbering: [],
+        sceneAbsoluteNumbering: [],
+        allSceneExceptions: [],
+        sceneNumbering: []
     }
 };
 

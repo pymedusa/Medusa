@@ -122,7 +122,6 @@ class ConfigHandler(BaseRequestHandler):
         'layout.history': EnumField(app, 'HISTORY_LAYOUT', ('compact', 'detailed'), default_value='detailed'),
         'layout.home': EnumField(app, 'HOME_LAYOUT', ('poster', 'small', 'banner', 'simple', 'coverflow'),
                                  default_value='poster'),
-        'layout.show.allSeasons': BooleanField(app, 'DISPLAY_ALL_SEASONS'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
         'theme.name': StringField(app, 'THEME_NAME', setter=theme_name_setter),
@@ -553,7 +552,7 @@ class DataGenerator(object):
         section_data['layout']['history'] = app.HISTORY_LAYOUT
         section_data['layout']['home'] = app.HOME_LAYOUT
         section_data['layout']['show'] = {}
-        section_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
+
         section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
 

@@ -1383,6 +1383,10 @@ ul.tags li a {
     background-color: rgb(195, 227, 200);
 }
 
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
 .qual {
     background-color: rgb(255, 218, 138);
 }

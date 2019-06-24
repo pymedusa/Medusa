@@ -2,58 +2,49 @@
     <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="" />
 </template>
 <script>
-import { api } from '../../api';
 
 export default {
     name: 'plot-info',
     props: {
-        hasPlot: Boolean,
+        description: {
+            type: String,
+            required: true
+        },
         showSlug: {
             type: String,
             required: true
         },
         season: {
-            type: String,
+            type: [Number, String],
             required: true
         },
         episode: {
-            type: String,
+            type: [Number, String],
             required: true
         }
     },
     computed: {
         plotInfoClass() {
-            return this.hasPlot ? 'plotInfo' : 'plotInfoNone';
+            return this.description !== '' ? 'plotInfo' : 'plotInfoNone';
         }
     },
     mounted() {
-        const { $el, hasPlot, showSlug, season, episode } = this;
-        if (!hasPlot) {
+        const { description, $el, showSlug, season, episode } = this;
+        if (description === '') {
             return false;
         }
         $($el).qtip({
             content: {
-                text(event, qt) {
-                    api.get('series/' + showSlug + '/episodes/s' + season + 'e' + episode + '/description').then(response => {
-                        // Set the tooltip content upon successful retrieval
-                        qt.set('content.text', response.data);
-                    }).catch(error => {
-                        // Upon failure... set the tooltip content to the status and error value
-                        const { response } = error;
-                        const { status, statusText } = response;
-                        qt.set('content.text', 'Error while loading plot: ' + status + ': ' + statusText);
-                    });
-                    return 'Loading...';
-                }
+                text: description
             },
             show: {
                 solo: true
             },
             position: {
-                my: 'left center',
+                my: 'right center',
                 adjust: {
                     y: -10,
-                    x: 2
+                    x: -10
                 }
             },
             style: {

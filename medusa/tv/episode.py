@@ -1068,6 +1068,7 @@ class Episode(TV):
         data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
+        data['slug'] = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
         data['season'] = self.season
         data['episode'] = self.episode
 
@@ -1077,11 +1078,11 @@ class Episode(TV):
         data['airDate'] = self.air_date
         data['title'] = self.name
         data['description'] = self.description
-        data['content'] = []
+        data['content'] = {}
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
-        data['watched'] = self.watched
+        data['watched'] = bool(self.watched)
         data['quality'] = self.quality
         data['release'] = {}
         data['release']['name'] = self.release_name
@@ -1100,10 +1101,8 @@ class Episode(TV):
         if self.file_size:
             data['file']['size'] = self.file_size
 
-        if self.hasnfo:
-            data['content'].append('NFO')
-        if self.hastbn:
-            data['content'].append('thumbnail')
+        data['content']['hasNfo'] = self.hasnfo
+        data['content']['hasTbn'] = self.hastbn
 
         if detailed:
             data['statistics'] = {}
