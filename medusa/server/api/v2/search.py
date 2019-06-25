@@ -124,7 +124,9 @@ class SearchHandler(BaseRequestHandler):
             return self._not_found('No episodes passed to search for using the backlog search')
 
         for segment in itervalues(season_segments):
-            cur_backlog_queue_item = BacklogQueueItem(series, segment)
+            # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
+            # when we've refactored out the ForcedSearchQueueItem.
+            cur_backlog_queue_item = ForcedSearchQueueItem(series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         return self._created()
@@ -227,8 +229,8 @@ class SearchHandler(BaseRequestHandler):
         search_type = data['options'].get('type', 'episode')
 
         for segment in itervalues(season_segments):
-            # Need this as it's part of a followup
-            # cur_manual_search_queue_item = ManualSearchQueueItem(series, segment, manual_search_type=search_type)
+            # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
+            # when we've refactored out the ForcedSearchQueueItem.
             cur_manual_search_queue_item = ForcedSearchQueueItem(series, segment, down_cur_quality=False,
                                                                  manual_search=False, manual_search_type=search_type)
 
