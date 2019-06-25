@@ -267,7 +267,7 @@ window.app = new Vue({
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
-                                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
+                                'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS, 'anonymous': app.ADDIC7ED_ANONYMOUS},
                                 'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
@@ -291,6 +291,17 @@ window.app = new Vue({
                                         <input type="password" name="${provider_name}_pass" id="${provider_name}_pass" value="${providerLoginDict[provider_name]['pass']}" class="form-control input-sm input300" autocomplete="no"/>
                                     </span>
                                 </label>
+                                % if provider_name == 'addic7ed':
+                                    <label class="nocheck" for="${provider_name}_anonymous">
+                                        <span class="component-title">Use alternative method</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="${provider_name}_anonymous" id="${provider_name}_anonymous" ${('', 'checked="checked"')[bool(providerLoginDict[provider_name]['anonymous'])]}/>
+                                            <p>This method doesn't require to login. Usefull to bypass reCaptcha protection</p>
+                                        </span>
+                                    </label>
+                                % else:
+                                    <% continue %>
+                                 % endif
                             </div>
                         % endfor
                         <br><input type="submit" class="btn-medusa config_submitter" value="Save Changes" /><br>

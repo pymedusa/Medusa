@@ -62,7 +62,7 @@ video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
 PROVIDER_URLS = {
-    'addic7ed': 'http://www.addic7ed.com',
+    'addic7ed': 'https://www.addic7ed.com',
     'itasa': 'http://www.italiansubs.net',
     'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
@@ -517,7 +517,8 @@ def get_provider_pool():
     """
     logger.debug(u'Creating a new ProviderPool instance')
     provider_configs = {'addic7ed': {'username': app.ADDIC7ED_USER,
-                                     'password': app.ADDIC7ED_PASS},
+                                     'password': app.ADDIC7ED_PASS,
+                                     'anonymous': app.ADDIC7ED_ANONYMOUS},
                         'itasa': {'username': app.ITASA_USER,
                                   'password': app.ITASA_PASS},
                         'legendastv': {'username': app.LEGENDASTV_USER,

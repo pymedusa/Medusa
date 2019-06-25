@@ -573,6 +573,7 @@ class MedusaApp(object):
 
         self.ADDIC7ED_USER = None
         self.ADDIC7ED_PASS = None
+        self.ADDIC7ED_ANONYMOUS = False
 
         self.ITASA_USER = None
         self.ITASA_PASS = None
