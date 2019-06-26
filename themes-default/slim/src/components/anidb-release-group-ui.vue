@@ -1,7 +1,7 @@
 <template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
-        <div id="fetch-release-groups" v-if="showIndexer && showId && fetchingGroups" >
-            <state-switch :state="'loading'"></state-switch>
+        <div id="fetch-release-groups" v-if="fetchingGroups">
+            <state-switch state="loading" />
             <span>Fetching release groups...</span>
         </div>
         <div v-else>
@@ -45,43 +45,24 @@
         </div>
     </div>
 </template>
-<script>
 
-import { api } from '../api';
-import { mapActions } from 'vuex';
+<script>
+import { apiRoute } from '../api';
 
 export default {
     name: 'anidb-release-group-ui',
     props: {
+        showName: {
+            type: String,
+            required: true
+        },
         blacklist: {
             type: Array,
-            default() {
-                return [];
-            }
+            default: () => []
         },
         whitelist: {
             type: Array,
-            default() {
-                return [];
-            }
-        },
-        allGroups: {
-            type: Array,
-            default() {
-                return [];
-            }
-        },
-        /**
-         * Show indexer
-         */
-        showIndexer: {
-            type: String
-        },
-        /**
-         * Show id
-         */
-        showId: {
-            type: Number
+            default: () => []
         }
     },
     data() {
@@ -89,38 +70,45 @@ export default {
             index: 0,
             allReleaseGroups: [],
             newGroup: '',
-            fetchingGroups: false
+            fetchingGroups: false,
+            remoteGroups: []
         };
     },
-    async mounted() {
-        const { showIndexer, showId } = this;
-
+    mounted() {
         this.createIndexedObjects(this.blacklist, 'blacklist');
         this.createIndexedObjects(this.whitelist, 'whitelist');
-        this.createIndexedObjects(this.allGroups, 'releasegroups');
+        this.createIndexedObjects(this.remoteGroups, 'releasegroups');
 
-        if (showId && showIndexer) {
+        this.fetchGroups();
+    },
+    methods: {
+        async fetchGroups() {
+            const { showName } = this;
+            if (!showName) {
+                return;
+            }
+
             this.fetchingGroups = true;
             console.log('Fetching release groups');
 
-            // If we just enabled show.config.anime, the backend will not be aware.
-            // Therefor we quickly patch the backend. So it will fetch the release group in our next api call.
-            await api.patch(`/series/${showIndexer}${showId}`, { config: { anime: true } });
+            const params = {
+                series_name: showName // eslint-disable-line camelcase
+            };
 
-            api.get(`/series/${showIndexer}${showId}`, { params: { id: showId, indexer: showIndexer, fetch: true } })
-                .then(res => {
-                    this.createIndexedObjects(res.data.config.release.blacklist || [], 'blacklist');
-                    this.createIndexedObjects(res.data.config.release.whitelist || [], 'whitelist');
-                    this.createIndexedObjects(res.data.config.release.allgroups || [], 'releasegroups');
-                    this.fetchingGroups = false;
-                })
-                .catch(error => {
-                    this.fetchingGroups = false;
-                    console.error(`Error while fetching the release groups, error: ${error}`);
-                });
-        }
-    },
-    methods: {
+            try {
+                const { data } = await apiRoute.get('home/fetch_releasegroups', { params, timeout: 30000 });
+                if (data.result !== 'success') {
+                    throw new Error('Failed to get release groups, check server logs for errors.');
+                }
+                this.remoteGroups = data.groups || [];
+            } catch (error) {
+                const message = `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`;
+                this.$snotify.warning(message, 'Error');
+                console.error(message);
+            } finally {
+                this.fetchingGroups = false;
+            }
+        },
         toggleItem(release) {
             this.allReleaseGroups = this.allReleaseGroups.map(x => {
                 if (x.id === release.id) {
@@ -203,20 +191,22 @@ export default {
         }
     },
     watch: {
+        showName() {
+            this.fetchGroups();
+        },
         allReleaseGroups: {
             handler() {
                 this.$emit('change', this.allReleaseGroups);
             },
             deep: true
         },
-        allGroups: {
-            handler(newValue) {
-                this.createIndexedObjects(newValue, 'releasegroups');
-            }
+        remoteGroups(newGroups) {
+            this.createIndexedObjects(newGroups, 'releasegroups');
         }
     }
 };
 </script>
+
 <style scoped>
 div.anidb-release-group-ui-wrapper {
     clear: both;
