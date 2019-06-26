@@ -4,13 +4,12 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 from six import itervalues
+
 from medusa import app
 from medusa.search.manual import collect_episodes_from_search_thread
 from medusa.search.queue import (
-    BacklogQueueItem,
     FailedQueueItem,
     ForcedSearchQueueItem,
-    # ManualSearchQueueItem,
 )
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -55,14 +54,6 @@ class SearchHandler(BaseRequestHandler):
         """Queue a backlog search for a range of episodes.
 
         :param identifier:
-        :example:
-            Start a backlog search for show slug tvdb1234 with episodes s01e01, s01e02, s03e03.
-            route: `apiv2/search/backlog`
-            "tvdb1234" : [
-                "s01e01",
-                "s01e02",
-                "s03e03",
-            ]
         """
         data = json_decode(self.request.body)
 
@@ -82,6 +73,17 @@ class SearchHandler(BaseRequestHandler):
 
         :param data:
         :return:
+        :example:
+            Start a backlog search for show slug tvdb1234 with episodes s01e01, s01e02, s03e03.
+            route: `apiv2/search/backlog`
+            { showSlug: "tvdb1234",
+              episodes: [
+                "s01e01",
+                "s01e02",
+                "s03e03",
+              ],
+              options: {}
+            }
         """
         statuses = {}
 
@@ -139,7 +141,7 @@ class SearchHandler(BaseRequestHandler):
         if app.daily_search_scheduler.forceRun():
             return self._created()
 
-        return self._bad_request('Triggering a daily search failed')
+        return self._bad_request('Daily search already active')
 
     def _search_failed(self, data):
         """Queue a failed search.
