@@ -41,7 +41,7 @@ import { isDevelopment } from './utils/core';
  */
 export const registerGlobalComponents = () => {
     // Start with the x-template components
-    let { components } = window;
+    let { components = [] } = window;
 
     // Add global components (in use by `main.mako`)
     // @TODO: These should be registered in an `App.vue` component when possible,
