@@ -80,6 +80,11 @@ async@3.0.1:
   resolved "https://registry.yarnpkg.com/async/-/async-3.0.1.tgz#dfeb34657d1e63c94c0eee424297bf8a2c9a8182"
   integrity sha512-ZswD8vwPtmBZzbn9xyi8XBQWXH3AvOQ43Za1KWYq7JeycrZuUYzx01KvHcVbXltjqH4y0MWrQ33008uLTqXuDw==
 
+async@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.1.0.tgz#42b3b12ae1b74927b5217d8c0016baaf62463772"
+  integrity sha512-4vx/aaY6j/j3Lw3fbCHNWP0pPaTCew3F6F3hYyl/tHs/ndmV1q7NW9T5yuJ2XAGwdQrP+6Wu20x06U4APo/iQQ==
+
 async@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/async/-/async-1.0.0.tgz#f8fc04ca3a13784ade9e1641af98578cfbd647a9"
@@ -343,12 +348,12 @@ dredd-transactions@9.0.2:
     fury-adapter-swagger "0.26.0"
     uri-template "1.0.1"
 
-dredd@11.2.8:
-  version "11.2.8"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.8.tgz#6ae46331f3ec4782872848262947e09b6008a2bb"
-  integrity sha512-kBqchg58znGGNaefaxT8IzSi5Yk9DFdErJesUZssCKHQPs+TQ6R1wChbHMyWJKbbAoylB7Bk1t2fO+zYIlqBfg==
+dredd@11.2.9:
+  version "11.2.9"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.9.tgz#c2c25ed748ee26501f9a02d85b0969cbd1c81d78"
+  integrity sha512-bSyLJ4b19iSg3wkJQUb7YZzQA/cg30cvYfzbpvcVqQQYiXPMT4ML95pufr2vbef4Dl/DbS80Koz8prdiUqCwog==
   dependencies:
-    async "3.0.1"
+    async "3.1.0"
     caseless "0.12.0"
     chai "4.2.0"
     clone "2.1.2"
@@ -358,7 +363,7 @@ dredd@11.2.8:
     glob "7.1.4"
     html "1.0.0"
     htmlencode "0.0.4"
-    inquirer "6.3.1"
+    inquirer "6.4.1"
     js-yaml "3.13.1"
     make-dir "3.0.0"
     markdown-it "8.4.2"
@@ -705,10 +710,10 @@ inherits@2, inherits@^2.0.3, inherits@~2.0.3:
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
 
-inquirer@6.3.1:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-6.3.1.tgz#7a413b5e7950811013a3db491c61d1f3b776e8e7"
-  integrity sha512-MmL624rfkFt4TG9y/Jvmt8vdmOo836U7Y0Hxr2aFk3RelZEGX4Igk0KabWrcaaZaTv9uzglOqWh1Vly+FAWAXA==
+inquirer@6.4.1:
+  version "6.4.1"
+  resolved "https://registry.yarnpkg.com/inquirer/-/inquirer-6.4.1.tgz#7bd9e5ab0567cd23b41b0180b68e0cfa82fc3c0b"
+  integrity sha512-/Jw+qPZx4EDYsaT6uz7F4GJRNFMRdKNeUZw3ZnKV8lyuUgz/YWRCSUAJMZSVhSq4Ec0R2oYnyi6b3d4JXcL5Nw==
   dependencies:
     ansi-escapes "^3.2.0"
     chalk "^2.4.2"
