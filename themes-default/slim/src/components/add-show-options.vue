@@ -62,8 +62,10 @@
                         <span>Release Groups</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist"
-                            :all-groups="release.allgroups" @change="onChangeReleaseGroupsAnime">
+                        <anidb-release-group-ui
+                            class="max-width"
+                            :show-name="showName"
+                            @change="onChangeReleaseGroupsAnime">
                         </anidb-release-group-ui>
                     </div>
                 </div>
@@ -86,9 +88,9 @@
         </fieldset>
     </div>
 </template>
+
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { apiRoute } from '../api';
 import { combineQualities } from '../utils/core';
 import {
     ConfigToggleSlider,
@@ -129,8 +131,7 @@ export default {
             selectedSceneEnabled: false,
             release: {
                 blacklist: [],
-                whitelist: [],
-                allgroups: []
+                whitelist: []
             }
         };
     },
@@ -152,23 +153,6 @@ export default {
         });
     },
     methods: {
-        getReleaseGroups(showName) {
-            const params = {
-                series_name: showName // eslint-disable-line camelcase
-            };
-
-            return apiRoute
-                .get('home/fetch_releasegroups', { params, timeout: 30000 })
-                .then(response => response.data)
-                .catch(error => {
-                    this.$snotify.warning(
-                        `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`,
-                        'Error'
-                    );
-                    console.warn(error);
-                    return null;
-                });
-        },
         update() {
             const {
                 selectedSubtitleEnabled,
@@ -294,24 +278,7 @@ export default {
             ].every(Boolean);
         }
     },
-    asyncComputed: {
-        releaseGroups() {
-            const { selectedAnimeEnabled, showName } = this;
-            if (!selectedAnimeEnabled || !showName) {
-                return Promise.resolve([]);
-            }
-
-            return this.getReleaseGroups(showName).then(result => {
-                if (result.groups) {
-                    return result.groups;
-                }
-            });
-        }
-    },
     watch: {
-        releaseGroups(groups) {
-            this.release.allgroups = groups;
-        },
         release: {
             handler() {
                 this.$emit('refresh');
@@ -348,6 +315,6 @@ export default {
     }
 };
 </script>
-<style>
 
+<style>
 </style>
