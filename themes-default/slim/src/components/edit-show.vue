@@ -1,13 +1,16 @@
 <template>
     <div id="config-content">
-        <backstretch :slug="show.id.slug" />
+        <!-- Remove v-if when backstretch is reactive to prop changes -->
+        <backstretch v-if="showLoaded" :slug="show.id.slug" />
 
-        <h1 class="header">
-            Edit Show
-            <template v-if="show.title"> - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link></template>
+        <h1 v-if="showLoaded" class="header">
+            Edit Show - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link>
+        </h1>
+        <h1 v-else class="header">
+            Edit Show (Loading...)
         </h1>
 
-        <div id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: config.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
                 <div id="config-components">
                     <ul>
@@ -194,7 +197,7 @@
                     type="submit"
                     :value="saveButton"
                     class="btn-medusa pull-left button"
-                    :disabled="saving || !show.id.slug"
+                    :disabled="saving || !showLoaded"
                 />
             </form>
         </div>
@@ -285,6 +288,9 @@ export default {
             const { defaultShow, getShowById, id, indexer } = this;
             return getShowById({ indexer, id }) || defaultShow;
         },
+        showLoaded() {
+            return Boolean(this.show.id.slug);
+        },
         defaultEpisodeStatusOptions() {
             if (this.episodeStatuses.length === 0) {
                 return [];
@@ -350,7 +356,7 @@ export default {
         ]),
         async saveShow(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.show.id.slug) {
+            if (!this.showLoaded) {
                 return;
             }
 
