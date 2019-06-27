@@ -17,9 +17,13 @@
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :value="selectedSubtitleEnabled" @input="selectedSubtitleEnabled = $event"
-                    :explanations="['Download subtitles for this show?']">
-                </config-toggle-slider>
+                <config-toggle-slider
+                    label="Subtitles"
+                    id="subtitles"
+                    :value="selectedSubtitleEnabled"
+                    :explanations="['Download subtitles for this show?']"
+                    @input="selectedSubtitleEnabled = $event"
+                />
             </div>
 
            <div class="form-group">
@@ -48,13 +52,23 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :value="selectedSeasonFoldersEnabled" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folders?']" @input="selectedSeasonFoldersEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Season Folders"
+                id="season_folders"
+                :value="selectedSeasonFoldersEnabled"
+                :disabled="namingForceFolders"
+                :explanations="['Group episodes by season folders?']"
+                @input="selectedSeasonFoldersEnabled = $event"
+            />
 
-            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime"
-                :explanations="['Is this show an Anime?']" :value="selectedAnimeEnabled" @input="selectedAnimeEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                v-if="enableAnimeOptions"
+                label="Anime"
+                id="anime"
+                :value="selectedAnimeEnabled"
+                :explanations="['Is this show an Anime?']"
+                @input="selectedAnimeEnabled = $event"
+            />
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
@@ -62,16 +76,22 @@
                         <span>Release Groups</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist"
-                            :all-groups="release.allgroups" @change="onChangeReleaseGroupsAnime">
-                        </anidb-release-group-ui>
+                        <anidb-release-group-ui
+                            class="max-width"
+                            :show-name="showName"
+                            @change="onChangeReleaseGroupsAnime"
+                        />
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :value="selectedSceneEnabled"
-                :explanations="['Is this show scene numbered?']" @input="selectedSceneEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Scene Numbering"
+                id="scene"
+                :value="selectedSceneEnabled"
+                :explanations="['Is this show scene numbered?']"
+                @input="selectedSceneEnabled = $event"
+            />
 
             <div class="form-group">
                 <div class="row">
@@ -86,9 +106,9 @@
         </fieldset>
     </div>
 </template>
+
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { apiRoute } from '../api';
 import { combineQualities } from '../utils/core';
 import {
     ConfigToggleSlider,
@@ -129,8 +149,7 @@ export default {
             selectedSceneEnabled: false,
             release: {
                 blacklist: [],
-                whitelist: [],
-                allgroups: []
+                whitelist: []
             }
         };
     },
@@ -152,23 +171,6 @@ export default {
         });
     },
     methods: {
-        getReleaseGroups(showName) {
-            const params = {
-                series_name: showName // eslint-disable-line camelcase
-            };
-
-            return apiRoute
-                .get('home/fetch_releasegroups', { params, timeout: 30000 })
-                .then(response => response.data)
-                .catch(error => {
-                    this.$snotify.warning(
-                        `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`,
-                        'Error'
-                    );
-                    console.warn(error);
-                    return null;
-                });
-        },
         update() {
             const {
                 selectedSubtitleEnabled,
@@ -193,9 +195,9 @@ export default {
                 });
             });
         },
-        onChangeReleaseGroupsAnime(items) {
-            this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
-            this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.release.whitelist = groupNames.whitelist;
+            this.release.blacklist = groupNames.blacklist;
             this.update();
         },
         saveDefaults() {
@@ -294,24 +296,7 @@ export default {
             ].every(Boolean);
         }
     },
-    asyncComputed: {
-        releaseGroups() {
-            const { selectedAnimeEnabled, showName } = this;
-            if (!selectedAnimeEnabled || !showName) {
-                return Promise.resolve([]);
-            }
-
-            return this.getReleaseGroups(showName).then(result => {
-                if (result.groups) {
-                    return result.groups;
-                }
-            });
-        }
-    },
     watch: {
-        releaseGroups(groups) {
-            this.release.allgroups = groups;
-        },
         release: {
             handler() {
                 this.$emit('refresh');
@@ -348,6 +333,6 @@ export default {
     }
 };
 </script>
-<style>
 
+<style>
 </style>
