@@ -417,7 +417,7 @@ export default {
 
             const { indexer, id, setShow } = this;
             try {
-                await setShow({ indexer, id, data, save: true });
+                await setShow({ indexer, id, data });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
