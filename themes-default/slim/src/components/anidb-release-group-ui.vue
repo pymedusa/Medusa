@@ -1,7 +1,7 @@
 <template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
         <div v-if="fetchingGroups" id="fetch-release-groups">
-            <state-switch state="loading" />
+            <state-switch state="loading" :theme="config.themeName" />
             <span>Fetching release groups...</span>
         </div>
         <div v-else class="row">
