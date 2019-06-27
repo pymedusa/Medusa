@@ -1,7 +1,7 @@
 // @TODO: Remove this file before v1.0.0
 import Vue from 'vue';
-import VueMeta from 'vue-meta';
 import AsyncComputed from 'vue-async-computed';
+import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
 
 import {
@@ -41,7 +41,7 @@ import { isDevelopment } from './utils/core';
  */
 export const registerGlobalComponents = () => {
     // Start with the x-template components
-    let { components } = window;
+    let { components = [] } = window;
 
     // Add global components (in use by `main.mako`)
     // @TODO: These should be registered in an `App.vue` component when possible,
@@ -98,6 +98,18 @@ export const registerGlobalComponents = () => {
     });
 };
 
+/**
+ * Register plugins.
+ */
+export const registerPlugins = () => {
+    Vue.use(AsyncComputed);
+    Vue.use(VueMeta);
+    Vue.use(Snotify);
+};
+
+/**
+ * Apply the global Vue shim.
+ */
 export default () => {
     const warningTemplate = (name, state) =>
         `${name} is using the global Vuex '${state}' state, ` +
@@ -161,10 +173,7 @@ export default () => {
         console.debug('Loading local Vue');
     }
 
-    // Register plugins
-    Vue.use(AsyncComputed);
-    Vue.use(VueMeta);
-    Vue.use(Snotify);
+    registerPlugins();
 
     registerGlobalComponents();
 };
