@@ -334,9 +334,8 @@ export default {
         }
     },
     created() {
-        const { getShows } = this;
-        // Without getting any specific show data, we pick the show needed from the shows array.
-        getShows();
+        const { id, indexer } = this;
+        this.getShow({ indexer, id, detailed: false });
     },
     beforeMount() {
         // Wait for the next tick, so the component is rendered
@@ -346,7 +345,7 @@ export default {
     },
     methods: {
         ...mapActions([
-            'getShows',
+            'getShow',
             'setShow'
         ]),
         async saveShow(subject) {
