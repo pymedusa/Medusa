@@ -349,7 +349,7 @@ export default {
             'getShows',
             'setShow'
         ]),
-        saveShow(subject) {
+        async saveShow(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.show.id.slug) {
                 return;
@@ -396,21 +396,22 @@ export default {
             }
 
             const { indexer, id } = this;
-            this.setShow({ indexer, id, data, save: true }).then(() => {
+            try {
+                await this.setShow({ indexer, id, data, save: true });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
                     { timeout: 5000 }
                 );
-            }).catch(error => {
+            } catch (error) {
                 this.$snotify.error(
                     'Error while trying to save "' + this.show.title + '": ' + error.message || 'Unknown',
                     'Error'
                 );
-            }).finally(() => {
+            } finally {
                 // Re-enable the save button.
                 this.saving = false;
-            });
+            }
         },
         onChangeIgnoredWords(items) {
             this.show.config.release.ignoredWords = items.map(item => item.value);
