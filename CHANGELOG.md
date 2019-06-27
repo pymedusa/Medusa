@@ -8,6 +8,7 @@
 #### Fixes
 - Fixed hdtorrent provider parse the publishing date with the day first ([#6847](https://github.com/pymedusa/Medusa/pull/6847))
 - Fixed release link on Help & Info page ([#6854](https://github.com/pymedusa/Medusa/pull/6854))
+- Fixed FreeMobile notifier message encode error ([#6867](https://github.com/pymedusa/Medusa/pull/6867))
 
 -----
 
