@@ -46,7 +46,6 @@ window.app = new Vue({
                         ignoredWords: [],
                         blacklist: [],
                         whitelist: [],
-                        allgroups: [],
                         requiredWordsExclude: false,
                         ignoredWordsExclude: false
                     },
@@ -156,7 +155,6 @@ window.app = new Vue({
         onChangeReleaseGroupsAnime(items) {
             this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
             this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-            this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
         },
         updateLanguage(value) {
             this.series.language = value;
