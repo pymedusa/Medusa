@@ -46,9 +46,13 @@
 
 <script>
 import { apiRoute } from '../api';
+import { StateSwitch } from './helpers';
 
 export default {
     name: 'anidb-release-group-ui',
+    components: {
+        StateSwitch
+    },
     props: {
         showName: {
             type: String,
