@@ -17,9 +17,13 @@
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :value="selectedSubtitleEnabled" @input="selectedSubtitleEnabled = $event"
-                    :explanations="['Download subtitles for this show?']">
-                </config-toggle-slider>
+                <config-toggle-slider
+                    label="Subtitles"
+                    id="subtitles"
+                    :value="selectedSubtitleEnabled"
+                    :explanations="['Download subtitles for this show?']"
+                    @input="selectedSubtitleEnabled = $event"
+                />
             </div>
 
            <div class="form-group">
@@ -48,13 +52,23 @@
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :value="selectedSeasonFoldersEnabled" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folders?']" @input="selectedSeasonFoldersEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Season Folders"
+                id="season_folders"
+                :value="selectedSeasonFoldersEnabled"
+                :disabled="namingForceFolders"
+                :explanations="['Group episodes by season folders?']"
+                @input="selectedSeasonFoldersEnabled = $event"
+            />
 
-            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime"
-                :explanations="['Is this show an Anime?']" :value="selectedAnimeEnabled" @input="selectedAnimeEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                v-if="enableAnimeOptions"
+                label="Anime"
+                id="anime"
+                :value="selectedAnimeEnabled"
+                :explanations="['Is this show an Anime?']"
+                @input="selectedAnimeEnabled = $event"
+            />
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
@@ -65,15 +79,19 @@
                         <anidb-release-group-ui
                             class="max-width"
                             :show-name="showName"
-                            @change="onChangeReleaseGroupsAnime">
-                        </anidb-release-group-ui>
+                            @change="onChangeReleaseGroupsAnime"
+                        />
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :value="selectedSceneEnabled"
-                :explanations="['Is this show scene numbered?']" @input="selectedSceneEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Scene Numbering"
+                id="scene"
+                :value="selectedSceneEnabled"
+                :explanations="['Is this show scene numbered?']"
+                @input="selectedSceneEnabled = $event"
+            />
 
             <div class="form-group">
                 <div class="row">
