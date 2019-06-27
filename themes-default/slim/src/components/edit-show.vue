@@ -422,7 +422,6 @@ export default {
         onChangeReleaseGroupsAnime(items) {
             this.show.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
             this.show.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-            this.show.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
         },
         updateLanguage(value) {
             this.show.language = value;

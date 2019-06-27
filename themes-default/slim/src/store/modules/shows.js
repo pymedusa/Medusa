@@ -75,7 +75,6 @@ const getters = {
  *
  * @typedef {object} ShowGetParameters
  * @property {boolean} detailed Fetch detailed information? (seasons & episodes).
- * @property {boolean} fetch Fetch external information? (for example AniDB release groups).
  */
 
 const actions = {
@@ -86,17 +85,13 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { indexer, id, detailed, fetch }) {
+    getShow(context, { indexer, id, detailed }) {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
 
             if (detailed !== undefined) {
                 params.detailed = Boolean(detailed);
-            }
-
-            if (fetch !== undefined) {
-                params.fetch = Boolean(fetch);
             }
 
             api.get('/series/' + indexer + id, { params })
