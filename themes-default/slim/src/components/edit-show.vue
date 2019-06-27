@@ -367,8 +367,10 @@ export default {
             }
         },
         async saveShow(subject) {
+            const { show, showLoaded } = this;
+
             // We want to wait until the page has been fully loaded, before starting to save stuff.
-            if (!this.showLoaded) {
+            if (!showLoaded) {
                 return;
             }
 
@@ -379,37 +381,38 @@ export default {
             // Disable the save button until we're done.
             this.saving = true;
 
+            const showConfig = show.config;
             const data = {
                 config: {
-                    aliases: this.show.config.aliases,
-                    defaultEpisodeStatus: this.show.config.defaultEpisodeStatus,
-                    dvdOrder: this.show.config.dvdOrder,
-                    seasonFolders: this.show.config.seasonFolders,
-                    anime: this.show.config.anime,
-                    scene: this.show.config.scene,
-                    sports: this.show.config.sports,
-                    paused: this.show.config.paused,
-                    location: this.show.config.location,
-                    airByDate: this.show.config.airByDate,
-                    subtitlesEnabled: this.show.config.subtitlesEnabled,
+                    aliases: showConfig.aliases,
+                    defaultEpisodeStatus: showConfig.defaultEpisodeStatus,
+                    dvdOrder: showConfig.dvdOrder,
+                    seasonFolders: showConfig.seasonFolders,
+                    anime: showConfig.anime,
+                    scene: showConfig.scene,
+                    sports: showConfig.sports,
+                    paused: showConfig.paused,
+                    location: showConfig.location,
+                    airByDate: showConfig.airByDate,
+                    subtitlesEnabled: showConfig.subtitlesEnabled,
                     release: {
-                        requiredWords: this.show.config.release.requiredWords,
-                        ignoredWords: this.show.config.release.ignoredWords,
-                        requiredWordsExclude: this.show.config.release.requiredWordsExclude,
-                        ignoredWordsExclude: this.show.config.release.ignoredWordsExclude
+                        requiredWords: showConfig.release.requiredWords,
+                        ignoredWords: showConfig.release.ignoredWords,
+                        requiredWordsExclude: showConfig.release.requiredWordsExclude,
+                        ignoredWordsExclude: showConfig.release.ignoredWordsExclude
                     },
                     qualities: {
-                        preferred: this.show.config.qualities.preferred,
-                        allowed: this.show.config.qualities.allowed
+                        preferred: showConfig.qualities.preferred,
+                        allowed: showConfig.qualities.allowed
                     },
-                    airdateOffset: this.show.config.airdateOffset
+                    airdateOffset: showConfig.airdateOffset
                 },
-                language: this.show.language
+                language: show.language
             };
 
             if (data.config.anime) {
-                data.config.release.blacklist = this.show.config.release.blacklist;
-                data.config.release.whitelist = this.show.config.release.whitelist;
+                data.config.release.blacklist = showConfig.release.blacklist;
+                data.config.release.whitelist = showConfig.release.whitelist;
             }
 
             const { indexer, id, setShow } = this;
