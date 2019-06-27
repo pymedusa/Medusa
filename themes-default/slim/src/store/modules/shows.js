@@ -1,5 +1,7 @@
 import Vue from 'vue';
+
 import { api } from '../../api';
+import { wait } from '../../utils/core';
 import { ADD_SHOW } from '../mutation-types';
 
 /**
@@ -165,8 +167,10 @@ const actions = {
             });
         }
 
-        // Send to API
-        return api.patch('series/' + indexer + id, data).then(setTimeout(() => dispatch('getShow', { indexer, id }), 500));
+        // Send to API and fetch the updated show
+        return api.patch('series/' + indexer + id, data).then(() => {
+            return wait(500).then(() => dispatch('getShow', { indexer, id }));
+        });
     }
 };
 
