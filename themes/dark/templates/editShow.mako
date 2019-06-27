@@ -306,7 +306,7 @@ window.app = new Vue({
                         </config-toggle-slider>
 
                         <config-template v-if="series.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
-                            <anidb-release-group-ui v-if="show.title" class="max-width" :show-name="show.title" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                            <anidb-release-group-ui v-if="series.title" class="max-width" :show-name="series.title" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                         </config-template>
 
                         <config-toggle-slider v-model="series.config.sports" label="Sports" id="sports">
