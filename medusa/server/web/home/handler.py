@@ -1139,14 +1139,16 @@ class Home(WebRoot):
         errors = 0
 
         if not indexername or not seriesid:
-            error_string = 'No show was selected'
+            logger.log('No show was selected (indexer: {indexer}, show: {show})'.format(
+                indexer=indexername, show=seriesid), logger.WARNING)
             errors += 1
             return errors
 
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
 
         if not series_obj:
-            error_string = 'Unable to find the specified show ID: {show}'.format(show=series_obj)
+            logger.log('Unable to find the specified show: {indexer}{show}'.format(
+                indexer=indexername, show=seriesid), logger.WARNING)
             errors += 1
             return errors
 
