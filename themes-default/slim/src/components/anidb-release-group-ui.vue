@@ -197,10 +197,21 @@ export default {
             this.fetchGroups();
         },
         allReleaseGroups: {
-            handler() {
-                this.$emit('change', this.allReleaseGroups);
-            },
-            deep: true
+            deep: true,
+            handler(items) {
+                const groupNames = {
+                    whitelist: [],
+                    blacklist: []
+                };
+
+                items.forEach(item => {
+                    if (Object.keys(groupNames).includes(item.memberOf)) {
+                        groupNames[item.memberOf].push(item.name);
+                    }
+                });
+
+                this.$emit('change', groupNames);
+            }
         },
         remoteGroups(newGroups) {
             this.createIndexedObjects(newGroups, 'releasegroups');

@@ -94,6 +94,8 @@
                                         v-if="show.title"
                                         class="max-width"
                                         :show-name="show.title"
+                                        :blacklist="show.config.release.blacklist"
+                                        :whitelist="show.config.release.whitelist"
                                         @change="onChangeReleaseGroupsAnime"
                                     />
                                 </config-template>
@@ -419,9 +421,9 @@ export default {
         onChangeAliases(items) {
             this.show.config.aliases = items.map(item => item.value);
         },
-        onChangeReleaseGroupsAnime(items) {
-            this.show.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
-            this.show.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.series.config.release.whitelist = groupNames.whitelist;
+            this.series.config.release.blacklist = groupNames.blacklist;
         },
         updateLanguage(value) {
             this.show.language = value;

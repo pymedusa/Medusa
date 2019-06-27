@@ -74,7 +74,7 @@ const getters = {
  * An object representing request parameters for getting a show from the API.
  *
  * @typedef {object} ShowGetParameters
- * @property {boolean} detailed Fetch detailed information? (seasons & episodes).
+ * @property {boolean} detailed Fetch detailed information? (seasons & episodes)
  */
 
 const actions = {

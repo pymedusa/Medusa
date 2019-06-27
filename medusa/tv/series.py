@@ -2065,7 +2065,6 @@ class Series(TV):
         Return JSON representation.
 
         :param detailed: Append seasons & episodes data as well
-        :param fetch: Fetch and append external data (for example AniDB release groups)
         """
         data = {}
         data['id'] = {}
