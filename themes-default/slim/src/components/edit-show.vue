@@ -422,8 +422,8 @@ export default {
             this.show.config.aliases = items.map(item => item.value);
         },
         onChangeReleaseGroupsAnime(groupNames) {
-            this.series.config.release.whitelist = groupNames.whitelist;
-            this.series.config.release.blacklist = groupNames.blacklist;
+            this.show.config.release.whitelist = groupNames.whitelist;
+            this.show.config.release.blacklist = groupNames.blacklist;
         },
         updateLanguage(value) {
             this.show.language = value;
