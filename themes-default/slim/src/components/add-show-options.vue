@@ -195,9 +195,9 @@ export default {
                 });
             });
         },
-        onChangeReleaseGroupsAnime(items) {
-            this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
-            this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.release.whitelist = groupNames.whitelist;
+            this.release.blacklist = groupNames.blacklist;
             this.update();
         },
         saveDefaults() {

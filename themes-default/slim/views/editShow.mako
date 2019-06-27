@@ -152,9 +152,9 @@ window.app = new Vue({
         onChangeAliases(items) {
             this.series.config.aliases = items.map(item => item.value);
         },
-        onChangeReleaseGroupsAnime(items) {
-            this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
-            this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.series.config.release.whitelist = groupNames.whitelist;
+            this.series.config.release.blacklist = groupNames.blacklist;
         },
         updateLanguage(value) {
             this.series.language = value;
