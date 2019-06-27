@@ -46,7 +46,6 @@ window.app = new Vue({
                         ignoredWords: [],
                         blacklist: [],
                         whitelist: [],
-                        allgroups: [],
                         requiredWordsExclude: false,
                         ignoredWordsExclude: false
                     },
@@ -156,7 +155,6 @@ window.app = new Vue({
         onChangeReleaseGroupsAnime(items) {
             this.series.config.release.whitelist = items.filter(item => item.memberOf === 'whitelist');
             this.series.config.release.blacklist = items.filter(item => item.memberOf === 'blacklist');
-            this.series.config.release.allgroups = items.filter(item => item.memberOf === 'releasegroups');
         },
         updateLanguage(value) {
             this.series.language = value;
@@ -308,7 +306,7 @@ window.app = new Vue({
                         </config-toggle-slider>
 
                         <config-template v-if="series.config.anime" label-for="anidbReleaseGroup" label="Release Groups">
-                            <anidb-release-group-ui class="max-width" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" :all-groups="series.config.release.allgroups" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
+                            <anidb-release-group-ui v-if="show.title" class="max-width" :show-name="show.title" :blacklist="series.config.release.blacklist" :whitelist="series.config.release.whitelist" @change="onChangeReleaseGroupsAnime"></anidb-release-group-ui>
                         </config-template>
 
                         <config-toggle-slider v-model="series.config.sports" label="Sports" id="sports">
