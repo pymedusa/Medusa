@@ -1270,22 +1270,12 @@ class Home(WebRoot):
 
         return errors
 
-    def editShow(self, indexername=None, seriesid=None):
+    def editShow(self, **query_args):
         """
         Render the editShow page.
 
         [Converted to VueRouter]
         """
-        # TODO: Handle "show not found" errors in Vue.
-        try:
-            indexer_id = indexer_name_to_id(indexername)
-            series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
-        except (ValueError, TypeError):
-            return self._genericMessage('Error', 'Invalid series ID: {seriesid}'.format(seriesid=seriesid))
-
-        if series_obj is None:
-            return self._genericMessage('Error', 'Show not in show list')
-
         return PageTemplate(rh=self, filename='index.mako').render()
 
     @staticmethod

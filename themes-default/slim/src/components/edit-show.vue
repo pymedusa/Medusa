@@ -7,8 +7,10 @@
             Edit Show - <app-link :href="`home/displayShow?indexername=${indexer}&seriesid=${id}`">{{ show.title }}</app-link>
         </h1>
         <h1 v-else class="header">
-            Edit Show (Loading...)
+            Edit Show<template v-if="!loadError"> (Loading...)</template>
         </h1>
+
+        <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
         <div v-if="showLoaded" id="config" :class="{ summaryFanArt: config.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
@@ -265,7 +267,8 @@ export default {
     },
     data() {
         return {
-            saving: false
+            saving: false,
+            loadError: null
         };
     },
     computed: {
@@ -340,20 +343,30 @@ export default {
         }
     },
     created() {
-        const { id, indexer } = this;
-        this.getShow({ indexer, id, detailed: false });
+        this.loadShow();
     },
-    beforeMount() {
-        // Wait for the next tick, so the component is rendered
-        this.$nextTick(() => {
-            $('#config-components').tabs();
-        });
+    updated() {
+        $('#config-components').tabs();
     },
     methods: {
         ...mapActions([
             'getShow',
             'setShow'
         ]),
+        async loadShow(params) {
+            const { id, indexer } = params || this;
+            try {
+                this.loadError = null;
+                await this.getShow({ indexer, id, detailed: false });
+            } catch (error) {
+                const { data } = error.response;
+                if (data && data.error) {
+                    this.loadError = data.error;
+                } else {
+                    this.loadError = String(error);
+                }
+            }
+        },
         async saveShow(subject) {
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.showLoaded) {
