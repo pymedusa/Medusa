@@ -6,7 +6,6 @@ import datetime
 import json
 import os
 import re
-from builtins import str
 
 from medusa import (
     app,
@@ -300,8 +299,10 @@ class Manage(Home, WebRoot):
                     "AND location != ''",
                     [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = ['s' + str(x['season']) + 'e' + str(x['episode'])
-                                                                for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = [
+                    's{0}e{1}'.format(x['season'], x['episode'])
+                    for x in all_eps_results
+                ]
 
             for ep_result in to_download[(cur_indexer_id, cur_series_id)]:
                 season, episode = ep_result.lstrip('s').split('e')

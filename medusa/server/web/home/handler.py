@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import json
 import os
 import time
-from builtins import str
 from datetime import date, datetime
 from textwrap import dedent
 
@@ -102,7 +101,8 @@ from requests.compat import (
     unquote_plus,
 )
 
-from six import iteritems
+from six import iteritems, text_type
+from six.moves import map
 
 from tornroutes import route
 
@@ -167,7 +167,7 @@ class Home(WebRoot):
         downloaded = [DOWNLOADED, ARCHIVED]
 
         def query_in(items):
-            return '({0})'.format(','.join(map(str, items)))
+            return '({0})'.format(','.join(map(text_type, items)))
 
         query = dedent("""\
             SELECT showid, indexer,
@@ -644,7 +644,7 @@ class Home(WebRoot):
                         controller='home', action='restart')
 
     def updateCheck(self, pid=None):
-        if str(pid) != str(app.PID):
+        if text_type(pid) != text_type(app.PID):
             return self.redirect('/home/')
 
         app.version_check_scheduler.action.check_for_new_version(force=True)
@@ -653,7 +653,7 @@ class Home(WebRoot):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def update(self, pid=None, branch=None):
-        if str(pid) != str(app.PID):
+        if text_type(pid) != text_type(app.PID):
             return self.redirect('/home/')
 
         checkversion = CheckVersion()
@@ -916,8 +916,8 @@ class Home(WebRoot):
         searched_item = [ep for ep in episodes_in_search
                          if all([ep.get('indexer_id') == series_obj.identifier.indexer.id,
                                  ep.get('series_id') == series_obj.identifier.id,
-                                 str(ep.get('season')) == season,
-                                 str(ep.get('episode')) == episode])]
+                                 text_type(ep.get('season')) == season,
+                                 text_type(ep.get('episode')) == episode])]
 
         # # No last_prov_updates available, let's assume we need to refresh until we get some
         # if not last_prov_updates:
@@ -1028,7 +1028,7 @@ class Home(WebRoot):
             episode_history = episode_status_result
             for i in episode_history:
                 i['status'] = i['action']
-                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
+                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(text_type(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
@@ -1715,7 +1715,7 @@ class Home(WebRoot):
         # retrieve the episode object and fail if we can't get one
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
         ep_obj = series_obj.get_episode(season, episode)
-        if isinstance(ep_obj, str):
+        if not ep_obj:
             return json.dumps({
                 'result': 'failure',
             })
@@ -1758,7 +1758,7 @@ class Home(WebRoot):
         indexer_id = indexer_name_to_id(indexername)
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
         ep_obj = series_obj.get_episode(season, episode)
-        if isinstance(ep_obj, str):
+        if not ep_obj:
             return json.dumps({
                 'result': 'failure',
             })
@@ -1899,7 +1899,7 @@ class Home(WebRoot):
         else:
             ep_obj = series_obj.get_episode(forSeason, forEpisode)
 
-        if isinstance(ep_obj, str):
+        if not ep_obj:
             result.update({
                 'success': False,
                 'errorMessage': ep_obj,
@@ -1951,7 +1951,7 @@ class Home(WebRoot):
         series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
 
         ep_obj = series_obj.get_episode(season, episode)
-        if isinstance(ep_obj, str):
+        if not ep_obj:
             return json.dumps({
                 'result': 'failure',
             })
