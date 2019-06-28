@@ -66,7 +66,7 @@ window.app = new Vue({
                     deluge: {
                         title: 'Deluge (via WebUI)',
                         shortTitle: 'Deluge',
-                        description: 'URL to your Deluge client (e.g. http://localhost:8112)',
+                        description: 'URL to your Deluge client (e.g. http://localhost:8112/). Mind the trailing slash!',
                         pathOption: true,
                         removeFromClientOption: true,
                         labelOption: true,
@@ -74,7 +74,8 @@ window.app = new Vue({
                         seedLocationOption: true,
                         pausedOption: true,
                         verifyCertOption: true,
-                        testStatus: 'Click below to test'
+                        testStatus: 'Click below to test',
+                        forceTrailingSlash: true  // Enable this object property if you want to force a trailing slash to the host url.
                     },
                     deluged: {
                         title: 'Deluge (via Daemon)',
@@ -306,6 +307,12 @@ window.app = new Vue({
         $('#config-components').tabs();
     },
     methods: {
+        checkTrailingSlash() {
+            const { clients, clientsConfig } = this;
+            if ( clientsConfig.torrent[clients.torrents.method].forceTrailingSlash && clients.torrents.host.trim().slice(-1) !== '/') {
+                this.clients.torrents.host = clients.torrents.host.trim() + '/';
+            }
+        },
         async testTorrentClient() {
             const { clients } = this;
             const { torrents } = clients;
@@ -410,6 +417,7 @@ window.app = new Vue({
             }
         },
         'clients.torrents.method'(method) {
+            const { clients, clientsConfig } = this;
             if (!this.clientsConfig.torrent[method].removeFromClientOption) {
                 this.search.general.removeFromClient = false;
             }
@@ -588,7 +596,7 @@ window.app = new Vue({
 
                                     <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'sabnzbd'" id="sabnzbd_settings">
 
-                                        <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']" @change="save()">
+                                        <config-textbox v-model="clients.nzb.sabnzbd.host" label="SABnzbd server URL" id="sab_host" :explanations="['username for your KODI server (blank for none)']">
                                             <div class="clear-left">
                                                 <p v-html="clientsConfig.nzb[clients.nzb.method].description"></p>
                                             </div>
@@ -671,7 +679,9 @@ window.app = new Vue({
 
                                     <div v-if="clients.torrents.method" v-show="clients.torrents.method !== 'blackhole'">
 
-                                        <config-textbox v-model="clients.torrents.host" :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'" id="torrent_host">
+                                        <config-textbox v-model="clients.torrents.host"
+                                            :label="clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title + ' host:port'"
+                                            id="torrent_host" @change="checkTrailingSlash">
                                             <p v-html="clientsConfig.torrent[clients.torrents.method].description"></p>
                                         </config-textbox>
 
