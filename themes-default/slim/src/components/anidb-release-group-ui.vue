@@ -1,9 +1,9 @@
 <template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
-        <div v-if="fetchingGroups" id="fetch-release-groups">
+        <template v-if="fetchingGroups">
             <state-switch state="loading" :theme="config.themeName" />
             <span>Fetching release groups...</span>
-        </div>
+        </template>
         <div v-else class="row">
             <div class="col-sm-4 left-whitelist">
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
@@ -47,6 +47,7 @@
 <script>
 import { apiRoute } from '../api';
 import { StateSwitch } from './helpers';
+import { mapState } from 'vuex';
 
 export default {
     name: 'anidb-release-group-ui',
@@ -172,6 +173,9 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            config: state => state.config
+        }),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },
