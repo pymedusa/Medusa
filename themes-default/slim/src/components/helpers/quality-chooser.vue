@@ -305,7 +305,7 @@ export default {
         This is causing the preset selector to change from `Custom` to a preset,
         when the correct qualities for that preset are selected.
         */
-        async overallQuality(newValue) {
+        overallQuality(newValue) {
             if (!this.lock) {
                 this.setInitialPreset(newValue);
             }
