@@ -45,9 +45,10 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 import { apiRoute } from '../api';
 import { StateSwitch } from './helpers';
-import { mapState } from 'vuex';
 
 export default {
     name: 'anidb-release-group-ui',
@@ -173,9 +174,9 @@ export default {
         }
     },
     computed: {
-        ...mapState({
-            config: state => state.config
-        }),
+        ...mapState([
+            'config'
+        ]),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },
