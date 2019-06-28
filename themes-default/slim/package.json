@@ -87,7 +87,7 @@
     "jest-serializer-vue": "2.0.2",
     "mini-css-extract-plugin": "0.7.0",
     "nyc": "14.1.1",
-    "optimize-css-assets-webpack-plugin": "5.0.1",
+    "optimize-css-assets-webpack-plugin": "5.0.3",
     "stylelint": "10.1.0",
     "stylelint-config-standard": "18.3.0",
     "timekeeper": "2.2.0",
