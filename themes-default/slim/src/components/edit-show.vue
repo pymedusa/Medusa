@@ -274,22 +274,17 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            defaultShow: state => state.defaults.show,
             episodeStatuses: state => state.consts.statuses
         }),
-        ...mapGetters([
-            'getShowById',
-            'getStatus'
-        ]),
+        ...mapGetters({
+            show: 'getCurrentShow',
+            getStatus: 'getStatus'
+        }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
         },
         id() {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
-        },
-        show() {
-            const { defaultShow, getShowById, id, indexer } = this;
-            return getShowById({ indexer, id }) || defaultShow;
         },
         showLoaded() {
             return Boolean(this.show.id.slug);
@@ -355,6 +350,10 @@ export default {
         ]),
         async loadShow(params) {
             const { id, indexer } = params || this;
+
+            // Let's tell the store which show we currently want as current.
+            this.$store.commit('currentShow', { indexer, id });
+
             try {
                 this.loadError = null;
                 await this.getShow({ indexer, id, detailed: false });
