@@ -58,6 +58,7 @@ module.exports = {
                 'asyncArrow': 'always'
             }
         ],
+        'require-await': 'error',
         'valid-jsdoc': [
             'error'
         ],
