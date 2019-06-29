@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import logging
-from builtins import object
 
 from medusa import app
 from medusa.common import (
@@ -47,9 +46,13 @@ class Notifier(object):
         log.debug(u'Free Mobile in use with API KEY: {0}', apiKey)
 
         # build up the URL and parameters
-        msg = msg.strip()
-        msg_quoted = quote(title.encode('utf-8') + ': ' + msg.encode('utf-8'))
-        URL = 'https://smsapi.free-mobile.fr/sendmsg?user=' + cust_id + '&pass=' + apiKey + '&msg=' + msg_quoted
+        msg = '{0}: {1}'.format(title, msg.strip())
+        msg_quoted = quote(msg.encode('utf-8'))
+        URL = 'https://smsapi.free-mobile.fr/sendmsg?user={user}&pass={api_key}&msg={msg}'.format(
+            user=cust_id,
+            api_key=apiKey,
+            msg=msg_quoted,
+        )
 
         req = Request(URL)
         # send the request to Free Mobile

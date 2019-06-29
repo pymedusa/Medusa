@@ -4,10 +4,12 @@
 
 #### Improvements
 - Converted the footer to a Vue component ([#4520](https://github.com/pymedusa/Medusa/pull/4520))
+- Converted Edit Show to a Vue SFC ([#4486](https://github.com/pymedusa/Medusa/pull/4486)
 
 #### Fixes
 - Fixed hdtorrent provider parse the publishing date with the day first ([#6847](https://github.com/pymedusa/Medusa/pull/6847))
 - Fixed release link on Help & Info page ([#6854](https://github.com/pymedusa/Medusa/pull/6854))
+- Fixed FreeMobile notifier message encode error ([#6867](https://github.com/pymedusa/Medusa/pull/6867))
 
 -----
 

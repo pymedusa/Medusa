@@ -1,65 +1,65 @@
 <template>
-<tr class="subtitle-search-wrapper">
-    <td colspan="9999">
-        <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
-        <div v-if="displayQuestion" class="search-question">
-            <div class="question">
-                <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+    <tr class="subtitle-search-wrapper">
+        <td colspan="9999">
+            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
+            <div v-if="displayQuestion" class="search-question">
+                <div class="question">
+                    <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+                </div>
+                <div class="options">
+                    <button type="button" class="btn-medusa btn-info" @click="autoSearch">Auto</button>
+                    <button type="button" class="btn-medusa btn-success" @click="manualSearch">Manual</button>
+                </div>
             </div>
-            <div class="options">
-                <button type="button" class="btn-medusa btn-info" @click="autoSearch">Auto</button>
-                <button type="button" class="btn-medusa btn-success" @click="manualSearch">Manual</button>
-            </div>
-        </div>
 
-        <vue-good-table v-if="subtitles.length > 0"
-            :columns="columns"
-            :rows="subtitles"
-            :search-options="{
-                enabled: false
-            }"
-            :sort-options="{
-                enabled: true,
-                initialSortBy: { field: 'score', type: 'desc' }
-            }"
-            styleClass="vgt-table condensed subtitle-table"
-        >
-            <template v-slot:table-column="props">
-                <span v-if="props.column.label === 'Download'">
-                    <span>{{props.column.label}}</span>
-                    <span class="btn-medusa btn-xs pull-right" @click="close">hide</span>
-                </span>
-                <span v-else>
-                    {{props.column.label}}
-                </span>
-            </template>
-            <template v-slot:table-row="props">
-                <span v-if="props.column.field === 'provider'">
-                    <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16" />
-                    <span :title="props.row.provider">{{props.row.provider}}</span>
-                </span>
-                <span v-else-if="props.column.field === 'lang'">
-                    <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11" />
-                </span>
-                <span v-else-if="props.column.field === 'filename'">
-                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16" />
-                        <span class="subtitle-name">{{props.row.filename}}</span>
-                        <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16" />
-                    </a>
-                </span>
-                <span v-else-if="props.column.field === 'download'">
-                    <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                        <img src="images/download.png" width="16" height="16" />
-                    </a>
-                </span>
-                <span v-else>
-                    {{props.formattedRow[props.column.field]}}
-                </span>
-            </template>
-        </vue-good-table>
-    </td>
-</tr>
+            <vue-good-table v-if="subtitles.length > 0"
+                            :columns="columns"
+                            :rows="subtitles"
+                            :search-options="{
+                                enabled: false
+                            }"
+                            :sort-options="{
+                                enabled: true,
+                                initialSortBy: { field: 'score', type: 'desc' }
+                            }"
+                            styleClass="vgt-table condensed subtitle-table"
+            >
+                <template v-slot:table-column="props">
+                    <span v-if="props.column.label === 'Download'">
+                        <span>{{props.column.label}}</span>
+                        <span class="btn-medusa btn-xs pull-right" @click="close">hide</span>
+                    </span>
+                    <span v-else>
+                        {{props.column.label}}
+                    </span>
+                </template>
+                <template v-slot:table-row="props">
+                    <span v-if="props.column.field === 'provider'">
+                        <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16">
+                        <span :title="props.row.provider">{{props.row.provider}}</span>
+                    </span>
+                    <span v-else-if="props.column.field === 'lang'">
+                        <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11">
+                    </span>
+                    <span v-else-if="props.column.field === 'filename'">
+                        <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                            <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16">
+                            <span class="subtitle-name">{{props.row.filename}}</span>
+                            <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16">
+                        </a>
+                    </span>
+                    <span v-else-if="props.column.field === 'download'">
+                        <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                            <img src="images/download.png" width="16" height="16">
+                        </a>
+                    </span>
+                    <span v-else>
+                        {{props.formattedRow[props.column.field]}}
+                    </span>
+                </template>
+            </vue-good-table>
+        </td>
+    </tr>
 </template>
 <script>
 
