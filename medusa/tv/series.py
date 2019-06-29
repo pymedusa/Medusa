@@ -54,7 +54,6 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
-    AnidbAdbaConnectionException,
     CantRefreshShowException,
     CantRemoveShowException,
     EpisodeDeletedException,
@@ -64,7 +63,7 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
+from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import safe_get, to_camel_case
 from medusa.imdb import Imdb
@@ -2061,15 +2060,12 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True, fetch=False):
+    def to_json(self, detailed=True):
         """
         Return JSON representation.
 
         :param detailed: Append seasons & episodes data as well
-        :param fetch: Fetch and append external data (for example AniDB release groups)
         """
-        bw_list = self.release_groups or BlackAndWhiteList(self)
-
         data = {}
         data['id'] = {}
         data['id'][self.indexer_name] = self.series_id
@@ -2130,22 +2126,9 @@ class Series(TV):
 
         # These are for now considered anime-only options
         if self.is_anime:
+            bw_list = self.release_groups or BlackAndWhiteList(self)
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
-
-        # Fetch data from external sources
-        if fetch:
-            # These are for now considered anime-only options, as they query anidb for available release groups.
-            if self.is_anime:
-                try:
-                    data['config']['release']['allgroups'] = get_release_groups_for_anime(self.name)
-                except AnidbAdbaConnectionException as error:
-                    data['config']['release']['allgroups'] = []
-                    log.warning(
-                        'An anidb adba exception occurred when attempting to get the release groups for the show {show}'
-                        '\nError: {error}',
-                        {'show': self.name, 'error': error}
-                    )
 
         if detailed:
             episodes = self.get_all_episodes()

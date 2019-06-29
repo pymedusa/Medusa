@@ -74,6 +74,7 @@ const showSubMenu = function() {
     }
     return menu;
 };
+
 const homeRoutes = [{
     path: '/home',
     name: 'home',
@@ -86,8 +87,10 @@ const homeRoutes = [{
     path: '/home/editShow',
     name: 'editShow',
     meta: {
-        topMenu: 'home'
-    }
+        topMenu: 'home',
+        subMenu: showSubMenu
+    },
+    component: () => import('../components/edit-show.vue')
 }, {
     path: '/home/displayShow',
     name: 'show',

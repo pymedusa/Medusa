@@ -2539,6 +2539,12 @@ option.flag {
     background-position: 10px 50%;
 }
 
+/*
+ * This is currently used by addShow_addExistingShows.mako and addShows_recommended.mako.
+ * Which in turn calls inc_addShowOptions.mako
+ * After these routes have been vueified, these templates can be removed as the below css.
+*/
+
 /* Anime section for editShow */
 .bwlWrapper {
     height: auto;
