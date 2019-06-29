@@ -422,7 +422,7 @@ export default {
                 );
             } catch (error) {
                 this.$snotify.error(
-                    `Error while trying to save ${this.show.title}: ${error.message}` || 'Unknown',
+                    `Error while trying to save ${this.show.title}: ${error.message || 'Unknown'}`,
                     'Error'
                 );
             } finally {
