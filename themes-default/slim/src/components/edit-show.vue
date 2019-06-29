@@ -349,14 +349,14 @@ export default {
             'setShow'
         ]),
         async loadShow(params) {
-            const { id, indexer } = params || this;
+            const { $store, id, indexer, getShow } = params || this;
 
             // Let's tell the store which show we currently want as current.
-            this.$store.commit('currentShow', { indexer, id });
+            $store.commit('currentShow', { indexer, id });
 
             try {
                 this.loadError = null;
-                await this.getShow({ indexer, id, detailed: false });
+                await getShow({ indexer, id, detailed: false });
             } catch (error) {
                 const { data } = error.response;
                 if (data && data.error) {
@@ -412,9 +412,9 @@ export default {
                 data.config.release.whitelist = this.show.config.release.whitelist;
             }
 
-            const { indexer, id } = this;
+            const { indexer, id, setShow } = this;
             try {
-                await this.setShow({ indexer, id, data, save: true });
+                await setShow({ indexer, id, data, save: true });
                 this.$snotify.success(
                     'You may need to "Re-scan files" or "Force Full Update".',
                     'Saved',
@@ -422,7 +422,7 @@ export default {
                 );
             } catch (error) {
                 this.$snotify.error(
-                    'Error while trying to save "' + this.show.title + '": ' + error.message || 'Unknown',
+                    `Error while trying to save ${this.show.title}: ${error.message}` || 'Unknown',
                     'Error'
                 );
             } finally {
