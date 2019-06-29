@@ -13,7 +13,8 @@
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
-import router from '../../router';
+
+import router, { base as routerBase } from '../../router';
 
 export default {
     name: 'app-link',
@@ -82,8 +83,17 @@ export default {
             return anonRedirect ? anonRedirect + href : href;
         },
         matchingVueRoute() {
-            const normalise = str => str ? str.replace(/^\/+|\/+$/g, '') : '';
-            return router.options.routes.find(({ path }) => normalise(path) === normalise(this.href));
+            const { isAbsolute, isExternal, computedHref } = this;
+            if (isAbsolute && isExternal) {
+                return undefined;
+            }
+
+            const { route } = router.resolve(routerBase + computedHref);
+            if (!route.name) {
+                return undefined;
+            }
+
+            return route;
         },
         linkProperties() {
             const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref, matchingVueRoute } = this;
@@ -94,19 +104,12 @@ export default {
             if (to) {
                 return {
                     is: 'router-link',
-                    to: (() => {
-                        if (typeof to === 'object') {
-                            return to;
-                        }
-                        return {
-                            name: to
-                        };
-                    })()
+                    to
                 };
             }
 
             // Just return a boring link with other attrs
-            // @NOTE: This is for scroll achors as it uses the id
+            // @NOTE: This is for scroll anchors as it uses the id
             if (!href) {
                 return {
                     is: 'a',
@@ -121,9 +124,7 @@ export default {
                 if (window.loadMainApp) {
                     return {
                         is: 'router-link',
-                        to: {
-                            name: matchingVueRoute.name
-                        }
+                        to: matchingVueRoute.fullPath
                     };
                 }
             }
