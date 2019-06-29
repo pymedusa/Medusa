@@ -14,7 +14,7 @@ registerPlugins();
 registerGlobalComponents();
 
 const app = new Vue({
-    name: 'App',
+    name: 'app',
     router,
     store,
     data() {

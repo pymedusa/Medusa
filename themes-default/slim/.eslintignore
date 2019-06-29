@@ -7,3 +7,4 @@ dist/**
 flow-typed/**
 static/js/lib/**
 static/js/vender.js
+!.eslintrc.js

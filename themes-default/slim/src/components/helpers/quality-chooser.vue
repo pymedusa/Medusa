@@ -81,15 +81,15 @@
         </div>
 
         <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
-            <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
+            <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html" />
         </div>
 
         <div v-if="archive" id="archive">
             <h5>
                 <b>Archive downloaded episodes that are not currently in
-                <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
-                <br />Avoids unnecessarily increasing your backlog
-                <br />
+                    <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
+                <br>Avoids unnecessarily increasing your backlog
+                <br>
             </h5>
             <button
                 @click.prevent="archiveEpisodes"
