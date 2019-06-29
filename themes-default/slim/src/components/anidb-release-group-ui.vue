@@ -6,11 +6,11 @@
         </template>
         <div v-else class="row">
             <div class="col-sm-4 left-whitelist">
-                <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')"/>
+                <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')">
                 <ul>
                     <li @click="release.toggled = !release.toggled" v-for="release in itemsWhitelist" :key="release.id" :class="{active: release.toggled}">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('whitelist')">
-                        <img src="images/curved-arrow-left.png"/>
+                        <img src="images/curved-arrow-left.png">
                     </div>
                 </ul>
             </div>
@@ -19,26 +19,26 @@
                 <ul>
                     <li v-for="release in itemsReleaseGroups" :key="release.id" class="initial" :class="{active: release.toggled}" @click="release.toggled = !release.toggled">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('releasegroups')">
-                        <img src="images/curved-arrow-left.png"/>
+                        <img src="images/curved-arrow-left.png">
                     </div>
                 </ul>
             </div>
             <div class="col-sm-4 right-blacklist">
-                <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')"/>
+                <span>Blacklist</span><img v-if="showDeleteFromBlacklist" class="deleteFromBlacklist" src="images/no16.png" @click="deleteFromList('blacklist')">
                 <ul>
                     <li @click="release.toggled = !release.toggled" v-for="release in itemsBlacklist" :key="release.id" :class="{active: release.toggled}">{{ release.name }}</li>
                     <div class="arrow" @click="moveToList('blacklist')">
-                        <img src="images/curved-arrow-left.png"/>
+                        <img src="images/curved-arrow-left.png">
                     </div>
                 </ul>
             </div>
         </div>
         <div id="add-new-release-group" class="row">
             <div class="col-md-4">
-                <input class="form-control input-sm" type="text" v-model="newGroup" placeholder="add custom group"/>
+                <input v-model="newGroup" class="form-control input-sm" type="text" placeholder="add custom group">
             </div>
             <div class="col-md-8">
-                <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"/> to add it to the correct list.</p>
+                <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"> to add it to the correct list.</p>
             </div>
         </div>
     </div>

@@ -132,7 +132,7 @@
                             <fieldset class="component-group-list">
 
                                 <config-template label-for="rls_ignore_words" label="Ignored words">
-                                     <select-list
+                                    <select-list
                                         :list-items="show.config.release.ignoredWords"
                                         @change="onChangeIgnoredWords"
                                     />
@@ -200,7 +200,7 @@
                     :value="saveButton"
                     class="btn-medusa pull-left button"
                     :disabled="saving || !showLoaded"
-                />
+                >
             </form>
         </div>
     </div>

@@ -26,7 +26,7 @@
                 />
             </div>
 
-           <div class="form-group">
+            <div class="form-group">
                 <div class="row">
                     <label for="defaultStatus" class="col-sm-2 control-label">
                         <span>Status for previously aired episodes</span>
