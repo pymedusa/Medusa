@@ -1,9 +1,9 @@
 <template>
     <div class="anidb-release-group-ui-wrapper top-10 max-width">
-        <div v-if="fetchingGroups" id="fetch-release-groups">
-            <state-switch state="loading" />
+        <template v-if="fetchingGroups">
+            <state-switch state="loading" :theme="config.themeName" />
             <span>Fetching release groups...</span>
-        </div>
+        </template>
         <div v-else class="row">
             <div class="col-sm-4 left-whitelist">
                 <span>Whitelist</span><img v-if="showDeleteFromWhitelist" class="deleteFromWhitelist" src="images/no16.png" @click="deleteFromList('whitelist')">
@@ -35,7 +35,7 @@
         </div>
         <div id="add-new-release-group" class="row">
             <div class="col-md-4">
-                <input class="form-control input-sm" type="text" v-model="newGroup" placeholder="add custom group">
+                <input v-model="newGroup" class="form-control input-sm" type="text" placeholder="add custom group">
             </div>
             <div class="col-md-8">
                 <p>Use the input to add custom whitelist / blacklist release groups. Click on the <img src="images/curved-arrow-left.png"> to add it to the correct list.</p>
@@ -45,6 +45,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 import { apiRoute } from '../api';
 import { StateSwitch } from './helpers';
 
@@ -172,6 +174,9 @@ export default {
         }
     },
     computed: {
+        ...mapState([
+            'config'
+        ]),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },

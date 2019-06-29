@@ -134,7 +134,7 @@ export default {
             lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
-            selectedQualityPreset: null, // Initialized on mount
+            curQualityPreset: null,
             archive: false,
             archivedStatus: '',
             archiveButton: {
@@ -155,6 +155,19 @@ export default {
         ]),
         initialQuality() {
             return this.overallQuality === undefined ? this.defaultQuality : this.overallQuality;
+        },
+        selectedQualityPreset: {
+            get() {
+                return this.curQualityPreset;
+            },
+            set(newValue) {
+                const { curQualityPreset, setQualityFromPreset } = this;
+                // If an array was provided - initial or update from parent: [newPreset, oldPreset]
+                // If a single value was provided - updated using select box: [newPreset, currentPreset]
+                const [newPreset, currentPreset] = Array.isArray(newValue) ? newValue : [newValue, curQualityPreset];
+                setQualityFromPreset(newPreset, currentPreset);
+                this.curQualityPreset = newPreset;
+            }
         },
         explanation() {
             const { allowedQualities, preferredQualities, qualityValues } = this;
@@ -234,16 +247,20 @@ export default {
             };
         }
     },
-    async mounted() {
-        await waitFor(() => this.qualityValues.length > 0, 100, 3000);
-
-        const { isQualityPreset, keep, initialQuality } = this;
-        this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(initialQuality) ? initialQuality : 0);
-        this.setQualityFromPreset(this.selectedQualityPreset, initialQuality);
+    mounted() {
+        this.setInitialPreset(this.initialQuality);
     },
     methods: {
         isQualityPreset(quality) {
             return this.getQualityPreset({ value: quality }) !== undefined;
+        },
+        async setInitialPreset(preset) {
+            // Wait for the store to get populated.
+            await waitFor(() => this.qualityValues.length > 0, 100, 3000);
+
+            const { isQualityPreset, keep } = this;
+            const newPreset = keep === 'keep' ? 'keep' : (isQualityPreset(preset) ? preset : 0);
+            this.selectedQualityPreset = [newPreset, preset];
         },
         async archiveEpisodes() {
             this.archivedStatus = 'Archiving...';
@@ -288,20 +305,10 @@ export default {
         This is causing the preset selector to change from `Custom` to a preset,
         when the correct qualities for that preset are selected.
         */
-        async overallQuality(newValue) {
-            if (this.lock) {
-                return;
+        overallQuality(newValue) {
+            if (!this.lock) {
+                this.setInitialPreset(newValue);
             }
-
-            // Wait for the store to get populated.
-            await waitFor(() => this.qualityValues.length > 0, 100, 3000);
-
-            const { isQualityPreset, keep, setQualityFromPreset } = this;
-            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(newValue) ? newValue : 0);
-            setQualityFromPreset(this.selectedQualityPreset, newValue);
-        },
-        selectedQualityPreset(preset, oldPreset) {
-            this.setQualityFromPreset(preset, oldPreset);
         },
         /* eslint-disable no-warning-comments */
         allowedQualities(newQuality) {

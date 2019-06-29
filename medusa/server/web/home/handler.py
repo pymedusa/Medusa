@@ -15,14 +15,10 @@ from medusa import (
     db,
     helpers,
     logger,
-    name_cache,
     notifiers,
     providers,
     subtitles,
     ui,
-)
-from medusa.black_and_white_list import (
-    BlackAndWhiteList,
 )
 from medusa.clients import torrent
 from medusa.clients.nzb import (
@@ -48,7 +44,6 @@ from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
     pretty_file_size,
-    try_int,
 )
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
@@ -57,19 +52,14 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ex,
 )
-from medusa.helpers.anidb import get_release_groups_for_anime, short_group_names
+from medusa.helpers.anidb import get_release_groups_for_anime
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
-    IndexerException,
-    IndexerShowNotFoundInLanguage,
-)
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
-    update_scene_exceptions,
 )
 from medusa.scene_numbering import (
     get_scene_absolute_numbering,
@@ -1131,54 +1121,38 @@ class Home(WebRoot):
         if language in indexer.config['valid_languages']:
             return True
 
-    def editShow(self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions_list=None, season_folders=None, paused=None, directCall=False,
-                 air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
-                 subtitles=None, rls_ignore_words=None, rls_require_words=None,
-                 anime=None, blacklist=None, whitelist=None, scene=None,
-                 defaultEpStatus=None, quality_preset=None):
+    def massEditShow(
+        self, indexername=None, seriesid=None, location=None, allowed_qualities=None, preferred_qualities=None,
+        season_folders=None, paused=None, air_by_date=None, sports=None, dvd_order=None, subtitles=None,
+        anime=None, scene=None, defaultEpStatus=None
+    ):
+        """
+        A variation of the original `editShow`, where `directCall` is always true.
 
+        This route as been added specifically for the usage in the massEditSubmit route.
+        It's called when trying to mass edit show configurations.
+        This route should be removed after vueifying manage_massEdit.mako.
+        """
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions = exceptions_list or set()
 
         errors = 0
 
         if not indexername or not seriesid:
-            error_string = 'No show was selected'
-            if directCall:
-                errors += 1
-                return errors
-            else:
-                return self._genericMessage('Error', error_string)
+            logger.log('No show was selected (indexer: {indexer}, show: {show})'.format(
+                indexer=indexername, show=seriesid), logger.WARNING)
+            errors += 1
+            return errors
 
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
 
         if not series_obj:
-            error_string = 'Unable to find the specified show ID: {show}'.format(show=series_obj)
-            if directCall:
-                errors += 1
-                return errors
-            else:
-                return self._genericMessage('Error', error_string)
+            logger.log('Unable to find the specified show: {indexer}{show}'.format(
+                indexer=indexername, show=seriesid), logger.WARNING)
+            errors += 1
+            return errors
 
         series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        # If user set quality_preset remove all preferred_qualities
-        if try_int(quality_preset, None):
-            preferred_qualities = []
-
-        if not location and not allowed_qualities and not preferred_qualities and season_folders is None:
-            t = PageTemplate(rh=self, filename='editShow.mako')
-            groups = []
-
-            if series_obj.is_anime:
-                return t.render(show=series_obj, groups=groups, whitelist=whitelist,
-                                blacklist=blacklist, title='Edit Show', header='Edit Show', controller='home',
-                                action='editShow')
-            else:
-                return t.render(show=series_obj, title='Edit Show', header='Edit Show',
-                                controller='home', action='editShow')
 
         season_folders = config.checkbox_to_value(season_folders)
         dvd_order = config.checkbox_to_value(dvd_order)
@@ -1189,86 +1163,13 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        do_update = False
-        # In mass edit, we can't change language so we need to check if indexer_lang is set
-        if indexer_lang and series_obj.lang != indexer_lang:
-            msg = (
-                '{{status}} {language}'
-                ' for {indexer_name} show {show_id}'.format(
-                    language=indexer_lang,
-                    show_id=series_obj.indexerid,
-                    indexer_name=indexerApi(series_obj.indexer).name,
-                )
-            )
-            status = 'Unexpected result when changing language to'
-            log_level = logger.WARNING
-            language = series_obj.lang
-            try:
-                do_update = self.check_show_for_language(
-                    series_obj,
-                    indexer_lang,
-                )
-            except IndexerShowNotFoundInLanguage:
-                errors += 1
-                status = 'Could not change language to'
-            except IndexerException as error:
-                errors += 1
-                status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {error!r}'.format(
-                    error=error,
-                )
-            else:
-                language = indexer_lang
-                status = 'Changing language to'
-                log_level = logger.INFO
-            finally:
-                indexer_lang = language
-                msg = msg.format(status=status)
-                logger.log(msg, log_level)
-
-        if scene == series_obj.scene and anime == series_obj.anime:
-            do_update_scene_numbering = False
-        else:
-            do_update_scene_numbering = True
+        do_update_scene_numbering = not (scene == series_obj.scene and anime == series_obj.anime)
 
         if not isinstance(allowed_qualities, list):
             allowed_qualities = [allowed_qualities]
 
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
-
-        if isinstance(exceptions, list):
-            exceptions = set(exceptions)
-
-        if not isinstance(exceptions, set):
-            exceptions = {exceptions}
-
-        # If directCall from mass_edit_update no scene exceptions handling or
-        # blackandwhite list handling
-        if directCall:
-            do_update_exceptions = False
-        else:
-            if exceptions == series_obj.exceptions:
-                do_update_exceptions = False
-            else:
-                do_update_exceptions = True
-
-            with series_obj.lock:
-                if anime:
-                    if not series_obj.release_groups:
-                        series_obj.release_groups = BlackAndWhiteList(series_obj)
-
-                    if whitelist:
-                        shortwhitelist = short_group_names(whitelist)
-                        series_obj.release_groups.set_white_keywords(shortwhitelist)
-                    else:
-                        series_obj.release_groups.set_white_keywords([])
-
-                    if blacklist:
-                        shortblacklist = short_group_names(blacklist)
-                        series_obj.release_groups.set_black_keywords(shortblacklist)
-                    else:
-                        series_obj.release_groups.set_black_keywords([])
 
         with series_obj.lock:
             new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities],
@@ -1303,11 +1204,6 @@ class Home(WebRoot):
             series_obj.default_ep_status = int(defaultEpStatus)
             series_obj.dvd_order = dvd_order
 
-            if not directCall:
-                series_obj.lang = indexer_lang
-                series_obj.rls_ignore_words = rls_ignore_words.strip()
-                series_obj.rls_require_words = rls_require_words.strip()
-
             # if we change location clear the db of episodes, change it, write to db, and rescan
             old_location = os.path.normpath(series_obj._location)
             new_location = os.path.normpath(location)
@@ -1316,16 +1212,16 @@ class Home(WebRoot):
                 logger.log('Changing show location to: {new}'.format(new=new_location), logger.INFO)
                 if not os.path.isdir(new_location):
                     if app.CREATE_MISSING_SHOW_DIRS:
-                        logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
+                        logger.log("Show directory doesn't exist, creating it", logger.INFO)
                         try:
                             os.mkdir(new_location)
                         except OSError as error:
                             errors += 1
                             changed_location = False
-                            logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
+                            logger.log("Unable to create the show directory '{location}'. Error: {msg}".format
                                        (location=new_location, msg=error), logger.WARNING)
                         else:
-                            logger.log(u'New show directory created', logger.INFO)
+                            logger.log('New show directory created', logger.INFO)
                             helpers.chmod_as_parent(new_location)
                     else:
                         changed_location = False
@@ -1337,7 +1233,7 @@ class Home(WebRoot):
                 if changed_location:
                     series_obj.location = new_location
 
-                if (do_update or changed_location) and os.path.isdir(new_location):
+                if changed_location and os.path.isdir(new_location):
                     try:
                         app.show_queue_scheduler.action.refreshShow(series_obj)
                     except CantRefreshShowException as error:
@@ -1347,26 +1243,6 @@ class Home(WebRoot):
 
             # Save all settings changed while in series_obj.lock
             series_obj.save_to_db()
-
-        # force the update
-        if do_update:
-            try:
-                app.show_queue_scheduler.action.updateShow(series_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as error:
-                errors += 1
-                logger.log("Unable to update show '{show}': {error!r}".format
-                           (show=series_obj.name, error=error), logger.WARNING)
-
-        if do_update_exceptions:
-            try:
-                update_scene_exceptions(series_obj, exceptions)
-                time.sleep(cpu_presets[app.CPU_PRESET])
-                name_cache.build_name_cache(series_obj)
-            except CantUpdateShowException as error:
-                errors += 1
-                logger.log("Unable to force an update on scene exceptions for show '{show}': {error!r}".format
-                           (show=series_obj.name, error=error), logger.WARNING)
 
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
@@ -1392,20 +1268,15 @@ class Home(WebRoot):
                 logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
                            'Error: {error!r}'.format(show=series_obj.name, error=error), logger.WARNING)
 
-        if directCall:
-            return errors
+        return errors
 
-        if errors:
-            ui.notifications.error(
-                'Errors', '{num} error{s} while saving changes. Please check logs'.format(
-                    num=errors, s='s' if errors > 1 else ''
-                )
-            )
+    def editShow(self, **query_args):
+        """
+        Render the editShow page.
 
-        logger.log(u'Finished editing show: {show}'.format(show=series_obj.name), logger.DEBUG)
-        return self.redirect(
-            '/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(
-                series_obj=series_obj))
+        [Converted to VueRouter]
+        """
+        return PageTemplate(rh=self, filename='index.mako').render()
 
     @staticmethod
     def erase_cache(series_obj):
