@@ -581,7 +581,7 @@ class Series(TV):
     @property
     def banner(self):
         """Return banner path."""
-        img_type = image_cache.POSTER
+        img_type = image_cache.BANNER
         return image_cache.get_artwork(img_type, self)
 
     @property
