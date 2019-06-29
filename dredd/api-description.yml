@@ -580,7 +580,6 @@ paths:
       description: Retrieves information about a given alias
       parameters:
         - $ref: '#/parameters/alias-id'
-          name: id
       responses:
         200:
           description: The alias information
@@ -892,54 +891,30 @@ paths:
           description: No credentials provided or invalid credentials
           x-request:
             body: {}
-  /search/{seriesid}:
+  /search:
     get:
-    summary: Collect finished, running and queued searches for a specific show
-    description: |
-      The Series endpoint returns information about the Series added to Medusa.
-    parameters:
-      - $ref: '#/parameters/series-id'
-        name: seriesid
-    responses:
-      200:
-        description: An array of searched episode objects with information on the type of search used
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/SearchedEpisode'
-      400:
-        $ref: '#/responses/error'
-        description: Invalid pagination parameters
+      summary: Collect finished, running and queued searches for a specific show
+      description: |
+        The Series endpoint returns information about the Series added to Medusa.
+      parameters:
+        - $ref: '#/parameters/series-id'
+      responses:
+        200:
+          description: An array of searched episode objects with information on the type of search used
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/SearchedEpisode'
+        400:
+          $ref: '#/responses/error'
   /search/backlog:
     post:
       summary: Search providers for results
       description: |
         When provided with a json formed body of search parameters,
-        queue a new daily search or start a search for a specific show with optional episodes(s)
+        queue a backlog search for a specific show with optional episodes(s)
       parameters:
-        - $ref: '#/parameters/search-type'
-          name: searchType
-      requestBody:
-        description: An object including
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                showSlug:
-                  - $ref: '#/parameters/series-id'
-                  name: seriesid
-                episodes:
-                  description: An array of searched episode objects with information on the type of search used
-                  schema:
-                    type: array
-                    items:
-                      type: string
-                    example: ["s01e01", "s03e03"]
-                options:
-                  description: TBD
-                  type: object
+        - $ref: '#/parameters/search-backlog'
       responses:
         201:
           description: "Queue a backlog search for a specific show and episode(s)"
@@ -947,10 +922,44 @@ paths:
             body: {"tvdb1234" : [ "s01e01", "s01e02", "s03e03" ]}
         400:
           $ref: '#/responses/error'
-          description: Invalid search object, missing show / episode information
         404:
           $ref: '#/responses/error'
-          description: Series or episode not found
+  /search/failed:
+    post:
+      summary: Search providers for results
+      description: |
+        When provided with a json formed body of search parameters,
+        queue a failed search for a specific show with optional episodes(s).
+        The episodes will be marked as failed. Which will prevent them from being snatched again.
+        A new backlog search is started for the episodes.
+      parameters:
+        - $ref: '#/parameters/search-backlog'
+      responses:
+        201:
+          description: "Queue a failed search for a specific show and episode(s)"
+          x-request:
+            body: {"tvdb1234" : [ "s01e01", "s01e02", "s03e03" ]}
+        400:
+          $ref: '#/responses/error'
+        404:
+          $ref: '#/responses/error'
+  /search/manual:
+    post:
+      summary: Search providers for results
+      description: |
+        When provided with a json formed body of search parameters,
+        queue a manual search for a specific show with optional episodes(s)
+      parameters:
+        - $ref: '#/parameters/search-manual'
+      responses:
+        201:
+          description: "Queue a manual search for a specific show and episode(s)"
+          x-request:
+            body: {"tvdb1234" : [ "s01e01", "s01e02", "s03e03" ]}
+        400:
+          $ref: '#/responses/error'
+        404:
+          $ref: '#/responses/error'
   /search/daily:
     post:
       summary: Queue a forced daily search
@@ -960,7 +969,6 @@ paths:
           description: "Queue a new daily search"
         400:
           $ref: '#/responses/error'
-          description: Daily search is already queued or active
 
 definitions:
   Series:
@@ -2684,17 +2692,59 @@ parameters:
     description: The log level
     type: string
     enum: [ERROR, WARNING, INFO, DEBUG, DB]
-  search-type:
-    name: search-type
-    in: path
-    required: true
-    description: the type of search we want to use for searching provider results
-    type: string
-    enum:
-      - backlog
-      - daily
-      - failed
-      - manual
+  search-backlog:
+    in: body
+    name: Search Config
+    description: Object with required information to search for a specific show's episode(s).
+    schema:
+      type: object
+      required:
+        - showSlug
+        - episodes
+      properties:
+        showSlug:
+          description: Show slug consisting of the indexer name + indexers id
+          type: string
+          example: tvdb12345
+        episodes:
+          description: An array of searched episode objects with information on the type of search used
+          type: array
+          items:
+            type: string
+          example: ["s01e01", "s03e03"]
+        options:
+          description: TBD
+          type: object
+  search-manual:
+    in: body
+    name: Search Config
+    description: Object with required information to search for a specific show's episode(s).
+    schema:
+      type: object
+      required:
+        - showSlug
+        - episodes
+      properties:
+        showSlug:
+          description: Show slug consisting of the indexer name + indexers id
+          type: string
+          example: tvdb12345
+        episodes:
+          description: An array of searched episode objects with information on the type of search used
+          type: array
+          items:
+            type: string
+          example: ["s01e01", "s03e03"]
+        options:
+          description: Type of the manual search. 'episode' or 'season' search.
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - 'episode'
+                - 'season'
+              example: 'episode'
 responses:
   pagination:
     description: Pagination response
