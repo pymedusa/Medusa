@@ -486,8 +486,7 @@ class Cache(object):
                 all_wanted = True
                 for cur_ep in search_result.actual_episodes:
                     # if the show says we want that episode then add it to the list
-                    if not search_result.series.want_episode(search_result.actual_season, cur_ep, search_result.quality,
-                                                             forced_search, down_cur_quality):
+                    if not search_result.want_episode(search_result.actual_season, cur_ep, search_result.quality):
                         log.debug('Ignoring {0} because one or more episodes are unwanted', search_result.name)
                         all_wanted = False
                         break

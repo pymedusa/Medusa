@@ -266,6 +266,7 @@ class Episode(TV):
         self.wanted_quality = []
         self.loaded = False
         self.watched = False
+        self.preferred_words_score = 0
         if series:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
@@ -692,6 +693,8 @@ class Episode(TV):
             if sql_results[0]['release_group'] is not None:
                 self.release_group = sql_results[0]['release_group']
 
+            self.preferred_words_score = int(sql_results[0]['preferred_words_score'] or 0)
+
             self.loaded = True
             self.reset_dirty()
             return True
@@ -1088,6 +1091,7 @@ class Episode(TV):
         data['release']['group'] = self.release_group
         data['release']['proper'] = self.is_proper
         data['release']['version'] = self.version
+        data['release']['preferred_words_score'] = self.preferred_words_score
         data['scene'] = {}
         data['scene']['season'] = self.scene_season
         data['scene']['episode'] = self.scene_episode
@@ -1237,14 +1241,15 @@ class Episode(TV):
                         '  version = ?, '
                         '  release_group = ?, '
                         '  manually_searched = ?, '
-                        '  watched = ? '
+                        '  watched = ?, '
+                        '  preferred_words_score = ? '
                         'WHERE '
                         '  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
                          self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
-                         self.version, self.release_group, self.manually_searched, self.watched, ep_id]]
+                         self.version, self.release_group, self.manually_searched, self.watched, self.preferred_words_score, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
@@ -1274,15 +1279,17 @@ class Episode(TV):
                         '  version = ?, '
                         '  release_group = ?, '
                         '  manually_searched = ?, '
-                        '  watched = ? '
+                        '  watched = ?, '
+                        '  preferred_words_score = ? '
                         'WHERE '
                         '  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.quality, self.location, self.file_size, self.release_name,
                          self.is_proper, self.series.series_id, self.season, self.episode, self.absolute_number,
-                         self.version, self.release_group, self.manually_searched, self.watched, ep_id]]
+                         self.version, self.release_group, self.manually_searched, self.watched, self.preferred_words_score, ep_id]]
             else:
+                # @TODO: I checked this query, but it's not up2date with the db. We should remove it or review it.
                 # use a custom insert method to get the data into the DB.
                 return [
                     'INSERT OR IGNORE INTO '
@@ -1311,15 +1318,16 @@ class Episode(TV):
                     '  version, '
                     '  release_group, '
                     '  manually_searched, '
-                    '  watched) '
+                    '  watched, '
+                    '  preferred_words_score) '
                     'VALUES '
                     '  ((SELECT episode_id FROM tv_episodes WHERE indexer = ? AND showid = ? AND season = ? AND episode = ?), '
-                    '  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
+                    '  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
                     [self.series.indexer, self.series.series_id, self.season, self.episode, self.indexerid, self.series.indexer, self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.quality, self.location,
                      self.file_size, self.release_name, self.is_proper, self.series.series_id, self.season, self.episode,
-                     self.absolute_number, self.version, self.release_group, self.manually_searched, self.watched]]
+                     self.absolute_number, self.version, self.release_group, self.manually_searched, self.watched, self.preferred_words_score]]
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
                       {'id': self.series.series_id, 'error_msg': error})
@@ -1350,6 +1358,7 @@ class Episode(TV):
             'release_group': self.release_group,
             'manually_searched': self.manually_searched,
             'watched': self.watched,
+            'preferred_words_score': self.preferred_words_score
         }
 
         control_value_dict = {

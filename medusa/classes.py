@@ -22,8 +22,9 @@ import logging
 
 from dateutil import parser
 
-from medusa import app
-from medusa.common import Quality
+from medusa import app, db
+from medusa.common import statusStrings, Quality, UNSET, WANTED
+from medusa.helper.common import episode_num
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import SearchType
 
@@ -131,6 +132,125 @@ class SearchResult(object):
         # Search type. Use the medusa.search.SearchType enum, as value.
         # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH, SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
+
+        # # Assign a score for the amount of preferred words there are in the release name
+        self._preferred_words_score = None
+
+    @property
+    def preferred_words_score(self):
+        """Calculate a score based on the amount of preferred words in release name."""
+        if not app.PREFERRED_WORDS:
+            return 0
+
+        preferred_words = [word.lower() for word in app.PREFERRED_WORDS]
+        self._preferred_words_score = round((len([word for word in preferred_words if word in self.name.lower()]) / float(len(preferred_words))) * 100)
+        return self._preferred_words_score
+
+    @staticmethod
+    def __qualities_to_string(qualities=None):
+        return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
+                          if quality and quality in Quality.qualityStrings]) or 'None'
+
+    def want_episode(self, season, episode, quality):
+        """Whether or not the episode with the specified quality is wanted.
+
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param quality:
+        :type quality: int
+
+        :return:
+        :rtype: bool
+        """
+        # if the quality isn't one we want under any circumstances then just say no
+        allowed_qualities, preferred_qualities = self.series.current_qualities
+        log.debug(
+            u'{id}: Allowed, Preferred = [ {allowed} ] [ {preferred} ] Found = [ {found} ]', {
+                'id': self.series.series_id,
+                'allowed': self.__qualities_to_string(allowed_qualities),
+                'preferred': self.__qualities_to_string(preferred_qualities),
+                'found': self.__qualities_to_string([quality]),
+            }
+        )
+
+        if not Quality.wanted_quality(quality, allowed_qualities, preferred_qualities):
+            log.debug(
+                u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'", {
+                    'id': self.series.series_id,
+                    'show': self.series.name,
+                    'ep': episode_num(season, episode),
+                    'quality': Quality.qualityStrings[quality],
+                }
+            )
+            return False
+
+        main_db_con = db.DBConnection()
+
+        sql_results = main_db_con.select(
+            'SELECT '
+            '  status, quality, '
+            '  manually_searched, preferred_words_score '
+            'FROM '
+            '  tv_episodes '
+            'WHERE '
+            '  indexer = ? '
+            '  AND showid = ? '
+            '  AND season = ? '
+            '  AND episode = ?', [self.series.indexer, self.series.series_id, season, episode])
+
+        if not sql_results or not len(sql_results):
+            log.debug(
+                u'{id}: Unable to find a matching episode in database.'
+                u' Ignoring found result for {show} {ep} with quality {quality}', {
+                    'id': self.series.series_id,
+                    'show': self.series.name,
+                    'ep': episode_num(season, episode),
+                    'quality': Quality.qualityStrings[quality],
+                }
+            )
+            return False
+
+        cur_status, cur_quality, preferred_words_score = (
+            int(sql_results[0]['status'] or UNSET),
+            int(sql_results[0]['quality'] or Quality.NA),
+            int(sql_results[0]['preferred_words_score'] or 0)
+        )
+
+        ep_status_text = statusStrings[cur_status]
+        manually_searched = sql_results[0]['manually_searched']
+
+        # if it's one of these then we want it as long as it's in our allowed initial qualities
+        if cur_status == WANTED:
+            should_replace, reason = (
+                True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
+                    new_quality=Quality.qualityStrings[quality]
+                )
+            )
+        else:
+            upgrade_preferred_words = all([self.series.upgrade_preferred_words,
+                                           self.preferred_words_score,
+                                           self.preferred_words_score < self.series.preferred_words_score])
+            should_replace, reason = Quality.should_replace(cur_status, cur_quality, quality, allowed_qualities,
+                                                            preferred_qualities, self.download_current_quality,
+                                                            self.forced_search, manually_searched, self.search_type,
+                                                            upgrade_preferred_words=upgrade_preferred_words)
+
+        log.debug(
+            u"{id}: '{show}' {ep} status is: '{status}'."
+            u" {action} result with quality '{new_quality}'."
+            u' Reason: {reason}', {
+                'id': self.series.series_id,
+                'show': self.name,
+                'ep': episode_num(season, episode),
+                'status': ep_status_text,
+                'action': 'Accepting' if should_replace else 'Ignoring',
+                'new_quality': Quality.qualityStrings[quality],
+                'reason': reason,
+            }
+        )
+        return should_replace
 
     @property
     def actual_episode(self):

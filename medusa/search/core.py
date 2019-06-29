@@ -215,6 +215,7 @@ def snatch_episode(result):
             cur_ep_obj.version = 0
 
             cur_ep_obj.manually_searched = result.manually_searched
+            cur_ep_obj.preferred_words_score = result.preferred_words_score
 
             sql_l.append(cur_ep_obj.get_sql())
 
@@ -274,9 +275,7 @@ def filter_results(results):
         if cur_result.actual_episodes:
             wanted_ep = False
             for episode in cur_result.actual_episodes:
-                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality,
-                                           cur_result.forced_search, cur_result.download_current_quality,
-                                           search_type=cur_result.search_type):
+                if cur_result.want_episode(cur_result.actual_season, episode, cur_result.quality):
                     wanted_ep = True
 
         if not wanted_ep:
@@ -707,8 +706,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                         # From our provider multi_episode and single_episode results, collect candidates.
                         cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [],
-                                                                       [], series_obj, down_cur_quality)
+                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [], [])
 
                 # For now we only search if we didn't get any results back from cache,
                 # but we might wanna check if there was something useful in cache.
@@ -761,8 +759,7 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                           single_results, series_obj, down_cur_quality)
+        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results, single_results)
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -774,13 +771,13 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         return combine_results(multi_results, single_results)
 
 
-def collect_candidates(found_results, provider, multi_results, single_results, series_obj, down_cur_quality):
+def collect_candidates(found_results, provider, multi_results, single_results):
     """Collect candidates for episode, multi-episode or season results."""
     candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
                   if result in (SEASON_RESULT, MULTI_EP_RESULT))
     candidates = list(itertools.chain(*candidates))
     if candidates:
-        multi_results += collect_multi_candidates(candidates, series_obj, down_cur_quality)
+        multi_results += collect_multi_candidates(candidates)
 
     # Collect candidates for single-episode results
     single_results = collect_single_candidates(found_results[provider.name], single_results)
@@ -847,7 +844,7 @@ def collect_single_candidates(candidates, results):
     return single_candidates + new_candidates
 
 
-def collect_multi_candidates(candidates, series_obj, down_cur_quality):
+def collect_multi_candidates(candidates):
     """Collect mutli-episode and season result candidates."""
     multi_candidates = []
 
@@ -857,7 +854,7 @@ def collect_multi_candidates(candidates, series_obj, down_cur_quality):
 
     for candidate in wanted_candidates:
         wanted_episodes = [
-            series_obj.want_episode(ep_obj.season, ep_obj.episode, candidate.quality, down_cur_quality)
+            candidate.want_episode(ep_obj.season, ep_obj.episode, candidate.quality)
             for ep_obj in candidate.episodes
         ]
 

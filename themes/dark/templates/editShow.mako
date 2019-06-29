@@ -53,7 +53,9 @@ window.app = new Vue({
                         preferred: [],
                         allowed: []
                     },
-                    airdateOffset: 0
+                    airdateOffset: 0,
+                    upgradePreferredWords: false,
+                    preferredWordsScore: 0
                 },
                 language: 'en'
             },
@@ -117,7 +119,9 @@ window.app = new Vue({
                         preferred: this.series.config.qualities.preferred,
                         allowed: this.series.config.qualities.allowed
                     },
-                    airdateOffset: this.series.config.airdateOffset
+                    airdateOffset: this.series.config.airdateOffset,
+                    upgradePreferredWords: this.series.config.upgradePreferredWords,
+                    preferredWordsScore: this.series.config.preferredWordsScore
                 },
                 language: this.series.language
             };
@@ -365,6 +369,13 @@ window.app = new Vue({
                             label="Airdate offset" id="airdate_offset" :explanations="['Amount of hours we want to start searching early (-1) or late (1) for new episodes.',
                              'This only applies to daily searches.']">
                         </config-textbox-number>
+                        
+                        <config-toggle-slider v-model="series.config.upgradePreferredWords" label="Upgrade based on preferred words" id="upgrade_pref_words" :explanations="['Keep upgrading releases with same or higher quality based on the amount of preffered words found compared to the total amount of preferred words configured.']" @change="save()" ></config-toggle-slider>
+                        <config-textbox-number v-show="series.config.upgradePreferredWords" :min.number="0" :max.number="100" :step.number="1" v-model="series.config.preferredWordsScore"
+                            label="Upgrade Preffered words" id="upgrade_pref_words">
+                            Upgrade search results until this preferred words score (percentage of the total set preferred words) has been reached.
+                        </config-textbox-number>
+
 
                     </fieldset>
                 </div>

@@ -236,6 +236,8 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self.upgrade_preferred_words = False
+        self.preferred_words_score = 0
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -1493,6 +1495,9 @@ class Series(TV):
 
             self.release_groups = BlackAndWhiteList(self)
 
+            self.upgrade_preferred_words = sql_results[0]['upgrade_preferred_words'] or 0
+            self.preferred_words_score = sql_results[0]['preferred_words_score'] or 0
+
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
@@ -1986,6 +1991,8 @@ class Series(TV):
                           'rls_require_exclude': self.rls_require_exclude,
                           'default_ep_status': self.default_ep_status,
                           'plot': self.plot,
+                          'upgrade_preferred_words': self.upgrade_preferred_words,
+                          'preferred_words_score': self.preferred_words_score,
                           'airdate_offset': self.airdate_offset}
 
         main_db_con = db.DBConnection()
@@ -2123,6 +2130,8 @@ class Series(TV):
         data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
         data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
+        data['config']['upgradePreferredWords'] = bool(self.upgrade_preferred_words)
+        data['config']['preferredWordsScore'] = self.preferred_words_score
 
         # These are for now considered anime-only options
         if self.is_anime:
@@ -2217,108 +2226,6 @@ class Series(TV):
                         new_show_names.add(name.replace(pattern_2, replacement))
 
         return show_names.union(new_show_names)
-
-    @staticmethod
-    def __qualities_to_string(qualities=None):
-        return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
-                          if quality and quality in Quality.qualityStrings]) or 'None'
-
-    def want_episode(self, season, episode, quality, forced_search=False,
-                     download_current_quality=False, search_type=None):
-        """Whether or not the episode with the specified quality is wanted.
-
-        :param season:
-        :type season: int
-        :param episode:
-        :type episode: int
-        :param quality:
-        :type quality: int
-        :param forced_search:
-        :type forced_search: bool
-        :param download_current_quality:
-        :type download_current_quality: bool
-        :param search_type:
-        :type search_type: int
-        :return:
-        :rtype: bool
-        """
-        # if the quality isn't one we want under any circumstances then just say no
-        allowed_qualities, preferred_qualities = self.current_qualities
-        log.debug(
-            u'{id}: Allowed, Preferred = [ {allowed} ] [ {preferred} ] Found = [ {found} ]', {
-                'id': self.series_id,
-                'allowed': self.__qualities_to_string(allowed_qualities),
-                'preferred': self.__qualities_to_string(preferred_qualities),
-                'found': self.__qualities_to_string([quality]),
-            }
-        )
-
-        if not Quality.wanted_quality(quality, allowed_qualities, preferred_qualities):
-            log.debug(
-                u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'", {
-                    'id': self.series_id,
-                    'show': self.name,
-                    'ep': episode_num(season, episode),
-                    'quality': Quality.qualityStrings[quality],
-                }
-            )
-            return False
-
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select(
-            'SELECT '
-            '  status, quality, '
-            '  manually_searched '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  indexer = ? '
-            '  AND showid = ? '
-            '  AND season = ? '
-            '  AND episode = ?', [self.indexer, self.series_id, season, episode])
-
-        if not sql_results or not len(sql_results):
-            log.debug(
-                u'{id}: Unable to find a matching episode in database.'
-                u' Ignoring found result for {show} {ep} with quality {quality}', {
-                    'id': self.series_id,
-                    'show': self.name,
-                    'ep': episode_num(season, episode),
-                    'quality': Quality.qualityStrings[quality],
-                }
-            )
-            return False
-
-        cur_status, cur_quality = int(sql_results[0]['status'] or UNSET), int(sql_results[0]['quality'] or Quality.NA)
-        ep_status_text = statusStrings[cur_status]
-        manually_searched = sql_results[0]['manually_searched']
-
-        # if it's one of these then we want it as long as it's in our allowed initial qualities
-        if cur_status == WANTED:
-            should_replace, reason = (
-                True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
-                    new_quality=Quality.qualityStrings[quality]
-                )
-            )
-        else:
-            should_replace, reason = Quality.should_replace(cur_status, cur_quality, quality, allowed_qualities,
-                                                            preferred_qualities, download_current_quality,
-                                                            forced_search, manually_searched, search_type)
-
-        log.debug(
-            u"{id}: '{show}' {ep} status is: '{status}'."
-            u" {action} result with quality '{new_quality}'."
-            u' Reason: {reason}', {
-                'id': self.series_id,
-                'show': self.name,
-                'ep': episode_num(season, episode),
-                'status': ep_status_text,
-                'action': 'Accepting' if should_replace else 'Ignoring',
-                'new_quality': Quality.qualityStrings[quality],
-                'reason': reason,
-            }
-        )
-        return should_replace
 
     def get_overview(self, ep_status, ep_quality, backlog_mode=False, manually_searched=False):
         """Get the Overview status from the Episode status.
