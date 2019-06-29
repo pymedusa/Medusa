@@ -30,7 +30,7 @@ class SearchHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST')
 
-    def get(self, identifier, *args, **kwargs):
+    def get(self, identifier):
         """Collect ran, running and queued searches for a specific show.
 
         :param identifier:
