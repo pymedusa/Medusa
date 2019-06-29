@@ -8,7 +8,7 @@
         :false-link="linkProperties.falseLink"
         :class="{ 'router-link': linkProperties.is === 'router-link' }"
     >
-        <slot></slot>
+        <slot />
     </component>
 </template>
 <script>
