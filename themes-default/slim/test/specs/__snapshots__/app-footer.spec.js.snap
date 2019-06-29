@@ -67,7 +67,7 @@ exports[`AppFooter renders 1`] = `
      
     <div>
       
-            Memory used: 
+                Memory used: 
       <span
         class="footerhighlight"
       >
