@@ -38,7 +38,7 @@ export default {
             return indexerIdToName(indexerId);
         },
         computedBase() {
-            return document.querySelectorAll('base')[0].getAttribute('href');
+            return document.querySelector('base').getAttribute('href');
         },
         computedHref() {
             const { href, indexerId, placeholder, indexerName } = this;
