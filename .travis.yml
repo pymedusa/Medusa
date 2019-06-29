@@ -21,7 +21,11 @@ aliases:
       export PATH="$HOME/.yarn/bin:$PATH"
   - &backend_tests
     install:
+      - which pip; pip --version
       - pip install --upgrade pip
+      - which pip; pip --version
+      - python -m pip install --upgrade pip
+      - which pip; pip --version
       - pip install --upgrade tox
     script:
       - tox -v --recreate
