@@ -23,7 +23,6 @@ aliases:
     install:
       - pip install --upgrade pip
       - pip install --upgrade tox
-      - pip install --upgrade setuptools
     script:
       - tox -v --recreate
   - &dredd_tests
