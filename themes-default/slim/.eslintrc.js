@@ -63,6 +63,21 @@ module.exports = {
         'valid-jsdoc': 'error',
         'padding-line-between-statements': 'off',
         'unicorn/prevent-abbreviations': 'off',
+        'vue/html-indent': [
+            'error',
+            4,
+        ],
+        'vue/name-property-casing': [
+            'error',
+            'kebab-case',
+        ],
+        'vue/html-self-closing': 'error',
+        'vue/html-closing-bracket-spacing': [
+            'error',
+            {
+                selfClosingTag: 'always',
+            },
+        ],
     },
     // Please do not use root `globals` because they can't be overriden.
     globals: {},
