@@ -21,24 +21,24 @@
                         >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
-                    <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
+                <div v-if="type !== 'snatch-selection' && show.seasonCount && Object.keys(show.seasonCount).length > 1" id="show-specials-and-seasons" class="pull-right">
+                    <span class="h2footer display-specials" v-if="show.seasonCount['0']">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
                         <span>
-                            <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
+                            <select v-if="Object.keys(show.seasonCount) >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season[0].season" :value="'#season-' + season[0].season" :data-season="season[0].season">
-                                    {{ season[0].season === 0 ? 'Specials' : 'Season ' + season[0].season }}
+                                <option v-for="season in Object.keys(show.seasonCount)" :key="`jumpToSeason-${season}`" :value="`#season-${season}`" :data-season="season">
+                                    {{ season === 0 ? 'Specials' : 'Season ' + season }}
                                 </option>
                             </select>
-                            <template v-else-if="show.seasons.length >= 1">
+                            <template v-else-if="Object.keys(show.seasonCount).length >= 1">
                                 Season:
-                                <template v-for="(season, $index) in reverse(show.seasons)">
-                                    <app-link :href="'#season-' + season[0].season" :key="`jumpToSeason-${season[0].season}`">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
-                                    <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                <template v-for="(season, $index) in reverse(Object.keys(show.seasonCount))">
+                                    <app-link :href="'#season-' + season" :key="`jumpToSeason-${season}`">{{ season === 0 ? 'Specials' : season }}</app-link>
+                                    <span v-if="$index !== (Object.keys(show.seasonCount) - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -234,12 +234,13 @@
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
                         <div id="key-padding" class="pull-left top-5">
-
-                            <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')"> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                            <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')"> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                            <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')"> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                            <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')"> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                            <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')"> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                            <template v-if="show.seasons">
+                                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')"> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
+                                <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')"> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
+                                <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')"> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
+                                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')"> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
+                                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')"> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                            </template>
                             <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
                             <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
                         </div>
@@ -423,8 +424,10 @@ export default {
                 Unset: 0,
                 Archived: 0
             };
-            seasons.forEach(episodes => {
-                episodes.forEach(episode => {
+
+            seasons.forEach(season => {
+                season.episodes.forEach(episode => {
+                    // FIXME: with the overview status.
                     summary[episode.status] += 1;
                 });
             });
