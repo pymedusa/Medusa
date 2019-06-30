@@ -1215,11 +1215,15 @@ definitions:
         type: string
         description: Episode plot
       content:
-        type: array
+        type: object
         description: Additional content
-        items:
-          type: string
-          enum: [NFO, thumbnail]
+        properties:
+          hasNfo:
+            type: boolean
+            description: Whether the episode has an .nfo file
+          hasNfo:
+            type: boolean
+            description: Wheter the episode has a thumbnail file
       subtitles:
         type: array
         items:
@@ -1295,15 +1299,18 @@ definitions:
                 format: int32
                 minimum: 0
                 description: search count
-      wantedQualities:
-        type: array
-        items:
-          type: string
       relatedEpisodes:
         type: array
         example: [s03e08, s03e09]
         items:
           type: string
+      wantedQualities:
+        type: array
+        items:
+          type: string
+      watched:
+        type: boolean
+        description: Wheter the episode has been marked as watched
   Auth:
     description: Auth object
     properties:
