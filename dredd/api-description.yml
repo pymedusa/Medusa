@@ -538,7 +538,7 @@ paths:
           $ref: '#/responses/error'
           description: Unable to create alias
           x-disabled: true
-  /alias/{alias-id}/{field}:
+  /alias/{aliasid}/{field}:
     get:
       summary: Return a specific field from a given alias
       description: Retrieve a specific field from a a given alias
@@ -572,7 +572,7 @@ paths:
           x-request:
             path-params:
               id: 999999999
-  /alias/{alias-id}:
+  /alias/{aliasid}:
     get:
       summary: Return information about a given alias
       description: Retrieves information about a given alias
@@ -889,7 +889,7 @@ paths:
           description: No credentials provided or invalid credentials
           x-request:
             body: {}
-  /search/{series-id}:
+  /search/{seriesid}:
     get:
       summary: Collect finished, running and queued searches for a specific show
       description: |
@@ -2612,7 +2612,7 @@ parameters:
     description: The field (or list of fields) to be used while sorting. Use + or - prefix to define sorting order.
     type: string
   series-id:
-    name: series-id
+    name: seriesid
     in: path
     required: true
     description: The series id to retrieve. E.g. tvdb1234
@@ -2633,7 +2633,7 @@ parameters:
     x-example: s01e02
     type: string
   alias-id:
-    name: alias-id
+    name: aliasid
     in: path
     required: true
     description: The alias id to retrieve
