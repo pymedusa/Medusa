@@ -1,6 +1,6 @@
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { Config } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
@@ -18,7 +18,7 @@ describe('Config.test.js', () => {
     });
 
     it('renders', () => {
-        const wrapper = mount(Config, {
+        const wrapper = shallowMount(Config, {
             localVue,
             store
         });

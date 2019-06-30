@@ -10,25 +10,50 @@ before_install:
   - sudo rm -f /etc/boto.cfg
 install: false
 script: false
+
+# Please read about YAML Anchors & Aliases: https://blog.daemonl.com/2016/02/yaml.html
+aliases:
+  # There's no support for concatenation so we must do this
+  - &node_version '10.16.0'
+  - &nvm_install nvm install v10.16.0
+  - &install_yarn_bin >-
+      curl -o- -L https://yarnpkg.com/install.sh | bash &&
+      export PATH="$HOME/.yarn/bin:$PATH"
+  - &backend_tests
+    install:
+      - pip install --upgrade pip
+      - pip install --upgrade tox
+    script:
+      - tox -v --recreate
+  - &dredd_tests
+    install:
+      - pip install --upgrade pip
+      - pip install dredd_hooks
+      - pip install 'PyYAML>=5.1'
+      - pip install six
+      - *nvm_install
+      - *install_yarn_bin
+      - yarn install --ignore-scripts
+    script:
+      - yarn test-api
+    after_failure:
+      - cat ./dredd/hook.log
+
 jobs:
-  fast_finish: true
+  # fast_finish: true
   include:
     # test stage + frontend tests start here
     - stage: test
       name: 'Frontend tests'
       language: node_js
-      node_js: 10.7.0
+      node_js: *node_version
       install:
-        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-        - 'export PATH="$HOME/.yarn/bin:$PATH"'
-        - >-
-          cd $TRAVIS_BUILD_DIR/themes-default/slim &&
-          yarn install --ignore-scripts &&
-          cd $TRAVIS_BUILD_DIR
-      script:
-        - ./.github/build-themes-check.sh
+        - *install_yarn_bin
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
-        - yarn xo
+        - yarn install --ignore-scripts
+      script:
+        - $TRAVIS_BUILD_DIR/.github/build-themes-check.sh
+        - yarn lint
         - yarn lint-css
         - yarn test
         - yarn coverage
@@ -36,52 +61,23 @@ jobs:
     - name: 'Backend tests (py2.7)'
       python: '2.7.10'
       env:
-        - TOXENV=py27,lint
-      install:
-        - pip install --upgrade pip
-        - pip install --upgrade tox
-      script:
-        - tox -v --recreate
+        - TOXENV=py27
+      <<: *backend_tests
     # backend tests (py3.6) start here
     - name: 'Backend tests (py3.6)'
       python: '3.6'
       env:
-        - TOXENV=py36
-      install:
-        - pip install --upgrade pip
-        - pip install --upgrade tox
-      script:
-        - tox -v --recreate
+        - TOXENV=py36,lint
+      <<: *backend_tests
     # dredd tests (py2.7) start here
     - name: 'Dredd tests (py2.7)'
       python: '2.7.10'
-      install:
-        - pip install --upgrade pip
-        - pip install dredd_hooks
-        - pip install 'PyYAML>=5.1'
-        - pip install six
-        - nvm install v10.7.0
-        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
-      script:
-        - yarn test-api
-      after_failure:
-        - cat ./dredd/data/Logs/application.log
+      <<: *dredd_tests
     # dredd tests (py3.6) start here
     - name: 'Dredd tests (py3.6)'
       python: '3.6'
-      install:
-        - pip install --upgrade pip
-        - pip install dredd_hooks
-        - pip install 'PyYAML>=5.1'
-        - pip install six
-        - nvm install v10.7.0
-        - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
-        - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install --ignore-scripts'
-      script:
-        - yarn test-api
-      after_failure:
-        - cat ./dredd/data/Logs/application.log
+      <<: *dredd_tests
+
 notifications:
   slack:
     secure: >-

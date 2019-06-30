@@ -1,6 +1,6 @@
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { AnidbReleaseGroupUi } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
@@ -18,9 +18,12 @@ describe('AnidbReleaseGroupUi.test.js', () => {
     });
 
     it('renders', () => {
-        const wrapper = mount(AnidbReleaseGroupUi, {
+        const wrapper = shallowMount(AnidbReleaseGroupUi, {
             localVue,
-            store
+            store,
+            propsData: {
+                showName: ''
+            }
         });
 
         expect(wrapper.element).toMatchSnapshot();

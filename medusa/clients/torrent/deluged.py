@@ -54,7 +54,9 @@ class DelugeDAPI(GenericClient):
         hostname = self.host.replace('/', '').split(':')
 
         if not self.drpc or reconnect:
-            self.drpc = DelugeRPC(hostname[1], port=hostname[2], username=self.username, password=self.password)
+            drpc = DelugeRPC(hostname[1], port=hostname[2], username=self.username, password=self.password)
+            if drpc.test():
+                self.drpc = drpc
 
         return self.drpc
 
@@ -156,6 +158,7 @@ class DelugeDAPI(GenericClient):
         log.info('Checking DelugeD torrent status.')
 
         if not self.connect():
+            log.warning('Error while fetching torrents status')
             return
 
         torrent_data = self.drpc.get_all_torrents()

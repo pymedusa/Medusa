@@ -17,18 +17,18 @@ import functools
 import bisect
 import warnings
 import numbers
+import re
 
 from .formatting import (remove_custom_flags, siunitx_format_unit, ndarray_to_latex,
                          ndarray_to_latex_parts)
 from .errors import (DimensionalityError, OffsetUnitCalculusError,
-                     UndefinedUnitError)
+                     UndefinedUnitError, UnitStrippedWarning)
 from .definitions import UnitDefinition
 from .compat import string_types, ndarray, np, _to_magnitude, long_type
-from .util import (logger, UnitsContainer, SharedRegistryObject,
+from .util import (PrettyIPython, logger, UnitsContainer, SharedRegistryObject,
                    to_units_container, infer_base_unit,
                    fix_str_conversions)
 from pint.compat import Loc
-
 
 def _eq(first, second, check_all):
     """Comparison of scalars and arrays
@@ -49,7 +49,7 @@ def reduce_dimensions(f):
     def wrapped(self, *args, **kwargs):
         result = f(self, *args, **kwargs)
         if result._REGISTRY.auto_reduce_dimensions:
-            return result.to_root_units()
+            return result.to_reduced_units()
         else:
             return result
     return wrapped
@@ -59,13 +59,26 @@ def ireduce_dimensions(f):
     def wrapped(self, *args, **kwargs):
         result = f(self, *args, **kwargs)
         if result._REGISTRY.auto_reduce_dimensions:
-            result.ito_root_units()
+            result.ito_reduced_units()
+        return result
+    return wrapped
+
+def check_implemented(f):
+    def wrapped(self, *args, **kwargs):
+        other=args[0]
+        if other.__class__.__name__ in ["PintArray", "Series"]:
+            return NotImplemented
+        # pandas often gets to arrays of quantities [ Q_(1,"m"), Q_(2,"m")]
+        # and expects Quantity * array[Quantity] should return NotImplemented
+        elif isinstance(other, list) and isinstance(other[0], type(self)):
+            return NotImplemented
+        result = f(self, *args, **kwargs)
         return result
     return wrapped
 
 
 @fix_str_conversions
-class _Quantity(SharedRegistryObject):
+class _Quantity(PrettyIPython, SharedRegistryObject):
     """Implements a class to describe a physical quantity:
     the product of a numerical value and a unit of measurement.
 
@@ -115,12 +128,22 @@ class _Quantity(SharedRegistryObject):
             inst._magnitude = _to_magnitude(value, inst.force_ndarray)
         else:
             raise TypeError('units must be of type str, Quantity or '
-                            'UnitsContainer; not {0}.'.format(type(units)))
+                            'UnitsContainer; not {}.'.format(type(units)))
 
         inst.__used = False
         inst.__handling = None
+        # Only instances where the magnitude is iterable should have __iter__()
+        if hasattr(inst._magnitude,"__iter__"):
+            inst.__iter__ = cls._iter
         return inst
 
+    def _iter(self):
+        """
+        Will be become __iter__() for instances with iterable magnitudes
+        """
+        # # Allow exception to propagate in case of non-iterable magnitude
+        it_mag = iter(self.magnitude)
+        return iter((self.__class__(mag, self._units) for mag in it_mag))
     @property
     def debug_used(self):
         return self.__used
@@ -140,15 +163,24 @@ class _Quantity(SharedRegistryObject):
         return format(self)
 
     def __repr__(self):
-        return "<Quantity({0}, '{1}')>".format(self._magnitude, self._units)
+        return "<Quantity({}, '{}')>".format(self._magnitude, self._units)
+
+    def __hash__(self):
+        self_base = self.to_base_units()
+        if self_base.dimensionless:
+            return hash(self_base.magnitude)
+        else:
+            return hash((self_base.__class__, self_base.magnitude, self_base.units))
+
+    _exp_pattern = re.compile(r"([0-9]\.?[0-9]*)e(-?)\+?0*([0-9]+)")
 
     def __format__(self, spec):
         spec = spec or self.default_format
 
         if 'L' in spec:
-            allf = plain_allf = r'{0}\ {1}'
+            allf = plain_allf = r'{}\ {}'
         else:
-            allf = plain_allf = '{0} {1}'
+            allf = plain_allf = '{} {}'
 
         mstr, ustr = None, None
 
@@ -165,7 +197,7 @@ class _Quantity(SharedRegistryObject):
             # todo: add support for extracting options
             opts = ''
             ustr = siunitx_format_unit(obj.units)
-            allf = r'\SI[%s]{{{0}}}{{{1}}}'% opts
+            allf = r'\SI[%s]{{{}}}{{{}}}'% opts
         else:
             ustr = format(obj.units, spec)
 
@@ -175,7 +207,7 @@ class _Quantity(SharedRegistryObject):
                 mstr = ndarray_to_latex(obj.magnitude, mspec)
             elif 'H' in spec:
                 # this is required to have the magnitude and unit in the same line
-                allf = r'\[{0} {1}\]'
+                allf = r'\[{} {}\]'
                 parts = ndarray_to_latex_parts(obj.magnitude, mspec)
 
                 if len(parts) > 1:
@@ -187,10 +219,23 @@ class _Quantity(SharedRegistryObject):
         else:
             mstr = format(obj.magnitude, mspec).replace('\n', '')
 
+        if 'L' in spec:
+            mstr = self._exp_pattern.sub(r"\1\\times 10^{\2\3}", mstr)
+        elif 'H' in spec:
+            mstr = self._exp_pattern.sub(r"\1×10<sup>\2\3</sup>", mstr)
+
         if allf == plain_allf and ustr.startswith('1 /'):
             # Write e.g. "3 / s" instead of "3 1 / s"
             ustr = ustr[2:]
         return allf.format(mstr, ustr).strip()
+
+    def _repr_pretty_(self, p, cycle):
+        if cycle:
+            super(_Quantity, self)._repr_pretty_(p, cycle)
+        else:
+            p.pretty(self.magnitude)
+            p.text(" ")
+            p.pretty(self.units)
 
     def format_babel(self, spec='', **kwspec):
         spec = spec or self.default_format
@@ -206,16 +251,9 @@ class _Quantity(SharedRegistryObject):
             kwspec['babel_length'] = kwspec.pop('length')
         kwspec['locale'] = Loc.parse(kwspec['locale'])
         kwspec['babel_plural_form'] = kwspec['locale'].plural_form(obj.magnitude)
-        return '{0} {1}'.format(
+        return '{} {}'.format(
             format(obj.magnitude, remove_custom_flags(spec)),
             obj.units.format_babel(spec, **kwspec)).replace('\n', '')
-
-    # IPython related code
-    def _repr_html_(self):
-        return self.__format__('H')
-
-    def _repr_latex_(self):
-        return "$" + self.__format__('L') + "$"
 
     @property
     def magnitude(self):
@@ -277,6 +315,11 @@ class _Quantity(SharedRegistryObject):
             self._dimensionality = self._REGISTRY._get_dimensionality(self._units)
 
         return self._dimensionality
+
+    def check(self, dimension):
+        """Return true if the quantity's dimension matches passed dimension.
+        """
+        return self.dimensionality == self._REGISTRY.get_dimensionality(dimension)
 
     @classmethod
     def from_tuple(cls, tup):
@@ -374,6 +417,42 @@ class _Quantity(SharedRegistryObject):
         return self.__class__(magnitude, other)
 
 
+    def ito_reduced_units(self):
+        """Return Quantity scaled in place to reduced units, i.e. one unit per
+        dimension. This will not reduce compound units (intentionally), nor
+        can it make use of contexts at this time.
+        """
+        #shortcuts in case we're dimensionless or only a single unit
+        if self.dimensionless:
+            return self.ito({})
+        if len(self._units) == 1:
+            return None
+
+        newunits = self._units.copy()
+        #loop through individual units and compare to each other unit
+        #can we do better than a nested loop here?
+        for unit1, exp in self._units.items():
+            for unit2 in newunits:
+                if unit1 != unit2:
+                    power = self._REGISTRY._get_dimensionality_ratio(unit1,
+                                                                     unit2)
+                    if power:
+                        newunits = newunits.add(unit2, exp/power).remove(unit1)
+                        break
+
+        return self.ito(newunits)
+
+    def to_reduced_units(self):
+        """Return Quantity scaled in place to reduced units, i.e. one unit per
+        dimension. This will not reduce compound units (intentionally), nor
+        can it make use of contexts at this time.
+        """
+        #can we make this more efficient?
+        newq = copy.copy(self)
+        newq.ito_reduced_units()
+        return newq
+
+
     def to_compact(self, unit=None):
         """Return Quantity rescaled to compact, human-readable units.
 
@@ -393,7 +472,7 @@ class _Quantity(SharedRegistryObject):
             warnings.warn(w, stacklevel=2)
             return self
 
-        if (self.unitless or self.magnitude==0 or 
+        if (self.unitless or self.magnitude==0 or
             math.isnan(self.magnitude) or math.isinf(self.magnitude)):
             return self
 
@@ -418,9 +497,14 @@ class _Quantity(SharedRegistryObject):
         q_base = self.to(unit)
 
         magnitude = q_base.magnitude
-        # Only changes the prefix on the first unit in the UnitContainer
-        unit_str = list(q_base._units.items())[0][0]
-        unit_power = list(q_base._units.items())[0][1]
+
+        units = list(q_base._units.items())
+        units_numerator = list(filter(lambda a: a[1]>0, units))
+
+        if len(units_numerator) > 0:
+            unit_str, unit_power = units_numerator[0]
+        else:
+            unit_str, unit_power = units[0]
 
         if unit_power > 0:
             power = int(math.floor(math.log10(abs(magnitude)) / unit_power / 3)) * 3
@@ -553,6 +637,7 @@ class _Quantity(SharedRegistryObject):
 
         return self
 
+    @check_implemented
     def _add_sub(self, other, op):
         """Perform addition or subtraction operation and return the result.
 
@@ -743,7 +828,8 @@ class _Quantity(SharedRegistryObject):
 
         return self
 
-    @reduce_dimensions
+    @check_implemented
+    @ireduce_dimensions
     def _mul_div(self, other, magnitude_op, units_op=None):
         """Perform multiplication or division operation and return the result.
 
@@ -851,6 +937,7 @@ class _Quantity(SharedRegistryObject):
         self._units = UnitsContainer({})
         return self
 
+    @check_implemented
     def __floordiv__(self, other):
         if self._check(other):
             magnitude = self._magnitude // other.to(self._units)._magnitude
@@ -860,6 +947,7 @@ class _Quantity(SharedRegistryObject):
             raise DimensionalityError(self._units, 'dimensionless')
         return self.__class__(magnitude, UnitsContainer({}))
 
+    @check_implemented
     def __rfloordiv__(self, other):
         if self._check(other):
             magnitude = other._magnitude // self.to(other._units)._magnitude
@@ -875,12 +963,14 @@ class _Quantity(SharedRegistryObject):
         self._magnitude %= other.to(self._units)._magnitude
         return self
 
+    @check_implemented
     def __mod__(self, other):
         if not self._check(other):
             other = self.__class__(other, UnitsContainer({}))
         magnitude = self._magnitude % other.to(self._units)._magnitude
         return self.__class__(magnitude, self._units)
 
+    @check_implemented
     def __rmod__(self, other):
         if self._check(other):
             magnitude = other._magnitude % self.to(other._units)._magnitude
@@ -891,6 +981,7 @@ class _Quantity(SharedRegistryObject):
         else:
             raise DimensionalityError(self._units, 'dimensionless')
 
+    @check_implemented
     def __divmod__(self, other):
         if not self._check(other):
             other = self.__class__(other, UnitsContainer({}))
@@ -898,6 +989,7 @@ class _Quantity(SharedRegistryObject):
         return (self.__class__(q, UnitsContainer({})),
                 self.__class__(r, self._units))
 
+    @check_implemented
     def __rdivmod__(self, other):
         if self._check(other):
             q, r = divmod(other._magnitude, self.to(other._units)._magnitude)
@@ -951,8 +1043,8 @@ class _Quantity(SharedRegistryObject):
                         raise OffsetUnitCalculusError(self._units)
 
                 if getattr(other, 'dimensionless', False):
-                    other = other.to_base_units()
-                    self._units **= other.magnitude
+                    other = other.to_base_units().magnitude
+                    self._units **= other
                 elif not getattr(other, 'dimensionless', True):
                     raise DimensionalityError(self._units, 'dimensionless')
                 else:
@@ -961,6 +1053,7 @@ class _Quantity(SharedRegistryObject):
             self._magnitude **= _to_magnitude(other, self.force_ndarray)
             return self
 
+    @check_implemented
     def __pow__(self, other):
         try:
             other_magnitude = _to_magnitude(other, self.force_ndarray)
@@ -1001,13 +1094,14 @@ class _Quantity(SharedRegistryObject):
                 if getattr(other, 'dimensionless', False):
                     units = new_self._units ** other.to_root_units().magnitude
                 elif not getattr(other, 'dimensionless', True):
-                    raise DimensionalityError(self._units, 'dimensionless')
+                    raise DimensionalityError(other._units, 'dimensionless')
                 else:
                     units = new_self._units ** other
 
             magnitude = new_self._magnitude ** _to_magnitude(other, self.force_ndarray)
             return self.__class__(magnitude, units)
 
+    @check_implemented
     def __rpow__(self, other):
         try:
             other_magnitude = _to_magnitude(other, self.force_ndarray)
@@ -1034,10 +1128,25 @@ class _Quantity(SharedRegistryObject):
     def __neg__(self):
         return self.__class__(operator.neg(self._magnitude), self._units)
 
+    @check_implemented
     def __eq__(self, other):
         # We compare to the base class of Quantity because
         # each Quantity class is unique.
         if not isinstance(other, _Quantity):
+            if _eq(other, 0, True):
+                # Handle the special case in which we compare to zero
+                # (or an array of zeros)
+                if self._is_multiplicative:
+                    # compare magnitude
+                    return _eq(self._magnitude, other, False)
+                else:
+                    # compare the magnitude after converting the
+                    # non-multiplicative quantity to base units
+                    if self._REGISTRY.autoconvert_offset_to_baseunit:
+                        return _eq(self.to_base_units()._magnitude, other, False)
+                    else:
+                        raise OffsetUnitCalculusError(self._units)
+
             return (self.dimensionless and
                     _eq(self._convert_magnitude(UnitsContainer()), other, False))
 
@@ -1059,12 +1168,26 @@ class _Quantity(SharedRegistryObject):
             return np.logical_not(out)
         return not out
 
+    @check_implemented
     def compare(self, other, op):
         if not isinstance(other, self.__class__):
             if self.dimensionless:
                 return op(self._convert_magnitude_not_inplace(UnitsContainer()), other)
+            elif _eq(other, 0, True):
+                # Handle the special case in which we compare to zero
+                # (or an array of zeros)
+                if self._is_multiplicative:
+                    # compare magnitude
+                    return op(self._magnitude, other)
+                else:
+                    # compare the magnitude after converting the
+                    # non-multiplicative quantity to base units
+                    if self._REGISTRY.autoconvert_offset_to_baseunit:
+                        return op(self.to_base_units()._magnitude, other)
+                    else:
+                        raise OffsetUnitCalculusError(self._units)
             else:
-                raise ValueError('Cannot compare Quantity and {0}'.format(type(other)))
+                raise ValueError('Cannot compare Quantity and {}'.format(type(other)))
 
         if self._units == other._units:
             return op(self._magnitude, other._magnitude)
@@ -1209,7 +1332,7 @@ class _Quantity(SharedRegistryObject):
     def shape(self, value):
         self._magnitude.shape = value
 
-    def searchsorted(self, v, side='left'):
+    def searchsorted(self, v, side='left', sorter=None):
         if isinstance(v, self.__class__):
             v = v.to(self).magnitude
         elif self.dimensionless:
@@ -1247,15 +1370,11 @@ class _Quantity(SharedRegistryObject):
     def __len__(self):
         return len(self._magnitude)
 
-    def __iter__(self):
-        # Allow exception to propagate in case of non-iterable magnitude
-        it_mag = iter(self.magnitude)
-        return iter((self.__class__(mag, self._units) for mag in it_mag))
-
     def __getattr__(self, item):
         # Attributes starting with `__array_` are common attributes of NumPy ndarray.
         # They are requested by numpy functions.
         if item.startswith('__array_'):
+            warnings.warn("The unit of the quantity is stripped.", UnitStrippedWarning)
             if isinstance(self._magnitude, ndarray):
                 return getattr(self._magnitude, item)
             else:
@@ -1273,15 +1392,15 @@ class _Quantity(SharedRegistryObject):
         try:
             return getattr(self._magnitude, item)
         except AttributeError as ex:
-            raise AttributeError("Neither Quantity object nor its magnitude ({0}) "
-                                 "has attribute '{1}'".format(self._magnitude, item))
+            raise AttributeError("Neither Quantity object nor its magnitude ({}) "
+                                 "has attribute '{}'".format(self._magnitude, item))
 
     def __getitem__(self, key):
         try:
             value = self._magnitude[key]
             return self.__class__(value, self._units)
         except TypeError:
-            raise TypeError("Neither Quantity object nor its magnitude ({0})"
+            raise TypeError("Neither Quantity object nor its magnitude ({})"
                             "supports indexing".format(self._magnitude))
 
     def __setitem__(self, key, value):
@@ -1309,7 +1428,7 @@ class _Quantity(SharedRegistryObject):
                 self._magnitude[key] = factor
 
         except TypeError:
-            raise TypeError("Neither Quantity object nor its magnitude ({0})"
+            raise TypeError("Neither Quantity object nor its magnitude ({})"
                             "supports indexing".format(self._magnitude))
 
     def tolist(self):
@@ -1318,6 +1437,111 @@ class _Quantity(SharedRegistryObject):
                 for value in self._magnitude.tolist()]
 
     __array_priority__ = 17
+
+    def _call_ufunc(self, ufunc, *inputs, **kwargs):
+        # Store the destination units
+        dst_units = None
+        # List of magnitudes of Quantities with the right units
+        # to be used as argument of the ufunc
+        mobjs = None
+
+        if ufunc.__name__ in self.__require_units:
+            # ufuncs in __require_units
+            # require specific units
+            # This is more complex that it should be due to automatic
+            # conversion between radians/dimensionless
+            # TODO: maybe could be simplified using Contexts
+            dst_units = self.__require_units[ufunc.__name__]
+            if dst_units == 'radian':
+                mobjs = []
+                for other in inputs:
+                    unt = getattr(other, '_units', '')
+                    if unt == 'radian':
+                        mobjs.append(getattr(other, 'magnitude', other))
+                    else:
+                        factor, units = self._REGISTRY._get_root_units(unt)
+                        if units and units != UnitsContainer({'radian': 1}):
+                            raise DimensionalityError(units, dst_units)
+                        mobjs.append(getattr(other, 'magnitude', other) * factor)
+                mobjs = tuple(mobjs)
+            else:
+                dst_units = self._REGISTRY.parse_expression(dst_units)._units
+
+        elif len(inputs) > 1 and ufunc.__name__ not in self.__skip_other_args:
+            # ufunc with multiple arguments require that all inputs have
+            # the same arguments unless they are in __skip_other_args
+            dst_units = getattr(inputs[0], "_units", None)
+
+        # Do the conversion (if needed) and extract the magnitude for each input.
+        if mobjs is None:
+            if dst_units is not None:
+                mobjs = tuple(self._REGISTRY.convert(getattr(other, 'magnitude', other),
+                                                     getattr(other, 'units', ''),
+                                                     dst_units)
+                              for other in inputs)
+            else:
+                mobjs = tuple(getattr(other, 'magnitude', other)
+                              for other in inputs)
+
+        # call the ufunc
+        try:
+            return ufunc(*mobjs)
+        except Exception as ex:
+            raise _Exception(ex)
+
+
+    def _wrap_output(self, ufname, i, objs, out):
+        """we set the units of the output value"""
+        if i > 0:
+            ufname = "{}__{}".format(ufname, i)
+
+        if ufname in self.__set_units:
+            try:
+                out = self.__class__(out, self.__set_units[ufname])
+            except:
+                raise _Exception(ValueError)
+        elif ufname in self.__copy_units:
+            try:
+                out = self.__class__(out, self._units)
+            except:
+                raise _Exception(ValueError)
+        elif ufname in self.__prod_units:
+            tmp = self.__prod_units[ufname]
+            if tmp == 'size':
+                out = self.__class__(out, self._units ** self._magnitude.size)
+            elif tmp == 'div':
+                units1 = objs[0]._units if isinstance(objs[0], self.__class__) else UnitsContainer()
+                units2 = objs[1]._units if isinstance(objs[1], self.__class__) else UnitsContainer()
+                out = self.__class__(out, units1 / units2)
+            elif tmp == 'mul':
+                units1 = objs[0]._units if isinstance(objs[0], self.__class__) else UnitsContainer()
+                units2 = objs[1]._units if isinstance(objs[1], self.__class__) else UnitsContainer()
+                out = self.__class__(out, units1 * units2)
+            else:
+                out = self.__class__(out, self._units ** tmp)
+
+        return out
+
+
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        if method != "__call__":
+            return NotImplemented
+
+        try:
+            out = self._call_ufunc(ufunc, *inputs, **kwargs)
+            if isinstance(out, tuple):
+                ret = tuple(self._wrap_output(ufunc.__name__, i, inputs, o)
+                            for i, o in enumerate(out))
+                return ret
+            else:
+                return self._wrap_output(ufunc.__name__, 0, inputs, out)
+        except (DimensionalityError, UndefinedUnitError):
+            raise
+        except _Exception as ex:
+            raise ex.internal
+        except:
+            return NotImplemented
+
 
     def __array_prepare__(self, obj, context=None):
         # If this uf is handled by Pint, write it down in the handling dictionary.
@@ -1334,8 +1558,8 @@ class _Quantity(SharedRegistryObject):
             # something is wrong..
             if self.__handling:
                 raise Exception('Cannot handled nested ufuncs.\n'
-                                'Current: {0}\n'
-                                'New: {1}'.format(context, self.__handling))
+                                'Current: {}\n'
+                                'New: {}'.format(context, self.__handling))
             self.__handling = context
 
         return obj
@@ -1348,60 +1572,10 @@ class _Quantity(SharedRegistryObject):
             return self.magnitude.__array_wrap__(obj, context)
 
         try:
-            ufname = uf.__name__ if i_out == 0 else '{0}__{1}'.format(uf.__name__, i_out)
-
             # First, we check the units of the input arguments.
 
             if i_out == 0:
-                # Do this only when the wrap is called for the first ouput.
-
-                # Store the destination units
-                dst_units = None
-                # List of magnitudes of Quantities with the right units
-                # to be used as argument of the ufunc
-                mobjs = None
-
-                if uf.__name__ in self.__require_units:
-                    # ufuncs in __require_units
-                    # require specific units
-                    # This is more complex that it should be due to automatic
-                    # conversion between radians/dimensionless
-                    # TODO: maybe could be simplified using Contexts
-                    dst_units = self.__require_units[uf.__name__]
-                    if dst_units == 'radian':
-                        mobjs = []
-                        for other in objs:
-                            unt = getattr(other, '_units', '')
-                            if unt == 'radian':
-                                mobjs.append(getattr(other, 'magnitude', other))
-                            else:
-                                factor, units = self._REGISTRY._get_root_units(unt)
-                                if units and units != UnitsContainer({'radian': 1}):
-                                    raise DimensionalityError(units, dst_units)
-                                mobjs.append(getattr(other, 'magnitude', other) * factor)
-                        mobjs = tuple(mobjs)
-                    else:
-                        dst_units = self._REGISTRY.parse_expression(dst_units)._units
-
-                elif len(objs) > 1 and uf.__name__ not in self.__skip_other_args:
-                    # ufunc with multiple arguments require that all inputs have
-                    # the same arguments unless they are in __skip_other_args
-                    dst_units = objs[0]._units
-
-                # Do the conversion (if needed) and extract the magnitude for each input.
-                if mobjs is None:
-                    if dst_units is not None:
-                        mobjs = tuple(self._REGISTRY.convert(getattr(other, 'magnitude', other),
-                                                             getattr(other, 'units', ''),
-                                                             dst_units)
-                                      for other in objs)
-                    else:
-                        mobjs = tuple(getattr(other, 'magnitude', other)
-                                      for other in objs)
-
-                # call the ufunc
-                out = uf(*mobjs)
-
+                out = self._call_ufunc(uf, *objs)
                 # If there are multiple outputs,
                 # store them in __handling (uf, objs, i_out, out0, out1, ...)
                 # and return the first
@@ -1413,33 +1587,7 @@ class _Quantity(SharedRegistryObject):
                 # just grab the result that was previously calculated.
                 out = self.__handling[3 + i_out]
 
-            # Second, we set the units of the output value.
-            if ufname in self.__set_units:
-                try:
-                    out = self.__class__(out, self.__set_units[ufname])
-                except:
-                    raise _Exception(ValueError)
-            elif ufname in self.__copy_units:
-                try:
-                    out = self.__class__(out, self._units)
-                except:
-                    raise _Exception(ValueError)
-            elif ufname in self.__prod_units:
-                tmp = self.__prod_units[ufname]
-                if tmp == 'size':
-                    out = self.__class__(out, self._units ** self._magnitude.size)
-                elif tmp == 'div':
-                    units1 = objs[0]._units if isinstance(objs[0], self.__class__) else UnitsContainer()
-                    units2 = objs[1]._units if isinstance(objs[1], self.__class__) else UnitsContainer()
-                    out = self.__class__(out, units1 / units2)
-                elif tmp == 'mul':
-                    units1 = objs[0]._units if isinstance(objs[0], self.__class__) else UnitsContainer()
-                    units2 = objs[1]._units if isinstance(objs[1], self.__class__) else UnitsContainer()
-                    out = self.__class__(out, units1 * units2)
-                else:
-                    out = self.__class__(out, self._units ** tmp)
-
-            return out
+            return self._wrap_output(uf.__name__, i_out, objs, out)
         except (DimensionalityError, UndefinedUnitError) as ex:
             raise ex
         except _Exception as ex:
@@ -1522,6 +1670,7 @@ class _Quantity(SharedRegistryObject):
 
     def to_timedelta(self):
         return datetime.timedelta(microseconds=self.to('microseconds').magnitude)
+
 
 
 def build_quantity_class(registry, force_ndarray=False):

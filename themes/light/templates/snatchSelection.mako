@@ -10,6 +10,9 @@
 <div>
     <input type="hidden" id="series-id" value="${show.indexerid}" />
     <input type="hidden" id="series-slug" value="${show.slug}" />
+
+    <backstretch slug="${show.slug}"></backstretch>
+
     <div class="clearfix"></div><!-- div.clearfix //-->
 
     <show-header @reflow="reflowLayout" type="snatch-selection"
@@ -175,7 +178,7 @@ window.app = new Vue({
     data() {
         return {
             // This loads snatch-selection.vue
-            pageComponent: 'snatchSelection'
+            pageComponent: 'snatch-selection'
         }
     }
 });

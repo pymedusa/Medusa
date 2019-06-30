@@ -119,16 +119,21 @@ window.app = new Vue({
                                         <span class="component-title">Quality</span>
                                         <span class="component-desc">
                                             <%
-                                                ## quality_value is None when the qualities of the edited shows differ
-                                                if quality_value is not None:
-                                                    initial_quality = int(quality_value)
+                                                if quality_value is None:
+                                                    ## The qualities of the edited shows differ
+                                                    qc_keep = 'keep'
+                                                    ## By passing `undefined` as the overall quality,
+                                                    ##   we're letting the component know to use the default show quality
+                                                    ##   when changing the preset to "Custom"
+                                                    qc_overall_quality = 'undefined'
                                                 else:
-                                                    initial_quality = int(app.QUALITY_DEFAULT)
-                                                allowed_qualities, preferred_qualities = Quality.split_quality(initial_quality)
-                                                overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
+                                                    qc_keep = 'show'
+                                                    qc_overall_quality = int(quality_value)
                                             %>
-                                            <quality-chooser keep="${('show', 'keep')[quality_value is None]}"
-                                                             :overall-quality.number="${overall_quality}"></quality-chooser>
+                                            <quality-chooser
+                                                keep="${qc_keep}"
+                                                :overall-quality="${qc_overall_quality}"
+                                            ></quality-chooser>
                                         </span>
                                     </label>
                                 </div>

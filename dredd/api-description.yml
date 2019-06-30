@@ -74,7 +74,6 @@ paths:
           description: Filter series based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
-        - $ref: '#/parameters/fetch'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -851,6 +850,9 @@ paths:
       responses:
         201:
           description: Log message successfully created
+          x-request:
+            body-update:
+              thread: ''
           x-expect:
             no-body: true
         400:
@@ -1152,7 +1154,7 @@ definitions:
                 items:
                   type: integer
                   format: int32
-              prefered:
+              preferred:
                 type: array
                 items:
                   type: integer
@@ -1552,6 +1554,10 @@ definitions:
           logs:
             type: object
             properties:
+              debug:
+                type: boolean
+              dbDebug:
+                type: boolean
               loggingLevels:
                 type: object
                 properties:
@@ -2587,12 +2593,6 @@ parameters:
     required: false
     description: Whether response should contain detailed information
     type: boolean
-  fetch:
-    name: fetch
-    in: query
-    required: false
-    description: Whether response should fetch external information
-    type: boolean
   page:
     name: page
     in: query
@@ -2677,12 +2677,12 @@ parameters:
     description: The configuration to retrieve
     type: string
     enum:
-      - main
-      - statuses
-      - qualities
+      - main # Keep main first, as the tests use it
+      - consts
       - metadata
-      - search
       - notifiers
+      - search
+      - system
   log-level:
     name: level
     in: query

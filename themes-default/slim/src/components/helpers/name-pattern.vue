@@ -8,7 +8,7 @@
                 <span>Custom {{ type }}</span>
             </label>
             <div class="col-sm-10 content">
-                <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" @input="update()" sync></toggle-button>
+                <toggle-button :width="45" :height="22" id="enable_naming_custom" name="enable_naming_custom" v-model="isEnabled" @input="update()" sync />
                 <span>Name {{ type }} shows differently than regular shows?</span>
             </div>
         </div>
@@ -31,8 +31,8 @@
                         <span>&nbsp;</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" @input="update()" class="form-control-inline-max input-sm max-input350"/>
-                        <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend"/>
+                        <input type="text" name="naming_pattern" id="naming_pattern" v-model="customName" @change="updatePatternSamples" @input="update()" class="form-control-inline-max input-sm max-input350">
+                        <img src="images/legend16.png" width="16" height="16" alt="[Toggle Key]" id="show_naming_key" title="Toggle Naming Legend" class="legend" @click="showLegend = !showLegend">
                     </div>
                 </div>
 
@@ -139,12 +139,12 @@
                             <tr class="even">
                                 <td>&nbsp;</td>
                                 <td>%D</td>
-                                <td>{{ getDateFormat('D')}}</td>
+                                <td>{{ getDateFormat('d')}}</td>
                             </tr>
                             <tr>
                                 <td>&nbsp;</td>
                                 <td>%Y</td>
-                                <td>{{ getDateFormat('YY')}}</td>
+                                <td>{{ getDateFormat('yyyy')}}</td>
                             </tr>
                             <tr>
                                 <td class="align-right"><b>Post-Processing Date:</b></td>
@@ -154,12 +154,12 @@
                             <tr class="even">
                                 <td>&nbsp;</td>
                                 <td>%CD</td>
-                                <td>{{ getDateFormat('D')}}</td>
+                                <td>{{ getDateFormat('d')}}</td>
                             </tr>
                             <tr>
                                 <td>&nbsp;</td>
                                 <td>%CY</td>
-                                <td>{{ getDateFormat('YY')}}</td>
+                                <td>{{ getDateFormat('yyyy')}}</td>
                             </tr>
                             <tr>
                                 <td class="align-right"><b>Quality:</b></td>
@@ -192,17 +192,17 @@
                                 <td>720p_HDTV_x264</td>
                             </tr>
                             <tr class="even">
-                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored"></i> <b>Release Name:</b></td>
+                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored" /> <b>Release Name:</b></td>
                                 <td>%RN</td>
                                 <td>Show.Name.S02E03.HDTV.x264-RLSGROUP</td>
                             </tr>
                             <tr>
-                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="UNKNOWN_RELEASE_GROUP is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
+                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="UNKNOWN_RELEASE_GROUP is used in place of RLSGROUP if it could not be properly detected" /> <b>Release Group:</b></td>
                                 <td>%RG</td>
                                 <td>RLSGROUP</td>
                             </tr>
                             <tr class="even">
-                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="If episode is proper/repack add 'proper' to name."></i> <b>Release Type:</b></td>
+                                <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="If episode is proper/repack add 'proper' to name." /> <b>Release Type:</b></td>
                                 <td>%RT</td>
                                 <td>PROPER</td>
                             </tr>
@@ -241,7 +241,7 @@
                     <span>Add Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()" />
+                    <input type="radio" name="naming_anime" id="naming_anime" value="1" v-model="animeType" @change="updatePatternSamples" @input="update()">
                     <span>Add the absolute number to the season/episode format?</span>
                     <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
                 </div>
@@ -252,7 +252,7 @@
                     <span>Only Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples" @input="update()"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_only" value="2" v-model="animeType" @change="updatePatternSamples" @input="update()">
                     <span>Replace season/episode format with absolute number</span>
                     <p>Only applies to animes.</p>
                 </div>
@@ -263,7 +263,7 @@
                     <span>No Absolute Number</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples" @input="update()"/>
+                    <input type="radio" name="naming_anime" id="naming_anime_none" value="3" v-model="animeType" @change="updatePatternSamples" @input="update()">
                     <span>Don't include the absolute number</span>
                     <p>Only applies to animes.</p>
                 </div>
@@ -400,8 +400,6 @@ export default {
             this.testNaming(pattern, false, this.animeType).then(result => {
                 this.namingExample = result + '.ext';
             });
-
-            console.debug('Result of naming pattern check: ' + this.namingExample);
 
             // Test naming
             this.checkNaming(pattern, false, this.animeType);
