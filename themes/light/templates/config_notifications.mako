@@ -1,12 +1,4 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import re
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import get_trakt_indexer
-%>
 <%block name="scripts">
 <script>
 const { mapState } = window.Vuex;
@@ -1408,7 +1400,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
                                     <config-textbox v-model="notifiers.pushover.userKey" label="Pushover User Key" id="pushover_userkey" :explanations="['User Key of your Pushover account']" @change="save()" ></config-textbox>
-                                    
+
                                     <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API Key" id="pushover_apikey" @change="save()" >
                                         <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </config-textbox>
