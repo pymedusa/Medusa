@@ -114,6 +114,12 @@ module.exports = {
                         json: 'ignorePackages',
                     },
                 ],
+                'import/order': [
+                    'error',
+                    {
+                        'newlines-between': 'always',
+                    },
+                ],
             },
             globals: {
                 MEDUSA: 'readonly',
