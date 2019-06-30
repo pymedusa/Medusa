@@ -148,8 +148,8 @@ $.ajaxEpSearch = function(options) {
     function forcedSearch() {
         let imageName;
         let imageResult;
-        let failedDownload = false;
-        let qualityDownload = false;
+        const failedDownload = false;
+        const qualityDownload = false;
 
         const parent = $.selectedEpisode.parent();
 
