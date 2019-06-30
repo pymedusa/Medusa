@@ -76,8 +76,9 @@ export default {
         });
 
         // We need the episodes, so let's get it.
+        // Enable detailed as we need the xemNumbering for the show-header.
         if (!show || !show.seasons) {
-            getShow({ id, indexer, episodes: true });
+            getShow({ id, indexer, detailed: true, episodes: true });
         }
 
         this.$watch('show', () => {
