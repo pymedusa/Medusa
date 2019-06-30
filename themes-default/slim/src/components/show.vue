@@ -75,9 +75,9 @@ export default {
             id
         });
 
-        // We need detailed info for the seasons, so let's get it.
+        // We need the episodes, so let's get it.
         if (!show || !show.seasons) {
-            getShow({ id, indexer, detailed: true });
+            getShow({ id, indexer, episodes: true });
         }
 
         this.$watch('show', () => {
