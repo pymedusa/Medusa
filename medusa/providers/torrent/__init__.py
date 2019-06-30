@@ -10,6 +10,7 @@ from medusa.providers.torrent.html import (
     animetorrents,
     archetorrent,
     avistaz,
+    beyondhd,
     bithdtv,
     bjshare,
     btdb,
@@ -72,5 +73,5 @@ __all__ = [
     'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat',
     'hebits', 'torrentz2', 'animetorrents', 'anidex', 'shanaproject',
     'torrenting', 'yggtorrent', 'elitetracker', 'privatehd', 'cinemaz',
-    'avistaz', 'bjshare', 'ncore', 'gimmepeers', 'btdb'
+    'avistaz', 'bjshare', 'ncore', 'gimmepeers', 'btdb', 'beyondhd'
 ]

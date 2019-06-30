@@ -23,7 +23,6 @@ const state = {
                 ignoredWords: [],
                 blacklist: [],
                 whitelist: [],
-                allgroups: [],
                 requiredWordsExclude: null,
                 ignoredWordsExclude: null
             },

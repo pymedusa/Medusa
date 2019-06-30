@@ -4,7 +4,7 @@ import { AppLink } from './helpers';
 import ShowHeader from './show-header.vue';
 
 export default {
-    name: 'snatchSelection',
+    name: 'snatch-selection',
     template: '#snatch-selection-template',
     components: {
         AppLink,

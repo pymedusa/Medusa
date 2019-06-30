@@ -9,6 +9,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -18,7 +20,8 @@ window.app = new Vue({
         return {
         };
     },
-    computed: Object.assign(Vuex.mapState([]), {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         period: {
             get() {
                 return this.config.backlogOverview.period;
@@ -241,7 +244,7 @@ window.app = new Vue({
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
                                     <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn-medusa btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="home/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>

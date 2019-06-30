@@ -178,7 +178,7 @@ window.app = new Vue({
     data() {
         return {
             // This loads snatch-selection.vue
-            pageComponent: 'snatchSelection'
+            pageComponent: 'snatch-selection'
         }
     }
 });

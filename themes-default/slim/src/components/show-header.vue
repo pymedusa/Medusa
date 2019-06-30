@@ -18,7 +18,7 @@
                         <app-link
                             :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                             class="snatchTitle"
-                            >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
@@ -38,7 +38,6 @@
                                 Season:
                                 <template v-for="(season, $index) in reverse(show.seasons)">
                                     <app-link :href="'#season-' + season.season" :key="`jumpToSeason-${season.season}`">{{ season.season === 0 ? 'Specials' : season.season }}</app-link>
-                                    <slot> </slot>
                                     <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
@@ -59,30 +58,31 @@
                 <div class="show-poster-container">
                     <div class="row">
                         <div class="image-flex-container col-md-12">
-                            <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                            <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                         </div>
                     </div>
                 </div>
 
-                <div class="ver-spacer"></div>
+                <div class="ver-spacer" />
 
                 <div class="show-info-container">
                     <div class="row">
                         <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                            <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                            <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                         </div>
                         <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                            <span v-if="show.rating.imdb && show.rating.imdb.rating"
+                            <span
+                                v-if="show.rating.imdb && show.rating.imdb.rating"
                                 class="imdbstars"
                                 :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
+                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
                             </span>
                             <template v-if="!show.id.imdb">
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                             </template>
                             <template v-else>
-                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
                                 <span v-if="show.imdbInfo.year">
                                     ({{ show.imdbInfo.year }}) -
                                 </span>
@@ -90,22 +90,22 @@
                                     {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                 </span>
                                 <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
                                 </app-link>
                             </template>
                             <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
-                                <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                                <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                             </app-link>
                             <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
+                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
                             <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
-                                <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                                <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
                             <app-link v-if="show.id.tvdb" :href="'https://fanart.tv/series/' + show.id.tvdb" :title="'https://fanart.tv/series/' + show.id[show.indexer]">
-                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/>
+                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
                             </app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
@@ -125,7 +125,7 @@
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
-                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot"></truncate>
+                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot" />
                                         </td>
                                     </tr>
 
@@ -212,15 +212,15 @@
                             <!-- Option table right -->
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
-                                    <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
+                                    <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
                                     <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');"></state-switch></td></tr>
                                     <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')"></state-switch></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')"></state-switch></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -256,14 +256,14 @@
                                     {{ quality.name }}
                                 </option>
                             </select>
-                            <input type="hidden" id="series-slug" :value="show.id.slug" />
-                            <input type="hidden" id="series-id" :value="show.id[show.indexer]" />
-                            <input type="hidden" id="indexer" :value="show.indexer" />
-                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked" />
+                            <input type="hidden" id="series-slug" :value="show.id.slug">
+                            <input type="hidden" id="series-id" :value="show.id[show.indexer]">
+                            <input type="hidden" id="indexer" :value="show.indexer">
+                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked">
                         </div>
                     </div> <!-- checkboxControls -->
                 </div> <!-- end of row -->
-                <div v-else></div>
+                <div v-else />
             </div> <!-- end of col -->
         </div> <!-- end of row -->
     </div>
@@ -367,6 +367,7 @@ export default {
     },
     computed: {
         ...mapState({
+            config: state => state.config,
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
             failedDownloads: state => state.config.failedDownloads,

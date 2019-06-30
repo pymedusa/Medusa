@@ -1,7 +1,15 @@
 import Vue from 'vue';
+
 import { api } from '../../api';
+import { wait } from '../../utils/core';
 import { ADD_SHOW } from '../mutation-types';
 import { ADD_SHOW_EPISODE } from '../mutation-types';
+
+/**
+ * @typedef {object} ShowIdentifier
+ * @property {string} indexer The indexer name (e.g. `tvdb`)
+ * @property {number} id The show ID on the indexer (e.g. `12345`)
+ */
 
 const state = {
     shows: [],
@@ -44,7 +52,7 @@ const mutations = {
 
         if (!newShow.seasons) {
             newShow.seasons = [];
-        }
+    }
 
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
@@ -65,7 +73,7 @@ const mutations = {
                     html: false,
                     mode: "span",
                     label: 1
-                };
+};
                 newShow.seasons.push(newSeason);
                 newSeason.episodes.push(episode);
             }
@@ -81,7 +89,16 @@ const mutations = {
 };
 
 const getters = {
-    getShowById: state => ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id)),
+    getShowById: state => {
+        /**
+         * Get a show from the loaded shows state, identified by show ID and indexer name.
+         *
+         * @param {ShowIdentifier} show Show identifiers.
+         * @returns {object|undefined} Show object or undefined if not found.
+         */
+        const getShowById = ({ id, indexer }) => state.shows.find(show => Number(show.id[indexer]) === Number(id));
+        return getShowById;
+    },
     getShowByTitle: state => title => state.shows.find(show => show.title === title),
     getSeason: state => ({ id, indexer, season }) => {
         const show = state.shows.find(show => Number(show.id[indexer]) === Number(id));
@@ -99,21 +116,19 @@ const getters = {
 /**
  * An object representing request parameters for getting a show from the API.
  *
- * @typedef {Object} ShowParameteres
- * @property {string} indexer - The indexer name (e.g. `tvdb`)
- * @property {string} id - The show ID on the indexer (e.g. `12345`)
- * @property {boolean} detailed - Whether to fetch detailed information (seasons & episodes)
- * @property {boolean} fetch - Whether to fetch external information (for example AniDB release groups)
+ * @typedef {object} ShowGetParameters
+ * @property {boolean} detailed Fetch detailed information? (seasons & episodes)
  */
+
 const actions = {
     /**
      * Get show from API and commit it to the store.
      *
-     * @param {*} context - The store context.
-     * @param {ShowParameteres} parameters - Request parameters.
+     * @param {*} context The store context.
+     * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { indexer, id, detailed, fetch }) {
+    getShow(context, { indexer, id, detailed }) {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
@@ -121,11 +136,6 @@ const actions = {
 
             if (detailed !== undefined) {
                 params.detailed = Boolean(detailed);
-                timeout = 60000;
-            }
-
-            if (fetch !== undefined) {
-                params.fetch = Boolean(fetch);
                 timeout = 60000;
             }
 
@@ -176,8 +186,8 @@ const actions = {
      * Get shows from API and commit them to the store.
      *
      * @param {*} context - The store context.
-     * @param {ShowParameteres[]} shows - Shows to get. If not provided, gets the first 10k shows.
-     * @returns {(undefined|Promise)} undefined if `shows` was provided or the API response if not.
+     * @param {(ShowIdentifier&ShowGetParameters)[]} shows Shows to get. If not provided, gets the first 1k shows.
+     * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
     getShows(context, shows) {
         const { commit, dispatch } = context;
@@ -221,6 +231,22 @@ const actions = {
         }
 
         return shows.forEach(show => dispatch('getShow', show));
+    },
+    setShow(context, { indexer, id, data, save }) {
+        const { commit, dispatch } = context;
+
+        // Just update local store
+        if (!save) {
+            return api.get('/series/' + indexer + id).then(response => {
+                const show = Object.assign({}, response.data, data);
+                commit(ADD_SHOW, show);
+            });
+        }
+
+        // Send to API and fetch the updated show
+        return api.patch('series/' + indexer + id, data).then(() => {
+            return wait(500).then(() => dispatch('getShow', { indexer, id }));
+        });
     }
 };
 

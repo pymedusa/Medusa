@@ -6,7 +6,7 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <slot></slot>
+                    <slot />
                 </div>
             </div>
         </div>

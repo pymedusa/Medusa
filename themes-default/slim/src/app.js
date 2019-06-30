@@ -1,83 +1,22 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
-import VueRouter from 'vue-router';
-import AsyncComputed from 'vue-async-computed';
-import Snotify from 'vue-snotify';
-import store from './store';
-import router from './router';
-import { isDevelopment } from './utils/core';
-import VModal from 'vue-js-modal';
-import VueCookie from 'vue-cookie';
 
-import {
-    AnidbReleaseGroupUi,
-    AppHeader,
-    AppLink,
-    Asset,
-    Backstretch,
-    Config,
-    FileBrowser,
-    LanguageSelect,
-    NamePattern,
-    PlotInfo,
-    RootDirs,
-    ScrollButtons,
-    SelectList,
-    Show,
-    ShowSelector,
-    SubMenu
-} from './components';
+import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
+import router from './router';
+import store from './store';
+import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
 Vue.config.performance = true;
 
-Vue.use(Vuex);
-Vue.use(VueCookie);
-Vue.use(VueRouter);
-Vue.use(AsyncComputed);
-Vue.use(Snotify);
-Vue.use(VModal);
+registerPlugins();
 
-// Global components
-const globalComponents = [
-    AnidbReleaseGroupUi,
-    AppHeader,
-    AppLink,
-    Asset,
-    Backstretch,
-    Config,
-    FileBrowser,
-    LanguageSelect,
-    NamePattern,
-    PlotInfo,
-    RootDirs,
-    ScrollButtons,
-    SelectList,
-    Show,
-    ShowSelector,
-    SubMenu
-];
-
-globalComponents.forEach(component => {
-    Vue.component(component.name, component);
-});
-
-// Load x-template components
-window.components.forEach(component => {
-    // Skip already registered components
-    if (!Object.keys(Vue.options.components).includes(component.name)) {
-        if (isDevelopment) {
-            console.debug(`Registering ${component.name}`);
-        }
-        Vue.component(component.name, component);
-    }
-});
+// @TODO: Remove this before v1.0.0
+registerGlobalComponents();
 
 const app = new Vue({
-    name: 'App',
-    store,
+    name: 'app',
     router,
-    components: {},
+    store,
     data() {
         return {
             globalLoading: false,
@@ -89,11 +28,12 @@ const app = new Vue({
             console.log('App Mounted!');
         }
 
-        if (!document.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes('/login')) {
             const { $store } = this;
             Promise.all([
                 $store.dispatch('login', { username: window.username }),
-                $store.dispatch('getConfig')
+                $store.dispatch('getConfig'),
+                $store.dispatch('getStats')
             ]).then(([_, config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');

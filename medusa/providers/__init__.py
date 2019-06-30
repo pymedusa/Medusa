@@ -21,6 +21,7 @@ from medusa.providers.torrent import (
     animetorrents,
     archetorrent,
     avistaz,
+    beyondhd,
     bitcannon,
     bithdtv,
     bjshare,
@@ -72,7 +73,7 @@ __all__ = [
     'danishbits', 'limetorrents', 'norbits', 'bithdtv', 'ncore', 'zooqle',
     'animebytes', 'animetorrents', 'anidex', 'shanaproject', 'torrenting',
     'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz',
-    'avistaz', 'bjshare', 'gimmepeers', 'btdb'
+    'avistaz', 'bjshare', 'gimmepeers', 'btdb', 'beyondhd'
 ]
 
 

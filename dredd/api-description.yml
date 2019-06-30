@@ -74,7 +74,6 @@ paths:
           description: Filter series based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
-        - $ref: '#/parameters/fetch'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -2474,12 +2473,6 @@ parameters:
     in: query
     required: false
     description: Whether response should contain detailed information
-    type: boolean
-  fetch:
-    name: fetch
-    in: query
-    required: false
-    description: Whether response should fetch external information
     type: boolean
   page:
     name: page

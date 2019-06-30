@@ -288,7 +288,7 @@ class MedusaApp(object):
         self.TV_DOWNLOAD_DIR = None
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
-        self.ALLOWED_EXTENSIONS = {'srt', 'nfo', 'sub', 'idx'}
+        self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
 
         self.NZBS = False
         self.NZBS_UID = None
