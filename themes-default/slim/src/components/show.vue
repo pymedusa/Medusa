@@ -40,7 +40,6 @@ export default {
         }
     },
     data() {
-
         return {
             invertTable: true,
             isMobile: false,
@@ -52,9 +51,22 @@ export default {
                 }
             },
             episodeColumns: [
-                'nfo', 'tbn', 'episode', 'absolute','scene', 'sceneAbsolute', 'title', 'fileName',
-                'size', 'airDate', 'download', 'airDate', 'subtitles', 'status', 'search'
-                ]
+                'nfo',
+                'tbn',
+                'episode',
+                'absolute',
+                'scene',
+                'sceneAbsolute',
+                'title',
+                'fileName',
+                'size',
+                'airDate',
+                'download',
+                'airDate',
+                'subtitles',
+                'status',
+                'search'
+            ]
         };
     },
     computed: {
@@ -80,9 +92,8 @@ export default {
 
             if (invertTable) {
                 return this.show.seasons.slice().reverse();
-            } else {
-                return this.show.seasons;
             }
+            return this.show.seasons;
         }
     },
     mounted() {
@@ -390,9 +401,8 @@ export default {
             }
             if (invertTable) {
                 return season.episodes.slice().reverse();
-            } else {
-                return season.episodes;
             }
+            return season.episodes;
         },
         /**
          * Check if the season/episode combination exists in the scene numbering.
@@ -418,7 +428,7 @@ export default {
 
             if (Object.keys(sceneAbsoluteNumbering).length > 0) {
                 return sceneAbsoluteNumbering[episode.absoluteNumber];
-            } else if (xemAbsolute) {
+            } if (xemAbsolute) {
                 return xemAbsolute;
             }
             return 0;
@@ -453,15 +463,15 @@ export default {
 
             // Check if there is a season exception for this season
             if (allSceneExceptions[season]) {
-                // if there is not a match on the xem table, display it as a medusa scene exception
+                // If there is not a match on the xem table, display it as a medusa scene exception
                 bindData = {
                     id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
                     alt: foundInXem ? '[xem]' : '[medusa]',
                     src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
-                    title: xemSeasons.reduce(function (a, b) {
+                    title: xemSeasons.reduce((a, b) => {
                         return a = a.concat(allSceneExceptions[b]);
-                    }, []).join(', '),
-                }
+                    }, []).join(', ')
+                };
             }
 
             return bindData;

@@ -247,18 +247,16 @@ const getters = {
         const globalIgnored = rootState.search.filters.ignored.map(x => x.toLowerCase());
         if (!series.config.release.ignoredWordsExclude) {
             return arrayUnique(globalIgnored.concat(seriesIgnored));
-        } else {
-            return arrayExclude(globalIgnored, seriesIgnored);
         }
+        return arrayExclude(globalIgnored, seriesIgnored);
     },
     effectiveRequired: (state, _, rootState) => series => {
         const globalRequired = rootState.search.filters.required.map(x => x.toLowerCase());
         const seriesRequired = series.config.release.requiredWords.map(x => x.toLowerCase());
         if (!series.config.release.requiredWordsExclude) {
             return arrayUnique(globalRequired.concat(seriesRequired));
-        } else {
-            return arrayExclude(globalRequired, seriesRequired);
         }
+        return arrayExclude(globalRequired, seriesRequired);
     },
     // Get an indexer's name using its ID.
     indexerIdToName: state => indexerId => {

@@ -1,149 +1,149 @@
 <template>
     <div class="display-show-template" :class="theme">
-        <vue-snotify></vue-snotify>
-        <backstretch v-if="config.fanartBackground" v-bind="{indexer, id}"></backstretch>
-        <input type="hidden" id="series-id" value="" />
-        <input type="hidden" id="indexer-name" value="" />
-        <input type="hidden" id="series-slug" value="" />
+        <vue-snotify />
+        <backstretch v-if="config.fanartBackground" v-bind="{indexer, id}" />
+        <input type="hidden" id="series-id" value="">
+        <input type="hidden" id="indexer-name" value="">
+        <input type="hidden" id="series-slug" value="">
 
         <show-header @reflow="reflowLayout" type="show"
-            :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate" @update-overview-status="filterByOverviewStatus = $event"
-        ></show-header>
+                     :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate" @update-overview-status="filterByOverviewStatus = $event"
+        />
 
         <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
 
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
-                :columns="columns"
-                :rows="orderSeasons"
-                :groupOptions="{
-                    enabled: true,
-                    mode: 'span',
-                    customChildObject: 'episodes'
-                }"
-                :pagination-options="{
-                    enabled: true,
-                    perPage: paginationPerPage,
-                    perPageDropdown: [25, 50, 100, 250, 500]
-                }"
-                :search-options="{
-                    enabled: true,
-                    trigger: 'enter',
-                    skipDiacritics: false,
-                    placeholder: 'Search episodes',
-                }"
-                :sort-options="{
-                    enabled: true,
-                    initialSortBy: { field: 'episode', type: 'desc' }
-                }"
-                :selectOptions="{
-                    enabled: true,
-                    selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
-                    selectionInfoClass: 'select-info',
-                    selectionText: 'episodes selected',
-                    clearSelectionText: 'clear',
-                    selectAllByGroup: true
-                }"
-                :row-style-class="rowStyleClassFn"
-                ref="table-seasons"
-                @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
-                @on-per-page-change="paginationPerPage=$event.currentPerPage">
-                <div slot="table-actions">
-                    <!-- Drowdown with checkboxes for showing / hiding table headers -->
-                    <div class="button-group pull-right">
-                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret"></span></button>
-                        <ul class="dropdown-menu" style="top: auto; left: auto;">
-                            <li v-for="(column, index) in columns" :key="index">
-                                <a href="#" class="small" tabIndex="-1" @click="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox"/>{{column.label}}</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <template slot="table-header-row" slot-scope="props">
-                    <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season"></app-link>
-                        <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
-                        {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
-                        <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                        <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
-                            <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search" />
-                        </app-link>
-                        <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'"></div>
-                    </h3>
-                </template>
-
-                <template slot="table-footer-row" slot-scope="{headerRow}">
-                    <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                        <th class="col-footer" colspan=15 align=left>Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
-                    </tr>
-                    <tr class="spacer"></tr>
-                </template>
-
-                <template slot="table-row" slot-scope="props">
-                    <span v-if="props.column.field == 'content.hasNfo'">
-                        <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11" />
-                    </span>
-                    <span v-else-if="props.column.field == 'content.hasTbn'">
-                        <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11" />
-                    </span>
-                    <span v-else-if="props.column.field == 'download'">
-                        <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
-                    </span>
-
-                    <span v-else-if="props.column.field == 'episode'">
-                        <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Scene'">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode" size="6" maxlength="8"
-                                class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
-                                :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
-                                title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
-                                :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
-                                style="padding: 0; text-align: center; max-width: 60px;"/>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Scene Absolute'">
-                        <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                            class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
-                            :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
-                            title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
-                            :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
-                            style="padding: 0; text-align: center; max-width: 60px;"/>
-                    </span>
-
-                    <span v-else-if="props.column.field == 'title'">
-                        <plot-info v-if="props.row.description !== ''" :description="props.row.description" :show-slug="show.id.slug" :season="props.row.season" :episode="props.row.episode"></plot-info>
-                        {{props.row.title}}
-                    </span>
-
-                    <span v-else-if="props.column.field == 'subtitles'">
-                        <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
-                            <div v-for="flag in props.row.subtitles" :key="flag">
-                                <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode='props.row.episode' + '&lang=' + flag">
-                                    <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
-                                </app-link>
-                                <img v-if="flag === 'und'" :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
-                            </div>
+                                :columns="columns"
+                                :rows="orderSeasons"
+                                :groupOptions="{
+                                    enabled: true,
+                                    mode: 'span',
+                                    customChildObject: 'episodes'
+                                }"
+                                :pagination-options="{
+                                    enabled: true,
+                                    perPage: paginationPerPage,
+                                    perPageDropdown: [25, 50, 100, 250, 500]
+                                }"
+                                :search-options="{
+                                    enabled: true,
+                                    trigger: 'enter',
+                                    skipDiacritics: false,
+                                    placeholder: 'Search episodes',
+                                }"
+                                :sort-options="{
+                                    enabled: true,
+                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                }"
+                                :selectOptions="{
+                                    enabled: true,
+                                    selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+                                    selectionInfoClass: 'select-info',
+                                    selectionText: 'episodes selected',
+                                    clearSelectionText: 'clear',
+                                    selectAllByGroup: true
+                                }"
+                                :row-style-class="rowStyleClassFn"
+                                ref="table-seasons"
+                                @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
+                                @on-per-page-change="paginationPerPage=$event.currentPerPage">
+                    <div slot="table-actions">
+                        <!-- Drowdown with checkboxes for showing / hiding table headers -->
+                        <div class="button-group pull-right">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret" /></button>
+                            <ul class="dropdown-menu" style="top: auto; left: auto;">
+                                <li v-for="(column, index) in columns" :key="index">
+                                    <a href="#" class="small" tabIndex="-1" @click="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox">{{column.label}}</a>
+                                </li>
+                            </ul>
                         </div>
-                    </span>
+                    </div>
 
-                    <span v-else-if="props.column.field == 'status'">
-                        {{props.row.status}} <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality"></quality-pill>
-                        <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);"/>
-                    </span>
+                    <template slot="table-header-row" slot-scope="props">
+                        <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
+                            <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
+                            {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
+                            <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
+                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
+                                <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                            </app-link>
+                            <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
+                        </h3>
+                    </template>
 
-                    <span v-else-if="props.column.field == 'search'">
-                        <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)"/>
-                        <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
-                        <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)"/>
-                    </span>
+                    <template slot="table-footer-row" slot-scope="{headerRow}">
+                        <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
+                            <th class="col-footer" colspan=15 align=left>Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                        </tr>
+                        <tr class="spacer" />
+                    </template>
 
-                    <span v-else>
-                        {{props.formattedRow[props.column.field]}}
-                    </span>
-                </template>
+                    <template slot="table-row" slot-scope="props">
+                        <span v-if="props.column.field == 'content.hasNfo'">
+                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                        </span>
+                        <span v-else-if="props.column.field == 'content.hasTbn'">
+                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                        </span>
+                        <span v-else-if="props.column.field == 'download'">
+                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
+                        </span>
+
+                        <span v-else-if="props.column.field == 'episode'">
+                            <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Scene'">
+                            <input type="text" :placeholder="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode" size="6" maxlength="8"
+                                   class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
+                                   :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
+                                   title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
+                                   :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
+                                   style="padding: 0; text-align: center; max-width: 60px;">
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Scene Absolute'">
+                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
+                                   :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
+                                   title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
+                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   style="padding: 0; text-align: center; max-width: 60px;">
+                        </span>
+
+                        <span v-else-if="props.column.field == 'title'">
+                            <plot-info v-if="props.row.description !== ''" :description="props.row.description" :show-slug="show.id.slug" :season="props.row.season" :episode="props.row.episode" />
+                            {{props.row.title}}
+                        </span>
+
+                        <span v-else-if="props.column.field == 'subtitles'">
+                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                                <div v-for="flag in props.row.subtitles" :key="flag">
+                                    <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode='props.row.episode' + '&lang=' + flag">
+                                        <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                                    </app-link>
+                                    <img v-if="flag === 'und'" :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                                </div>
+                            </div>
+                        </span>
+
+                        <span v-else-if="props.column.field == 'status'">
+                            {{props.row.status}} <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                            <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
+                        </span>
+
+                        <span v-else-if="props.column.field == 'search'">
+                            <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
+                            <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
+                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)">
+                        </span>
+
+                        <span v-else>
+                            {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
 
                 </vue-good-table>
             </div>
@@ -542,7 +542,6 @@ export default {
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
                         getEpisodes({ id, indexer, season });
                     });
-
                 }).catch(error => {
                     console.error(String(error));
                 });
@@ -556,7 +555,7 @@ export default {
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
-                .then( _ => {
+                .then(_ => {
                     console.info(`patched show ${show.id.slug} with status ${status}`);
                     [...new Set(episodes.map(episode => episode.season))].forEach(season => {
                         getEpisodes({ id, indexer, season });
@@ -592,7 +591,7 @@ export default {
         },
         searchSubtitle(event, season, episode, rowIndex) {
             const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
-            const SubtitleSearchClass = Vue.extend(SubtitleSearch);  // eslint-disable-line no-undef
+            const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
                 propsData: { show, season, episode, key: rowIndex },
                 parent: this
@@ -842,20 +841,20 @@ export default {
             }
 
             api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
-                .then( _ => {
+                .then(_ => {
                     if (episodes.length === 1) {
                         console.info(`started search for show: ${show.id.slug} episode: ${episodes[0].slug}`);
-                        this.$refs[`search-${episodes[0].slug}`].src = `images/queued.png`;
+                        this.$refs[`search-${episodes[0].slug}`].src = 'images/queued.png';
                         this.$refs[`search-${episodes[0].slug}`].disabled = true;
                     } else {
-                        console.info(`started a full backlog search`);
+                        console.info('started a full backlog search');
                     }
                 }).catch(error => {
                     console.error(String(error));
 
                     episodes.forEach(episode => {
                         data.episodes.push(episode.slug);
-                        this.$refs[`search-${episodes[0].slug}`].src = `images/no16.png`;
+                        this.$refs[`search-${episodes[0].slug}`].src = 'images/no16.png';
                     });
                 }).finally(() => {
                     this.failedSearchEpisode = null;
@@ -956,7 +955,7 @@ export default {
                 if (!show.seasons) {
                     // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
                     // before going on to the next one.
-                    const _getEpisodes = async(id, indexer) => {
+                    const _getEpisodes = async (id, indexer) => {
                         for (const season of Object.keys(show.seasonCount).reverse()) {
                             // We're waiting for the results by design, to give vue the chance to update the dom.
                             // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
@@ -975,7 +974,7 @@ export default {
                 const { setCookie } = this;
                 for (const column of newVal) {
                     if (column) {
-                        setCookie(`displayShow-hide-field-${column.label}`, column.hidden)
+                        setCookie(`displayShow-hide-field-${column.label}`, column.hidden);
                     }
                 }
             },

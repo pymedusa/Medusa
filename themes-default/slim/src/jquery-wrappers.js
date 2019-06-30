@@ -44,7 +44,7 @@ const attachImdbTooltip = () => {
  * Attach a default qtip to elements with the addQTip class.
  */
 const addQTip = () => {
-    $('.addQTip').each(function () {
+    $('.addQTip').each(function() {
         $(this).css({
             'cursor': 'help', // eslint-disable-line quote-props
             'text-shadow': '0px 0px 0.5px #666'
@@ -70,7 +70,7 @@ const addQTip = () => {
             }
         });
     });
-}
+};
 
 /**
  * Start checking for running searches.
@@ -132,7 +132,6 @@ const updateSearchIcons = (showSlug, vm) => {
                     enableLink(img);
                 }
             }
-
         });
     };
 
@@ -156,9 +155,8 @@ const updateSearchIcons = (showSlug, vm) => {
                 pollInterval = 30000;
             }).finally(() => {
                 setTimeout(checkManualSearches, pollInterval);
-            })
-
-    }
+            });
+    };
 
     checkManualSearches();
-}
+};

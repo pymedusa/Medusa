@@ -57,22 +57,22 @@ export default {
         },
         getReleaseNameClasses(name) {
             const { config, effectiveIgnored, effectiveRequired, show } = this;
-            let classes = [];
-            const { ignored, required, undesired } =  this.$store.state.search.filters;
+            const classes = [];
+            const { ignored, required, undesired } = this.$store.state.search.filters;
 
-            if (effectiveIgnored(show).map( word => {
+            if (effectiveIgnored(show).map(word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length) {
                 classes.push('global-ignored');
             }
 
-            if (effectiveRequired(show).map( word => {
+            if (effectiveRequired(show).map(word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length) {
                 classes.push('global-required');
             }
 
-            if (this.$store.state.search.filters.undesired.map( word => {
+            if (this.$store.state.search.filters.undesired.map(word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length) {
                 classes.push('global-undesired');

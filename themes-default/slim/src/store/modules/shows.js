@@ -2,8 +2,7 @@ import Vue from 'vue';
 
 import { api } from '../../api';
 import { wait } from '../../utils/core';
-import { ADD_SHOW } from '../mutation-types';
-import { ADD_SHOW_EPISODE } from '../mutation-types';
+import { ADD_SHOW, ADD_SHOW_EPISODE } from '../mutation-types';
 
 /**
  * @typedef {object} ShowIdentifier
@@ -52,7 +51,7 @@ const mutations = {
 
         if (!newShow.seasons) {
             newShow.seasons = [];
-    }
+        }
 
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
@@ -64,16 +63,16 @@ const mutations = {
                 if (foundIndex === -1) {
                     existingSeason.episodes.push(episode);
                 } else {
-                    existingSeason.episodes.splice(foundIndex, 1, episode)
+                    existingSeason.episodes.splice(foundIndex, 1, episode);
                 }
             } else {
                 const newSeason = {
                     season: episode.season,
                     episodes: [],
                     html: false,
-                    mode: "span",
+                    mode: 'span',
                     label: 1
-};
+                };
                 newShow.seasons.push(newSeason);
                 newSeason.episodes.push(episode);
             }
@@ -84,7 +83,6 @@ const mutations = {
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
     }
-
 
 };
 
