@@ -574,7 +574,7 @@ paths:
           x-request:
             path-params:
               id: 999999999
-  /alias/{id}:
+  /alias/{alias-id}:
     get:
       summary: Return information about a given alias
       description: Retrieves information about a given alias
@@ -590,7 +590,6 @@ paths:
             path-params:
               id: "${stash['alias-id']}"
         404:
-          $ref: '#/responses/error'
           description: Alias not found
           x-request:
             path-params:
@@ -600,7 +599,6 @@ paths:
       description: Replace alias data
       parameters:
         - $ref: '#/parameters/alias-id'
-          name: id
           x-example: 1
         - name: alias
           in: body
