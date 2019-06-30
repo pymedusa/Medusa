@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from collections import defaultdict
-from six import itervalues
 
 from medusa import app
 from medusa.search.manual import collect_episodes_from_search_thread
@@ -14,6 +13,7 @@ from medusa.search.queue import (
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
+from six import itervalues
 
 from tornado.escape import json_decode
 
