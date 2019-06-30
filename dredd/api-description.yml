@@ -538,13 +538,12 @@ paths:
           $ref: '#/responses/error'
           description: Unable to create alias
           x-disabled: true
-  /alias/{id}/{field}:
+  /alias/{alias-id}/{field}:
     get:
       summary: Return a specific field from a given alias
       description: Retrieve a specific field from a a given alias
       parameters:
         - $ref: '#/parameters/alias-id'
-          name: id
         - name: field
           in: path
           required: true
@@ -640,7 +639,6 @@ paths:
       description: Delete an alias
       parameters:
         - $ref: '#/parameters/alias-id'
-          name: id
           x-example: 123456
       responses:
         204:
