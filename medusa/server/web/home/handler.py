@@ -1420,47 +1420,45 @@ class Home(WebRoot):
         else:
             return self.redirect('/home/')
 
-    def setStatus(self, showSlug=None, eps=None, status=None):
+    def setStatus(self, indexername=None, seriesid=None, eps=None, status=None, direct=False):
         # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
-        if not all([showSlug, eps, status]):
+        if not all([indexername, seriesid, eps, status]):
             error_message = 'You must specify a show and at least one episode'
+            if direct:
                 ui.notifications.error('Error', error_message)
                 return json.dumps({
                     'result': 'error',
-            'message': error_message
                 })
+            else:
+                return self._genericMessage('Error', error_message)
 
         status = int(status)
         if status not in statusStrings:
             error_message = 'Invalid status'
+            if direct:
                 ui.notifications.error('Error', error_message)
                 return json.dumps({
                     'result': 'error',
-            'message': error_message
                 })
+            else:
+                return self._genericMessage('Error', error_message)
 
-        identifier = SeriesIdentifier.from_slug(showSlug)
-        if not identifier:
-            error_message = 'Error', 'Show not in show list'
-            ui.notifications.error('Error', error_message)
-            return json.dumps({
-                'result': 'error',
-                'message': error_message
-            })
+        series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
 
-        series_obj = Series.find_by_identifier(identifier)
         if not series_obj:
             error_message = 'Error', 'Show not in show list'
+            if direct:
                 ui.notifications.error('Error', error_message)
                 return json.dumps({
                     'result': 'error',
-            'message': error_message
                 })
+            else:
+                return self._genericMessage('Error', error_message)
 
         segments = {}
         trakt_data = []
-
         if eps:
+
             sql_l = []
             for cur_ep in eps.split('|'):
 
@@ -1589,10 +1587,12 @@ class Home(WebRoot):
             if segments:
                 ui.notifications.message('Retry Search started', msg)
 
+        if direct:
             return json.dumps({
                 'result': 'success',
-            'message': ''
             })
+        else:
+            return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
     def testRename(self, indexername=None, seriesid=None):
         if not indexername or not seriesid:
