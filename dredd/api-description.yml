@@ -889,7 +889,7 @@ paths:
           description: No credentials provided or invalid credentials
           x-request:
             body: {}
-  /search:
+  /search/{series-id}:
     get:
       summary: Collect finished, running and queued searches for a specific show
       description: |
