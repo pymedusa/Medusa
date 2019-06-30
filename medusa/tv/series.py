@@ -97,8 +97,11 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
-from medusa.scene_numbering import get_xem_numbering_for_show
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
+)
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -600,6 +603,26 @@ class Series(TV):
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self)
+
+    @property
+    def xem_absolute_numbering(self):
+        """Return series xem absolute numbering."""
+        return get_xem_absolute_numbering_for_show(self)
+
+    @property
+    def scene_absolute_numbering(self):
+        """Return series scene absolute numbering."""
+        return get_scene_absolute_numbering_for_show(self)
+
+    @property
+    def all_scene_exceptions(self):
+        """Return series season scene exceptions."""
+        return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
+
+    @property
+    def scene_numbering(self):
+        """Return series scene numbering."""
+        return get_scene_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -2060,7 +2083,7 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True):
+    def to_json(self, detailed=True, episodes=False):
         """
         Return JSON representation.
 
@@ -2077,6 +2100,7 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
+        data['seasonCount'] = self.get_all_seasons()
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2131,19 +2155,31 @@ class Series(TV):
             data['config']['release']['whitelist'] = bw_list.whitelist
 
         if detailed:
-            episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [list(v) for _, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
-
-            data['episodeCount'] = len(episodes)
-            last_episode = episodes[-1] if episodes else None
-            if self.status == 'Ended' and last_episode and last_episode.airdate:
-                data['year']['end'] = last_episode.airdate.year
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
                                      'destination': {'season': dest[0], 'episode': dest[1]}}
                                     for src, dest in viewitems(self.xem_numbering)]
+            data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
+            data['allSceneExceptions'] = self.all_scene_exceptions
+            if self.is_scene:
+                data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
+                data['sceneNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
+                                           'destination': {'season': dest[0], 'episode': dest[1]}}
+                                          for src, dest in viewitems(self.scene_numbering)]
+            else:
+                data['xemAbsoluteNumbering'], data['sceneNumbering'] = [], []
+
+        if episodes:
+            episodes = self.get_all_episodes()
+            data['episodeCount'] = len(episodes)
+            last_episode = episodes[-1] if episodes else None
+            if self.status == 'Ended' and last_episode and last_episode.airdate:
+                data['year']['end'] = last_episode.airdate.year
+
+            data['seasons'] = [{'episodes': list(v), 'season': season}
+                               for season, v in
+                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
 
         return data
 
