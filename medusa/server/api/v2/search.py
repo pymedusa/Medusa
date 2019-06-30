@@ -123,7 +123,8 @@ class SearchHandler(BaseRequestHandler):
             season_segments[episode.season].append(episode)
 
         if not season_segments:
-            return self._not_found('No episodes passed to search for using the backlog search')
+            return self._not_found('Could not find any episode for show {show}, Did you provide the correct format?'
+                                   .format(show=series.name))
 
         for segment in itervalues(season_segments):
             # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
@@ -152,10 +153,10 @@ class SearchHandler(BaseRequestHandler):
         statuses = {}
 
         if not data.get('showSlug'):
-            return self._bad_request('For a backlog search you need to provide a showSlug')
+            return self._bad_request('For a failed search you need to provide a showSlug')
 
         if not data.get('episodes'):
-            return self._bad_request('For a backlog search you need to provide a list of episodes')
+            return self._bad_request('For a failed search you need to provide a list of episodes')
 
         identifier = SeriesIdentifier.from_slug(data['showSlug'])
         if not identifier:
@@ -180,7 +181,8 @@ class SearchHandler(BaseRequestHandler):
             season_segments[episode.season].append(episode)
 
         if not season_segments:
-            return self._not_found('No episodes passed to search for using the backlog search')
+            return self._not_found('Could not find any episode for show {show}, Did you provide the correct format?'
+                                   .format(show=series.name))
 
         for segment in itervalues(season_segments):
             cur_failed_queue_item = FailedQueueItem(series, segment)
@@ -197,10 +199,10 @@ class SearchHandler(BaseRequestHandler):
         statuses = {}
 
         if not data.get('showSlug'):
-            return self._bad_request('For a backlog search you need to provide a showSlug')
+            return self._bad_request('For a manual search you need to provide a showSlug')
 
         if not data.get('episodes'):
-            return self._bad_request('For a backlog search you need to provide a list of episodes')
+            return self._bad_request('For a manual search you need to provide a list of episodes')
 
         identifier = SeriesIdentifier.from_slug(data['showSlug'])
         if not identifier:
@@ -225,7 +227,8 @@ class SearchHandler(BaseRequestHandler):
             season_segments[episode.season].append(episode)
 
         if not season_segments:
-            return self._not_found('No episodes passed to search for using the backlog search')
+            return self._not_found('Could not find any episode for show {show}. Did you provide the correct format?'
+                                   .format(show=series.name))
 
         # Retrieve the search type option (episode vs season)
         search_type = data['options'].get('type', 'episode')
