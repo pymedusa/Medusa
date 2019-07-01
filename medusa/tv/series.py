@@ -2100,7 +2100,7 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
-        data['seasonCount'] = self.get_all_seasons()
+        data['seasonCount'] = numbering_tuple_to_dict(self.get_all_seasons(), left_desc='season', right_desc='episodeCount')
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2158,25 +2158,25 @@ class Series(TV):
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
-            data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
-            data['allSceneExceptions'] = self.all_scene_exceptions
+            data['sceneAbsoluteNumbering'] = numbering_tuple_to_dict(self.scene_absolute_numbering)
+            data['allSceneExceptions'] = numbering_tuple_to_dict(self.all_scene_exceptions, left_desc='season', right_desc='exceptions')
             if self.is_scene:
-                data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
+                data['xemAbsoluteNumbering'] = numbering_tuple_to_dict(self.xem_absolute_numbering, left_desc='absoluteNumber', right_desc='sceneAbsoluteNumber')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
             else:
                 data['xemAbsoluteNumbering'] = []
                 data['sceneNumbering'] = []
 
         if episodes:
-            episodes = self.get_all_episodes()
-            data['episodeCount'] = len(episodes)
-            last_episode = episodes[-1] if episodes else None
+            all_episodes = self.get_all_episodes()
+            data['episodeCount'] = len(all_episodes)
+            last_episode = all_episodes[-1] if all_episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
 
             data['seasons'] = [{'episodes': list(v), 'season': season}
                                for season, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+                               groupby([ep.to_json() for ep in all_episodes], lambda item: item['season'])]
 
         return data
 
