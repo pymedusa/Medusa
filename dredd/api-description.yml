@@ -953,6 +953,15 @@ definitions:
       showType:
         type: string
         enum: [series, anime, sports]
+      seasonCount:
+        type: object
+        description: Key/value mapping with `Season Number: Number of episodes in season`
+        additionalProperties:
+          type: string
+        example:
+          0: 10
+          1: 24
+          2: 24
       imdbInfo:
         type: object
         description: "Object with additional show information retrieved from imdb"
@@ -1139,12 +1148,19 @@ definitions:
             description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
       seasons:
         type: array
-        description: Episodes grouped by season. Available in detailed view.
+        description: Episodes grouped by season. Available through the episodes query param.
         items:
-          type: array
-          description: Episodes for the given season
-          items:
-            $ref: '#/definitions/Episode'
+          type: object
+          properties:
+            season:
+              type: int
+              format: int32
+              description: Season number
+            episodes:
+              type: array
+              description: Episodes for the given season
+              items:
+                $ref: '#/definitions/Episode'
       episodeCount:
         type: integer
         format: int32
