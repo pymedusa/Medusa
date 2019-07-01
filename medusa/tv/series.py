@@ -100,7 +100,7 @@ from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from medusa.scene_numbering import (
     get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show, numbering_tuple_to_dict
 )
 from medusa.show.show import Show
 from medusa.subtitles import (
@@ -2157,16 +2157,12 @@ class Series(TV):
         if detailed:
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
-            data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
-                                     'destination': {'season': dest[0], 'episode': dest[1]}}
-                                    for src, dest in viewitems(self.xem_numbering)]
+            data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
             data['sceneAbsoluteNumbering'] = self.scene_absolute_numbering
             data['allSceneExceptions'] = self.all_scene_exceptions
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = self.xem_absolute_numbering
-                data['sceneNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
-                                           'destination': {'season': dest[0], 'episode': dest[1]}}
-                                          for src, dest in viewitems(self.scene_numbering)]
+                data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
             else:
                 data['xemAbsoluteNumbering'] = []
                 data['sceneNumbering'] = []

@@ -33,6 +33,7 @@ from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.scene_exceptions import safe_session
 
+from six import viewitems
 
 def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
     """
@@ -647,3 +648,15 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
     if cl:
         main_db_con = db.DBConnection()
         main_db_con.mass_action(cl)
+
+
+def numbering_tuple_to_dict(numbering):
+    """
+    Convert an array with tuple mapping to a json structure.
+
+    :param numbering: Array with double tuple mapping. For example: (src season, src episode): (dest season, dest episode).
+    :return: Dictionary with dedicated keys for source and destination.
+    """
+    return [{'source': {'season': src[0], 'episode': src[1]},
+             'destination': {'season': dest[0], 'episode': dest[1]}}
+            for src, dest in viewitems(numbering)]
