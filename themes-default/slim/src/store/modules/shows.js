@@ -103,7 +103,7 @@ const actions = {
                 timeout = 60000;
             }
 
-            api.get(`/series/${indexer}${id}`, { params }, { timeout })
+            api.get(`/series/${indexer}${id}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
