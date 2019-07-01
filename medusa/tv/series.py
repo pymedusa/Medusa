@@ -2083,7 +2083,7 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True, episodes=False):
+    def to_json(self, detailed=False, episodes=False):
         """
         Return JSON representation.
 

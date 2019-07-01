@@ -64,7 +64,7 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        detailed = self._parse_boolean(self.get_argument('detailed', default=True))
+        detailed = self._parse_boolean(self.get_argument('detailed', default=False))
         episodes = self._parse_boolean(self.get_argument('episodes', default=False))
         data = series.to_json(detailed=detailed, episodes=episodes)
         if path_param:
