@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import ws
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -156,6 +157,10 @@ class SeriesHandler(BaseRequestHandler):
 
         if ignored:
             log.warning('Series patch ignored {items!r}', {'items': ignored})
+
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('showUpdated', series.to_json(detailed=False))
+        msg.push()
 
         return self._ok(data=accepted)
 
