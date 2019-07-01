@@ -21,24 +21,24 @@
                         >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="type !== 'snatch-selection' && show.seasonCount && Object.keys(show.seasonCount).length > 1" id="show-specials-and-seasons" class="pull-right">
+                <div v-if="type !== 'snatch-selection' && show.seasonCount && seasons.length > 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="show.seasonCount['0']">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
                         <span>
-                            <select v-if="Object.keys(show.seasonCount) >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
+                            <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in Object.keys(show.seasonCount)" :key="`jumpToSeason-${season}`" :value="`#season-${season}`" :data-season="season">
+                                <option v-for="season in seasons" :key="`jumpToSeason-${season}`" :value="`#season-${season}`" :data-season="season">
                                     {{ season === 0 ? 'Specials' : 'Season ' + season }}
                                 </option>
                             </select>
-                            <template v-else-if="Object.keys(show.seasonCount).length >= 1">
+                            <template v-else-if="seasons.length >= 1">
                                 Season:
-                                <template v-for="(season, $index) in reverse(Object.keys(show.seasonCount))">
+                                <template v-for="(season, $index) in reverse(seasons)">
                                     <app-link :href="'#season-' + season" :key="`jumpToSeason-${season}`">{{ season === 0 ? 'Specials' : season }}</app-link>
-                                    <span v-if="$index !== (Object.keys(show.seasonCount) - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                    <span v-if="$index !== (seasons - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -453,6 +453,15 @@ export default {
         combinedQualities() {
             const { allowed, preferred } = this.show.config.qualities;
             return combineQualities(allowed, preferred);
+        },
+        seasons() {
+            const { show } = this;
+            if (!show.seasonCount) {
+                return [];
+            }
+
+            // Force sort to compare using integers.
+            return Object.keys(show.seasonCount).sort((a, b) => a - b);
         }
     },
     methods: {
