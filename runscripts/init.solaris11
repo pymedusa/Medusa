@@ -85,7 +85,7 @@
        </common_name>
        <documentation>
           <doc_link name='medusa'
-                    uri='https://github.com/PyMedusa/medusa.github.io/' />
+                    uri='https://pymedusa.com/' />
        </documentation>
     </template>
 

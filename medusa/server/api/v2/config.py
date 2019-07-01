@@ -508,7 +508,7 @@ class DataGenerator(object):
         section_data['appArgs'] = app.MY_ARGS
         section_data['webRoot'] = app.WEB_ROOT
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
-        section_data['githubUrl'] = app.GITHUB_IO_URL
+        section_data['websiteUrl'] = app.WEBSITE_URL
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL

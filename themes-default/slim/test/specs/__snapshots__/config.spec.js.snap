@@ -255,10 +255,10 @@ exports[`Config.test.js renders 1`] = `
       </td>
       <td>
         <app-link-stub
-          href="https://github.com/pymedusa/pymedusa.github.io"
+          href="https://pymedusa.com"
           placeholder="indexer-to-name"
         >
-          https://github.com/pymedusa/pymedusa.github.io
+          https://pymedusa.com
         </app-link-stub>
       </td>
     </tr>

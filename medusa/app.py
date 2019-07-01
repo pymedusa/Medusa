@@ -43,7 +43,7 @@ class MedusaApp(object):
         self.APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=self.GIT_ORG, repo=self.GIT_REPO)
         self.DONATIONS_URL = '{0}/wiki/Donations'.format(self.APPLICATION_URL)
         self.WIKI_URL = '{0}/wiki'.format(self.APPLICATION_URL)
-        self.GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
+        self.WEBSITE_URL = 'http://pymedusa.com/'
         self.EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(self.APPLICATION_URL)
         self.SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(self.APPLICATION_URL)
         self.RARBG_APPID = 'medusa'

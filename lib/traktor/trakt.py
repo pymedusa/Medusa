@@ -1,7 +1,7 @@
 """Traktor Trakt module."""
 # coding=utf-8
 #
-# URL: https://medusa.github.io
+# URL: https://pymedusa.com
 #
 # This file is part of medusa.
 #

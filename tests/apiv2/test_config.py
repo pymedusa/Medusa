@@ -69,7 +69,7 @@ def config_main(monkeypatch, app_config):
     config_data['appArgs'] = app.MY_ARGS
     config_data['webRoot'] = app.WEB_ROOT
     config_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
-    config_data['githubUrl'] = app.GITHUB_IO_URL
+    config_data['websiteUrl'] = app.WEBSITE_URL
     config_data['wikiUrl'] = app.WIKI_URL
     config_data['donationsUrl'] = app.DONATIONS_URL
     config_data['sourceUrl'] = app.APPLICATION_URL
@@ -186,7 +186,7 @@ def test_config_get(http_client, create_url, auth_headers, config_main):
     'pythonVersion',
     'locale',
     'localUser',
-    'githubUrl',
+    'websiteUrl',
     'dbPath',
     'postProcessing'
 ])

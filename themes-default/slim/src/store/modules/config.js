@@ -212,7 +212,7 @@ const state = {
     sslVersion: null,
     pythonVersion: null,
     comingEpsSort: null,
-    githubUrl: null,
+    websiteUrl: null,
     datePreset: null,
     subtitlesMulti: null,
     pid: null,
