@@ -2168,7 +2168,8 @@ class Series(TV):
                                            'destination': {'season': dest[0], 'episode': dest[1]}}
                                           for src, dest in viewitems(self.scene_numbering)]
             else:
-                data['xemAbsoluteNumbering'], data['sceneNumbering'] = [], []
+                data['xemAbsoluteNumbering'] = []
+                data['sceneNumbering'] = []
 
         if episodes:
             episodes = self.get_all_episodes()
