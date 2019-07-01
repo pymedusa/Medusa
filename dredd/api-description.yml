@@ -1221,9 +1221,9 @@ definitions:
           hasNfo:
             type: boolean
             description: Whether the episode has an .nfo file
-          hasNfo:
+          hasTbn:
             type: boolean
-            description: Wheter the episode has a thumbnail file
+            description: Whether the episode has a thumbnail file
       subtitles:
         type: array
         items:
@@ -1310,7 +1310,7 @@ definitions:
           type: string
       watched:
         type: boolean
-        description: Wheter the episode has been marked as watched
+        description: Whether the episode has been marked as watched
   Auth:
     description: Auth object
     properties:
