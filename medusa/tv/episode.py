@@ -1078,7 +1078,6 @@ class Episode(TV):
         data['airDate'] = self.air_date
         data['title'] = self.name
         data['description'] = self.description
-        data['content'] = {}
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
@@ -1101,6 +1100,7 @@ class Episode(TV):
         if self.file_size:
             data['file']['size'] = self.file_size
 
+        data['content'] = {}
         data['content']['hasNfo'] = self.hasnfo
         data['content']['hasTbn'] = self.hastbn
 
