@@ -1,5 +1,5 @@
 import { Vue } from 'vue/types/vue';
-import { RouteConfig } from 'vue-router';
+import { Route as VRoute, RouteConfig } from 'vue-router';
 
 /**
  * A route config.
@@ -47,3 +47,28 @@ export interface SubMenuItem {
 
 export type SubMenu = SubMenuItem[];
 export type SubMenuFunction = (vm: Vue) => SubMenu;
+
+interface MakeLegacyRedirectParams {
+    target: string;
+    from: string;
+    targetParams: {
+        [pathParamName: string]: (route: VRoute) => string;
+    };
+    (...config: RouteConfig);
+}
+
+export const makeLegacyRedirect: (params: MakeLegacyRedirectParams) => RouteConfig;
+export const extractLegacyPath: (path: string) => string;
+
+interface LegacyRedirectWrapperParams {
+    legacyRedirect: {
+        from?: string;
+        targetParams?: {
+            [pathParamName: string]: (route: VRoute) => string;
+        };
+        (...redirectConfig: RouteConfig);
+    };
+    (...routeConfig: RouteConfig);
+}
+
+export const legacyRedirectWrapper: (params: LegacyRedirectWrapperParams) => [RouteConfig, RouteConfig];

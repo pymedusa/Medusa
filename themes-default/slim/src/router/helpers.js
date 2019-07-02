@@ -55,7 +55,7 @@ const extractLegacyPath = path => {
  *      (`pathParamName: route => route.query.queryParamName`).
  * @param {...Object<string, any>} [params.legacyRedirect.redirectConfig] Extra redirect route config options.
  * @param {...Object<string, any>} params.routeConfig Original route config options.
- * @returns {Object<string, any>[]} A redirection route + a normal route.
+ * @returns {[Object<string, any>, Object<string, any>]} A redirection route + a normal route.
  */
 export const legacyRedirectWrapper = params => {
     const { legacyRedirect, ...routeConfig } = params;
