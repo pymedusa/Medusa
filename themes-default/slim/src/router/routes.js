@@ -5,6 +5,9 @@ import {
     showSubMenu
 } from './sub-menus';
 
+/** @typedef {import('.').Route} Route */
+
+/** @type {Route[]} */
 const homeRoutes = [
     {
         path: '/home',
@@ -92,6 +95,7 @@ const homeRoutes = [
     }
 ];
 
+/** @type {Route[]} */
 const configRoutes = [
     {
         path: '/config',
@@ -189,6 +193,7 @@ const configRoutes = [
     }
 ];
 
+/** @type {Route[]} */
 const addShowRoutes = [
     {
         path: '/addShows',
@@ -246,6 +251,7 @@ const addShowRoutes = [
     }
 ];
 
+/** @type {Route} */
 const loginRoute = {
     path: '/login',
     name: 'login',
@@ -255,6 +261,7 @@ const loginRoute = {
     component: () => import('../components/login.vue')
 };
 
+/** @type {Route} */
 const addRecommendedRoute = {
     path: '/addRecommended',
     name: 'addRecommended',
@@ -267,6 +274,7 @@ const addRecommendedRoute = {
     component: () => import('../components/add-recommended.vue')
 };
 
+/** @type {Route} */
 const scheduleRoute = {
     path: '/schedule',
     name: 'schedule',
@@ -277,6 +285,7 @@ const scheduleRoute = {
     }
 };
 
+/** @type {Route} */
 const historyRoute = {
     path: '/history',
     name: 'history',
@@ -288,6 +297,7 @@ const historyRoute = {
     }
 };
 
+/** @type {Route[]} */
 const manageRoutes = [
     {
         path: '/manage',
@@ -362,6 +372,7 @@ const manageRoutes = [
     }
 ];
 
+/** @type {Route[]} */
 const errorLogsRoutes = [
     {
         path: '/errorlogs',
@@ -385,6 +396,7 @@ const errorLogsRoutes = [
     }
 ];
 
+/** @type {Route} */
 const newsRoute = {
     path: '/news',
     name: 'news',
@@ -395,6 +407,7 @@ const newsRoute = {
     }
 };
 
+/** @type {Route} */
 const changesRoute = {
     path: '/changes',
     name: 'changes',
@@ -405,6 +418,7 @@ const changesRoute = {
     }
 };
 
+/** @type {Route} */
 const ircRoute = {
     path: '/IRC',
     name: 'IRC',
@@ -416,6 +430,7 @@ const ircRoute = {
     component: () => import('../components/irc.vue')
 };
 
+/** @type {Route} */
 const notFoundRoute = {
     path: '/not-found',
     name: 'not-found',
@@ -428,12 +443,14 @@ const notFoundRoute = {
 
 // @NOTE: Redirect can only be added once all routes are vue
 /*
+/** @type {Route} *-/
 const notFoundRedirect = {
     path: '*',
     redirect: '/not-found'
 };
 */
 
+/** @type {Route[]} */
 export default [
     ...homeRoutes,
     ...configRoutes,
