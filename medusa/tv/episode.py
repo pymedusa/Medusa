@@ -30,7 +30,8 @@ from medusa.common import (
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED,
     NAMING_SEPARATED_REPEAT,
     Quality,
     SKIPPED,
@@ -1667,7 +1668,7 @@ class Episode(TV):
                     sep = ' '
 
                 # force 2-3-4 format if they chose to extend
-                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED):
+                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED):
                     ep_sep = '-'
 
                 regex_used = season_ep_regex
@@ -1692,7 +1693,7 @@ class Episode(TV):
             for other_ep in self.related_episodes:
 
                 # for limited extend we only append the last ep
-                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED) and \
+                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED) and \
                         other_ep != self.related_episodes[-1]:
                     continue
 
@@ -1706,8 +1707,11 @@ class Episode(TV):
                 # add "E04"
                 ep_string += ep_sep
 
-                if multi == NAMING_LIMITED_EXTEND_E_PREFIXED:
+                if multi == NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED:
                     ep_string += 'E'
+
+                elif multi == NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED:
+                    ep_string += 'e'
 
                 ep_string += other_ep.__format_string(ep_format.upper(), other_ep.__replace_map())
 
