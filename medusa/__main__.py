@@ -474,9 +474,20 @@ class Application(object):
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+            # set current commit hash from environment variable, if needed
+            # use this to inject the commit hash information on immutable installations (e.g. Docker containers)
+            commit_hash_env = os.environ.get('MEDUSA_COMMIT_HASH')
+            if commit_hash_env and app.CUR_COMMIT_HASH != commit_hash_env:
+                app.CUR_COMMIT_HASH = commit_hash_env
 
             # current commit branch
             app.CUR_COMMIT_BRANCH = check_setting_str(app.CFG, 'General', 'cur_commit_branch', '')
+            # set current commit branch from environment variable, if needed
+            # use this to inject the branch information on immutable installations (e.g. Docker containers)
+            commit_branch_env = os.environ.get('MEDUSA_COMMIT_BRANCH')
+            if commit_branch_env and app.CUR_COMMIT_BRANCH != commit_branch_env:
+                app.CUR_COMMIT_BRANCH = commit_branch_env
+
             app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
 
             # fix bad configs due to buggy code

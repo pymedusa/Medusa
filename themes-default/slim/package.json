@@ -27,13 +27,13 @@
   },
   "resolutions": {
     "**/jquery": "3.4.1",
-    "**/date-fns": "2.0.0-alpha.34"
+    "**/date-fns": "2.0.0-beta.2"
   },
   "dependencies": {
     "axios": "0.19.0",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.0.0-alpha.34",
+    "date-fns": "2.0.0-beta.2",
     "is-visible": "2.2.0",
     "jquery": "3.4.1",
     "lodash": "4.17.11",
@@ -93,7 +93,7 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.4",
     "vue-loader": "15.7.0",
-    "webpack": "4.35.0",
+    "webpack": "4.35.2",
     "webpack-cli": "3.3.5"
   },
   "stylelint": {
