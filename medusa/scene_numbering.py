@@ -654,6 +654,7 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
 def numbering_tuple_to_dict(values, left_desc='source', right_desc='destination', level_2_left='season', level_2_right='episode'):
     """
     Convert a dictionary with tuple to tuple (key/value) mapping to a json structure.
+
     Create a new dictionary and move key/value to a new object, with left_desc and right_desc as its
     keys.
 
@@ -674,19 +675,3 @@ def numbering_tuple_to_dict(values, left_desc='source', right_desc='destination'
     return [{left_desc: {level_2_left: src[0], level_2_right: src[1]},
              right_desc: {level_2_left: dest[0], level_2_right: dest[1]}}
             for src, dest in viewitems(values)]
-
-
-def dict_to_array(values, key, value):
-    """
-    Convert a dict, to an array with dicts.
-    Use the paramaters key and value, to describe the key/value property in the new array.
-
-    For example. values: {a: b, c: d}, with key="my_key_prop" and value="my_value_prop".
-    Will result in: [{"my_key_prop": a, "my_value_prop": b}, {"my_key_prop": c, "my_value_prop": d, ...etc}].
-
-    :param values: Dict with single key/value mappings.
-    :param key: Name for the key property.
-    :param value: Name for the value property.
-    :return: An array of dicts.
-    """
-    return [{key: k, value: v} for k, v in viewitems(values)]
