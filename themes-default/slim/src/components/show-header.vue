@@ -30,7 +30,7 @@
                         <span>
                             <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in seasons" :key="`jumpToSeason-${season}`" :value="`#season-${season}`" :data-season="season">
+                                <option v-for="season in seasons" :key="`jumpToSeason-${season}`" :value="`#season-${season}`">
                                     {{ season === 0 ? 'Specials' : `Season ${season}`}}
                                 </option>
                             </select>
