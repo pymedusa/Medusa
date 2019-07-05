@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added multi-episode naming style with lowercase `e` ([#6910](https://github.com/pymedusa/Medusa/pull/6910))
 
 #### Improvements
 - Converted the footer to a Vue component ([#4520](https://github.com/pymedusa/Medusa/pull/4520))
