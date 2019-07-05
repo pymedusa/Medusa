@@ -2568,7 +2568,6 @@ definitions:
             format: int32
             minimum: 0
             maximum: 10000
-  episodeMapping:
 
 
 parameters:
