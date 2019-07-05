@@ -35,6 +35,7 @@ from medusa.scene_exceptions import safe_session
 
 from six import viewitems
 
+
 def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
     """
     Returns a tuple, (season, episode), with the scene numbering (if there is one),

@@ -2158,7 +2158,7 @@ class Series(TV):
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
-            data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key="absolute", value="sceneAbsolute")
+            data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
             data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
