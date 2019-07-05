@@ -1,23 +1,4 @@
-/**
- * A sub menu item.
- *
- * Use a function that returns an array of sub menu items if you need access to `$store`/`$route`/etc,
- * for setting any of the properties of a menu item.
- *
- * TODO: A possible improvement:
- *       Use a object for `confirm` to customize the dialog from the sub menu definition.
- * @typedef {Object<string, any} SubMenuItem
- * @property {string} title Text for the menu item.
- * @property {string} path Target URL for the menu item.
- * @property {string} icon Icon for the menu item.
- * @property {boolean} [requires] When should this menu item be visible? (default: `undefined` = always)
- * @property {string} [confirm] Show a confirmation dialog upon clicking the menu item.
- *                              The value is the type of dialog to show - configurable on the `SubMenu` component.
- *
- * @typedef {SubMenuItem[]} SubMenu
-*/
-
-/** @type {SubMenu} */
+/** @type {import('.').SubMenu} */
 export const configSubMenu = [
     { title: 'General', path: 'config/general/', icon: 'menu-icon-config' },
     { title: 'Backup/Restore', path: 'config/backuprestore/', icon: 'menu-icon-backup' },
@@ -29,10 +10,8 @@ export const configSubMenu = [
     { title: 'Anime', path: 'config/anime/', icon: 'menu-icon-anime' }
 ];
 
-/**
- * @param {*} vm Vue instance.
- * @returns {SubMenu} A sub menu.
- */
+// eslint-disable-next-line valid-jsdoc
+/** @type {import('.').SubMenuFunction} */
 export const errorlogsSubMenu = vm => {
     const { $route, $store } = vm;
     const level = $route.params.level || $route.query.level;
@@ -67,16 +46,14 @@ export const errorlogsSubMenu = vm => {
     ];
 };
 
-/** @type {SubMenu} */
+/** @type {import('.').SubMenu} */
 export const historySubMenu = [
     { title: 'Clear History', path: 'history/clearHistory', icon: 'ui-icon ui-icon-trash', confirm: 'clearhistory' },
     { title: 'Trim History', path: 'history/trimHistory', icon: 'menu-icon-cut', confirm: 'trimhistory' }
 ];
 
-/**
- * @param {*} vm Vue instance.
- * @returns {SubMenu} A sub menu.
- */
+// eslint-disable-next-line valid-jsdoc
+/** @type {import('.').SubMenuFunction} */
 export const showSubMenu = vm => {
     const { $route, $store } = vm;
     const { config, notifiers } = $store.state;
@@ -98,7 +75,7 @@ export const showSubMenu = vm => {
     const isBeingUpdated = queuedActionStatus('isBeingUpdated');
     const isBeingSubtitled = queuedActionStatus('isBeingSubtitled');
 
-    /** @type {SubMenu} */
+    /** @type {import('.').SubMenu} */
     let menu = [{
         title: 'Edit',
         path: `home/editShow?indexername=${indexerName}&seriesid=${showId}`,

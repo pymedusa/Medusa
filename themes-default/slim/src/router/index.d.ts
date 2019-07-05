@@ -1,5 +1,5 @@
 import { Vue } from 'vue/types/vue';
-import { Route as VRoute, RouteConfig } from 'vue-router';
+import { VRoute, RouteConfig } from 'vue-router';
 
 /**
  * A route config.
@@ -27,14 +27,14 @@ export interface Route extends RouteConfig {
  * for setting any of the properties of a menu item.
  *
  * TODO: A possible improvement:
- *       Use a object for `confirm` to customize the dialog from the sub menu definition.
+ *       Use an object for `confirm` to customize the dialog from the sub menu definition.
  */
 export interface SubMenuItem {
     /** Text for the menu item. */
     title: string;
     /** Target URL for the menu item. */
     path: string;
-    /** Icon for the menu item. */
+    /** Icon class for the menu item. */
     icon: string;
     /** When should this menu item be visible? (default: `undefined` = always) */
     requires?: boolean;
@@ -45,30 +45,58 @@ export interface SubMenuItem {
     confirm?: string;
 }
 
+/** Sub menu definition. */
 export type SubMenu = SubMenuItem[];
+/** Sub menu function that returns a sub menu definition. */
 export type SubMenuFunction = (vm: Vue) => SubMenu;
 
-interface MakeLegacyRedirectParams {
+interface MakeLegacyRedirectParams extends RouteConfig {
+    /** The target route name to redirect to. */
     target: string;
+    /** The path to redirect from. */
     from: string;
+    /**
+     * A mapping linking path parameters on the target route
+     * to a function that returns the matching query parameters' values
+     * (`pathParamName: route => route.query.queryParamName`).
+     */
     targetParams: {
         [pathParamName: string]: (route: VRoute) => string;
     };
-    (...config: RouteConfig);
 }
 
+/**
+ * Make a redirection route for legacy routes that use query parameters,
+ * that redirects to the main route that uses path parameters.
+ *
+ * @param params Redirect configuration.
+ * @returns A redirection route.
+ */
 export const makeLegacyRedirect: (params: MakeLegacyRedirectParams) => RouteConfig;
+
+/**
+ * Make a legacy path from a route path.
+ *
+ * @param path Original (optionally parameterized) route path.
+ * @returns Legacy path.
+ */
 export const extractLegacyPath: (path: string) => string;
 
-interface LegacyRedirectWrapperParams {
-    legacyRedirect: {
-        from?: string;
-        targetParams?: {
-            [pathParamName: string]: (route: VRoute) => string;
-        };
-        (...redirectConfig: RouteConfig);
-    };
-    (...routeConfig: RouteConfig);
-}
+interface LegacyRedirectWrapperParams extends RouteConfig {
+    /** Redirect route configuration. */
+    legacyRedirect: MakeLegacyRedirectParams;
+};
 
+/**
+ * A helper to create two routes:
+ *  - A redirection route for legacy routes that use query parameters,
+ *    that redirects to the main route that uses path parameters.
+ *    If the path to redirect from is not provided, it will extract one from the normal route's path.
+ *  - A normal route as with all the options passed.
+ *
+ * Use with spread operator: `[ ...legacyRedirectWrapper({ ... }) ]`.
+ *
+ * @param params Route configuration.
+ * @returns A redirection route + a normal route.
+ */
 export const legacyRedirectWrapper: (params: LegacyRedirectWrapperParams) => [RouteConfig, RouteConfig];
