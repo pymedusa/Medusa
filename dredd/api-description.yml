@@ -74,6 +74,7 @@ paths:
           description: Filter series based on paused status
           type: boolean
         - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/episodes'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
@@ -98,6 +99,8 @@ paths:
       parameters:
         - $ref: '#/parameters/series-id'
           name: id
+        - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/episodes'
       responses:
         200:
           description: The series information
@@ -1179,7 +1182,7 @@ definitions:
         type: array
         description:
           Array of objects with a mapping of indexer numbering to scene numbering. Available through the detailed query param.
-          Mappings are pulled from theXem.de.
+          Mappings are pulled from TheXem.de.
         items:
           $ref: '#/definitions/episodeMapping'
       sceneAbsoluteNumbering:
@@ -1196,7 +1199,7 @@ definitions:
             sceneAbsolute:
               type: integer
               format: int32
-              description: Scene absolute episode number
+              description: Scene absolute episode number.
       allSceneExceptions:
         type: array
         description: Array of objects with xem indexer to scene mappings. Available through the detailed query param.
@@ -1209,7 +1212,7 @@ definitions:
               description: Absolute episode number.
             exceptions:
               type: array
-              description: Show name exceptions (sason = -1) or season exceptions ( season > 0)
+              description: Show name exceptions (season = -1) or season exceptions (season > 0)
               items:
                 type: string
                 description: Scene name for a show or season
@@ -1228,7 +1231,7 @@ definitions:
             sceneAbsolute:
               type: integer
               format: int32
-              description: Scene absolute episode number
+              description: Scene absolute episode number.
       sceneNumbering:
         type: array
         description: Array of objects with a mapping of indexer numbering to scene numbering. Available through the detailed query param.
@@ -2583,6 +2586,12 @@ parameters:
     in: query
     required: false
     description: Whether response should contain detailed information
+    type: boolean
+  episodes:
+    name: episodes
+    in: query
+    required: false
+    description: Whether response should contain episodes information
     type: boolean
   page:
     name: page
