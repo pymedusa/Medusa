@@ -960,10 +960,10 @@ definitions:
           type: object
           properties:
             season:
-              type: int
+              type: integer
               description: Shows season number
             episodeCount:
-              type: int
+              type: integer
               description: Seasons episode count
       imdbInfo:
         type: object
@@ -1156,7 +1156,7 @@ definitions:
           type: object
           properties:
             season:
-              type: int
+              type: integer
               format: int32
               description: Season number
             episodes:
