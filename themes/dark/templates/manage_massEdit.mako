@@ -8,11 +8,19 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState([
+        'config'
+    ]), {
+
+    }),
     beforeMount() {
         $('#config-components').tabs();
     },
@@ -131,6 +139,7 @@ window.app = new Vue({
                                                     qc_overall_quality = int(quality_value)
                                             %>
                                             <quality-chooser
+                                                v-if="config.showDefaults.quality !== null"
                                                 keep="${qc_keep}"
                                                 :overall-quality="${qc_overall_quality}"
                                             ></quality-chooser>
