@@ -38,7 +38,7 @@
                                 Season:
                                 <template v-for="(season, $index) in reverse(seasons)">
                                     <app-link :href="'#season-' + season" :key="`jumpToSeason-${season}`">{{ season === 0 ? 'Specials' : season }}</app-link>
-                                    <span v-if="$index !== (seasons - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                    <span v-if="$index !== (seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
