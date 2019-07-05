@@ -22,7 +22,7 @@
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && show.seasonCount && seasons.length > 1" id="show-specials-and-seasons" class="pull-right">
-                    <span class="h2footer display-specials" v-if="show.seasonCount['0']">
+                    <span class="h2footer display-specials" v-if="show.seasonCount.find(season => season.season == 0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
@@ -100,7 +100,7 @@
                                 <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.xemNumbering" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
+                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
                                 <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
@@ -461,7 +461,7 @@ export default {
             }
 
             // Force sort to compare using integers.
-            return Object.keys(show.seasonCount).sort((a, b) => a - b);
+            return show.seasonCount.map(season => season.season);
         }
     },
     methods: {

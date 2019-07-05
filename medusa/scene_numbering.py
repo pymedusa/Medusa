@@ -653,26 +653,39 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
 def numbering_tuple_to_dict(values, left_desc='source', right_desc='destination', level_2_left='season', level_2_right='episode'):
     """
     Convert a dictionary with tuple to tuple (key/value) mapping to a json structure.
-    If a dictionary is passed, it will create a new dictionary and move key/value to a new object, with left_desc and right_desc as its
+    Create a new dictionary and move key/value to a new object, with left_desc and right_desc as its
     keys.
 
     This method is required because the swagger spec does not support describing the dynamic key/value mapping.
     The json schema supports additionalProperties (which is required to document this). But Swagger itself has limited support for it.
     https://support.reprezen.com/support/solutions/articles/6000162892-support-for-additionalproperties-in-swagger-2-0-schemas.
 
-    :param values: Array with double tuple mapping. For example: (src season, src episode): (dest season, dest episode).
+    For example the values {(a, b): (c: d)} will be transformed to:
+    {"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}
+
+    :param values: Dict with double tuple mapping. For example: (src season, src episode): (dest season, dest episode).
     :param left_desc: The key description used for the orginal "key" value.
     :param right_desc: The key description used for the original "value" value.
     :param level_2_left: When passing {tuple: tuple}, it's used to map the value of the first tuple's value.
-        For example {(a, b): (c: d)}. In the new structure. {"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}
     :param level_2_right: When passing {tuple: tuple}, it's used to map the value of the second tuple's value.
-        For example {(a, b): (c: d)}. In the new structure. {"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}
     :return: Dictionary with dedicated keys for source and destination.
     """
-    if values and isinstance(next(iter(values)), tuple):
-        return [{left_desc: {level_2_left: src[0], level_2_right: src[1]},
-                 right_desc: {level_2_left: dest[0], level_2_right: dest[1]}}
-                for src, dest in viewitems(values)]
-    else:
-        return [{left_desc: src, right_desc: dest}
-                for src, dest in viewitems(values)]
+    return [{left_desc: {level_2_left: src[0], level_2_right: src[1]},
+             right_desc: {level_2_left: dest[0], level_2_right: dest[1]}}
+            for src, dest in viewitems(values)]
+
+
+def dict_to_array(values, key, value):
+    """
+    Convert a dict, to an array with dicts.
+    Use the paramaters key and value, to describe the key/value property in the new array.
+
+    For example. values: {a: b, c: d}, with key="my_key_prop" and value="my_value_prop".
+    Will result in: [{"my_key_prop": a, "my_value_prop": b}, {"my_key_prop": c, "my_value_prop": d, ...etc}].
+
+    :param values: Dict with single key/value mappings.
+    :param key: Name for the key property.
+    :param value: Name for the value property.
+    :return: An array of dicts.
+    """
+    return [{key: k, value: v} for k, v in viewitems(values)]

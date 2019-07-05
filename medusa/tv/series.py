@@ -99,7 +99,7 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from medusa.scene_numbering import (
-    get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
+    dict_to_array, get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show, numbering_tuple_to_dict
 )
 from medusa.show.show import Show
@@ -2100,7 +2100,7 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
-        data['seasonCount'] = numbering_tuple_to_dict(self.get_all_seasons(), left_desc='season', right_desc='episodeCount')
+        data['seasonCount'] = dict_to_array(self.get_all_seasons(), key='season', value='episodeCount')
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2158,10 +2158,10 @@ class Series(TV):
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
-            data['sceneAbsoluteNumbering'] = numbering_tuple_to_dict(self.scene_absolute_numbering)
-            data['allSceneExceptions'] = numbering_tuple_to_dict(self.all_scene_exceptions, left_desc='season', right_desc='exceptions')
+            data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key="absolute", value="sceneAbsolute")
+            data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
             if self.is_scene:
-                data['xemAbsoluteNumbering'] = numbering_tuple_to_dict(self.xem_absolute_numbering, left_desc='absoluteNumber', right_desc='sceneAbsoluteNumber')
+                data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
             else:
                 data['xemAbsoluteNumbering'] = []
