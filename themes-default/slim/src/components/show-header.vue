@@ -21,7 +21,7 @@
                         >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="type !== 'snatch-selection' && seasons.length > 1" id="show-specials-and-seasons" class="pull-right">
+                <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
