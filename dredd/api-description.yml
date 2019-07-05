@@ -1165,19 +1165,8 @@ definitions:
               items:
                 $ref: '#/definitions/Episode'
       episodeCount:
-        type: array
+        type: integer
         description: Total number of episodes. Available through the episodes query param.
-        items:
-          type: object
-          properties:
-            season:
-              type: integer
-              format: int32
-              description: Season number
-            episodeCount:
-              type: integer
-              format: int32
-              description: Number of episodes in season
       size:
         type: integer
         description: Show size on disk calculated from the shows configured location. Available through the detailed query param.
@@ -2579,6 +2568,8 @@ definitions:
             format: int32
             minimum: 0
             maximum: 10000
+  episodeMapping:
+
 
 parameters:
   detailed:
