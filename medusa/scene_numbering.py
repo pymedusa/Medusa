@@ -655,22 +655,22 @@ def numbering_tuple_to_dict(values, left_desc='source', right_desc='destination'
     """
     Convert a dictionary with tuple to tuple (key/value) mapping to a json structure.
 
-    Create a new dictionary and move key/value to a new object, with left_desc and right_desc as its
-    keys.
+    For each key/value pair, create a new dictionary and move key/value to a new object,
+    with left_desc and right_desc as its keys.
 
     This method is required because the swagger spec does not support describing the dynamic key/value mapping.
     The json schema supports additionalProperties (which is required to document this). But Swagger itself has limited support for it.
     https://support.reprezen.com/support/solutions/articles/6000162892-support-for-additionalproperties-in-swagger-2-0-schemas.
 
     For example the values {(a, b): (c: d)} will be transformed to:
-    {"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}
+    [{"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}]
 
     :param values: Dict with double tuple mapping. For example: (src season, src episode): (dest season, dest episode).
     :param left_desc: The key description used for the orginal "key" value.
     :param right_desc: The key description used for the original "value" value.
     :param level_2_left: When passing {tuple: tuple}, it's used to map the value of the first tuple's value.
     :param level_2_right: When passing {tuple: tuple}, it's used to map the value of the second tuple's value.
-    :return: Dictionary with dedicated keys for source and destination.
+    :return: List of dictionaries with dedicated keys for source and destination.
     """
     return [{left_desc: {level_2_left: src[0], level_2_right: src[1]},
              right_desc: {level_2_left: dest[0], level_2_right: dest[1]}}
