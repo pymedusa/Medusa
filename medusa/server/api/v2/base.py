@@ -160,7 +160,7 @@ class BaseRequestHandler(RequestHandler):
             error = exc_info[1].log_message or exc_info[1].reason
             response = self.api_response(status=status_code, error=error)
         elif app.DEVELOPER and exc_info:
-            self.set_header('content-type', 'text/plain')
+            self.set_header('content-type', 'text/plain; charset=UTF-8')
             self.set_status(500)
             for line in traceback.format_exception(*exc_info):
                 self.write(line)
