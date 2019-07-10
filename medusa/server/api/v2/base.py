@@ -9,7 +9,6 @@ import json
 import logging
 import sys
 import traceback
-from builtins import object
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
