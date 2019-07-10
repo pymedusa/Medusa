@@ -203,7 +203,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(filename, size=64 * 1024, encoding='utf-8'):
+def blocks_r(filename, size=64 * 1024):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
@@ -219,15 +219,12 @@ def blocks_r(filename, size=64 * 1024, encoding='utf-8'):
         size (int|None): The block size.
             If int, the file is yielded in blocks of the specified size.
             If None, the file is yielded at once.
-        encoding (str|None): The encoding for correct block size computation.
-            If `str`, must be a valid string encoding.
-            If None, the default encoding is used.
 
     Yields:
-        block (str): The data within the blocks.
+        block (bytes): The data within the blocks.
 
     """
-    with io.open(filename, 'r', encoding=encoding) as file_obj:
+    with io.open(filename, 'rb') as file_obj:
         remaining_size = file_obj.seek(0, os.SEEK_END)
         while remaining_size > 0:
             block_size = min(remaining_size, size)
@@ -264,19 +261,18 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False,
     newline = '\n'
     empty = ''
     remainder = empty
-    block_generator_kws = dict(size=block_size, encoding=encoding)
     block_generator = blocks_r
-    for block in block_generator(filename, **block_generator_kws):
-        lines = block.split(newline)
+    for block in block_generator(filename, size=block_size):
+        lines = block.split(b'\n')
         if remainder:
             lines[-1] = lines[-1] + remainder
         remainder = lines[0]
         mask = slice(-1, 0, -1)
         for line in lines[mask]:
             if line or not skip_empty:
-                yield line + (newline if append_newline else empty)
+                yield line.decode(encoding) + (newline if append_newline else empty)
     if remainder or not skip_empty:
-        yield remainder + (newline if append_newline else empty)
+        yield remainder.decode(encoding) + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
