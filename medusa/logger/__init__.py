@@ -203,7 +203,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
+def blocks_r(filename, size=64 * 1024, encoding='utf-8'):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
@@ -219,9 +219,6 @@ def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
         size (int|None): The block size.
             If int, the file is yielded in blocks of the specified size.
             If None, the file is yielded at once.
-        reset_offset (bool): Reset the file offset.
-            If True, starts reading from the end of the file.
-            Otherwise, starts reading from where the file current position is.
         encoding (str|None): The encoding for correct block size computation.
             If `str`, must be a valid string encoding.
             If None, the default encoding is used.
@@ -231,22 +228,17 @@ def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
 
     """
     with io.open(filename, 'r', encoding=encoding) as file_obj:
-        offset = 0
-        if reset_offset:
-            file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
-        else:
-            file_size = remaining_size = file_obj.tell()
-        rounding = 0
+        remaining_size = file_obj.seek(0, os.SEEK_END)
         while remaining_size > 0:
-            offset = min(file_size, offset + size)
-            file_obj.seek(file_size - offset)
-            block = file_obj.read(min(remaining_size, size))
-            remaining_size -= size
-            yield block[:len(block) + rounding] if rounding else block
+            block_size = min(remaining_size, size)
+            file_obj.seek(remaining_size - block_size)
+            block = file_obj.read(block_size)
+            remaining_size -= block_size
+            yield block
 
 
-def reverse_readlines(filename, skip_empty=True, append_newline=False, block_size=512 * 1024,
-                      reset_offset=True, encoding='utf-8'):
+def reverse_readlines(filename, skip_empty=True, append_newline=False,
+                      block_size=64 * 1024, encoding='utf-8'):
     """
     Flexible function for reversing read lines incrementally.
 
@@ -261,9 +253,6 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
         block_size (int|None): The block size.
             If int, the file is processed in blocks of the specified size.
             If None, the file is processed at once.
-        reset_offset (bool): Reset the file offset.
-            If True, starts reading from the end of the file.
-            Otherwise, starts reading from where the file current position is.
         encoding (str|None): The encoding for correct block size computation.
             If `str`, must be a valid string encoding.
             If None, the default encoding is used.
@@ -275,8 +264,7 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
     newline = '\n'
     empty = ''
     remainder = empty
-    block_generator_kws = dict(size=block_size, reset_offset=reset_offset,
-                               encoding=encoding)
+    block_generator_kws = dict(size=block_size, encoding=encoding)
     block_generator = blocks_r
     for block in block_generator(filename, **block_generator_kws):
         lines = block.split(newline)
