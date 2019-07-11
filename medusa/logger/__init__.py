@@ -403,7 +403,7 @@ class LogLine(object):
                 # Grab the <-Nth> item from the list (-1, -2, ..., -N)
                 line = self.traceback_lines[-offset]
 
-                # GuessIt errors have a template and tend to end in three lines that we don't want.
+                # Guessit errors have a template and tend to end in three lines that we don't want.
                 # The original exception is one line before these lines.
                 # --------------------------------------------------------------------
                 # Please report at https://github.com/guessit-io/guessit/issues.

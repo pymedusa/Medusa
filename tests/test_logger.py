@@ -260,8 +260,8 @@ def test_read_loglines__with_traceback(logger, commit_hash, logfile):
             ]
         }
     },
-    {  # p4: GuessIt error
-       # NOTE: The traceback lines are truncated, but still true to GuessIt's template
+    {  # p4: Guessit error
+       # NOTE: The traceback lines are truncated, but still true to Guessit's template
         'line': (
             '2019-06-13 16:13:15 ERROR    FINDSUBTITLES :: [c1675ff] Exception generated: An internal error has occured in guessit.'
             '\n===================== Guessit Exception Report ====================='
