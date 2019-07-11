@@ -13,6 +13,7 @@
 - Fixed release link on Help & Info page ([#6854](https://github.com/pymedusa/Medusa/pull/6854))
 - Fixed FreeMobile notifier message encode error ([#6867](https://github.com/pymedusa/Medusa/pull/6867))
 - Fixed charset on API v2 responses with plain text content ([#6931](https://github.com/pymedusa/Medusa/pull/6931))
+- Fixed logger causing an exception in certain cases ([#6932](https://github.com/pymedusa/Medusa/pull/6932))
 
 -----
 
