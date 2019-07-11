@@ -650,13 +650,13 @@ class Series(TV):
         return bw_list.blacklist
 
     @blacklist.setter
-    def blacklist(self, value):
+    def blacklist(self, group_names):
         """
         Set the anime's blacklisted release groups.
 
-        :param value: A list of blacklist release groups.
+        :param group_names: A list of blacklist release group names.
         """
-        self.release_groups.set_black_keywords(short_group_names([v['name'] for v in value]))
+        self.release_groups.set_black_keywords(short_group_names(group_names))
 
     @property
     def whitelist(self):
@@ -665,13 +665,13 @@ class Series(TV):
         return bw_list.whitelist
 
     @whitelist.setter
-    def whitelist(self, value):
+    def whitelist(self, group_names):
         """
         Set the anime's whitelisted release groups.
 
-        :param value: A list of whitelist release groups.
+        :param group_names: A list of whitelist release group names.
         """
-        self.release_groups.set_white_keywords(short_group_names([v['name'] for v in value]))
+        self.release_groups.set_white_keywords(short_group_names(group_names))
 
     @staticmethod
     def normalize_status(series_status):
