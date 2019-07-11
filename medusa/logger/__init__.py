@@ -203,7 +203,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(filename, size=64 * 1024):
+def blocks_r(file_path, size=64 * 1024):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
@@ -215,16 +215,14 @@ def blocks_r(filename, size=64 * 1024):
      - the content of the block is NOT reversed.
 
     Args:
-        filename (str): The input file name.
-        size (int|None): The block size.
-            If int, the file is yielded in blocks of the specified size.
-            If None, the file is yielded at once.
+        file_path (str): The input file path.
+        size (int): The block size.
 
     Yields:
         block (bytes): The data within the blocks.
 
     """
-    with io.open(filename, 'rb') as file_obj:
+    with io.open(file_path, 'rb') as file_obj:
         remaining_size = file_obj.seek(0, os.SEEK_END)
         while remaining_size > 0:
             block_size = min(remaining_size, size)
@@ -234,7 +232,7 @@ def blocks_r(filename, size=64 * 1024):
             yield block
 
 
-def reverse_readlines(filename, skip_empty=True, append_newline=False,
+def reverse_readlines(file_path, skip_empty=True, append_newline=False,
                       block_size=128 * 1024, encoding='utf-8'):
     """
     Flexible function for reversing read lines incrementally.
@@ -244,15 +242,13 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False,
     All credits go to the original author.
 
     Args:
-        filename (str): The input file name.
+        file_path (str): The input file path.
         skip_empty (bool): Skip empty lines.
         append_newline (bool):
         block_size (int|None): The block size.
             If int, the file is processed in blocks of the specified size.
             If None, the file is processed at once.
-        encoding (str|None): The encoding for correct block size computation.
-            If `str`, must be a valid string encoding.
-            If None, the default encoding is used.
+        encoding (str): The encoding for correct block size computation.
 
     Yields:
         line (str): The next line.
@@ -262,7 +258,7 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False,
     empty = ''
     remainder = empty
     block_generator = blocks_r
-    for block in block_generator(filename, size=block_size):
+    for block in block_generator(file_path, size=block_size):
         lines = block.split(b'\n')
         if remainder:
             lines[-1] = lines[-1] + remainder
