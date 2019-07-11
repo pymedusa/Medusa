@@ -235,7 +235,7 @@ def blocks_r(filename, size=64 * 1024):
 
 
 def reverse_readlines(filename, skip_empty=True, append_newline=False,
-                      block_size=64 * 1024, encoding='utf-8'):
+                      block_size=128 * 1024, encoding='utf-8'):
     """
     Flexible function for reversing read lines incrementally.
 
