@@ -244,7 +244,7 @@ def reverse_readlines(file_path, skip_empty=True, append_newline=False,
     Args:
         file_path (str): The input file path.
         skip_empty (bool): Skip empty lines.
-        append_newline (bool):
+        append_newline (bool): Append a new line character at the end of each yielded line.
         block_size (int): The block size.
         encoding (str): The encoding for correct block size computation.
 
