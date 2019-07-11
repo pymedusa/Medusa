@@ -27,16 +27,16 @@
   },
   "resolutions": {
     "**/jquery": "3.4.1",
-    "**/date-fns": "2.0.0-alpha.34"
+    "**/date-fns": "2.0.0-beta.2"
   },
   "dependencies": {
     "axios": "0.19.0",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.0.0-alpha.34",
+    "date-fns": "2.0.0-beta.2",
     "is-visible": "2.2.0",
     "jquery": "3.4.1",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "tablesorter": "2.31.1",
     "vue": "2.6.10",
     "vue-async-computed": "3.7.0",
@@ -54,9 +54,10 @@
     "vuex": "3.1.1"
   },
   "devDependencies": {
-    "@babel/core": "7.4.5",
-    "@babel/plugin-syntax-dynamic-import": "7.2.0",
-    "@babel/preset-env": "7.4.5",
+    "@babel/core": "7.5.4",
+    "@babel/plugin-transform-runtime": "7.5.0",
+    "@babel/preset-env": "7.5.4",
+    "@babel/runtime": "7.5.4",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
     "@vue/test-utils": "1.0.0-beta.29",
     "babel-core": "7.0.0-bridge.0",
@@ -93,7 +94,7 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.4",
     "vue-loader": "15.7.0",
-    "webpack": "4.35.0",
+    "webpack": "4.35.3",
     "webpack-cli": "3.3.5"
   },
   "stylelint": {
