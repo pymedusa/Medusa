@@ -371,10 +371,35 @@ class LogLine(object):
     @property
     def issue_title(self):
         """Return the expected issue title for this logline."""
+        result = None
+
         if self.traceback_lines:
-            result = next((line for line in reversed(self.traceback_lines) if line.strip()), self.message)
-        else:
+            # Grab the first viable line from the end of the traceback lines
+            offset = 1
+            size = len(self.traceback_lines)
+            while offset < size:
+                # Grab the <-Nth> item from the list (-1, -2, ..., -N)
+                line = self.traceback_lines[-offset]
+
+                # Guessit errors have a template and tend to end in three lines that we don't want.
+                # The original exception is one line before these lines.
+                # --------------------------------------------------------------------
+                # Please report at https://github.com/guessit-io/guessit/issues.
+                # ====================================================================
+                if line.startswith('=' * 20):
+                    offset += 3
+                    continue
+
+                if line.strip():
+                    result = line
+                    break
+
+                offset += 1
+
+        # Not found a single viable traceback line, fall back to the log message.
+        if not result:
             result = self.message
+
         return result[:1000]
 
     def to_json(self):
