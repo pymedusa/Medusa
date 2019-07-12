@@ -125,6 +125,8 @@ result_type_map = {
 class ApiHandler(ThreadedRequestHandler):
     """Api class that returns json results."""
 
+    thread_prefix = 'APIv1-Thread'
+
     version = 7  # use an int since float-point is unpredictable
 
     def __init__(self, *args, **kwargs):

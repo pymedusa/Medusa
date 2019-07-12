@@ -88,6 +88,8 @@ export default {
             autoUpdate: true,
             autoUpdateTimer: null,
             filters: [
+                { value: 'API-V1', title: 'API v1' },
+                { value: 'API-V2', title: 'API v2' },
                 { value: 'BACKLOG', title: 'Backlog' },
                 { value: 'CHECKVERSION', title: 'Check Version' },
                 { value: 'DAILYSEARCHER', title: 'Daily Searcher' },
@@ -109,7 +111,7 @@ export default {
                 { value: 'SHOWQUEUE-SEASON-UPDATE', title: 'Show Season Queue (Update)' },
                 { value: 'SHOWQUEUE-UPDATE', title: 'Show Queue (Update)' },
                 { value: 'SHOWUPDATER', title: 'Show Updater' },
-                { value: 'Thread', title: 'Thread' },
+                { value: 'THREAD', title: 'Thread' },
                 { value: 'TORNADO', title: 'Tornado' },
                 { value: 'TORRENTCHECKER', title: 'Torrent Checker' },
                 { value: 'TRAKTCHECKER', title: 'Trakt Checker' }

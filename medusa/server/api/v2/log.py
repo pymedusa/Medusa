@@ -20,6 +20,8 @@ log.logger.addHandler(logging.NullHandler())
 
 valid_thread_names = [
     '',
+    'API-V1',
+    'API-V2',
     'BACKLOG',
     'CHECKVERSION',
     'DAILYSEARCHER',
@@ -49,6 +51,8 @@ valid_thread_names = [
 
 thread_name_overrides = {
     'THREAD': 'Thread',
+    'API-V1': 'APIv1-Thread',
+    'API-V2': 'APIv2-Thread',
     'SHOWQUEUE': {name for name in valid_thread_names if name and name.startswith('SHOWQUEUE-')},
     'SEARCHQUEUE': {name for name in valid_thread_names if name and name.startswith('SEARCHQUEUE-')},
 }
