@@ -76,12 +76,13 @@
         "createMissingShowDirs": true,
         "nfoRename": true,
         "multiEpStrings": {
-          "32": "Extend (Limited, E-prefixed)",
           "1": "Repeat",
           "2": "Extend",
           "4": "Duplicate",
           "8": "Extend (Limited)",
-          "16": "Repeat (Separated)"
+          "16": "Repeat (Separated)",
+          "32": "Extend (Limited, E-prefixed)",
+          "64": "Extend (Limited, e-prefixed)"
         },
         "airdateEpisodes": false
       },

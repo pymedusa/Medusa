@@ -23,11 +23,12 @@ describe('QualityChooser.test.js', () => {
         store.replaceState(state);
     });
 
-    it('renders', () => {
+    it('renders', async () => {
         const { state } = fixtures;
         const wrapper = shallowMount(QualityChooser, {
             localVue,
             store,
+            sync: false,
             propsData: {
                 overallQuality: undefined,
                 keep: 'show'
@@ -45,11 +46,13 @@ describe('QualityChooser.test.js', () => {
 
         // If `overallQuality` is provided, `initialQuality` should be that value
         wrapper.setProps({ overallQuality: 1000 }); // HD preset
+        await wrapper.vm.$nextTick();
         expect(wrapper.vm.initialQuality).toBe(1000);
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(false);
 
         // Choose a preset
         wrapper.setData({ selectedQualityPreset: 6 }); // SD preset
+        await wrapper.vm.$nextTick();
         // Custom quality elements should be hidden
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(false);
         expect(wrapper.vm.allowedQualities).toEqual([2, 4]);
@@ -57,6 +60,7 @@ describe('QualityChooser.test.js', () => {
 
         // Choose custom
         wrapper.setData({ selectedQualityPreset: 0 });
+        await wrapper.vm.$nextTick();
         // Custom quality elements should now be visible
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(true);
         expect(wrapper.vm.allowedQualities).toEqual([2, 4]);
@@ -67,11 +71,13 @@ describe('QualityChooser.test.js', () => {
             selectedQualityPreset: 0,
             allowedQualities: []
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(true);
         expect(wrapper.findAll('#customQualityWrapper select').at(1).is(':disabled')).toBe(true);
 
         // Choose keep
         wrapper.setData({ selectedQualityPreset: 'keep' });
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(false);
         // Underlying value should be equal to `initialQuality`
         expect(wrapper.vm.allowedQualities).toEqual([8, 32, 64, 128, 256, 512]); // HD preset
@@ -79,6 +85,7 @@ describe('QualityChooser.test.js', () => {
 
         // And to custom again
         wrapper.setData({ selectedQualityPreset: 0 });
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(true);
         // Underlying value should be equal to `initialQuality`
         expect(wrapper.vm.allowedQualities).toEqual([8, 32, 64, 128, 256, 512]); // HD preset
@@ -88,6 +95,7 @@ describe('QualityChooser.test.js', () => {
         wrapper.setData({
             allowedQualities: [2, 4] // SD preset
         });
+        await wrapper.vm.$nextTick();
         expect(wrapper.find('#customQualityWrapper').isVisible()).toBe(true);
         expect(wrapper.vm.selectedQualityPreset).toEqual(0);
 
@@ -97,6 +105,7 @@ describe('QualityChooser.test.js', () => {
             preferredQualities: [32]
         });
         wrapper.setData({ allowedQualities: [] });
+        await wrapper.vm.$nextTick();
         expect(wrapper.findAll('#customQualityWrapper select').at(1).is(':disabled')).toBe(true);
         expect(wrapper.vm.allowedQualities).toEqual([]);
         expect(wrapper.vm.preferredQualities).toEqual([]);
