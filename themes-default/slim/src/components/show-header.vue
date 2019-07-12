@@ -160,12 +160,12 @@
                                         </tr>
                                     </template>
 
-                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font> on {{ show.network }}</td></tr>
+                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b> on {{ show.network }}</td></tr>
                                     <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
-                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font></td></tr>
+                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b></td></tr>
                                     <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
                                     <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                                    <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
+                                    <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
@@ -665,6 +665,16 @@ div#col-show-summary {
 .show-info-container {
     overflow: hidden;
     display: table-cell;
+}
+
+.showLegend {
+    padding-right: 6px;
+    padding-bottom: 1px;
+    width: 150px;
+}
+
+.invalid-value {
+    color: rgb(255, 0, 0);
 }
 
 @media (min-width: 768px) {
