@@ -50,8 +50,9 @@ class SeriesHandler(BaseRequestHandler):
 
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
+            episodes = self._parse_boolean(self.get_argument('episodes', default=False))
             data = [
-                s.to_json(detailed=detailed)
+                s.to_json(detailed=detailed, episodes=episodes)
                 for s in Series.find_series(predicate=filter_series)
             ]
             return self._paginate(data, sort='title')
@@ -64,8 +65,9 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        detailed = self._parse_boolean(self.get_argument('detailed', default=True))
-        data = series.to_json(detailed=detailed)
+        detailed = self._parse_boolean(self.get_argument('detailed', default=False))
+        episodes = self._parse_boolean(self.get_argument('episodes', default=False))
+        data = series.to_json(detailed=detailed, episodes=episodes)
         if path_param:
             if path_param not in data:
                 return self._bad_request("Invalid path parameter '{0}'".format(path_param))

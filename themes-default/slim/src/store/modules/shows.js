@@ -75,7 +75,8 @@ const getters = {
  * An object representing request parameters for getting a show from the API.
  *
  * @typedef {object} ShowGetParameters
- * @property {boolean} detailed Fetch detailed information? (seasons & episodes)
+ * @property {boolean} detailed Fetch detailed information? (e.g. scene/xem numbering)
+ * @property {boolean} episodes Fetch seasons & episodes?
  */
 
 const actions = {
@@ -86,16 +87,23 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { indexer, id, detailed }) {
+    getShow(context, { indexer, id, detailed, episodes }) {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
+            let timeout = 30000;
 
             if (detailed !== undefined) {
-                params.detailed = Boolean(detailed);
+                params.detailed = detailed;
+                timeout = 60000;
             }
 
-            api.get('/series/' + indexer + id, { params })
+            if (episodes !== undefined) {
+                params.episodes = episodes;
+                timeout = 60000;
+            }
+
+            api.get(`/series/${indexer}${id}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);

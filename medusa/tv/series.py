@@ -65,7 +65,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
-from medusa.helpers.utils import safe_get, to_camel_case
+from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -97,8 +97,12 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
-from medusa.scene_exceptions import get_scene_exceptions, update_scene_exceptions
-from medusa.scene_numbering import get_xem_numbering_for_show
+from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
+    numbering_tuple_to_dict,
+)
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -600,6 +604,26 @@ class Series(TV):
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self)
+
+    @property
+    def xem_absolute_numbering(self):
+        """Return series xem absolute numbering."""
+        return get_xem_absolute_numbering_for_show(self)
+
+    @property
+    def scene_absolute_numbering(self):
+        """Return series scene absolute numbering."""
+        return get_scene_absolute_numbering_for_show(self)
+
+    @property
+    def all_scene_exceptions(self):
+        """Return series season scene exceptions."""
+        return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
+
+    @property
+    def scene_numbering(self):
+        """Return series scene numbering."""
+        return get_scene_numbering_for_show(self)
 
     @property
     def release_ignore_words(self):
@@ -2060,7 +2084,7 @@ class Series(TV):
         to_return += u'anime: {0}\n'.format(self.is_anime)
         return to_return
 
-    def to_json(self, detailed=True):
+    def to_json(self, detailed=False, episodes=False):
         """
         Return JSON representation.
 
@@ -2077,6 +2101,7 @@ class Series(TV):
         data['network'] = self.network  # e.g. CBS
         data['type'] = self.classification  # e.g. Scripted
         data['status'] = self.status  # e.g. Continuing
+        data['seasonCount'] = dict_to_array(self.get_all_seasons(), key='season', value='episodeCount')
         data['airs'] = self.airs  # e.g. Thursday 8:00 PM
         data['airsFormatValid'] = network_timezones.test_timeformat(self.airs)
         data['language'] = self.lang
@@ -2131,19 +2156,28 @@ class Series(TV):
             data['config']['release']['whitelist'] = bw_list.whitelist
 
         if detailed:
-            episodes = self.get_all_episodes()
             data['size'] = self.size
-            data['seasons'] = [list(v) for _, v in
-                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+            data['showQueueStatus'] = self.show_queue_status
+            data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
+            data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
+            data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
+            if self.is_scene:
+                data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
+                data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
+            else:
+                data['xemAbsoluteNumbering'] = []
+                data['sceneNumbering'] = []
 
-            data['episodeCount'] = len(episodes)
-            last_episode = episodes[-1] if episodes else None
+        if episodes:
+            all_episodes = self.get_all_episodes()
+            data['episodeCount'] = len(all_episodes)
+            last_episode = all_episodes[-1] if all_episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 data['year']['end'] = last_episode.airdate.year
-            data['showQueueStatus'] = self.show_queue_status
-            data['xemNumbering'] = [{'source': {'season': src[0], 'episode': src[1]},
-                                     'destination': {'season': dest[0], 'episode': dest[1]}}
-                                    for src, dest in viewitems(self.xem_numbering)]
+
+            data['seasons'] = [{'episodes': list(v), 'season': season}
+                               for season, v in
+                               groupby([ep.to_json() for ep in all_episodes], lambda item: item['season'])]
 
         return data
 
