@@ -30,14 +30,16 @@
                         <span>
                             <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="seasonNumber in seasons" :key="`jumpToSeason-${seasonNumber}`" :value="`#season-${seasonNumber}`">
-                                    {{ seasonNumber === 0 ? 'Specials' : `Season ${seasonNumber}`}}
+                                <option v-for="seasonNumber in seasons" :key="`jumpToSeason-${seasonNumber}`" :value="seasonNumber">
+                                    {{ seasonNumber === 0 ? 'Specials' : `Season ${seasonNumber}` }}
                                 </option>
                             </select>
                             <template v-else-if="seasons.length >= 1">
                                 Season:
                                 <template v-for="(seasonNumber, index) in reverse(seasons)">
-                                    <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`">{{ seasonNumber === 0 ? 'Specials' : seasonNumber }}</app-link>
+                                    <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`" @click.native.prevent="jumpToSeason = seasonNumber">
+                                        {{ seasonNumber === 0 ? 'Specials' : seasonNumber }}
+                                    </app-link>
                                     <span v-if="index !== (seasons.length - 1)" :key="`separator-${index}`" class="separator">| </span>
                                 </template>
                             </template>
@@ -584,16 +586,26 @@ export default {
         jumpToSeason(season) {
             // Don't jump until an option is selected
             if (season !== 'jump') {
-                console.debug(`Jumping to ${season}`);
+                // Calculate duration
+                let duration = (this.seasons.length - season) * 50;
+                duration = Math.max(500, Math.min(duration, 2000)); // Limit to (500ms <= duration <= 2000ms)
 
-                scrollTo(season, 100, {
+                // Calculate offset
+                let offset = -50; // Navbar
+                // Needs extra offset when the sub menu is "fixed".
+                offset -= window.matchMedia('(min-width: 1281px)').matches ? 40 : 0;
+
+                const name = `season-${season}`;
+                console.debug(`Jumping to #${name} (${duration}ms)`);
+
+                scrollTo(`[name="${name}"]`, duration, {
                     container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
+                    easing: 'ease-in-out',
+                    offset
                 });
 
                 // Update URL hash
-                location.hash = season;
+                window.location.hash = name;
 
                 // Reset jump
                 this.jumpToSeason = 'jump';
