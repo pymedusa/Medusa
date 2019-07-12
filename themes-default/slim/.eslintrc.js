@@ -68,6 +68,10 @@ module.exports = {
             'error',
             4,
         ],
+        'vue/html-quotes': [
+            'error',
+            'double',
+        ],
         'vue/name-property-casing': [
             'error',
             'kebab-case',
