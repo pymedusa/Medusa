@@ -36,9 +36,9 @@
                             </select>
                             <template v-else-if="seasons.length >= 1">
                                 Season:
-                                <template v-for="(seasonNumber, $index) in reverse(seasons)">
+                                <template v-for="(seasonNumber, index) in reverse(seasons)">
                                     <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`">{{ seasonNumber === 0 ? 'Specials' : seasonNumber }}</app-link>
-                                    <span v-if="$index !== (seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                    <span v-if="index !== (seasons.length - 1)" :key="`separator-${index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -140,8 +140,8 @@
                                         <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                             <td class="showLegend">Allowed Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.allowed"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                 </template>
                                             </td>
@@ -150,8 +150,8 @@
                                         <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                             <td class="showLegend">Preferred Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.preferred"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                 </template>
                                             </td>
