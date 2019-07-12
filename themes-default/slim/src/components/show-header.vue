@@ -30,14 +30,14 @@
                         <span>
                             <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in seasons" :key="`jumpToSeason-${season}`" :value="`#season-${season}`">
-                                    {{ season === 0 ? 'Specials' : `Season ${season}`}}
+                                <option v-for="seasonNumber in seasons" :key="`jumpToSeason-${seasonNumber}`" :value="`#season-${seasonNumber}`">
+                                    {{ seasonNumber === 0 ? 'Specials' : `Season ${seasonNumber}`}}
                                 </option>
                             </select>
                             <template v-else-if="seasons.length >= 1">
                                 Season:
-                                <template v-for="(season, $index) in reverse(seasons)">
-                                    <app-link :href="'#season-' + season" :key="`jumpToSeason-${season}`">{{ season === 0 ? 'Specials' : season }}</app-link>
+                                <template v-for="(seasonNumber, $index) in reverse(seasons)">
+                                    <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`">{{ seasonNumber === 0 ? 'Specials' : seasonNumber }}</app-link>
                                     <span v-if="$index !== (seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
                                 </template>
                             </template>
