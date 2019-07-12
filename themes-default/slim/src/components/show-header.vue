@@ -18,7 +18,7 @@
                         <app-link
                             :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                             class="snatchTitle"
-                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
@@ -282,6 +282,17 @@ import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
+/**
+ * Return the first item of `values` that is not `null`, `undefined` or `NaN`.
+ * @param {...any} values - Values to check.
+ * @returns {any} - The first item that fits the criteria, `undefined` otherwise.
+ */
+const resolveToValue = (...values) => {
+    return values.find(value => {
+        return !Number.isNaN(value) && value !== null && value !== undefined;
+    });
+};
+
 export default {
     name: 'show-header',
     components: {
@@ -362,10 +373,10 @@ export default {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.showSeason || Number(this.$route.query.season) || undefined;
+            return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
         episode() {
-            return this.showEpisode || Number(this.$route.query.episode) || undefined;
+            return resolveToValue(this.showEpisode, Number(this.$route.query.episode));
         },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
