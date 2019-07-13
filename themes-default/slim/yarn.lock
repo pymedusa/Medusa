@@ -1118,6 +1118,11 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
+"@sharkykh/eslint-plugin-vue-extra@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@sharkykh/eslint-plugin-vue-extra/-/eslint-plugin-vue-extra-0.1.1.tgz#a06dbdc828a3cf41982bcb073f5eb2e609da98bf"
+  integrity sha512-kBVpr33UhVWD29SRJf18eZE96zvk6A2O+iR96MB1wTFYMbydBCZzPG5ZuPE9fWUznmHPUmMyO1rbPf0B90gyBA==
+
 "@sindresorhus/is@^0.7.0":
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"

@@ -26,6 +26,7 @@ module.exports = {
         'unicorn',
         'import',
         'vue',
+        '@sharkykh/vue-extra',
         'jest',
         'eslint-comments',
     ],
@@ -67,6 +68,10 @@ module.exports = {
             'error',
             4,
         ],
+        'vue/html-quotes': [
+            'error',
+            'double',
+        ],
         'vue/name-property-casing': [
             'error',
             'kebab-case',
@@ -105,6 +110,14 @@ module.exports = {
         {
             files: 'src/**',
             rules: {
+                '@sharkykh/vue-extra/component-not-registered': [
+                    'error',
+                    [
+                        'router-link',
+                        'router-view',
+                        'vue-snotify',
+                    ],
+                ],
                 'import/extensions': [
                     'error',
                     'always',
