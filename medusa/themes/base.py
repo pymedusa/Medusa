@@ -17,9 +17,8 @@ class Theme(object):
     """Base theme class."""
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get('baseName')
+        self.name = kwargs.get('name')
         self.version = kwargs.get('version')
-        self.package_name = kwargs.get('name')
         self.dep_version = kwargs.get('depVersion')
         self.author = kwargs.get('author')
 
@@ -43,7 +42,6 @@ def read_themes():
             continue
 
         # create a theme object from the `package.json` data
-        package_json['baseName'] = os.path.basename(os.path.normpath(theme_path))
         themes.append(Theme(**package_json))
 
     return themes
