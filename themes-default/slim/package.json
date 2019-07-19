@@ -36,7 +36,7 @@
     "date-fns": "2.0.0-beta.2",
     "is-visible": "2.2.0",
     "jquery": "3.4.1",
-    "lodash": "4.17.13",
+    "lodash": "4.17.15",
     "tablesorter": "2.31.1",
     "vue": "2.6.10",
     "vue-async-computed": "3.7.0",
