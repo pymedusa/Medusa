@@ -134,7 +134,7 @@ class LogHandler(BaseRequestHandler):
             return self._paginate(data_generator=data_generator)
         else:
             text = '\n'.join(data_generator())
-            return self._ok(stream=text, content_type='text/plain')
+            return self._ok(stream=text, content_type='text/plain; charset=UTF-8')
 
     def post(self):
         """Create a log line.

@@ -1,7 +1,6 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { wait } from '../../utils/core';
 import { ADD_SHOW, ADD_SHOW_EPISODE } from '../mutation-types';
 
 /**
@@ -51,7 +50,7 @@ const mutations = {
 
         if (!newShow.seasons) {
             newShow.seasons = [];
-        }
+    }
 
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
@@ -72,7 +71,7 @@ const mutations = {
                     html: false,
                     mode: 'span',
                     label: 1
-                };
+};
                 newShow.seasons.push(newSeason);
                 newSeason.episodes.push(episode);
             }
@@ -115,7 +114,8 @@ const getters = {
  * An object representing request parameters for getting a show from the API.
  *
  * @typedef {object} ShowGetParameters
- * @property {boolean} detailed Fetch detailed information? (seasons & episodes)
+ * @property {boolean} detailed Fetch detailed information? (e.g. scene/xem numbering)
+ * @property {boolean} episodes Fetch seasons & episodes?
  */
 
 const actions = {
@@ -126,18 +126,24 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShow(context, { indexer, id, detailed }) {
+    getShow(context, { indexer, id, detailed, episodes }) {
         return new Promise((resolve, reject) => {
             const { commit } = context;
             const params = {};
             let timeout = 30000;
 
             if (detailed !== undefined) {
-                params.detailed = Boolean(detailed);
+                params.detailed = detailed;
+                timeout = 60000;
                 timeout = 60000;
             }
 
-            api.get(`/series/${indexer}${id}`, { params }, { timeout })
+            if (episodes !== undefined) {
+                params.episodes = episodes;
+                timeout = 60000;
+            }
+
+            api.get(`/series/${indexer}${id}`, { params, timeout })
                 .then(res => {
                     commit(ADD_SHOW, res.data);
                     resolve(res.data);
@@ -230,21 +236,14 @@ const actions = {
 
         return shows.forEach(show => dispatch('getShow', show));
     },
-    setShow(context, { indexer, id, data, save }) {
-        const { commit, dispatch } = context;
-
-        // Just update local store
-        if (!save) {
-            return api.get('/series/' + indexer + id).then(response => {
-                const show = Object.assign({}, response.data, data);
-                commit(ADD_SHOW, show);
-            });
-        }
-
-        // Send to API and fetch the updated show
-        return api.patch('series/' + indexer + id, data).then(() => {
-            return wait(500).then(() => dispatch('getShow', { indexer, id }));
-        });
+    setShow(context, { indexer, id, data }) {
+        // Update show, updated show will arrive over a WebSocket message
+        return api.patch(`series/${indexer}${id}`, data);
+    },
+    updateShow(context, show) {
+        // Update local store
+        const { commit } = context;
+        return commit(ADD_SHOW, show);
     }
 };
 

@@ -1471,6 +1471,9 @@ def memory_usage(pretty=True):
     usage = ''
     if memory_usage_tool == 'resource':
         usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if platform.system() == 'Linux':
+            # resource.RUSAGE_SELF is in KB on Linux
+            usage *= 1024
     elif memory_usage_tool == 'psutil':
         usage = Process(os.getpid()).memory_info().rss
     else:

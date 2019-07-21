@@ -18,27 +18,29 @@
                         <app-link
                             :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                             class="snatchTitle"
-                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
-                    <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season.season === 0)">
+                <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
+                    <span class="h2footer display-specials" v-if="seasons.includes(0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
                         <span>
-                            <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
+                            <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season.season" :value="'#season-' + season.season" :data-season="season.season">
-                                    {{ season.season === 0 ? 'Specials' : 'Season ' + season.season }}
+                                <option v-for="seasonNumber in seasons" :key="`jumpToSeason-${seasonNumber}`" :value="seasonNumber">
+                                    {{ seasonNumber === 0 ? 'Specials' : `Season ${seasonNumber}` }}
                                 </option>
                             </select>
-                            <template v-else-if="show.seasons.length >= 1">
+                            <template v-else-if="seasons.length >= 1">
                                 Season:
-                                <template v-for="(season, $index) in reverse(show.seasons)">
-                                    <app-link :href="'#season-' + season.season" :key="`jumpToSeason-${season.season}`">{{ season.season === 0 ? 'Specials' : season.season }}</app-link>
-                                    <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                <template v-for="(seasonNumber, index) in reverse(seasons)">
+                                    <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`" @click.native.prevent="jumpToSeason = seasonNumber">
+                                        {{ seasonNumber === 0 ? 'Specials' : seasonNumber }}
+                                    </app-link>
+                                    <span v-if="index !== (seasons.length - 1)" :key="`separator-${index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -140,8 +142,8 @@
                                         <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                             <td class="showLegend">Allowed Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.allowed"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                 </template>
                                             </td>
@@ -150,20 +152,20 @@
                                         <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                             <td class="showLegend">Preferred Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.preferred"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                 </template>
                                             </td>
                                         </tr>
                                     </template>
 
-                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font> on {{ show.network }}</td></tr>
+                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b> on {{ show.network }}</td></tr>
                                     <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
-                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font></td></tr>
+                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b></td></tr>
                                     <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
                                     <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                                    <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
+                                    <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
@@ -279,6 +281,17 @@ import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../jquery-wrappers';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
+/**
+ * Return the first item of `values` that is not `null`, `undefined` or `NaN`.
+ * @param {...any} values - Values to check.
+ * @returns {any} - The first item that fits the criteria, `undefined` otherwise.
+ */
+const resolveToValue = (...values) => {
+    return values.find(value => {
+        return !Number.isNaN(value) && value !== null && value !== undefined;
+    });
+};
+
 export default {
     name: 'show-header',
     components: {
@@ -391,10 +404,10 @@ export default {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.showSeason || Number(this.$route.query.season) || undefined;
+            return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
         episode() {
-            return this.showEpisode || Number(this.$route.query.episode) || undefined;
+            return resolveToValue(this.showEpisode, Number(this.$route.query.episode));
         },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
@@ -484,6 +497,11 @@ export default {
         combinedQualities() {
             const { allowed, preferred } = this.show.config.qualities;
             return combineQualities(allowed, preferred);
+        },
+        seasons() {
+            const { show } = this;
+            // Only return an array with seasons (integers)
+            return show.seasonCount.map(season => season.season);
         }
     },
     mounted() {
@@ -571,7 +589,7 @@ export default {
             // A hack for now, to bail if the page hasn't fully been rendered yet.
             if (!summary) {
                 return;
-            }
+        }
 
             const height = summary.height() + 10;
             const top = summary.offset().top + 5;
@@ -584,16 +602,26 @@ export default {
         jumpToSeason(season) {
             // Don't jump until an option is selected
             if (season !== 'jump') {
-                console.debug(`Jumping to ${season}`);
+                // Calculate duration
+                let duration = (this.seasons.length - season) * 50;
+                duration = Math.max(500, Math.min(duration, 2000)); // Limit to (500ms <= duration <= 2000ms)
 
-                scrollTo(season, 100, {
+                // Calculate offset
+                let offset = -50; // Navbar
+                // Needs extra offset when the sub menu is "fixed".
+                offset -= window.matchMedia('(min-width: 1281px)').matches ? 40 : 0;
+
+                const name = `season-${season}`;
+                console.debug(`Jumping to #${name} (${duration}ms)`);
+
+                scrollTo(`[name="${name}"]`, duration, {
                     container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
+                    easing: 'ease-in-out',
+                    offset
                 });
 
                 // Update URL hash
-                location.hash = season;
+                window.location.hash = name;
 
                 // Reset jump
                 this.jumpToSeason = 'jump';
@@ -653,6 +681,16 @@ div#col-show-summary {
 .show-info-container {
     overflow: hidden;
     display: table-cell;
+}
+
+.showLegend {
+    padding-right: 6px;
+    padding-bottom: 1px;
+    width: 150px;
+}
+
+.invalid-value {
+    color: rgb(255, 0, 0);
 }
 
 @media (min-width: 768px) {

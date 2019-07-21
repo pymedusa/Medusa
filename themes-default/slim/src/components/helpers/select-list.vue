@@ -66,6 +66,10 @@ export default {
             csvMode: this.csvEnabled
         };
     },
+    mounted() {
+        this.editItems = this.sanitize(this.listItems);
+        this.csv = this.editItems.map(item => item.value).join(', ');
+    },
     created() {
         /**
          * ListItems property might receive values originating from the API,

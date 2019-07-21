@@ -80,7 +80,7 @@
             <div v-else>Please select at least one allowed quality.</div>
         </div>
 
-        <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
+        <div v-if="backloggedEpisodes">
             <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html" />
         </div>
 
@@ -106,7 +106,6 @@
 import { mapGetters, mapState } from 'vuex';
 
 import { api } from '../../api';
-import { waitFor } from '../../utils/core';
 import AppLink from './app-link';
 
 export default {
@@ -194,12 +193,12 @@ export default {
 
             // Skip if no showSlug, as that means we're on a addShow page
             if (!showSlug) {
-                return {};
+                return null;
             }
 
             // Skip if no qualities are selected
-            if (allowedQualities.length === 0 && preferredQualities.length === 0) {
-                return {};
+            if ((allowedQualities.length + preferredQualities.length) === 0) {
+                return null;
             }
 
             const url = `series/${showSlug}/legacy/backlogged`;
@@ -254,10 +253,7 @@ export default {
         isQualityPreset(quality) {
             return this.getQualityPreset({ value: quality }) !== undefined;
         },
-        async setInitialPreset(preset) {
-            // Wait for the store to get populated.
-            await waitFor(() => this.qualityValues.length > 0, 100, 3000);
-
+        setInitialPreset(preset) {
             const { isQualityPreset, keep } = this;
             const newPreset = keep === 'keep' ? 'keep' : (isQualityPreset(preset) ? preset : 0);
             this.selectedQualityPreset = [newPreset, preset];

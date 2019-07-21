@@ -5,6 +5,7 @@ const state = {
         akas: null,
         cache: null,
         classification: null,
+        seasonCount: [],
         config: {
             airByDate: null,
             aliases: [],
@@ -67,19 +68,32 @@ const state = {
             }
         },
         runtime: null,
-        seasonCount: null,
         showType: null,
         status: null,
         title: null,
         type: null,
         year: {},
         size: null,
+
+        // ===========================
+        // Detailed (`?detailed=true`)
+        // ===========================
+
         showQueueStatus: [],
         xemNumbering: [],
-        xemAbsoluteNumbering: [],
         sceneAbsoluteNumbering: [],
         allSceneExceptions: [],
-        sceneNumbering: []
+        xemAbsoluteNumbering: [],
+        sceneNumbering: [],
+
+        // ===========================
+        // Episodes (`?episodes=true`)
+        // ===========================
+
+        // Seasons array is added to the show object under this query,
+        // but we currently check to see if this property is defined before fetching the show with `?episodes=true`.
+        // seasons: [],
+        episodeCount: null
     }
 };
 
