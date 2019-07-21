@@ -19,27 +19,27 @@
 from __future__ import division
 from __future__ import unicode_literals
 
+import logging
 import operator
 import os
 import platform
 import re
 import uuid
-from builtins import object
-from builtins import str
 from functools import reduce
 
 import knowit
 
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
 
-from six import PY3, viewitems
+from six import text_type, viewitems
 
-if PY3:
-    long = int
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
-INSTANCE_ID = str(uuid.uuid1())
-VERSION = '0.3.1'
+INSTANCE_ID = text_type(uuid.uuid1())
+VERSION = '0.3.4'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -105,7 +105,8 @@ NAMING_EXTEND = 2
 NAMING_DUPLICATE = 4
 NAMING_LIMITED_EXTEND = 8
 NAMING_SEPARATED_REPEAT = 16
-NAMING_LIMITED_EXTEND_E_PREFIXED = 32
+NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED = 32
+NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED = 64
 
 MULTI_EP_STRINGS = {
     NAMING_REPEAT: 'Repeat',
@@ -113,7 +114,8 @@ MULTI_EP_STRINGS = {
     NAMING_DUPLICATE: 'Duplicate',
     NAMING_EXTEND: 'Extend',
     NAMING_LIMITED_EXTEND: 'Extend (Limited)',
-    NAMING_LIMITED_EXTEND_E_PREFIXED: 'Extend (Limited, E-prefixed)'
+    NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED: 'Extend (Limited, E-prefixed)',
+    NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED: 'Extend (Limited, e-prefixed)'
 }
 
 
@@ -176,7 +178,7 @@ class Quality(object):
         UHD_8K_BLURAY: '8K UHD BluRay',
     }
 
-    sceneQualityStrings = {
+    scene_quality_strings = {
         NA: 'N/A',
         UNKNOWN: 'Unknown',
         SDTV: '',
@@ -196,33 +198,34 @@ class Quality(object):
         UHD_8K_BLURAY: '4320p BluRay',
     }
 
-    combinedQualityStrings = {
+    combined_quality_strings = {
         ANYHDTV: 'HDTV',
         ANYWEBDL: 'WEB-DL',
-        ANYBLURAY: 'BluRay'
+        ANYBLURAY: 'BluRay',
     }
 
-    cssClassStrings = {
+    # A reverse map from quality values and any-sets to "keys"
+    quality_keys = {
         NA: 'na',
-        UNKNOWN: 'Unknown',
-        SDTV: 'SDTV',
-        SDDVD: 'SDDVD',
-        HDTV: 'HD720p',
-        RAWHDTV: 'RawHD',
-        FULLHDTV: 'HD1080p',
-        HDWEBDL: 'HD720p',
-        FULLHDWEBDL: 'HD1080p',
-        HDBLURAY: 'HD720p',
-        FULLHDBLURAY: 'HD1080p',
-        UHD_4K_TV: 'UHD-4K',
-        UHD_8K_TV: 'UHD-8K',
-        UHD_4K_WEBDL: 'UHD-4K',
-        UHD_8K_WEBDL: 'UHD-8K',
-        UHD_4K_BLURAY: 'UHD-4K',
-        UHD_8K_BLURAY: 'UHD-8K',
-        ANYHDTV: 'any-hd',
-        ANYWEBDL: 'any-hd',
-        ANYBLURAY: 'any-hd'
+        UNKNOWN: 'unknown',
+        SDTV: 'sdtv',
+        SDDVD: 'sddvd',
+        HDTV: 'hdtv',
+        RAWHDTV: 'rawhdtv',
+        FULLHDTV: 'fullhdtv',
+        HDWEBDL: 'hdwebdl',
+        FULLHDWEBDL: 'fullhdwebdl',
+        HDBLURAY: 'hdbluray',
+        FULLHDBLURAY: 'fullhdbluray',
+        UHD_4K_TV: 'uhd4ktv',
+        UHD_4K_WEBDL: 'uhd4kwebdl',
+        UHD_4K_BLURAY: 'uhd4kbluray',
+        UHD_8K_TV: 'uhd8ktv',
+        UHD_8K_WEBDL: 'uhd8kwebdl',
+        UHD_8K_BLURAY: 'uhd8kbluray',
+        ANYHDTV: 'anyhdtv',
+        ANYWEBDL: 'anywebdl',
+        ANYBLURAY: 'anybluray',
     }
 
     @staticmethod
@@ -392,7 +395,7 @@ class Quality(object):
     @staticmethod
     def quality_from_file_meta(file_path):
         """
-        Get quality file file metadata.
+        Get quality from file metadata.
 
         :param file_path: File path to analyse
         :return: Quality prefix
@@ -400,7 +403,16 @@ class Quality(object):
         if not os.path.isfile(file_path):
             return Quality.UNKNOWN
 
-        knowledge = knowit.know(file_path)
+        try:
+            knowledge = knowit.know(file_path)
+        except knowit.KnowitException as error:
+            log.warning(
+                'An error occurred while parsing: {path}\n'
+                'KnowIt reported:\n{report}', {
+                    'path': file_path,
+                    'report': error,
+                })
+            return Quality.UNKNOWN
 
         if not knowledge:
             return Quality.UNKNOWN

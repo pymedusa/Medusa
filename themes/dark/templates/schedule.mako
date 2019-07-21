@@ -7,12 +7,15 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
     router,
     el: '#vue-wrap',
-    computed: Object.assign(Vuex.mapState(['shows']), {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         header() {
             return this.$route.meta.header;
         },
@@ -103,7 +106,7 @@ window.app = new Vue({
 
 <%block name="content">
 <% random_series = choice(results) if results else '' %>
-<input type="hidden" id="background-series-slug" value="${choice(results)['series_slug'] if results else ''}" />
+<backstretch slug="${choice(results)['series_slug'] if results else ''}"></backstretch>
 
 <div class="row">
     <div class="col-md-12">

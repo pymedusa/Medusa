@@ -458,7 +458,7 @@ class QueueItemAdd(ShowQueueItem):
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
-        except IndexerShowNotFound as error:
+        except IndexerShowNotFound:
             log.warning(
                 '{id}: Unable to look up the show in {path} using id {id} on {indexer}.'
                 ' Delete metadata files from the folder and try adding it again.',

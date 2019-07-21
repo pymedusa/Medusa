@@ -154,6 +154,13 @@ class TorrentProvider(GenericProvider):
             response.close()
             return response.url
 
+        # Jackett redirects to a magnet causing InvalidSchema.
+        # Use an alternative method to get the redirect URL.
+        log.debug('Using alternative method to retrieve redirect URL')
+        response = self.session.get(url, allow_redirects=False)
+        if response and response.headers.get('Location'):
+            return response.headers['Location']
+
         log.debug('Unable to retrieve redirect URL for {url}', {'url': url})
         return url
 

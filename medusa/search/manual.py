@@ -7,7 +7,6 @@ import json
 import logging
 import threading
 import time
-from builtins import zip
 from datetime import datetime
 
 from dateutil import parser
@@ -26,22 +25,14 @@ from medusa.search.queue import ManualSearchQueueItem, SEARCH_HISTORY
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
+from six.moves import zip
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 SEARCH_STATUS_FINISHED = 'finished'
 SEARCH_STATUS_QUEUED = 'queued'
 SEARCH_STATUS_SEARCHING = 'searching'
-
-
-def get_quality_class(ep_obj):
-    """Find the quality class for the episode."""
-    if ep_obj.quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_obj.quality]
-    else:
-        quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
-
-    return quality_class
 
 
 def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):
@@ -102,12 +93,16 @@ def get_episodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
+            # TODO: `quality_name` and `quality_style` should both be removed
+            # when converting forced/manual episode search to Vue (use QualityPill component directly)
             'quality_name': Quality.qualityStrings[ep.quality],
-            'quality_style': get_quality_class(ep),
+            'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
             'overview': Overview.overviewStrings[series_obj.get_overview(
                 ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
+            'queuetime': search_thread.queue_time.isoformat(),
+            'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None,
         })
 
     return results

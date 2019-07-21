@@ -9,7 +9,7 @@ from datetime import datetime
 
 from dateutil import tz
 
-from six import string_types
+from six import string_types, viewitems
 
 
 def generate(it):
@@ -84,7 +84,8 @@ def strtobool(val):
 
 
 def to_timestamp(dt):
-    """Return POSIX timestamp corresponding to the datetime instance.
+    """
+    Return POSIX timestamp corresponding to the datetime instance.
 
     :param dt: datetime (possibly aware)
     :return: seconds since epoch as float
@@ -102,3 +103,35 @@ def to_camel_case(snake_str):
     """Convert a snake formatted string to camel case."""
     components = snake_str.split('_')
     return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def dict_to_array(values, key, value):
+    """
+    Convert a dict to an array with dicts.
+
+    Use the paramaters key and value to describe the key/value property in the new array.
+
+    For example. values: {a: b, c: d}, with key="my_key_prop" and value="my_value_prop".
+    Will result in: [{"my_key_prop": a, "my_value_prop": b}, {"my_key_prop": c, "my_value_prop": d}, ...etc].
+
+    :param values: Dict with single key/value mappings.
+    :param key: Name for the key property.
+    :param value: Name for the value property.
+    :return: An array of dicts.
+    """
+    return [{key: k, value: v} for k, v in viewitems(values)]
+
+
+def timedelta_in_milliseconds(td):
+    """
+    Return the value of the timedelta object in milliseconds.
+
+    :param td: timedelta
+    :type td: timedelta
+    :return: the value of the timedelta in milliseconds
+    :rtype: int
+    """
+    if not td:
+        return 0
+
+    return int(td.total_seconds() * 1000)
