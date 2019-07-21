@@ -4,17 +4,17 @@
     "network": "Netflix",
     "language": "en",
     "countries": ["UNITED KINGDOM"],
-    "seasonCount": {
-        "0": 2,
-        "1": 3,
-        "2": 3,
-        "3": 6,
-        "4": 6,
-        "5": 3
-    },
-    "allSceneExceptions": {
-        "-1": []
-    },
+    "seasonCount": [
+        { "season": 0, "episodeCount": 2 },
+        { "season": 1, "episodeCount": 3 },
+        { "season": 2, "episodeCount": 3 },
+        { "season": 3, "episodeCount": 6 },
+        { "season": 4, "episodeCount": 6 },
+        { "season": 5, "episodeCount": 3 }
+    ],
+    "allSceneExceptions": [
+        { "season": "-1", "exceptions": [] }
+    ],
     "classification": "",
     "countryCodes": ["gb"],
     "id": {
@@ -114,7 +114,7 @@
         "poster": "/medusa-data/cache/images/tvdb/253463.poster.jpg",
         "banner": "/medusa-data/cache/images/tvdb/253463.poster.jpg"
     },
-    "sceneAbsoluteNumbering": {},
+    "sceneAbsoluteNumbering": [],
     "title": "Black Mirror",
     "genres": ["Science-Fiction", "Thriller", "Drama"],
     "indexer": "tvdb",

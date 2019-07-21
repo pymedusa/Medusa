@@ -110,7 +110,7 @@ window.app = new Vue({
             sceneRefresh.inProgress = false;
         },
         goTo(url) {
-            const base = document.getElementsByTagName('base')[0].getAttribute('href');
+            const base = document.querySelector('base').getAttribute('href');
             window.location.href = base + 'manage/manageSearches/' + url;
         },
         toggleBacklog() {

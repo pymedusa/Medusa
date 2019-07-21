@@ -1642,12 +1642,6 @@ td.col-group {
     text-align: center;
 }
 
-.showLegend {
-    padding-right: 6px;
-    padding-bottom: 1px;
-    width: 150px;
-}
-
 .input-scene {
     height: 20px;
     line-height: 1.5;
@@ -1696,10 +1690,6 @@ div.season-scene-exception {
 
 button.selectColumns {
     margin-right: 2px;
-}
-
-.location-invalid {
-    color: rgb(255, 0, 0);
 }
 
 /* =======================================================================

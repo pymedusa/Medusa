@@ -203,7 +203,7 @@ def read_loglines(log_file=None, modification_time=None, start_index=0, max_line
                 yield formatter(logline)
 
 
-def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
+def blocks_r(file_path, size=64 * 1024):
     """
     Yields the data within a file in reverse-ordered blocks of given size.
 
@@ -215,38 +215,25 @@ def blocks_r(filename, size=64 * 1024, reset_offset=True, encoding='utf-8'):
      - the content of the block is NOT reversed.
 
     Args:
-        filename (str): The input file name.
-        size (int|None): The block size.
-            If int, the file is yielded in blocks of the specified size.
-            If None, the file is yielded at once.
-        reset_offset (bool): Reset the file offset.
-            If True, starts reading from the end of the file.
-            Otherwise, starts reading from where the file current position is.
-        encoding (str|None): The encoding for correct block size computation.
-            If `str`, must be a valid string encoding.
-            If None, the default encoding is used.
+        file_path (str): The input file path.
+        size (int): The block size.
 
     Yields:
-        block (str): The data within the blocks.
+        block (bytes): The data within the blocks.
 
     """
-    with io.open(filename, 'r', encoding=encoding) as file_obj:
-        offset = 0
-        if reset_offset:
-            file_size = remaining_size = file_obj.seek(0, os.SEEK_END)
-        else:
-            file_size = remaining_size = file_obj.tell()
-        rounding = 0
+    with io.open(file_path, 'rb') as file_obj:
+        remaining_size = file_obj.seek(0, os.SEEK_END)
         while remaining_size > 0:
-            offset = min(file_size, offset + size)
-            file_obj.seek(file_size - offset)
-            block = file_obj.read(min(remaining_size, size))
-            remaining_size -= size
-            yield block[:len(block) + rounding] if rounding else block
+            block_size = min(remaining_size, size)
+            file_obj.seek(remaining_size - block_size)
+            block = file_obj.read(block_size)
+            remaining_size -= block_size
+            yield block
 
 
-def reverse_readlines(filename, skip_empty=True, append_newline=False, block_size=512 * 1024,
-                      reset_offset=True, encoding='utf-8'):
+def reverse_readlines(file_path, skip_empty=True, append_newline=False,
+                      block_size=128 * 1024, encoding='utf-8'):
     """
     Flexible function for reversing read lines incrementally.
 
@@ -255,18 +242,11 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
     All credits go to the original author.
 
     Args:
-        filename (str): The input file name.
+        file_path (str): The input file path.
         skip_empty (bool): Skip empty lines.
-        append_newline (bool):
-        block_size (int|None): The block size.
-            If int, the file is processed in blocks of the specified size.
-            If None, the file is processed at once.
-        reset_offset (bool): Reset the file offset.
-            If True, starts reading from the end of the file.
-            Otherwise, starts reading from where the file current position is.
-        encoding (str|None): The encoding for correct block size computation.
-            If `str`, must be a valid string encoding.
-            If None, the default encoding is used.
+        append_newline (bool): Append a new line character at the end of each yielded line.
+        block_size (int): The block size.
+        encoding (str): The encoding for correct block size computation.
 
     Yields:
         line (str): The next line.
@@ -275,20 +255,18 @@ def reverse_readlines(filename, skip_empty=True, append_newline=False, block_siz
     newline = '\n'
     empty = ''
     remainder = empty
-    block_generator_kws = dict(size=block_size, reset_offset=reset_offset,
-                               encoding=encoding)
     block_generator = blocks_r
-    for block in block_generator(filename, **block_generator_kws):
-        lines = block.split(newline)
+    for block in block_generator(file_path, size=block_size):
+        lines = block.split(b'\n')
         if remainder:
             lines[-1] = lines[-1] + remainder
         remainder = lines[0]
         mask = slice(-1, 0, -1)
         for line in lines[mask]:
             if line or not skip_empty:
-                yield line + (newline if append_newline else empty)
+                yield line.decode(encoding) + (newline if append_newline else empty)
     if remainder or not skip_empty:
-        yield remainder + (newline if append_newline else empty)
+        yield remainder.decode(encoding) + (newline if append_newline else empty)
 
 
 def filter_logline(logline, min_level=None, thread_name=None, search_query=None):
@@ -393,10 +371,35 @@ class LogLine(object):
     @property
     def issue_title(self):
         """Return the expected issue title for this logline."""
+        result = None
+
         if self.traceback_lines:
-            result = next((line for line in reversed(self.traceback_lines) if line.strip()), self.message)
-        else:
+            # Grab the first viable line from the end of the traceback lines
+            offset = 1
+            size = len(self.traceback_lines)
+            while offset < size:
+                # Grab the <-Nth> item from the list (-1, -2, ..., -N)
+                line = self.traceback_lines[-offset]
+
+                # Guessit errors have a template and tend to end in three lines that we don't want.
+                # The original exception is one line before these lines.
+                # --------------------------------------------------------------------
+                # Please report at https://github.com/guessit-io/guessit/issues.
+                # ====================================================================
+                if line.startswith('=' * 20):
+                    offset += 3
+                    continue
+
+                if line.strip():
+                    result = line
+                    break
+
+                offset += 1
+
+        # Not found a single viable traceback line, fall back to the log message.
+        if not result:
             result = self.message
+
         return result[:1000]
 
     def to_json(self):
