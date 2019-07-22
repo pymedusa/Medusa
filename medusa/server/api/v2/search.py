@@ -86,9 +86,7 @@ class SearchHandler(BaseRequestHandler):
               options: {}
             }
         """
-        statuses = {}
-
-        if all([not data.get('showSlug'), not data.get('episodes')]):
+        if all([not data.get('showSlug'), not data.get('episodes'), not data.get('season')]):
             # Trigger a full backlog search
             if app.backlog_search_scheduler.forceRun():
                 return self._created()
@@ -98,8 +96,8 @@ class SearchHandler(BaseRequestHandler):
         if not data.get('showSlug'):
             return self._bad_request('For a backlog search you need to provide a showSlug')
 
-        if not data.get('episodes'):
-            return self._bad_request('For a backlog search you need to provide a list of episodes')
+        if not data.get('episodes') and not data.get('season'):
+            return self._bad_request('For a backlog search you need to provide a list of episodes or seasons')
 
         identifier = SeriesIdentifier.from_slug(data['showSlug'])
         if not identifier:
@@ -109,25 +107,24 @@ class SearchHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        season_segments = defaultdict(list)
-        for episode_slug in data['episodes']:
-            episode_number = EpisodeNumber.from_slug(episode_slug)
-            if not episode_number:
-                statuses[episode_slug] = {'status': 400}
-                continue
+        episode_segments = self._get_episode_segments(series, data)
 
-            episode = Episode.find_by_series_and_episode(series, episode_number)
-            if not episode:
-                statuses[episode_slug] = {'status': 404}
-                continue
+        # If a season is passed, we transform it to a list of episode objects. And merge it with the episode_segment.
+        # This because the backlog search has it's own logic for searching per episode or season packs. And falling back
+        # between them, if configured.
+        if data.get('season') and len(data.get('season')) > 0:
+            for season_slug in data.get('season'):
+                episode_season = int(season_slug[1:])
+                episodes = series.get_all_episodes(episode_season)
+                for episode in episodes:
+                    if episode not in episode_segments[episode_season]:
+                        episode_segments[episode_season].append(episode)
 
-            season_segments[episode.season].append(episode)
-
-        if not season_segments:
+        if not episode_segments:
             return self._not_found('Could not find any episode for show {show}, Did you provide the correct format?'
                                    .format(show=series.name))
 
-        for segment in itervalues(season_segments):
+        for segment in itervalues(episode_segments):
             # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
             # when we've refactored out the ForcedSearchQueueItem.
             cur_backlog_queue_item = ForcedSearchQueueItem(series, segment)
@@ -197,13 +194,12 @@ class SearchHandler(BaseRequestHandler):
         :param data:
         :return:
         """
-        statuses = {}
 
         if not data.get('showSlug'):
             return self._bad_request('For a manual search you need to provide a showSlug')
 
-        if not data.get('episodes'):
-            return self._bad_request('For a manual search you need to provide a list of episodes')
+        if not data.get('episodes') and not data.get('season'):
+            return self._bad_request('For a manual search you need to provide a list of episodes or seasons')
 
         identifier = SeriesIdentifier.from_slug(data['showSlug'])
         if not identifier:
@@ -213,33 +209,63 @@ class SearchHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        season_segments = defaultdict(list)
-        for episode_slug in data['episodes']:
-            episode_number = EpisodeNumber.from_slug(episode_slug)
-            if not episode_number:
-                statuses[episode_slug] = {'status': 400}
-                continue
+        episode_segments = self._get_episode_segments(series, data)
+        season_segments = self._get_season_segments(series, data)
 
-            episode = Episode.find_by_series_and_episode(series, episode_number)
-            if not episode:
-                statuses[episode_slug] = {'status': 404}
-                continue
+        for segments in ({'segment': episode_segments, 'manual_search_type': 'episode'},
+                         {'segment': season_segments, 'manual_search_type': 'season'}):
+            for segment in itervalues(segments['segment']):
+                # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
+                # when we've refactored out the ForcedSearchQueueItem.
+                cur_manual_search_queue_item = ForcedSearchQueueItem(series, segment, down_cur_quality=False,
+                                                                     manual_search=True, manual_search_type=segments['manual_search_type'])
+                app.forced_search_queue_scheduler.action.add_item(cur_manual_search_queue_item)
 
-            season_segments[episode.season].append(episode)
-
-        if not season_segments:
+        if not episode_segments and not season_segments:
             return self._not_found('Could not find any episode for show {show}. Did you provide the correct format?'
                                    .format(show=series.name))
 
-        # Retrieve the search type option (episode vs season)
-        search_type = data['options'].get('type', 'episode')
-
-        for segment in itervalues(season_segments):
-            # Adding the forcedSearchQueueItem to the forced_search_queue_scheduler. but this is all going to change
-            # when we've refactored out the ForcedSearchQueueItem.
-            cur_manual_search_queue_item = ForcedSearchQueueItem(series, segment, down_cur_quality=False,
-                                                                 manual_search=False, manual_search_type=search_type)
-
-            app.forced_search_queue_scheduler.action.add_item(cur_manual_search_queue_item)
-
         return self._created()
+
+    @staticmethod
+    def _get_episode_segments(series, data):
+        """
+        Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
+        The episode objects are created from the "episodes" property passed as json post data.
+        """
+        episode_segments = defaultdict(list)
+        if data.get('episodes') and len(data.get('episodes')) > 0:
+            for episode_slug in data['episodes']:
+                episode_number = EpisodeNumber.from_slug(episode_slug)
+                if not episode_number:
+                    continue
+
+                episode = Episode.find_by_series_and_episode(series, episode_number)
+                if not episode:
+                    continue
+
+                episode_segments[episode.season].append(episode)
+        return episode_segments
+
+    @staticmethod
+    def _get_season_segments(series, data):
+        """
+        Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
+        The episode objects are created from the "season" property passed as json post data.
+        """
+        season_segments = defaultdict(list)
+        if data.get('season') and len(data.get('season')) > 0:
+            for season_slug in data['season']:
+                # For season packs we still need to provide an episode object. So we choose to provide the first
+                episode_slug = '{season}e01'.format(season=season_slug)
+                episode_number = EpisodeNumber.from_slug(episode_slug)
+
+                if not episode_number:
+                    continue
+
+                episode = Episode.find_by_series_and_episode(series, episode_number)
+                if not episode:
+                    continue
+
+                season_segments[episode.season].append(episode)
+        return season_segments
