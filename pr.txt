@@ -1,0 +1,17 @@
+title:
+Use a single `ThreadPoolExecutor`
+
+labels:
+On hold
+Needs testing
+
+body:
+Instead of creating separate `ThreadPoolExecutor`s for the web and API v2 base handlers, create a class that they can all inherit from.
+Consolidates our async request handling code into a single `RequestHandler` class.
+
+Fixes the issue where we relied on `thread_name_prefix` to set the thread name, which is not available in Python 3.5 and the name defaults to `ThreadPoolExecutor-poolId_threadId` (the log filter for "Thread" did not work on this).
+
+Allows us to set the prefix for each base class independently, as the thread name will be updated at the start of each thread from the pool.
+
+With this branch API v1 is now also multi-threaded.
+Not sure as to the consequences this can/will have to tools like `nzbToMedia`...
