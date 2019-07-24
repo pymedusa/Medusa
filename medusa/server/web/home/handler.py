@@ -389,9 +389,9 @@ class Home(WebRoot):
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Successful test notice sent to Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
             else:
-                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
+                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message('Tested Plex Home Theater(s): ', unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Home Theater(s)', final_result)
 
         return final_result
 
@@ -412,7 +412,7 @@ class Home(WebRoot):
         else:
             final_result += 'Test failed for Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message(final_result)
+        ui.notifications.message('Tested Plex Media Server(s)', final_result)
 
         return final_result
 
