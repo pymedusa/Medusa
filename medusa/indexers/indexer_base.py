@@ -495,6 +495,11 @@ class Show(dict):
             # doesn't exist, so attribute error.
             raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
 
+    def __bool__(self):
+        return bool(self.data)
+
+    __nonzero__ = __bool__
+
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""
         ret = self.search(text_type(date), 'firstaired')
