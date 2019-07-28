@@ -82,7 +82,7 @@ import pytest
             'show': 'tvs-the-americans',
             'season': 5,
             'episodes': [7],
-            'quality': Quality.FULLHDWEBDL,
+            'quality': Quality.UNKNOWN,
             'version': -1
         }
     }
