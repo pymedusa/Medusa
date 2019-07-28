@@ -302,7 +302,7 @@ class Quality(object):
             return Quality.UNKNOWN
 
         result = None
-        name = os.path.basename(name)
+        name = os.path.basename(os.path.dirname(name)) or name
         ep = EpisodeTags(name)
 
         if anime:
