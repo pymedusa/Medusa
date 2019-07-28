@@ -74,6 +74,17 @@ import pytest
             'quality': Quality.FULLHDWEBDL,
             'version': -1
         }
+    },
+    {  # Test NZB multi episode
+        'file_path': 'tvs-americansDETE507/The.Americans.2013.S05E07.Hoehere.Ziele.German.DD+51.DL.1080p.NetflixHD.AVC-TVS/tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'nzb_name': 'tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'expected': {
+            'show': 'tvs-the-americans',
+            'season': 5,
+            'episodes': [7],
+            'quality': Quality.FULLHDWEBDL,
+            'version': -1
+        }
     }
 ])
 def test_parse_info(p, monkeypatch, parse_method):
