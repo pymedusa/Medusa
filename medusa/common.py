@@ -334,7 +334,7 @@ class Quality(object):
                 if ep.bluray:
                     result = Quality.UHD_8K_BLURAY if is_4320 else Quality.UHD_4K_BLURAY
                 # WEB-DL
-                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                elif ep.web:
                     result = Quality.UHD_8K_WEBDL if is_4320 else Quality.UHD_4K_WEBDL
                 # HDTV
                 else:
@@ -348,7 +348,7 @@ class Quality(object):
                 if ep.bluray or ep.hddvd:
                     result = Quality.FULLHDBLURAY if is_1080 else Quality.HDBLURAY
                 # WEB-DL
-                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                elif ep.web:
                     result = Quality.FULLHDWEBDL if is_1080 else Quality.HDWEBDL
                 # HDTV and MPEG2 encoded
                 elif ep.tv == 'hd' and ep.mpeg:
@@ -365,7 +365,7 @@ class Quality(object):
         elif ep.dvd or ep.bluray:
             # SD DVD
             result = Quality.SDDVD
-        elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+        elif ep.web and not ep.web.lower().endswith('hd'):
             # This should be Quality.WEB in the future
             result = Quality.SDTV
         elif ep.tv or any([ep.res == '480p', ep.sat]):
