@@ -560,9 +560,8 @@ class PostProcessor(object):
 
         :return: A (show, season, episodes, version, quality) tuple
         """
-        show = season = version = airdate = None
+        show = season = version = airdate = quality = None
         episodes = []
-        quality = Quality.NA
 
         for counter, (resource, name) in enumerate(self.item_resources.items()):
 
@@ -570,7 +569,6 @@ class PostProcessor(object):
 
             if not cur_show:
                 continue
-
             show = cur_show
 
             if cur_season is not None:
@@ -594,12 +592,10 @@ class PostProcessor(object):
                     self.log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
                     continue
 
-            # We allow for picking the highest found quality while iterating over the resources
-            if cur_quality > quality:
-                quality = cur_quality
-
             if counter < (len(self.item_resources) - 1):
-                continue
+                if Quality.qualityStrings[cur_quality] == 'Unknown':
+                    continue
+            quality = cur_quality
 
             # We have all the information we need
             self.log(u'Show information parsed from {0}'.format(resource), logger.DEBUG)
