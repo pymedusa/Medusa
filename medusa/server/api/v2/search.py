@@ -199,7 +199,6 @@ class SearchHandler(BaseRequestHandler):
         :param data:
         :return:
         """
-
         if not data.get('showSlug'):
             return self._bad_request('For a manual search you need to provide a show slug')
 
@@ -236,6 +235,7 @@ class SearchHandler(BaseRequestHandler):
     def _get_episode_segments(series, data):
         """
         Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
+
         The episode objects are created from the "episodes" property passed as json data.
         """
         episode_segments = defaultdict(list)
@@ -256,6 +256,7 @@ class SearchHandler(BaseRequestHandler):
     def _get_season_segments(series, data):
         """
         Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
+
         The episode objects are created from the "season" property passed as json data.
         """
         season_segments = defaultdict(list)
