@@ -29,7 +29,7 @@ class SearchHandler(BaseRequestHandler):
     #: path param
     path_param = None
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'POST')
+    allowed_methods = ('GET', 'PUT',)
 
     def get(self, identifier):
         """Collect ran, running and queued searches for a specific show.
@@ -51,25 +51,30 @@ class SearchHandler(BaseRequestHandler):
             'results': collect_episodes_from_search_thread(series_obj)
         }
 
-    def post(self, identifier):
+    def put(self, identifier):
         """Queue a backlog search for a range of episodes.
 
         :param identifier:
         """
-        data = json_decode(self.request.body)
+        if not self.request.body:
+            if identifier == 'daily':
+                return self._search_daily()
+            if identifier == 'backlog':
+                return self._search_backlog()
+            else:
+                return self._bad_request("Body required for search type '{0}'".format(identifier))
 
+        data = json_decode(self.request.body)
         if identifier == 'backlog':
             return self._search_backlog(data)
-        if identifier == 'daily':
-            return self._search_daily()
         if identifier == 'failed':
             return self._search_failed(data)
         if identifier == 'manual':
             return self._search_manual(data)
 
-        return self._bad_request('{key} is a invalid path. You will need to add a search type to the path'.format(key=identifier))
+        return self._bad_request("Invalid search type '{0}'".format(identifier))
 
-    def _search_backlog(self, data):
+    def _search_backlog(self, data=None):
         """Queue a backlog search for results for the provided episodes.
 
         :param data:
@@ -86,15 +91,15 @@ class SearchHandler(BaseRequestHandler):
               options: {}
             }
         """
-        if all([not data.get('showSlug'), not data.get('episodes'), not data.get('season')]):
+        if not data:
             # Trigger a full backlog search
             if app.backlog_search_scheduler.forceRun():
-                return self._created()
+                return self._accepted('Full backlog search started')
 
-            return self._bad_request('Triggering a backlog search failed')
+            return self._bad_request('Triggering a full backlog search failed')
 
         if not data.get('showSlug'):
-            return self._bad_request('For a backlog search you need to provide a showSlug')
+            return self._bad_request('You need to provide a show slug')
 
         if not data.get('episodes') and not data.get('season'):
             return self._bad_request('For a backlog search you need to provide a list of episodes or seasons')
@@ -130,7 +135,7 @@ class SearchHandler(BaseRequestHandler):
             cur_backlog_queue_item = ForcedSearchQueueItem(series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
-        return self._created()
+        return self._accepted('Backlog search for {0} started'.format(data['showSlug']))
 
     def _search_daily(self):
         """Queue a daily search.
@@ -138,9 +143,9 @@ class SearchHandler(BaseRequestHandler):
         :return:
         """
         if app.daily_search_scheduler.forceRun():
-            return self._created()
+            return self._accepted('Daily search started')
 
-        return self._bad_request('Daily search already active')
+        return self._bad_request('Daily search already running')
 
     def _search_failed(self, data):
         """Queue a failed search.
@@ -151,7 +156,7 @@ class SearchHandler(BaseRequestHandler):
         statuses = {}
 
         if not data.get('showSlug'):
-            return self._bad_request('For a failed search you need to provide a showSlug')
+            return self._bad_request('For a failed search you need to provide a show slug')
 
         if not data.get('episodes'):
             return self._bad_request('For a failed search you need to provide a list of episodes')
@@ -186,7 +191,7 @@ class SearchHandler(BaseRequestHandler):
             cur_failed_queue_item = FailedQueueItem(series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
-        return self._created()
+        return self._accepted('Failed search for {0} started'.format(data['showSlug']))
 
     def _search_manual(self, data):
         """Queue a manual search for results for the provided episodes.
@@ -196,7 +201,7 @@ class SearchHandler(BaseRequestHandler):
         """
 
         if not data.get('showSlug'):
-            return self._bad_request('For a manual search you need to provide a showSlug')
+            return self._bad_request('For a manual search you need to provide a show slug')
 
         if not data.get('episodes') and not data.get('season'):
             return self._bad_request('For a manual search you need to provide a list of episodes or seasons')
@@ -225,13 +230,13 @@ class SearchHandler(BaseRequestHandler):
             return self._not_found('Could not find any episode for show {show}. Did you provide the correct format?'
                                    .format(show=series.name))
 
-        return self._created()
+        return self._accepted('Manual search for {0} started'.format(data['showSlug']))
 
     @staticmethod
     def _get_episode_segments(series, data):
         """
         Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
-        The episode objects are created from the "episodes" property passed as json post data.
+        The episode objects are created from the "episodes" property passed as json data.
         """
         episode_segments = defaultdict(list)
         if data.get('episodes') and len(data.get('episodes')) > 0:
@@ -251,7 +256,7 @@ class SearchHandler(BaseRequestHandler):
     def _get_season_segments(series, data):
         """
         Create a dict with season number keys and their corresponding episodes as an array of Episode objects.
-        The episode objects are created from the "season" property passed as json post data.
+        The episode objects are created from the "season" property passed as json data.
         """
         season_segments = defaultdict(list)
         if data.get('season') and len(data.get('season')) > 0:
