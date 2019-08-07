@@ -7,6 +7,8 @@
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -16,7 +18,13 @@ window.app = new Vue({
         return {
             rootDirs: []
         };
-    }
+    },
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState([
+        'config' // Used by `inc_addShowOptions.mako`
+    ]), {
+
+    })
 });
 </script>
 </%block>

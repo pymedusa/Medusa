@@ -6,7 +6,7 @@ import six
 from decorator import decorator
 
 
-class ValidationFailure(object):
+class ValidationFailure(Exception):
     def __init__(self, func, args):
         self.func = func
         self.__dict__.update(args)

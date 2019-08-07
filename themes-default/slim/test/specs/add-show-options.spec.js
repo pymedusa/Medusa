@@ -1,7 +1,8 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AddShowOptions } from '../../src/components';
+import constsModule from '../../src/store/modules/consts';
 import fixtures from '../__fixtures__/common';
 
 describe('AddShowOptions.test.js', () => {
@@ -14,8 +15,12 @@ describe('AddShowOptions.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
-        store = new Store({ state });
+        store = new Store({
+            modules: {
+                consts: constsModule
+            }
+        });
+        store.replaceState(state);
     });
 
     it('renders with `enable-anime-options` disabled', () => {

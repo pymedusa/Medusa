@@ -1,4 +1,5 @@
 # Code coverage
+.eslintcache
 .nyc_output
 coverage
 coverage.lcov

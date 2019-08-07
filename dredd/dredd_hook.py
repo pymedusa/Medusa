@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 """Dredd hook."""
+from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import io
@@ -8,11 +10,22 @@ import json
 import os
 import sys
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext')))
-if sys.version_info[0] == 2:
-    sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext2')))
+try:
+    from builtins import print as real_print
+except ImportError:
+    # Python 2
+    from __builtin__ import print as real_print
 
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
+current_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.insert(1, os.path.join(root_dir, 'ext'))
+sys.path.insert(1, os.path.join(root_dir, 'ext%d' % sys.version_info.major))
+
 from configparser import ConfigParser
 
 import dredd_hooks as hooks
@@ -30,6 +43,19 @@ stash = {
     'web-password': 'testpass',
     'api-key': '1234567890ABCDEF1234567890ABCDEF',
 }
+
+hook_log = os.path.join(current_dir, 'hook.log')
+try:
+    os.remove(hook_log)
+except OSError:
+    pass
+
+
+def print(*args, **kwargs):
+    """Override builtin print to write to a file, because nothing prints to `stdout`."""
+    with io.open(hook_log, 'a', encoding='utf-8') as fh:
+        kwargs['file'] = fh
+        return real_print(*args, **kwargs)
 
 
 @hooks.before_all
@@ -79,8 +105,18 @@ def configure_transaction(transaction):
 
     request = response.get('x-request', {})
     body = request.get('body')
+    body_update = request.get('body-update')
     if body is not None:
         transaction['request']['body'] = json.dumps(evaluate(body))
+    elif body_update is not None:
+        try:
+            orig_body = json.loads(transaction['request']['body'])
+        except ValueError:
+            orig_body = {}
+
+        # Use the current request body and update it with the new values
+        new_body = dict(orig_body, **evaluate(body_update))
+        transaction['request']['body'] = json.dumps(new_body)
 
     path_params = request.get('path-params')
     if path_params:
@@ -151,13 +187,9 @@ def evaluate(expression, context=None):
 
 def start():
     """Start application."""
-    import os
     import shutil
-    import sys
 
-    current_dir = os.path.dirname(__file__)
-    app_dir = os.path.abspath(os.path.join(current_dir, '..'))
-    data_dir = os.path.abspath(os.path.join(current_dir, 'data'))
+    data_dir = os.path.join(current_dir, 'data')
     if os.path.isdir(data_dir):
         shutil.rmtree(data_dir)
     args = [
@@ -176,7 +208,7 @@ def start():
     with io.open('config.ini', 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
-    sys.path.insert(1, app_dir)
+    sys.path.insert(1, root_dir)
 
     from medusa.__main__ import Application
     application = Application()

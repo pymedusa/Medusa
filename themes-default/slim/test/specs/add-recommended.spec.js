@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { AppLink, AddRecommended } from '../../src/components';
@@ -14,7 +14,6 @@ describe('AddRecommended.test.js', () => {
         localVue.component('app-link', AppLink);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
         const store = new Store({ state });
 
         wrapper = shallowMount(AddRecommended, {

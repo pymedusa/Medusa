@@ -65,6 +65,16 @@ try:
 except ImportError:
     reflink = None
 
+try:
+    from psutil import Process
+    memory_usage_tool = 'psutil'
+except ImportError:
+    try:
+        import resource  # resource module is unix only
+        memory_usage_tool = 'resource'
+    except ImportError:
+        memory_usage_tool = None
+
 
 def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
@@ -1450,6 +1460,31 @@ def get_disk_space_usage(disk_path=None, pretty=True):
         return False
 
 
+def memory_usage(pretty=True):
+    """
+    Get the current memory usage (if possible).
+
+    :param pretty: True for human readable size, False for bytes
+
+    :return: Current memory usage
+    """
+    usage = ''
+    if memory_usage_tool == 'resource':
+        usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if platform.system() == 'Linux':
+            # resource.RUSAGE_SELF is in KB on Linux
+            usage *= 1024
+    elif memory_usage_tool == 'psutil':
+        usage = Process(os.getpid()).memory_info().rss
+    else:
+        return ''
+
+    if pretty:
+        usage = pretty_file_size(usage)
+
+    return usage
+
+
 def get_tvdb_from_id(indexer_id, indexer):
 
     session = MedusaSafeSession()
@@ -1742,20 +1777,13 @@ def title_to_imdb(title, start_year, imdb_api=None):
     if imdb_api is None:
         imdb_api = Imdb()
 
-    try:
-        titles = imdb_api.search_for_title(title)
-    except ValueError as error:
-        # FIXME: Putting an error here, as this is a known error with the lib imdbpie. And should be fix.
-        log.warning('Could not get a result from imdbpie for the title {title}, error: {error}',
-                    {'title': title, 'error': error})
-        return None
-
+    titles = imdb_api.search_for_title(title)
     if len(titles) == 1:
         return titles[0]['imdb_id']
 
-    title = title.lower()
     # ImdbPie returns the year as string
     start_year = str(start_year)
+    title = title.lower()
 
     title_matches = []
     for candidate in titles:

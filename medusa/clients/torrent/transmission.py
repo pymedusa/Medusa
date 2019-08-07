@@ -279,7 +279,7 @@ class TransmissionAPI(GenericClient):
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
 
         if not self._request(method='post', data=post_data):
-            log.debug('Could not connect to Transmission. Check logs')
+            log.warning('Error while fetching torrents status')
             return
 
         try:

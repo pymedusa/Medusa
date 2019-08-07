@@ -10,10 +10,13 @@ from medusa.providers.torrent.html import (
     animetorrents,
     archetorrent,
     avistaz,
+    beyondhd,
     bithdtv,
     bjshare,
+    btdb,
     cinemaz,
     elitetracker,
+    gimmepeers,
     hdspace,
     hdtorrents,
     hebits,
@@ -29,7 +32,6 @@ from medusa.providers.torrent.html import (
     shanaproject,
     speedcd,
     thepiratebay,
-    tntvillage,
     tokyotoshokan,
     torrentbytes,
     torrenting,
@@ -43,6 +45,7 @@ from medusa.providers.torrent.json import (
     btn,
     danishbits,
     hdbits,
+    ncore,
     norbits,
     rarbg,
     torrentday,
@@ -62,11 +65,13 @@ from medusa.providers.torrent.xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'danishbits',
-    'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents', 'morethantv', 'torznab', 'nordicbits',
-    'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn',
-    'hdbits', 'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
-    'torrentz2', 'animetorrents', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent',
-    'elitetracker', 'privatehd', 'cinemaz', 'avistaz', 'bjshare'
+    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv',
+    'danishbits', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents',
+    'morethantv', 'torznab', 'nordicbits', 'pretome', 'sdbits', 'scenetime',
+    'speedcd', 'thepiratebay', 'tokyotoshokan', 'torrentbytes', 'torrentleech',
+    'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hdbits',
+    'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat',
+    'hebits', 'torrentz2', 'animetorrents', 'anidex', 'shanaproject',
+    'torrenting', 'yggtorrent', 'elitetracker', 'privatehd', 'cinemaz',
+    'avistaz', 'bjshare', 'ncore', 'gimmepeers', 'btdb', 'beyondhd'
 ]

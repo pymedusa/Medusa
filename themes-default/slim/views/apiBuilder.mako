@@ -139,10 +139,13 @@
 
         ## These contain all the Webpack-imported modules
         <script src="js/vendors.js?${sbPID}"></script>
+        <script src="js/vendors~date-fns.js?${sbPID}"></script>
         <script src="js/medusa-runtime.js?${sbPID}"></script>
+
         <script src="js/index.js?${sbPID}"></script>
 
         <script src="js/vender.min.js?${sbPID}"></script>
+
         <script src="js/apibuilder.js?${sbPID}"></script>
     </body>
 </html>

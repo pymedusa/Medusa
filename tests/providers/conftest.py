@@ -14,11 +14,12 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 def get_providers():
-    from medusa.providers.torrent import (anidex, limetorrents, nyaa, rarbg, shanaproject, tntvillage,
-                                          thepiratebay, tokyotoshokan, torrentz2, zooqle)
+    from medusa.providers.torrent import (anidex, btdb, limetorrents, nyaa,
+                                          rarbg, shanaproject, thepiratebay,
+                                          tokyotoshokan, torrentz2, zooqle)
     from medusa.providers.nzb import anizb, binsearch
 
-    return (anidex, limetorrents, nyaa, rarbg, shanaproject, tntvillage,
+    return (anidex, btdb, limetorrents, nyaa, rarbg, shanaproject,
             thepiratebay, tokyotoshokan, torrentz2, zooqle, anizb, binsearch)
 
 

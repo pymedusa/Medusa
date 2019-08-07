@@ -119,7 +119,7 @@ class EliteTrackerProvider(TorrentProvider):
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if torrent_rows[1].get_text(strip=True) == 'Aucun Resultat':
+            if torrent_rows[1].get_text(strip=True) == 'Aucun résultat':
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
@@ -128,7 +128,7 @@ class EliteTrackerProvider(TorrentProvider):
             for torrent in torrent_rows[1:]:
                 try:
                     if self.freeleech and not torrent.find('img', alt=re.compile('TORRENT GRATUIT : Seulement '
-                                                                                 'l\'upload sera compter.')):
+                                                                                 "l'upload sera compter.")):
                         continue
 
                     title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
@@ -199,7 +199,7 @@ class EliteTrackerProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if 'Une erreur s\'est produite!' in response.text:
+        if "Une erreur s'est produite!" in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 

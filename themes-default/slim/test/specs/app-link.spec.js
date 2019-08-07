@@ -1,7 +1,8 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
+import configModule from '../../src/store/modules/config';
 import fixtures from '../__fixtures__/app-link';
 
 describe('AppLink.test.js', () => {
@@ -15,8 +16,12 @@ describe('AppLink.test.js', () => {
         localVue.use(VueRouter);
 
         const { state } = fixtures;
-        const { Store } = Vuex;
-        store = new Store({ state });
+        store = new Store({
+            modules: {
+                config: configModule
+            }
+        });
+        store.replaceState(state);
         routerBase = '/'; // This might be '/webroot'
     });
 
@@ -77,6 +82,22 @@ describe('AppLink.test.js', () => {
 
         expect(wrapper.element).toMatchSnapshot();
         expect(wrapper.attributes().href).toEqual('http://localhost:8081/config');
+        expect(wrapper.attributes().target).toEqual('_self');
+        expect(wrapper.attributes().rel).toEqual(undefined);
+    });
+
+    it('renders internal link with placeholder', () => {
+        const wrapper = mount(AppLink, {
+            localVue,
+            store,
+            propsData: {
+                indexerId: '1',
+                href: 'home/displayShow?indexername=indexer-to-name&seriesid=12345'
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+        expect(wrapper.attributes().href).toEqual('http://localhost:8081/home/displayShow?indexername=tvdb&seriesid=12345');
         expect(wrapper.attributes().target).toEqual('_self');
         expect(wrapper.attributes().rel).toEqual(undefined);
     });
