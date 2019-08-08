@@ -64,7 +64,7 @@ class QBittorrentAPI(GenericClient):
         return version
 
     def _get_auth(self):
-        """This method gets overriden by the `api` property."""
+        """Method gets overriden by the `api` property."""
         return self._get_auth_v2() or self._get_auth_legacy()
 
     def _get_auth_v2(self):
