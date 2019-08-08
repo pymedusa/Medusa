@@ -85,7 +85,7 @@ class QBittorrentAPI(GenericClient):
         self.session.cookies = self.response.cookies
         self.auth = self.response.content
 
-        return self.auth if not self.response.status_code == 404 else None
+        return self.auth
 
     def _get_auth_legacy(self):
         """Authenticate using the legacy method (API v1)."""
