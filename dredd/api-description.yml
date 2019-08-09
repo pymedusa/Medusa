@@ -894,7 +894,7 @@ paths:
       summary: Search providers for results
       description: |
         When provided with a json formed body of search parameters,
-        queue a backlog search for a specific show with optional episodes(s)
+        queue a backlog search for a specific show with optional episode(s) or season
       parameters:
         - $ref: '#/parameters/search-backlog'
       responses:
@@ -920,7 +920,7 @@ paths:
       summary: Search providers for results
       description: |
         When provided with a json formed body of search parameters,
-        queue a failed search for a specific show with optional episodes(s).
+        queue a failed search for a specific show with optional episode(s).
         The episodes will be marked as failed. Which will prevent them from being snatched again.
         A new backlog search is started for the episodes.
       parameters:
@@ -948,7 +948,7 @@ paths:
       summary: Search providers for results
       description: |
         When provided with a json formed body of search parameters,
-        queue a manual search for a specific show with optional episodes(s)
+        queue a manual search for a specific show with optional episode(s) or season
       parameters:
         - $ref: '#/parameters/search-manual'
       responses:
@@ -1020,7 +1020,7 @@ definitions:
             description: This is the ID from imdb.com
           slug:
             type: string
-            description: Shows slug. In the format of indexer's string representation + the indexers id
+            description: Show's slug
             example: tvdb1234
         example:
           tvdb: 1234
