@@ -59,7 +59,7 @@ class MakoLexer(RegexLexer):
             ),
             (r"<%(?=([\w\.\:]+))", Comment.Preproc, "ondeftags"),
             (
-                r"(<%(?:!?))(.*?)(%>)(?s)",
+                r"(?s)(<%(?:!?))(.*?)(%>)",
                 bygroups(Comment.Preproc, using(PythonLexer), Comment.Preproc),
             ),
             (
