@@ -4,7 +4,7 @@ beautifulsoup4==4.7.1
 bencode.py==2.1.0
 CacheControl==0.12.5
 certifi==2019.6.16
-cfscrape==2.0.5
+cfscrape==2.0.8
 chardet==3.0.4
 configobj==5.0.6
 contextlib2==0.5.5
