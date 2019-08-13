@@ -288,21 +288,21 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def quality_from_name(name, anime=False):
+    def quality_from_name(path, anime=False):
         """
-        Return the quality from the episode filename with the regex.
+        Return the quality from the episode filename or its parent folder.
 
-        :param name: Episode filename to analyse
+        :param path: Episode filename or its parent folder
         :param anime: Boolean to indicate if the show we're resolving is anime
         :return: Quality
         """
         from medusa.tagger.episode import EpisodeTags
 
-        if not name:
+        if not path:
             return Quality.UNKNOWN
 
         result = None
-        name = os.path.basename(name)
+        name = os.path.basename(path)
         ep = EpisodeTags(name)
 
         if anime:
@@ -372,7 +372,15 @@ class Quality(object):
             # SDTV/HDTV
             result = Quality.SDTV
 
-        return Quality.UNKNOWN if result is None else result
+        if result is not None:
+            return result
+
+        # Try to get the quality from the parent folder
+        parent_folder = os.path.basename(os.path.dirname(path))
+        if parent_folder:
+            return Quality.quality_from_name(parent_folder)
+
+        return Quality.UNKNOWN
 
     @staticmethod
     def _extend_quality(file_path):
