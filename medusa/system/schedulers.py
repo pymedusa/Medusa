@@ -16,7 +16,7 @@ all_schedulers = [
     ('showQueue', 'Show Queue', 'show_queue_scheduler'),
     ('searchQueue', 'Search Queue', 'search_queue_scheduler'),
     ('properFinder', 'Proper Finder', 'proper_finder_scheduler'),
-    ('postProcess', 'Post Process', 'auto_post_processor_scheduler'),
+    ('postProcess', 'Post Process', 'post_processor_scheduler'),
     ('subtitlesFinder', 'Subtitles Finder', 'subtitles_finder_scheduler'),
     ('traktChecker', 'Trakt Checker', 'trakt_checker_scheduler'),
     ('torrentChecker', 'Torrent Checker', 'torrent_checker_scheduler'),
