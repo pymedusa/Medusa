@@ -59,7 +59,7 @@ jobs:
         - yarn coverage
     # backend tests (py2.7) start here
     - name: 'Backend tests (py2.7)'
-      python: '2.7.10'
+      python: '2.7.11'
       env:
         - TOXENV=py27
       <<: *backend_tests
@@ -71,7 +71,7 @@ jobs:
       <<: *backend_tests
     # dredd tests (py2.7) start here
     - name: 'Dredd tests (py2.7)'
-      python: '2.7.10'
+      python: '2.7.11'
       <<: *dredd_tests
     # dredd tests (py3.6) start here
     - name: 'Dredd tests (py3.6)'
