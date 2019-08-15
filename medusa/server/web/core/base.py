@@ -5,9 +5,7 @@ from __future__ import unicode_literals
 import os
 import re
 import sys
-import time
 import traceback
-from builtins import str
 from concurrent.futures import ThreadPoolExecutor
 
 from mako.exceptions import RichTraceback
@@ -28,6 +26,7 @@ from requests.compat import urljoin
 
 from six import (
     iteritems,
+    text_type,
     viewitems,
 )
 
@@ -75,8 +74,8 @@ class PageTemplate(MakoTemplate):
         lookup = get_lookup()
         self.template = lookup.get_template(filename)
 
-        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://' +
-                    rh.request.headers.get('X-Forwarded-Host', rh.request.host))
+        base_url = (rh.request.headers.get('X-Forwarded-Proto', rh.request.protocol) + '://'
+                    + rh.request.headers.get('X-Forwarded-Host', rh.request.host))
 
         self.arguments = {
             'sbHttpPort': app.WEB_PORT,
@@ -85,8 +84,7 @@ class PageTemplate(MakoTemplate):
             'sbHandleReverseProxy': app.HANDLE_REVERSE_PROXY,
             'sbDefaultPage': app.DEFAULT_PAGE,
             'loggedIn': rh.get_current_user(),
-            'sbStartTime': rh.startTime,
-            'sbPID': str(app.PID),
+            'sbPID': text_type(app.PID),
             'title': 'FixME',
             'header': 'FixME',
             'controller': 'FixME',
@@ -114,7 +112,6 @@ class PageTemplate(MakoTemplate):
             if key not in kwargs:
                 kwargs[key] = self.arguments[key]
 
-        kwargs['makoStartTime'] = time.time()
         try:
             return self.template.render_unicode(*args, **kwargs)
         except Exception:
@@ -130,15 +127,8 @@ class PageTemplate(MakoTemplate):
 class BaseHandler(RequestHandler):
     """Base Handler for the server."""
 
-    startTime = 0.
-
-    def __init__(self, *args, **kwargs):
-        self.startTime = time.time()
-
-        super(BaseHandler, self).__init__(*args, **kwargs)
-
     def write_error(self, status_code, **kwargs):
-        """Base error Handler for 404's."""
+        """Error handler for 404's."""
         # handle 404 http errors
         if status_code == 404:
             url = self.request.uri

@@ -1,0 +1,184 @@
+{
+    "result": [{
+        "result": "success",
+        "description": "",
+        "release": "Black.Mirror.S04E06.INTERNAL.1080p.WEB.x264-STRiFE-Obfuscated",
+        "subtitles": [{
+            "score": 10,
+            "hearing_impaired": true,
+            "id": "1955788530",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt",
+            "sub_score": 359,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 10,
+            "hearing_impaired": true,
+            "id": "1955788595",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "resolution"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt",
+            "sub_score": 359,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 9,
+            "hearing_impaired": false,
+            "id": "1955788587",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "resolution"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt",
+            "sub_score": 355,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 9,
+            "hearing_impaired": false,
+            "id": "qxxF",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "resolution"],
+            "lang": "eng",
+            "filename": "['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']",
+            "sub_score": 355,
+            "min_score": 330,
+            "provider": "podnapisi"
+        }, {
+            "score": 9,
+            "hearing_impaired": true,
+            "id": "1955788595",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "resolution"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt",
+            "sub_score": 354,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 9,
+            "hearing_impaired": true,
+            "id": "xRtF",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "resolution"],
+            "lang": "eng",
+            "filename": "['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']",
+            "sub_score": 354,
+            "min_score": 330,
+            "provider": "podnapisi"
+        }, {
+            "score": 7,
+            "hearing_impaired": false,
+            "id": "1955790687",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt",
+            "sub_score": 342,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 7,
+            "hearing_impaired": true,
+            "id": "1955790685",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt",
+            "sub_score": 341,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 7,
+            "hearing_impaired": false,
+            "id": "1955788533",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution"],
+            "lang": "dut",
+            "filename": "Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt",
+            "sub_score": 340,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 7,
+            "hearing_impaired": true,
+            "id": "1955788530",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt",
+            "sub_score": 339,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 6,
+            "hearing_impaired": false,
+            "id": "1956170109",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt",
+            "sub_score": 333,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 6,
+            "hearing_impaired": true,
+            "id": "1956170116",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source"],
+            "lang": "eng",
+            "filename": "Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt",
+            "sub_score": 332,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 6,
+            "hearing_impaired": false,
+            "id": "1955788563",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source", "video_codec"],
+            "lang": "eng",
+            "filename": "Black Mirror S04E06.srt",
+            "sub_score": 331,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 6,
+            "hearing_impaired": false,
+            "id": "1955803243",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source", "video_codec"],
+            "lang": "eng",
+            "filename": "Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt",
+            "sub_score": 331,
+            "min_score": 330,
+            "provider": "opensubtitles"
+        }, {
+            "score": 6,
+            "hearing_impaired": false,
+            "id": "xhtF",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source", "video_codec"],
+            "lang": "dut",
+            "filename": "xhtF",
+            "sub_score": 331,
+            "min_score": 330,
+            "provider": "podnapisi"
+        }, {
+            "score": 6,
+            "hearing_impaired": false,
+            "id": "333026",
+            "max_score": 359,
+            "missing_guess": ["audio_codec", "release_group", "resolution", "source", "video_codec"],
+            "lang": "eng",
+            "filename": "Black Mirror 4x06 (HDTV)",
+            "sub_score": 331,
+            "min_score": 330,
+            "provider": "tvsubtitles"
+        }]
+    }]
+}

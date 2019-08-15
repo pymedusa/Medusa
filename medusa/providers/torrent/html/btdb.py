@@ -91,12 +91,11 @@ class BTDBProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            if mode != 'RSS':
-                table_body = html.find('div', class_='search-ret')
-                torrent_rows = table_body.find_all('li', class_='search-ret-item')
-            else:
-                table_body = html.find('div', class_='recent')
-                torrent_rows = table_body.find_all('li', class_='recent-item')
+            cls_name = 'search-ret' if mode != 'RSS' else 'recent'
+            table_body = html.find('div', class_=cls_name)
+            torrent_rows = table_body.find_all(
+                'li', class_='{0}-item'.format(cls_name)
+            ) if table_body else []
 
             # Continue only if at least one release is found
             if not table_body:

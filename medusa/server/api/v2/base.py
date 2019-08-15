@@ -9,7 +9,6 @@ import json
 import logging
 import sys
 import traceback
-from builtins import object
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
@@ -23,8 +22,9 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import ensure_text, iteritems, string_types, text_type, viewitems
+from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
 
+from tornado.concurrent import Future as TornadoFuture
 from tornado.gen import coroutine
 from tornado.httputil import url_concat
 from tornado.ioloop import IOLoop
@@ -60,8 +60,28 @@ def make_async(instance, method):
             return
 
         # Authentication check passed, run the method in a thread
-        prepared = partial(method, *args, **kwargs)
-        content = yield IOLoop.current().run_in_executor(executor, prepared)
+        if PY2:
+            # On Python 2, the original exception stack trace is not passed from the executor.
+            # This is a workaround based on https://stackoverflow.com/a/27413025/7597273
+            tornado_future = TornadoFuture()
+
+            def wrapper():
+                try:
+                    result = method(*args, **kwargs)
+                except:  # noqa: E722 [do not use bare 'except']
+                    tornado_future.set_exc_info(sys.exc_info())
+                else:
+                    tornado_future.set_result(result)
+
+            # `executor.submit()` returns a `concurrent.futures.Future`; wait for it to finish, but ignore the result
+            yield executor.submit(wrapper)
+            # When this future is yielded, any stored exceptions are raised (with the correct stack trace).
+            content = yield tornado_future
+        else:
+            # On Python 3+, exceptions contain their original stack trace.
+            prepared = partial(method, *args, **kwargs)
+            content = yield IOLoop.current().run_in_executor(executor, prepared)
+
         self.finish(content)
 
     # This creates a bound method `instance.async_call`,
@@ -139,7 +159,7 @@ class BaseRequestHandler(RequestHandler):
             error = exc_info[1].log_message or exc_info[1].reason
             response = self.api_response(status=status_code, error=error)
         elif app.DEVELOPER and exc_info:
-            self.set_header('content-type', 'text/plain')
+            self.set_header('content-type', 'text/plain; charset=UTF-8')
             self.set_status(500)
             for line in traceback.format_exception(*exc_info):
                 self.write(line)
@@ -259,8 +279,8 @@ class BaseRequestHandler(RequestHandler):
             self.set_header('Location', '{0}{1}'.format(location, identifier))
         return self.api_response(201, data=data)
 
-    def _accepted(self):
-        return self.api_response(202)
+    def _accepted(self, data=None):
+        return self.api_response(202, data=data)
 
     def _no_content(self):
         return self.api_response(204)

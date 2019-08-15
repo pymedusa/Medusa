@@ -17,6 +17,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 from medusa.updater.update_manager import UpdateManager
 
+from requests.exceptions import RequestException
+
 from six import text_type
 
 
@@ -259,6 +261,6 @@ class SourceUpdateManager(UpdateManager):
         try:
             gh = get_github_repo(app.GIT_ORG, app.GIT_REPO)
             return [x.name for x in gh.get_branches() if x]
-        except GithubException as error:
+        except (GithubException, RequestException) as error:
             log.warning(u"Unable to contact github, can't check for update: {0!r}", error)
             return []

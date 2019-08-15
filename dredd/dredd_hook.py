@@ -59,9 +59,13 @@ def print(*args, **kwargs):
 
 
 @hooks.before_all
-def load_api_description(transactions):
+def order_and_load_api_description(transactions):
     """Load api description."""
     global api_description
+
+    # Set DELETE transactions last, keep the rest unchanged
+    transactions.sort(key=lambda x: (x['request']['method'] == 'DELETE', True))
+
     with io.open(transactions[0]['origin']['filename'], 'rb') as stream:
         api_description = yaml.safe_load(stream)
 

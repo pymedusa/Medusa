@@ -19,6 +19,11 @@ from collections import deque
 import sys
 
 try:
+    from typing import Dict, List, Tuple, Deque, Union, TextIO, BinaryIO, Any
+except ImportError:
+    Dict = List = Tuple = Deque = Union = TextIO = BinaryIO = Any = None
+
+try:
     from collections import OrderedDict
 except ImportError:
     OrderedDict = None
@@ -41,6 +46,7 @@ __all__ = (
 
 
 def decode_int(x, f):
+    # type: (bytes, int) -> Tuple[int, int]
     f += 1
     newf = x.index(b'e', f)
     n = int(x[f:newf])
@@ -55,6 +61,7 @@ def decode_int(x, f):
 
 
 def decode_string(x, f, try_decode_utf8=True, force_decode_utf8=False):
+    # type: (bytes, int, bool, bool) -> Tuple[bytes, int]
     """Decode torrent bencoded 'string' in x starting at f.
 
     An attempt is made to convert the string to a python string from utf-8.
@@ -88,6 +95,7 @@ def decode_string(x, f, try_decode_utf8=True, force_decode_utf8=False):
 
 
 def decode_list(x, f):
+    # type: (bytes, int) -> Tuple[List, int]
     r, f = [], f + 1
 
     while x[f:f + 1] != b'e':
@@ -98,6 +106,7 @@ def decode_list(x, f):
 
 
 def decode_dict_py26(x, f):
+    # type: (bytes, int) -> Tuple[Dict[str, Any], int]
     r, f = {}, f + 1
 
     while x[f] != 'e':
@@ -108,6 +117,7 @@ def decode_dict_py26(x, f):
 
 
 def decode_dict(x, f, force_sort=True):
+    # type: (bytes, int, bool) -> Tuple[OrderedDict[str, Any], int]
     """Decode bencoded data to an OrderedDict.
 
     The BitTorrent standard states that:
@@ -121,6 +131,7 @@ def decode_dict(x, f, force_sort=True):
     represented in x, as many other encoders and decoders do not force this
     property.
     """
+
     r, f = OrderedDict(), f + 1
 
     while x[f:f + 1] != b'e':
@@ -155,11 +166,12 @@ else:
 
 
 def bdecode(value):
+    # type: (bytes) -> Union[Tuple, List, OrderedDict, bool, int, str, bytes]
     """
-    Decode bencode formatted string ``value``.
+    Decode bencode formatted byte string ``value``.
 
     :param value: Bencode formatted string
-    :type value: str
+    :type value: bytes
 
     :return: Decoded value
     :rtype: object
@@ -183,14 +195,17 @@ class Bencached(object):
 
 
 def encode_bencached(x, r):
+    # type: (Bencached, Deque[bytes]) -> None
     r.append(x.bencoded)
 
 
 def encode_int(x, r):
+    # type: (int, Deque[bytes]) -> None
     r.extend((b'i', str(x).encode('utf-8'), b'e'))
 
 
 def encode_bool(x, r):
+    # type: (bool, Deque[bytes]) -> None
     if x:
         encode_int(1, r)
     else:
@@ -198,19 +213,23 @@ def encode_bool(x, r):
 
 
 def encode_bytes(x, r):
+    # type: (bytes, Deque[bytes]) -> None
     r.extend((str(len(x)).encode('utf-8'), b':', x))
 
 
 def encode_string(x, r):
+    # type: (str, Deque[bytes]) -> None
     try:
         s = x.encode('utf-8')
     except UnicodeDecodeError:
-        return encode_bytes(x, r)
+        encode_bytes(x, r)
+        return
 
     r.extend((str(len(s)).encode('utf-8'), b':', s))
 
 
 def encode_list(x, r):
+    # type: (List, Deque[bytes]) -> None
     r.append(b'l')
 
     for i in x:
@@ -220,6 +239,7 @@ def encode_list(x, r):
 
 
 def encode_dict(x, r):
+    # type: (Dict, Deque[bytes]) -> None
     r.append(b'd')
     ilist = list(x.items())
     ilist.sort()
@@ -268,6 +288,7 @@ else:
 
 
 def bencode(value):
+    # type: (Union[Tuple, List, OrderedDict, Dict, bool, int, str, bytes]) -> bytes
     """
     Encode ``value`` into the bencode format.
 
@@ -292,6 +313,7 @@ encode = bencode
 
 
 def bread(fd):
+    # type: (Union[bytes, str, pathlib.Path, pathlib.PurePath, TextIO, BinaryIO]) -> bytes
     """Return bdecoded data from filename, file, or file-like object.
 
     if fd is a bytes/string or pathlib.Path-like object, it is opened and
@@ -309,6 +331,7 @@ def bread(fd):
 
 
 def bwrite(data, fd):
+    # type: (Union[Tuple, List, OrderedDict, Dict, bool, int, str, bytes], Union[bytes, str, pathlib.Path, pathlib.PurePath, TextIO, BinaryIO]) -> None
     """Write data in bencoded form to filename, file, or file-like object.
 
     if fd is bytes/string or pathlib.Path-like object, it is opened and

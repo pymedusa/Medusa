@@ -5,15 +5,16 @@ import {
     auth,
     clients,
     config,
+    consts,
     defaults,
     metadata,
     notifications,
     notifiers,
-    qualities,
     search,
     shows,
     socket,
-    statuses
+    stats,
+    system
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -31,15 +32,16 @@ const store = new Store({
         auth,
         clients,
         config,
+        consts,
         defaults,
         metadata,
         notifications,
         notifiers,
-        qualities,
         search,
         shows,
         socket,
-        statuses
+        stats,
+        system
     },
     state: {},
     mutations: {},
@@ -63,6 +65,8 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
+        } else if (event === 'showUpdated') {
+            this.store.dispatch('updateShow', data);
         } else {
             window.displayNotification('info', event, data);
         }
