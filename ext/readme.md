@@ -39,7 +39,7 @@ ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4
 ext | `knowit` | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
 ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
 ext | `Mako` | [1.1.0](https://pypi.org/project/Mako/1.1.0/) | **`medusa`** | Module: `mako`
-ext | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | -
+ext | <code><b>markdown2</b>.py</code> | [2.3.8](https://pypi.org/project/markdown2/2.3.8/) | **`medusa`** | -
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -

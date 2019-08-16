@@ -378,7 +378,7 @@ class Quality(object):
         # Try to get the quality from the parent folder
         parent_folder = os.path.basename(os.path.dirname(path))
         if parent_folder:
-            return Quality.quality_from_name(parent_folder)
+            return Quality.quality_from_name(parent_folder, anime)
 
         return Quality.UNKNOWN
 
