@@ -279,8 +279,8 @@ class BaseRequestHandler(RequestHandler):
             self.set_header('Location', '{0}{1}'.format(location, identifier))
         return self.api_response(201, data=data)
 
-    def _accepted(self):
-        return self.api_response(202)
+    def _accepted(self, data=None):
+        return self.api_response(202, data=data)
 
     def _no_content(self):
         return self.api_response(204)
