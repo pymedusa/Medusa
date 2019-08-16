@@ -206,7 +206,7 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
         app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+    app.post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_TORRENT_CHECKER_FREQUENCY(freq):
@@ -437,16 +437,16 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
-        if not app.auto_post_processor_scheduler.enable:
+        if not app.post_processor_scheduler.enable:
             log.info(u'Starting POSTPROCESSOR thread')
-            app.auto_post_processor_scheduler.silent = False
-            app.auto_post_processor_scheduler.enable = True
+            app.post_processor_scheduler.silent = False
+            app.post_processor_scheduler.enable = True
         else:
             log.info(u'Unable to start POSTPROCESSOR thread. Already running')
     else:
         log.info(u'Stopping POSTPROCESSOR thread')
-        app.auto_post_processor_scheduler.enable = False
-        app.auto_post_processor_scheduler.silent = True
+        app.post_processor_scheduler.enable = False
+        app.post_processor_scheduler.silent = True
 
 
 def change_remove_from_client(new_state):
