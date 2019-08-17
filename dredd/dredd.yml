@@ -8,7 +8,6 @@ names: false
 only: []
 output: []
 header: []
-sorted: true
 user: null
 inline-errors: false
 details: false

@@ -95,7 +95,7 @@ class MedusaApp(object):
         self.forced_search_queue_scheduler = None
         self.manual_snatch_scheduler = None
         self.proper_finder_scheduler = None
-        self.auto_post_processor_scheduler = None
+        self.post_processor_scheduler = None
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
         self.torrent_checker_scheduler = None
