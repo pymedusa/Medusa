@@ -1709,8 +1709,8 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
-    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None, manual_search=None):
-        """Search for a single using a episode using a Backlog Search with providers that are backlog enabled."""
+    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None):
+        """Search for a single episode using a Backlog Search using providers that are backlog enabled."""
         # retrieve the episode object and fail if we can't get one
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
         ep_obj = series_obj.get_episode(season, episode)
