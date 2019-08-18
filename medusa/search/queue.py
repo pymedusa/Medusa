@@ -12,7 +12,7 @@ import traceback
 from medusa import app, common, failed_history, generic_queue, history, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, MANUAL_SEARCH, SNATCH_RESULT, SearchType
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
@@ -127,7 +127,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return False
 
     def is_show_in_queue(self, show):
-        """Verify if the show is queued in this queue as a ForcedSearchQueueItem or FailedQueueItem."""
+        """Verify if the show is queued in this queue as a BacklogQueueItem, ManualSearchQueueItem or FailedQueueItem."""
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem, ManualSearchQueueItem)) and cur_item.show.indexerid == show:
                 return True
@@ -139,7 +139,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
         @param series_obj: Series object.
 
-        @return: A list of ForcedSearchQueueItem or FailedQueueItem items
+        @return: A list of BacklogQueueItem, FailedQueueItem or FailedQueueItem items
         """
         ep_obj_list = []
         for cur_item in self.queue:
@@ -318,26 +318,22 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         self.finish()
 
 
-class ForcedSearchQueueItem(generic_queue.QueueItem):
-    """Forced search queue item class."""
+class ManualSearchQueueItem(generic_queue.QueueItem):
+    """Manual search queue item class."""
 
-    def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
+    def __init__(self, show, segment, manual_search_type='episode'):
         """
         Initialize class of a QueueItem used to queue forced and manual searches.
 
         :param show: A show object
         :param segment: A list of episode objects.
-        :param down_cur_quality: Not sure what it's used for. Maybe legacy.
-        :param manual_search: Passed as True (bool) when the search should be performed without snatching a result
         :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
         :return: The run() method searches and snatches the episode(s) if possible or it only searches and saves results to cache tables.
         """
-        generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
+        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
-        # SEARCHQUEUE-MANUAL-12345
-        # SEARCHQUEUE-FORCED-12345
         self.name = '{search_type}-{indexerid}'.format(
-            search_type=('FORCED', 'MANUAL')[bool(manual_search)],
+            search_type='MANUAL',
             indexerid=show.indexerid
         )
 
@@ -347,8 +343,6 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
-        self.down_cur_quality = down_cur_quality
-        self.manual_search = manual_search
         self.manual_search_type = manual_search_type
 
     def run(self):
@@ -359,57 +353,16 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         try:
             log.info(
                 'Beginning {search_type} {season_pack}search for: {ep}', {
-                    'search_type': ('forced', 'manual')[bool(self.manual_search)],
+                    'search_type': 'manual',
                     'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
                     'ep': self.segment[0].pretty_name()
                 }
             )
 
-            search_result = search_providers(self.show, self.segment, True, self.down_cur_quality,
-                                             self.manual_search, self.manual_search_type)
+            search_result = search_providers(self.show, self.segment, True, True,
+                                             True, self.manual_search_type)
 
-            if not self.manual_search and search_result:
-                for result in search_result:
-                    # Just use the first result for now
-                    if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        log.info(
-                            'Downloading {name} with {seeders} seeders and {leechers} leechers '
-                            'and size {size} from {provider}', {
-                                'name': result.name,
-                                'seeders': result.seeders,
-                                'leechers': result.leechers,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    else:
-                        log.info(
-                            'Downloading {name} with size: {size} from {provider}', {
-                                'name': result.name,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-
-                    # Set the search_type for the result.
-                    result.search_type = SearchType.FORCED_SEARCH
-
-                    # Create the queue item
-                    snatch_queue_item = SnatchQueueItem(result.series, result.episodes, result)
-
-                    # Add the queue item to the queue
-                    app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
-
-                    self.success = False
-                    while snatch_queue_item.success is False:
-                        if snatch_queue_item.started and snatch_queue_item.success:
-                            self.success = True
-                        time.sleep(1)
-
-                    # Give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
-
-            elif self.manual_search and search_result:
+            if search_result:
                 self.results = search_result
                 self.success = True
 
@@ -681,8 +634,8 @@ class BacklogQueueItem(generic_queue.QueueItem):
             # Keep a list with the 100 last executed searches
             fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
-            if self.success is None:
-                self.success = False
+        if self.success is None:
+            self.success = False
 
         self.finish()
 
