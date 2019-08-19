@@ -382,15 +382,16 @@ class Home(WebRoot):
         if None is not password and set('*') == set(password):
             password = app.PLEX_CLIENT_PASSWORD
 
+        host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.plex_notifier.test_notify_pht(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Successful test notice sent to Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
             else:
-                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
+                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message('Tested Plex Home Theater(s): ', unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Home Theater(s)', final_result)
 
         return final_result
 
@@ -400,17 +401,18 @@ class Home(WebRoot):
         if password is not None and set('*') == set(password):
             password = app.PLEX_SERVER_PASSWORD
 
+        host = config.clean_hosts(host)
         final_result = ''
 
-        cur_result = notifiers.plex_notifier.test_notify_pms(unquote_plus(host), username, password, plex_server_token)
+        cur_result = notifiers.plex_notifier.test_notify_pms(host, username, password, plex_server_token)
         if cur_result is None:
-            final_result += 'Successful test of Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(host.replace(',', ', ')))
+            final_result += 'Successful test of Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(', '.join(host)))
         elif cur_result is False:
             final_result += 'Test failed, No Plex Media Server host specified<br>\n'
         else:
-            final_result += 'Test failed for Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(host.replace(',', ', ')))
+            final_result += 'Test failed for Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message('Tested Plex Media Server host(s): ', unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Media Server(s)', final_result)
 
         return final_result
 
