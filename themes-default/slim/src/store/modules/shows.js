@@ -50,7 +50,7 @@ const mutations = {
 
         if (!newShow.seasons) {
             newShow.seasons = [];
-    }
+        }
 
         // Recreate an Array with season objects, with each season having an episodes array.
         // This format is used by vue-good-table (displayShow).
