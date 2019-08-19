@@ -3,6 +3,8 @@ import Vue from 'vue';
 import AsyncComputed from 'vue-async-computed';
 import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
+import VueCookies from 'vue-cookies';
+import VModal from 'vue-js-modal'
 
 import {
     AddShowOptions,
@@ -105,6 +107,8 @@ export const registerPlugins = () => {
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
     Vue.use(Snotify);
+    Vue.use(VueCookies);
+    Vue.use(VModal);
 };
 
 /**
