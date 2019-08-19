@@ -96,9 +96,9 @@
                         </span>
 
                         <span v-else-if="props.column.label == 'Scene'">
-                            <input type="text" :placeholder="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode" size="6" maxlength="8"
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field].season}x${props.formattedRow[props.column.field].episode}`" size="6" maxlength="8"
                                    class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
-                                   :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + '_' + props.row.season + '_' + props.row.episode"
+                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}_${props.row.season}_${props.row.episode}`"
                                    title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
                                    :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
                                    style="padding: 0; text-align: center; max-width: 60px;">
@@ -106,8 +106,8 @@
 
                         <span v-else-if="props.column.label == 'Scene Absolute'">
                             <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
-                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.row.absoluteNumber || 0"
-                                   :id="'sceneSeasonXEpisode_' + show.id[show.indexer] + props.row.absoluteNumber"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
+                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
                                    title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
                                    :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
                                    style="padding: 0; text-align: center; max-width: 60px;">
@@ -121,7 +121,7 @@
                         <span v-else-if="props.column.field == 'subtitles'">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="home/searchEpisodeSubtitles?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode='props.row.episode' + '&lang=' + flag">
+                                    <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="`home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}&lang=${flag}">
                                         <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                     </app-link>
                                     <img v-if="flag === 'und'" :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -217,6 +217,7 @@ import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
+import QualityPill from './helpers/quality-pill.vue';
 
 export default {
     name: 'show',
@@ -225,7 +226,8 @@ export default {
         VueGoodTable,
         Backstretch,
         PlotInfo,
-        ShowHeader
+        ShowHeader,
+        QualityPill
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -795,11 +797,11 @@ export default {
             }
 
             if (Object.keys(sceneAbsoluteNumbering).length > 0 && sceneAbsoluteNumbering[episode.absoluteNumber]) {
-                return sceneAbsoluteNumbering[episode.absoluteNumber];
+                return sceneAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
             }
 
             if (Object.keys(xemAbsoluteNumbering).length > 0 && xemAbsoluteNumbering[episode.absoluteNumber]) {
-                return xemAbsoluteNumbering[episode.absoluteNumber];
+                return xemAbsoluteNumbering[episode.absoluteNumber].sceneAbsolute;
             }
 
             return episode.scene.absoluteNumber;
@@ -840,7 +842,7 @@ export default {
                 });
             }
 
-            api.post(`search/${searchType}`, data) // eslint-disable-line no-undef
+            api.put(`search/${searchType}`, data) // eslint-disable-line no-undef
                 .then(_ => {
                     if (episodes.length === 1) {
                         console.info(`started search for show: ${show.id.slug} episode: ${episodes[0].slug}`);
@@ -925,11 +927,11 @@ export default {
             this.$set(this.columns[index], 'hidden', !this.columns[index].hidden);
         },
         getCookie(key) {
-            const cookie = this.$cookie.get(key);
+            const cookie = this.$cookies.get(key);
             return JSON.parse(cookie);
         },
         setCookie(key, value) {
-            return this.$cookie.set(key, JSON.stringify(value));
+            return this.$cookies.set(key, JSON.stringify(value));
         },
         updateEpisodeWatched(episode, watched) {
             const { id, indexer, getEpisodes, show } = this;
