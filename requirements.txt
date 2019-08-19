@@ -20,7 +20,7 @@ gntp==1.0.3
 https://codeload.github.com/guessit-io/guessit/tar.gz/74dbb0c7420cee18969926aba9cc06b8959daa0e#egg=guessit
 html5lib==1.0.1
 imdbpie==5.6.4
-Js2Py==0.63
+Js2Py==0.66
 jsonrpclib-pelix==0.4.0
 https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e#egg=knowit
 Mako==1.1.0
