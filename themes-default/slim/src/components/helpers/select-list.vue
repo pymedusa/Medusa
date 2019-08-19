@@ -1,35 +1,35 @@
 <template>
     <div class="select-list max-width" v-bind="{disabled}">
-        <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values"></i>
+        <i class="switch-input glyphicon glyphicon-refresh" @click="switchFields()" title="Switch between a list and comma separated values" />
 
         <ul v-if="!csvMode">
             <li v-for="item of editItems" :key="item.id">
                 <div class="input-group">
-                    <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)"/>
+                    <input class="form-control input-sm" type="text" v-model="item.value" @input="removeEmpty(item)">
                     <div class="input-group-btn" @click="deleteItem(item)">
                         <div style="font-size: 14px" class="btn btn-default input-sm">
-                            <i class="glyphicon glyphicon-remove" title="Remove"></i>
+                            <i class="glyphicon glyphicon-remove" title="Remove" />
                         </div>
                     </div>
                 </div>
             </li>
             <div class="new-item">
                 <div class="input-group">
-                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line"/>
+                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line">
                     <div class="input-group-btn" @click="addNewItem()">
                         <div style="font-size: 14px" class="btn btn-default input-sm">
-                            <i class="glyphicon glyphicon-plus" title="Add"></i>
+                            <i class="glyphicon glyphicon-plus" title="Add" />
                         </div>
                     </div>
                 </div>
             </div>
             <div v-if="newItem.length > 0" class="new-item-help">
-                Click <i class="glyphicon glyphicon-plus"></i> to finish adding the value.
+                Click <i class="glyphicon glyphicon-plus" /> to finish adding the value.
             </div>
         </ul>
 
         <div v-else class="csv">
-            <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated"/>
+            <input class="form-control input-sm" type="text" v-model="csv" placeholder="add values comma separated">
         </div>
     </div>
 </template>
@@ -65,6 +65,10 @@ export default {
             csv: '',
             csvMode: this.csvEnabled
         };
+    },
+    mounted() {
+        this.editItems = this.sanitize(this.listItems);
+        this.csv = this.editItems.map(item => item.value).join(', ');
     },
     created() {
         /**

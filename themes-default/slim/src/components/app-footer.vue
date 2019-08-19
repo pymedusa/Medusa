@@ -12,7 +12,7 @@
             | Backlog Search: <span class="footerhighlight">{{ schedulerNextRun('backlog') }}</span>
             <div>
                 <template v-if="system.memoryUsage">
-                Memory used: <span class="footerhighlight">{{ system.memoryUsage }}</span> |
+                    Memory used: <span class="footerhighlight">{{ system.memoryUsage }}</span> |
                 </template>
                 <!-- Load time: <span class="footerhighlight">{{ loadTime }}s</span> / Mako: <span class="footerhighlight">{{ makoTime }}s</span> | -->
                 Branch: <span class="footerhighlight">{{ config.branch || 'Unknown' }}</span> |

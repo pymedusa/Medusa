@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import ws
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -49,9 +50,9 @@ class SeriesHandler(BaseRequestHandler):
 
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
-            fetch = self._parse_boolean(self.get_argument('fetch', default=False))
+            episodes = self._parse_boolean(self.get_argument('episodes', default=False))
             data = [
-                s.to_json(detailed=detailed, fetch=fetch)
+                s.to_json(detailed=detailed, episodes=episodes)
                 for s in Series.find_series(predicate=filter_series)
             ]
             return self._paginate(data, sort='title')
@@ -64,9 +65,9 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        detailed = self._parse_boolean(self.get_argument('detailed', default=True))
-        fetch = self._parse_boolean(self.get_argument('fetch', default=False))
-        data = series.to_json(detailed=detailed, fetch=fetch)
+        detailed = self._parse_boolean(self.get_argument('detailed', default=False))
+        episodes = self._parse_boolean(self.get_argument('episodes', default=False))
+        data = series.to_json(detailed=detailed, episodes=episodes)
         if path_param:
             if path_param not in data:
                 return self._bad_request("Invalid path parameter '{0}'".format(path_param))
@@ -158,6 +159,10 @@ class SeriesHandler(BaseRequestHandler):
 
         if ignored:
             log.warning('Series patch ignored {items!r}', {'items': ignored})
+
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('showUpdated', series.to_json(detailed=False))
+        msg.push()
 
         return self._ok(data=accepted)
 

@@ -30,7 +30,8 @@ from medusa.common import (
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED,
     NAMING_SEPARATED_REPEAT,
     Quality,
     SKIPPED,
@@ -1068,6 +1069,7 @@ class Episode(TV):
         data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
+        data['slug'] = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
         data['season'] = self.season
         data['episode'] = self.episode
 
@@ -1077,11 +1079,10 @@ class Episode(TV):
         data['airDate'] = self.air_date
         data['title'] = self.name
         data['description'] = self.description
-        data['content'] = []
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
-        data['watched'] = self.watched
+        data['watched'] = bool(self.watched)
         data['quality'] = self.quality
         data['release'] = {}
         data['release']['name'] = self.release_name
@@ -1100,10 +1101,9 @@ class Episode(TV):
         if self.file_size:
             data['file']['size'] = self.file_size
 
-        if self.hasnfo:
-            data['content'].append('NFO')
-        if self.hastbn:
-            data['content'].append('thumbnail')
+        data['content'] = {}
+        data['content']['hasNfo'] = self.hasnfo
+        data['content']['hasTbn'] = self.hastbn
 
         if detailed:
             data['statistics'] = {}
@@ -1668,7 +1668,7 @@ class Episode(TV):
                     sep = ' '
 
                 # force 2-3-4 format if they chose to extend
-                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED):
+                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED):
                     ep_sep = '-'
 
                 regex_used = season_ep_regex
@@ -1693,7 +1693,7 @@ class Episode(TV):
             for other_ep in self.related_episodes:
 
                 # for limited extend we only append the last ep
-                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED) and \
+                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED) and \
                         other_ep != self.related_episodes[-1]:
                     continue
 
@@ -1707,8 +1707,11 @@ class Episode(TV):
                 # add "E04"
                 ep_string += ep_sep
 
-                if multi == NAMING_LIMITED_EXTEND_E_PREFIXED:
+                if multi == NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED:
                     ep_string += 'E'
+
+                elif multi == NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED:
+                    ep_string += 'e'
 
                 ep_string += other_ep.__format_string(ep_format.upper(), other_ep.__replace_map())
 

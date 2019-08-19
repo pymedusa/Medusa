@@ -1,3 +1,4 @@
+/* eslint comma-dangle: [error, always-multiline] */
 const presets = [
     ['@babel/preset-env', {
         targets: {
@@ -9,17 +10,17 @@ const presets = [
                 'Firefox ESR',
                 'last 1 ChromeAndroid version',
                 'last 1 FirefoxAndroid version',
-                'last 1 iOS version'
-            ]
-        }
-    }]
+                'last 1 iOS version',
+            ],
+        },
+    }],
 ];
 
 const plugins = [
-    '@babel/plugin-syntax-dynamic-import'
+    '@babel/plugin-transform-runtime',
 ];
 
 module.exports = {
     presets,
-    plugins
+    plugins,
 };

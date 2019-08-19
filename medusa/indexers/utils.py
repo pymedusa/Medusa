@@ -8,6 +8,8 @@ from medusa.indexers.indexer_config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, in
 
 from six import viewitems
 
+SHOW_SLUG_PATTERN = re.compile(r'([a-z]+)([0-9]+)')
+
 # For example: {1: 'tvdb_id', 3: 'tvmaze_id', 4: 'tmdb_id'}
 mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
 mappings.update(EXTERNAL_MAPPINGS)
@@ -53,7 +55,7 @@ def slug_to_indexer_id(slug):
     """
     if not slug:
         return None, None
-    result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
+    result = SHOW_SLUG_PATTERN.match(slug)
     if result:
         return indexer_name_to_id(result.group(1)), int(result.group(2))
 

@@ -1642,12 +1642,6 @@ td.col-group {
     text-align: center;
 }
 
-.showLegend {
-    padding-right: 6px;
-    padding-bottom: 1px;
-    width: 150px;
-}
-
 .input-scene {
     height: 20px;
     line-height: 1.5;
@@ -1696,10 +1690,6 @@ div.season-scene-exception {
 
 button.selectColumns {
     margin-right: 2px;
-}
-
-.location-invalid {
-    color: rgb(255, 0, 0);
 }
 
 /* =======================================================================
@@ -2538,6 +2528,12 @@ option.flag {
     background-repeat: no-repeat;
     background-position: 10px 50%;
 }
+
+/*
+ * This is currently used by addShow_addExistingShows.mako and addShows_recommended.mako.
+ * Which in turn calls inc_addShowOptions.mako
+ * After these routes have been vueified, these templates can be removed as the below css.
+*/
 
 /* Anime section for editShow */
 .bwlWrapper {

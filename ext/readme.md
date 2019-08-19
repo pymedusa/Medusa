@@ -12,7 +12,7 @@ ext | `bencode.py` | [2.1.0](https://pypi.org/project/bencode.py/2.1.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.6.16](https://pypi.org/project/certifi/2019.6.16/) | **`medusa`**, `requests`, `traktor` | -
-ext | `cfscrape` | [2.0.5](https://pypi.org/project/cfscrape/2.0.5/) | **`medusa`** | -
+ext | `cfscrape` | [2.0.8](https://pypi.org/project/cfscrape/2.0.8/) | **`medusa`** | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
@@ -38,8 +38,8 @@ ext | `Js2Py` | [0.66](https://pypi.org/project/Js2Py/0.66/) | **`medusa`** | Mo
 ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
 ext | `knowit` | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
 ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
-ext | `Mako` | [1.0.12](https://pypi.org/project/Mako/1.0.12/) | **`medusa`** | Module: `mako`
-ext | <code><b>markdown2</b>.py</code> | [2.3.7](https://pypi.org/project/markdown2/2.3.7/) | **`medusa`** | -
+ext | `Mako` | [1.1.0](https://pypi.org/project/Mako/1.1.0/) | **`medusa`** | Module: `mako`
+ext | <code><b>markdown2</b>.py</code> | [2.3.8](https://pypi.org/project/markdown2/2.3.8/) | **`medusa`** | -
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
 ext | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
@@ -54,7 +54,7 @@ ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | *
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
 **ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
-ext | `rebulk` | [1.0.0](https://pypi.org/project/rebulk/1.0.0/) | **`medusa`**, `guessit` | -
+ext | `rebulk` | [1.0.1](https://pypi.org/project/rebulk/1.0.1/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.22.0](https://pypi.org/project/requests/2.22.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cfscrape`, `PyGithub`, `python-twitter`, `pytvmaze`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`

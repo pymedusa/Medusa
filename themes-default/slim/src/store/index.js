@@ -65,6 +65,8 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
+        } else if (event === 'showUpdated') {
+            this.store.dispatch('updateShow', data);
         } else {
             window.displayNotification('info', event, data);
         }

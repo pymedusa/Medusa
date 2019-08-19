@@ -114,9 +114,8 @@ export default {
             }
             const indexerName = selectedShow.indexer;
             const showId = selectedShow.id[indexerName];
-            const base = document.querySelectorAll('base')[0].getAttribute('href');
-            const path = 'home/displayShow?indexername=' + indexerName + '&seriesid=' + showId;
-            window.location.href = base + path;
+            const base = document.querySelector('base').getAttribute('href');
+            window.location.href = `${base}home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
         }
     }
 };
