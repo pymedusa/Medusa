@@ -12,7 +12,7 @@ ext | `bencode.py` | [2.1.0](https://pypi.org/project/bencode.py/2.1.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.6.16](https://pypi.org/project/certifi/2019.6.16/) | **`medusa`**, `requests`, `traktor` | -
-ext | `cfscrape` | [2.0.5](https://pypi.org/project/cfscrape/2.0.5/) | **`medusa`** | -
+ext | `cfscrape` | [2.0.8](https://pypi.org/project/cfscrape/2.0.8/) | **`medusa`** | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
