@@ -246,14 +246,14 @@
                         <div class="pull-lg-right top-5">
 
                             <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change status to:</option>
+                                <option :value="'Change status to:'">Change status to:</option>
                                 <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
                                     {{ status.name }}
                                 </option>
                             </select>
 
                             <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change quality to:</option>
+                                <option :value="'Change quality to:'">Change quality to:</option>
                                 <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
                                     {{ quality.name }}
                                 </option>
@@ -388,8 +388,7 @@ export default {
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
             search: state => state.search,
-            configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config
+            configLoaded: state => state.config.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -589,7 +588,7 @@ export default {
             // A hack for now, to bail if the page hasn't fully been rendered yet.
             if (!summary) {
                 return;
-        }
+            }
 
             const height = summary.height() + 10;
             const top = summary.offset().top + 5;
