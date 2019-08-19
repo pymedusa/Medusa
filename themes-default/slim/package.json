@@ -82,7 +82,7 @@
     "filemanager-webpack-plugin": "2.0.5",
     "glob": "7.1.4",
     "gulp": "4.0.2",
-    "gulp-changed": "4.0.0",
+    "gulp-changed": "4.0.1",
     "gulp-imagemin": "6.1.0",
     "imagemin-pngquant": "8.0.0",
     "jest": "24.8.0",
