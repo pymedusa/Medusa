@@ -28,7 +28,6 @@ import {
     RootDirs,
     ScrollButtons,
     SelectList,
-    Show,
     ShowSelector,
     SnatchSelection,
     StateSwitch,
@@ -86,7 +85,6 @@ export const registerGlobalComponents = () => {
     components = components.concat([
         Home,
         ManualPostProcess,
-        Show,
         SnatchSelection,
         Status
     ]);
