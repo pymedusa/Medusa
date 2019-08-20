@@ -334,10 +334,10 @@ dredd-transactions@9.0.6:
     fury-adapter-swagger "0.27.2"
     uri-template "1.0.1"
 
-dredd@11.2.19:
-  version "11.2.19"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-11.2.19.tgz#4816a8ddfe5ffe934328db2d72111f277ac4b469"
-  integrity sha512-0YXdQVg9LAEga/QptL4xBOksz/u8awm3H7ZUdTnn05+VGb6uM+R7pwxp/mrT/O+vARS3v9uD+W443AayiTez6Q==
+dredd@12.0.1:
+  version "12.0.1"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.0.1.tgz#590e5c624a0d5334f7cf11ca7cc3fd51aeac7ea5"
+  integrity sha512-CKOAgmU0QmqDOQo5xvQ8bVMk5sL7X3+srr3S4Iwgeg2abmnCHQ0nQLeDq+UQcZ0wsCUXiDzhMmsjCLuc8qjEkA==
   dependencies:
     async "3.1.0"
     caseless "0.12.0"
@@ -352,7 +352,7 @@ dredd@11.2.19:
     inquirer "6.5.1"
     js-yaml "3.13.1"
     make-dir "3.0.0"
-    markdown-it "9.0.1"
+    markdown-it "9.1.0"
     optimist "0.6.1"
     proxyquire "2.1.3"
     ramda "0.26.1"
@@ -833,10 +833,10 @@ make-dir@3.0.0:
   dependencies:
     semver "^6.0.0"
 
-markdown-it@9.0.1:
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-9.0.1.tgz#aafe363c43718720b6575fd10625cde6e4ff2d47"
-  integrity sha512-XC9dMBHg28Xi7y5dPuLjM61upIGPJG8AiHNHYqIaXER2KNnn7eKnM5/sF0ImNnyoV224Ogn9b1Pck8VH4k0bxw==
+markdown-it@9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-9.1.0.tgz#df9601c168568704d554b1fff9af0c5b561168d9"
+  integrity sha512-xHKG4C8iPriyfu/jc2hsCC045fKrMQ0VexX2F1FGYiRxDxqMB2aAhF8WauJ3fltn2kb90moGBkiiEdooGIg55w==
   dependencies:
     argparse "^1.0.7"
     entities "~1.1.1"
