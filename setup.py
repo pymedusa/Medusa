@@ -48,17 +48,8 @@ with open(os.path.join(here, 'readme.md'), 'r') as r:
 
 
 def install_requires():
-    pkg_name_pattern = re.compile(r'#egg=(.+)(?:&|$)')
-
     with open(os.path.join(here, 'requirements.txt'), 'r') as r:
-        requirements = r.read().splitlines(keepends=False)
-
-    def make_item(req):
-        if not req.startswith('https://'):
-            return req
-        return pkg_name_pattern.search(req).group(1) + ' @ ' + req
-
-    return [make_item(req) for req in requirements if req]
+        return r.read().splitlines(keepends=False)
 
 
 def packages():
