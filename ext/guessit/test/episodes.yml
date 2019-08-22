@@ -4654,3 +4654,40 @@
   episode_title: The Injury
   container: mkv
   type: episode
+
+? Thumping.Spike.2.E01.DF.WEBRip.720p-DRAMATV.mp4
+: title: Thumping Spike 2
+  episode: 1
+  source: Web
+  other: Rip
+  screen_size: 720p
+  streaming_service: DramaFever
+  release_group: DRAMATV
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? About.Time.E01.1080p.VIKI.WEB-DL-BLUEBERRY.mkv
+: title: About Time
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Viki
+  source: Web 
+  release_group: BLUEBERRY
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Eyes.Of.Dawn.1991.E01.480p.MBCVOD.AAC.x264-NOGPR.mp4
+: title: Eyes Of Dawn
+  year: 1991
+  season: 1991
+  episode: 1
+  screen_size: 480p
+  streaming_service: MBC
+  audio_codec: AAC
+  video_codec: H.264
+  release_group: NOGPR
+  container: mp4
+  mimetype: video/mp4
+  type: episode
