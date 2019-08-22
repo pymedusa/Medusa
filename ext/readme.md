@@ -52,14 +52,14 @@ ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | 
 ext | `python-dateutil` | [2.8.0](https://pypi.org/project/python-dateutil/2.8.0/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
-**ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `guessit`, `knowit` | Module: `yaml`
+**ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
 ext | `rebulk` | [1.0.1](https://pypi.org/project/rebulk/1.0.1/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.22.0](https://pypi.org/project/requests/2.22.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cfscrape`, `PyGithub`, `python-twitter`, `pytvmaze`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 **ext2** | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | -
-ext | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `adba`, `configobj`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `python-dateutil`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
+ext | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `python-dateutil`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
 ext | `soupsieve` | [1.7](https://pypi.org/project/soupsieve/1.7/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | `subliminal` | [6ac2fa2](https://github.com/Diaoul/subliminal/tree/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a) | **`medusa`** | -
