@@ -1,6 +1,6 @@
 ## ext
- Folder  |  Package  |  Version / Commit  | Usage | Notes
-:------: | :-------: | :----------------: | :---- | :----
+Folder | Package | Version / Commit | Usage | Notes
+:----: | :-----: | :--------------: | :---- | :----
 ext | `adba` | pymedusa/[112c04b](https://github.com/pymedusa/adba/tree/112c04b50d318802b4a0c7924f8e26aaf9e60a5b) | **`medusa`** | -
 ext | <code><b>appdirs</b>.py</code> | [1.4.3](https://pypi.org/project/appdirs/1.4.3/) | `simpleanidb`, `subliminal` (cli only) | -
 ext | `attrs` | [18.2.0](https://pypi.org/project/attrs/18.2.0/) | `imdbpie` | Module: `attr`
@@ -30,7 +30,7 @@ ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11
 **ext2** | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | -
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
-ext | `guessit` | [74dbb0c](https://github.com/guessit-io/guessit/tree/74dbb0c7420cee18969926aba9cc06b8959daa0e) | **`medusa`**, `subliminal` | -
+ext | `guessit` | [ca60ce6](https://github.com/guessit-io/guessit/tree/ca60ce6ec2dcba48b68e77d381e64256af4a5380) | **`medusa`**, `subliminal` | -
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
@@ -73,7 +73,7 @@ ext | `validators` | [0.13.0](https://pypi.org/project/validators/0.13.0/) | **`
 ext | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
 
-Notes:
- - `ext` compatible with python2 and python3
- - `ext2` only compatible with python2
- - `ext3` only compatible with python3
+#### Notes:
+- `ext` compatible with Python 2 and Python 3
+- `ext2` only compatible with Python 2
+- `ext3` only compatible with Python 3
