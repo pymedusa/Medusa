@@ -172,22 +172,42 @@
                                         <td>{{show.config.aliases.join(',')}}</td>
                                     </tr>
 
-                                    <tr v-if="show.config.release.requiredWords.length > 0">
+                                    <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Required Words: </td>
-                                        <td><span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span></td>
+                                        <td>
+                                            <span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span>
+                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter" :class="{required: type === 'snatch-selection'}">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                    <span v-else>+ </span>
+                                                    {{search.filters.required.join(',')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
-                                    <tr v-if="show.config.release.ignoredWords.length > 0">
+                                    <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
-                                        <td><span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span></td>
+                                        <td>
+                                            <span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span>
+                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter" :class="{ignored: type === 'snatch-selection'}">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <span v-if="show.config.release.ignoreddWordsExclude"> excluded from: </span>
+                                                    <span v-else>+ </span>
+                                                    {{search.filters.ignored.join(',')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
 
-                                    <tr v-if="preferredWords.length > 0">
+                                    <tr v-if="search.filters.preferred.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
-                                        <td><span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{preferredWords.join(',')}}</span></td>
+                                        <td>
+                                            <span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{search.filters.preferred.join(',')}}</span>
+                                        </td>
                                     </tr>
-                                    <tr v-if="undesiredWords.length > 0">
+                                    <tr v-if="search.filters.undesired.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
-                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td>
+                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{search.filters.undesired.join(',')}}</span></td>
                                     </tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
@@ -407,20 +427,6 @@ export default {
                 result = dedupeGenres(genres.split('|'));
             }
             return result;
-        },
-        preferredWords() {
-            const { preferred } = this.search.filters;
-            if (preferred.length > 0) {
-                return preferred;
-            }
-            return [];
-        },
-        undesiredWords() {
-            const { undesired } = this.search.filters;
-            if (undesired.length > 0) {
-                return undesired;
-            }
-            return [];
         },
         episodeSummary() {
             const { show } = this;
@@ -727,5 +733,9 @@ div#col-show-summary {
     #col-show-summary img.show-image {
         max-width: 280px;
     }
+}
+
+span.global-filter {
+    font-style: italic
 }
 </style>

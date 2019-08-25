@@ -520,7 +520,7 @@ window.app = new Vue({
                     <!-- search filters //-->
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
-                            <h3>Search Filters</h3>
+                            <a name="searchfilters"></a><h3>Search Filters</h3>
                             <p>Options to filter search results</p>
                         </div>
                         <div class="col-xs-12 col-md-10">
