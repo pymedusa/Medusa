@@ -746,6 +746,6 @@ div#col-show-summary {
 }
 
 span.global-filter {
-    font-style: italic
+    font-style: italic;
 }
 </style>
