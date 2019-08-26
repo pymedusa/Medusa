@@ -175,12 +175,14 @@
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Required Words: </td>
                                         <td>
-                                            <span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span>
+                                            <span v-if="show.config.release.requiredWords.length" class="break-word" :class="{required: type === 'snatch-selection'}">
+                                                {{show.config.release.requiredWords.join(', ')}}
+                                            </span>
                                             <span v-if="search.filters.required.length > 0" class="break-word global-filter" :class="{required: type === 'snatch-selection'}">
                                                 <app-link href="config/search/#searchfilters">
                                                     <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
                                                     <span v-else>+ </span>
-                                                    {{search.filters.required.join(',')}}
+                                                    {{search.filters.required.join(', ')}}
                                                 </app-link>
                                             </span>
                                         </td>
@@ -188,12 +190,14 @@
                                     <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
                                         <td>
-                                            <span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span>
+                                            <span v-if="show.config.release.ignoredWords.length" class="break-word" :class="{ignored: type === 'snatch-selection'}">
+                                                {{show.config.release.ignoredWords.join(', ')}}
+                                            </span>
                                             <span v-if="search.filters.ignored.length > 0" class="break-word global-filter" :class="{ignored: type === 'snatch-selection'}">
                                                 <app-link href="config/search/#searchfilters">
-                                                    <span v-if="show.config.release.ignoreddWordsExclude"> excluded from: </span>
+                                                    <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
                                                     <span v-else>+ </span>
-                                                    {{search.filters.ignored.join(',')}}
+                                                    {{search.filters.ignored.join(', ')}}
                                                 </app-link>
                                             </span>
                                         </td>
