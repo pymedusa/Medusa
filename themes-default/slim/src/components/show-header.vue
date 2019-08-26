@@ -169,7 +169,7 @@
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.join(',')}}</td>
+                                        <td>{{show.config.aliases.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
@@ -181,7 +181,7 @@
                                             <span v-if="search.filters.required.length > 0" class="break-word global-filter" :class="{required: type === 'snatch-selection'}">
                                                 <app-link href="config/search/#searchfilters">
                                                     <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
-                                                    <span v-else>+ </span>
+                                                    <span v-else-if="show.config.release.requiredWords.length">+ </span>
                                                     {{search.filters.required.join(', ')}}
                                                 </app-link>
                                             </span>
@@ -196,7 +196,7 @@
                                             <span v-if="search.filters.ignored.length > 0" class="break-word global-filter" :class="{ignored: type === 'snatch-selection'}">
                                                 <app-link href="config/search/#searchfilters">
                                                     <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
-                                                    <span v-else>+ </span>
+                                                    <span v-else-if="show.config.release.ignoredWords.length">+ </span>
                                                     {{search.filters.ignored.join(', ')}}
                                                 </app-link>
                                             </span>
@@ -206,22 +206,28 @@
                                     <tr v-if="search.filters.preferred.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
                                         <td>
-                                            <span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{search.filters.preferred.join(',')}}</span>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{search.filters.preferred.join(', ')}}</span>
+                                            </app-link>
                                         </td>
                                     </tr>
                                     <tr v-if="search.filters.undesired.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
-                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{search.filters.undesired.join(',')}}</span></td>
+                                        <td>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{search.filters.undesired.join(', ')}}</span>
+                                            </app-link>
+                                        </td>
                                     </tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
-                                        <td>{{show.config.release.whitelist.join(',')}}</td>
+                                        <td>{{show.config.release.whitelist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
                                         <td class="showLegend">Unwanted Groups:</td>
-                                        <td>{{show.config.release.blacklist.join(',')}}</td>
+                                        <td>{{show.config.release.blacklist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.airdateOffset !== 0">
