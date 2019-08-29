@@ -173,14 +173,16 @@
                                     </tr>
 
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Required Words: </td>
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
+                                        </td>
                                         <td>
-                                            <span v-if="show.config.release.requiredWords.length" class="break-word" :class="{required: type === 'snatch-selection'}">
+                                            <span v-if="show.config.release.requiredWords.length" class="break-word">
                                                 {{show.config.release.requiredWords.join(', ')}}
                                             </span>
-                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter" :class="{required: type === 'snatch-selection'}">
+                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter">
                                                 <app-link href="config/search/#searchfilters">
-                                                    <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                    <span v-if="show.config.release.requiredWordsExclude && show.config.release.requiredWords.length"> excluded from: </span>
                                                     <span v-else-if="show.config.release.requiredWords.length">+ </span>
                                                     {{search.filters.required.join(', ')}}
                                                 </app-link>
@@ -188,14 +190,16 @@
                                         </td>
                                     </tr>
                                     <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{ignored: type === 'snatch-selection'}">Ignored Words: </span>
+                                        </td>
                                         <td>
-                                            <span v-if="show.config.release.ignoredWords.length" class="break-word" :class="{ignored: type === 'snatch-selection'}">
+                                            <span v-if="show.config.release.ignoredWords.length" class="break-word">
                                                 {{show.config.release.ignoredWords.join(', ')}}
                                             </span>
-                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter" :class="{ignored: type === 'snatch-selection'}">
+                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
                                                 <app-link href="config/search/#searchfilters">
-                                                    <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
+                                                    <span v-if="show.config.release.ignoredWordsExclude && show.config.release.ignoredWords.length"> excluded from: </span>
                                                     <span v-else-if="show.config.release.ignoredWords.length">+ </span>
                                                     {{search.filters.ignored.join(', ')}}
                                                 </app-link>
@@ -204,18 +208,22 @@
                                     </tr>
 
                                     <tr v-if="search.filters.preferred.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{preferred: type === 'snatch-selection'}">Preferred Words: </span>
+                                        </td>
                                         <td>
                                             <app-link href="config/search/#searchfilters">
-                                                <span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{search.filters.preferred.join(', ')}}</span>
+                                                <span class="break-word">{{search.filters.preferred.join(', ')}}</span>
                                             </app-link>
                                         </td>
                                     </tr>
                                     <tr v-if="search.filters.undesired.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{undesired: type === 'snatch-selection'}">Undesired Words: </span>
+                                        </td>
                                         <td>
                                             <app-link href="config/search/#searchfilters">
-                                                <span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{search.filters.undesired.join(', ')}}</span>
+                                                <span class="break-word">{{search.filters.undesired.join(', ')}}</span>
                                             </app-link>
                                         </td>
                                     </tr>
