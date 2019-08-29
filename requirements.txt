@@ -31,7 +31,7 @@ PyJWT==1.7.1
 python-dateutil==2.8.0
 python-twitter==3.5
 rarfile==3.0
-rebulk==1.0.1
+rebulk==2.0.0
 requests==2.22.0
 requests-oauthlib==1.2.0
 six==1.12.0
