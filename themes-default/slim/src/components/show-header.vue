@@ -182,8 +182,10 @@
                                             </span>
                                             <span v-if="search.filters.required.length > 0" class="break-word global-filter">
                                                 <app-link href="config/search/#searchfilters">
-                                                    <span v-if="show.config.release.requiredWordsExclude && show.config.release.requiredWords.length"> excluded from: </span>
-                                                    <span v-else-if="show.config.release.requiredWords.length">+ </span>
+                                                    <template v-if="show.config.release.requiredWords.length > 0">
+                                                        <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
                                                     {{search.filters.required.join(', ')}}
                                                 </app-link>
                                             </span>
@@ -199,8 +201,10 @@
                                             </span>
                                             <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
                                                 <app-link href="config/search/#searchfilters">
-                                                    <span v-if="show.config.release.ignoredWordsExclude && show.config.release.ignoredWords.length"> excluded from: </span>
-                                                    <span v-else-if="show.config.release.ignoredWords.length">+ </span>
+                                                    <template v-if="show.config.release.ignoredWords.length > 0">
+                                                        <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
                                                     {{search.filters.ignored.join(', ')}}
                                                 </app-link>
                                             </span>
