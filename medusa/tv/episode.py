@@ -1188,7 +1188,7 @@ class Episode(TV):
     def get_sql(self):
         """Create SQL queue for this episode if any of its data has been changed since the last save."""
         if not self.dirty:
-            log.debug('{id}: Not creating SQL queue - record is not dirty',
+            log.debug('{id}: Not creating SQL query - record is not dirty',
                       {'id': self.series.series_id})
             return
 
@@ -1328,6 +1328,7 @@ class Episode(TV):
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
                       {'id': self.series.series_id, 'error_msg': error})
+            self.reset_dirty()
             return
 
         self.loaded = False
@@ -1339,6 +1340,11 @@ class Episode(TV):
         """Save this episode to the database if any of its data has been changed since the last save."""
         if not self.dirty:
             return
+
+        log.debug('{id}: Saving episode to database: {show} {ep}',
+                  {'id': self.series.series_id,
+                   'show': self.series.name,
+                   'ep': episode_num(self.season, self.episode)})
 
         new_value_dict = {
             'indexerid': self.indexerid,
