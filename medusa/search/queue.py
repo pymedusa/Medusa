@@ -161,7 +161,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
     def is_forced_search_in_progress(self):
         """Test of a forced search is currently running (can be backlog, manual or failed search).
 
-        it doesn't check what's in queue.
+        It doesn't check what's in queue.
         """
         if isinstance(self.currentItem, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
             return True
@@ -359,8 +359,8 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                 }
             )
 
-            search_result = search_providers(self.show, self.segment, True, True,
-                                             True, self.manual_search_type)
+            search_result = search_providers(self.show, self.segment, forced_search=True, down_cur_quality=True,
+                                             manual_search=True, manual_search_type=self.manual_search_type)
 
             if search_result:
                 self.results = search_result
