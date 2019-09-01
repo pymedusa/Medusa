@@ -245,7 +245,8 @@ class Tmdb(BaseIndexer):
             aired_season = [season['season_number'] for season in self.shows[tmdb_id].data.get('seasons', [])]
 
         if not aired_season:
-            raise IndexerShowIncomplete('This show does not have any seasons on TMDB.')
+            log.debug('Series does not have any seasons added on indexer TMDB.')
+            return
 
         # Parse episode data
         log.debug('Getting all episodes of {0}', tmdb_id)
@@ -263,10 +264,8 @@ class Tmdb(BaseIndexer):
                 )
 
         if not results:
-            log.debug('Series results incomplete')
-            raise IndexerShowIncomplete(
-                'Show search returned incomplete results (cannot find complete show on TheMovieDb)'
-            )
+            log.debug('Series does not have any episodes added on indexer TMDB.')
+            return
 
         mapped_episodes = self._map_results(results, self.episodes_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
