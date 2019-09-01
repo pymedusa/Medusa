@@ -126,8 +126,8 @@ class XthorProvider(TorrentProvider):
                 if not all([title, download_url]):
                     continue
 
-                seeders = row.get('seeders')
-                leechers = row.get('leechers')
+                seeders = int(row.get('seeders'))
+                leechers = int(row.get('leechers'))
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:
