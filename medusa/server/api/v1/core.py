@@ -76,7 +76,7 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
@@ -818,7 +818,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = BacklogQueueItem(show_obj, [ep_obj])
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
