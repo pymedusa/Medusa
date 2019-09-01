@@ -299,21 +299,8 @@ class TVDBv2(BaseIndexer):
             if e.status == 404 and not self.shows[tvdb_id]['firstaired']:
                 log.warning('Show {name} is {status} and does not have any episodes yet',
                             {'name': self.shows[tvdb_id]['seriesname'], 'status': self.shows[tvdb_id]['firstaired']})
-            # raise IndexerShowIncomplete(
-            #     'Show episode search exception, '
-            #     'could not get any episodes. Did a {search_type} search. Exception: {e}'.format
-            #     (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.reason)
-            # )
         except RequestException as error:
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {error!r}'.format(error=error))
-
-        # if not results:
-        #     log.debug('Series results incomplete')
-        #     raise IndexerShowIncomplete(
-        #         'Show episode search returned incomplete results, '
-        #         'could not get any episodes. Did a {search_type} search.'.format
-        #         (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season))
-        #     )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
         return OrderedDict({'episode': mapped_episodes if isinstance(mapped_episodes, list) else [mapped_episodes]})

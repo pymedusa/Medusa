@@ -423,21 +423,6 @@ class QueueItemAdd(ShowQueueItem):
                 )
                 self._finishEarly()
                 return
-            # TODO: Remove this if not longer required
-            # if the show has no episodes/seasons
-            # if not s:
-            #     log.info(
-            #         'Show {series_name} is on {indexer_name} but contains no season/episode data.',
-            #         {'series_name': s['seriesname'], 'indexer_name': indexerApi(self.indexer).name}
-            #     )
-            #     ui.notifications.error(
-            #         'Unable to add show',
-            #         'Show {series_name} is on {indexer_name} but contains no season/episode data.'.format(
-            #             series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
-            #     )
-            #     self._finishEarly()
-            #
-            #     return
 
             # Check if we can already find this show in our current showList.
             try:
