@@ -987,7 +987,7 @@ class Series(TV):
         :param show_only:
         :type show_only: bool
         """
-        if not self.is_location_valid():
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             log.warning("{id}: Show directory doesn't exist, skipping NFO generation",
                         {'id': self.series_id})
             return
@@ -1030,8 +1030,8 @@ class Series(TV):
 
     def update_metadata(self):
         """Update show metadata files."""
-        if not self.is_location_valid():
-            log.warning(u"{id}: Show directory doesn't exist, skipping NFO generation",
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
+            log.warning(u"{id}: Show directory doesn't exist, skipping NFO update",
                         {'id': self.series_id})
             return
 
@@ -1052,7 +1052,7 @@ class Series(TV):
 
     def load_episodes_from_dir(self):
         """Find all media files in the show folder and create episodes for as many as possible."""
-        if not self.is_location_valid():
+        if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             log.warning(u"{id}: Show directory doesn't exist, not loading episodes from disk",
                         {'id': self.series_id})
             return
