@@ -295,7 +295,7 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
         'scene_absolute_number': 6,
         'season_scene_name_exceptions': {'My Series S1', 'My Series Season Scene title', 'My Series S2'},
         'expected': [
-            u'My Series+6+add_string',
+            u'My Series+06+add_string',
             u'My Series S1+06+add_string',
             u'My Series Season Scene title+06+add_string',
             u'My Series S2+06+add_string'
