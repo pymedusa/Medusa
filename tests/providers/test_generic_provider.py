@@ -292,10 +292,10 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
         'episode': 6,
         'scene_episode': 6,
         'absolute_number': 12,
-        'scene_absolute_number': 12,
+        'scene_absolute_number': 6,
         'season_scene_name_exceptions': {'My Series S1', 'My Series Season Scene title', 'My Series S2'},
         'expected': [
-            u'My Series+12+add_string',
+            u'My Series+6+add_string',
             u'My Series S1+06+add_string',
             u'My Series Season Scene title+06+add_string',
             u'My Series S2+06+add_string'
@@ -316,6 +316,7 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     )])
 
     mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_series.is_scene = True
     provider = GenericProvider('mock_provider')
     provider.series = mock_series
     provider.search_separator = separator
