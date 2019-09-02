@@ -316,7 +316,7 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     )])
 
     mock_series = create_tvshow(indexer=1, name=series_name)
-    mock_series.is_scene = True
+    mock_series.scene = 1
     provider = GenericProvider('mock_provider')
     provider.series = mock_series
     provider.search_separator = separator
