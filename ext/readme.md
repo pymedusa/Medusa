@@ -30,7 +30,7 @@ ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11
 **ext2** | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | -
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
-ext | `guessit` | [ca60ce6](https://github.com/guessit-io/guessit/tree/ca60ce6ec2dcba48b68e77d381e64256af4a5380) | **`medusa`**, `subliminal` | -
+ext | `guessit` | [3.1.0](https://pypi.org/project/guessit/3.1.0/) | **`medusa`**, `subliminal` | -
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
@@ -54,7 +54,7 @@ ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | *
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
 **ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
-ext | `rebulk` | [1.0.1](https://pypi.org/project/rebulk/1.0.1/) | **`medusa`**, `guessit` | -
+ext | `rebulk` | [2.0.0](https://pypi.org/project/rebulk/2.0.0/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.22.0](https://pypi.org/project/requests/2.22.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cfscrape`, `PyGithub`, `python-twitter`, `pytvmaze`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
