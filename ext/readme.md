@@ -54,7 +54,7 @@ ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | *
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal`, `tzlocal` | -
 **ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.0](https://pypi.org/project/rarfile/3.0/) | **`medusa`**, `subliminal` | -
-ext | `rebulk` | [1.0.1](https://pypi.org/project/rebulk/1.0.1/) | **`medusa`**, `guessit` | -
+ext | `rebulk` | [2.0.0](https://pypi.org/project/rebulk/2.0.0/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.22.0](https://pypi.org/project/requests/2.22.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cfscrape`, `PyGithub`, `python-twitter`, `pytvmaze`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1.2.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
