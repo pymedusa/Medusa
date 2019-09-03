@@ -27,7 +27,7 @@ ext | `dogpile.cache` | [0.7.1](https://pypi.org/project/dogpile.cache/0.7.1/) |
 ext | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | -
 ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | Requires `sgmllib3k` on Python 3
 **ext2** | `funcsigs` | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `Pint` | -
-**ext2** | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`**, `python-twitter`, ????? | -
+**ext2** | **`future`**<br>`_dummy_thread`<br>`_markupbase`<br>`_thread`<br>`builtins`<br>`copyreg`<br>`html`<br>`http`<br>`libfuturize`<br>`libpasteurize`<br>`past`<br>`queue`<br>`reprlib`<br>`socketserver`<br>`tkinter`<br>`winreg`<br>`xmlrpc` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`** | -
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent.futures`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | -
 ext | `guessit` | [3.1.0](https://pypi.org/project/guessit/3.1.0/) | **`medusa`**, `subliminal` | -
@@ -62,7 +62,7 @@ ext | `requests-oauthlib` | [1.2.0](https://pypi.org/project/requests-oauthlib/1
 ext | <code><b>six</b>.py</code> | [1.12.0](https://pypi.org/project/six/1.12.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `Js2Py`, `knowit`, `python-dateutil`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
 ext | `soupsieve` | [1.7](https://pypi.org/project/soupsieve/1.7/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
-ext | `subliminal` | [6ac2fa2](https://github.com/Diaoul/subliminal/tree/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a) | **`medusa`** | -
+ext | `subliminal` | [develop@6ac2fa2](https://github.com/Diaoul/subliminal/tree/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a) | **`medusa`** | -
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
