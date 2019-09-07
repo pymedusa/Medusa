@@ -285,18 +285,32 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
     {  # p0: Standard series search string
         'series_name': 'My Series',
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Season Scene title', 'My Series S2'],
+        # All series aliases included the season scene exceptions.
+        'series_alias': [
+            'My Series S1',
+            'My Series alternative title',
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        ],
         'add_string': 'add_string',
         'season': 2,
         'scene_season': 2,
         'episode': 6,
         'scene_episode': 6,
         'absolute_number': 12,
-        'scene_absolute_number': 6,
-        'season_scene_name_exceptions': {'My Series S1', 'My Series Season Scene title', 'My Series S2'},
+        'scene_absolute_number': 12,
+        # These season_scene_name_exceptions should be returned when querying for the season exceptions for season 2.
+        'season_scene_name_exceptions': {
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        },
         'expected': [
-            u'My Series+06+add_string',
-            u'My Series S1+06+add_string',
+            u'My Series+12+add_string',
+            u'My Series S1+12+add_string',
+            u'My Series alternative title+12+add_string',
+            u'My Series Season2+06+add_string',
             u'My Series Season Scene title+06+add_string',
             u'My Series S2+06+add_string'
         ]
