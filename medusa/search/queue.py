@@ -161,7 +161,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
     def is_forced_search_in_progress(self):
         """Test of a forced search is currently running (can be backlog, manual or failed search).
 
-        it doesn't check what's in queue.
+        It doesn't check what's in queue.
         """
         if isinstance(self.currentItem, (BacklogQueueItem, ManualSearchQueueItem, FailedQueueItem)):
             return True
@@ -359,8 +359,8 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                 }
             )
 
-            search_result = search_providers(self.show, self.segment, True, True,
-                                             True, self.manual_search_type)
+            search_result = search_providers(self.show, self.segment, forced_search=True, down_cur_quality=True,
+                                             manual_search=True, manual_search_type=self.manual_search_type)
 
             if search_result:
                 self.results = search_result
@@ -380,86 +380,6 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                 log.info(
                     'Unable to find {search_type} {season_pack}results for: {ep}', {
                         'search_type': ('forced', 'manual')[bool(self.manual_search)],
-                        'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                        'ep': self.segment[0].pretty_name()
-                    }
-                )
-
-        # TODO: Remove catch all exception.
-        except Exception:
-            self.success = False
-            log.debug(traceback.format_exc())
-
-        # Keep a list with the 100 last executed searches
-        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
-
-        if self.success is None:
-            self.success = False
-
-        self.finish()
-
-
-class ManualSearchQueueItem(generic_queue.QueueItem):
-    """Manual search queue item class."""
-
-    def __init__(self, show, segment, manual_search_type='episode'):
-        """
-        Initialize class of a QueueItem used to queue forced and manual searches.
-
-        :param show: A show object
-        :param segment: A list of episode objects.
-        :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
-        :return: The run() method searches and snatches the episode(s) if possible or it only searches and saves results to cache tables.
-        """
-        generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
-        self.priority = generic_queue.QueuePriorities.HIGH
-        self.name = '{search_type}-{indexerid}'.format(
-            search_type='MANUAL',
-            indexerid=show.indexerid
-        )
-
-        self.success = None
-        self.started = None
-        self.results = None
-
-        self.show = show
-        self.segment = segment
-        self.manual_search_type = manual_search_type
-
-    def run(self):
-        """Run forced search thread."""
-        generic_queue.QueueItem.run(self)
-        self.started = True
-
-        try:
-            log.info(
-                'Beginning {search_type} {season_pack}search for: {ep}', {
-                    'search_type': 'manual',
-                    'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                    'ep': self.segment[0].pretty_name()
-                }
-            )
-
-            search_result = search_providers(self.show, self.segment, True, True,
-                                             True, self.manual_search_type)
-
-            if search_result:
-                self.results = search_result
-                self.success = True
-
-                if self.manual_search_type == 'season':
-                    ui.notifications.message('We have found season packs for {show_name}'
-                                             .format(show_name=self.show.name),
-                                             'These should become visible in the manual select page.')
-                else:
-                    ui.notifications.message('We have found results for {ep}'
-                                             .format(ep=self.segment[0].pretty_name()),
-                                             'These should become visible in the manual select page.')
-
-            else:
-                ui.notifications.message('No results were found')
-                log.info(
-                    'Unable to find manual {season_pack}results for: {ep}', {
                         'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
                         'ep': self.segment[0].pretty_name()
                     }
@@ -630,9 +550,6 @@ class BacklogQueueItem(generic_queue.QueueItem):
             except Exception:
                 self.success = False
                 log.debug(traceback.format_exc())
-
-            # Keep a list with the 100 last executed searches
-            fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
         if self.success is None:
             self.success = False

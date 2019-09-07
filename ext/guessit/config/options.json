@@ -5,15 +5,15 @@
   ],
   "allowed_countries": [
     "au",
-    "us",
-    "gb"
+    "gb",
+    "us"
   ],
   "allowed_languages": [
+    "ca",
+    "cs",
     "de",
     "en",
     "es",
-    "ca",
-    "cs",
     "fr",
     "he",
     "hi",
@@ -21,6 +21,7 @@
     "it",
     "ja",
     "ko",
+    "mul",
     "nl",
     "no",
     "pl",
@@ -30,7 +31,6 @@
     "sv",
     "te",
     "uk",
-    "mul",
     "und"
   ],
   "advanced_config": {
@@ -94,9 +94,10 @@
         "avi",
         "divx",
         "flv",
-        "mk3d",
+        "iso",
         "m4v",
         "mk2",
+        "mk3d",
         "mka",
         "mkv",
         "mov",
@@ -112,12 +113,11 @@
         "ram",
         "rm",
         "ts",
+        "vob",
         "wav",
         "webm",
         "wma",
-        "wmv",
-        "iso",
-        "vob"
+        "wmv"
       ],
       "torrent": [
         "torrent"
@@ -290,7 +290,6 @@
       ],
       "subtitle_prefixes": [
         "st",
-        "v",
         "vost",
         "subforced",
         "fansub",
@@ -332,12 +331,12 @@
     },
     "release_group": {
       "forbidden_names": [
-        "rip",
+        "bonus",
         "by",
         "for",
         "par",
         "pour",
-        "bonus"
+        "rip"
       ],
       "ignored_seps": "[]{}()"
     },
@@ -346,6 +345,7 @@
         "23.976",
         "24",
         "25",
+        "29.970",
         "30",
         "48",
         "50",
@@ -378,8 +378,8 @@
     "website": {
       "safe_tlds": [
         "com",
-        "org",
-        "net"
+        "net",
+        "org"
       ],
       "safe_subdomains": [
         "www"
@@ -387,8 +387,8 @@
       "safe_prefixes": [
         "co",
         "com",
-        "org",
-        "net"
+        "net",
+        "org"
       ],
       "prefixes": [
         "from"
@@ -448,6 +448,10 @@
       "Daisuki": "DSKI",
       "DC Universe": "DCU",
       "Deadhouse Films": "DHF",
+      "DramaFever": [
+        "DF",
+        "DramaFever"
+      ],
       "Digiturk Diledigin Yerde": "DDY",
       "Discovery": [
         "DISC",
@@ -491,6 +495,10 @@
       "Knowledge Network": "KNOW",
       "Lifetime": "LIFE",
       "Motor Trend OnDemand": "MTOD",
+      "MBC": [
+        "MBC",
+        "MBCVOD"
+      ],
       "MSNBC": "MNBC",
       "MTV": "MTV",
       "National Geographic": [
@@ -514,6 +522,10 @@
         "Nickelodeon"
       ],
       "Norsk Rikskringkasting": "NRK",
+      "OnDemandKorea": [
+        "ODK",
+        "OnDemandKorea"
+      ],
       "PBS": "PBS",
       "PBS Kids": "PBSK",
       "Playstation Network": "PSN",
@@ -547,6 +559,7 @@
       "TubiTV": "TUBI",
       "TV3 Ireland": "TV3",
       "TV4 Sweeden": "TV4",
+      "TVING": "TVING",
       "TV Land": [
         "TVL",
         "re:TV-?Land"
@@ -558,6 +571,7 @@
       "Velocity": "VLCT",
       "VH1": "VH1",
       "Viceland": "VICE",
+      "Viki": "VIKI",
       "Vimeo": "VMEO",
       "VRV": "VRV",
       "W Network": "WNET",

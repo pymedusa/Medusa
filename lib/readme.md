@@ -1,6 +1,6 @@
 ## lib
- Folder  |  Package  |  Version / Commit  | Usage | Notes
-:------: | :-------: | :----------------: | :---- | :----
+Folder | Package | Version / Commit | Usage | Notes
+:----: | :-----: | :--------------: | :---- | :----
 lib | `certgen.py` | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | **Not a package**
 lib | `native` | - | `pymediainfo` | **Not a package**
 lib | `pkg_resources` | ????? | `babelfish`, `enzyme`, `guessit`, `stevedore`, `pint`, ... | **Not a package**<br>Part of `setuptools`
@@ -15,7 +15,7 @@ lib | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb
 lib | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 lib | `traktor` | - | **`medusa`** | **Custom**
 
-Notes:
- - `lib` compatible with python2 and python3
- - `lib2` only compatible with python2
- - `lib3` only compatible with python3
+#### Notes:
+- `lib` compatible with Python 2 and Python 3
+- `lib2` only compatible with Python 2
+- `lib3` only compatible with Python 3
