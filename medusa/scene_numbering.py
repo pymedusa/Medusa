@@ -52,9 +52,6 @@ def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
     if series_obj is None or season is None or episode is None:
         return season, episode
 
-    if series_obj and not series_obj.is_scene:
-        return season, episode
-
     result = find_scene_numbering(series_obj, season, episode)
     if result:
         return result
@@ -95,9 +92,6 @@ def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=Tr
     :return: (int, int) a tuple with (season, episode)
     """
     if series_obj is None or absolute_number is None:
-        return absolute_number
-
-    if series_obj and not series_obj.is_scene:
         return absolute_number
 
     result = find_scene_absolute_numbering(series_obj, absolute_number)

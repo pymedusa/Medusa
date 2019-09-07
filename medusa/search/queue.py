@@ -173,10 +173,10 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         for cur_item in self.queue:
             if isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
-            elif isinstance(cur_item, BacklogQueueItem) and not cur_item.manual_search:
-                length['backlog_search'] += 1
             elif isinstance(cur_item, ManualSearchQueueItem):
                 length['manual_search'] += 1
+            elif isinstance(cur_item, BacklogQueueItem):
+                length['backlog_search'] += 1
         return length
 
     def add_item(self, item):
@@ -379,7 +379,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
                 ui.notifications.message('No results were found')
                 log.info(
                     'Unable to find {search_type} {season_pack}results for: {ep}', {
-                        'search_type': ('forced', 'manual')[bool(self.manual_search)],
+                        'search_type': 'manual',
                         'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
                         'ep': self.segment[0].pretty_name()
                     }
