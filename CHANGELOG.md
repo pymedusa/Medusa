@@ -1,4 +1,4 @@
-## Unreleased
+## 0.3.5 (2019-09-08)
 
 #### New Features
 - Added multi-episode naming style with lowercase `e` ([#6910](https://github.com/pymedusa/Medusa/pull/6910))
