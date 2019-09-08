@@ -25,7 +25,7 @@
                                 :pagination-options="{
                                     enabled: true,
                                     perPage: paginationPerPage,
-                                    perPageDropdown: [25, 50, 100, 250, 500]
+                                    perPageDropdown
                                 }"
                                 :search-options="{
                                     enabled: true,
@@ -48,7 +48,7 @@
                                 :row-style-class="rowStyleClassFn"
                                 ref="table-seasons"
                                 @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
-                                @on-per-page-change="paginationPerPage=$event.currentPerPage">
+                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)">
                     <div slot="table-actions">
                         <!-- Drowdown with checkboxes for showing / hiding table headers -->
                         <div class="button-group pull-right">
@@ -258,6 +258,18 @@ export default {
     },
     data() {
         const { getCookie } = this;
+        const perPageDropdown = [25, 50, 100, 250, 500];
+        const getPaginationPerPage = () => {
+            const rows = getCookie('displayShow-pagination-perPage');
+            if (!rows) {
+                return 50;
+            }
+
+            if (!perPageDropdown.includes(rows)) {
+                return 500;
+            }
+            return rows;
+        };
         return {
             invertTable: true,
             isMobile: false,
@@ -349,7 +361,8 @@ export default {
                 sortable: false,
                 hidden: getCookie('displayShow-hide-field-Search')
             }],
-            paginationPerPage: getCookie('displayShow-pagination-perPage') || 50,
+            perPageDropdown,
+            paginationPerPage: getPaginationPerPage(),
             selectedEpisodes: [],
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisode: null,
@@ -946,6 +959,11 @@ export default {
                 }).catch(error => {
                     console.error(String(error));
                 });
+        },
+        updatePaginationPerPage(rows) {
+            const { setCookie } = this;
+            this.paginationPerPage = rows;
+            setCookie('displayShow-pagination-perPage', rows);
         }
     },
     watch: {
