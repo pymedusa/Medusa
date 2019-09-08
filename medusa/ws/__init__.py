@@ -4,9 +4,14 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.ws.handler import backlogged_msgs, clients  # noqa: F401
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Message(object):
@@ -32,7 +37,16 @@ class Message(object):
 
     def json(self):
         """Return the message content as a JSON-serialized string."""
-        return json.dumps(self.content)
+        try:
+            return json.dumps(self.content)
+        except TypeError as error:
+            log.warning('Unhashable type encountered. Please report this warning to the developers.\n{error!r}', {
+                'error': error,
+                'exc_info': True
+            })
+            # Fall back to using the APIv2 default encoder. This is a safety measure.
+            from medusa.server.api.v2.base import json_default_encoder
+            return json.dumps(self.content, default=json_default_encoder)
 
     def push(self):
         """Push the message to all connected WebSocket clients."""

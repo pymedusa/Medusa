@@ -52,8 +52,8 @@ describe('SubMenu.test.js', () => {
                 path: '/',
                 name: '',
                 meta: {
-                    subMenu() {
-                        const { recentShows } = this.$store.state.config;
+                    subMenu: vm => {
+                        const { recentShows } = vm.$store.state.config;
                         return recentShows.map((show, index) => {
                             return {
                                 title: show.name,

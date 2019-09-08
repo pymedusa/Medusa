@@ -1,12 +1,13 @@
 // @TODO: Remove this file before v1.0.0
 import Vue from 'vue';
-import VueMeta from 'vue-meta';
 import AsyncComputed from 'vue-async-computed';
+import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
 
 import {
     AddShowOptions,
     AnidbReleaseGroupUi,
+    AppFooter,
     AppHeader,
     AppLink,
     Asset,
@@ -40,12 +41,13 @@ import { isDevelopment } from './utils/core';
  */
 export const registerGlobalComponents = () => {
     // Start with the x-template components
-    let { components } = window;
+    let { components = [] } = window;
 
     // Add global components (in use by `main.mako`)
     // @TODO: These should be registered in an `App.vue` component when possible,
     //        along with some of the `main.mako` template
     components = components.concat([
+        AppFooter,
         AppHeader,
         ScrollButtons,
         SubMenu
@@ -96,6 +98,18 @@ export const registerGlobalComponents = () => {
     });
 };
 
+/**
+ * Register plugins.
+ */
+export const registerPlugins = () => {
+    Vue.use(AsyncComputed);
+    Vue.use(VueMeta);
+    Vue.use(Snotify);
+};
+
+/**
+ * Apply the global Vue shim.
+ */
 export default () => {
     const warningTemplate = (name, state) =>
         `${name} is using the global Vuex '${state}' state, ` +
@@ -119,7 +133,8 @@ export default () => {
                     /* This is used by the `app-header` component
                     to only show the logout button if a username is set */
                     store.dispatch('login', { username }),
-                    store.dispatch('getConfig')
+                    store.dispatch('getConfig'),
+                    store.dispatch('getStats')
                 ]).then(([_, config]) => {
                     this.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
@@ -158,10 +173,7 @@ export default () => {
         console.debug('Loading local Vue');
     }
 
-    // Register plugins
-    Vue.use(AsyncComputed);
-    Vue.use(VueMeta);
-    Vue.use(Snotify);
+    registerPlugins();
 
     registerGlobalComponents();
 };

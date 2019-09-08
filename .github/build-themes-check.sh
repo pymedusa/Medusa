@@ -1,10 +1,17 @@
 #!/bin/bash
 set -e
 
+# This script expects to be run in: `Medusa/themes-default/slim`
+path_to_built_themes="../../themes/"
+
 # Helper function to print the command before running it.
 run_verbose () {
     echo "\$ $*"
     eval $*
+}
+
+get_size () {
+    du -sb $1 | cut -f1
 }
 
 # Determine if and how to build the Webpack bundle.
@@ -22,22 +29,20 @@ elif [[ $TRAVIS_BRANCH == "develop" ]]; then
 fi
 
 # Keep track of the current themes size.
-size_before=$(du -sb themes/ | cut -f1)
+size_before=$(get_size $path_to_built_themes)
 
 # Build themes.
-cd themes-default/slim/
 [[ -n $build_cmd ]] && run_verbose "$build_cmd"
 run_verbose "yarn gulp sync"
-cd ../../
 
 # Keep track of the new themes size.
-size_after=$(du -sb themes/ | cut -f1)
+size_after=$(get_size $path_to_built_themes)
 
 echo "Themes size before: $size_before"
 echo "Themes size after: $size_after"
 
 # Check if the themes changed.
-status="$(git status --porcelain -- themes/)";
+status="$(git status --porcelain -- $path_to_built_themes)";
 if [[ -n $status && $size_before != $size_after ]]; then
     if [[ -z $build_mode ]]; then
         echo "Please build the themes"

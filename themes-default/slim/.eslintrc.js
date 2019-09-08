@@ -1,3 +1,4 @@
+/* eslint comma-dangle: [error, always-multiline] */
 module.exports = {
     parserOptions: {
         ecmaVersion: 2019,
@@ -14,82 +15,109 @@ module.exports = {
         'plugin:import/warnings',
         'plugin:vue/essential',
         'plugin:jest/recommended',
-        'plugin:eslint-comments/recommended'
+        'plugin:eslint-comments/recommended',
     ],
     env: {
         browser: true,
         es6: true,
-        jquery: true
+        jquery: true,
     },
     plugins: [
         'unicorn',
         'import',
         'vue',
+        '@sharkykh/vue-extra',
         'jest',
-        'eslint-comments'
+        'eslint-comments',
     ],
     settings: {
-        'import/resolver': 'webpack'
+        'import/resolver': 'webpack',
     },
     rules: {
         indent: [
             'error',
             4,
             {
-                SwitchCase: 1
-            }
+                SwitchCase: 1,
+            },
         ],
         quotes: [
             'error',
             'single',
             {
-                avoidEscape: true
-            }
+                avoidEscape: true,
+            },
         ],
         'object-curly-spacing': [
             'error',
-            'always'
+            'always',
         ],
         'space-before-function-paren': [
             'error',
             {
-                'anonymous': 'never',
-                'named': 'never',
-                'asyncArrow': 'always'
-            }
+                anonymous: 'never',
+                named: 'never',
+                asyncArrow: 'always',
+            },
         ],
-        'valid-jsdoc': [
-            'error'
-        ],
+        'require-await': 'error',
+        'valid-jsdoc': 'error',
         'padding-line-between-statements': 'off',
         'unicorn/prevent-abbreviations': 'off',
+        'vue/html-indent': [
+            'error',
+            4,
+        ],
+        'vue/html-quotes': [
+            'error',
+            'double',
+        ],
+        'vue/name-property-casing': [
+            'error',
+            'kebab-case',
+        ],
+        'vue/html-self-closing': 'error',
+        'vue/html-closing-bracket-spacing': [
+            'error',
+            {
+                selfClosingTag: 'always',
+            },
+        ],
     },
     // Please do not use root `globals` because they can't be overriden.
     globals: {},
     overrides: [
         {
-            files: "static/js/**",
+            files: 'static/js/**',
             rules: {
                 'unicorn/prefer-includes': 'off',
-                'unicorn/prefer-text-content': 'off'
+                'unicorn/prefer-text-content': 'off',
             },
             globals: {
-                'PNotify': 'readonly',
-                'LazyLoad': 'readonly',
-                '_': 'readonly',
-                'MEDUSA': 'readonly',
-                'api': 'readonly',
-                'apiv1': 'readonly',
-                'apiRoute': 'readonly',
-                'axios': 'readonly',
-                'webRoot': 'readonly',
-                'apiKey': 'readonly',
-                'Vuex': 'readonly',
-            }
+                PNotify: 'readonly',
+                LazyLoad: 'readonly',
+                _: 'readonly',
+                MEDUSA: 'readonly',
+                api: 'readonly',
+                apiv1: 'readonly',
+                apiRoute: 'readonly',
+                axios: 'readonly',
+                webRoot: 'readonly',
+                apiKey: 'readonly',
+                Vuex: 'readonly',
+            },
         },
         {
-            files: "src/**",
+            files: 'src/**',
             rules: {
+                '@sharkykh/vue-extra/component-not-registered': [
+                    'error',
+                    [
+                        'router-link',
+                        'router-view',
+                        'vue-snotify',
+                    ],
+                ],
                 'import/extensions': [
                     'error',
                     'always',
@@ -97,12 +125,12 @@ module.exports = {
                         js: 'ignorePackages',
                         vue: 'ignorePackages',
                         json: 'ignorePackages',
-                    }
+                    },
                 ],
             },
             globals: {
-                'MEDUSA': 'readonly',
+                MEDUSA: 'readonly',
             },
-        }
+        },
     ],
 };

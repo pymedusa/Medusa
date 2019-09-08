@@ -48,17 +48,8 @@ with open(os.path.join(here, 'readme.md'), 'r') as r:
 
 
 def install_requires():
-    pkg_name_pattern = re.compile(r'#egg=(.+)(?:&|$)')
-
     with open(os.path.join(here, 'requirements.txt'), 'r') as r:
-        requirements = r.read().splitlines(keepends=False)
-
-    def make_item(req):
-        if not req.startswith('https://'):
-            return req
-        return pkg_name_pattern.search(req).group(1) + ' @ ' + req
-
-    return [make_item(req) for req in requirements if req]
+        return r.read().splitlines(keepends=False)
 
 
 def packages():
@@ -102,13 +93,14 @@ setup(
     },
     cmdclass={'test': PyTest},
     tests_require=tests_runtime_require + [
-        'flake8>=3.5.0',
+        'flake8>=3.7.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
         'pep8-naming>=0.7.0',
         'pycodestyle>=2.4.0',
-        'pytest>=4.1.0',
+        'pytest<5.0.0 ; python_version < "3.5"',
+        'pytest>=5.0.0 ; python_version >= "3.5"',
         'pytest-cov>=2.6.1',
         'pytest-flake8>=1.0.2',
         'pytest-tornado5>=2.0.0',

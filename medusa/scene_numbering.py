@@ -33,6 +33,8 @@ from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.scene_exceptions import safe_session
 
+from six import viewitems
+
 
 def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
     """
@@ -48,9 +50,6 @@ def get_scene_numbering(series_obj, season, episode, fallback_to_xem=True):
     :return: (int, int) a tuple with (season, episode)
     """
     if series_obj is None or season is None or episode is None:
-        return season, episode
-
-    if series_obj and not series_obj.is_scene:
         return season, episode
 
     result = find_scene_numbering(series_obj, season, episode)
@@ -93,9 +92,6 @@ def get_scene_absolute_numbering(series_obj, absolute_number, fallback_to_xem=Tr
     :return: (int, int) a tuple with (season, episode)
     """
     if series_obj is None or absolute_number is None:
-        return absolute_number
-
-    if series_obj and not series_obj.is_scene:
         return absolute_number
 
     result = find_scene_absolute_numbering(series_obj, absolute_number)
@@ -647,3 +643,29 @@ def fix_xem_numbering(series_obj):  # pylint:disable=too-many-locals, too-many-b
     if cl:
         main_db_con = db.DBConnection()
         main_db_con.mass_action(cl)
+
+
+def numbering_tuple_to_dict(values, left_desc='source', right_desc='destination', level_2_left='season', level_2_right='episode'):
+    """
+    Convert a dictionary with tuple to tuple (key/value) mapping to a json structure.
+
+    For each key/value pair, create a new dictionary and move key/value to a new object,
+    with left_desc and right_desc as its keys.
+
+    This method is required because the swagger spec does not support describing the dynamic key/value mapping.
+    The json schema supports additionalProperties (which is required to document this). But Swagger itself has limited support for it.
+    https://support.reprezen.com/support/solutions/articles/6000162892-support-for-additionalproperties-in-swagger-2-0-schemas.
+
+    For example the values {(a, b): (c: d)} will be transformed to:
+    [{"source": {"season": a, "episode": b}, "destination": {"season": c, "episode": d}}]
+
+    :param values: Dict with double tuple mapping. For example: (src season, src episode): (dest season, dest episode).
+    :param left_desc: The key description used for the orginal "key" value.
+    :param right_desc: The key description used for the original "value" value.
+    :param level_2_left: When passing {tuple: tuple}, it's used to map the value of the first tuple's value.
+    :param level_2_right: When passing {tuple: tuple}, it's used to map the value of the second tuple's value.
+    :return: List of dictionaries with dedicated keys for source and destination.
+    """
+    return [{left_desc: {level_2_left: src[0], level_2_right: src[1]},
+             right_desc: {level_2_left: dest[0], level_2_right: dest[1]}}
+            for src, dest in viewitems(values)]

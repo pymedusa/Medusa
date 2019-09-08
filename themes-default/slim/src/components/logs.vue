@@ -43,7 +43,7 @@
                         <input
                             v-model="searchQuery" @keyup="fetchLogsDebounced()" @keypress.enter="fetchLogsDebounced.flush()"
                             type="text" placeholder="clear to reset" class="form-control form-control-inline input-sm"
-                        />
+                        >
                     </span>
                 </div>
             </div>
@@ -52,7 +52,7 @@
         <pre class="col-md-12" :class="{ fanartOpacity: config.fanartBackground }"><!--
             --><div class="notepad"><!--
                 --><app-link :href="rawViewLink"><!--
-                    --><img src="images/notepad.png"/><!--
+                    --><img src="images/notepad.png"><!--
                 --></app-link><!--
             --></div><!--
             --><div v-for="(line, index) in logLines" :key="`line-${index}`"><!--

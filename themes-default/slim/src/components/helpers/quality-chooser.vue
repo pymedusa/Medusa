@@ -80,16 +80,16 @@
             <div v-else>Please select at least one allowed quality.</div>
         </div>
 
-        <div v-if="showSlug && (allowedQualities.length + preferredQualities.length) >= 1">
-            <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html"></h5>
+        <div v-if="backloggedEpisodes">
+            <h5 class="{ 'red-text': !backloggedEpisodes.status }" v-html="backloggedEpisodes.html" />
         </div>
 
         <div v-if="archive" id="archive">
             <h5>
                 <b>Archive downloaded episodes that are not currently in
-                <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
-                <br />Avoids unnecessarily increasing your backlog
-                <br />
+                    <app-link href="manage/backlogOverview/" target="_blank" class="backlog-link">backlog</app-link>.</b>
+                <br>Avoids unnecessarily increasing your backlog
+                <br>
             </h5>
             <button
                 @click.prevent="archiveEpisodes"
@@ -106,7 +106,6 @@
 import { mapGetters, mapState } from 'vuex';
 
 import { api } from '../../api';
-import { waitFor } from '../../utils/core';
 import AppLink from './app-link';
 
 export default {
@@ -134,7 +133,7 @@ export default {
             lock: false, // FIXME: Remove this hack, see `watch.overallQuality` below
             allowedQualities: [],
             preferredQualities: [],
-            selectedQualityPreset: null, // Initialized on mount
+            curQualityPreset: null,
             archive: false,
             archivedStatus: '',
             archiveButton: {
@@ -155,6 +154,19 @@ export default {
         ]),
         initialQuality() {
             return this.overallQuality === undefined ? this.defaultQuality : this.overallQuality;
+        },
+        selectedQualityPreset: {
+            get() {
+                return this.curQualityPreset;
+            },
+            set(newValue) {
+                const { curQualityPreset, setQualityFromPreset } = this;
+                // If an array was provided - initial or update from parent: [newPreset, oldPreset]
+                // If a single value was provided - updated using select box: [newPreset, currentPreset]
+                const [newPreset, currentPreset] = Array.isArray(newValue) ? newValue : [newValue, curQualityPreset];
+                setQualityFromPreset(newPreset, currentPreset);
+                this.curQualityPreset = newPreset;
+            }
         },
         explanation() {
             const { allowedQualities, preferredQualities, qualityValues } = this;
@@ -181,12 +193,12 @@ export default {
 
             // Skip if no showSlug, as that means we're on a addShow page
             if (!showSlug) {
-                return {};
+                return null;
             }
 
             // Skip if no qualities are selected
-            if (allowedQualities.length === 0 && preferredQualities.length === 0) {
-                return {};
+            if ((allowedQualities.length + preferredQualities.length) === 0) {
+                return null;
             }
 
             const url = `series/${showSlug}/legacy/backlogged`;
@@ -234,16 +246,17 @@ export default {
             };
         }
     },
-    async mounted() {
-        await waitFor(() => this.qualityValues.length > 0, 100, 3000);
-
-        const { isQualityPreset, keep, initialQuality } = this;
-        this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(initialQuality) ? initialQuality : 0);
-        this.setQualityFromPreset(this.selectedQualityPreset, initialQuality);
+    mounted() {
+        this.setInitialPreset(this.initialQuality);
     },
     methods: {
         isQualityPreset(quality) {
             return this.getQualityPreset({ value: quality }) !== undefined;
+        },
+        setInitialPreset(preset) {
+            const { isQualityPreset, keep } = this;
+            const newPreset = keep === 'keep' ? 'keep' : (isQualityPreset(preset) ? preset : 0);
+            this.selectedQualityPreset = [newPreset, preset];
         },
         async archiveEpisodes() {
             this.archivedStatus = 'Archiving...';
@@ -288,20 +301,10 @@ export default {
         This is causing the preset selector to change from `Custom` to a preset,
         when the correct qualities for that preset are selected.
         */
-        async overallQuality(newValue) {
-            if (this.lock) {
-                return;
+        overallQuality(newValue) {
+            if (!this.lock) {
+                this.setInitialPreset(newValue);
             }
-
-            // Wait for the store to get populated.
-            await waitFor(() => this.qualityValues.length > 0, 100, 3000);
-
-            const { isQualityPreset, keep, setQualityFromPreset } = this;
-            this.selectedQualityPreset = keep === 'keep' ? 'keep' : (isQualityPreset(newValue) ? newValue : 0);
-            setQualityFromPreset(this.selectedQualityPreset, newValue);
-        },
-        selectedQualityPreset(preset, oldPreset) {
-            this.setQualityFromPreset(preset, oldPreset);
         },
         /* eslint-disable no-warning-comments */
         allowedQualities(newQuality) {

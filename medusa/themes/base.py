@@ -1,10 +1,10 @@
 """Base theme module."""
 from __future__ import unicode_literals
 
+import io
 import json
 import logging
 import os
-from builtins import object
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
@@ -17,9 +17,8 @@ class Theme(object):
     """Base theme class."""
 
     def __init__(self, **kwargs):
-        self.name = kwargs.get('baseName')
+        self.name = kwargs.get('name')
         self.version = kwargs.get('version')
-        self.package_name = kwargs.get('name')
         self.dep_version = kwargs.get('depVersion')
         self.author = kwargs.get('author')
 
@@ -33,20 +32,17 @@ def read_themes():
     for theme_path in themes_from_fs:
         # validate the directory structure
         try:
-            result = validate_theme(theme_path)
+            package_json = validate_theme(theme_path)
         except Exception as error:
             log.error('Error reading theme {theme}, {error!r}', {'theme': theme_path, 'error': error})
             raise Exception('Error in one of the theme paths. Please fix the error and start medusa.')
 
-        if not result:
+        if not package_json:
             log.debug('Skipping reading theme {theme}, as the folder is empty', {'theme': theme_path})
             continue
 
-        # validate the package.json
-        package_json = json.load(open(os.path.join(theme_path, 'package.json')))
-        if theme_path:
-            package_json['baseName'] = os.path.basename(os.path.normpath(theme_path))
-            themes.append(Theme(**package_json))
+        # create a theme object from the `package.json` data
+        themes.append(Theme(**package_json))
 
     return themes
 
@@ -71,7 +67,7 @@ def validate_theme(theme_path):
                             'Please refer to the medusa theming documentation.'.format(check_folder=check_folder))
 
     try:
-        with open(os.path.join(theme_path, 'package.json')) as pj:
+        with io.open(os.path.join(theme_path, 'package.json'), 'r', encoding='utf-8') as pj:
             package_json = json.load(pj)
     except IOError:
         raise Exception('Cannot read package.json. Please refer to the medusa theming documentation.')
@@ -86,4 +82,4 @@ def validate_theme(theme_path):
         raise Exception('You need to have at least a templates folder with mako temnplates, '
                         "or an index.html in your [theme's] root. Please refer to the medusa theming documentation.")
 
-    return True
+    return package_json

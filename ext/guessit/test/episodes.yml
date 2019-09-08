@@ -201,9 +201,9 @@
 ? Series/My Name Is Earl/My.Name.Is.Earl.S01Extras.-.Bad.Karma.DVDRip.XviD.avi
 : title: My Name Is Earl
   season: 1
-  episode_title: Extras - Bad Karma
+  episode_title: Bad Karma
   source: DVD
-  other: Rip
+  other: [Extras, Rip]
   video_codec: Xvid
 
 ? series/Freaks And Geeks/Season 1/Episode 4 - Kim Kelly Is My Friend-eng(1).srt
@@ -3029,7 +3029,7 @@
   title: Show Name
   episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   screen_size: 720p
-  subtitle_language: fr
+  other: Variable Frame Rate
   video_codec: H.264
   audio_codec: AAC
   type: episode
@@ -4653,4 +4653,41 @@
   episode: 12
   episode_title: The Injury
   container: mkv
+  type: episode
+
+? Thumping.Spike.2.E01.DF.WEBRip.720p-DRAMATV.mp4
+: title: Thumping Spike 2
+  episode: 1
+  source: Web
+  other: Rip
+  screen_size: 720p
+  streaming_service: DramaFever
+  release_group: DRAMATV
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+? About.Time.E01.1080p.VIKI.WEB-DL-BLUEBERRY.mkv
+: title: About Time
+  episode: 1
+  screen_size: 1080p
+  streaming_service: Viki
+  source: Web 
+  release_group: BLUEBERRY
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Eyes.Of.Dawn.1991.E01.480p.MBCVOD.AAC.x264-NOGPR.mp4
+: title: Eyes Of Dawn
+  year: 1991
+  season: 1991
+  episode: 1
+  screen_size: 480p
+  streaming_service: MBC
+  audio_codec: AAC
+  video_codec: H.264
+  release_group: NOGPR
+  container: mp4
+  mimetype: video/mp4
   type: episode

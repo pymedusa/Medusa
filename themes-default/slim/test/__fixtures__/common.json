@@ -10,7 +10,7 @@
       "gitUsername": null,
       "branch": "master",
       "commitHash": "f5973b28465246e67465d7d86bdc8aa74d13e659",
-      "release": "v0.2.8",
+      "release": "0.2.8",
       "databaseVersion": {
         "major": 44,
         "minor": 11
@@ -26,6 +26,8 @@
       "dbPath": "C:\\Medusa\\Data\\main.db",
       "cacheDir": "C:\\Medusa\\Data\\cache",
       "logDir": "C:\\Medusa\\Data\\Logs",
+      "datePreset": "%Y-%m-%d",
+      "timePreset": "%H:%M",
       "postProcessing": {
         "postponeIfSyncFiles": true,
         "showDownloadDir": "C:\\Downloads\\TV",
@@ -74,12 +76,13 @@
         "createMissingShowDirs": true,
         "nfoRename": true,
         "multiEpStrings": {
-          "32": "Extend (Limited, E-prefixed)",
           "1": "Repeat",
           "2": "Extend",
           "4": "Duplicate",
           "8": "Extend (Limited)",
-          "16": "Repeat (Separated)"
+          "16": "Repeat (Separated)",
+          "32": "Extend (Limited, E-prefixed)",
+          "64": "Extend (Limited, e-prefixed)"
         },
         "airdateEpisodes": false
       },
@@ -429,6 +432,157 @@
           "name": "Snatched (Best)"
         }
       ]
+    },
+    "system": {
+      "memoryUsage": "56.85 MB",
+      "schedulers": [
+        {
+          "key": "dailySearch",
+          "name": "Daily Search",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 2400000,
+          "nextRun": 2386016,
+          "lastRun": "2019-06-10T21:00:53.477616",
+          "isSilent": true
+        },
+        {
+          "key": "backlog",
+          "name": "Backlog",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 43200000,
+          "nextRun": 43186017,
+          "lastRun": "2019-06-10T21:00:53.478603",
+          "isSilent": true
+        },
+        {
+          "key": "showUpdate",
+          "name": "Show Update",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": "03:52:00",
+          "cycleTime": 3600000,
+          "nextRun": 24652538,
+          "lastRun": "2019-06-10T21:00:00",
+          "isSilent": true
+        },
+        {
+          "key": "versionCheck",
+          "name": "Version Check",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3600000,
+          "nextRun": 3586035,
+          "lastRun": "2019-06-10T21:00:53.496593",
+          "isSilent": false
+        },
+        {
+          "key": "showQueue",
+          "name": "Show Queue",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3000,
+          "nextRun": 1110,
+          "lastRun": "2019-06-10T21:01:05.571404",
+          "isSilent": true
+        },
+        {
+          "key": "searchQueue",
+          "name": "Search Queue",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3000,
+          "nextRun": 1110,
+          "lastRun": "2019-06-10T21:01:05.571404",
+          "isSilent": true
+        },
+        {
+          "key": "properFinder",
+          "name": "Proper Finder",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 14400000,
+          "nextRun": 14386017,
+          "lastRun": "2019-06-10T21:00:53.478603",
+          "isSilent": false
+        },
+        {
+          "key": "postProcess",
+          "name": "Post Process",
+          "isAlive": true,
+          "isEnabled": false,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 600000,
+          "nextRun": null,
+          "lastRun": "2019-06-10T21:00:53.478603",
+          "isSilent": true
+        },
+        {
+          "key": "subtitlesFinder",
+          "name": "Subtitles Finder",
+          "isAlive": true,
+          "isEnabled": true,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3600000,
+          "nextRun": 3586017,
+          "lastRun": "2019-06-10T21:00:53.478603",
+          "isSilent": false
+        },
+        {
+          "key": "traktChecker",
+          "name": "Trakt Checker",
+          "isAlive": true,
+          "isEnabled": false,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3600000,
+          "nextRun": null,
+          "lastRun": "2019-06-10T20:05:53.478603",
+          "isSilent": true
+        },
+        {
+          "key": "torrentChecker",
+          "name": "Torrent Checker",
+          "isAlive": true,
+          "isEnabled": false,
+          "isActive": false,
+          "startTime": null,
+          "cycleTime": 3600000,
+          "nextRun": null,
+          "lastRun": "2019-06-10T21:00:53.478603",
+          "isSilent": false
+        }
+      ],
+      "showQueue": []
+    },
+    "stats": {
+      "overall": {
+        "episodes": {
+          "downloaded": 100,
+          "snatched": 5,
+          "total": 150
+        },
+        "shows": {
+          "active": 2,
+          "total": 2
+        }
+      }
     },
     "metadata": {
       "metadataProviders": {

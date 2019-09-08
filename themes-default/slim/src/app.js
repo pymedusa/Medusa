@@ -1,8 +1,6 @@
 import Vue from 'vue';
-import AsyncComputed from 'vue-async-computed';
-import Snotify from 'vue-snotify';
 
-import { registerGlobalComponents } from './global-vue-shim';
+import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
 import { isDevelopment } from './utils/core';
@@ -10,15 +8,13 @@ import { isDevelopment } from './utils/core';
 Vue.config.devtools = true;
 Vue.config.performance = true;
 
-// Register plugins
-Vue.use(AsyncComputed);
-Vue.use(Snotify);
+registerPlugins();
 
 // @TODO: Remove this before v1.0.0
 registerGlobalComponents();
 
 const app = new Vue({
-    name: 'App',
+    name: 'app',
     router,
     store,
     data() {
@@ -36,7 +32,8 @@ const app = new Vue({
             const { $store } = this;
             Promise.all([
                 $store.dispatch('login', { username: window.username }),
-                $store.dispatch('getConfig')
+                $store.dispatch('getConfig'),
+                $store.dispatch('getStats')
             ]).then(([_, config]) => {
                 if (isDevelopment) {
                     console.log('App Loaded!');

@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '0.3.4'
+VERSION = '0.3.5'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -105,7 +105,8 @@ NAMING_EXTEND = 2
 NAMING_DUPLICATE = 4
 NAMING_LIMITED_EXTEND = 8
 NAMING_SEPARATED_REPEAT = 16
-NAMING_LIMITED_EXTEND_E_PREFIXED = 32
+NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED = 32
+NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED = 64
 
 MULTI_EP_STRINGS = {
     NAMING_REPEAT: 'Repeat',
@@ -113,7 +114,8 @@ MULTI_EP_STRINGS = {
     NAMING_DUPLICATE: 'Duplicate',
     NAMING_EXTEND: 'Extend',
     NAMING_LIMITED_EXTEND: 'Extend (Limited)',
-    NAMING_LIMITED_EXTEND_E_PREFIXED: 'Extend (Limited, E-prefixed)'
+    NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED: 'Extend (Limited, E-prefixed)',
+    NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED: 'Extend (Limited, e-prefixed)'
 }
 
 
@@ -286,21 +288,21 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def quality_from_name(name, anime=False):
+    def quality_from_name(path, anime=False):
         """
-        Return the quality from the episode filename with the regex.
+        Return the quality from the episode filename or its parent folder.
 
-        :param name: Episode filename to analyse
+        :param path: Episode filename or its parent folder
         :param anime: Boolean to indicate if the show we're resolving is anime
         :return: Quality
         """
         from medusa.tagger.episode import EpisodeTags
 
-        if not name:
+        if not path:
             return Quality.UNKNOWN
 
         result = None
-        name = os.path.basename(name)
+        name = os.path.basename(path)
         ep = EpisodeTags(name)
 
         if anime:
@@ -332,7 +334,7 @@ class Quality(object):
                 if ep.bluray:
                     result = Quality.UHD_8K_BLURAY if is_4320 else Quality.UHD_4K_BLURAY
                 # WEB-DL
-                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                elif ep.web:
                     result = Quality.UHD_8K_WEBDL if is_4320 else Quality.UHD_4K_WEBDL
                 # HDTV
                 else:
@@ -346,7 +348,7 @@ class Quality(object):
                 if ep.bluray or ep.hddvd:
                     result = Quality.FULLHDBLURAY if is_1080 else Quality.HDBLURAY
                 # WEB-DL
-                elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+                elif ep.web:
                     result = Quality.FULLHDWEBDL if is_1080 else Quality.HDWEBDL
                 # HDTV and MPEG2 encoded
                 elif ep.tv == 'hd' and ep.mpeg:
@@ -363,14 +365,22 @@ class Quality(object):
         elif ep.dvd or ep.bluray:
             # SD DVD
             result = Quality.SDDVD
-        elif ep.web or any([ep.amazon, ep.itunes, ep.netflix]):
+        elif ep.web and not ep.web.lower().endswith('hd'):
             # This should be Quality.WEB in the future
             result = Quality.SDTV
         elif ep.tv or any([ep.res == '480p', ep.sat]):
             # SDTV/HDTV
             result = Quality.SDTV
 
-        return Quality.UNKNOWN if result is None else result
+        if result is not None:
+            return result
+
+        # Try to get the quality from the parent folder
+        parent_folder = os.path.basename(os.path.dirname(path))
+        if parent_folder:
+            return Quality.quality_from_name(parent_folder, anime)
+
+        return Quality.UNKNOWN
 
     @staticmethod
     def _extend_quality(file_path):

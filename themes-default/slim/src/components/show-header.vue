@@ -18,28 +18,29 @@
                         <app-link
                             :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
                             class="snatchTitle"
-                            >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
-                <div v-if="type !== 'snatch-selection' && show.seasons && show.seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
-                    <span class="h2footer display-specials" v-if="show.seasons.find(season => ({ season }) => season === 0)">
+                <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
+                    <span class="h2footer display-specials" v-if="seasons.includes(0)">
                         Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
                         <span>
-                            <select v-if="show.seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
+                            <select v-if="seasons.length >= 15" v-model="jumpToSeason" id="seasonJump" class="form-control input-sm" style="position: relative">
                                 <option value="jump">Jump to Season</option>
-                                <option v-for="season in show.seasons" :key="'jumpToSeason-' + season[0].season" :value="'#season-' + season[0].season" :data-season="season[0].season">
-                                    {{ season[0].season === 0 ? 'Specials' : 'Season ' + season[0].season }}
+                                <option v-for="seasonNumber in seasons" :key="`jumpToSeason-${seasonNumber}`" :value="seasonNumber">
+                                    {{ seasonNumber === 0 ? 'Specials' : `Season ${seasonNumber}` }}
                                 </option>
                             </select>
-                            <template v-else-if="show.seasons.length >= 1">
+                            <template v-else-if="seasons.length >= 1">
                                 Season:
-                                <template v-for="(season, $index) in reverse(show.seasons)">
-                                    <app-link :href="'#season-' + season[0].season" :key="`jumpToSeason-${season[0].season}`">{{ season[0].season === 0 ? 'Specials' : season[0].season }}</app-link>
-                                    <slot> </slot>
-                                    <span v-if="$index !== (show.seasons.length - 1)" :key="`separator-${$index}`" class="separator">| </span>
+                                <template v-for="(seasonNumber, index) in reverse(seasons)">
+                                    <app-link :href="`#season-${seasonNumber}`" :key="`jumpToSeason-${seasonNumber}`" @click.native.prevent="jumpToSeason = seasonNumber">
+                                        {{ seasonNumber === 0 ? 'Specials' : seasonNumber }}
+                                    </app-link>
+                                    <span v-if="index !== (seasons.length - 1)" :key="`separator-${index}`" class="separator">| </span>
                                 </template>
                             </template>
                         </span>
@@ -59,30 +60,31 @@
                 <div class="show-poster-container">
                     <div class="row">
                         <div class="image-flex-container col-md-12">
-                            <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true"></asset>
+                            <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                         </div>
                     </div>
                 </div>
 
-                <div class="ver-spacer"></div>
+                <div class="ver-spacer" />
 
                 <div class="show-info-container">
                     <div class="row">
                         <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                            <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true"></asset>
+                            <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                         </div>
                         <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                            <span v-if="show.rating.imdb && show.rating.imdb.rating"
+                            <span
+                                v-if="show.rating.imdb && show.rating.imdb.rating"
                                 class="imdbstars"
                                 :qtip-content="show.rating.imdb.rating + ' / 10 Stars<br> ' + show.rating.imdb.votes + ' Votes'"
                             >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }"></span>
+                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
                             </span>
                             <template v-if="!show.id.imdb">
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
                             </template>
                             <template v-else>
-                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
                                 <span v-if="show.imdbInfo.year">
                                     ({{ show.imdbInfo.year }}) -
                                 </span>
@@ -90,22 +92,22 @@
                                     {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                 </span>
                                 <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
                                 </app-link>
                             </template>
                             <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
-                                <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                                <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                             </app-link>
                             <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;"/>
+                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.xemNumbering" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
-                                <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
+                                <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
                             <app-link v-if="show.id.tvdb" :href="'https://fanart.tv/series/' + show.id.tvdb" :title="'https://fanart.tv/series/' + show.id[show.indexer]">
-                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/>
+                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
                             </app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
@@ -125,7 +127,7 @@
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
-                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot"></truncate>
+                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot" />
                                         </td>
                                     </tr>
 
@@ -140,8 +142,8 @@
                                         <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
                                             <td class="showLegend">Allowed Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.allowed"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
                                                 </template>
                                             </td>
@@ -150,52 +152,94 @@
                                         <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
                                             <td class="showLegend">Preferred Qualities:</td>
                                             <td>
-                                                <template v-for="(curQuality, $index) in show.config.qualities.preferred"><!--
-                                                    -->{{ $index > 0 ? ', ' : '' }}<!--
+                                                <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
+                                                    -->{{ index > 0 ? ', ' : '' }}<!--
                                                     --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
                                                 </template>
                                             </td>
                                         </tr>
                                     </template>
 
-                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font> on {{ show.network }}</td></tr>
+                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b> on {{ show.network }}</td></tr>
                                     <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
-                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }} <font v-if="!show.airsFormatValid" color='#FF0000'><b>(invalid Timeformat)</b></font></td></tr>
+                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b></td></tr>
                                     <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
                                     <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                                    <tr><td class="showLegend"><span :class="{'location-invalid': !show.config.locationValid}">Location: </span></td><td><span :class="{'location-invalid': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
+                                    <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.join(',')}}</td>
+                                        <td>{{show.config.aliases.join(', ')}}</td>
                                     </tr>
 
-                                    <tr v-if="show.config.release.requiredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Required Words: </td>
-                                        <td><span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span></td>
+                                    <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
+                                        </td>
+                                        <td>
+                                            <span v-if="show.config.release.requiredWords.length" class="break-word">
+                                                {{show.config.release.requiredWords.join(', ')}}
+                                            </span>
+                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <template v-if="show.config.release.requiredWords.length > 0">
+                                                        <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
+                                                    {{search.filters.required.join(', ')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
-                                    <tr v-if="show.config.release.ignoredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
-                                        <td><span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span></td>
+                                    <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{ignored: type === 'snatch-selection'}">Ignored Words: </span>
+                                        </td>
+                                        <td>
+                                            <span v-if="show.config.release.ignoredWords.length" class="break-word">
+                                                {{show.config.release.ignoredWords.join(', ')}}
+                                            </span>
+                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <template v-if="show.config.release.ignoredWords.length > 0">
+                                                        <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
+                                                    {{search.filters.ignored.join(', ')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
 
-                                    <tr v-if="preferredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
-                                        <td><span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{preferredWords.join(',')}}</span></td>
+                                    <tr v-if="search.filters.preferred.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{preferred: type === 'snatch-selection'}">Preferred Words: </span>
+                                        </td>
+                                        <td>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word">{{search.filters.preferred.join(', ')}}</span>
+                                            </app-link>
+                                        </td>
                                     </tr>
-                                    <tr v-if="undesiredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
-                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td>
+                                    <tr v-if="search.filters.undesired.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{undesired: type === 'snatch-selection'}">Undesired Words: </span>
+                                        </td>
+                                        <td>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word">{{search.filters.undesired.join(', ')}}</span>
+                                            </app-link>
+                                        </td>
                                     </tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
-                                        <td>{{show.config.release.whitelist.join(',')}}</td>
+                                        <td>{{show.config.release.whitelist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
                                         <td class="showLegend">Unwanted Groups:</td>
-                                        <td>{{show.config.release.blacklist.join(',')}}</td>
+                                        <td>{{show.config.release.blacklist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.airdateOffset !== 0">
@@ -212,15 +256,15 @@
                             <!-- Option table right -->
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
-                                    <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime"></state-switch></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder"></state-switch></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene"></state-switch></td></tr>
+                                    <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
+                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" /></td></tr>
+                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -234,12 +278,13 @@
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
                         <div id="key-padding" class="pull-left top-5">
-
-                            <label v-if="show.seasons" for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')" /> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                            <label v-if="show.seasons" for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')" /> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                            <label v-if="show.seasons" for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')" /> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                            <label v-if="show.seasons" for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')" /> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                            <label v-if="show.seasons" for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')" /> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                            <template v-if="show.seasons">
+                                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')"> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
+                                <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')"> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
+                                <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')"> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
+                                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')"> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
+                                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')"> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
+                            </template>
                             <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
                             <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
                         </div>
@@ -258,14 +303,14 @@
                                     {{ quality.name }}
                                 </option>
                             </select>
-                            <input type="hidden" id="series-slug" :value="show.id.slug" />
-                            <input type="hidden" id="series-id" :value="show.id[show.indexer]" />
-                            <input type="hidden" id="indexer" :value="show.indexer" />
-                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked" />
+                            <input type="hidden" id="series-slug" :value="show.id.slug">
+                            <input type="hidden" id="series-id" :value="show.id[show.indexer]">
+                            <input type="hidden" id="indexer" :value="show.indexer">
+                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked">
                         </div>
                     </div> <!-- checkboxControls -->
                 </div> <!-- end of row -->
-                <div v-else></div>
+                <div v-else />
             </div> <!-- end of col -->
         </div> <!-- end of row -->
     </div>
@@ -280,6 +325,17 @@ import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
+
+/**
+ * Return the first item of `values` that is not `null`, `undefined` or `NaN`.
+ * @param {...any} values - Values to check.
+ * @returns {any} - The first item that fits the criteria, `undefined` otherwise.
+ */
+const resolveToValue = (...values) => {
+    return values.find(value => {
+        return !Number.isNaN(value) && value !== null && value !== undefined;
+    });
+};
 
 export default {
     name: 'show-header',
@@ -361,10 +417,10 @@ export default {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         season() {
-            return this.showSeason || Number(this.$route.query.season) || undefined;
+            return resolveToValue(this.showSeason, Number(this.$route.query.season));
         },
         episode() {
-            return this.showEpisode || Number(this.$route.query.episode) || undefined;
+            return resolveToValue(this.showEpisode, Number(this.$route.query.episode));
         },
         showIndexerUrl() {
             const { show, indexerConfig } = this;
@@ -394,20 +450,6 @@ export default {
             }
             return result;
         },
-        preferredWords() {
-            const { preferred } = this.search.filters;
-            if (preferred.length > 0) {
-                return preferred;
-            }
-            return [];
-        },
-        undesiredWords() {
-            const { undesired } = this.search.filters;
-            if (undesired.length > 0) {
-                return undesired;
-            }
-            return [];
-        },
         episodeSummary() {
             const { show } = this;
             const { seasons } = show;
@@ -423,8 +465,10 @@ export default {
                 Unset: 0,
                 Archived: 0
             };
-            seasons.forEach(episodes => {
-                episodes.forEach(episode => {
+
+            seasons.forEach(season => {
+                season.episodes.forEach(episode => {
+                    // FIXME: with the overview status.
                     summary[episode.status] += 1;
                 });
             });
@@ -450,6 +494,11 @@ export default {
         combinedQualities() {
             const { allowed, preferred } = this.show.config.qualities;
             return combineQualities(allowed, preferred);
+        },
+        seasons() {
+            const { show } = this;
+            // Only return an array with seasons (integers)
+            return show.seasonCount.map(season => season.season);
         }
     },
     methods: {
@@ -565,16 +614,26 @@ export default {
         jumpToSeason(season) {
             // Don't jump until an option is selected
             if (season !== 'jump') {
-                console.debug(`Jumping to ${season}`);
+                // Calculate duration
+                let duration = (this.seasons.length - season) * 50;
+                duration = Math.max(500, Math.min(duration, 2000)); // Limit to (500ms <= duration <= 2000ms)
 
-                scrollTo(season, 100, {
+                // Calculate offset
+                let offset = -50; // Navbar
+                // Needs extra offset when the sub menu is "fixed".
+                offset -= window.matchMedia('(min-width: 1281px)').matches ? 40 : 0;
+
+                const name = `season-${season}`;
+                console.debug(`Jumping to #${name} (${duration}ms)`);
+
+                scrollTo(`[name="${name}"]`, duration, {
                     container: 'body',
-                    easing: 'ease-in',
-                    offset: -100
+                    easing: 'ease-in-out',
+                    offset
                 });
 
                 // Update URL hash
-                location.hash = season;
+                window.location.hash = name;
 
                 // Reset jump
                 this.jumpToSeason = 'jump';
@@ -636,6 +695,16 @@ div#col-show-summary {
     display: table-cell;
 }
 
+.showLegend {
+    padding-right: 6px;
+    padding-bottom: 1px;
+    width: 150px;
+}
+
+.invalid-value {
+    color: rgb(255, 0, 0);
+}
+
 @media (min-width: 768px) {
     .display-specials,
     .display-seasons {
@@ -686,5 +755,9 @@ div#col-show-summary {
     #col-show-summary img.show-image {
         max-width: 280px;
     }
+}
+
+span.global-filter {
+    font-style: italic;
 }
 </style>

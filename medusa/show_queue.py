@@ -458,7 +458,7 @@ class QueueItemAdd(ShowQueueItem):
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
-        except IndexerShowNotFound as error:
+        except IndexerShowNotFound:
             log.warning(
                 '{id}: Unable to look up the show in {path} using id {id} on {indexer}.'
                 ' Delete metadata files from the folder and try adding it again.',
@@ -593,6 +593,10 @@ class QueueItemAdd(ShowQueueItem):
             log.warning('Error loading IMDb info: {0}', error)
 
         try:
+            log.debug(
+                '{id}: Saving new show to database',
+                {'id': self.show.series_id}
+            )
             self.show.save_to_db()
         except Exception as error:
             log.error('Error saving the show to the database: {0}', error)
@@ -655,6 +659,19 @@ class QueueItemAdd(ShowQueueItem):
 
         # After initial add, set to default_status_after.
         self.show.default_ep_status = self.default_status_after
+
+        try:
+            log.debug(
+                '{id}: Saving new show info to database',
+                {'id': self.show.series_id}
+            )
+            self.show.save_to_db()
+        except Exception as error:
+            log.warning(
+                '{id}: Error saving new show info to database: {error_msg}',
+                {'id': self.show.series_id, 'error_msg': error}
+            )
+            log.error(traceback.format_exc())
 
         self.finish()
 

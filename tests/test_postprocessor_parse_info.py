@@ -64,6 +64,39 @@ import pytest
             'version': -1
         }
     },
+    {  # Quality from parent folder with source
+        'file_path': 'tvs-americansDETE507/The.Americans.2013.S05E07.Hoehere.Ziele.German.DD+51.WEBDL.1080p.NetflixHD.AVC-TVS/tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'nzb_name': 'tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'expected': {
+            'show': 'The Americans 2013',
+            'season': 5,
+            'episodes': [7],
+            'quality': Quality.FULLHDWEBDL,
+            'version': -1
+        }
+    },
+    {  # Quality from parent folder with origin
+        'file_path': 'tvs-americansDETE507/The.Americans.2013.S05E07.Hoehere.Ziele.German.DD+51.DL.1080p.NetflixHD.AVC-TVS/tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'nzb_name': 'tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'expected': {
+            'show': 'The Americans 2013',
+            'season': 5,
+            'episodes': [7],
+            'quality': Quality.FULLHDWEBDL,
+            'version': -1
+        }
+    },
+    {  # Quality from parent folder without source/origin
+        'file_path': 'tvs-americansDETE507/The.Americans.2013.S05E07.Hoehere.Ziele.German.DD+51.DL.1080p.AVC-TVS/tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'nzb_name': 'tvs-the-americans-2013-dd51-dl-18p-nfhd-avc-507.mkv',
+        'expected': {
+            'show': 'The Americans 2013',
+            'season': 5,
+            'episodes': [7],
+            'quality': Quality.FULLHDTV,
+            'version': -1
+        }
+    }
 ])
 def test_parse_info(p, monkeypatch, parse_method):
     """Run the test."""

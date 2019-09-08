@@ -9,15 +9,15 @@
                     class="btn-medusa top-5 bottom-5"
                     @[clickEventCond(menuItem)].native.prevent="confirmDialog($event, menuItem.confirm)"
                 >
-                    <span :class="['pull-left', menuItem.icon]"></span> {{ menuItem.title }}
+                    <span :class="['pull-left', menuItem.icon]" /> {{ menuItem.title }}
                 </app-link>
 
-                <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug" follow-selection></show-selector>
+                <show-selector v-if="showSelectorVisible" :show-slug="curShowSlug" follow-selection />
             </div>
         </div>
 
         <!-- This fixes some padding issues on screens larger than 1281px -->
-        <div class="btn-group"></div>
+        <div class="btn-group" />
     </div>
 </template>
 <script>
@@ -34,7 +34,7 @@ export default {
             const { $route } = this;
             let subMenu = $route.meta.subMenu || [];
             if (typeof subMenu === 'function') {
-                subMenu = subMenu.call(this);
+                subMenu = subMenu(this);
             }
             // Filters `requires = false` and reverses the array
             const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
