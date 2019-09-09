@@ -320,7 +320,7 @@ import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
-import { attachImdbTooltip } from '../jquery-wrappers';
+import { attachImdbTooltip } from '../utils/jquery';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 /**
@@ -612,9 +612,9 @@ export default {
         moveSummaryBackground() {
             const summary = $('#summary');
             // A hack for now, to bail if the page hasn't fully been rendered yet.
-            if (!summary) {
+            if (Object.keys(summary).length === 0) {
                 return;
-        }
+            }
 
             const height = summary.height() + 10;
             const top = summary.offset().top + 5;
