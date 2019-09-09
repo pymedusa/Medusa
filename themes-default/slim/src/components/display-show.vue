@@ -212,7 +212,7 @@ import parseISO from 'date-fns/parseISO';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize, convertDateFormat } from '../utils/core';
-import { addQTip, updateSearchIcons } from '../jquery-wrappers';
+import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
@@ -845,7 +845,7 @@ export default {
 
             if (episodes) {
                 data = {
-                    showslug: show.id.slug,
+                    showSlug: show.id.slug,
                     episodes: [],
                     options: {}
                 };
