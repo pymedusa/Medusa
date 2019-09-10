@@ -58,7 +58,7 @@ const mutations = {
             const existingSeason = newShow.seasons.find(season => season.season === episode.season);
 
             if (existingSeason) {
-                const foundIndex = existingSeason.episodes.findIndex(element => element.identifier === episode.identifier);
+                const foundIndex = existingSeason.episodes.findIndex(element => element.slug === episode.slug);
                 if (foundIndex === -1) {
                     existingSeason.episodes.push(episode);
                 } else {
