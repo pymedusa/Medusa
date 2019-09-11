@@ -378,8 +378,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
             else:
                 ui.notifications.message('No results were found')
                 log.info(
-                    'Unable to find {search_type} {season_pack}results for: {ep}', {
-                        'search_type': ('forced', 'manual')[bool(self.manual_search)],
+                    'Unable to find manual search {season_pack}results for: {ep}', {
                         'season_pack': ('', 'season pack ')[bool(self.manual_search_type == 'season')],
                         'ep': self.segment[0].pretty_name()
                     }
