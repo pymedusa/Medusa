@@ -13,6 +13,6 @@
     "test-api": "dredd --config dredd/dredd.yml"
   },
   "devDependencies": {
-    "dredd": "12.0.6"
+    "dredd": "12.0.7"
   }
 }
