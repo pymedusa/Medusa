@@ -976,7 +976,7 @@ export default {
                     // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
                     // before going on to the next one.
                     const _getEpisodes = async (id, indexer) => {
-                        for (const season of Object.keys(show.seasonCount).reverse()) {
+                        for (const season of show.seasonCount.map(s => s.season).reverse()) {
                             // We're waiting for the results by design, to give vue the chance to update the dom.
                             // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
                             // and chance is high a number of requests will timeout.
