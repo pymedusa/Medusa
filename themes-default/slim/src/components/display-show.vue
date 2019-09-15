@@ -75,7 +75,7 @@
 
                     <template slot="table-footer-row" slot-scope="{headerRow}">
                         <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
-                            <th class="col-footer" colspan=15 align=left>Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
                         </tr>
                         <tr class="spacer" />
                     </template>
@@ -149,6 +149,7 @@
             </div>
         </div>
 
+        <!-- eslint-disable @sharkykh/vue-extra/component-not-registered -->
         <modal name="query-start-backlog-search" @before-open="beforeBacklogSearchModalClose" :height="'auto'" :width="'80%'">
             <transition name="modal">
                 <div class="modal-mask">
@@ -195,6 +196,7 @@
                 </div>
             </transition>
         </modal>
+        <!--eslint-enable-->
 
         <!-- TODO: Implement subtitle modal in vue -->
         <!-- <include file="subtitle_modal.mako"/> -->
@@ -207,7 +209,6 @@
 
 <script>
 import formatDate from 'date-fns/format';
-import parse from 'date-fns/parse';
 import parseISO from 'date-fns/parseISO';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
@@ -740,7 +741,7 @@ export default {
 
             $(el).css({
                 'background-color': '#FF0000', // Red
-                'color': '#FFF!important', // eslint-disable-line quote-props
+                'color': '#FFF !important', // eslint-disable-line quote-props
                 'font-weight': 'bold'
             });
             return false;
@@ -1009,30 +1010,36 @@ export default {
     float: left;
     height: 40px;
 }
+
 .vgt-input {
     border: 1px solid #ccc;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out,-webkit-box-shadow .15s ease-in-out;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
     height: 30px;
     padding: 5px 10px;
     font-size: 12px;
     line-height: 1.5;
     border-radius: 3px;
 }
+
 div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
     font-size: 24px;
     margin-top: 20px;
     margin-bottom: 10px;
 }
+
 .fanartBackground.displayShow {
     clear: both;
     opacity: 0.9;
 }
+
 .defaultTable.displayShow {
     clear: both;
 }
+
 .displayShowTable.displayShow {
     clear: both;
 }
+
 .fanartBackground table {
     table-layout: auto;
     width: 100%;
@@ -1043,9 +1050,11 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
     empty-cells: show;
     color: rgb(0, 0, 0) !important;
 }
+
 .summaryFanArt {
     opacity: 0.9;
 }
+
 .fanartBackground > table th.vgt-row-header {
     border: none !important;
     background-color: transparent !important;
@@ -1053,11 +1062,13 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
     padding-top: 15px !important;
     text-align: left !important;
 }
+
 .fanartBackground td.col-search {
     text-align: center;
 }
 
 /* Trying to migrate this from tablesorter */
+
 /* =======================================================================
 tablesorter.css
 ========================================================================== */
@@ -1068,7 +1079,6 @@ tablesorter.css
     margin-left: auto;
     color: rgb(0, 0, 0);
     text-align: left;
-    /* background-color: rgb(255, 255, 255); */
     border-spacing: 0;
 }
 
@@ -1251,7 +1261,8 @@ td.col-footer {
     justify-content: space-between;
 }
 
-.footer__row-count, .footer__navigation__page-info {
+.footer__row-count,
+.footer__navigation__page-info {
     display: inline;
 }
 
@@ -1264,7 +1275,7 @@ td.col-footer {
 }
 
 .vgt-pull-right {
-    float: right!important;
+    float: right !important;
 }
 
 .vgt-wrap__footer .footer__navigation__page-btn .chevron {
@@ -1275,13 +1286,14 @@ td.col-footer {
     margin: 0 8px;
 }
 
-.vgt-wrap__footer .footer__navigation__info, .vgt-wrap__footer .footer__navigation__page-info {
+.vgt-wrap__footer .footer__navigation__info,
+.vgt-wrap__footer .footer__navigation__page-info {
     display: inline-flex;
     color: #909399;
     margin: 0 16px;
-    margin-top: 0px;
+    margin-top: 0;
     margin-right: 16px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
     margin-left: 16px;
 }
 
@@ -1290,7 +1302,7 @@ td.col-footer {
     line-height: 40px;
 }
 
-/** Style the modal. This should be saved somewhere, where we create one modal template with slots, and style that.*/
+/** Style the modal. This should be saved somewhere, where we create one modal template with slots, and style that. */
 .modal-container {
     border: 1px solid rgb(17, 17, 17);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
@@ -1307,8 +1319,8 @@ td.col-footer {
 .modal-content {
     background: rgb(34, 34, 34);
     border-radius: 0;
-    border: 1px solid rgba(0,0,0,.2);
-    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .modal-body {

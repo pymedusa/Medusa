@@ -239,14 +239,4 @@ $.ajaxEpSearch = function(options) {
             window.location = url;
         }
     });
-
-    $('#forcedSearchModalFailed .btn-medusa').on('click', function() {
-        failedDownload = ($(this).text().toLowerCase() === 'yes');
-        $('#forcedSearchModalQuality').modal('show');
-    });
-
-    $('#forcedSearchModalQuality .btn-medusa').on('click', function() {
-        qualityDownload = ($(this).text().toLowerCase() === 'yes');
-        forcedSearch();
-    });
 };

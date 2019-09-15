@@ -71,7 +71,7 @@ const mutations = {
                     html: false,
                     mode: 'span',
                     label: 1
-};
+                };
                 newShow.seasons.push(newSeason);
                 newSeason.episodes.push(episode);
             }
@@ -160,7 +160,7 @@ const actions = {
      * @param {ShowParameteres} parameters - Request parameters.
      * @returns {Promise} The API response.
      */
-    async getEpisodes({ commit, getters }, { indexer, id, season }) {
+    getEpisodes({ commit, getters }, { indexer, id, season }) {
         return new Promise((resolve, reject) => {
             const { getShowById } = getters;
             const show = getShowById({ id, indexer });

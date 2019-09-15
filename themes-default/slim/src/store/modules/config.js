@@ -273,9 +273,6 @@ const getters = {
         }
         const { indexers } = state.indexers.config;
         return indexers[name].id;
-    },
-    layout: state => layout => {
-        return state.layout[layout];
     }
 };
 

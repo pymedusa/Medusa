@@ -25,11 +25,11 @@ export default {
     },
     computed: {
         plotInfoClass() {
-            return this.description !== '' ? 'plotInfo' : 'plotInfoNone';
+            return this.description === '' ? 'plotInfoNone' : 'plotInfo';
         }
     },
     mounted() {
-        const { description, $el, showSlug, season, episode } = this;
+        const { description, $el } = this;
         if (description === '') {
             return false;
         }

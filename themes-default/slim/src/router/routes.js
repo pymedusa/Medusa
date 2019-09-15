@@ -31,8 +31,8 @@ const homeRoutes = [
         meta: {
             topMenu: 'home',
             subMenu: showSubMenu
-    },
-    component: () => import('../components/display-show.vue')
+        },
+        component: () => import('../components/display-show.vue')
     },
     {
         path: '/home/snatchSelection',
