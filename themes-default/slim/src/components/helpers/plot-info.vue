@@ -1,6 +1,6 @@
 <template>
     <img v-if="description !== ''" src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt=""
-         v-tooltip.right="description">
+         v-tooltip.right="{content: description, show: manualOpen}">
 </template>
 <script>
 
@@ -23,6 +23,11 @@ export default {
             type: [Number, String],
             required: true
         }
+    },
+    data() {
+        return {
+            manualOpen: false
+        };
     },
     computed: {
         plotInfoClass() {
@@ -58,6 +63,10 @@ export default {
   border-radius: 16px;
   padding: 5px 10px 4px;
   border: 1px solid #F1D031;
+  -webkit-box-shadow:1px 1px 3px 1px rgba(0,0,0,.15);
+  -moz-box-shadow:1px 1px 3px 1px rgba(0,0,0,.15);
+  box-shadow:1px 1px 3px 1px rgba(0,0,0,.15)
+
 }
 
 .tooltip .tooltip-arrow {
@@ -65,6 +74,8 @@ export default {
   height: 0;
   position: absolute;
   margin: 5px;
+  /* background: #FFEF93; */
+
   border: 1px solid #F1D031;
   z-index: 1;
 }
