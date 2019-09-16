@@ -5,6 +5,7 @@ import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
 import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
+import VTooltip from 'v-tooltip'
 
 import {
     AddShowOptions,
@@ -107,6 +108,7 @@ export const registerPlugins = () => {
     Vue.use(Snotify);
     Vue.use(VueCookies);
     Vue.use(VModal);
+    Vue.use(VTooltip);
 };
 
 /**

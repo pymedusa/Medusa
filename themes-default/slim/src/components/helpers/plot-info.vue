@@ -1,5 +1,6 @@
 <template>
-    <img src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt="">
+    <img v-if="description !== ''" src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt=""
+         v-tooltip.right="description">
 </template>
 <script>
 
@@ -27,34 +28,6 @@ export default {
         plotInfoClass() {
             return this.description === '' ? 'plotInfoNone' : 'plotInfo';
         }
-    },
-    mounted() {
-        const { description, $el } = this;
-        if (description === '') {
-            return false;
-        }
-        $($el).qtip({
-            content: {
-                text: description
-            },
-            show: {
-                solo: true
-            },
-            position: {
-                my: 'right center',
-                adjust: {
-                    y: -10,
-                    x: -10
-                }
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    method: 'polygon'
-                },
-                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-            }
-        });
     }
 };
 </script>
@@ -73,4 +46,111 @@ export default {
     top: 2px;
     opacity: 0.4;
 }
+
+.tooltip {
+  display: block !important;
+  z-index: 10000;
+}
+
+.tooltip .tooltip-inner {
+  background: #FFEF93;
+  color: #555;
+  border-radius: 16px;
+  padding: 5px 10px 4px;
+  border: 1px solid #F1D031;
+}
+
+.tooltip .tooltip-arrow {
+  width: 0;
+  height: 0;
+  position: absolute;
+  margin: 5px;
+  border: 1px solid #F1D031;
+  z-index: 1;
+}
+
+.tooltip[x-placement^="top"] {
+  margin-bottom: 5px;
+}
+
+.tooltip[x-placement^="top"] .tooltip-arrow {
+  border-width: 5px 5px 0 5px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  bottom: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tooltip[x-placement^="bottom"] {
+  margin-top: 5px;
+}
+
+.tooltip[x-placement^="bottom"] .tooltip-arrow {
+  border-width: 0 5px 5px 5px;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  border-top-color: transparent !important;
+  top: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.tooltip[x-placement^="right"] {
+  margin-left: 5px;
+}
+
+.tooltip[x-placement^="right"] .tooltip-arrow {
+  border-width: 5px 5px 5px 0;
+  border-left-color: transparent !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  left: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.tooltip[x-placement^="left"] {
+  margin-right: 5px;
+}
+
+.tooltip[x-placement^="left"] .tooltip-arrow {
+  border-width: 5px 0 5px 5px;
+  border-top-color: transparent !important;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  right: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.tooltip.popover .popover-inner {
+  background: #FFEF93;
+  color: #555;
+  padding: 24px;
+  border-radius: 5px;
+  box-shadow: 0 5px 30px rgba(black, .1);
+}
+
+.tooltip.popover .popover-arrow {
+  border-color: #F1D031;
+}
+
+.tooltip[aria-hidden='true'] {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .15s, visibility .15s;
+}
+
+.tooltip[aria-hidden='false'] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .15s;
+}
+
 </style>
