@@ -754,7 +754,6 @@ class Home(WebRoot):
 
         t = PageTemplate(rh=self, filename='index.mako')
 
-
         indexer_id = int(series_obj.indexer)
         series_id = int(series_obj.series_id)
 

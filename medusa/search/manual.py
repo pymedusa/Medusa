@@ -87,7 +87,7 @@ def get_episodes(search_thread, searchstatus):
         ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
             'show': {
-                'indexer' : series_obj.indexer,
+                'indexer': series_obj.indexer,
                 'series_id': series_obj.series_id,
                 'slug': series_obj.slug
             },
