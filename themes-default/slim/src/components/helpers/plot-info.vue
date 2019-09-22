@@ -1,33 +1,20 @@
 <template>
     <img v-if="description !== ''" src="images/info32.png" width="16" height="16" :class="plotInfoClass" alt=""
-         v-tooltip.right="{content: description, show: manualOpen}">
+         v-tooltip.right="{content: description}">
 </template>
 <script>
+import { VTooltip } from 'v-tooltip';
 
 export default {
     name: 'plot-info',
+    directives: {
+        tooltip: VTooltip
+    },
     props: {
         description: {
             type: String,
             required: true
-        },
-        showSlug: {
-            type: String,
-            required: true
-        },
-        season: {
-            type: [Number, String],
-            required: true
-        },
-        episode: {
-            type: [Number, String],
-            required: true
         }
-    },
-    data() {
-        return {
-            manualOpen: false
-        };
     },
     computed: {
         plotInfoClass() {
@@ -74,8 +61,6 @@ export default {
   height: 0;
   position: absolute;
   margin: 5px;
-  /* background: #FFEF93; */
-
   border: 1px solid #FFEF93;
   z-index: 1;
 }
