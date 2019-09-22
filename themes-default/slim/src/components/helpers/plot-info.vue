@@ -76,7 +76,7 @@ export default {
   margin: 5px;
   /* background: #FFEF93; */
 
-  border: 1px solid #F1D031;
+  border: 1px solid #FFEF93;
   z-index: 1;
 }
 
@@ -90,7 +90,7 @@ export default {
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
   bottom: -5px;
-  left: calc(50% - 5px);
+  left: calc(50% - 4px);
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -105,7 +105,7 @@ export default {
   border-right-color: transparent !important;
   border-top-color: transparent !important;
   top: -5px;
-  left: calc(50% - 5px);
+  left: calc(50% - 4px);
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -119,7 +119,7 @@ export default {
   border-left-color: transparent !important;
   border-top-color: transparent !important;
   border-bottom-color: transparent !important;
-  left: -5px;
+  left: -4px;
   top: calc(50% - 5px);
   margin-left: 0;
   margin-right: 0;
@@ -134,7 +134,7 @@ export default {
   border-top-color: transparent !important;
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
-  right: -5px;
+  right: -4px;
   top: calc(50% - 5px);
   margin-left: 0;
   margin-right: 0;
@@ -149,7 +149,7 @@ export default {
 }
 
 .tooltip.popover .popover-arrow {
-  border-color: #F1D031;
+  border-color: #FFEF93;
 }
 
 .tooltip[aria-hidden='true'] {
