@@ -23,7 +23,7 @@
                 </div>
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
-                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
+                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Show' : 'Hide' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
@@ -566,9 +566,7 @@ export default {
                     }
                 }
             };
-            this.$store.dispatch('setConfig', config).then(() => {
-                window.location.reload();
-            });
+            this.$store.dispatch('setConfig', config);
         },
         reverse(array) {
             return array ? array.slice().reverse() : [];

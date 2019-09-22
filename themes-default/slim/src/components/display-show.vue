@@ -6,11 +6,12 @@
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
 
-        <show-header @reflow="reflowLayout" type="show"
-                     :show-id="id" :show-indexer="indexer" @update="statusQualityUpdate" @update-overview-status="filterByOverviewStatus = $event"
-        />
-
-        <!-- <subtitle-search v-if="Boolean(show)" :show="show" :season="4" :episode="8"></subtitle-search> -->
+        <show-header type="show"
+                     @reflow="reflowLayout"
+                     :show-id="id"
+                     :show-indexer="indexer"
+                     @update="statusQualityUpdate"
+                     @update-overview-status="filterByOverviewStatus = $event"/>
 
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
@@ -63,7 +64,6 @@
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
-                            <!-- {'Season ' + str(epResult['season']) if int(epResult['season']) > 0 else 'Specials'} -->
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
                             <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
@@ -394,8 +394,13 @@ export default {
         },
         orderSeasons() {
             // TODO: Make use of the getOverviewStatus function in the const module, to properly map the statuses.
-            const { filterByOverviewStatus, invertTable, show } = this;
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season);
+            const { config, filterByOverviewStatus, invertTable, show } = this;
+
+            if (!show.seasons) {
+                return [];
+            }
+
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || !config.layout.show.specials);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
