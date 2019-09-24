@@ -496,6 +496,7 @@ class Show(dict):
             raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
 
     def __bool__(self):
+        """Magic method for returning self.data as a boolean."""
         return bool(self.data)
 
     __nonzero__ = __bool__
