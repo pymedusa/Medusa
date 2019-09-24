@@ -62,7 +62,7 @@ class Notifier(object):
         username = username or app.PLEX_CLIENT_USERNAME
         password = password or app.PLEX_CLIENT_PASSWORD
 
-        return kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app='PLEX')  # pylint: disable=protected-access
+        return kodi_notifier._notify_kodi(title, message, host=host, username=username, password=password, force=force, dest_app='PLEX')  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions

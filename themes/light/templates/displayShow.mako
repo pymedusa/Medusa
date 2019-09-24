@@ -1,11 +1,17 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import datetime
-    import urllib
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
+
+    try:
+        # python 2
+        from urllib import quote
+    except ImportError:
+        # python 3+
+        from urllib.parse import quote
 %>
 <%block name="scripts">
 <script type="text/x-template" id="show-template">
@@ -243,7 +249,7 @@
                                     for rootDir in app.ROOT_DIRS:
                                         if rootDir.startswith('/'):
                                             filename = filename.replace(rootDir, '')
-                                    filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
+                                    filename = app.DOWNLOAD_URL + quote(filename.encode('utf8'))
                                 %>
                                 <app-link href="${filename}">Download</app-link>
                             % endif

@@ -31,16 +31,39 @@ from collections import OrderedDict
 from datetime import date, datetime
 
 from medusa import (
-    app, classes, db, helpers, image_cache, network_timezones,
-    process_tv, sbdatetime, subtitles, ui,
+    app,
+    classes,
+    db,
+    helpers,
+    image_cache,
+    network_timezones,
+    sbdatetime,
+    subtitles,
+    ui,
 )
 from medusa.common import (
-    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
-    SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings,
+    ARCHIVED,
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    UNSET,
+    WANTED,
+    statusStrings,
 )
 from medusa.helper.common import (
-    dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
-    timeFormat, try_int,
+    dateFormat,
+    dateTimeFormat,
+    pretty_file_size,
+    sanitize_filename,
+    timeFormat,
+    try_int,
 )
 from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException
 from medusa.helpers.quality import get_quality_string
@@ -53,7 +76,7 @@ from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
@@ -795,7 +818,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = BacklogQueueItem(show_obj, [ep_obj])
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -1303,9 +1326,14 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = 'manual'
 
-        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
-            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
-            failed=self.failed, proc_type=self.type
+        data = app.post_processor_scheduler.action.run(
+            path=self.path,
+            process_method=self.process_method,
+            force=self.force_replace,
+            is_priority=self.is_priority,
+            delete_on=self.delete_files,
+            failed=self.failed,
+            proc_type=self.type
         )
 
         if not self.return_data:

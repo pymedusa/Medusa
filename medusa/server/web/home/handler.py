@@ -82,7 +82,6 @@ from medusa.search.manual import (
 from medusa.search.queue import (
     BacklogQueueItem,
     FailedQueueItem,
-    ForcedSearchQueueItem,
     SnatchQueueItem,
 )
 from medusa.server.web.core import (
@@ -382,15 +381,16 @@ class Home(WebRoot):
         if None is not password and set('*') == set(password):
             password = app.PLEX_CLIENT_PASSWORD
 
+        host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.plex_notifier.test_notify_pht(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Successful test notice sent to Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
             else:
-                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(curHost))
+                final_result += 'Test failed for Plex Home Theater ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message('Tested Plex Home Theater(s): ', unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Home Theater(s)', final_result)
 
         return final_result
 
@@ -400,17 +400,18 @@ class Home(WebRoot):
         if password is not None and set('*') == set(password):
             password = app.PLEX_SERVER_PASSWORD
 
+        host = config.clean_hosts(host)
         final_result = ''
 
-        cur_result = notifiers.plex_notifier.test_notify_pms(unquote_plus(host), username, password, plex_server_token)
+        cur_result = notifiers.plex_notifier.test_notify_pms(host, username, password, plex_server_token)
         if cur_result is None:
-            final_result += 'Successful test of Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(host.replace(',', ', ')))
+            final_result += 'Successful test of Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(', '.join(host)))
         elif cur_result is False:
             final_result += 'Test failed, No Plex Media Server host specified<br>\n'
         else:
-            final_result += 'Test failed for Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(host.replace(',', ', ')))
+            final_result += 'Test failed for Plex Media Server(s) ... {host}<br>\n'.format(host=unquote_plus(cur_result))
 
-        ui.notifications.message('Tested Plex Media Server host(s): ', unquote_plus(host.replace(',', ', ')))
+        ui.notifications.message('Tested Plex Media Server(s)', final_result)
 
         return final_result
 
@@ -1708,10 +1709,8 @@ class Home(WebRoot):
 
         return self.redirect('/home/displayShow?indexername={series_obj.indexer_name}&seriesid={series_obj.series_id}'.format(series_obj=series_obj))
 
-    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None, manual_search=None):
-        """Search a ForcedSearch single episode using providers which are backlog enabled."""
-        down_cur_quality = 0
-
+    def searchEpisode(self, indexername=None, seriesid=None, season=None, episode=None):
+        """Search for a single episode using a Backlog Search using providers that are backlog enabled."""
         # retrieve the episode object and fail if we can't get one
         series_obj = Show.find_by_id(app.showList, indexer_name_to_id(indexername), seriesid)
         ep_obj = series_obj.get_episode(season, episode)
@@ -1721,7 +1720,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = BacklogQueueItem(ep_obj.series, [ep_obj])
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
