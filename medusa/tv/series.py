@@ -676,8 +676,8 @@ class Series(TV):
     @staticmethod
     def normalize_status(status):
         """Return a normalized status given current indexer status."""
-        for medusa_status, mappings in viewitems(STATUS_MAP):
-            if status.lower() in mappings:
+        for medusa_status, indexer_mappings in viewitems(STATUS_MAP):
+            if status.lower() in indexer_mappings:
                 return medusa_status
 
         return 'Unknown'
