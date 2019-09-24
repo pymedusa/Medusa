@@ -55,7 +55,8 @@ STATUS_MAP = {
         'planned',
         'in production',
         'pilot',
-        'continuing'
+        'continuing',
+        'upcoming'
     ],
     'Ended': [
         'canceled/ended',
