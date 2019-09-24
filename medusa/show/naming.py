@@ -77,7 +77,7 @@ def contains_at_least_one_word(name, words):
 
     if isinstance(words, string_types):
         words = words.split(',')
-    items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % word.strip(), re.I), word.strip()) for word in words]
+    items = [(re.compile(r'(^|[\W_])%s($|[\W_])' % re.escape(word.strip()), re.I), word.strip()) for word in words]
     for regexp, word in items:
         if regexp.search(name):
             # subs_words = '.dub.' or '.dksub.' or else

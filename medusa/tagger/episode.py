@@ -28,7 +28,6 @@ class EpisodeTags(object):
             'mpeg': tags.mpeg,
             'xvid': tags.xvid,
             'wide': tags.widescreen,
-            'aussie': tags.aussie,
             'netflix': tags.netflix,
             'amazon': tags.amazon,
         }
@@ -134,9 +133,9 @@ class EpisodeTags(object):
         if 'dlmux' in self.name.lower():
             return 'dlmux'
 
-        if self.netflix:
-            return self.netflix
-
+        streaming_service = self.netflix or self.amazon or self.itunes
+        if streaming_service:
+            return streaming_service
         else:
             attr = 'web'
             match = self._get_match_obj(attr)
@@ -277,17 +276,6 @@ class EpisodeTags(object):
         if self.res and self.tv == 'hd':
             regex = re.compile(r'(%s.hdtv)' % self.res, re.IGNORECASE)
             match = self._get_match_obj(attr, regex)
-        return '' if not match else match.group()
-
-    @property
-    def aussie(self):
-        """
-        Aussie p2p release groups.
-
-        :return: the aussie p2p release group
-        """
-        attr = 'aussie'
-        match = self._get_match_obj(attr)
         return '' if not match else match.group()
 
     @property

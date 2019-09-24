@@ -9,6 +9,7 @@ import collections
 import operator
 import os
 import re
+import timeit
 
 from mako import compat
 
@@ -180,7 +181,7 @@ class LRUCache(dict):
         def __init__(self, key, value):
             self.key = key
             self.value = value
-            self.timestamp = compat.time_func()
+            self.timestamp = timeit.default_timer()
 
         def __repr__(self):
             return repr(self.value)
@@ -191,7 +192,7 @@ class LRUCache(dict):
 
     def __getitem__(self, key):
         item = dict.__getitem__(self, key)
-        item.timestamp = compat.time_func()
+        item.timestamp = timeit.default_timer()
         return item.value
 
     def values(self):
