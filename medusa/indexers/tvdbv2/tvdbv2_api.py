@@ -295,7 +295,7 @@ class TVDBv2(BaseIndexer):
                     'Authentication failed, possible bad api key. reason: {reason} ({status})'
                     .format(reason=e.reason, status=e.status)
                 )
-            if e.status == 404 and self.shows[tvdb_id]['firstaired'] == '':
+            if e.status == 404 and not self.shows[tvdb_id]['firstaired']:
                 log.info('Show {name} does not have any episodes yet, adding it anyway',
                          {'name': self.shows[tvdb_id]['seriesname']})
         except RequestException as error:
