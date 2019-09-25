@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Shows without any episodes can now be added ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
 
 #### Fixes
 

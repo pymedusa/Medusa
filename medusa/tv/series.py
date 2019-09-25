@@ -674,10 +674,13 @@ class Series(TV):
         self.release_groups.set_white_keywords(short_group_names(group_names))
 
     @staticmethod
-    def normalize_status(series_status):
+    def normalize_status(status):
         """Return a normalized status given current indexer status."""
-        default_status = 'Unknown'
-        return STATUS_MAP.get(series_status.lower(), default_status) if series_status else default_status
+        for medusa_status, indexer_mappings in viewitems(STATUS_MAP):
+            if status.lower() in indexer_mappings:
+                return medusa_status
+
+        return 'Unknown'
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""

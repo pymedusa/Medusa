@@ -23,7 +23,7 @@ import re
 from dateutil import tz
 
 from medusa import db, logger
-from medusa.app import BASE_PYMEDUSA_URL
+from medusa.app import app
 from medusa.helper.common import try_int
 from medusa.session.core import MedusaSafeSession
 
@@ -47,7 +47,7 @@ session = MedusaSafeSession()
 def update_network_dict():
     """Update timezone information from Medusa repositories."""
     logger.log('Started updating network timezones', logger.DEBUG)
-    url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
+    url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=app.BASE_PYMEDUSA_URL)
     response = session.get(url)
     if not response or not response.text:
         logger.log('Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.INFO)
