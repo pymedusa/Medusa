@@ -33,7 +33,7 @@ class InternalHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def http_get(self, resource, path_param=None):
+    def get(self, resource, path_param=None):
         """Query internal data.
 
         :param resource: a resource name
@@ -172,9 +172,9 @@ class InternalHandler(BaseRequestHandler):
         if matches:
             search_terms.append('{0}({1})'.format(matches.group(1), matches.group(2)))
 
-        for searchTerm in search_terms:
+        for search_term in search_terms:
             # If search term begins with an article, let's also search for it without
-            matches = re.match(r'^(?:a|an|the) (.+)$', searchTerm, re.I)
+            matches = re.match(r'^(?:a|an|the) (.+)$', search_term, re.I)
             if matches:
                 search_terms.append(matches.group(1))
 

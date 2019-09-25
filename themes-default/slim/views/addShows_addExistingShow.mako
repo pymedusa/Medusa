@@ -11,6 +11,8 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -38,7 +40,10 @@ window.app = new Vue({
             $.updateBlackWhiteList(undefined);
         }, 500);
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState([
+        'config' // Used by `inc_addShowOptions.mako`
+    ]), {
         selectedRootDirs() {
             return this.rootDirs.filter(rd => rd.selected);
         },
@@ -81,7 +86,7 @@ window.app = new Vue({
                 });
             }
         }
-    },
+    }),
     methods: {
         /**
          * Transform root dirs paths array, and select all the paths.

@@ -603,11 +603,6 @@ div.xem {
     border: 1px solid rgb(136, 136, 136);
 }
 
-/* Used by the displayShow and snatchSelection show header posters */
-#col-show-summary img.show-image {
-    max-width: 180px;
-}
-
 .background-image img {
     width: 100%;
     overflow: hidden;
@@ -1158,29 +1153,6 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#col-show-summary {
-    display: table;
-}
-
-.show-poster-container {
-    margin-right: 10px;
-    display: table-cell;
-    width: 180px;
-}
-
-.ver-spacer {
-    width: 15px;
-}
-
-#show-specials-and-seasons {
-    margin-bottom: 15px;
-}
-
-.show-info-container {
-    overflow: hidden;
-    display: table-cell;
-}
-
 .container-navShow {
     margin-top: -2px;
     margin-left: 305px;
@@ -1234,62 +1206,14 @@ div#col-show-summary {
         float: none;
     }
 
-    .show-poster-container {
-        display: inline-block;
-        width: 100%;
-        margin: 0 auto;
-        border-style: none;
-    }
-
-    .show-poster-container img {
-        display: block;
-        margin: 0 auto;
-        max-width: 280px !important;
-    }
-
     .col-md-12 > .horizontal-scroll {
         margin: 0 -13px;
-    }
-
-    .show-info-container {
-        display: block;
-        padding-top: 5px;
-        width: 100%;
     }
 }
 
 @media (min-width: 768px) {
-    .display-specials,
-    .display-seasons {
-        top: -60px;
-    }
-
-    #show-specials-and-seasons {
-        bottom: 5px;
-        right: 15px;
-        position: absolute;
-    }
-
     .tvshowImg {
         max-height: 245px;
-    }
-}
-
-@media (max-width: 991px) and (min-width: 768px) {
-    .show-poster-container {
-        float: left;
-        display: inline-block;
-        width: 100%;
-        border-style: none;
-    }
-
-    .show-info-container {
-        display: block;
-        width: 100%;
-    }
-
-    #col-show-summary img.show-image {
-        max-width: 280px;
     }
 }
 
@@ -1441,10 +1365,6 @@ ul.tags li a {
     border-style: solid none;
     border-color: rgb(136, 136, 136);
     z-index: -2;
-}
-
-.summaryTable {
-    overflow: hidden;
 }
 
 #checkboxControls {
@@ -1735,12 +1655,6 @@ td.col-provider {
 td.col-group {
     min-width: 90px;
     text-align: center;
-}
-
-.showLegend {
-    padding-right: 6px;
-    padding-bottom: 1px;
-    width: 150px;
 }
 
 .input-scene {
@@ -2044,7 +1958,6 @@ config*.mako
 }
 
 #config .nocheck,
-#config div #customQuality,
 .metadataDiv {
     padding-left: 20px;
 }
@@ -2587,10 +2500,6 @@ a.whitelink {
 Global
 ========================================================================== */
 
-.logging-filter-controll {
-    padding-top: 24px;
-}
-
 span.path {
     padding: 3px 6px;
     color: rgb(139, 0, 0);
@@ -2621,22 +2530,6 @@ span.true {
     word-wrap: break-word;
 }
 
-span.required {
-    color: green;
-}
-
-span.preferred {
-    color: blue;
-}
-
-span.undesired {
-    color: orange;
-}
-
-span.ignored {
-    color: red;
-}
-
 a.wiki {
     color: red;
 }
@@ -2650,6 +2543,12 @@ option.flag {
     background-repeat: no-repeat;
     background-position: 10px 50%;
 }
+
+/*
+ * This is currently used by addShow_addExistingShows.mako and addShows_recommended.mako.
+ * Which in turn calls inc_addShowOptions.mako
+ * After these routes have been vueified, these templates can be removed as the below css.
+*/
 
 /* Anime section for editShow */
 .bwlWrapper {
@@ -3476,27 +3375,6 @@ div.field-pair input {
     float: left;
 }
 
-/* step 3 related */
-#customQuality {
-    display: block;
-    padding: 10px 0;
-    overflow: hidden;
-    clear: both;
-}
-
-#customQualityWrapper div.component-group-desc {
-    float: left;
-    width: 172px;
-    margin-right: 10px;
-}
-
-#customQualityWrapper div.component-group-desc p {
-    width: 85%;
-    margin: 0.8em 0;
-    font-size: 1.13em;
-    color: rgb(102, 102, 102);
-}
-
 /* =======================================================================
 tablesorter.css
 ========================================================================== */
@@ -4134,10 +4012,6 @@ div#searchNotification {
     text-align: center;
 }
 
-.summaryTable tr td {
-    word-break: break-all;
-}
-
 .release-name-ellipses {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4165,27 +4039,7 @@ div#searchNotification {
     box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
 
-/* =======================================================================
-viewLog.mako
-========================================================================== */
-div .notepad {
-    position: absolute;
-    right: 15px;
-    opacity: 0.1;
-    zoom: 1;
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-    -webkit-transition: opacity 0.5s; /* Safari */
-    transition: opacity 0.5s;
-}
-
-div .notepad:hover {
-    opacity: 0.4;
-}
-
-div.notepad img {
-    width: 50px;
-}
+/* ========================================================================== */
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
@@ -4206,11 +4060,6 @@ div.notepad img {
     .checkbox-inline.pull-xs-left {
         margin-right: 10px;
     }
-}
-
-/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
-.log-filter {
-    margin-top: 20px;
 }
 
 /* ========================================================================

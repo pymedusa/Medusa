@@ -23,7 +23,8 @@
         "packageNames": [
           "vue",
           "vue-template-compiler",
-          "@vue/test-utils"
+          "@vue/test-utils",
+          "vue-jest"
         ],
         "groupName": "vue-base"
       }

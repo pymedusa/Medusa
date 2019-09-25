@@ -8,7 +8,12 @@ from rebulk import Rebulk, Rule, AppendMatch, RemoveMatch, AppendTags
 from rebulk.formatters import formatters
 
 from .film import FilmTitleRule
-from .language import SubtitlePrefixLanguageRule, SubtitleSuffixLanguageRule, SubtitleExtensionRule
+from .language import (
+    SubtitlePrefixLanguageRule,
+    SubtitleSuffixLanguageRule,
+    SubtitleExtensionRule,
+    NON_SPECIFIC_LANGUAGES
+)
 from ..common import seps, title_seps
 from ..common.comparators import marker_sorted
 from ..common.expected import build_expected_function
@@ -88,12 +93,19 @@ class TitleBaseRule(Rule):
         :rtype:
         """
         cropped_holes = []
+        group_markers = matches.markers.named('group')
+        for group_marker in group_markers:
+            path_marker = matches.markers.at_match(group_marker, predicate=lambda m: m.name == 'path', index=0)
+            if path_marker and path_marker.span == group_marker.span:
+                group_markers.remove(group_marker)
+
         for hole in holes:
-            group_markers = matches.markers.named('group')
             cropped_holes.extend(hole.crop(group_markers))
+
         return cropped_holes
 
-    def is_ignored(self, match):
+    @staticmethod
+    def is_ignored(match):
         """
         Ignore matches when scanning for title (hole).
 
@@ -130,7 +142,8 @@ class TitleBaseRule(Rule):
             for outside in outside_matches:
                 other_languages.extend(matches.range(outside.start, outside.end,
                                                      lambda c_match: c_match.name == match.name and
-                                                     c_match not in to_keep))
+                                                     c_match not in to_keep and
+                                                     c_match.value not in NON_SPECIFIC_LANGUAGES))
 
             if not other_languages and (not starting or len(match.raw) <= 3):
                 return True
@@ -239,7 +252,7 @@ class TitleBaseRule(Rule):
         to_remove = []
 
         if matches.named(self.match_name, lambda match: 'expected' in match.tags):
-            return ret, to_remove
+            return False
 
         fileparts = [filepart for filepart in list(marker_sorted(matches.markers.named('path'), matches))
                      if not self.filepart_filter or self.filepart_filter(filepart, matches)]
@@ -272,7 +285,9 @@ class TitleBaseRule(Rule):
                 ret.extend(titles)
                 to_remove.extend(to_remove_c)
 
-        return ret, to_remove
+        if ret or to_remove:
+            return ret, to_remove
+        return False
 
 
 class TitleFromPosition(TitleBaseRule):
@@ -329,4 +344,6 @@ class PreferTitleWithYear(Rule):
         for title_match in titles:
             if title_match.value not in title_values:
                 to_remove.append(title_match)
-        return to_remove, to_tag
+        if to_remove or to_tag:
+            return to_remove, to_tag
+        return False

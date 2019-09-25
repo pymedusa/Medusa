@@ -26,6 +26,7 @@ from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.recommended import RecommendedHandler
+from medusa.server.api.v2.search import SearchHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
@@ -79,6 +80,10 @@ def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
         # Order: Most specific to most generic
+
+        # /api/v2/search
+        SearchHandler.create_app_handler(base),
+
         # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
 
@@ -328,16 +333,23 @@ class AppWebServer(threading.Thread):
         if not app.WEB_LOG:
             return
 
+        level = None
         if handler.get_status() < 400:
             level = logging.INFO
         elif handler.get_status() < 500:
-            # Don't log normal RESTful responses as warnings
+            # Don't log normal APIv2 RESTful responses as warnings
             if isinstance(handler, BaseRequestHandler):
                 level = logging.INFO
             else:
                 level = logging.WARNING
         else:
-            level = logging.ERROR
+            # If a real exception was raised in APIv2,
+            # let `BaseRequestHandler.log_exception` handle the logging
+            if not isinstance(handler, BaseRequestHandler):
+                level = logging.ERROR
+
+        if level is None:
+            return
 
         log.log(
             level,

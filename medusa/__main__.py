@@ -65,14 +65,18 @@ from builtins import str
 from configobj import ConfigObj
 
 from medusa import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler,
-    helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
+    app, cache, db, event_queue, exception_handler, helpers,
+    logger as app_logger, metadata, name_cache, naming,
+    network_timezones, process_tv, providers, scheduler,
+    show_queue, show_updater, subtitles, trakt_checker
 )
+from medusa.clients.torrent import torrent_checker
 from medusa.common import SD, SKIPPED, WANTED
 from medusa.config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
-    check_setting_str, load_provider_setting, save_provider_setting
+    CheckSection, ConfigMigrator, check_setting_bool,
+    check_setting_float, check_setting_int,
+    check_setting_list, check_setting_str,
+    load_provider_setting, save_provider_setting
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
@@ -91,6 +95,7 @@ from medusa.server.core import AppWebServer
 from medusa.system.shutdown import Shutdown
 from medusa.themes import read_themes
 from medusa.tv import Series
+from medusa.updater.version_checker import CheckVersion
 
 
 logger = logging.getLogger(__name__)
@@ -263,7 +268,7 @@ class Application(object):
             if self.run_as_daemon:
                 pid_dir = os.path.dirname(self.pid_file)
                 if not os.access(pid_dir, os.F_OK):
-                    sys.exit('PID dir: %s doesn\'t exist. Exiting.' % pid_dir)
+                    sys.exit("PID dir: %s doesn't exist. Exiting." % pid_dir)
                 if not os.access(pid_dir, os.W_OK):
                     sys.exit('PID dir: %s must be writable (write permissions). Exiting.' % pid_dir)
 
@@ -473,9 +478,20 @@ class Application(object):
 
             # current commit hash
             app.CUR_COMMIT_HASH = check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+            # set current commit hash from environment variable, if needed
+            # use this to inject the commit hash information on immutable installations (e.g. Docker containers)
+            commit_hash_env = os.environ.get('MEDUSA_COMMIT_HASH')
+            if commit_hash_env and app.CUR_COMMIT_HASH != commit_hash_env:
+                app.CUR_COMMIT_HASH = commit_hash_env
 
             # current commit branch
             app.CUR_COMMIT_BRANCH = check_setting_str(app.CFG, 'General', 'cur_commit_branch', '')
+            # set current commit branch from environment variable, if needed
+            # use this to inject the branch information on immutable installations (e.g. Docker containers)
+            commit_branch_env = os.environ.get('MEDUSA_COMMIT_BRANCH')
+            if commit_branch_env and app.CUR_COMMIT_BRANCH != commit_branch_env:
+                app.CUR_COMMIT_BRANCH = commit_branch_env
+
             app.ACTUAL_CACHE_DIR = check_setting_str(app.CFG, 'General', 'cache_dir', 'cache')
 
             # fix bad configs due to buggy code
@@ -572,7 +588,6 @@ class Application(object):
             app.NAMING_CUSTOM_ANIME = bool(check_setting_int(app.CFG, 'General', 'naming_custom_anime', 0))
             app.NAMING_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_multi_ep', 1)
             app.NAMING_ANIME_MULTI_EP = check_setting_int(app.CFG, 'General', 'naming_anime_multi_ep', 1)
-            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
             app.NAMING_STRIP_YEAR = bool(check_setting_int(app.CFG, 'General', 'naming_strip_year', 0))
             app.USE_NZBS = bool(check_setting_int(app.CFG, 'General', 'use_nzbs', 0))
             app.USE_TORRENTS = bool(check_setting_int(app.CFG, 'General', 'use_torrents', 1))
@@ -969,6 +984,10 @@ class Application(object):
             try:
                 import pwd
                 app.OS_USER = pwd.getpwuid(os.getuid()).pw_name
+            except KeyError:
+                # In the case of a usage with Docker run `user` feature, the username might not exist.
+                # See: https://docs.docker.com/engine/reference/run/#user
+                app.OS_USER = os.getuid()
             except ImportError:
                 try:
                     import getpass
@@ -988,11 +1007,9 @@ class Application(object):
                 pass
 
             if app.VERSION_NOTIFY:
-                updater = version_checker.CheckVersion().updater
+                updater = CheckVersion().updater
                 if updater:
-                    app.APP_VERSION = updater.get_cur_version()
-
-            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
+                    app.APP_VERSION = updater.current_version
 
             # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
@@ -1109,6 +1126,11 @@ class Application(object):
             main_db_con = db.DBConnection()
             db.sanityCheckDatabase(main_db_con, main_db.MainSanityCheck)
 
+            app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = main_db_con.checkDBVersion()
+
+            # checks that require DB existence
+            app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
+
             # migrate the config if it needs it
             migrator = ConfigMigrator(app.CFG)
             migrator.migrate_config()
@@ -1129,7 +1151,7 @@ class Application(object):
 
             # initialize schedulers
             # updaters
-            app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
+            app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
                                                               threadName='CHECKVERSION', silent=False)
 
@@ -1188,11 +1210,11 @@ class Application(object):
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
-                                                                    cycleTime=update_interval,
-                                                                    threadName='POSTPROCESSOR',
-                                                                    silent=not app.PROCESS_AUTOMATICALLY,
-                                                                    run_delay=update_interval)
+            app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
+                                                               cycleTime=update_interval,
+                                                               threadName='POSTPROCESSOR',
+                                                               silent=not app.PROCESS_AUTOMATICALLY,
+                                                               run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
@@ -1334,12 +1356,12 @@ class Application(object):
 
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
-                app.auto_post_processor_scheduler.silent = False
-                app.auto_post_processor_scheduler.enable = True
+                app.post_processor_scheduler.silent = False
+                app.post_processor_scheduler.enable = True
             else:
-                app.auto_post_processor_scheduler.enable = False
-                app.auto_post_processor_scheduler.silent = True
-            app.auto_post_processor_scheduler.start()
+                app.post_processor_scheduler.enable = False
+                app.post_processor_scheduler.silent = True
+            app.post_processor_scheduler.start()
 
             # start the subtitles finder
             if app.USE_SUBTITLES:
@@ -1385,7 +1407,7 @@ class Application(object):
                 app.search_queue_scheduler,
                 app.forced_search_queue_scheduler,
                 app.manual_snatch_scheduler,
-                app.auto_post_processor_scheduler,
+                app.post_processor_scheduler,
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
@@ -2083,16 +2105,9 @@ class Application(object):
     @staticmethod
     def restart():
         """Restart application."""
-        install_type = app.version_check_scheduler.action.install_type
+        popen_list = [sys.executable, app.MY_FULLNAME]
 
-        popen_list = []
-
-        if install_type in ('git', 'source'):
-            popen_list = [sys.executable, app.MY_FULLNAME]
-        elif install_type == 'win':
-            logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
-
-        if popen_list and not app.NO_RESTART:
+        if not app.NO_RESTART:
             popen_list += app.MY_ARGS
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']

@@ -257,7 +257,7 @@ class NewznabProvider(NZBProvider):
                             peers = try_int(attr['value']) if attr['name'] == 'peers' else None
                             leechers = peers - seeders if peers else leechers
 
-                    if not item_size or (self.torznab and (seeders is -1 or leechers is -1)):
+                    if not item_size or (self.torznab and (seeders == -1 or leechers == -1)):
                         continue
 
                     size = convert_size(item_size) or -1

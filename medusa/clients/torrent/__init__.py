@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Clients module."""
-
 from __future__ import unicode_literals
 
 
@@ -34,7 +33,7 @@ _clients = [
 
 def get_client_module(name):
     """Import the client module for the given name."""
-    return __import__('{prefix}.{name}_client'.format(prefix=__name__, name=name.lower()), fromlist=_clients)
+    return __import__('{prefix}.{name}'.format(prefix=__name__, name=name.lower()), fromlist=_clients)
 
 
 def get_client_class(name):

@@ -24,7 +24,6 @@ import datetime
 import logging
 import operator
 import os
-import re
 import subprocess
 import time
 from builtins import object
@@ -283,7 +282,13 @@ def get_embedded_subtitles(video_path):
     :return:
     :rtype: set of babelfish.Language
     """
-    knowledge = knowit.know(video_path)
+    try:
+        knowledge = knowit.know(video_path)
+    except knowit.KnowitException as error:
+        logger.warning('An error occurred while parsing: {0}\n'
+                       'KnowIt reported:\n{1}'.format(video_path, error))
+        return set()
+
     tracks = knowledge.get('subtitle', [])
     found_languages = {s['language'] for s in tracks if 'language' in s}
     if found_languages:
@@ -827,9 +832,8 @@ class SubtitlesFinder(object):
         self.amActive = False
 
     @staticmethod
-    def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+    def subtitles_download_in_pp():
         """Check for needed subtitles in the post process folder."""
-        from medusa import process_tv
         from medusa.tv import Episode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
@@ -897,7 +901,7 @@ class SubtitlesFinder(object):
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
-            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
+            app.post_processor_scheduler.forceRun()
 
     @staticmethod
     def unpack_rar_files(dirpath):
@@ -1110,7 +1114,7 @@ def run_subs_scripts(video_path, scripts, *args):
     :type args: list of str
     """
     for script_name in scripts:
-        script_cmd = [piece for piece in re.split("( |\\\".*?\\\"|'.*?')", script_name) if piece.strip()]
+        script_cmd = [piece for piece in script_name.split(' ') if piece.strip()]
         script_cmd.extend(str(arg) for arg in args)
 
         logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
@@ -1124,6 +1128,6 @@ def run_subs_scripts(video_path, scripts, *args):
             logger.debug(u'Script result: %s', out)
 
         except Exception as error:
-            logger.info(u'Unable to run subtitles script: %s', ex(error))
+            logger.info(u'Unable to run subtitles script: %r', ex(error))
 
     invalidate_video_cache(video_path)

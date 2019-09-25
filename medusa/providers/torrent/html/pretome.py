@@ -45,10 +45,6 @@ class PretomeProvider(TorrentProvider):
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -126,7 +122,7 @@ class PretomeProvider(TorrentProvider):
                     leechers = try_int(cells[10].get_text())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

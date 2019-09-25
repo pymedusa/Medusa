@@ -65,6 +65,7 @@ def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, re
             'here': 'message'
         },
         'level': 'ERROR',
+        'thread': 'Vue',
     }
 
     # when
@@ -77,3 +78,4 @@ def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, re
     assert len(actual) == 1
     assert 'Some nice message' == actual[0].message
     assert 'ERROR' == actual[0].level_name
+    assert 'VUE' == actual[0].extra

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# flake8: noqa
 
 """Configuration file parser.
 
@@ -64,7 +65,7 @@ ConfigParser -- responsible for parsing a list of
         Return list of configuration options for the named section.
 
     read(filenames, encoding=None)
-        Read and parse the list of named configuration files, given by
+        Read and parse the iterable of named configuration files, given by
         name.  A single filename is also allowed.  Non-existing files
         are ignored.  Return list of successfully read files.
 
@@ -127,10 +128,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from collections import MutableMapping
 import functools
 import io
 import itertools
+import os
 import re
 import sys
 import warnings
@@ -138,6 +139,8 @@ import warnings
 from backports.configparser.helpers import OrderedDict as _default_dict
 from backports.configparser.helpers import ChainMap as _ChainMap
 from backports.configparser.helpers import from_none, open, str, PY2
+from backports.configparser.helpers import PathLike, fspath
+from backports.configparser.helpers import MutableMapping
 
 __all__ = ["NoSectionError", "DuplicateOptionError", "DuplicateSectionError",
            "NoOptionError", "InterpolationError", "InterpolationDepthError",
@@ -606,9 +609,6 @@ class RawConfigParser(MutableMapping):
         self._converters = ConverterMapping(self)
         self._proxies = self._dict()
         self._proxies[default_section] = SectionProxy(self, default_section)
-        if defaults:
-            for key, value in defaults.items():
-                self._defaults[self.optionxform(key)] = value
         self._delimiters = tuple(delimiters)
         if delimiters == ('=', ':'):
             self._optcre = self.OPTCRE_NV if allow_no_value else self.OPTCRE
@@ -633,6 +633,8 @@ class RawConfigParser(MutableMapping):
             self._interpolation = Interpolation()
         if converters is not _UNSET:
             self._converters.update(converters)
+        if defaults:
+            self._read_defaults(defaults)
 
     def defaults(self):
         return self._defaults
@@ -673,33 +675,23 @@ class RawConfigParser(MutableMapping):
         return list(opts.keys())
 
     def read(self, filenames, encoding=None):
-        """Read and parse a filename or a list of filenames.
+        """Read and parse a filename or an iterable of filenames.
 
         Files that cannot be opened are silently ignored; this is
-        designed so that you can specify a list of potential
+        designed so that you can specify an iterable of potential
         configuration file locations (e.g. current directory, user's
         home directory, systemwide directory), and all existing
-        configuration files in the list will be read.  A single
+        configuration files in the iterable will be read.  A single
         filename may also be given.
 
         Return list of successfully read files.
         """
-        if PY2 and isinstance(filenames, bytes):
-            # we allow for a little unholy magic for Python 2 so that
-            # people not using unicode_literals can still use the library
-            # conveniently
-            warnings.warn(
-                "You passed a bytestring as `filenames`. This will not work"
-                " on Python 3. Use `cp.read_file()` or switch to using Unicode"
-                " strings across the board.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            filenames = [filenames]
-        elif isinstance(filenames, str):
+        if isinstance(filenames, (str, bytes, PathLike)):
             filenames = [filenames]
         read_ok = []
         for filename in filenames:
+            if isinstance(filename, PathLike):
+                filename = fspath(filename)
             try:
                 with open(filename, encoding=encoding) as fp:
                     self._read(fp, filename)
@@ -1126,10 +1118,10 @@ class RawConfigParser(MutableMapping):
                         # raised at the end of the file and will contain a
                         # list of all bogus lines
                         e = self._handle_error(e, fpname, lineno, line)
+        self._join_multiline_values()
         # if any parsing errors occurred, raise an exception
         if e:
             raise e
-        self._join_multiline_values()
 
     def _join_multiline_values(self):
         defaults = self.default_section, self._defaults
@@ -1142,6 +1134,12 @@ class RawConfigParser(MutableMapping):
                 options[name] = self._interpolation.before_read(self,
                                                                 section,
                                                                 name, val)
+
+    def _read_defaults(self, defaults):
+        """Read the defaults passed in the initializer.
+        Note: values can be non-string."""
+        for key, value in defaults.items():
+            self._defaults[self.optionxform(key)] = value
 
     def _handle_error(self, exc, fpname, lineno, line):
         if not exc:
@@ -1244,6 +1242,19 @@ class ConfigParser(RawConfigParser):
         a string."""
         section, _, _ = self._validate_value_types(section=section)
         super(ConfigParser, self).add_section(section)
+
+    def _read_defaults(self, defaults):
+        """Reads the defaults passed in the initializer, implicitly converting
+        values to strings like the rest of the API.
+
+        Does not perform interpolation for backwards compatibility.
+        """
+        try:
+            hold_interpolation = self._interpolation
+            self._interpolation = Interpolation()
+            self.read_dict({self.default_section: defaults})
+        finally:
+            self._interpolation = hold_interpolation
 
 
 class SafeConfigParser(ConfigParser):

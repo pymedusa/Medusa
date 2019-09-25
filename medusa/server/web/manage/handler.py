@@ -6,7 +6,6 @@ import datetime
 import json
 import os
 import re
-from builtins import str
 
 from medusa import (
     app,
@@ -300,11 +299,13 @@ class Manage(Home, WebRoot):
                     "AND location != ''",
                     [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = ['s' + str(x['season']) + 'e' + str(x['episode'])
-                                                                for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = [
+                    's{0}e{1}'.format(x['season'], x['episode'])
+                    for x in all_eps_results
+                ]
 
-            for epResult in to_download[(cur_indexer_id, cur_series_id)]:
-                season, episode = epResult.lstrip('s').split('e')
+            for ep_result in to_download[(cur_indexer_id, cur_series_id)]:
+                season, episode = ep_result.lstrip('s').split('e')
 
                 series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
                 series_obj.get_episode(season, episode).download_subtitles()
@@ -683,19 +684,17 @@ class Manage(Home, WebRoot):
 
             if quality_preset == 'keep':
                 allowed_qualities, preferred_qualities = series_obj.current_qualities
+            # If user set quality_preset remove all preferred_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 
-            exceptions_list = []
-
-            errors += self.editShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
-                                    preferred_qualities, exceptions_list,
-                                    defaultEpStatus=new_default_ep_status,
-                                    season_folders=new_season_folders,
-                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
-                                    subtitles=new_subtitles, anime=new_anime,
-                                    scene=new_scene, air_by_date=new_air_by_date,
-                                    directCall=True)
+            errors += self.massEditShow(
+                indexername=identifier.indexer.slug, seriesid=identifier.id, location=new_show_dir,
+                allowed_qualities=allowed_qualities, preferred_qualities=preferred_qualities,
+                season_folders=new_season_folders, paused=new_paused, air_by_date=new_air_by_date, sports=new_sports,
+                dvd_order=new_dvd_order, subtitles=new_subtitles, anime=new_anime, scene=new_scene,
+                defaultEpStatus=new_default_ep_status,
+            )
 
         if errors:
             ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format

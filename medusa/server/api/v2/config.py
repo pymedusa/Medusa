@@ -7,6 +7,7 @@ import logging
 import pkgutil
 import platform
 import sys
+from random import choice
 
 from medusa import (
     app,
@@ -14,11 +15,12 @@ from medusa import (
     common,
     config,
     db,
+    helpers,
     logger,
     ws,
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED
-from medusa.helper.mappings import NonEmptyDict
+from medusa.helpers.utils import to_camel_case
 from medusa.indexers.indexer_config import get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
@@ -32,8 +34,13 @@ from medusa.server.api.v2.base import (
     iter_nested_items,
     set_nested_value,
 )
+from medusa.system.schedulers import (
+    generate_schedulers,
+    generate_show_queue,
+)
 
 from six import iteritems, itervalues, text_type
+from six.moves import map
 
 from tornado.escape import json_decode
 
@@ -363,7 +370,7 @@ class ConfigHandler(BaseRequestHandler):
 
     }
 
-    def http_get(self, identifier, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query general configuration.
 
         :param identifier:
@@ -376,7 +383,7 @@ class ConfigHandler(BaseRequestHandler):
             return self._not_found('Config not found')
 
         if not identifier:
-            config_data = NonEmptyDict()
+            config_data = {}
 
             for section in config_sections:
                 config_data[section] = DataGenerator.get_data(section)
@@ -393,7 +400,7 @@ class ConfigHandler(BaseRequestHandler):
 
         return self._ok(data=config_data)
 
-    def http_patch(self, identifier, *args, **kwargs):
+    def patch(self, identifier, *args, **kwargs):
         """Patch general configuration."""
         if not identifier:
             return self._bad_request('Config identifier not specified')
@@ -448,7 +455,8 @@ class DataGenerator(object):
         """Get the available section names."""
         return [
             name[5:]
-            for (name, function) in inspect.getmembers(cls, predicate=inspect.isfunction)
+            for (name, function)
+            in inspect.getmembers(cls, predicate=lambda f: inspect.isfunction(f) or inspect.ismethod(f))
             if name.startswith('data_')
         ]
 
@@ -460,7 +468,7 @@ class DataGenerator(object):
     @staticmethod
     def data_main():
         """Main."""
-        section_data = NonEmptyDict()
+        section_data = {}
 
         section_data['anonRedirect'] = app.ANON_REDIRECT
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -484,7 +492,7 @@ class DataGenerator(object):
         section_data['release'] = app.APP_VERSION
         section_data['sslVersion'] = app.OPENSSL_VERSION
         section_data['pythonVersion'] = sys.version
-        section_data['databaseVersion'] = NonEmptyDict()
+        section_data['databaseVersion'] = {}
         section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
         section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
         section_data['os'] = platform.platform()
@@ -507,9 +515,13 @@ class DataGenerator(object):
         section_data['downloadUrl'] = app.DOWNLOAD_URL
         section_data['subtitlesMulti'] = bool(app.SUBTITLES_MULTI)
         section_data['namingForceFolders'] = bool(app.NAMING_FORCE_FOLDERS)
-        section_data['subtitles'] = NonEmptyDict()
+        section_data['subtitles'] = {}
         section_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
         section_data['recentShows'] = app.SHOWS_RECENT
+
+        # Pick a random series to show as background.
+        # TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
+        section_data['randomShowSlug'] = getattr(choice(app.showList), 'slug', None) if app.FANART_BACKGROUND and app.showList else ''
 
         section_data['showDefaults'] = {}
         section_data['showDefaults']['status'] = app.STATUS_DEFAULT
@@ -520,40 +532,42 @@ class DataGenerator(object):
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
-        section_data['news'] = NonEmptyDict()
+        section_data['news'] = {}
         section_data['news']['lastRead'] = app.NEWS_LAST_READ
         section_data['news']['latest'] = app.NEWS_LATEST
         section_data['news']['unread'] = app.NEWS_UNREAD
 
-        section_data['logs'] = NonEmptyDict()
+        section_data['logs'] = {}
+        section_data['logs']['debug'] = bool(app.DEBUG)
+        section_data['logs']['dbDebug'] = bool(app.DBDEBUG)
         section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
         section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
         section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
 
-        section_data['failedDownloads'] = NonEmptyDict()
+        section_data['failedDownloads'] = {}
         section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
         section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
-        section_data['layout'] = NonEmptyDict()
+        section_data['layout'] = {}
         section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
         section_data['layout']['history'] = app.HISTORY_LAYOUT
         section_data['layout']['home'] = app.HOME_LAYOUT
-        section_data['layout']['show'] = NonEmptyDict()
+        section_data['layout']['show'] = {}
         section_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
         section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
 
         section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
 
-        section_data['backlogOverview'] = NonEmptyDict()
+        section_data['backlogOverview'] = {}
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 
-        section_data['indexers'] = NonEmptyDict()
+        section_data['indexers'] = {}
         section_data['indexers']['config'] = get_indexer_config()
 
-        section_data['postProcessing'] = NonEmptyDict()
-        section_data['postProcessing']['naming'] = NonEmptyDict()
+        section_data['postProcessing'] = {}
+        section_data['postProcessing']['naming'] = {}
         section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
         section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
         section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
@@ -590,81 +604,74 @@ class DataGenerator(object):
 
         return section_data
 
-    @staticmethod
-    def data_qualities():
-        """Qualities."""
-        section_data = NonEmptyDict()
+    # The consts info only needs to be generated once.
+    _generated_data_consts = {}
 
-        section_data['values'] = NonEmptyDict()
-        section_data['values']['na'] = common.Quality.NA
-        section_data['values']['unknown'] = common.Quality.UNKNOWN
-        section_data['values']['sdtv'] = common.Quality.SDTV
-        section_data['values']['sddvd'] = common.Quality.SDDVD
-        section_data['values']['hdtv'] = common.Quality.HDTV
-        section_data['values']['rawhdtv'] = common.Quality.RAWHDTV
-        section_data['values']['fullhdtv'] = common.Quality.FULLHDTV
-        section_data['values']['hdwebdl'] = common.Quality.HDWEBDL
-        section_data['values']['fullhdwebdl'] = common.Quality.FULLHDWEBDL
-        section_data['values']['hdbluray'] = common.Quality.HDBLURAY
-        section_data['values']['fullhdbluray'] = common.Quality.FULLHDBLURAY
-        section_data['values']['uhd4ktv'] = common.Quality.UHD_4K_TV
-        section_data['values']['uhd4kwebdl'] = common.Quality.UHD_4K_WEBDL
-        section_data['values']['uhd4kbluray'] = common.Quality.UHD_4K_BLURAY
-        section_data['values']['uhd8ktv'] = common.Quality.UHD_8K_TV
-        section_data['values']['uhd8kwebdl'] = common.Quality.UHD_8K_WEBDL
-        section_data['values']['uhd8kbluray'] = common.Quality.UHD_8K_BLURAY
+    @classmethod
+    def data_consts(cls):
+        """Constant values - values that will never change during runtime."""
+        if cls._generated_data_consts:
+            return cls._generated_data_consts
 
-        section_data['anySets'] = NonEmptyDict()
-        section_data['anySets']['anyhdtv'] = common.Quality.ANYHDTV
-        section_data['anySets']['anywebdl'] = common.Quality.ANYWEBDL
-        section_data['anySets']['anybluray'] = common.Quality.ANYBLURAY
+        section_data = {}
 
-        section_data['presets'] = NonEmptyDict()
-        section_data['presets']['any'] = common.ANY
-        section_data['presets']['sd'] = common.SD
-        section_data['presets']['hd'] = common.HD
-        section_data['presets']['hd720p'] = common.HD720p
-        section_data['presets']['hd1080p'] = common.HD1080p
-        section_data['presets']['uhd'] = common.UHD
-        section_data['presets']['uhd4k'] = common.UHD_4K
-        section_data['presets']['uhd8k'] = common.UHD_8K
+        section_data['qualities'] = {}
 
-        section_data['strings'] = NonEmptyDict()
-        section_data['strings']['values'] = common.Quality.qualityStrings
-        section_data['strings']['anySets'] = common.Quality.combinedQualityStrings
-        section_data['strings']['presets'] = common.qualityPresetStrings
-        section_data['strings']['cssClass'] = common.Quality.cssClassStrings
+        def make_quality(value, name, key=None):
+            return {
+                'value': value,
+                'key': key or Quality.quality_keys.get(value),
+                'name': name
+            }
 
-        return section_data
+        section_data['qualities']['values'] = [
+            make_quality(value, name)
+            for (value, name)
+            in sorted(iteritems(common.Quality.qualityStrings))
+        ]
 
-    @staticmethod
-    def data_statuses():
-        """Statuses."""
-        section_data = NonEmptyDict()
+        section_data['qualities']['anySets'] = [
+            make_quality(value, name)
+            for (value, name)
+            in sorted(iteritems(common.Quality.combined_quality_strings))
+        ]
 
-        section_data['values'] = NonEmptyDict()
-        section_data['values']['unset'] = common.UNSET
-        section_data['values']['unaired'] = common.UNAIRED
-        section_data['values']['snatched'] = common.SNATCHED
-        section_data['values']['wanted'] = common.WANTED
-        section_data['values']['downloaded'] = common.DOWNLOADED
-        section_data['values']['skipped'] = common.SKIPPED
-        section_data['values']['archived'] = common.ARCHIVED
-        section_data['values']['ignored'] = common.IGNORED
-        section_data['values']['snatchedProper'] = common.SNATCHED_PROPER
-        section_data['values']['subtitled'] = common.SUBTITLED
-        section_data['values']['failed'] = common.FAILED
-        section_data['values']['snatchedBest'] = common.SNATCHED_BEST
-        section_data['strings'] = common.statusStrings
+        section_data['qualities']['presets'] = [
+            make_quality(value, name, name.lower().replace('-', ''))
+            for (value, name)
+            in sorted(
+                iteritems(common.qualityPresetStrings),
+                # Sort presets based on the order defined in `qualityPresets`
+                key=lambda i: common.qualityPresets.index(i[0])
+            )
+        ]
+
+        section_data['statuses'] = [
+            {
+                'value': value,
+                'key': to_camel_case(key.lower()),
+                'name': common.statusStrings[value],
+            }
+            for (value, key)
+            in map(
+                lambda key: (getattr(common, key), key),
+                # Sorted by value
+                ('UNSET', 'UNAIRED', 'SNATCHED', 'WANTED', 'DOWNLOADED', 'SKIPPED', 'ARCHIVED',
+                 'IGNORED', 'SNATCHED_PROPER', 'SUBTITLED', 'FAILED', 'SNATCHED_BEST')
+            )
+        ]
+
+        # Save it for next time
+        cls._generated_data_consts = section_data
 
         return section_data
 
     @staticmethod
     def data_metadata():
         """Metadata."""
-        section_data = NonEmptyDict()
+        section_data = {}
 
-        section_data['metadataProviders'] = NonEmptyDict()
+        section_data['metadataProviders'] = {}
 
         for provider in itervalues(app.metadata_provider_dict):
             json_repr = provider.to_json()
@@ -675,9 +682,9 @@ class DataGenerator(object):
     @staticmethod
     def data_search():
         """Search filters."""
-        section_data = NonEmptyDict()
+        section_data = {}
 
-        section_data['general'] = NonEmptyDict()
+        section_data['general'] = {}
         section_data['general']['randomizeProviders'] = bool(app.RANDOMIZE_PROVIDERS)
         section_data['general']['downloadPropers'] = bool(app.DOWNLOAD_PROPERS)
         section_data['general']['checkPropersInterval'] = app.CHECK_PROPERS_INTERVAL
@@ -701,7 +708,7 @@ class DataGenerator(object):
         section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
         section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
 
-        section_data['filters'] = NonEmptyDict()
+        section_data['filters'] = {}
         section_data['filters']['ignored'] = app.IGNORE_WORDS
         section_data['filters']['undesired'] = app.UNDESIRED_WORDS
         section_data['filters']['preferred'] = app.PREFERRED_WORDS
@@ -714,15 +721,15 @@ class DataGenerator(object):
     @staticmethod
     def data_notifiers():
         """Notifications."""
-        section_data = NonEmptyDict()
+        section_data = {}
 
-        section_data['kodi'] = NonEmptyDict()
+        section_data['kodi'] = {}
         section_data['kodi']['enabled'] = bool(app.USE_KODI)
         section_data['kodi']['alwaysOn'] = bool(app.KODI_ALWAYS_ON)
         section_data['kodi']['notifyOnSnatch'] = bool(app.KODI_NOTIFY_ONSNATCH)
         section_data['kodi']['notifyOnDownload'] = bool(app.KODI_NOTIFY_ONDOWNLOAD)
         section_data['kodi']['notifyOnSubtitleDownload'] = bool(app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD)
-        section_data['kodi']['update'] = NonEmptyDict()
+        section_data['kodi']['update'] = {}
         section_data['kodi']['update']['library'] = bool(app.KODI_UPDATE_LIBRARY)
         section_data['kodi']['update']['full'] = bool(app.KODI_UPDATE_FULL)
         section_data['kodi']['update']['onlyFirst'] = bool(app.KODI_UPDATE_ONLYFIRST)
@@ -732,8 +739,8 @@ class DataGenerator(object):
         section_data['kodi']['libraryCleanPending'] = bool(app.KODI_LIBRARY_CLEAN_PENDING)
         section_data['kodi']['cleanLibrary'] = bool(app.KODI_CLEAN_LIBRARY)
 
-        section_data['plex'] = NonEmptyDict()
-        section_data['plex']['server'] = NonEmptyDict()
+        section_data['plex'] = {}
+        section_data['plex']['server'] = {}
         section_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
         section_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
         section_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
@@ -741,7 +748,7 @@ class DataGenerator(object):
         section_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
         section_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
         section_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
-        section_data['plex']['client'] = NonEmptyDict()
+        section_data['plex']['client'] = {}
         section_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
         section_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
         section_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
@@ -749,39 +756,39 @@ class DataGenerator(object):
         section_data['plex']['client']['notifyOnDownload'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
         section_data['plex']['client']['notifyOnSubtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['emby'] = NonEmptyDict()
+        section_data['emby'] = {}
         section_data['emby']['enabled'] = bool(app.USE_EMBY)
         section_data['emby']['host'] = app.EMBY_HOST
         section_data['emby']['apiKey'] = app.EMBY_APIKEY
 
-        section_data['nmj'] = NonEmptyDict()
+        section_data['nmj'] = {}
         section_data['nmj']['enabled'] = bool(app.USE_NMJ)
         section_data['nmj']['host'] = app.NMJ_HOST
         section_data['nmj']['database'] = app.NMJ_DATABASE
         section_data['nmj']['mount'] = app.NMJ_MOUNT
 
-        section_data['nmjv2'] = NonEmptyDict()
+        section_data['nmjv2'] = {}
         section_data['nmjv2']['enabled'] = bool(app.USE_NMJv2)
         section_data['nmjv2']['host'] = app.NMJv2_HOST
         section_data['nmjv2']['dbloc'] = app.NMJv2_DBLOC
         section_data['nmjv2']['database'] = app.NMJv2_DATABASE
 
-        section_data['synologyIndex'] = NonEmptyDict()
+        section_data['synologyIndex'] = {}
         section_data['synologyIndex']['enabled'] = bool(app.USE_SYNOINDEX)
 
-        section_data['synology'] = NonEmptyDict()
+        section_data['synology'] = {}
         section_data['synology']['enabled'] = bool(app.USE_SYNOLOGYNOTIFIER)
         section_data['synology']['notifyOnSnatch'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONSNATCH)
         section_data['synology']['notifyOnDownload'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD)
         section_data['synology']['notifyOnSubtitleDownload'] = bool(app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['pyTivo'] = NonEmptyDict()
+        section_data['pyTivo'] = {}
         section_data['pyTivo']['enabled'] = bool(app.USE_PYTIVO)
         section_data['pyTivo']['host'] = app.PYTIVO_HOST
         section_data['pyTivo']['name'] = app.PYTIVO_TIVO_NAME
         section_data['pyTivo']['shareName'] = app.PYTIVO_SHARE_NAME
 
-        section_data['growl'] = NonEmptyDict()
+        section_data['growl'] = {}
         section_data['growl']['enabled'] = bool(app.USE_GROWL)
         section_data['growl']['host'] = app.GROWL_HOST
         section_data['growl']['password'] = app.GROWL_PASSWORD
@@ -789,7 +796,7 @@ class DataGenerator(object):
         section_data['growl']['notifyOnDownload'] = bool(app.GROWL_NOTIFY_ONDOWNLOAD)
         section_data['growl']['notifyOnSubtitleDownload'] = bool(app.GROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['prowl'] = NonEmptyDict()
+        section_data['prowl'] = {}
         section_data['prowl']['enabled'] = bool(app.USE_PROWL)
         section_data['prowl']['api'] = app.PROWL_API
         section_data['prowl']['messageTitle'] = app.PROWL_MESSAGE_TITLE
@@ -798,13 +805,13 @@ class DataGenerator(object):
         section_data['prowl']['notifyOnDownload'] = bool(app.PROWL_NOTIFY_ONDOWNLOAD)
         section_data['prowl']['notifyOnSubtitleDownload'] = bool(app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['libnotify'] = NonEmptyDict()
+        section_data['libnotify'] = {}
         section_data['libnotify']['enabled'] = bool(app.USE_LIBNOTIFY)
         section_data['libnotify']['notifyOnSnatch'] = bool(app.LIBNOTIFY_NOTIFY_ONSNATCH)
         section_data['libnotify']['notifyOnDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONDOWNLOAD)
         section_data['libnotify']['notifyOnSubtitleDownload'] = bool(app.LIBNOTIFY_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['pushover'] = NonEmptyDict()
+        section_data['pushover'] = {}
         section_data['pushover']['enabled'] = bool(app.USE_PUSHOVER)
         section_data['pushover']['apiKey'] = app.PUSHOVER_APIKEY
         section_data['pushover']['userKey'] = app.PUSHOVER_USERKEY
@@ -815,21 +822,21 @@ class DataGenerator(object):
         section_data['pushover']['notifyOnDownload'] = bool(app.PUSHOVER_NOTIFY_ONDOWNLOAD)
         section_data['pushover']['notifyOnSubtitleDownload'] = bool(app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD)
 
-        section_data['boxcar2'] = NonEmptyDict()
+        section_data['boxcar2'] = {}
         section_data['boxcar2']['enabled'] = bool(app.USE_BOXCAR2)
         section_data['boxcar2']['notifyOnSnatch'] = bool(app.BOXCAR2_NOTIFY_ONSNATCH)
         section_data['boxcar2']['notifyOnDownload'] = bool(app.BOXCAR2_NOTIFY_ONDOWNLOAD)
         section_data['boxcar2']['notifyOnSubtitleDownload'] = bool(app.BOXCAR2_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['boxcar2']['accessToken'] = app.BOXCAR2_ACCESSTOKEN
 
-        section_data['pushalot'] = NonEmptyDict()
+        section_data['pushalot'] = {}
         section_data['pushalot']['enabled'] = bool(app.USE_PUSHALOT)
         section_data['pushalot']['notifyOnSnatch'] = bool(app.PUSHALOT_NOTIFY_ONSNATCH)
         section_data['pushalot']['notifyOnDownload'] = bool(app.PUSHALOT_NOTIFY_ONDOWNLOAD)
         section_data['pushalot']['notifyOnSubtitleDownload'] = bool(app.PUSHALOT_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['pushalot']['authToken'] = app.PUSHALOT_AUTHORIZATIONTOKEN
 
-        section_data['pushbullet'] = NonEmptyDict()
+        section_data['pushbullet'] = {}
         section_data['pushbullet']['enabled'] = bool(app.USE_PUSHBULLET)
         section_data['pushbullet']['notifyOnSnatch'] = bool(app.PUSHBULLET_NOTIFY_ONSNATCH)
         section_data['pushbullet']['notifyOnDownload'] = bool(app.PUSHBULLET_NOTIFY_ONDOWNLOAD)
@@ -837,7 +844,7 @@ class DataGenerator(object):
         section_data['pushbullet']['api'] = app.PUSHBULLET_API
         section_data['pushbullet']['device'] = app.PUSHBULLET_DEVICE
 
-        section_data['join'] = NonEmptyDict()
+        section_data['join'] = {}
         section_data['join']['enabled'] = bool(app.USE_JOIN)
         section_data['join']['notifyOnSnatch'] = bool(app.JOIN_NOTIFY_ONSNATCH)
         section_data['join']['notifyOnDownload'] = bool(app.JOIN_NOTIFY_ONDOWNLOAD)
@@ -845,7 +852,7 @@ class DataGenerator(object):
         section_data['join']['api'] = app.JOIN_API
         section_data['join']['device'] = app.JOIN_DEVICE
 
-        section_data['freemobile'] = NonEmptyDict()
+        section_data['freemobile'] = {}
         section_data['freemobile']['enabled'] = bool(app.USE_FREEMOBILE)
         section_data['freemobile']['notifyOnSnatch'] = bool(app.FREEMOBILE_NOTIFY_ONSNATCH)
         section_data['freemobile']['notifyOnDownload'] = bool(app.FREEMOBILE_NOTIFY_ONDOWNLOAD)
@@ -853,7 +860,7 @@ class DataGenerator(object):
         section_data['freemobile']['api'] = app.FREEMOBILE_APIKEY
         section_data['freemobile']['id'] = app.FREEMOBILE_ID
 
-        section_data['telegram'] = NonEmptyDict()
+        section_data['telegram'] = {}
         section_data['telegram']['enabled'] = bool(app.USE_TELEGRAM)
         section_data['telegram']['notifyOnSnatch'] = bool(app.TELEGRAM_NOTIFY_ONSNATCH)
         section_data['telegram']['notifyOnDownload'] = bool(app.TELEGRAM_NOTIFY_ONDOWNLOAD)
@@ -861,7 +868,7 @@ class DataGenerator(object):
         section_data['telegram']['api'] = app.TELEGRAM_APIKEY
         section_data['telegram']['id'] = app.TELEGRAM_ID
 
-        section_data['twitter'] = NonEmptyDict()
+        section_data['twitter'] = {}
         section_data['twitter']['enabled'] = bool(app.USE_TWITTER)
         section_data['twitter']['notifyOnSnatch'] = bool(app.TWITTER_NOTIFY_ONSNATCH)
         section_data['twitter']['notifyOnDownload'] = bool(app.TWITTER_NOTIFY_ONDOWNLOAD)
@@ -872,7 +879,7 @@ class DataGenerator(object):
         section_data['twitter']['prefix'] = app.TWITTER_PREFIX
         section_data['twitter']['directMessage'] = bool(app.TWITTER_USEDM)
 
-        section_data['trakt'] = NonEmptyDict()
+        section_data['trakt'] = {}
         section_data['trakt']['enabled'] = bool(app.USE_TRAKT)
         section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
         section_data['trakt']['username'] = app.TRAKT_USERNAME
@@ -889,7 +896,7 @@ class DataGenerator(object):
         section_data['trakt']['startPaused'] = bool(app.TRAKT_START_PAUSED)
         section_data['trakt']['blacklistName'] = app.TRAKT_BLACKLIST_NAME
 
-        section_data['email'] = NonEmptyDict()
+        section_data['email'] = {}
         section_data['email']['enabled'] = bool(app.USE_EMAIL)
         section_data['email']['notifyOnSnatch'] = bool(app.EMAIL_NOTIFY_ONSNATCH)
         section_data['email']['notifyOnDownload'] = bool(app.EMAIL_NOTIFY_ONDOWNLOAD)
@@ -903,7 +910,7 @@ class DataGenerator(object):
         section_data['email']['addressList'] = app.EMAIL_LIST
         section_data['email']['subject'] = app.EMAIL_SUBJECT
 
-        section_data['slack'] = NonEmptyDict()
+        section_data['slack'] = {}
         section_data['slack']['enabled'] = bool(app.USE_SLACK)
         section_data['slack']['notifyOnSnatch'] = bool(app.SLACK_NOTIFY_SNATCH)
         section_data['slack']['notifyOnDownload'] = bool(app.SLACK_NOTIFY_DOWNLOAD)
@@ -913,11 +920,22 @@ class DataGenerator(object):
         return section_data
 
     @staticmethod
+    def data_system():
+        """System information."""
+        section_data = {}
+
+        section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
+        section_data['schedulers'] = generate_schedulers()
+        section_data['showQueue'] = generate_show_queue()
+
+        return section_data
+
+    @staticmethod
     def data_clients():
         """Notifications."""
-        section_data = NonEmptyDict()
+        section_data = {}
 
-        section_data['torrents'] = NonEmptyDict()
+        section_data['torrents'] = {}
         section_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
         section_data['torrents']['dir'] = app.TORRENT_DIR
         section_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
@@ -935,11 +953,11 @@ class DataGenerator(object):
         section_data['torrents']['password'] = app.TORRENT_PASSWORD
         section_data['torrents']['verifySSL'] = bool(app.TORRENT_VERIFY_CERT)
 
-        section_data['nzb'] = NonEmptyDict()
+        section_data['nzb'] = {}
         section_data['nzb']['enabled'] = bool(app.USE_NZBS)
         section_data['nzb']['dir'] = app.NZB_DIR
         section_data['nzb']['method'] = app.NZB_METHOD
-        section_data['nzb']['nzbget'] = NonEmptyDict()
+        section_data['nzb']['nzbget'] = {}
         section_data['nzb']['nzbget']['category'] = app.NZBGET_CATEGORY
         section_data['nzb']['nzbget']['categoryAnime'] = app.NZBGET_CATEGORY_ANIME
         section_data['nzb']['nzbget']['categoryAnimeBacklog'] = app.NZBGET_CATEGORY_ANIME_BACKLOG
@@ -950,7 +968,7 @@ class DataGenerator(object):
         section_data['nzb']['nzbget']['username'] = app.NZBGET_USERNAME
         section_data['nzb']['nzbget']['password'] = app.NZBGET_PASSWORD
 
-        section_data['nzb']['sabnzbd'] = NonEmptyDict()
+        section_data['nzb']['sabnzbd'] = {}
         section_data['nzb']['sabnzbd']['category'] = app.SAB_CATEGORY
         section_data['nzb']['sabnzbd']['categoryAnime'] = app.SAB_CATEGORY_ANIME
         section_data['nzb']['sabnzbd']['categoryAnimeBacklog'] = app.SAB_CATEGORY_ANIME_BACKLOG

@@ -21,7 +21,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 name_cache = {}
-nameCacheLock = threading.Lock()
+name_cache_lock = threading.Lock()
 
 
 def addNameToCache(name, indexer_id=1, series_id=0):
@@ -114,7 +114,7 @@ def build_name_cache(series_obj=None):
             'names': u', '.join(list(names))
         })
 
-    with nameCacheLock:
+    with name_cache_lock:
         retrieve_exceptions()
 
     # Create cache from db for the scene_exceptions.

@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from backports.configparser import (
     RawConfigParser,
     ConfigParser,
@@ -20,7 +19,6 @@ from backports.configparser import (
     ExtendedInterpolation,
     LegacyInterpolation,
 
-    Error,
     NoSectionError,
     DuplicateSectionError,
     DuplicateOptionError,
@@ -33,9 +31,13 @@ from backports.configparser import (
     MissingSectionHeaderError,
     ConverterMapping,
 
-    _UNSET,
     DEFAULTSECT,
     MAX_INTERPOLATION_DEPTH,
+)
+
+from backports.configparser import (  # noqa: F401
+    Error,
+    _UNSET,
     _default_dict,
     _ChainMap,
 )
@@ -45,7 +47,7 @@ __all__ = ["NoSectionError", "DuplicateOptionError", "DuplicateSectionError",
            "InterpolationMissingOptionError", "InterpolationSyntaxError",
            "ParsingError", "MissingSectionHeaderError",
            "ConfigParser", "SafeConfigParser", "RawConfigParser",
-           "Interpolation", "BasicInterpolation",  "ExtendedInterpolation",
+           "Interpolation", "BasicInterpolation", "ExtendedInterpolation",
            "LegacyInterpolation", "SectionProxy", "ConverterMapping",
            "DEFAULTSECT", "MAX_INTERPOLATION_DEPTH"]
 

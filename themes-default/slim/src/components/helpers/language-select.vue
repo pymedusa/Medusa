@@ -1,5 +1,5 @@
 <template>
-    <select/>
+    <select />
 </template>
 <script>
 export default {
@@ -41,5 +41,5 @@ export default {
 };
 </script>
 <style>
-/* placeholder */
+
 </style>

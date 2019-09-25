@@ -2,6 +2,7 @@
 """First module to initialize."""
 from __future__ import unicode_literals
 
+import os
 import random
 import sys
 from threading import Lock
@@ -16,8 +17,7 @@ class MedusaApp(object):
         self.instance = None
 
         # Fixed values
-        self.__title__ = __name__
-        self.SRC_FOLDER = __name__
+        self.SRC_FOLDER = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
         self.LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
         self.LIB_FOLDER = 'lib'
         self.LIB2_FOLDER = 'lib2'
@@ -96,7 +96,7 @@ class MedusaApp(object):
         self.forced_search_queue_scheduler = None
         self.manual_snatch_scheduler = None
         self.proper_finder_scheduler = None
-        self.auto_post_processor_scheduler = None
+        self.post_processor_scheduler = None
         self.subtitles_finder_scheduler = None
         self.trakt_checker_scheduler = None
         self.torrent_checker_scheduler = None
@@ -290,7 +290,7 @@ class MedusaApp(object):
         self.TV_DOWNLOAD_DIR = None
         self.UNPACK = False
         self.SKIP_REMOVED_FILES = False
-        self.ALLOWED_EXTENSIONS = {'srt', 'nfo', 'sub', 'idx'}
+        self.ALLOWED_EXTENSIONS = ['srt', 'nfo', 'sub', 'idx']
 
         self.NZBS = False
         self.NZBS_UID = None

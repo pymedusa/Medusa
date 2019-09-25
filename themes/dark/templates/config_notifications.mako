@@ -1,14 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
-<%!
-    import re
-    from medusa import app
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.utils import get_trakt_indexer
-%>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -273,7 +267,8 @@ window.app = new Vue({
             }
         };
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         stateNotifiers() {
             return this.$store.state.notifiers;
         },
@@ -293,7 +288,7 @@ window.app = new Vue({
                 return { text: indexer, value: indexers[indexer].id }
             })
         }
-    },
+    }),
     created() {
         const { $store } = this;
         // Needed for the show-selector component
@@ -450,7 +445,7 @@ window.app = new Vue({
                 const response = await apiRoute('home/testTwitter');
                 const { data } = response;
                 this.twitterTestInfo = data;
-            } catch {
+            } catch (e) {
                 this.twitterTestInfo = 'Error while trying to request for a test on the twitter api.'
             }
         },
@@ -1263,7 +1258,7 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for pyTivo client -->
-                                <config-toggle-slider v-model="notifiers.pyTivo.enabled" label="Enable" id="use_pytivo" :explanations="['Send Plex Home Theater notifications?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.pyTivo.enabled" label="Enable" id="use_pytivo" :explanations="['Send notifications to pyTivo?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.pyTivo.enabled" id="content-use-pytivo"> <!-- show based on notifiers.pyTivo.enabled -->
                                     <config-textbox v-model="notifiers.pyTivo.host" label="pyTivo IP:Port" id="pytivo_host" :explanations="['host running pyTivo (eg. 192.168.1.1:9032)']" @change="save()" ></config-textbox>
                                     <config-textbox v-model="notifiers.pyTivo.shareName" label="pyTivo share name" id="pytivo_name" :explanations="['(Messages \& Settings > Account \& System Information > System Information > DVR name)']" @change="save()" ></config-textbox>
@@ -1285,7 +1280,7 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for growl client -->
-                                <config-toggle-slider v-model="notifiers.growl.enabled" label="Enable" id="use_growl_client" :explanations="['Send growl Home Theater notifications?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.growl.enabled" label="Enable" id="use_growl_client" :explanations="['Send Growl notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.growl.enabled" id="content-use-growl-client"> <!-- show based on notifiers.growl.enabled -->
 
                                     <config-toggle-slider v-model="notifiers.growl.notifyOnSnatch" label="Notify on snatch" id="growl_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>
@@ -1404,7 +1399,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.pushover.notifyOnSubtitleDownload" label="Notify on subtitle download" id="pushover_notify_onsubtitledownload" :explanations="['send a notification when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
 
                                     <config-textbox v-model="notifiers.pushover.userKey" label="Pushover User Key" id="pushover_userkey" :explanations="['User Key of your Pushover account']" @change="save()" ></config-textbox>
-                                    
+
                                     <config-textbox v-model="notifiers.pushover.apiKey" label="Pushover API Key" id="pushover_apikey" @change="save()" >
                                         <span><app-link href="https://pushover.net/apps/build/"><b>Click here</b></app-link> to create a Pushover API key</span>
                                     </config-textbox>
@@ -1747,7 +1742,7 @@ window.app = new Vue({
                                     </config-template>
 
                                     <config-textbox v-model="notifiers.email.subject" label="Email Subject" id="email_subject" :explanations="
-                                    ['Use a custom subject for some privacy protection?<br>',
+                                    ['Use a custom subject for some privacy protection?',
                                         '(Leave blank for the default Medusa subject)']" @change="save()" >
                                     </config-textbox>
 
@@ -1783,7 +1778,7 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for slack client -->
-                                <config-toggle-slider v-model="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send slack Home Theater notifications?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.slack.enabled" label="Enable" id="use_slack_client" :explanations="['Send Slack notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.slack.enabled" id="content-use-slack-client"> <!-- show based on notifiers.slack.enabled -->
 
                                     <config-toggle-slider v-model="notifiers.slack.notifyOnSnatch" label="Notify on snatch" id="slack_notify_onsnatch" :explanations="['send a notification when a download starts?']" @change="save()" ></config-toggle-slider>

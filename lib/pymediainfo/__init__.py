@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 import os
 import re
 import locale
@@ -20,7 +21,7 @@ else:
 try:
     __version__ = get_distribution("pymediainfo").version
 except DistributionNotFound:
-    __version__ = '2.2.1'
+    __version__ = '3.2.1'
     pass
 
 class Track(object):
@@ -118,42 +119,56 @@ class MediaInfo(object):
     >>> pymediainfo.MediaInfo.parse("/path/to/file.mp4")
 
     Alternatively, objects may be created from MediaInfo's XML output.
-    XML output can be obtained using the `XML` output format on versions older than v17.10
-    and the `OLDXML` format on newer versions.
+    Such output can be obtained using the ``XML`` output format on versions older than v17.10
+    and the ``OLDXML`` format on newer versions.
 
     Using such an XML file, we can create a :class:`MediaInfo` object:
 
     >>> with open("output.xml") as f:
     ...     mi = pymediainfo.MediaInfo(f.read())
 
-    :param str xml: XML output obtained from MediaInfo
+    :param str xml: XML output obtained from MediaInfo.
+    :param str encoding_errors: option to pass to :func:`str.encode`'s `errors`
+        parameter before parsing `xml`.
+    :raises xml.etree.ElementTree.ParseError: if passed invalid XML (Python ≥ 2.7).
+    :raises xml.parsers.expat.ExpatError: if passed invalid XML (Python 2.6).
     """
-    def __init__(self, xml):
-        self.xml_dom = MediaInfo._parse_xml_data_into_dom(xml)
-
+    def __init__(self, xml, encoding_errors="strict"):
+        self.xml_dom = MediaInfo._parse_xml_data_into_dom(xml, encoding_errors)
     @staticmethod
-    def _parse_xml_data_into_dom(xml_data):
-        try:
-            return ET.fromstring(xml_data.encode("utf-8"))
-        except:
-            return None
+    def _parse_xml_data_into_dom(xml_data, encoding_errors="strict"):
+        return ET.fromstring(xml_data.encode("utf-8", encoding_errors))
     @staticmethod
     def _get_library(library_file=None):
         os_is_nt = os.name in ("nt", "dos", "os2", "ce")
-        if library_file is not None:
-            if os_is_nt:
-                return WinDLL(library_file)
-            else:
-                return CDLL(library_file)
-        elif os_is_nt:
-            return windll.MediaInfo
-        elif sys.platform == "darwin":
-            try:
-                return CDLL("libmediainfo.0.dylib")
-            except OSError:
-                return CDLL("libmediainfo.dylib")
+        if os_is_nt:
+            lib_type = WinDLL
         else:
-            return CDLL("libmediainfo.so.0")
+            lib_type = CDLL
+        if library_file is None:
+            if os_is_nt:
+                library_names = ("MediaInfo.dll",)
+            elif sys.platform == "darwin":
+                library_names = ("libmediainfo.0.dylib", "libmediainfo.dylib")
+            else:
+                library_names = ("libmediainfo.so.0",)
+            script_dir = os.path.dirname(__file__)
+            # Look for the library file in the script folder
+            for library in library_names:
+                lib_path = os.path.join(script_dir, library)
+                if os.path.isfile(lib_path):
+                    # If we find it, don't try any other filename
+                    library_names = (lib_path,)
+                    break
+        else:
+            library_names = (library_file,)
+        for i, library in enumerate(library_names, start=1):
+            try:
+                return lib_type(library)
+            except OSError:
+                # If we've tried all possible filenames
+                if i == len(library_names):
+                    raise
     @classmethod
     def can_parse(cls, library_file=None):
         """
@@ -167,7 +182,8 @@ class MediaInfo(object):
         except:
             return False
     @classmethod
-    def parse(cls, filename, library_file=None):
+    def parse(cls, filename, library_file=None, cover_data=False,
+            encoding_errors="strict", parse_speed=0.5):
         """
         Analyze a media file using libmediainfo.
         If libmediainfo is located in a non-standard location, the `library_file` parameter can be used:
@@ -176,20 +192,37 @@ class MediaInfo(object):
         ...     library_file="/path/to/libmediainfo.dylib")
 
         :param filename: path to the media file which will be analyzed.
+            A URL can also be used if libmediainfo was compiled
+            with CURL support.
         :param str library_file: path to the libmediainfo library, this should only be used if the library cannot be auto-detected.
+        :param bool cover_data: whether to retrieve cover data as base64.
+        :param str encoding_errors: option to pass to :func:`str.encode`'s `errors`
+            parameter before parsing MediaInfo's XML output.
+        :param float parse_speed: passed to the library as `ParseSpeed`,
+            this option takes values between 0 and 1.
+            A higher value will yield more precise results in some cases
+            but will also increase parsing time.
         :type filename: str or pathlib.Path
         :rtype: MediaInfo
+        :raises FileNotFoundError: if passed a non-existent file
+            (Python ≥ 3.3), does not work on Windows.
+        :raises IOError: if passed a non-existent file (Python < 3.3),
+            does not work on Windows.
+        :raises RuntimeError: if parsing fails, this should not
+            happen unless libmediainfo itself fails.
         """
         lib = cls._get_library(library_file)
         if pathlib is not None and isinstance(filename, pathlib.PurePath):
             filename = str(filename)
+            url = False
         else:
             url = urlparse.urlparse(filename)
-            # Test whether the filename is actually a URL
-            if url.scheme is None:
-                # Test whether the file is readable
-                with open(filename, "rb"):
-                    pass
+        # Try to open the file (if it's not a URL)
+        # Doesn't work on Windows because paths are URLs
+        if not (url and url.scheme):
+            # Test whether the file is readable
+            with open(filename, "rb"):
+                pass
         # Define arguments and return types
         lib.MediaInfo_Inform.restype = c_wchar_p
         lib.MediaInfo_New.argtypes = []
@@ -206,12 +239,16 @@ class MediaInfo(object):
         lib.MediaInfo_Close.restype = None
         # Obtain the library version
         lib_version = lib.MediaInfo_Option(None, "Info_Version", "")
-        lib_version = [int(_) for _ in re.search("^MediaInfoLib - v(\S+)", lib_version).group(1).split(".")]
+        lib_version = tuple(int(_) for _ in re.search("^MediaInfoLib - v(\\S+)", lib_version).group(1).split("."))
         # The XML option was renamed starting with version 17.10
-        if lib_version >= [17, 10]:
+        if lib_version >= (17, 10):
             xml_option = "OLDXML"
         else:
             xml_option = "XML"
+        # Cover_Data is not extracted by default since version 18.03
+        # See https://github.com/MediaArea/MediaInfoLib/commit/d8fd88a1c282d1c09388c55ee0b46029e7330690
+        if cover_data and lib_version >= (18, 3):
+            lib.MediaInfo_Option(None, "Cover_Data", "base64")
         # Create a MediaInfo handle
         handle = lib.MediaInfo_New()
         lib.MediaInfo_Option(handle, "CharSet", "UTF-8")
@@ -223,17 +260,26 @@ class MediaInfo(object):
             locale.setlocale(locale.LC_CTYPE, locale.getdefaultlocale())
         lib.MediaInfo_Option(None, "Inform", xml_option)
         lib.MediaInfo_Option(None, "Complete", "1")
-        lib.MediaInfo_Open(handle, filename)
+        lib.MediaInfo_Option(None, "ParseSpeed", str(parse_speed))
+        if lib.MediaInfo_Open(handle, filename) == 0:
+            raise RuntimeError("An eror occured while opening {0}"
+                    " with libmediainfo".format(filename))
         xml = lib.MediaInfo_Inform(handle, 0)
         # Delete the handle
         lib.MediaInfo_Close(handle)
         lib.MediaInfo_Delete(handle)
-        return cls(xml)
+        return cls(xml, encoding_errors)
     def _populate_tracks(self):
-        if self.xml_dom is None:
-            return
-        iterator = "getiterator" if sys.version_info < (2, 7) else "iter"
-        for xml_track in getattr(self.xml_dom, iterator)("track"):
+        self._tracks = []
+        iterator = "findall" if sys.version_info < (2, 7) else "iterfind"
+        # This is the case for libmediainfo < 18.03
+        # https://github.com/sbraz/pymediainfo/issues/57
+        # https://github.com/MediaArea/MediaInfoLib/commit/575a9a32e6960ea34adb3bc982c64edfa06e95eb
+        if self.xml_dom.tag == "File":
+            xpath = "track"
+        else:
+            xpath = "File/track"
+        for xml_track in getattr(self.xml_dom, iterator)(xpath):
             self._tracks.append(Track(xml_track))
     @property
     def tracks(self):
@@ -249,8 +295,6 @@ class MediaInfo(object):
         <Track track_id='1', track_type='Text'>
         """
         if not hasattr(self, "_tracks"):
-            self._tracks = []
-        if len(self._tracks) == 0:
             self._populate_tracks()
         return self._tracks
     def to_data(self):
@@ -265,7 +309,7 @@ class MediaInfo(object):
         return data
     def to_json(self):
         """
-        Returns a json representation of the object's :py:class:`Tracks <Track>`.
+        Returns a JSON representation of the object's :py:class:`Tracks <Track>`.
 
         :rtype: str
         """

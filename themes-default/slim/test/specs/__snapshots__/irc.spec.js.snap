@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IRC.test.js renders 1`] = `
+<iframe
+  class="irc-frame loading-spinner"
+  src="https://kiwiirc.com/client/irc.freenode.net/?nick=MedusaUI|?&theme=basic#pymedusa"
+/>
+`;
+
+exports[`IRC.test.js renders with username 1`] = `
+<iframe
+  class="irc-frame loading-spinner"
+  src="https://kiwiirc.com/client/irc.freenode.net/?nick=pymedusa&theme=basic#pymedusa"
+/>
+`;

@@ -239,6 +239,14 @@ class AuthenticatedUser(github.GithubObject.CompletableGithubObject):
         return self._name.value
 
     @property
+    def node_id(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._node_id)
+        return self._node_id.value
+
+    @property
     def organizations_url(self):
         """
         :type: string
@@ -487,7 +495,7 @@ class AuthenticatedUser(github.GithubObject.CompletableGithubObject):
         assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
         post_parameters = {
             "public": public,
-            "files": dict((key, value._identity) for key, value in files.iteritems()),
+            "files": {key: value._identity for key, value in files.iteritems()},
         }
         if description is not github.GithubObject.NotSet:
             post_parameters["description"] = description
@@ -836,23 +844,30 @@ class AuthenticatedUser(github.GithubObject.CompletableGithubObject):
         )
         return github.Notification.Notification(self._requester, headers, data, completed=True)
 
-    def get_notifications(self, all=github.GithubObject.NotSet, participating=github.GithubObject.NotSet):
+    def get_notifications(self, all=github.GithubObject.NotSet, participating=github.GithubObject.NotSet, since=github.GithubObject.NotSet, before=github.GithubObject.NotSet):
         """
         :calls: `GET /notifications <http://developer.github.com/v3/activity/notifications>`_
         :param all: bool
         :param participating: bool
+        :param since: datetime.datetime
+        :param before: datetime.datetime
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Notification.Notification`
         """
 
         assert all is github.GithubObject.NotSet or isinstance(all, bool), all
         assert participating is github.GithubObject.NotSet or isinstance(participating, bool), participating
+        assert since is github.GithubObject.NotSet or isinstance(since, datetime.datetime), since
+        assert before is github.GithubObject.NotSet or isinstance(before, datetime.datetime), before
 
         params = dict()
         if all is not github.GithubObject.NotSet:
             params["all"] = all
         if participating is not github.GithubObject.NotSet:
             params["participating"] = participating
-        # TODO: implement parameter "since"
+        if since is not github.GithubObject.NotSet:
+            params["since"] = since.strftime("%Y-%m-%dT%H:%M:%SZ")
+        if before is not github.GithubObject.NotSet:
+            params["before"] = before.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return github.PaginatedList.PaginatedList(
             github.Notification.Notification,
@@ -1206,6 +1221,7 @@ class AuthenticatedUser(github.GithubObject.CompletableGithubObject):
         self._location = github.GithubObject.NotSet
         self._login = github.GithubObject.NotSet
         self._name = github.GithubObject.NotSet
+        self._node_id = github.GithubObject.NotSet
         self._organizations_url = github.GithubObject.NotSet
         self._owned_private_repos = github.GithubObject.NotSet
         self._plan = github.GithubObject.NotSet
@@ -1265,6 +1281,8 @@ class AuthenticatedUser(github.GithubObject.CompletableGithubObject):
             self._login = self._makeStringAttribute(attributes["login"])
         if "name" in attributes:  # pragma no branch
             self._name = self._makeStringAttribute(attributes["name"])
+        if "node_id" in attributes:  # pragma no branch
+            self._node_id = self._makeStringAttribute(attributes["node_id"])
         if "organizations_url" in attributes:  # pragma no branch
             self._organizations_url = self._makeStringAttribute(attributes["organizations_url"])
         if "owned_private_repos" in attributes:  # pragma no branch

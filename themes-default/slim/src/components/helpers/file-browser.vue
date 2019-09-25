@@ -1,20 +1,20 @@
 <template>
     <div class="file-browser max-width">
         <div :class="(showBrowseButton ? 'input-group' : 'input-group-no-btn')">
-            <input ref="locationInput" v-model="currentPath" :name="name" type="text" class="form-control input-sm fileBrowserField"/>
+            <input ref="locationInput" v-model="currentPath" :name="name" type="text" class="form-control input-sm fileBrowserField">
             <div v-if="showBrowseButton" @click.prevent="openDialog" class="input-group-btn" :title="title" :alt="title">
                 <div style="font-size: 14px" class="btn btn-default input-sm">
-                    <i class="glyphicon glyphicon-open"></i>
+                    <i class="glyphicon glyphicon-open" />
                 </div>
             </div>
         </div>
 
-        <div ref="fileBrowserDialog" class="fileBrowserDialog" style="display: none;"></div>
-        <input ref="fileBrowserSearchBox" @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control" style="display: none;"/>
+        <div ref="fileBrowserDialog" class="fileBrowserDialog" style="display: none;" />
+        <input ref="fileBrowserSearchBox" @keyup.enter="browse($event.target.value)" :value="currentPath" type="text" class="form-control" style="display: none;">
         <ul ref="fileBrowserFileList" style="display: none;">
             <li v-for="file in files" :key="file.name" class="ui-state-default ui-corner-all">
                 <a @mouseover="toggleFolder(file, $event)" @mouseout="toggleFolder(file, $event)" @click="fileClicked(file)">
-                    <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')"></span> {{ file.name }}
+                    <span :class="'ui-icon ' + (file.isFile ? 'ui-icon-blank' : 'ui-icon-folder-collapsed')" /> {{ file.name }}
                 </a>
             </li>
         </ul>

@@ -43,12 +43,8 @@ class IPTorrentsProvider(TorrentProvider):
         self.required_cookies = ('uid', 'pass')
         self.categories = '73=&60='
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -121,7 +117,7 @@ class IPTorrentsProvider(TorrentProvider):
                     leechers = int(row.find('td', attrs={'class': 'ac t_leechers'}).text)
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

@@ -58,7 +58,7 @@ def _parameters(single_test=None):
     parameters = []
     input_file = os.path.join(__location__, __name__.split('.')[-1] + '.yml')
     with open(input_file, 'r') as stream:
-        data = yaml.load(stream)
+        data = yaml.load(stream, Loader=yaml.Loader)
 
     for release_names, expected in iteritems(data):
         expected = {k: v for k, v in iteritems(expected)}

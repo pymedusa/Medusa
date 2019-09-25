@@ -40,10 +40,6 @@ class BitCannonProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         cache_params = {'RSS': ['tv', 'anime']}
         self.cache = tv.Cache(self, search_params=cache_params)
@@ -126,14 +122,14 @@ class BitCannonProvider(TorrentProvider):
                 leechers = try_int(swarm.pop('leechers', 0))
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
-                size = convert_size(row.pop('size', -1)) or -1
+                size = convert_size(row.pop('size', None), default=-1)
 
                 item = {
                     'title': title,

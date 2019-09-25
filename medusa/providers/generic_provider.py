@@ -334,8 +334,9 @@ class GenericProvider(object):
             search_result.result_wanted = True
 
             try:
-                search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[series.is_anime]
-                                                         ).parse(search_result.name)
+                search_result.parsed_result = NameParser(
+                    parse_method=('normal', 'anime')[series.is_anime]).parse(
+                        search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Error during parsing of release name: {release_name}, with error: {error}',
                           {'release_name': search_result.name, 'error': error})
@@ -392,11 +393,21 @@ class GenericProvider(object):
                             continue
 
                         # Compare the episodes and season from the result with what was searched.
-                        if not [searched_episode for searched_episode in episodes
-                                if searched_episode.season == search_result.parsed_result.season_number and
-                                (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.series.is_scene] in
-                                search_result.parsed_result.episode_numbers]:
+                        wanted_ep = False
+                        for searched_ep in episodes:
+                            if searched_ep.series.is_scene:
+                                season = searched_ep.scene_season
+                                episode = searched_ep.scene_episode
+                            else:
+                                season = searched_ep.season
+                                episode = searched_ep.episode
+
+                            if (season == search_result.parsed_result.season_number
+                                    and episode in search_result.parsed_result.episode_numbers):
+                                wanted_ep = True
+                                break
+
+                        if not wanted_ep:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
                                 'snatch, skipping it', search_result.name
@@ -648,20 +659,18 @@ class GenericProvider(object):
         """Create a search string used for as anime 'marked' shows."""
         episode_string = show_scene_name + self.search_separator
 
-        # If the show name is a season scene exception, we want to use the indexer episode number.
-        if (episode.scene_season > 1 and
-                show_scene_name in scene_exceptions.get_season_scene_exceptions(episode.series, episode.scene_season)):
-            # This is apparently a season exception, let's use the scene_episode instead of absolute
+        # If the show name is a season scene exception, we want to use the episode number
+        if episode.scene_season > 0 and show_scene_name in scene_exceptions.get_season_scene_exceptions(
+                episode.series, episode.scene_season):
+            # This is apparently a season exception, let's use the episode instead of absolute
             ep = episode.scene_episode
         else:
-            ep = episode.scene_absolute_number
+            ep = episode.scene_absolute_number if episode.series.is_scene else episode.absolute_number
 
         episode_string += '{episode:0>2}'.format(episode=ep)
-        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
 
         if add_string:
             episode_string += self.search_separator + add_string
-            episode_string_fallback += self.search_separator + add_string
 
         search_string['Episode'].append(episode_string.strip())
 
@@ -670,8 +679,8 @@ class GenericProvider(object):
         episode_string = show_scene_name + self.search_separator
 
         episode_string += config.naming_ep_type[2] % {
-            'seasonnumber': episode.scene_season,
-            'episodenumber': episode.scene_episode,
+            'seasonnumber': episode.scene_season if episode.series.is_scene else episode.season,
+            'episodenumber': episode.scene_episode if episode.series.is_scene else episode.episode,
         }
 
         if add_string:

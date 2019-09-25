@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConfigToggleSlider.test.js renders 1`] = `
+<div
+  checked="checked"
+  id="config-toggle-slider-content"
+>
+  <div
+    class="form-group"
+  >
+    <div
+      class="row"
+    >
+      <label
+        class="col-sm-2 control-label"
+        for="test-id"
+      >
+        <span>
+          test-label
+        </span>
+      </label>
+       
+      <div
+        class="col-sm-10 content"
+      >
+        <togglebutton-stub
+          height="22"
+          id="test-id"
+          margin="3"
+          name="test-id"
+          speed="300"
+          sync="true"
+          width="45"
+        />
+         
+        <p>
+          explanation 1
+        </p>
+        <p>
+          explanation 2
+        </p>
+         
+      </div>
+    </div>
+  </div>
+</div>
+`;

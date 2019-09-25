@@ -1,23 +1,25 @@
-<template>
-    <div></div>
-</template>
 <script>
+import { mapState } from 'vuex';
+
 import { webRoot, apiKey } from '../api';
+import { waitFor } from '../utils/core';
 
 export default {
     name: 'backstretch',
+    render: h => h(), // Doesn't render anything
     props: {
-        opacity: {
-            type: Number
-        },
-        indexer: {
-            type: String
-        },
-        id: {
-            type: [String, Number]
-        }
+        slug: String
+    },
+    data() {
+        return {
+            created: false
+        };
     },
     computed: {
+        ...mapState({
+            enabled: state => state.config.fanartBackground,
+            opacity: state => state.config.fanartBackgroundOpacity
+        }),
         offset() {
             let offset = '90px';
             if ($('#sub-menu-container').length === 0) {
@@ -29,20 +31,38 @@ export default {
             return offset;
         }
     },
-    mounted() {
-        const { $el, opacity, indexer, id, offset } = this;
-        const el = $($el);
+    async mounted() {
+        try {
+            await waitFor(() => this.enabled !== null);
+        } catch (_) {}
 
-        const showSlug = indexer + String(id);
+        if (!this.enabled) {
+            return;
+        }
 
-        if (indexer && id) {
-            $.backstretch(webRoot + '/api/v2/series/' + showSlug + '/asset/fanart?api_key=' + apiKey);
-            el.css('top', offset);
-            el.css('opacity', opacity).fadeIn(500);
+        const { opacity, slug, offset } = this;
+        if (slug) {
+            const imgUrl = `${webRoot}/api/v2/series/${slug}/asset/fanart?api_key=${apiKey}`;
+
+            // If no element is supplied, attaches to `<body>`
+            const { $wrap } = $.backstretch(imgUrl);
+            $wrap.css('top', offset);
+            $wrap.css('opacity', opacity).fadeIn(500);
+            this.created = true;
+        }
+    },
+    destroyed() {
+        if (this.created) {
+            $.backstretch('destroy');
+        }
+    },
+    watch: {
+        opacity(newOpacity) {
+            if (this.created) {
+                const { $wrap } = $('body').data('backstretch');
+                $wrap.css('opacity', newOpacity).fadeIn(500);
+            }
         }
     }
 };
 </script>
-<style>
-/* placeholder */
-</style>

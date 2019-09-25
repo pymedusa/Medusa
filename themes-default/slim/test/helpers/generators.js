@@ -10,19 +10,19 @@ const generatePropTest = component => {
     /**
      * A simple component prop test case.
      *
-     * @param {*} t - AVA test with a context containing `localVue` and `store` properties.
+     * @param {localVue} localVue property.
+     * @param {store} store property.
      * @param {string} message - Test message.
      * @param {object} propsData - Props to pass to the component.
      */
-    const propTest = (t, message, propsData) => {
-        const { localVue, store } = t.context;
-
-        t.snapshot(mount(component, {
+    const propTest = (localVue, store, message, propsData) => {
+        expect(mount(component, {
             localVue,
             store,
             propsData
-        }).html(), message);
+        }).element).toMatchSnapshot(message);
     };
+
     return propTest;
 };
 

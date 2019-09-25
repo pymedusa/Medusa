@@ -10,6 +10,8 @@ def js_bool(value):
     return 'true' if value else 'false'
 %>
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -261,7 +263,8 @@ window.app = new Vue({
             },
         };
     },
-    computed: {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         stateSearch() {
             return this.$store.state.search;
         },
@@ -298,7 +301,7 @@ window.app = new Vue({
             }
             return true;
         }
-    },
+    }),
     beforeMount() {
         $('#config-components').tabs();
     },
@@ -465,7 +468,7 @@ window.app = new Vue({
 
                                 </div><!-- check propers -->
 
-                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to keep searching for propers since episode airdate (default: 2 days)']"></config-textbox-number>
+                                <config-textbox-number :min="1" :step="1" v-model.number="search.general.backlogDays" label="Forced backlog search day(s)" id="backlog_days" :explanations="['how many days to search in the past for a forced backlog search (default: 7 days)']"></config-textbox-number>
 
                                 <config-textbox-number :min="search.general.minBacklogFrequency" :step="1" v-model.number="search.general.backlogFrequency" label="Backlog search interval" id="backlog_frequency">
                                     <p>time in minutes between searches (min. {{search.general.minBacklogFrequency}})</p>
@@ -517,7 +520,7 @@ window.app = new Vue({
                     <!-- search filters //-->
                     <div class="row component-group">
                         <div class="component-group-desc col-xs-12 col-md-2">
-                            <h3>Search Filters</h3>
+                            <a name="searchfilters"></a><h3>Search Filters</h3>
                             <p>Options to filter search results</p>
                         </div>
                         <div class="col-xs-12 col-md-10">

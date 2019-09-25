@@ -4,7 +4,6 @@
     from medusa import helpers
     from medusa.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat
-    from random import choice
     from six import iteritems
 %>
 <%block name="scripts">
@@ -18,20 +17,14 @@
         'Show Queue': 'show_queue_scheduler',
         'Search Queue': 'search_queue_scheduler',
         'Proper Finder': 'proper_finder_scheduler',
-        'Post Process': 'auto_post_processor_scheduler',
+        'Post Process': 'post_processor_scheduler',
         'Subtitles Finder': 'subtitles_finder_scheduler',
         'Trakt Checker': 'trakt_checker_scheduler',
         'Torrent Checker': 'torrent_checker_scheduler',
     }
 %>
-
-<%
-    # pick a random series to show as background
-    random_show = choice(app.showList) if app.showList else None
-%>
 <div>
-    <input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
-    <input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+    <backstretch :slug="config.randomShowSlug"></backstretch>
 
     <div id="config-content">
         <h2 class="header">Scheduler</h2>

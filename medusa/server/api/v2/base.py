@@ -9,11 +9,11 @@ import json
 import logging
 import sys
 import traceback
-from builtins import object
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from functools import partial
+from types import MethodType
 
 from babelfish.language import Language
 
@@ -22,13 +22,13 @@ import jwt
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import iteritems, string_types, text_type, viewitems
+from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
 
+from tornado.concurrent import Future as TornadoFuture
 from tornado.gen import coroutine
-from tornado.httpclient import HTTPError
 from tornado.httputil import url_concat
 from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler
+from tornado.web import HTTPError, RequestHandler
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -38,6 +38,55 @@ if sys.version_info[:2] == (3, 5):
     executor = ThreadPoolExecutor()
 else:
     executor = ThreadPoolExecutor(thread_name_prefix='APIv2-Thread')
+
+
+def make_async(instance, method):
+    """
+    Wrap a method with an async wrapper.
+
+    :param instance: A RequestHandler class instance.
+    :param type: instance of RequestHandler
+    :param method: The method to wrap.
+    :type method: callable
+    :return: An instance-bound async-wrapped method.
+    :rtype: callable
+    """
+    @coroutine
+    def async_call(self, *args, **kwargs):
+        """Call the actual HTTP method asynchronously."""
+        content = self._check_authentication()
+        if content is not None:
+            self.finish(content)
+            return
+
+        # Authentication check passed, run the method in a thread
+        if PY2:
+            # On Python 2, the original exception stack trace is not passed from the executor.
+            # This is a workaround based on https://stackoverflow.com/a/27413025/7597273
+            tornado_future = TornadoFuture()
+
+            def wrapper():
+                try:
+                    result = method(*args, **kwargs)
+                except:  # noqa: E722 [do not use bare 'except']
+                    tornado_future.set_exc_info(sys.exc_info())
+                else:
+                    tornado_future.set_result(result)
+
+            # `executor.submit()` returns a `concurrent.futures.Future`; wait for it to finish, but ignore the result
+            yield executor.submit(wrapper)
+            # When this future is yielded, any stored exceptions are raised (with the correct stack trace).
+            content = yield tornado_future
+        else:
+            # On Python 3+, exceptions contain their original stack trace.
+            prepared = partial(method, *args, **kwargs)
+            content = yield IOLoop.current().run_in_executor(executor, prepared)
+
+        self.finish(content)
+
+    # This creates a bound method `instance.async_call`,
+    # so that it could substitute the original method in the class instance.
+    return MethodType(async_call, instance)
 
 
 class BaseRequestHandler(RequestHandler):
@@ -56,7 +105,7 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def prepare(self):
+    def _check_authentication(self):
         """Check if JWT or API key is provided and valid."""
         if self.request.method == 'OPTIONS':
             return
@@ -85,90 +134,60 @@ class BaseRequestHandler(RequestHandler):
         else:
             return self._unauthorized('Invalid token.')
 
-    def async_call(self, name, *args, **kwargs):
-        """Call the actual HTTP method, if available."""
-        try:
-            method = getattr(self, 'http_' + name)
-        except AttributeError:
-            raise HTTPError(405, '{name} method is not allowed'.format(name=name.upper()))
+    def initialize(self):
+        """
+        Override the request method to use the async dispatcher.
 
-        def blocking_call():
-            try:
-                return method(*args, **kwargs)
-            except Exception as error:
-                self._handle_request_exception(error)
-
-        return IOLoop.current().run_in_executor(executor, blocking_call)
-
-    @coroutine
-    def head(self, *args, **kwargs):
-        """HEAD HTTP method."""
-        content = self.async_call('head', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def get(self, *args, **kwargs):
-        """GET HTTP method."""
-        content = self.async_call('get', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def post(self, *args, **kwargs):
-        """POST HTTP method."""
-        content = self.async_call('post', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def delete(self, *args, **kwargs):
-        """DELETE HTTP method."""
-        content = self.async_call('delete', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def patch(self, *args, **kwargs):
-        """PATCH HTTP method."""
-        content = self.async_call('patch', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    @coroutine
-    def put(self, *args, **kwargs):
-        """PUT HTTP method."""
-        content = self.async_call('put', *args, **kwargs)
-        if content is not None:
-            content = yield content
-        if not self._finished:
-            self.finish(content)
-
-    def write_error(self, *args, **kwargs):
-        """Only send traceback if app.DEVELOPER is true."""
-        if app.DEVELOPER and 'exc_info' in kwargs:
-            self.set_header('content-type', 'text/plain')
-            self.set_status(500)
-            for line in traceback.format_exception(*kwargs['exc_info']):
-                self.write(line)
-            self.finish()
-        else:
-            response = self._internal_server_error()
-            self.finish(response)
+        This function is called for each request.
+        """
+        name = self.request.method.lower()
+        # Wrap the original method with the code needed to run it asynchronously
+        method = make_async(self, getattr(self, name))
+        # Bind the wrapped method to self.<name>
+        setattr(self, name, method)
 
     def options(self, *args, **kwargs):
         """OPTIONS HTTP method."""
         self._no_content()
+
+    def write_error(self, status_code, *args, **kwargs):
+        """Only send traceback if app.DEVELOPER is true."""
+        response = None
+        exc_info = kwargs.get('exc_info', None)
+
+        if exc_info and isinstance(exc_info[1], HTTPError):
+            error = exc_info[1].log_message or exc_info[1].reason
+            response = self.api_response(status=status_code, error=error)
+        elif app.DEVELOPER and exc_info:
+            self.set_header('content-type', 'text/plain; charset=UTF-8')
+            self.set_status(500)
+            for line in traceback.format_exception(*exc_info):
+                self.write(line)
+        else:
+            response = self._internal_server_error()
+
+        self.finish(response)
+
+    def log_exception(self, typ, value, tb):
+        """
+        Customize logging of uncaught exceptions.
+
+        Only logs unhandled exceptions, as `HTTPErrors` are common for a RESTful API handler.
+        Note: If this method raises an exception, it will only be logged if `app.WEB_LOG` is enabled
+        """
+        if isinstance(value, HTTPError):
+            return
+
+        debug_info = 'Request: {0}'.format(self._request_summary())
+        if self.request.body:
+            body = ensure_text(self.request.body, errors='replace')
+            debug_info += '\nWith body:\n{0}'.format(body)
+
+        log.error('Uncaught exception in APIv2: {error!r}\n{debug}', {
+            'error': value,
+            'debug': debug_info,
+            'exc_info': (typ, value, tb),
+        })
 
     def set_default_headers(self):
         """Set default CORS headers."""
@@ -248,13 +267,6 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _handle_request_exception(self, error):
-        if isinstance(error, HTTPError):
-            response = self.api_response(error.code, error.message)
-            self.finish(response)
-        else:
-            super(BaseRequestHandler, self)._handle_request_exception(error)
-
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
         return self.api_response(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
@@ -267,8 +279,8 @@ class BaseRequestHandler(RequestHandler):
             self.set_header('Location', '{0}{1}'.format(location, identifier))
         return self.api_response(201, data=data)
 
-    def _accepted(self):
-        return self.api_response(202)
+    def _accepted(self, data=None):
+        return self.api_response(202, data=data)
 
     def _no_content(self):
         return self.api_response(204)
@@ -324,7 +336,7 @@ class BaseRequestHandler(RequestHandler):
         except ValueError:
             self._raise_bad_request_error('Invalid page parameter')
 
-    def _get_limit(self, default=20, maximum=10000):
+    def _get_limit(self, default=20, maximum=1000):
         try:
             limit = self._parse(self.get_argument('limit', default=default))
             if limit < 1 or limit > maximum:
@@ -335,11 +347,8 @@ class BaseRequestHandler(RequestHandler):
             self._raise_bad_request_error('Invalid limit parameter')
 
     def _paginate(self, data=None, data_generator=None, sort=None):
-        try:
-            arg_page = self._get_page()
-            arg_limit = self._get_limit()
-        except HTTPError as error:
-            return self._bad_request(error.message)
+        arg_page = self._get_page()
+        arg_limit = self._get_limit()
 
         headers = {
             'X-Pagination-Page': arg_page,
@@ -375,6 +384,7 @@ class BaseRequestHandler(RequestHandler):
             results = results[start:end]
             next_page = None if end > count else arg_page + 1
             last_page = ((count - 1) // arg_limit) + 1
+            headers['X-Pagination-Total'] = last_page
             if last_page <= arg_page:
                 last_page = None
 
@@ -444,7 +454,7 @@ class BaseRequestHandler(RequestHandler):
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
 
-    def http_get(self, *args, **kwargs):
+    def get(self, *args, **kwargs):
         """Get."""
         return self.api_response(status=404)
 

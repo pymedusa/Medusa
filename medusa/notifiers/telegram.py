@@ -68,7 +68,7 @@ class Notifier(object):
             success = True
         except RequestException as error:
             message = 'Unknown IO error: %s' % error
-            if hasattr(error, 'response'):
+            if hasattr(error, 'response') and error.response is not None:
                 error_message = {
                     400: 'Missing parameter(s). Double check your settings or if the channel/user exists.',
                     401: 'Authentication failed.',

@@ -42,10 +42,6 @@ class ShanaProjectProvider(TorrentProvider):
         self.supports_absolute_numbering = True
         self.anime_only = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 

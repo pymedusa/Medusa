@@ -14,7 +14,7 @@ from medusa.session.core import MedusaSession
 from six import iteritems
 
 
-initConfig = {
+init_config = {
     'valid_languages': [
         'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
         'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
@@ -146,8 +146,8 @@ def get_indexer_config():
     }
 
     main = {
-        'validLanguages': initConfig['valid_languages'],
-        'langabbvToId': initConfig['langabbv_to_id'],
+        'validLanguages': init_config['valid_languages'],
+        'langabbvToId': init_config['langabbv_to_id'],
         'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
         'traktIndexers': TRAKT_INDEXERS,
         'statusMap': STATUS_MAP

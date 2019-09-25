@@ -23,13 +23,13 @@ import struct
 import time
 import traceback
 import uuid
-import xml.etree.ElementTree as ET
 import zipfile
 from builtins import chr
 from builtins import hex
 from builtins import str
 from builtins import zip
 from itertools import cycle
+from xml.etree import ElementTree
 
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
@@ -64,6 +64,16 @@ try:
     import reflink
 except ImportError:
     reflink = None
+
+try:
+    from psutil import Process
+    memory_usage_tool = 'psutil'
+except ImportError:
+    try:
+        import resource  # resource module is unix only
+        memory_usage_tool = 'resource'
+    except ImportError:
+        memory_usage_tool = None
 
 
 def indent_xml(elem, level=0):
@@ -1020,8 +1030,8 @@ def get_show(name, try_indexers=False):
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
             for found_series in match_name_only:
-                log.warning("Consider adding '{name}' in scene exceptions for series '{series}'".format
-                            (name=series_name, series=found_series))
+                log.info("Consider adding '{name}' in scene exceptions for series '{series}'".format
+                         (name=series_name, series=found_series))
 
         # add show to cache
         if series and not from_cache:
@@ -1450,6 +1460,31 @@ def get_disk_space_usage(disk_path=None, pretty=True):
         return False
 
 
+def memory_usage(pretty=True):
+    """
+    Get the current memory usage (if possible).
+
+    :param pretty: True for human readable size, False for bytes
+
+    :return: Current memory usage
+    """
+    usage = ''
+    if memory_usage_tool == 'resource':
+        usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if platform.system() == 'Linux':
+            # resource.RUSAGE_SELF is in KB on Linux
+            usage *= 1024
+    elif memory_usage_tool == 'psutil':
+        usage = Process(os.getpid()).memory_info().rss
+    else:
+        return ''
+
+    if pretty:
+        usage = pretty_file_size(usage)
+
+    return usage
+
+
 def get_tvdb_from_id(indexer_id, indexer):
 
     session = MedusaSafeSession()
@@ -1462,7 +1497,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 
@@ -1476,7 +1511,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
         with suppress(SyntaxError):
-            tree = ET.fromstring(data)
+            tree = ElementTree.fromstring(data)
             for show in tree.iter('Series'):
                 tvdb_id = show.findtext('seriesid')
 
@@ -1652,7 +1687,11 @@ def ensure_list(value):
     :param value:
     :rtype: list
     """
-    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    try:
+        return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    except TypeError:
+        log.debug('Could not sort list with values: {value}', {'value': value})
+        return []
 
 
 def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozenset()):
@@ -1742,20 +1781,13 @@ def title_to_imdb(title, start_year, imdb_api=None):
     if imdb_api is None:
         imdb_api = Imdb()
 
-    try:
-        titles = imdb_api.search_for_title(title)
-    except ValueError as error:
-        # FIXME: Putting an error here, as this is a known error with the lib imdbpie. And should be fix.
-        log.warning('Could not get a result from imdbpie for the title {title}, error: {error}',
-                    {'title': title, 'error': error})
-        return None
-
+    titles = imdb_api.search_for_title(title)
     if len(titles) == 1:
         return titles[0]['imdb_id']
 
-    title = title.lower()
     # ImdbPie returns the year as string
     start_year = str(start_year)
+    title = title.lower()
 
     title_matches = []
     for candidate in titles:

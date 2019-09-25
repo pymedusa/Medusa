@@ -83,7 +83,7 @@ def _download_result(result):
 
         # save the data to disk
         try:
-            with open(file_name, u'w') as file_out:
+            with open(file_name, u'wb') as file_out:
                 file_out.write(result.extra_info[0])
 
             chmod_as_parent(file_name)
@@ -185,48 +185,48 @@ def snatch_episode(result):
     # don't notify when we re-download an episode
     sql_l = []
     trakt_data = []
-    for curEpObj in result.episodes:
-        with curEpObj.lock:
+    for cur_ep_obj in result.episodes:
+        with cur_ep_obj.lock:
             if is_first_best_match(result):
-                curEpObj.status = SNATCHED_BEST
-                curEpObj.quality = result.quality
+                cur_ep_obj.status = SNATCHED_BEST
+                cur_ep_obj.quality = result.quality
             else:
-                curEpObj.status = end_status
-                curEpObj.quality = result.quality
+                cur_ep_obj.status = end_status
+                cur_ep_obj.quality = result.quality
             # Reset all others fields to the snatched status
             # New snatch by default doesn't have nfo/tbn
-            curEpObj.hasnfo = False
-            curEpObj.hastbn = False
+            cur_ep_obj.hasnfo = False
+            cur_ep_obj.hastbn = False
 
             # We can't reset location because we need to know what we are replacing
-            # curEpObj.location = ''
+            # cur_ep_obj.location = ''
 
             # Release name and group are parsed in PP
-            curEpObj.release_name = ''
-            curEpObj.release_group = ''
+            cur_ep_obj.release_name = ''
+            cur_ep_obj.release_group = ''
 
             # Need to reset subtitle settings because it's a different file
-            curEpObj.subtitles = list()
-            curEpObj.subtitles_searchcount = 0
-            curEpObj.subtitles_lastsearch = u'0001-01-01 00:00:00'
+            cur_ep_obj.subtitles = list()
+            cur_ep_obj.subtitles_searchcount = 0
+            cur_ep_obj.subtitles_lastsearch = u'0001-01-01 00:00:00'
 
             # Need to store the correct is_proper. Not use the old one
-            curEpObj.is_proper = is_proper
-            curEpObj.version = 0
+            cur_ep_obj.is_proper = is_proper
+            cur_ep_obj.version = 0
 
-            curEpObj.manually_searched = result.manually_searched
+            cur_ep_obj.manually_searched = result.manually_searched
 
-            sql_l.append(curEpObj.get_sql())
+            sql_l.append(cur_ep_obj.get_sql())
 
-        if curEpObj.status != common.DOWNLOADED:
-            notifiers.notify_snatch(curEpObj, result)
+        if cur_ep_obj.status != common.DOWNLOADED:
+            notifiers.notify_snatch(cur_ep_obj, result)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                trakt_data.append((curEpObj.season, curEpObj.episode))
+                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
                 log.info(
                     u'Adding {0} {1} to Trakt watchlist',
                     result.series.name,
-                    episode_num(curEpObj.season, curEpObj.episode),
+                    episode_num(cur_ep_obj.season, cur_ep_obj.episode),
                 )
 
     if trakt_data:
@@ -600,7 +600,7 @@ def delay_search(best_result):
             date_added = first_result['date_added']
             # Some results in cache have date_added as 0
             if not date_added:
-                log.debug('DELAY: First result in cache doesn\'t have a valid date, skipping provider.')
+                log.debug("DELAY: First result in cache doesn't have a valid date, skipping provider.")
                 return False
 
             timestamp = to_timestamp(date_added)
@@ -927,6 +927,10 @@ def combine_results(multi_results, single_results):
 
         log.debug(u'Adding {0} to multi-episode result candidates', candidate.name)
         result_candidates.append(candidate)
+
+    # If there aren't any single results we can return early
+    if not single_results:
+        return result_candidates
 
     return_multi_results = []
     for multi_result in result_candidates:
