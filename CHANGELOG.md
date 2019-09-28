@@ -6,6 +6,7 @@
 - Shows without any episodes can now be added ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
 
 #### Fixes
+- Fix AnimeBytes dailysearch, for multi-ep results ([#7190](https://github.com/pymedusa/Medusa/pull/7190))
 
 -----
 
