@@ -164,13 +164,18 @@ class AnimeBytes(TorrentProvider):
                 release_type = OTHER
                 season = None
                 episode = None
+                multi_ep_start = None
+                multi_ep_end = None
                 title = None
 
-                # Attempt and get an season or episode number
+                # Attempt and get a season or episode number
                 title_info = row.get('EditionData').get('EditionTitle')
                 if title_info != '':
                     if title_info.startswith('Episodes'):
-                        episode = re.match(r'Episodes 1-(\d+)', title_info).group(1)
+                        multi_ep_match = re.match(r'Episodes (\d+)-(\d+)', title_info)
+                        if multi_ep_match:
+                            multi_ep_start = multi_ep_match.group(1)
+                            multi_ep_end = multi_ep_match.group(2)
                         release_type = MULTI_EP
                     elif title_info.startswith('Episode'):
                         episode = re.match('^Episode.([0-9]+)', title_info).group(1)
@@ -208,10 +213,11 @@ class AnimeBytes(TorrentProvider):
                 if release_type == MULTI_EP:
                     # Create the multi-episode release_name
                     # Multiple.Episode.TV.Show.SXXEXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
-                    title = '{title}.{season}{multi_episode}.{tags}' \
+                    title = '{title}.{season}{multi_episode_start}-{multi_episode_end}.{tags}' \
                             '{release_group}'.format(title=group.get('SeriesName'),
                                                      season='S{0}'.format(season) if season else 'S01',
-                                                     multi_episode='E01-E{0}'.format(episode),
+                                                     multi_episode_start='E{0}'.format(multi_ep_start),
+                                                     multi_episode_end='E{0}'.format(multi_ep_end),
                                                      tags=tags,
                                                      release_group=release_group)
                 if release_type == SEASON_PACK:
