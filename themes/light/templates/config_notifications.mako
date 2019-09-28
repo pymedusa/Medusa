@@ -1632,7 +1632,7 @@ window.app = new Vue({
                         <div class="component-group-desc col-xs-12 col-md-2">
                             <span class="icon-notifiers-discord" title="Discord"></span>
                             <h3><app-link href="https://discordapp.com/">Discord</app-link></h3>
-                            <p>Telegram is a cloud-based instant messaging service.</p>
+                            <p>Discord is a cloud-based All-in-one voice and text chat for gamers that's free, secure, and works on both your desktop and phone..</p>
                         </div>
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
