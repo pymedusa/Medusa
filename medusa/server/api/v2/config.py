@@ -323,6 +323,13 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.telegram.notifyOnDownload': BooleanField(app, 'TELEGRAM_NOTIFY_ONDOWNLOAD'),
         'notifiers.telegram.notifyOnSubtitleDownload': BooleanField(app, 'TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD'),
 
+        'notifiers.discord.enabled': BooleanField(app, 'USE_DISCORD'),
+        'notifiers.discord.webhook': StringField(app, 'DISCORD_WEBHOOK'),
+        'notifiers.discord.tts': BooleanField(app, 'DISCORD_TTS'),
+        'notifiers.discord.notifyOnSnatch': BooleanField(app, 'DISCORD_NOTIFY_ONSNATCH'),
+        'notifiers.discord.notifyOnDownload': BooleanField(app, 'DISCORD_NOTIFY_ONDOWNLOAD'),
+        'notifiers.discord.notifyOnSubtitleDownload': BooleanField(app, 'DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD'),
+
         'notifiers.twitter.enabled': BooleanField(app, 'USE_TWITTER'),
         'notifiers.twitter.dmto': StringField(app, 'TWITTER_DMTO'),
         'notifiers.twitter.username': StringField(app, 'TWITTER_USERNAME'),
@@ -867,6 +874,14 @@ class DataGenerator(object):
         section_data['telegram']['notifyOnSubtitleDownload'] = bool(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['telegram']['api'] = app.TELEGRAM_APIKEY
         section_data['telegram']['id'] = app.TELEGRAM_ID
+
+        section_data['discord'] = {}
+        section_data['discord']['enabled'] = bool(app.USE_DISCORD)
+        section_data['discord']['notifyOnSnatch'] = bool(app.DISCORD_NOTIFY_ONSNATCH)
+        section_data['discord']['notifyOnDownload'] = bool(app.DISCORD_NOTIFY_ONDOWNLOAD)
+        section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
+        section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
+        section_data['discord']['tts'] = bool(app.DISCORD_TTS)
 
         section_data['twitter'] = {}
         section_data['twitter']['enabled'] = bool(app.USE_TWITTER)

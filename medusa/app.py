@@ -392,6 +392,15 @@ class MedusaApp(object):
         self.TELEGRAM_ID = ''
         self.TELEGRAM_APIKEY = ''
 
+        self.USE_DISCORD = False
+        self.DISCORD_NOTIFY_ONSNATCH = False
+        self.DISCORD_NOTIFY_ONDOWNLOAD = False
+        self.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = False
+        self.DISCORD_WEBHOOK = None
+        self.DISCORD_NAME = 'pymedusa'
+        self.DISCORD_AVATAR_URL = 'https://raw.githubusercontent.com/pymedusa/medusa/master/themes-default/slim/static/images/ico/favicon-144.png'
+        self.DISCORD_TTS = False
+
         self.USE_PROWL = False
         self.PROWL_NOTIFY_ONSNATCH = False
         self.PROWL_NOTIFY_ONDOWNLOAD = False
