@@ -33,6 +33,7 @@ class Notifier(object):
     """
 
     def _send_discord_msg(self, title, msg, webhook=None, tts=False):
+        """Collect the parameters and send the message to the discord webhook."""
         webhook = app.DISCORD_WEBHOOK if webhook is None else webhook
         tts = app.DISCORD_TTS if tts is None else tts
 
@@ -127,9 +128,11 @@ class Notifier(object):
             self._notify_discord(title, update_text.format(ipaddress))
 
     def test_notify(self, discord_webhook=None, discord_tts=None):
+        """Create the test notification."""
         return self._notify_discord('test', 'This is a test notification from Medusa', webhook=discord_webhook, tts=discord_tts, force=True)
 
     def _notify_discord(self, title='', message='', webhook=None, tts=False, force=False):
+        """Validate if USE_DISCORD or Force is enabled and send."""
         if not app.USE_DISCORD and not force:
             return False
 
