@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Added notifier for Discord (discordapp.com) ([#7189](https://github.com/pymedusa/Medusa/pull/7189))
 
 #### Improvements
 - Shows without any episodes can now be added ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
