@@ -310,7 +310,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         except Exception as error:
             self.success = False
-            log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
+            log.exception('DailySearchQueueItem Exception, error: {error!r}', {'error': error})
 
         if self.success is None:
             self.success = False
