@@ -1645,7 +1645,7 @@ window.app = new Vue({
                                     <config-toggle-slider v-model="notifiers.discord.notifyOnSubtitleDownload" label="Notify on subtitle download" id="discord_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.discord.webhook" label="Channel webhook" id="discord_webhook" :explanations="['Add a webhook to a channel, use the returned url here']" @change="save()" ></config-textbox>
                                     <config-toggle-slider v-model="notifiers.discord.tts" label="Text to speech" id="discord_tts" :explanations="['Use discord text to speech feature']" @change="save()" ></config-toggle-slider>
-                                    
+
                                     <div class="testNotification" id="testDiscord-result">Click below to test your settings.</div>
                                     <input  class="btn-medusa" type="button" value="Test Discord" id="testDiscord" @click="testDiscord"/>
                                     <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>

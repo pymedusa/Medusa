@@ -2415,6 +2415,10 @@ div.metadataDiv .disabled {
     background-position: -736px 0;
 }
 
+.icon-notifiers-discord {
+    background-position: -768px 0;
+}
+
 div#config-components h3 > a {
     padding-left: 5px;
 }
