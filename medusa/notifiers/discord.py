@@ -1,3 +1,4 @@
+"""Discord notifier."""
 # coding=utf-8
 
 from __future__ import unicode_literals
@@ -27,7 +28,7 @@ log.logger.addHandler(logging.NullHandler())
 
 class Notifier(object):
     """
-    Use Discord to send notifications
+    Use Discord to send notifications.
 
     https://discordapp.com
     """
@@ -76,7 +77,7 @@ class Notifier(object):
 
     def notify_snatch(self, title, message):
         """
-        Sends a Discord notification when an episode is snatched
+        Send a Discord notification when an episode is snatched.
 
         :param ep_name: The name of the episode snatched
         :param is_proper: Boolean. If snatch is proper or not
@@ -86,7 +87,7 @@ class Notifier(object):
 
     def notify_download(self, ep_obj, title=notifyStrings[NOTIFY_DOWNLOAD]):
         """
-        Sends a Discord notification when an episode is downloaded
+        Send a Discord notification when an episode is downloaded.
 
         :param ep_name: The name of the episode downloaded
         :param title: The title of the notification to send
@@ -96,7 +97,7 @@ class Notifier(object):
 
     def notify_subtitle_download(self, ep_obj, lang, title=notifyStrings[NOTIFY_SUBTITLE_DOWNLOAD]):
         """
-        Sends a Discord notification when subtitles for an episode are downloaded
+        Send a Discord notification when subtitles for an episode are downloaded.
 
         :param ep_name: The name of the episode subtitles were downloaded for
         :param lang: The language of the downloaded subtitles
@@ -107,7 +108,7 @@ class Notifier(object):
 
     def notify_git_update(self, new_version='??'):
         """
-        Sends a Discord notification for git updates
+        Send a Discord notification for git updates.
 
         :param new_version: The new version available from git
         """
@@ -118,7 +119,7 @@ class Notifier(object):
 
     def notify_login(self, ipaddress=''):
         """
-        Sends a Discord notification on login
+        Send a Discord notification on login.
 
         :param ipaddress: The ip address the login is originating from
         """

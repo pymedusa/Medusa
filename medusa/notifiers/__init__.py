@@ -14,6 +14,7 @@ from medusa.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.notifiers import (
     boxcar2,
+    discord,
     emailnotify,
     emby,
     freemobile,
@@ -33,7 +34,6 @@ from medusa.notifiers import (
     synoindex,
     synology_notifier,
     telegram,
-    discord,
     trakt,
     tweet,
 )
