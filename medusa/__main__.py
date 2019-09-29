@@ -1770,7 +1770,7 @@ class Application(object):
         new_config['Discord']['discord_notify_ondownload'] = int(app.DISCORD_NOTIFY_ONDOWNLOAD)
         new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
-        new_config['Discord']['discord_tts'] = app.DISCORD_TTS
+        new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
 
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
