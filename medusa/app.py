@@ -398,7 +398,7 @@ class MedusaApp(object):
         self.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = False
         self.DISCORD_WEBHOOK = None
         self.DISCORD_NAME = 'pymedusa'
-        self.DISCORD_AVATAR_URL = 'https://raw.githubusercontent.com/pymedusa/medusa/master/themes-default/slim/static/images/ico/favicon-144.png'
+        self.DISCORD_AVATAR_URL = '{base_url}/images/ico/favicon-144.png'.format(base_url=self.BASE_PYMEDUSA_URL)
         self.DISCORD_TTS = False
 
         self.USE_PROWL = False
