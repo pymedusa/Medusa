@@ -144,8 +144,10 @@ const configRoutes = [
             title: 'Config - Notifications',
             header: 'Notifications',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-notifications.vue')
     },
     {
         path: '/config/postProcessing',
