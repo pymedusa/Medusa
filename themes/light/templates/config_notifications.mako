@@ -215,6 +215,16 @@ window.app = new Vue({
                     api: null,
                     id: null
                 },
+                discord: {
+                    enabled: null,
+                    notifyOnSnatch: null,
+                    notifyOnDownload: null,
+                    notifyOnSubtitleDownload: null,
+                    webhook: null,
+                    name: null,
+                    avatar_url: null,
+                    tts: false
+                },
                 twitter: {
                     enabled: null,
                     notifyOnSnatch: null,
@@ -818,6 +828,25 @@ window.app = new Vue({
             }).done(data => {
                 $('#testTelegram-result').html(data);
                 $('#testTelegram').prop('disabled', false);
+            });
+        },
+        testDiscord() {
+            const { notifiers } = this;
+
+            if (!notifiers.discord.webhook) {
+                $('#testDiscord-result').html('Please fill out the necessary fields above.');
+                $('#discord_webhook').addRemoveWarningClass(notifiers.discord.webhook);
+                return;
+            }
+            $('#discord_id,#discord_apikey').removeClass('warning');
+            $(this).prop('disabled', true);
+            $('#testDiscord-result').html(MEDUSA.config.loading);
+            $.get('home/testDiscord', {
+                discord_webhook: notifiers.discord.webhook, // eslint-disable-line camelcase
+                discord_tts: notifiers.discord.tts // eslint-disable-line camelcase
+            }).done(data => {
+                $('#testDiscord-result').html(data);
+                $('#testDiscord').prop('disabled', false);
             });
         },
         testSlack() {
@@ -1599,6 +1628,32 @@ window.app = new Vue({
                         </div>
                     </div>
 
+                    <div class="row component-group">
+                        <div class="component-group-desc col-xs-12 col-md-2">
+                            <span class="icon-notifiers-discord" title="Discord"></span>
+                            <h3><app-link href="https://discordapp.com/">Discord</app-link></h3>
+                            <p>Discord is a cloud-based All-in-one voice and text chat for gamers that's free, secure, and works on both your desktop and phone..</p>
+                        </div>
+                        <div class="col-xs-12 col-md-10">
+                            <fieldset class="component-group-list">
+                                <!-- All form components here for discord client -->
+                                <config-toggle-slider v-model="notifiers.discord.enabled" label="Enable" id="use_discord" :explanations="['Send Discord notifications?']" @change="save()" ></config-toggle-slider>
+                                <div v-show="notifiers.discord.enabled" id="content-use-discord-client"> <!-- show based on notifiers.discord.enabled -->
+
+                                    <config-toggle-slider v-model="notifiers.discord.notifyOnSnatch" label="Notify on snatch" id="discord_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.discord.notifyOnDownload" label="Notify on download" id="discord_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.discord.notifyOnSubtitleDownload" label="Notify on subtitle download" id="discord_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-textbox v-model="notifiers.discord.webhook" label="Channel webhook" id="discord_webhook" :explanations="['Add a webhook to a channel, use the returned url here']" @change="save()" ></config-textbox>
+                                    <config-toggle-slider v-model="notifiers.discord.tts" label="Text to speech" id="discord_tts" :explanations="['Use discord text to speech feature']" @change="save()" ></config-toggle-slider>
+
+                                    <div class="testNotification" id="testDiscord-result">Click below to test your settings.</div>
+                                    <input  class="btn-medusa" type="button" value="Test Discord" id="testDiscord" @click="testDiscord"/>
+                                    <input type="submit" class="config_submitter btn-medusa" value="Save Changes"/>
+                                </div>
+                            </fieldset>
+                        </div>
+                    </div>
+
                 </div><!-- #devices //-->
 
                 <div id="social">
@@ -1723,12 +1778,12 @@ window.app = new Vue({
                         <div class="col-xs-12 col-md-10">
                             <fieldset class="component-group-list">
                                 <!-- All form components here for the email client -->
-                                <config-toggle-slider v-model="notifiers.email.enabled" label="Enable" id="use_telegram" :explanations="['Send email notifications?']" @change="save()" ></config-toggle-slider>
+                                <config-toggle-slider v-model="notifiers.email.enabled" label="Enable" id="use_email" :explanations="['Send email notifications?']" @change="save()" ></config-toggle-slider>
                                 <div v-show="notifiers.email.enabled" id="content-use-email">
 
-                                    <config-toggle-slider v-model="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="telegram_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()" ></config-toggle-slider>
-                                    <config-toggle-slider v-model="notifiers.email.notifyOnDownload" label="Notify on download" id="telegram_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
-                                    <config-toggle-slider v-model="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="telegram_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnSnatch" label="Notify on snatch" id="email_notify_onsnatch" :explanations="['Send a message when a download starts??']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnDownload" label="Notify on download" id="email_notify_ondownload" :explanations="['send a message when a download finishes?']" @change="save()" ></config-toggle-slider>
+                                    <config-toggle-slider v-model="notifiers.email.notifyOnSubtitleDownload" label="Notify on subtitle download" id="email_notify_onsubtitledownload" :explanations="['send a message when subtitles are downloaded?']" @change="save()" ></config-toggle-slider>
                                     <config-textbox v-model="notifiers.email.host" label="SMTP host" id="email_host" :explanations="['hostname of your SMTP email server.']" @change="save()" ></config-textbox>
                                     <config-textbox-number :min="1" :step="1" v-model="notifiers.email.port" label="SMTP port" id="email_port" :explanations="['port number used to connect to your SMTP host.']" @change="save()" ></config-textbox-number>
                                     <config-textbox v-model="notifiers.email.from" label="SMTP from" id="email_from" :explanations="['sender email address, some hosts require a real address.']" @change="save()" ></config-textbox>
