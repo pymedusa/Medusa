@@ -44,7 +44,7 @@ class Notifier(object):
 
         headers = {'Content-Type': 'application/json'}
         payload = {
-            'content': message.encode('utf-8'),
+            'content': message,
             'username': app.DISCORD_NAME,
             'avatar_url': app.DISCORD_AVATAR_URL,
             'tts': tts
