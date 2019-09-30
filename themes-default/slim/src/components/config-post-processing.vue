@@ -363,7 +363,7 @@
     </div><!--/config//-->
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import { ToggleButton } from 'vue-js-toggle-button';
 import { AppLink, FileBrowser, NamePattern, SelectList } from './helpers';
 
@@ -437,6 +437,9 @@ export default {
         };
     },
     methods: {
+        ...mapActions([
+            'setConfig'
+        ]),
         onChangeSyncFiles(items) {
             this.postProcessing.syncFiles = items.map(item => item.value);
         },
@@ -476,8 +479,8 @@ export default {
             this.postProcessing.naming.animeNamingType = values.animeNamingType;
             this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
         },
-        save() {
-            const { $store, postProcessing, metadataProviders } = this;
+        async save() {
+            const { postProcessing, metadataProviders, setConfig } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.configLoaded) {
                 return;
@@ -500,18 +503,21 @@ export default {
 
             const section = 'main';
 
-            $store.dispatch('setConfig', { section, config }).then(() => {
+            try {
+                await setConfig({ section, config });
                 this.$snotify.success(
                     'Saved Post-Processing config',
                     'Saved',
                     { timeout: 5000 }
                 );
-            }).catch(() => {
+            } catch (error) {
                 this.$snotify.error(
                     'Error while trying to save Post-Processing config',
                     'Error'
                 );
-            });
+            } finally {
+                this.saving = false;
+            }
         },
         /**
          * Get the first enabled metadata provider based on enabled features.
