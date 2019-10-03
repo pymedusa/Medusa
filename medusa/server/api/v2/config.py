@@ -332,8 +332,6 @@ class ConfigHandler(BaseRequestHandler):
 
         'notifiers.twitter.enabled': BooleanField(app, 'USE_TWITTER'),
         'notifiers.twitter.dmto': StringField(app, 'TWITTER_DMTO'),
-        'notifiers.twitter.username': StringField(app, 'TWITTER_USERNAME'),
-        'notifiers.twitter.password': StringField(app, 'TWITTER_PASSWORD'),
         'notifiers.twitter.prefix': StringField(app, 'TWITTER_PREFIX'),
         'notifiers.twitter.directMessage': BooleanField(app, 'TWITTER_USEDM'),
         'notifiers.twitter.notifyOnSnatch': BooleanField(app, 'TWITTER_NOTIFY_ONSNATCH'),
@@ -889,8 +887,6 @@ class DataGenerator(object):
         section_data['twitter']['notifyOnDownload'] = bool(app.TWITTER_NOTIFY_ONDOWNLOAD)
         section_data['twitter']['notifyOnSubtitleDownload'] = bool(app.TWITTER_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['twitter']['dmto'] = app.TWITTER_DMTO
-        section_data['twitter']['username'] = app.TWITTER_USERNAME
-        section_data['twitter']['password'] = app.TWITTER_PASSWORD
         section_data['twitter']['prefix'] = app.TWITTER_PREFIX
         section_data['twitter']['directMessage'] = bool(app.TWITTER_USEDM)
 
