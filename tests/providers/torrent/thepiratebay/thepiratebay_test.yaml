@@ -4,22 +4,22 @@ daily:
   results:
     - seeders: 0
       pubdate:
-      title: Ink.Master.Angels.S01E06.WEB.x264-TBS[ettv]
+      title: Hospital.S04E06.XviD-AFG
       leechers: 0
-      link: magnet:?xt=urn:btih:2c0822768c241e36d770f1e60dc54fd093c68549
-      size: 549055365
-    - seeders: 124
+      link: magnet:?xt=urn:btih:bef700a68338e37c53e3b42837d8282a3489b6b3
+      size: 554371645
+    - seeders: 0
       pubdate:
-      title: The.Voice.S13E14.WEB.x264-TBS[ettv]
-      leechers: 78
-      link: magnet:?xt=urn:btih:f16cbe510298eee0c1477b5477dd408568489bec
-      size: 620169789
-    - seeders: 44
+      title: Great.British.Railway.Journeys.S10E10.720p.HDTV.x264-QPEL
+      leechers: 0
+      link: magnet:?xt=urn:btih:586cab8cbd80ab21e5230f19b1a9a86bc0c9c7f6
+      size: 571211776
+    - seeders: 0
       pubdate:
-      title: The.Mayor.2017.S01E06.WEB.x264-TBS[ettv]
-      leechers: 21
-      link: magnet:?xt=urn:btih:94411f7130f1d170b5ee13532ade9171d6dde7d4
-      size: 183207198
+      title: Show.Me.The.Movie.S02E02.480p.x264-mSD
+      leechers: 0
+      link: magnet:?xt=urn:btih:f4915f92e8462c3769fcfca886448fd48d1861fb
+      size: 212504412
 
 backlog:
   search_strings:
@@ -34,6 +34,6 @@ backlog:
     - seeders: 1
       pubdate:
       title: Arrow.S05E07.1080p.WEB-DL.6CH.x265.HEVC-PSA
-      leechers: 3
+      leechers: 2
       link: magnet:?xt=urn:btih:d540765a1d0b49ec1c7bf6186c42d9e652500aaa
       size: 524350914

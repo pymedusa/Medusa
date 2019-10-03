@@ -9,6 +9,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -18,7 +20,8 @@ window.app = new Vue({
         return {
         };
     },
-    computed: Object.assign(Vuex.mapState([]), {
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
         period: {
             get() {
                 return this.config.backlogOverview.period;
@@ -241,7 +244,7 @@ window.app = new Vue({
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
                                     <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn-medusa btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="home/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>
@@ -311,7 +314,7 @@ window.app = new Vue({
                             <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
                             <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                             % if old_status == DOWNLOADED:
-                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
+                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=s${cur_result['season']}e${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
                             % endif
                         </td>
                     </tr>

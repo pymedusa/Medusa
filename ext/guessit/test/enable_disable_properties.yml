@@ -35,9 +35,9 @@
   -cd: 1
   -cd_count: 3
 
-? This.Is.Us
+? This.is.Us
 : options: --exclude country
-  title: This Is Us
+  title: This is Us
   -country: US
 
 ? 2015.01.31

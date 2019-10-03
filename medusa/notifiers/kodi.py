@@ -61,11 +61,13 @@ class Notifier(object):
         result = self._send_to_kodi(check_command, host, username, password, dest_app)
 
         if result and 'error' not in result:
+            if isinstance(result['result']['version'], dict):
+                return result['result']['version'].get('major')
             return result['result']['version']
         else:
             return False
 
-    def _notify_kodi(self, message, title='Medusa', host=None, username=None, password=None,
+    def _notify_kodi(self, title, message, host=None, username=None, password=None,
                      force=False, dest_app='KODI'):
         """Private wrapper for the notify_snatch and notify_download functions.
 
@@ -103,11 +105,11 @@ class Notifier(object):
             return False
 
         result = ''
-        for curHost in [x.strip() for x in host if x.strip()]:
+        for cur_host in [x.strip() for x in host if x.strip()]:
             log.debug(u'Sending {app} notification to {host} - {msg}',
-                      {'app': dest_app, 'host': curHost, 'msg': message})
+                      {'app': dest_app, 'host': cur_host, 'msg': message})
 
-            kodi_api = self._get_kodi_version(curHost, username, password, dest_app)
+            kodi_api = self._get_kodi_version(cur_host, username, password, dest_app)
             if kodi_api:
                 if kodi_api <= 4:
                     log.warning(u'Detected {app} version <= 11, this version is not supported by Medusa. '
@@ -120,23 +122,23 @@ class Notifier(object):
                         'jsonrpc': '2.0',
                         'method': 'GUI.ShowNotification',
                         'params': {
-                            'title': title.encode('utf-8'),
-                            'message': message.encode('utf-8'),
+                            'title': title,
+                            'message': message,
                             'image': app.LOGO_URL,
                         },
                         'id': '1',
                     }
-                    notify_result = self._send_to_kodi(command, curHost, username, password, dest_app)
-                    if notify_result and notify_result.get('result'):  # pylint: disable=no-member
-                        result += curHost + ':' + notify_result['result'].decode(app.SYS_ENCODING)
+                    notify_result = self._send_to_kodi(command, cur_host, username, password, dest_app)
+                    if notify_result and notify_result.get('result'):
+                        result += '{cur_host}:{notify_result}'.format(cur_host=cur_host, notify_result=notify_result['result'])
             else:
                 if app.KODI_ALWAYS_ON or force:
                     log.warning(
                         u'Failed to detect {app} version for {host},'
                         u' check configuration and try again.',
-                        {'app': dest_app, 'host': curHost}
+                        {'app': dest_app, 'host': cur_host}
                     )
-                result += curHost + ':False'
+                result += cur_host + ':False'
 
         return result
 
@@ -178,7 +180,7 @@ class Notifier(object):
         """Handle communication to KODI servers via JSONRPC.
 
         Args:
-            command: Dictionary of field/data pairs, encoded via urllib and passed to the KODI JSON-RPC via HTTP
+            command: Dictionary of field/data pairs, passed to the KODI JSON-RPC via HTTP
             host: KODI webserver host:port
             username: KODI webserver username
             password: KODI webserver password
@@ -225,7 +227,9 @@ class Notifier(object):
                     log.warning(u'Connection error while trying to retrieve {0} API version for {1}: {2!r}',
                                 dest_app, host, error)
                 return False
-            except Exception:
+            except Exception as error:
+                log.exception(u'An error occurred while trying to retrieve {0} API version for {1}: {2!r}',
+                              dest_app, host, error)
                 return False
 
             # parse the json result
@@ -279,7 +283,7 @@ class Notifier(object):
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
         return clean_library
 
-    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
+    def _update_library(self, host=None, series_name=None):
         """Handle updating KODI host via HTTP JSON-RPC.
 
         Attempts to update the KODI video library for a specific tv show if passed,
@@ -421,39 +425,38 @@ class Notifier(object):
     # Public functions which will call the JSON or Legacy HTTP API methods
     ##############################################################################
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """Send the snatch message."""
         if app.KODI_NOTIFY_ONSNATCH:
-            self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH,
-                                                             common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_kodi(title, message)
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """Send the download message."""
         if app.KODI_NOTIFY_ONDOWNLOAD:
-            self._notify_kodi(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
+            self._notify_kodi(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_obj.pretty_name_with_quality())
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """Send the subtitle download message."""
         if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_kodi(ep_name + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
+            self._notify_kodi(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         """Send update available message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._notify_kodi(update_text + new_version, title)
+            self._notify_kodi(title, update_text + new_version)
 
     def notify_login(self, ipaddress=''):
         """Send the new login message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._notify_kodi(update_text.format(ipaddress), title)
+            self._notify_kodi(title, update_text.format(ipaddress))
 
     def test_notify(self, host, username, password):
         """Test notifier."""
-        return self._notify_kodi('Testing KODI notifications from Medusa', 'Test Notification', host, username,
+        return self._notify_kodi('Test Notification', 'Testing KODI notifications from Medusa', host, username,
                                  password, force=True)
 
     def update_library(self, series_name=None):

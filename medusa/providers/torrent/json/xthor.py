@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import tv
-from medusa.common import USER_AGENT
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -34,17 +34,14 @@ class XthorProvider(TorrentProvider):
         # Proper Strings
 
         # Miscellaneous Options
-        self.headers.update({'User-Agent': USER_AGENT})
         self.subcategories = [433, 637, 455, 639]
 
         # Torrent Stats
-        self.minseed = None
-        self.minleech = None
         self.confirmed = False
-        self.freeleech = None
+        self.freeleech = False
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -129,18 +126,18 @@ class XthorProvider(TorrentProvider):
                 if not all([title, download_url]):
                     continue
 
-                seeders = row.get('seeders')
-                leechers = row.get('leechers')
+                seeders = int(row.get('seeders'))
+                leechers = int(row.get('leechers'))
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
-                        log.debug('Discarding torrent because it doesn\'t meet the'
+                        log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
-                size = row.get('size') or -1
+                size = convert_size(row.get('size'), default=-1)
 
                 item = {
                     'title': title,

@@ -24,7 +24,6 @@ from medusa.show.recommendations.trakt import TraktPopular
 from medusa.show.show import Show
 
 from requests import RequestException
-from requests.compat import unquote_plus
 
 from simpleanidb import REQUEST_HOT
 
@@ -52,6 +51,14 @@ def json_response(result=True, message=None, redirect=None, params=None):
         'redirect': text_type(redirect or '').strip('/'),
         'params': params or [],
     })
+
+
+def decode_shows(names):
+    """Decode show names to UTF-8."""
+    return [
+        name.decode('utf-8') if not isinstance(name, text_type) else name
+        for name in names
+    ]
 
 
 @route('/addShows(/?.*)')
@@ -97,9 +104,9 @@ class HomeAddShows(Home):
         elif not isinstance(other_shows, list):
             other_shows = [other_shows]
 
+        other_shows = decode_shows(other_shows)
         provided_indexer_id = int(indexer_id or 0)
         provided_indexer_name = show_name
-
         provided_indexer = int(indexer or app.INDEXER_DEFAULT)
 
         return t.render(
@@ -152,8 +159,12 @@ class HomeAddShows(Home):
         Display the new show page which collects a tvdb id, folder, and extra options and
         posts them to addNewShow
         """
-        e = None
+        error = None
         t = PageTemplate(rh=self, filename='addShows_recommended.mako')
+        trakt_blacklist = False
+        recommended_shows = None
+        removed_from_medusa = None
+
         if traktList is None:
             traktList = ''
 
@@ -183,28 +194,26 @@ class HomeAddShows(Home):
         try:
             (trakt_blacklist, recommended_shows, removed_from_medusa) = TraktPopular().fetch_popular_shows(page_url=page_url, trakt_list=traktList)
         except Exception as e:
-            # print traceback.format_exc()
-            trakt_blacklist = False
-            recommended_shows = None
-            removed_from_medusa = None
+            error = e
 
         return t.render(trakt_blacklist=trakt_blacklist, recommended_shows=recommended_shows, removed_from_medusa=removed_from_medusa,
-                        exception=e, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
+                        exception=error, enable_anime_options=False, blacklist=[], whitelist=[], realpage='getTrendingShows')
 
     def popularShows(self):
         """
         Fetches data from IMDB to show a list of popular shows.
         """
         t = PageTemplate(rh=self, filename='addShows_recommended.mako')
-        e = None
+        recommended_shows = None
+        error = None
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
         except (RequestException, Exception) as e:
-            recommended_shows = None
+            error = e
 
         return t.render(title='Popular Shows', header='Popular Shows',
-                        recommended_shows=recommended_shows, exception=e, groups=[],
+                        recommended_shows=recommended_shows, exception=error, groups=[],
                         enable_anime_options=True, blacklist=[], whitelist=[],
                         controller='addShows', action='recommendedShows', realpage='popularShows')
 
@@ -213,16 +222,16 @@ class HomeAddShows(Home):
         Fetches list recommeded shows from anidb.info.
         """
         t = PageTemplate(rh=self, filename='addShows_recommended.mako')
-        e = None
+        recommended_shows = None
+        error = None
 
         try:
             recommended_shows = AnidbPopular().fetch_popular_shows(list_type)
         except Exception as e:
-            # print traceback.format_exc()
-            recommended_shows = None
+            error = e
 
         return t.render(title='Popular Anime Shows', header='Popular Anime Shows',
-                        recommended_shows=recommended_shows, exception=e, groups=[],
+                        recommended_shows=recommended_shows, exception=error, groups=[],
                         enable_anime_options=True, blacklist=[], whitelist=[],
                         controller='addShows', action='recommendedShows', realpage='popularAnime')
 
@@ -273,12 +282,12 @@ class HomeAddShows(Home):
             if not series_id:
                 log.info('Unable to find tvdb ID to add {name}', {'name': show_name})
                 ui.notifications.error(
-                    'Unable to add %s' % show_name,
-                    'Could not add %s.  We were unable to locate the tvdb id at this time.' % show_name
+                    'Unable to add {0}'.format(show_name),
+                    'Could not add {0}. We were unable to locate the tvdb id at this time.'.format(show_name)
                 )
                 return json_response(
                     result=False,
-                    message='Unable to find tvdb ID to add {0}'.format(show=show_name)
+                    message='Unable to find tvdb ID to add {show}'.format(show=show_name)
                 )
 
         if Show.find_by_id(app.showList, INDEXER_TVDBV2, series_id):
@@ -385,6 +394,8 @@ class HomeAddShows(Home):
         elif not isinstance(other_shows, list):
             other_shows = [other_shows]
 
+        other_shows = decode_shows(other_shows)
+
         def finishAddShow():
             # if there are no extra shows then go home
             if not other_shows:
@@ -464,7 +475,7 @@ class HomeAddShows(Home):
                 log.error("Unable to create the folder {path}, can't add the show",
                           {'path': show_dir})
                 ui.notifications.error('Unable to add show',
-                                       'Unable to create the folder {path}, can\'t add the show'.format(path=show_dir))
+                                       "Unable to create the folder {path}, can't add the show".format(path=show_dir))
                 # Don't redirect to default page because user wants to see the new show
                 return json_response(
                     result=False,
@@ -481,8 +492,12 @@ class HomeAddShows(Home):
         subtitles = config.checkbox_to_value(subtitles)
 
         if whitelist:
+            if not isinstance(whitelist, list):
+                whitelist = [whitelist]
             whitelist = short_group_names(whitelist)
         if blacklist:
+            if not isinstance(blacklist, list):
+                blacklist = [blacklist]
             blacklist = short_group_names(blacklist)
 
         if not allowed_qualities:
@@ -532,8 +547,7 @@ class HomeAddShows(Home):
         elif not isinstance(shows_to_add, list):
             shows_to_add = [shows_to_add]
 
-        shows_to_add = [unquote_plus(x) for x in shows_to_add]
-
+        shows_to_add = decode_shows(shows_to_add)
         prompt_for_settings = config.checkbox_to_value(prompt_for_settings)
 
         indexer_id_given = []

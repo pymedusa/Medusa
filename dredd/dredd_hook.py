@@ -1,15 +1,37 @@
+#!/usr/bin/env python
+# coding=utf-8
 """Dredd hook."""
 from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
-import ConfigParser
+import io
 import json
-import urlparse
-from collections import Mapping
-from urllib import urlencode
+import os
+import sys
+
+try:
+    from builtins import print as real_print
+except ImportError:
+    # Python 2
+    from __builtin__ import print as real_print
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
+current_dir = os.path.abspath(os.path.dirname(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.insert(1, os.path.join(root_dir, 'ext'))
+sys.path.insert(1, os.path.join(root_dir, 'ext%d' % sys.version_info.major))
+
+from configparser import ConfigParser
 
 import dredd_hooks as hooks
 
 from six import string_types
+from six.moves.urllib.parse import parse_qs, urlencode, urlparse
 
 import yaml
 
@@ -22,12 +44,29 @@ stash = {
     'api-key': '1234567890ABCDEF1234567890ABCDEF',
 }
 
+hook_log = os.path.join(current_dir, 'hook.log')
+try:
+    os.remove(hook_log)
+except OSError:
+    pass
+
+
+def print(*args, **kwargs):
+    """Override builtin print to write to a file, because nothing prints to `stdout`."""
+    with io.open(hook_log, 'a', encoding='utf-8') as fh:
+        kwargs['file'] = fh
+        return real_print(*args, **kwargs)
+
 
 @hooks.before_all
-def load_api_description(transactions):
+def order_and_load_api_description(transactions):
     """Load api description."""
     global api_description
-    with open(transactions[0]['origin']['filename'], 'r') as stream:
+
+    # Set DELETE transactions last, keep the rest unchanged
+    transactions.sort(key=lambda x: (x['request']['method'] == 'DELETE', True))
+
+    with io.open(transactions[0]['origin']['filename'], 'rb') as stream:
         api_description = yaml.safe_load(stream)
 
 
@@ -64,14 +103,24 @@ def configure_transaction(transaction):
 
     # Change request based on x-request configuration
     url = transaction['fullPath']
-    parsed_url = urlparse.urlparse(url)
-    parsed_params = urlparse.parse_qs(parsed_url.query)
+    parsed_url = urlparse(url)
+    parsed_params = parse_qs(parsed_url.query)
     parsed_path = parsed_url.path
 
     request = response.get('x-request', {})
     body = request.get('body')
+    body_update = request.get('body-update')
     if body is not None:
         transaction['request']['body'] = json.dumps(evaluate(body))
+    elif body_update is not None:
+        try:
+            orig_body = json.loads(transaction['request']['body'])
+        except ValueError:
+            orig_body = {}
+
+        # Use the current request body and update it with the new values
+        new_body = dict(orig_body, **evaluate(body_update))
+        transaction['request']['body'] = json.dumps(new_body)
 
     path_params = request.get('path-params')
     if path_params:
@@ -142,13 +191,9 @@ def evaluate(expression, context=None):
 
 def start():
     """Start application."""
-    import os
     import shutil
-    import sys
 
-    current_dir = os.path.dirname(__file__)
-    app_dir = os.path.abspath(os.path.join(current_dir, '..'))
-    data_dir = os.path.abspath(os.path.join(current_dir, 'data'))
+    data_dir = os.path.join(current_dir, 'data')
     if os.path.isdir(data_dir):
         shutil.rmtree(data_dir)
     args = [
@@ -158,16 +203,16 @@ def start():
 
     os.makedirs(data_dir)
     os.chdir(data_dir)
-    config = ConfigParser.RawConfigParser()
+    config = ConfigParser()
     config.read('config.ini')
     config.add_section('General')
     config.set('General', 'web_username', stash['web-username'])
     config.set('General', 'web_password', stash['web-password'])
     config.set('General', 'api_key', stash['api-key'])
-    with open('config.ini', 'wb') as configfile:
+    with io.open('config.ini', 'w', encoding='utf-8') as configfile:
         config.write(configfile)
 
-    sys.path.insert(1, app_dir)
+    sys.path.insert(1, root_dir)
 
     from medusa.__main__ import Application
     application = Application()

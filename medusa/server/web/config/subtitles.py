@@ -33,8 +33,7 @@ class ConfigSubtitles(Config):
         """
         t = PageTemplate(rh=self, filename='config_subtitles.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='subtitlesPage')
+        return t.render(controller='config', action='subtitlesPage')
 
     def saveSubtitles(self, use_subtitles=None, subtitles_plugins=None, subtitles_languages=None, subtitles_dir=None, subtitles_perfect_match=None,
                       service_order=None, subtitles_history=None, subtitles_finder_frequency=None, subtitles_erase_cache=None,
@@ -66,8 +65,8 @@ class ConfigSubtitles(Config):
         services_str_list = service_order.split()
         subtitles_services_list = []
         subtitles_services_enabled = []
-        for curServiceStr in services_str_list:
-            cur_service, cur_enabled = curServiceStr.split(':')
+        for cur_service_str in services_str_list:
+            cur_service, cur_enabled = cur_service_str.split(':')
             subtitles_services_list.append(cur_service)
             subtitles_services_enabled.append(int(cur_enabled))
 

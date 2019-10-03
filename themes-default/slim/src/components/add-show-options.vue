@@ -7,25 +7,33 @@
                         <span>Quality</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <quality-chooser :overall-quality="defaultConfig.quality" @update:quality:allowed="quality.allowed = $event" @update:quality:preferred="quality.preferred = $event"></quality-chooser>
+                        <quality-chooser
+                            :overall-quality="defaultConfig.quality"
+                            @update:quality:allowed="quality.allowed = $event"
+                            @update:quality:preferred="quality.preferred = $event"
+                        />
                     </div>
                 </div>
             </div>
 
             <div v-if="subtitlesEnabled" id="use-subtitles">
-                <config-toggle-slider label="Subtitles" id="subtitles" :checked="defaultConfig.subtitles" @update="selectedSubtitleEnabled = $event"
-                    :explanations="['Download subtitles for this show?']">
-                </config-toggle-slider>
+                <config-toggle-slider
+                    label="Subtitles"
+                    id="subtitles"
+                    :value="selectedSubtitleEnabled"
+                    :explanations="['Download subtitles for this show?']"
+                    @input="selectedSubtitleEnabled = $event"
+                />
             </div>
 
-           <div class="form-group">
+            <div class="form-group">
                 <div class="row">
                     <label for="defaultStatus" class="col-sm-2 control-label">
                         <span>Status for previously aired episodes</span>
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatus" class="form-control form-control-inline input-sm" v-model="selectedStatus">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -38,19 +46,29 @@
                     </label>
                     <div class="col-sm-10 content">
                         <select id="defaultStatusAfter" class="form-control form-control-inline input-sm" v-model="selectedStatusAfter">
-                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.text }}</option>
+                            <option v-for="option in defaultEpisodeStatusOptions" :value="option.value" :key="option.value">{{ option.name }}</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Season Folders" id="season_folders" :checked="defaultConfig.seasonFolders || namingForceFolders" :disabled="namingForceFolders"
-                :explanations="['Group episodes by season folders?']" @update="selectedSeasonFoldersEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Season Folders"
+                id="season_folders"
+                :value="selectedSeasonFoldersEnabled"
+                :disabled="namingForceFolders"
+                :explanations="['Group episodes by season folders?']"
+                @input="selectedSeasonFoldersEnabled = $event"
+            />
 
-            <config-toggle-slider v-if="enableAnimeOptions" label="Anime" id="anime" :checked="defaultConfig.anime"
-                :explanations="['Is this show an Anime?']" @update="selectedAnimeEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                v-if="enableAnimeOptions"
+                label="Anime"
+                id="anime"
+                :value="selectedAnimeEnabled"
+                :explanations="['Is this show an Anime?']"
+                @input="selectedAnimeEnabled = $event"
+            />
 
             <div v-if="enableAnimeOptions && selectedAnimeEnabled" class="form-group">
                 <div class="row">
@@ -58,16 +76,22 @@
                         <span>Release Groups</span>
                     </label>
                     <div class="col-sm-10 content">
-                        <anidb-release-group-ui class="max-width" :blacklist="release.blacklist" :whitelist="release.whitelist"
-                            :all-groups="release.allgroups" @change="onChangeReleaseGroupsAnime">
-                        </anidb-release-group-ui>
+                        <anidb-release-group-ui
+                            class="max-width"
+                            :show-name="showName"
+                            @change="onChangeReleaseGroupsAnime"
+                        />
                     </div>
                 </div>
             </div>
 
-            <config-toggle-slider label="Scene Numbering" id="scene" :checked="defaultConfig.scene"
-                :explanations="['Is this show scene numbered?']" @update="selectedSceneEnabled = $event">
-            </config-toggle-slider>
+            <config-toggle-slider
+                label="Scene Numbering"
+                id="scene"
+                :value="selectedSceneEnabled"
+                :explanations="['Is this show scene numbered?']"
+                @input="selectedSceneEnabled = $event"
+            />
 
             <div class="form-group">
                 <div class="row">
@@ -82,19 +106,22 @@
         </fieldset>
     </div>
 </template>
+
 <script>
-import { mapState } from 'vuex';
-import { apiRoute } from '../api';
-import { combineQualities } from '../utils';
-import { ConfigToggleSlider } from './helpers';
+import { mapState, mapGetters } from 'vuex';
+import { combineQualities } from '../utils/core';
+import {
+    ConfigToggleSlider,
+    QualityChooser
+} from './helpers';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 
 export default {
     name: 'add-show-options',
     components: {
         AnidbReleaseGroupUi,
-        ConfigToggleSlider
-        // @TODO: Add `QualityChooser`
+        ConfigToggleSlider,
+        QualityChooser
     },
     props: {
         showName: {
@@ -122,8 +149,7 @@ export default {
             selectedSceneEnabled: false,
             release: {
                 blacklist: [],
-                whitelist: [],
-                allgroups: []
+                whitelist: []
             }
         };
     },
@@ -138,29 +164,13 @@ export default {
             vm.selectedStatusAfter,
             vm.selectedSubtitleEnabled,
             vm.selectedSeasonFoldersEnabled,
-            vm.selectedSceneEnabled
+            vm.selectedSceneEnabled,
+            vm.selectedAnimeEnabled
         ].join(), () => {
             this.update();
         });
     },
     methods: {
-        getReleaseGroups(showName) {
-            const params = {
-                series_name: showName // eslint-disable-line camelcase
-            };
-
-            return apiRoute
-                .get('home/fetch_releasegroups', { params, timeout: 30000 })
-                .then(response => response.data)
-                .catch(error => {
-                    this.$snotify.warning(
-                        `Error while trying to fetch release groups for show "${showName}": ${error || 'Unknown'}`,
-                        'Error'
-                    );
-                    console.warn(error);
-                    return null;
-                });
-        },
         update() {
             const {
                 selectedSubtitleEnabled,
@@ -185,9 +195,9 @@ export default {
                 });
             });
         },
-        onChangeReleaseGroupsAnime(items) {
-            this.release.whitelist = items.filter(item => item.memberOf === 'whitelist').map(item => item.name);
-            this.release.blacklist = items.filter(item => item.memberOf === 'blacklist').map(item => item.name);
+        onChangeReleaseGroupsAnime(groupNames) {
+            this.release.whitelist = groupNames.whitelist;
+            this.release.blacklist = groupNames.blacklist;
             this.update();
         },
         saveDefaults() {
@@ -223,7 +233,7 @@ export default {
                 );
             }).catch(error => {
                 this.$snotify.error(
-                    'Error while trying to save "add show" defaults: ' + error.message || 'Unknown',
+                    'Error while trying to save "add show" defaults: ' + (error.message || 'Unknown'),
                     'Error'
                 );
             }).finally(() => {
@@ -236,15 +246,17 @@ export default {
             defaultConfig: state => state.config.showDefaults,
             namingForceFolders: state => state.config.namingForceFolders,
             subtitlesEnabled: state => state.config.subtitles.enabled,
-            episodeStatuses: state => state.statuses
+            episodeStatuses: state => state.consts.statuses
         }),
+        ...mapGetters([
+            'getStatus'
+        ]),
         defaultEpisodeStatusOptions() {
-            const { strings, values } = this.episodeStatuses;
-            const { skipped, wanted, ignored } = values;
-            return [skipped, wanted, ignored].map(value => ({
-                value,
-                text: strings[value]
-            }));
+            if (this.episodeStatuses.length === 0) {
+                return [];
+            }
+            // Get status objects, in this order
+            return ['skipped', 'wanted', 'ignored'].map(key => this.getStatus({ key }));
         },
         /**
          * Calculate the combined value of the selected qualities.
@@ -264,7 +276,6 @@ export default {
                 enableAnimeOptions,
                 defaultConfig,
                 namingForceFolders,
-
                 selectedStatus,
                 selectedStatusAfter,
                 combinedQualities,
@@ -285,26 +296,10 @@ export default {
             ].every(Boolean);
         }
     },
-    asyncComputed: {
-        releaseGroups() {
-            const { selectedAnimeEnabled, showName } = this;
-            if (!selectedAnimeEnabled || !showName) {
-                return Promise.resolve([]);
-            }
-
-            return this.getReleaseGroups(showName).then(result => {
-                if (result.groups) {
-                    return result.groups;
-                }
-            });
-        }
-    },
     watch: {
-        releaseGroups(groups) {
-            this.release.allgroups = groups;
-        },
         release: {
             handler() {
+                this.$emit('refresh');
                 this.update();
             },
             deep: true,
@@ -327,12 +322,17 @@ export default {
             this.update();
         },
         defaultConfig(newValue) {
+            const { namingForceFolders } = this;
             this.selectedStatus = newValue.status;
             this.selectedStatusAfter = newValue.statusAfter;
+            this.selectedSubtitleEnabled = newValue.subtitles;
+            this.selectedAnimeEnabled = newValue.anime;
+            this.selectedSeasonFoldersEnabled = newValue.seasonFolders || namingForceFolders;
+            this.selectedSceneEnabled = newValue.scene;
         }
     }
 };
 </script>
+
 <style>
-/* placeholder */
 </style>

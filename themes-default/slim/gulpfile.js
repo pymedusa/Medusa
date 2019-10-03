@@ -1,5 +1,4 @@
 const path = require('path');
-const runSequence = require('run-sequence');
 const gulp = require('gulp');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
@@ -21,6 +20,12 @@ const setCsstheme = theme => {
     }
 };
 
+/**
+ * Compressing and copying images to their destinations.
+ * Should save up to 50% of total filesize.
+ *
+ * @returns {NodeJS.ReadWriteStream} stream
+ */
 const moveImages = () => {
     const dest = `${buildDest}/assets/img`;
     return gulp
@@ -38,32 +43,21 @@ const moveImages = () => {
 
 /** Gulp tasks */
 
-/**
- * By default build.
- */
-gulp.task('default', ['sync']);
-
-const syncTheme = (theme, sequence) => {
-    return new Promise(resolve => {
-        console.log(`Starting syncing for theme: ${theme}`);
-        setCsstheme(theme);
-        runSequence(sequence, resolve);
+const generateSyncTasks = () => {
+    const tasks = Object.keys(config.cssThemes).map(theme => {
+        const setTheme = callback => {
+            console.log(`Starting syncing for theme: ${theme}`);
+            setCsstheme(theme);
+            callback();
+        };
+        return gulp.series(setTheme, moveImages);
     });
+    return gulp.series(...tasks);
 };
 
-/**
- * Build the current theme and copy all files to the location configured in the package.json config attribute.
- */
-gulp.task('sync', async () => { // eslint-disable-line space-before-function-paren
-    // Whe're building the light and dark theme. For this we need to run two sequences.
-    // If we need a yargs parameter name csstheme.
-    for (const theme of Object.keys(config.cssThemes)) {
-        await syncTheme(theme, ['img']); // eslint-disable-line no-await-in-loop
-    }
-});
+exports.sync = generateSyncTasks();
 
 /**
- * Task for compressing and copying images to it's destination.
- * Should save up to 50% of total filesize.
+ * Sync by default.
  */
-gulp.task('img', moveImages);
+exports.default = exports.sync;

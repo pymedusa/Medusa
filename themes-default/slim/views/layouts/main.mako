@@ -47,7 +47,6 @@
         <link rel="stylesheet" type="text/css" href="css/themed.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/lib/vue-snotify-material.css?${sbPID}"/>
         <%block name="css" />
     </head>
     <% attributes = 'data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY + '"' %>
@@ -66,16 +65,14 @@
             <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
             <app-header></app-header>
-            % if submenu:
             <sub-menu></sub-menu>
-            % endif
             <%include file="/partials/alerts.mako"/>
             <div id="content-row" class="row">
                 <component :is="pageComponent || 'div'" id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                     <%block name="content" />
                 </component>
             </div><!-- /content -->
-            <%include file="/partials/footer.mako" />
+            <app-footer v-if="$store.state.auth.isAuthenticated"></app-footer>
             <scroll-buttons></scroll-buttons>
 
           </div><!-- /globalLoading wrapper -->
@@ -84,7 +81,9 @@
         <%block name="load_main_app" />
 
         ## These contain all the Webpack-imported modules
+        ## When adding/removing JS files, don't forget to update `apiBuilder.mako`
         <script type="text/javascript" src="js/vendors.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/vendors~date-fns.js?${sbPID}"></script>
         <script type="text/javascript" src="js/medusa-runtime.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/index.js?${sbPID}"></script>
@@ -115,65 +114,22 @@
             % else:
             window.username = '';
             % endif
-        </script>
-        <%include file="/vue-components/sub-menu.mako"/>
-        <%include file="/vue-components/quality-chooser.mako"/>
-        <script>
+
+            // [Temporary] Used by the QualityChooser component on some pages
+            % if show is not UNDEFINED:
+                window.qualityChooserInitialQuality = ${int(show.quality)};
+            % endif
+
             if ('${bool(app.DEVELOPER)}' === 'True') {
                 Vue.config.devtools = true;
                 Vue.config.performance = true;
             }
-
+        </script>
+        ## Include Vue components using x-templates here
+        <script>
             // @TODO: Remove this before v1.0.0
-            if (!window.loadMainApp) {
-                Vue.mixin({
-                    data() {
-                        // These are only needed for the root Vue
-                        if (this.$root === this) {
-                            return {
-                                globalLoading: true,
-                                pageComponent: false
-                            };
-                        }
-                    },
-                    mounted() {
-                        if (this.$root === this && !document.location.pathname.includes('/login')) {
-                            const { store, username } = window;
-                            /* This is used by the `app-header` component
-                            to only show the logout button if a username is set */
-                            store.dispatch('login', { username });
-                            store.dispatch('getConfig').then(() => this.$emit('loaded'));
-                        }
-
-                        this.$once('loaded', () => {
-                            this.$root.globalLoading = false;
-                        });
-                    },
-                    // Make auth and config accessible to all components
-                    computed: Vuex.mapState(['auth', 'config'])
-                });
-
-                if (window.isDevelopment) {
-                    console.debug('Loading local Vue');
-                }
-
-                Vue.use(Vuex);
-                Vue.use(VueRouter); 
-                Vue.use(AsyncComputed);
-                Vue.use(VueMeta);
-
-                // Register components
-                window.components.forEach(component => {
-                    if (window.isDevelopment) {
-                        console.log('Registering ' + component.name);
-                    }
-                    Vue.component(component.name, component);
-                });
-
-                // Global components
-                Vue.use(ToggleButton);
-                Vue.use(Snotify);
-                Vue.component('truncate', Truncate);
+            if (!window.loadMainApp && window.globalVueShim) {
+                window.globalVueShim();
             }
         </script>
         <%block name="scripts" />

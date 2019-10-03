@@ -18,9 +18,11 @@ class QueuePriorities(object):
 
 
 class GenericQueue(object):
-    def __init__(self):
+    def __init__(self, max_history=100):
         self.currentItem = None
         self.queue = []
+        self.history = []
+        self.max_history = max_history
         self.queue_name = 'QUEUE'
         self.min_priority = 0
         self.lock = threading.Lock()
@@ -57,7 +59,7 @@ class GenericQueue(object):
         """
         with self.lock:
             # only start a new task if one isn't already going
-            if self.currentItem is None or not self.currentItem.isAlive():
+            if self.currentItem is None or not self.currentItem.is_alive():
 
                 # if the thread is dead then the current item should be
                 # finished
@@ -95,6 +97,7 @@ class GenericQueue(object):
                         item=self.currentItem.name,
                     )
                     self.currentItem.start()
+                    fifo(self.history, self.currentItem, self.max_history)
 
         self.amActive = False
 
@@ -108,12 +111,22 @@ class QueueItem(threading.Thread):
         self.action_id = action_id
         self.stop = threading.Event()
         self.added = None
+        self.queue_time = datetime.datetime.now()
+        self.start_time = None
 
     def run(self):
         """Implementing classes should call this."""
         self.inProgress = True
+        self.start_time = datetime.datetime.now()
 
     def finish(self):
         """Implementing Classes should call this."""
         self.inProgress = False
         threading.currentThread().name = self.name
+
+
+def fifo(my_list, item, max_size=100):
+    """Append item to queue and limit it to 100 items."""
+    if len(my_list) >= max_size:
+        my_list.pop(0)
+    my_list.append(item)

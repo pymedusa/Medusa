@@ -41,6 +41,8 @@
                 show_div = 'listing-current'
             else:
                 show_div = 'listing-default'
+    else:
+        cur_ep_enddate = cur_result['localtime']
 %>
         <tr class="${show_div}">
             <td align="center" nowrap="nowrap" class="triggerhighlight">

@@ -1,46 +1,48 @@
 # coding=utf-8
 """Tests for medusa.clients.torrent module."""
+from __future__ import unicode_literals
 
 import medusa.clients.torrent as sut
 from medusa.clients.torrent import (
-    deluge_client, deluged_client, downloadstation_client, mlnet_client,
-    qbittorrent_client, rtorrent_client, transmission_client, utorrent_client
+    deluge, deluged, downloadstation, mlnet,
+    qbittorrent, rtorrent, transmission, utorrent
 )
+
 import pytest
 
 
 @pytest.mark.parametrize('p', [
     {  # p0
         'client': 'deluge',
-        'expected': deluge_client
+        'expected': deluge
     },
     {  # p1
         'client': 'deluged',
-        'expected': deluged_client
+        'expected': deluged
     },
     {  # p2
         'client': 'downloadstation',
-        'expected': downloadstation_client
+        'expected': downloadstation
     },
     {  # p3
         'client': 'mlnet',
-        'expected': mlnet_client
+        'expected': mlnet
     },
     {  # p4
         'client': 'qbittorrent',
-        'expected': qbittorrent_client
+        'expected': qbittorrent
     },
     {  # p5
         'client': 'rtorrent',
-        'expected': rtorrent_client
+        'expected': rtorrent
     },
     {  # p6
         'client': 'transmission',
-        'expected': transmission_client
+        'expected': transmission
     },
     {  # p7
         'client': 'utorrent',
-        'expected': utorrent_client
+        'expected': utorrent
     }
 ])
 def test_get_client_module(p):
@@ -67,35 +69,35 @@ def test_get_client_module__non_existent():
 @pytest.mark.parametrize('p', [
     {  # p0
         'client': 'deluge',
-        'expected': deluge_client.DelugeAPI
+        'expected': deluge.DelugeAPI
     },
     {  # p1
         'client': 'deluged',
-        'expected': deluged_client.DelugeDAPI
+        'expected': deluged.DelugeDAPI
     },
     {  # p2
         'client': 'downloadstation',
-        'expected': downloadstation_client.DownloadStationAPI
+        'expected': downloadstation.DownloadStationAPI
     },
     {  # p3
         'client': 'mlnet',
-        'expected': mlnet_client.MLNetAPI
+        'expected': mlnet.MLNetAPI
     },
     {  # p4
         'client': 'qbittorrent',
-        'expected': qbittorrent_client.QBittorrentAPI
+        'expected': qbittorrent.QBittorrentAPI
     },
     {  # p5
         'client': 'rtorrent',
-        'expected': rtorrent_client.RTorrentAPI
+        'expected': rtorrent.RTorrentAPI
     },
     {  # p6
         'client': 'transmission',
-        'expected': transmission_client.TransmissionAPI
+        'expected': transmission.TransmissionAPI
     },
     {  # p7
         'client': 'utorrent',
-        'expected': utorrent_client.UTorrentAPI
+        'expected': utorrent.UTorrentAPI
     }
 ])
 def test_get_client_class(p):

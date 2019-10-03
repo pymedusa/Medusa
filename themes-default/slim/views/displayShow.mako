@@ -1,20 +1,30 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     import datetime
-    import urllib
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, statusStrings, Overview
     from medusa.helper.common import pretty_file_size
+
+    try:
+        # python 2
+        from urllib import quote
+    except ImportError:
+        # python 3+
+        from urllib.parse import quote
 %>
 <%block name="scripts">
 <script type="text/x-template" id="show-template">
-<div v-show="show.indexer">
+<div>
     <input type="hidden" id="series-id" value="${show.series_id}" />
     <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
     <input type="hidden" id="series-slug" value="${show.slug}" />
 
-    <%include file="/partials/showheader.mako"/>
+    <backstretch slug="${show.slug}"></backstretch>
+
+    <show-header @reflow="reflowLayout" type="show"
+        :show-id="id" :show-indexer="indexer"
+    ></show-header>
 
     <div class="row">
         <div class="col-md-12 horizontal-scroll" style="top: 12px">
@@ -239,7 +249,7 @@
                                     for rootDir in app.ROOT_DIRS:
                                         if rootDir.startswith('/'):
                                             filename = filename.replace(rootDir, '')
-                                    filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
+                                    filename = app.DOWNLOAD_URL + quote(filename.encode('utf8'))
                                 %>
                                 <app-link href="${filename}">Download</app-link>
                             % endif

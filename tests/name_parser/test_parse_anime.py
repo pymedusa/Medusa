@@ -1,7 +1,9 @@
 # coding=utf-8
 """Tests for medusa/test_list_associated_files.py."""
+from __future__ import unicode_literals
 
 from medusa.name_parser.parser import NameParser
+
 import guessit
 import pytest
 
@@ -119,6 +121,7 @@ import pytest
         'indexer': 300835,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
@@ -134,6 +137,7 @@ import pytest
         'indexer': 300835,
         'mocks': [
             ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 13)),
             ('medusa.helpers.get_absolute_number_from_season_and_episode', 26),
         ],
         'series_info': {
@@ -158,6 +162,55 @@ import pytest
         },
         'expected': ([2], [1], [2]),
     },
+    # Anime show, season scene name with one alias, with scene numbering. Using the season scene name.
+    {
+        'name': u"[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv",
+        'indexer_id': 1,
+        'indexer': 262954,
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 2, 1)]),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
+        ],
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
+        },
+        'expected': ([12], [2], [38]),
+    },
+    # Anime show, season scene name with two aliases because it's parsing the full path inc the show folder,
+    # with scene numbering. Using the season scene name.
+    {
+        'name': u"JoJo's Bizarre Adventure (2012)\Season 02\[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv",
+        'indexer_id': 1,
+        'indexer': 262954,
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(262954, 2, 1)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12)),
+            ('medusa.helpers.get_absolute_number_from_season_and_episode', 38),
+        ],
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': True
+        },
+        'expected': ([12], [2], [38]),
+    },
+    # Anime show, released as pseudo-absolute by scene
+    {
+        'name': u"One.Piece.S01E43.iTALiAN.PDTV.x264-iDiB",
+        'indexer_id': 1,
+        'indexer': 81797,
+        'mocks': [
+            ('medusa.scene_exceptions.get_scene_exceptions_by_name', [(None, None, None)]),
+            ('medusa.scene_numbering.get_indexer_numbering', (3, 13)),
+            ('medusa.helpers.get_absolute_number_from_season_and_episode', 43),
+        ],
+        'series_info': {
+            'name': u"One Piece",
+            'is_scene': True
+        },
+        'expected': ([13], [3], [43]),
+    },
 
 ])
 def test_anime_parsing(p, create_tvshow, monkeypatch_function_return):
@@ -177,7 +230,7 @@ def test_anime_parsing(p, create_tvshow, monkeypatch_function_return):
 
     # confirm passed in show object indexer id matches result show object indexer id
     result.series = create_tvshow(name=p['series_info']['name'])
-    result.scene = p['series_info']['is_scene']
+    result.series.scene = p['series_info']['is_scene']
 
     actual = parser._parse_anime(result)
 

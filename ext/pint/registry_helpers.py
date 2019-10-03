@@ -15,6 +15,12 @@ from .compat import string_types, zip_longest
 from .errors import DimensionalityError
 from .util import to_units_container, UnitsContainer
 
+try:
+    from inspect import signature
+except ImportError:
+    # Python2 does not have the inspect library. Import the backport.
+    from funcsigs import signature
+
 
 def _replace_units(original_units, values_by_name):
     """Convert a unit compatible type to a UnitsContainer.
@@ -118,12 +124,26 @@ def _parse_wrap_args(args, registry=None):
                 if strict:
                     raise ValueError('A wrapped function using strict=True requires '
                                      'quantity for all arguments with not None units. '
-                                     '(error found for {0}, {1})'.format(args_as_uc[ndx][0], new_values[ndx]))
+                                     '(error found for {}, {})'.format(args_as_uc[ndx][0], new_values[ndx]))
 
         return new_values, values_by_name
 
     return _converter
 
+def _apply_defaults(func, args, kwargs):
+    """Apply default keyword arguments.
+
+    Named keywords may have been left blank. This function applies the default
+    values so that every argument is defined.
+    """
+
+    sig = signature(func)
+    bound_arguments = sig.bind(*args, **kwargs)
+    for param in sig.parameters.values():
+        if param.name not in bound_arguments.arguments:
+            bound_arguments.arguments[param.name] = param.default
+    args = [bound_arguments.arguments[key] for key in sig.parameters.keys()]
+    return args, {} 
 
 def wraps(ureg, ret, args, strict=True):
     """Wraps a function to become pint-aware.
@@ -165,6 +185,8 @@ def wraps(ureg, ret, args, strict=True):
         @functools.wraps(func, assigned=assigned, updated=updated)
         def wrapper(*values, **kw):
 
+            values, kw = _apply_defaults(func, values, kw)
+                
             # In principle, the values are used as is
             # When then extract the magnitudes when needed.
             new_values, values_by_name = converter(ureg, values, strict)
@@ -201,18 +223,27 @@ def check(ureg, *args):
     :raises:
         :class:`DimensionalityError` if the parameters don't match dimensions
     """
-    dimensions = [ureg.get_dimensionality(dim) for dim in args]
+    dimensions = [ureg.get_dimensionality(dim) if dim is not None else None for dim in args]
 
     def decorator(func):
         assigned = tuple(attr for attr in functools.WRAPPER_ASSIGNMENTS if hasattr(func, attr))
         updated = tuple(attr for attr in functools.WRAPPER_UPDATES if hasattr(func, attr))
 
         @functools.wraps(func, assigned=assigned, updated=updated)
-        def wrapper(*values, **kwargs):
-            for dim, value in zip_longest(dimensions, values):
-                if dim and value.dimensionality != dim:
+        def wrapper(*args, **kwargs):
+            list_args, empty = _apply_defaults(func, args, kwargs)
+            if len(dimensions) > len(list_args):
+                raise TypeError("%s takes %i parameters, but %i dimensions were passed"
+                % (func.__name__, len(list_args), len(dimensions)))
+            for dim, value in zip(dimensions, list_args):
+
+                if dim is None:
+                    continue
+
+                if not ureg.Quantity(value).check(dim):
+                    val_dim = ureg.get_dimensionality(value)
                     raise DimensionalityError(value, 'a quantity of',
-                                              value.dimensionality, dim)
-            return func(*values, **kwargs)
+                                              val_dim, dim)
+            return func(*args, **kwargs)
         return wrapper
     return decorator

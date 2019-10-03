@@ -20,8 +20,13 @@
 
 import os.path
 import time
-import urllib
-import xmlrpclib
+
+try:
+    import xmlrpc.client as xmlrpc_client
+    from urllib.parse import urlparse
+except ImportError:
+    import xmlrpclib as xmlrpc_client
+    from urlparse import urlparse
 
 import rtorrent.rpc
 from rtorrent import common
@@ -42,7 +47,7 @@ MIN_RTORRENT_VERSION = (0, 9, 0)
 MIN_RTORRENT_VERSION_STR = common.convert_version_tuple_to_str(MIN_RTORRENT_VERSION)
 
 
-class RTorrent:
+class RTorrent(object):
     """Create a new rTorrent connection."""
 
     rpc_prefix = None
@@ -54,7 +59,7 @@ class RTorrent:
         self.username = username
         self.password = password
 
-        self.schema = urllib.splittype(uri)[0]
+        self.schema = urlparse(uri).scheme
 
         if sp:
             self.sp = sp
@@ -182,7 +187,7 @@ class RTorrent:
             results_dict = {}
             # build results_dict
             # result[0] is the info_hash
-            for m, r in zip(retriever_methods, result[1:]):
+            for m, r in list(zip(retriever_methods, result[1:])):
                 results_dict[m.varname] = rtorrent.rpc.process_result(m, r)
 
             self.torrents.append(
@@ -299,7 +304,7 @@ class RTorrent:
 
         p = self._get_conn()
         tp = TorrentParser(torrent)
-        torrent = xmlrpclib.Binary(tp._raw_torrent)
+        torrent = xmlrpc_client.Binary(tp._raw_torrent)
         info_hash = tp.info_hash
 
         func_name = self._get_load_function('raw', start, verbose)
@@ -366,7 +371,7 @@ class RTorrent:
             torrent = open(torrent, 'rb').read()
 
         if file_type in ['raw', 'file']:
-            finput = xmlrpclib.Binary(torrent)
+            finput = xmlrpc_client.Binary(torrent)
         elif file_type == 'url':
             finput = torrent
 
@@ -663,6 +668,6 @@ class_methods_pair = {
     rtorrent.tracker.Tracker: rtorrent.tracker.methods,
     rtorrent.peer.Peer: rtorrent.peer.methods,
 }
-for c in class_methods_pair.keys():
+for c in class_methods_pair:
     rtorrent.rpc._build_rpc_methods(c, class_methods_pair[c])
     _build_class_methods(c)

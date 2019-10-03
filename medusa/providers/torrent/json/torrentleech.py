@@ -47,10 +47,6 @@ class TorrentLeechProvider(TorrentProvider):
         # Miscellaneous Options
         self.max_torrents = 100
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -155,10 +151,11 @@ class TorrentLeechProvider(TorrentProvider):
                 leechers = int(torrent['leechers'])
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  ' minimum seeders: {0}. Seeders: {1}', title, seeders)
+                                  ' minimum seeders: {0}. Seeders: {1}',
+                                  title, seeders)
                     continue
 
                 size = convert_size(torrent['size']) or -1

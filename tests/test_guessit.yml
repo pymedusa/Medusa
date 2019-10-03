@@ -2882,7 +2882,7 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: eps2
+  episode_title: eps2 0 unm4sk
   part: 1
   screen_size: 1080p
   source: Web
@@ -2899,7 +2899,7 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: eps2
+  episode_title: eps2 0 unm4sk
   part: 1
   screen_size: 1080p
   source: Web
@@ -3159,7 +3159,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  episode_title: eps2
+  episode_title: eps2 0 title
   part: 1 # not a big issue
   screen_size: 1080p
   source: Web
@@ -4219,7 +4219,7 @@
   screen_size: 720p
   release_group: Zero-Raws
   aspect_ratio: '1.778'
-  subtitle_language: fr
+  other: Variable Frame Rate
   video_codec: H.264
   video_encoder: x264
   audio_codec: AAC
@@ -4310,6 +4310,16 @@
   mimetype: video/x-matroska
   type: episode
 
+? Rugrats Season 1/Rugrats - 01x01 - Tommy's First Birthday[JM].avi
+: title: Rugrats
+  season: 1
+  episode: 1
+  episode_title: Tommy's First Birthday
+  release_group: JM
+  container: avi
+  mimetype: video/avi
+  type: episode
+
 ? shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
 : title: shes gotta have it
   season: 1
@@ -4331,7 +4341,8 @@
   source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  language: ca
+  episode_title: desca202
+  language: [es, ca]
   container: mkv
   mimetype: video/x-matroska
   type: episode
@@ -4344,8 +4355,33 @@
   source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  language: [ca, pt]
+  language: ca
   release_group: desca202
   container: mkv
   mimetype: video/x-matroska
+  type: episode
+
+? JoJo's Bizarre Adventure (2012)\Season 02\[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv
+: title: JoJo's Bizarre Adventure
+  year: 2012
+  season: 2
+  episode: 12
+  release_group: HorribleSubs
+  alias: JoJo's Bizarre Adventure - Stardust Crusaders
+  alternative_title: Stardust Crusaders
+  screen_size: 1080p
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? VA_-_Redux_presents_The_Uplifting_Selection_Vol_1-2019-(RDXSEL026)-WEB-2019-ZzZz
+: title: VA
+  year: 2019
+  season: 2019
+  episode: 1
+  episode_title: '2019'
+  release_group: RDXSEL026
+  alias: VA - Redux presents The Uplifting Selection Vol
+  alternative_title: Redux presents The Uplifting Selection Vol
+  source: Web
   type: episode

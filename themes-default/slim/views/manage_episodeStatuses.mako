@@ -5,6 +5,8 @@
 %>
 <%block name="scripts">
 <script>
+const { mapGetters } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
@@ -14,6 +16,7 @@ window.app = new Vue({
         return {
         };
     },
+    computed: mapGetters(['indexerIdToName']),
     mounted() {
         $.makeEpisodeRow = function(indexerId, seriesId, season, episode, name, checked) { // eslint-disable-line max-params
             let row = '';
@@ -28,6 +31,8 @@ window.app = new Vue({
             return row;
         };
 
+        const { indexerIdToName } = this;
+
         $('.allCheck').on('click', function() {
             const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
             $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
@@ -35,7 +40,7 @@ window.app = new Vue({
 
         $('.get_more_eps').on('click', function() {
             const indexerId = $(this).attr('data-indexer-id');
-            const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
+            const indexerName = indexerIdToName(indexerId);
             const seriesId = $(this).attr('data-series-id');
             const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
             const lastRow = $('tr#' + indexerId + '-' + seriesId);

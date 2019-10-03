@@ -114,7 +114,7 @@
                 else:
                     den = 1
                     download_stat_tip = "Unaired"
-                progressbar_percent = nom * 100 / den
+                progressbar_percent = nom * 100 // den
             %>
                 <tr>
                 % if cur_airs_next:

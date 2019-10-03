@@ -37,10 +37,6 @@ class BJShareProvider(TorrentProvider):
         self.cookies = ''
         self.required_cookies = ['session']
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.max_back_pages = 2
@@ -114,7 +110,8 @@ class BJShareProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    log.debug('Search string: {0}'.format(search_string.decode('utf-8')))
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 # Remove season / episode from search (not supported by tracker)
                 search_str = re.sub(r'\d+$' if anime else r'[S|E]\d\d', '', search_string).strip()
@@ -208,7 +205,7 @@ class BJShareProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers') + group_index].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

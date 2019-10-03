@@ -189,6 +189,12 @@ window.app = new Vue({
             if (currentSearch.cancel !== null) return 'searching';
             if (!firstSearch || searchStatus !== '') return 'status';
             return 'results';
+        },
+        enableAnimeOptions() {
+            const { selectedShow } = this;
+            if (selectedShow && selectedShow.indexerId === 1) {
+                return true;
+            }
         }
     },
     methods: {
@@ -609,7 +615,7 @@ window.app = new Vue({
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <add-show-options :show-name="showName" enable-anime-options @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
+                        <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
             </form>

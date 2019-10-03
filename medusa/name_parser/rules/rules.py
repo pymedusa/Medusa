@@ -397,6 +397,10 @@ class CreateAliasWithCountryOrYear(Rule):
         :type context: dict
         :return:
         """
+        # Don't add additional alias if we already have one from the previous rules
+        if matches.named('alias'):
+            return
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
@@ -577,7 +581,10 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 # adjust title to append the series name.
                 # Only the season.parent contains the S prefix in its value
                 new_title = copy.copy(title)
-                new_title.value = ' '.join([title.value, season.parent.value])
+                if six.PY3:
+                    new_title.value = ' '.join([title.value, season.parent.value])
+                else:
+                    new_title.value = b' '.join([title.value, season.parent.value])
                 new_title.end = season.end
 
                 # other fileparts might have the same season to be removed from the matches
@@ -690,7 +697,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
                     index=0,
                     predicate=lambda match: match.name == 'episode_title' and match.value.isdigit(),
                 )
-                if episode_title:
+                if episode_title and to_append:
                     if matches.input_string[episode.end:episode_title.start + 1] in range_separator:
                         end_value = int(episode_title.value)
                         for i in range(absolute_episode.value + 1, end_value + 1):
@@ -919,116 +926,6 @@ class RemoveInvalidEpisodeSeparator(Rule):
                 return to_remove
 
 
-class FixWordAsLanguage(Rule):
-    """Fix word getting parsed as language with multiple fileparts.
-
-    Related bug report: https://github.com/guessit-io/guessit/issues/578
-
-    e.g.: Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]/Por Trece Razones 2x01 [des202].mkv
-
-    without the rule:
-        GuessIt found: {
-            "language": [
-                "Portuguese",
-                "Catalan"
-            ],
-            "title": "Trece Razones",
-            "season": 2,
-            "source": "HDTV",
-            "screen_size": "720p",
-            "episode": 1,
-            "audio_codec": "Dolby Digital",
-            "audio_channels": "5.1",
-            "release_group": "des202",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-
-    with the rule:
-        GuessIt found: {
-            "language": "Catalan",
-            "title": "Por Trece Razones",
-            "season": 2,
-            "source": "HDTV",
-            "screen_size": "720p",
-            "episode": 1,
-            "audio_codec": "Dolby Digital",
-            "audio_channels": "5.1",
-            "release_group": "des202",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        languages = matches.named('language')
-        if not languages:
-            return
-
-        fileparts = matches.markers.named('path')
-        parts_len = len(fileparts)
-        if parts_len < 2:
-            return
-
-        titles = matches.named('title')
-        if not titles:
-            return
-
-        first_title = titles[0]
-        last_title = titles[-1]
-
-        # Always use the first language
-        first_language = languages[0]
-        for language in languages[1:]:
-            if language.start < first_language.start:
-                first_language = language
-
-        lang_start = first_language.start
-        lang_end = first_language.end
-
-        start = end = None
-        # Language is before titles
-        if lang_end == first_title.start:
-            start = lang_start
-            end = last_title.end
-        # Language is after titles
-        elif last_title.end == lang_start:
-            start = first_title.start
-            end = lang_end
-        # Language is between titles
-        elif len(titles) > 1:
-            lang_code = last_title.value.split()[0].lower()
-            if lang_code in context.get('allowed_languages', []):
-                start = first_title.start
-                end = last_title.end
-
-        if start is not None:
-            second_filepart = fileparts[parts_len - 2]
-            rel_start = start - second_filepart.start
-            rel_end = end - second_filepart.end
-
-            new_title = second_filepart.value[rel_start:rel_end]
-            titles[0].value = cleanup(new_title)
-
-            to_append = titles[0]
-            to_remove = first_language
-
-            return to_remove, to_append
-
-
 class FixParentFolderReplacingTitle(Rule):
     """Fix folder name replacing title when it ends with digits.
 
@@ -1083,12 +980,19 @@ class FixParentFolderReplacingTitle(Rule):
             second_part = fileparts[parts_len - 2].value
             if self.ends_with_digit.search(second_part):
                 title = matches.named('title')
-                if not title or second_part.startswith(title[0].value):
+                if not title:
                     episode_title[0].name = 'title'
                     to_append = episode_title
-                    to_remove = title
-
+                    to_remove = None
                     return to_remove, to_append
+
+                if second_part.startswith(title[0].value):
+                    season = matches.named('season')
+                    if season and not second_part.endswith(str(season[-1].initiator.value)):
+                        episode_title[0].name = 'title'
+                        to_append = episode_title
+                        to_remove = title
+                        return to_remove, to_append
 
 
 class FixMultipleSources(Rule):
@@ -1487,7 +1391,6 @@ def rules():
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
-        FixWordAsLanguage,
         FixMultipleSources,
         AudioCodecStandardizer,
         SourceStandardizer,

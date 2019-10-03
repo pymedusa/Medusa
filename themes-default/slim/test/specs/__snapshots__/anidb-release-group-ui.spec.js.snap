@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AnidbReleaseGroupUi.test.js renders 1`] = `
+<div
+  class="anidb-release-group-ui-wrapper top-10 max-width"
+>
+  <div
+    class="row"
+  >
+    <div
+      class="col-sm-4 left-whitelist"
+    >
+      <span>
+        Whitelist
+      </span>
+      <!---->
+       
+      <ul>
+         
+        <div
+          class="arrow"
+        >
+          <img
+            src="images/curved-arrow-left.png"
+          />
+        </div>
+      </ul>
+    </div>
+     
+    <div
+      class="col-sm-4 center-available"
+    >
+      <span>
+        Release groups
+      </span>
+       
+      <ul>
+         
+        <div
+          class="arrow"
+        >
+          <img
+            src="images/curved-arrow-left.png"
+          />
+        </div>
+      </ul>
+    </div>
+     
+    <div
+      class="col-sm-4 right-blacklist"
+    >
+      <span>
+        Blacklist
+      </span>
+      <!---->
+       
+      <ul>
+         
+        <div
+          class="arrow"
+        >
+          <img
+            src="images/curved-arrow-left.png"
+          />
+        </div>
+      </ul>
+    </div>
+  </div>
+   
+  <div
+    class="row"
+    id="add-new-release-group"
+  >
+    <div
+      class="col-md-4"
+    >
+      <input
+        class="form-control input-sm"
+        placeholder="add custom group"
+        type="text"
+      />
+    </div>
+     
+    <div
+      class="col-md-8"
+    >
+      <p>
+        Use the input to add custom whitelist / blacklist release groups. Click on the 
+        <img
+          src="images/curved-arrow-left.png"
+        />
+         to add it to the correct list.
+      </p>
+    </div>
+  </div>
+</div>
+`;

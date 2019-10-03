@@ -7,7 +7,6 @@ import json
 import logging
 import threading
 import time
-from builtins import zip
 from datetime import datetime
 
 from dateutil import parser
@@ -22,9 +21,11 @@ from medusa.common import (
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.search.queue import ManualSearchQueueItem, SEARCH_HISTORY
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
+
+from six.moves import zip
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -32,16 +33,6 @@ log.logger.addHandler(logging.NullHandler())
 SEARCH_STATUS_FINISHED = 'finished'
 SEARCH_STATUS_QUEUED = 'queued'
 SEARCH_STATUS_SEARCHING = 'searching'
-
-
-def get_quality_class(ep_obj):
-    """Find the quality class for the episode."""
-    if ep_obj.quality in Quality.cssClassStrings:
-        quality_class = Quality.cssClassStrings[ep_obj.quality]
-    else:
-        quality_class = Quality.cssClassStrings[Quality.UNKNOWN]
-
-    return quality_class
 
 
 def get_episode(series_id, season=None, episode=None, absolute=None, indexer=None):
@@ -102,12 +93,16 @@ def get_episodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
+            # TODO: `quality_name` and `quality_style` should both be removed
+            # when converting forced/manual episode search to Vue (use QualityPill component directly)
             'quality_name': Quality.qualityStrings[ep.quality],
-            'quality_style': get_quality_class(ep),
+            'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
             'overview': Overview.overviewStrings[series_obj.get_overview(
                 ep.status, ep.quality,
                 manually_searched=ep.manually_searched
             )],
+            'queuetime': search_thread.queue_time.isoformat(),
+            'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None,
         })
 
     return results
@@ -121,11 +116,11 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
+        if isinstance(search_thread, ManualSearchQueueItem):
             if not isinstance(search_thread.segment, list):
                 search_thread.segment = [search_thread.segment]
 
@@ -163,11 +158,11 @@ def collect_episodes_from_search_thread(series_obj):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
+        if isinstance(search_thread, ManualSearchQueueItem):
             if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += get_episodes(search_thread, searchstatus)
         else:
@@ -181,7 +176,6 @@ def collect_episodes_from_search_thread(series_obj):
 def get_provider_cache_results(series_obj, show_all_results=None, perform_search=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    down_cur_quality = 0
     preferred_words = series_obj.show_words().preferred_words
     undesired_words = series_obj.show_words().undesired_words
     ignored_words = series_obj.show_words().ignored_words
@@ -286,7 +280,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             and episode: {1}x{2}'.format(series_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ManualSearchQueueItem(ep_obj.series, [ep_obj], manual_search_type)  # pylint: disable=maybe-no-member
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
@@ -308,6 +302,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
             i['pubdate'] = parser.parse(i['pubdate']).astimezone(app_timezone) if i['pubdate'] else ''
             i['date_added'] = datetime.fromtimestamp(float(i['date_added']), tz=app_timezone) if i['date_added'] else ''
+
             release_group = i['release_group']
             if ignored_words and release_group in ignored_words:
                 i['rg_highlight'] = 'ignored'
@@ -329,8 +324,15 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''
-            i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
-            i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
+
+            i['seed_highlight'] = 'ignored'
+            if i['seeders'] == '-' or i['provider_minseed'] <= i['seeders']:
+                i['seed_highlight'] = ''
+
+            i['leech_highlight'] = 'ignored'
+            if i['leechers'] == '-' or i['provider_minleech'] <= i['leechers']:
+                i['leech_highlight'] = ''
+
         provider_results['found_items'] = cached_results_total
 
     # Remove provider from thread name before return results

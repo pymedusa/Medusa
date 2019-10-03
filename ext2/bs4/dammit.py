@@ -6,8 +6,7 @@ necessary. It is heavily based on code from Mark Pilgrim's Universal
 Feed Parser. It works best on XML and HTML, but it does not rewrite the
 XML or HTML to reflect a new encoding; that's the tree builder's job.
 """
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 import codecs

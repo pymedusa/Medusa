@@ -301,8 +301,8 @@ def fill_cache(series_obj):
                 log.debug('Checking {provider.name} metadata for {img}',
                           {'provider': provider, 'img': IMAGE_TYPES[img_type]})
 
-                if os.path.isfile(provider.get_poster_path(series_obj)):
-                    path = provider.get_poster_path(series_obj)
+                path = provider.get_image_path(series_obj, img_type)
+                if os.path.isfile(path):
                     filename = os.path.abspath(path)
                     file_type = which_type(filename)
 

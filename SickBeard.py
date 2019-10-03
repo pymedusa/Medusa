@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*
 """Script for backwards compatibility."""
 from __future__ import unicode_literals

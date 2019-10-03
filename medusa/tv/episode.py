@@ -30,7 +30,8 @@ from medusa.common import (
     NAMING_DUPLICATE,
     NAMING_EXTEND,
     NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED,
+    NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED,
     NAMING_SEPARATED_REPEAT,
     Quality,
     SKIPPED,
@@ -95,8 +96,8 @@ class EpisodeNumber(Identifier):
 
     date_fmt = '%Y-%m-%d'
     regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
-                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,2}))|'
-                       r'(?:e(?P<abs_episode>\d{1,3})))\b', re.IGNORECASE)
+                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,4}))|'
+                       r'(?:e(?P<abs_episode>\d{1,4})))\b', re.IGNORECASE)
 
     @classmethod
     def from_slug(cls, slug):
@@ -303,6 +304,12 @@ class Episode(TV):
                 )
                 return super(Episode, self).__getattribute__(refactor)
 
+    def __eq__(self, other):
+        """Override default equalize implementation."""
+        return all([self.series.identifier == other.series.identifier,
+                    self.season == other.season,
+                    self.episode == other.episode])
+
     @classmethod
     def find_by_series_and_episode(cls, series, episode_number):
         """Find Episode based on series and episode number.
@@ -404,13 +411,14 @@ class Episode(TV):
         if self.airdate == date.min:
             return None
 
-        return sbdatetime.convert_to_setting(
+        date_parsed = sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
                 date.toordinal(self.airdate),
                 self.series.airs,
-                self.series.network
-            )
-        ).isoformat(b'T')
+                self.series.network)
+        )
+
+        return date_parsed.isoformat()
 
     @property
     def status_name(self):
@@ -434,7 +442,16 @@ class Episode(TV):
 
     def metadata(self):
         """Return the video metadata."""
-        return knowit.know(self.location)
+        try:
+            return knowit.know(self.location)
+        except knowit.KnowitException as error:
+            log.warning(
+                'An error occurred while parsing: {path}\n'
+                'KnowIt reported:\n{report}', {
+                    'path': self.location,
+                    'report': error,
+                })
+            return {}
 
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
@@ -503,7 +520,7 @@ class Episode(TV):
                            episode_num(self.season, self.episode, numbering='absolute')),
                 }
             )
-            notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
+            notifiers.notify_subtitle_download(self, subtitle_list)
         else:
             log.info(
                 '{id}: No subtitles found for {series} {ep}', {
@@ -592,6 +609,7 @@ class Episode(TV):
         """
         if self.loaded:
             return True
+
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT '
@@ -636,7 +654,7 @@ class Episode(TV):
 
             # don't overwrite my location
             if sql_results[0]['location']:
-                self.location = os.path.normpath(sql_results[0]['location'])
+                self._location = os.path.normpath(sql_results[0]['location'])
             if sql_results[0]['file_size']:
                 self.file_size = int(sql_results[0]['file_size'])
             else:
@@ -645,6 +663,7 @@ class Episode(TV):
             self.indexerid = int(sql_results[0]['indexerid'])
             self.indexer = int(sql_results[0]['indexer'])
 
+            # FIXME: This shouldn't be part of a possible apiv2 episodes request
             xem_refresh(self.series)
 
             self.scene_season = try_int(sql_results[0]['scene_season'], 0)
@@ -864,7 +883,7 @@ class Episode(TV):
                 '{id}: {series} episode statuses unchanged. Location is missing: {location}', {
                     'id': self.series.series_id,
                     'series': self.series.name,
-                    'location': self.series.raw_location,
+                    'location': self.series.location,
                 }
             )
             return
@@ -942,6 +961,8 @@ class Episode(TV):
                 }
             )
             self.status = UNSET
+
+        self.save_to_db()
 
     def __load_from_nfo(self, location):
 
@@ -1026,6 +1047,8 @@ class Episode(TV):
 
             self.hastbn = bool(os.path.isfile(replace_extension(nfo_file, 'tbn')))
 
+        self.save_to_db()
+
     def __str__(self):
         """Represent a string.
 
@@ -1051,6 +1074,7 @@ class Episode(TV):
         data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
+        data['slug'] = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
         data['season'] = self.season
         data['episode'] = self.episode
 
@@ -1060,11 +1084,10 @@ class Episode(TV):
         data['airDate'] = self.air_date
         data['title'] = self.name
         data['description'] = self.description
-        data['content'] = []
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
-        data['watched'] = self.watched
+        data['watched'] = bool(self.watched)
         data['quality'] = self.quality
         data['release'] = {}
         data['release']['name'] = self.release_name
@@ -1083,10 +1106,9 @@ class Episode(TV):
         if self.file_size:
             data['file']['size'] = self.file_size
 
-        if self.hasnfo:
-            data['content'].append('NFO')
-        if self.hastbn:
-            data['content'].append('thumbnail')
+        data['content'] = {}
+        data['content']['hasNfo'] = self.hasnfo
+        data['content']['hasTbn'] = self.hastbn
 
         if detailed:
             data['statistics'] = {}
@@ -1165,12 +1187,12 @@ class Episode(TV):
 
     def get_sql(self):
         """Create SQL queue for this episode if any of its data has been changed since the last save."""
-        try:
-            if not self.dirty:
-                log.debug('{id}: Not creating SQL queue - record is not dirty',
-                          {'id': self.series.series_id})
-                return
+        if not self.dirty:
+            log.debug('{id}: Not creating SQL query - record is not dirty',
+                      {'id': self.series.series_id})
+            return
 
+        try:
             main_db_con = db.DBConnection()
             rows = main_db_con.select(
                 'SELECT '
@@ -1193,7 +1215,7 @@ class Episode(TV):
                 # use a custom update method to get the data into the DB for existing records.
                 # Multi or added subtitle or removed subtitles
                 if app.SUBTITLES_MULTI or not rows[0]['subtitles'] or not self.subtitles:
-                    return [
+                    sql_query = [
                         'UPDATE '
                         '  tv_episodes '
                         'SET '
@@ -1231,7 +1253,7 @@ class Episode(TV):
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
-                    return [
+                    sql_query = [
                         'UPDATE '
                         '  tv_episodes '
                         'SET '
@@ -1267,7 +1289,7 @@ class Episode(TV):
                          self.version, self.release_group, self.manually_searched, self.watched, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
-                return [
+                sql_query = [
                     'INSERT OR IGNORE INTO '
                     '  tv_episodes '
                     '  (episode_id, '
@@ -1306,11 +1328,23 @@ class Episode(TV):
         except Exception as error:
             log.error('{id}: Error while updating database: {error_msg!r}',
                       {'id': self.series.series_id, 'error_msg': error})
+            self.reset_dirty()
+            return
+
+        self.loaded = False
+        self.reset_dirty()
+
+        return sql_query
 
     def save_to_db(self):
         """Save this episode to the database if any of its data has been changed since the last save."""
         if not self.dirty:
             return
+
+        log.debug('{id}: Saving episode to database: {show} {ep}',
+                  {'id': self.series.series_id,
+                   'show': self.series.name,
+                   'ep': episode_num(self.season, self.episode)})
 
         new_value_dict = {
             'indexerid': self.indexerid,
@@ -1345,6 +1379,7 @@ class Episode(TV):
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_episodes', new_value_dict, control_value_dict)
+
         self.loaded = False
         self.reset_dirty()
 
@@ -1373,6 +1408,21 @@ class Episode(TV):
             return self._format_pattern('%SN - %AD - %EN')
 
         return self._format_pattern('%SN - S%0SE%0E - %EN')
+
+    def pretty_name_with_quality(self):
+        """Return the name of this episode in a "pretty" human-readable format, with quality information.
+
+        Used for notifications.
+
+        :return: A string representing the episode's name, season/ep numbers and quality
+        :rtype: str
+        """
+        if self.series.anime and not self.series.scene:
+            return self._format_pattern('%SN - %AB - %EN - %QN')
+        elif self.series.air_by_date:
+            return self._format_pattern('%SN - %AD - %EN - %QN')
+
+        return self._format_pattern('%SN - %Sx%0E - %EN - %QN')
 
     def __ep_name(self):
         """Return the name of the episode to use during renaming.
@@ -1500,9 +1550,9 @@ class Episode(TV):
             '%QN': Quality.qualityStrings[self.quality],
             '%Q.N': dot(Quality.qualityStrings[self.quality]),
             '%Q_N': us(Quality.qualityStrings[self.quality]),
-            '%SQN': Quality.sceneQualityStrings[self.quality] + encoder,
-            '%SQ.N': dot(Quality.sceneQualityStrings[self.quality] + encoder),
-            '%SQ_N': us(Quality.sceneQualityStrings[self.quality] + encoder),
+            '%SQN': Quality.scene_quality_strings[self.quality] + encoder,
+            '%SQ.N': dot(Quality.scene_quality_strings[self.quality] + encoder),
+            '%SQ_N': us(Quality.scene_quality_strings[self.quality] + encoder),
             '%S': str(self.season),
             '%0S': '%02d' % self.season,
             '%E': str(self.episode),
@@ -1636,7 +1686,7 @@ class Episode(TV):
                     sep = ' '
 
                 # force 2-3-4 format if they chose to extend
-                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED):
+                if multi in (NAMING_EXTEND, NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED):
                     ep_sep = '-'
 
                 regex_used = season_ep_regex
@@ -1661,7 +1711,7 @@ class Episode(TV):
             for other_ep in self.related_episodes:
 
                 # for limited extend we only append the last ep
-                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_PREFIXED) and \
+                if multi in (NAMING_LIMITED_EXTEND, NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED, NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED) and \
                         other_ep != self.related_episodes[-1]:
                     continue
 
@@ -1675,8 +1725,11 @@ class Episode(TV):
                 # add "E04"
                 ep_string += ep_sep
 
-                if multi == NAMING_LIMITED_EXTEND_E_PREFIXED:
+                if multi == NAMING_LIMITED_EXTEND_E_UPPER_PREFIXED:
                     ep_string += 'E'
+
+                elif multi == NAMING_LIMITED_EXTEND_E_LOWER_PREFIXED:
+                    ep_string += 'e'
 
                 ep_string += other_ep.__format_string(ep_format.upper(), other_ep.__replace_map())
 

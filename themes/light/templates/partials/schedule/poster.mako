@@ -4,7 +4,7 @@
     from medusa import app
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.utils import indexer_id_to_name
-    from medusa import sbdatetime
+    from medusa.sbdatetime import sbdatetime
 %>
 <!-- start poster view //-->
 <%
@@ -59,17 +59,17 @@
                 <% too_late_header = True %>
             % elif cur_ep_enddate >= today and cur_ep_airdate < next_week.date():
                 % if cur_ep_airdate == today.date():
-                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${sbdatetime.sbftime(dt=cur_ep_airdate, t_preset='%A').capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
                     <% today_header = True %>
                 % else:
-                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${sbdatetime.sbftime(dt=cur_ep_airdate, t_preset='%A').capitalize()}</h2>
                 % endif
             % endif
             <% cur_segment = cur_ep_airdate %>
         % endif
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
-            <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${sbdatetime.sbftime(dt=cur_ep_airdate, t_preset='%A').capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
             </div>
             <% today_header = True %>
         % endif
@@ -126,7 +126,7 @@
                 </div>
                 <span class="title">Next Episode:</span> <span>${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))} - ${cur_result['name']}</span>
                 <div class="clearfix">
-                    <span class="title">Airs: </span><span class="airdate">${sbdatetime.sbdatetime.sbfdatetime(cur_result['localtime'])}</span>${('', '<span> on %s</span>' % cur_result['network'])[bool(cur_result['network'])]}
+                    <span class="title">Airs: </span><span class="airdate">${sbdatetime.sbfdatetime(cur_result['localtime'])}</span>${('', '<span> on %s</span>' % cur_result['network'])[bool(cur_result['network'])]}
                 </div>
                 <div class="clearfix">
                     <span class="title">Quality:</span>

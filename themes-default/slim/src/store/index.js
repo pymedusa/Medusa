@@ -1,17 +1,20 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueNativeSock from 'vue-native-websocket';
 import {
     auth,
+    clients,
     config,
+    consts,
     defaults,
     metadata,
     notifications,
     notifiers,
-    qualities,
+    search,
     shows,
     socket,
-    statuses
+    stats,
+    system
 } from './modules';
 import {
     SOCKET_ONOPEN,
@@ -22,22 +25,23 @@ import {
     SOCKET_RECONNECT_ERROR
 } from './mutation-types';
 
-const { Store } = Vuex;
-
 Vue.use(Vuex);
 
 const store = new Store({
     modules: {
         auth,
+        clients,
         config,
+        consts,
         defaults,
         metadata,
         notifications,
         notifiers,
-        qualities,
+        search,
         shows,
         socket,
-        statuses
+        stats,
+        system
     },
     state: {},
     mutations: {},
@@ -61,6 +65,8 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
+        } else if (event === 'showUpdated') {
+            this.store.dispatch('updateShow', data);
         } else {
             window.displayNotification('info', event, data);
         }

@@ -1,26 +1,28 @@
-import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { ConfigToggleSlider } from '../../src/components';
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-});
+describe('ConfigToggleSlider.test.js', () => {
+    let localVue;
 
-test('renders', t => {
-    const { localVue } = t.context;
-    const wrapper = mount(ConfigToggleSlider, {
-        localVue,
-        stubs: ['ToggleButton'],
-        propsData: {
-            label: 'test-label',
-            explanations: [
-                'explanation 1',
-                'explanation 2'
-            ],
-            checked: true,
-            id: 'test-id'
-        }
+    beforeEach(() => {
+        localVue = createLocalVue();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        const wrapper = mount(ConfigToggleSlider, {
+            localVue,
+            stubs: ['ToggleButton'],
+            propsData: {
+                label: 'test-label',
+                explanations: [
+                    'explanation 1',
+                    'explanation 2'
+                ],
+                checked: true,
+                id: 'test-id'
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

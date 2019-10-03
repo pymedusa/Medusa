@@ -42,10 +42,6 @@ class DanishbitsProvider(TorrentProvider):
         self.freeleech = True
         self.session.headers['User-Agent'] = USER_AGENT
 
-        # Torrent Stats
-        self.minseed = 0
-        self.minleech = 0
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -80,7 +76,7 @@ class DanishbitsProvider(TorrentProvider):
                     search_params['search'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
-                if not response:
+                if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
 
@@ -89,7 +85,7 @@ class DanishbitsProvider(TorrentProvider):
                 except ValueError as e:
                     log.warning(
                         'Could not decode the response as json for the result,'
-                        'searching {provider} with error {err_msg}',
+                        ' searching {provider} with error {err_msg}',
                         provider=self.name,
                         err_msg=e
                     )
@@ -131,7 +127,7 @@ class DanishbitsProvider(TorrentProvider):
                 leechers = row.get('leechers')
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',

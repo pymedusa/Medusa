@@ -6,6 +6,8 @@ from medusa.server.core import get_apiv2_handlers
 import pytest
 import tornado.web
 
+from six import iteritems
+
 
 @pytest.fixture(scope='session')
 def app():
@@ -28,7 +30,7 @@ def create_url(app_config, base_url):
         api_key = app_config('API_KEY', 'myhiddenkey')
         params = dict(api_key=api_key)
         params.update(kwargs)
-        q = '?' + ('&'.join(['{0}={1}'.format(k, v) for k, v in params.items()])) if params else ''
+        q = '?' + ('&'.join(['{0}={1}'.format(k, v) for k, v in iteritems(params)])) if params else ''
         url = '{base}{url}{query}'.format(base=base_url, url=url, query=q)
         return url
 

@@ -4,11 +4,11 @@ from __future__ import division, unicode_literals, print_function, absolute_impo
 
 import copy
 import operator as op
+import unittest
 
 from pint import DimensionalityError, set_application_registry
 from pint.compat import np
 from pint.testsuite import QuantityTestCase, helpers
-from pint.testsuite.compat import unittest
 from pint.testsuite.test_umath import TestUFuncs
 
 
@@ -112,6 +112,12 @@ class TestNumpyMethods(QuantityTestCase):
                                       [1, 2])
         q = self.q.flatten()
         self.assertRaises(ValueError, q.searchsorted, [1.5, 2.5])
+
+    def test_searchsorted_numpy_func(self):
+        """Test searchsorted as numpy function."""
+        q = self.q.flatten()
+        np.testing.assert_array_equal(np.searchsorted(q, [1.5, 2.5] * self.ureg.m),
+                                      [1, 2])
 
     def test_nonzero(self):
         q = [1, 0, 5, 6, 0, 9] * self.ureg.m
@@ -422,7 +428,7 @@ class TestBitTwiddlingUfuncs(TestUFuncs):
                     'same')
 
 
-class TestNDArrayQunatityMath(QuantityTestCase):
+class TestNDArrayQuantityMath(QuantityTestCase):
 
     @helpers.requires_numpy()
     def test_exponentiation_array_exp(self):

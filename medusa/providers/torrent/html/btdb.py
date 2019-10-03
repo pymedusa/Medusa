@@ -29,14 +29,12 @@ class BTDBProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://btdb.to'
+        self.url = 'https://btdb.eu'
         self.urls = {
-            'daily': urljoin(self.url, '/q/x264/?sort=time'),
-            'search': urljoin(self.url, '/q/{query}/{page}?sort=popular'),
+            'daily': urljoin(self.url, 'recent'),
         }
 
         # Miscellaneous Options
-        self.max_pages = 3
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -52,39 +50,32 @@ class BTDBProvider(TorrentProvider):
         """
         results = []
 
+        # Search Params
+        search_params = {
+            'category': 'show',
+        }
+
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
+                search_url = self.urls['daily']
 
                 if mode != 'RSS':
+                    search_url = self.url
+
+                    search_params['search'] = search_string
+                    search_params['sort'] = 'popular'
+
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                    for page in range(1, self.max_pages + 1):
-                        search_url = self.urls['search'].format(query=search_string, page=page)
+                response = self.session.get(search_url, params=search_params)
+                if not response or not response.text:
+                    log.debug('No data returned from provider')
+                    continue
 
-                        response = self.session.get(search_url)
-                        if not response or not response.text:
-                            log.debug('No data returned from provider')
-                            break
-
-                        page_results = self.parse(response.text, mode)
-                        results += page_results
-                        if len(page_results) < 10:
-                            break
-
-                else:
-                    response = self.session.get(self.urls['daily'])
-                    if not response or not response.text:
-                        log.debug('No data returned from provider')
-                        continue
-
-                    results += self.parse(response.text, mode)
-
-                # We don't have the real seeds but we can sort results by popularity and
-                # normalize seeds numbers so results can be sort in manual search
-                results = self.calc_seeds(results)
+                results += self.parse(response.text, mode)
 
         return results
 
@@ -100,31 +91,37 @@ class BTDBProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            table_body = html.find('ul', class_='search-ret-list')
+            cls_name = 'search-ret' if mode != 'RSS' else 'recent'
+            table_body = html.find('div', class_=cls_name)
+            torrent_rows = table_body.find_all(
+                'li', class_='{0}-item'.format(cls_name)
+            ) if table_body else []
 
             # Continue only if at least one release is found
             if not table_body:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            torrent_rows = table_body.find_all('li', class_='search-ret-item')
             for row in torrent_rows:
                 try:
 
-                    title = row.find('h2').find('a').get('title')
-                    download_url = row.find('div').find('a').get('href')
+                    title = row.h2.find('a').get('title')
+                    download_url = row.div.find('a').get('href')
                     if not all([title, download_url]):
                         continue
 
+                    download_url += self._custom_trackers
+
                     spans = row.find('div').find_all('span')
 
-                    seeders = leechers = 0
+                    seeders = int(spans[3].get_text().replace(',', ''))
+                    leechers = int(spans[4].get_text().replace(',', ''))
 
                     torrent_size = spans[0].get_text()
                     size = convert_size(torrent_size, default=-1)
 
-                    torrent_pubdate = spans[2].get_text()
-                    pubdate = self.parse_pubdate(torrent_pubdate)
+                    pubdate_raw = spans[2].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -144,14 +141,6 @@ class BTDBProvider(TorrentProvider):
                     log.exception('Failed parsing provider.')
 
         return items
-
-    def calc_seeds(self, results):
-        """Normalize seeds numbers so results can be sort in manual search."""
-        seeds = len(results)
-        for result in results:
-            result['seeders'] = seeds
-            seeds -= 1
-        return results
 
 
 provider = BTDBProvider()

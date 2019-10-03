@@ -6,9 +6,9 @@
                     <span>{{ label }}</span>
                 </label>
                 <div class="col-sm-10 content">
-                    <input v-bind="{id, type, name: id, class: inputClass, placeholder}" v-model="localValue" @input="updateValue()"/>
+                    <input v-bind="{id, type, name: id, class: inputClass, placeholder, disabled}" v-model="localValue" @input="updateValue()">
                     <p v-for="(explanation, index) in explanations" :key="index">{{ explanation }}</p>
-                    <slot></slot>
+                    <slot />
                 </div>
             </div>
         </div>
@@ -38,6 +38,10 @@ export default {
         type: {
             type: String,
             default: 'text'
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         },
         /**
          * Overwrite the default configured class on the <input/> element.
