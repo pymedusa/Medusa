@@ -38,12 +38,14 @@
     "jquery": "3.4.1",
     "lodash": "4.17.15",
     "tablesorter": "2.31.1",
+    "vanilla-lazyload": "12.0.0",
     "vue": "2.6.10",
     "vue-async-computed": "3.7.0",
     "vue-cookie": "1.1.4",
     "vue-good-table": "https://github.com/p0psicles/vue-good-table/archive/master.tar.gz",
     "vue-js-modal": "1.3.31",
     "vue-js-toggle-button": "1.3.2",
+    "vue-lazyload": "1.3.3",
     "vue-meta": "2.0.5",
     "vue-native-websocket": "2.0.13",
     "vue-router": "3.0.7",
@@ -51,8 +53,8 @@
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.10",
     "vue-truncate-collapsed": "2.1.0",
-    "vuex": "3.1.1",
-    "vueisotope": "3.1.2"
+    "vueisotope": "3.1.2",
+    "vuex": "3.1.1"
   },
   "devDependencies": {
     "@babel/core": "7.6.0",

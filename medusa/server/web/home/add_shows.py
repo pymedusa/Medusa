@@ -217,32 +217,23 @@ class HomeAddShows(Home):
                         enable_anime_options=True, blacklist=[], whitelist=[],
                         controller='addShows', action='recommendedShows', realpage='popularShows')
 
-    def popularAnime(self, list_type=REQUEST_HOT):
+    def popularAnime(self):
         """
-        Fetches list recommeded shows from anidb.info.
+        Render template for route /home/addShows/recommended.
+
+        [Converted to VueRouter]
         """
-        t = PageTemplate(rh=self, filename='addShows_recommended_vue.mako')
-        recommended_shows = None
-        error = None
-
-        try:
-            recommended_shows = AnidbPopular().fetch_popular_shows(list_type)
-        except Exception as e:
-            error = e
-
-        return t.render(title='Popular Anime Shows', header='Popular Anime Shows',
-                        recommended_shows=recommended_shows, exception=error, groups=[],
-                        enable_anime_options=True, blacklist=[], whitelist=[],
-                        controller='addShows', action='recommendedShows', realpage='popularAnime')
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='addShows', action='recommendedShows')
 
     def recommended(self):
         """
-        Serve Vue page addShows_recommeded_vue.mako
-        """
-        t = PageTemplate(rh=self, filename='addShows_recommended_vue.mako')
+        Render template for route /home/addShows/recommended.
 
-        return t.render(title='Recommended shows', header='Recommended shows',
-                        controller='addShows', action='recommendedShows', realpage='recommended')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render(controller='addShows', action='recommendedShows')
 
     def addShowToBlacklist(self, seriesid):
         # URL parameters

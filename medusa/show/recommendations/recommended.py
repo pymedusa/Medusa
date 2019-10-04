@@ -306,27 +306,27 @@ def get_recommended_shows(source=None, series_id=None):
     for show in shows:
 
         # Get the external id's
-        externals = load_externals_from_db(show[b'source'], show[b'series_id'])
+        externals = load_externals_from_db(show['source'], show['series_id'])
 
         try:
             recommended_shows.append(
                 RecommendedShow(
                     BasePopular(
-                        recommender=mapped_source.get(show[b'source']).TITLE,
-                        source=show[b'source'],
-                        cache_subfoler=mapped_source.get(show[b'source']).CACHE_SUBFOLDER
+                        recommender=mapped_source.get(show['source']).TITLE,
+                        source=show['source'],
+                        cache_subfoler=mapped_source.get(show['source']).CACHE_SUBFOLDER
                     ),
-                    show[b'series_id'],
-                    show[b'title'],
+                    show['series_id'],
+                    show['title'],
                     **{
-                        'rating': show[b'rating'],
-                        'votes': show[b'votes'],
-                        'image_href': show[b'image_href'],
-                        'image_src': show[b'image_src'],
+                        'rating': show['rating'],
+                        'votes': show['votes'],
+                        'image_href': show['image_href'],
+                        'image_src': show['image_src'],
                         'ids': externals,
-                        'subcat': show[b'subcat'],
-                        'mapped_indexer': show[b'mapped_indexer'],
-                        'mapped_series_id': show[b'mapped_series_id']
+                        'subcat': show['subcat'],
+                        'mapped_indexer': show['mapped_indexer'],
+                        'mapped_series_id': show['mapped_series_id']
                     }
                 )
             )

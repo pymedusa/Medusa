@@ -4,14 +4,13 @@ from __future__ import unicode_literals
 
 import logging
 import traceback
-from builtins import object
+
 from os.path import join
 
 from medusa import app
 from medusa.cache import recommended_series_cache
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, EXTERNAL_ANIDB
+from medusa.indexers.indexer_config import EXTERNAL_ANIDB
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (
     BasePopular,
     MissingTvdbMapping,
@@ -61,7 +60,7 @@ class AnidbPopular(BasePopular):  # pylint: disable=too-few-public-methods
         rec_show = RecommendedShow(
             self,
             series.aid,
-            unicode(series.title),
+            series.title,
             **{'rating': series.rating_permanent,
                 'votes': series.count_permanent,
                 'image_href': self.base_url.format(aid=series.aid),

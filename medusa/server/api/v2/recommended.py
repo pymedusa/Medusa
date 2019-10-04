@@ -28,13 +28,13 @@ class RecommendedHandler(BaseRequestHandler):
     path_param = ('path_param', r'\w+')
     allowed_methods = ('GET',)
 
-    def http_get(self, identifier, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query available recommended show lists."""
 
         if identifier and identifier not in ('anidb', 'trakt', 'imdb'):
             return self._bad_request("Invalid recommended list identifier '{0}'".format(identifier))
 
-        data = {}
+        data = {'shows': [], 'trakt': {'removedFromMedusa': []}}
 
         recommended_mappings = {'imdb': EXTERNAL_IMDB, 'anidb': EXTERNAL_ANIDB, 'trakt': EXTERNAL_TRAKT}
         shows = get_recommended_shows(source=recommended_mappings.get(identifier))
@@ -42,8 +42,6 @@ class RecommendedHandler(BaseRequestHandler):
         if shows:
             data['shows'] = [show.to_json() for show in shows]
 
-        data['trakt'] = {}
-        data['trakt']['removedFromMedusa'] = []
         try:
             data['trakt']['removedFromMedusa'] = TraktPopular().get_removed_from_medusa()
         except Exception:

@@ -269,7 +269,7 @@ const addRecommendedRoute = {
         topMenu: 'home',
         converted: true
     },
-    component: () => import('../components/add-recommended.vue')
+    component: () => import('../components/recommended.vue')
 };
 
 /** @type {import('.').Route} */

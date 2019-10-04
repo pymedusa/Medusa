@@ -55,9 +55,12 @@ const actions = {
             const { data } = res;
             state.trakt.removedFromMedusa = data.trakt.removedFromMedusa;
             state.trakt.blacklistEnabled = data.trakt.blacklistEnabled;
-            return data.shows.forEach(show => {
-                commit(ADD_RECOMMENDED_SHOW, show);
-            });
+            if (data.shows && data.shows.length > 0) {
+                return data.shows.forEach(show => {
+                    commit(ADD_RECOMMENDED_SHOW, show);
+                });
+            }
+            return [];
         });
     }
 };

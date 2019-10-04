@@ -25,6 +25,10 @@ window.app = new Vue({
     ]), {
 
     })
+    },
+    mounted() {
+        $('.recommended-show-url').each(obj, index => {})
+    }
 });
 </script>
 </%block>
