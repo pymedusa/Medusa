@@ -31,9 +31,13 @@ class ConfigGeneral(Config):
         super(ConfigGeneral, self).__init__(*args, **kwargs)
 
     def index(self):
-        t = PageTemplate(rh=self, filename='config_general.mako')
+        """
+        Render the general configuration page.
 
-        return t.render(controller='config', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     @staticmethod
     def generate_api_key():

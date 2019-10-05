@@ -44,7 +44,8 @@ const state = {
         },
         home: null,
         history: null,
-        schedule: null
+        schedule: null,
+        wide: null
     },
     dbPath: null,
     nzb: {
@@ -250,7 +251,6 @@ const state = {
     updateFrequency: null,
     notifyOnUpdate: null,
     availableThemes: null,
-    layoutWide: null,
     comingEpsMissedRange: null,
     timeStyle: null,
     timePresets: [],
@@ -292,7 +292,7 @@ const state = {
         token: null,
         authType: null,
         remote: null,
-        remoteBanches: null,
+        remoteBranches: null,
         path: null,
         org: null,
         reset: null,

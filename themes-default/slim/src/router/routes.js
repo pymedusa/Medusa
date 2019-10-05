@@ -134,8 +134,10 @@ const configRoutes = [
             title: 'Config - General',
             header: 'General Configuration',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-general.vue')
     },
     {
         path: '/config/notifications',

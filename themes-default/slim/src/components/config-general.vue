@@ -1,0 +1,739 @@
+<template>
+    <!-- import datetime
+    import json
+    import locale
+    from medusa import app, config, metadata
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
+    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
+    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
+    from medusa.metadata.generic import GenericMetadata
+    from medusa.indexers.indexer_api import indexerApi
+    gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches() -->
+
+    <div id="config-genaral">
+        <div id="config-content">
+            <form id="configForm" action="config/general/saveGeneral" method="post">
+                <div id="config-components">
+                    <ul>
+                        <li><app-link href="#misc">Misc</app-link></li>
+                        <li><app-link href="#interface">Interface</app-link></li>
+                        <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
+                    </ul>
+                    <div id="misc">
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Misc</h3>
+                                <p>Startup options. Indexer options. Log and show file locations.</p>
+                                <p><b>Some options may require a manual restart to take effect.</b></p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-toggle-slider v-model="config.launchBrowser" label="Launch browser" id="launch_browser">
+                                        <span>open the Medusa home page on startup</span>
+                                    </config-toggle-slider>
+
+                                    <config-template label-for="default_page" label="Initial page">
+                                        <select id="default_page" name="default_page" v-model="config.defaultPage" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in defaultPageOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>when launching Medusa interface</span>
+                                    </config-template>
+
+                                    <config-template label-for="trash_remove_show" label="Send to trash for actions">
+                                        <label for="trash_remove_show" class="nextline-block">
+                                            <!-- <input type="checkbox" name="trash_remove_show" id="trash_remove_show" 'checked="checked"' if app.TRASH_REMOVE_SHOW else ''}/> -->
+                                            <toggle-button :width="45" :height="22" id="trash_remove_show" name="trash_remove_show" v-model="config.trashRemoveShow" sync />
+                                            <p>when using show "Remove" and delete files</p>
+                                        </label>
+                                        <label for="trash_rotate_logs" class="nextline-block">
+                                            <!-- <input type="checkbox" name="trash_rotate_logs" id="trash_rotate_logs" 'checked="checked"' if app.TRASH_ROTATE_LOGS else ''}/> -->
+                                            <toggle-button :width="45" :height="22" id="trash_rotate_logs" name="trash_rotate_logs" v-model="config.trashRotateLogs" sync />
+                                            <p>on scheduled deletes of the oldest log files</p>
+                                        </label>
+                                        <p>selected actions use trash (recycle bin) instead of the default permanent delete</p>
+                                    </config-template>
+
+                                    <config-textbox v-model="config.actualLogDir" label="Log file folder location" id="log_id" @change="save()" />
+
+                                    <config-textbox-number v-model="config.logNr" label="Number of Log files saved" id="log_nr" :min="1" :step="1">
+                                        <p>number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)</p>
+                                    </config-textbox-number>
+
+                                    <config-textbox-number v-model="config.logSize" label="Size of Log files saved" id="log_size" :min="0.5" :step="0.1">
+                                        <p>maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)</p>
+                                    </config-textbox-number>
+
+                                    <config-template label-for="show_root_dir" label="Show root directories">
+                                        <p>where the files of shows are located</p>
+                                        <p>These changes are automatically saved!</p>
+                                        <root-dirs />
+                                    </config-template>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div>
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Indexer</h3>
+                                <p>Options for controlling the show indexers.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-template label-for="show_root_dir" label="Default Indexer Language">
+                                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="config.indexerDefaultLanguage" :available="config.indexers.config.main.validLanguages.join(',')" class="form-control form-control-inline input-sm" />
+                                        <span>for adding shows and metadata providers</span>
+                                    </config-template>
+
+                                    <config-textbox-number v-model="config.showUpdateHour" label="Choose hour to update shows" id="showupdate_hour" :min="0" :max="23" :step="1">
+                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
+                                        <p>Note: minutes are randomized each time Medusa is started</p>
+                                    </config-textbox-number>
+
+                                    <config-textbox-number v-model="config.indexerTimeout" label="Timeout show indexer at" id="indexer_timeout" :min="10" :step="1">
+                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                    </config-textbox-number>
+
+                                    <config-template label-for="indexer_default" label="Use initial indexer set to">
+                                        <select id="indexer_default" name="indexer_default" v-model="indexerDefault" class="form-control input-sm">
+                                            <option v-for="option in indexerListOptions" :value="option.value" :key="option.value">
+                                                {{ option.text }}
+                                            </option>
+                                        </select>
+                                    </config-template>
+
+                                    <config-toggle-slider v-model="config.plexFallBack.enable" label="Enable fallback to plex" id="fallback_plex_enable">
+                                        <p>Plex provides a tvdb mirror, that can be utilized when Tvdb's api is unavailable.</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.plexFallBack.notifications" label="Enable fallback notifications" id="fallback_plex_notifications">
+                                        <p>When this settings has been enabled, you may receive frequent notifications when falling back to the plex mirror.</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox-number v-model="config.plexFallBack.timeout" label="Timeout show indexer at" id="Fallback duration" :min="1" :step="1" >
+                                        <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
+                                    </config-textbox-number>
+                                </fieldset>
+                            </div>
+                        </div>
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Updates</h3>
+                                <p>Options for software updates.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-toggle-slider v-model="config.versionNotify" label="Check software updates" id="version_notify">
+                                        <p>and display notifications when updates are available.
+                                            Checks are run on startup and at the frequency set below*</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.autoUpdate" label="Automatically update" id="auto_update">
+                                        <p>fetch and install software updates.
+                                            Updates are run on startup and in the background at the frequency set below*</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox-number v-model="config.updateFrequency" label="Check the server every*" id="update_frequency duration" :min="1" :step="1" >
+                                        <p>hours for software updates (default:1)</p>
+                                    </config-textbox-number>
+
+                                    <config-toggle-slider v-model="config.notifyOnUpdate" label="Notify on software update" id="notify_on_update">
+                                        <p>send a message to all enabled notifiers when Medusa has been updated</p>
+                                    </config-toggle-slider>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div>
+
+                    </div><!-- /component-group1 //-->
+
+                    <div id="interface">
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>User Interface</h3>
+                                <p>Options for visual appearance.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-template label-for="theme_name" label="Display theme">
+                                        <select id="theme_name" name="theme_name" v-model="config.themeName">
+                                            <option :value="option.value" v-for="option in availableThemesOptions"
+                                                    :key="option.value">{{ option.text }}
+                                            </option>
+                                        </select>
+                                    </config-template>
+
+                                    <config-toggle-slider v-model="config.layout.wide" label="Use wider layout" id="layout_wide">
+                                        <p>uses all available space in the page</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.fanartBackground" label="Show fanart in the background" id="fanart_background">
+                                        <p>on the show summary page</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox-number v-model="config.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0" >
+                                        <p>Transparency of the fanart in the background</p>
+                                    </config-textbox-number>
+
+                                    <config-toggle-slider v-model="config.layout.show.allSeasons" label="Show all seasons" id="display_all_seasons">
+                                        <p>on the show summary page</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.layout.show.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
+                                        <p>include articles ("The", "A", "An") when sorting show lists</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox-number v-model="config.comingEpsMissedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
+                                        <p>Set the range in days of the missed episodes in the Schedule page</p>
+                                    </config-textbox-number>
+
+                                    <config-toggle-slider v-model="config.fuzzyDating" label="Display fuzzy dates" id="fuzzy_dating">
+                                        <p>move absolute dates into tooltips and display e.g. "Last Thu", "On Tue"</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.trimZero" label="Trim zero padding" id="trim_zero">
+                                        <p>remove the leading number "0" shown on hour of day, and date of month</p>
+                                    </config-toggle-slider>
+
+                                    <config-template label-for="date_preset" label="Date style">
+                                        <select id="date_preset" name="date_preset" v-model="config.datePreset" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                    </config-template>
+
+                                    <config-template label-for="time_preset" label="Time style">
+                                        <select id="time_preset" name="time_preset" v-model="config.timePreset" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in timePresetOptions" :key="option.value">{{ option.text }}</option>
+                                            <!--  for cur_preset in time_presets:
+                                                    <option value="cur_preset}" 'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>sbdatetime.now().sbftime(show_seconds=True, t_preset=cur_preset)}</option>
+                                                    endfor -->
+                                        </select>
+                                        <span><b>note:</b> seconds are only shown on the History page</span>
+                                    </config-template>
+
+                                    <config-template label-for="timezone_display" label="Timezone">
+                                        <input type="radio" name="timezone_display_local" id="timezone_display_local" value="local" v-model="config.timezoneDisplay">
+                                        <label for="one">local</label>
+                                        <input type="radio" name="timezone_display_network" id="timezone_display_network" value="network" v-model="config.timezoneDisplay">
+                                        <label for="one">network</label>
+                                        <p>display dates and times in either your timezone or the shows network timezone</p>
+                                        <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
+                                    </config-template>
+
+                                    <config-textbox v-model="config.downloadUrl" label="Download url" id="download_url">
+                                        <span class="component-desc">URL where the shows can be downloaded.</span>
+                                    </config-textbox>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div> <!-- /User interface row/component-group -->
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Web Interface</h3>
+                                <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
+                                <p><b>These options require a manual restart to take effect.</b></p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+
+                                <fieldset class="component-group-list">
+
+                                    <!-- FIXME: config-textbox Should get a property that makes it read-only  -->
+                                    <config-textbox v-model="config.webInterface.apiKey" label="API key" id="api_key" readonly="readonly">
+                                        <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate">
+                                        <p>used to give 3rd party programs limited access to Medusa</p>
+                                        <p>you can try all the features of the legacy API (v1) <app-link href="apibuilder/">here</app-link></p>
+                                    </config-textbox>
+
+                                    <config-toggle-slider v-model="config.webInterface.log" label="HTTP logs" id="web_log">
+                                        <p>enable logs from the internal Tornado web server</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox v-model="config.webInterface.username" label="HTTP username" id="web_username" autocomplete="no">
+                                        <p>set blank for no login</p>
+                                    </config-textbox>
+
+                                    <config-textbox v-model="config.webInterface.password" label="HTTP password" id="web_password" type="password" autocomplete="no">
+                                        <p>blank = no authentication</p>
+                                    </config-textbox>
+
+
+                                    <config-textbox-number v-model="config.webInterface.port" label="HTTP port" id="web_port" :min="1" :step="1">
+                                        <p>web port to browse and access Medusa (default:8081)</p>
+                                    </config-textbox-number>
+
+                                    <config-toggle-slider v-model="config.webInterface.notifyOnLogin" label="Notify on login" id="notify_on_login">
+                                        <p>enable to be notified when a new login happens in webserver</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.webInterface.ipv6" label="Listen on IPv6" id="web_ipv6">
+                                        <p>enable to be notified when a new login happens in webserver</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.webInterface.httpsEnable" label="Enable HTTPS" id="enable_https">
+                                        <p>enable access to the web interface using a HTTPS address</p>
+                                    </config-toggle-slider>
+
+                                    <div v-if="config.webInterface.httpsEnable">
+                                        <config-textbox v-model="config.webInterface.httpsCert" label="HTTPS certificate" id="https_cert">
+                                            <p>file name or path to HTTPS certificate</p>
+                                        </config-textbox>
+
+                                        <config-textbox v-model="config.webInterface.httpsKey" label="HTTPS key" id="https_key">
+                                            <p>file name or path to HTTPS key</p>
+                                        </config-textbox>
+                                    </div>
+
+                                    <config-toggle-slider v-model="config.webInterface.handleReverseProxy" label="Reverse proxy headers" id="handle_reverse_proxy">
+                                        <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no" >
+                                        <p>Set a base URL, for use in reverse proxies.</p>
+                                        <p>blank = disabled</p>
+                                        <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
+                                    </config-textbox>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div><!-- /web-interface row/component-group //-->
+                    </div><!-- /component-group2 //-->
+
+                    <div id="advanced-settings">
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Advanced Settings</h3>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-template label-for="cpu_presets" label="CPU throttling">
+                                        <select id="cpu_presets" name="cpu_presets" v-model="config.cpuPreset" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in cpuPresetOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>Normal (default). High is lower and Low is higher CPU use</span>
+                                    </config-template>
+
+                                    <config-textbox v-model="config.anonRedirect" label="Anonymous redirect" id="anon_redirect">
+                                        <p>backlink protection via anonymizer service, must end in "?"</p>
+                                    </config-textbox>
+
+                                    <config-toggle-slider v-model="config.webInterface.sslVerify" label="Verify SSL Certs" id="ssl_verify">
+                                        <p>Verify SSL Certificates (Disable this for broken SSL installs (Like QNAP))</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox v-model="config.sslCaBundle" label="SSL CA Bundle" id="ssl_ca_bundle">
+                                        <p>Path to a SSL CA Bundle. Will replace default bundle(certifi) with the one specified.</p>
+                                        <b>NOTE:</b> This only apply to call made using Medusa's Requests implementation.
+                                    </config-textbox>
+
+                                    <config-toggle-slider v-model="config.noRestart" label="No Restart" id="no_restart">
+                                        <p>Only shutdown when restarting Medusa.
+                                            Only select this when you have external software restarting Medusa automatically when it stops (like FireDaemon)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.encryptionVersion" label="Encrypt passwords" id="encryption_version">
+                                        <p>in the <code>config.ini</code> file.
+                                            <b>Warning:</b> Passwords must only contain <app-link href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII characters</app-link></p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.calendarUnprotected" label="Unprotected calendar" id="calendar_unprotected">
+                                        <p>allow subscribing to the calendar without user and password.
+                                            Some services like Google Calendar only work this way</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.calendarIcons" label="Google Calendar Icons" id="calendar_icons">
+                                        <p>show an icon next to exported calendar events in Google Calendar.</p>
+                                    </config-toggle-slider>
+
+                                    <config-textbox v-model="config.proxySetting" label="Proxy host" id="proxy_setting">
+                                        <p>blank to disable or proxy to use when connecting to providers</p>
+                                    </config-textbox>
+
+                                    <config-toggle-slider v-model="config.proxyIndexers" label="Use proxy for indexers" id="proxy_indexers">
+                                        <p>use proxy host for connecting to indexers (thetvdb)</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.skipRemovedFiles" label="Skip Remove Detection" id="skip_removed_files">
+                                        <span>
+                                            <p>Skip detection of removed files. If disabled the episode will be set to the default deleted status</p>
+                                            <b>NOTE:</b> This may mean Medusa misses renames as well
+                                        </span>
+                                    </config-toggle-slider>
+
+
+                                    <config-template label-for="ep_default_deleted_status" label="Default deleted episode status">
+                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.epDefaultDeletedStatus" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in defaultDeletedEpOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>Define the status to be set for media file that has been deleted.</span>
+                                        <p> <b>NOTE:</b> Archived option will keep previous downloaded quality</p>
+                                        <p>Example: Downloaded (1080p WEB-DL) ==> Archived (1080p WEB-DL)</p>
+                                    </config-template>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div> <!-- /row -->
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>Logging</h3>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-toggle-slider v-model="config.debug" label="Enable debug" id="debug">
+                                        <p>Enable debug logs</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-if="config.developer" v-model="config.dbDebug" label="Enable DB debug" id="dbdebug">
+                                        <p>Enable DB debug logs</p>
+                                    </config-toggle-slider>
+
+                                    <config-toggle-slider v-model="config.subliminalLog" label="Subliminal logs" id="subliminal_log">
+                                        <p>enable logs from subliminal library (subtitles)</p>
+                                    </config-toggle-slider>
+
+                                    <config-template label-for="privacy_level" label="Privacy">
+                                        <select id="privacy_level" name="privacy_level" v-model="config.privacyLevel" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in privacyLevelOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <span>
+                                            Set the level of log-filtering.
+                                            Normal (default).
+                                        </span>
+                                    </config-template>
+
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div>
+                        </div>
+
+                        <div class="row component-group">
+                            <div class="component-group-desc col-xs-12 col-md-2">
+                                <h3>GitHub</h3>
+                                <p>Options for github related features.</p>
+                            </div>
+                            <div class="col-xs-12 col-md-10">
+                                <fieldset class="component-group-list">
+
+                                    <config-template label-for="ep_default_deleted_status" label="Branch version">
+                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.branch" class="form-control input-sm">
+                                            <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
+                                        </select>
+                                        <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
+                                        <span v-if="!githubBranches.length > 0" style="color:rgb(255, 0, 0);"><p>Error: No branches found.</p></span>
+                                        <p v-else>select branch to use (restart required)</p>
+                                    </config-template>
+
+                                    <config-template label-for="date_presets" label="GitHub authentication type">
+                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" value="0" v-model="config.git.authType">
+                                        <label for="one">Username and password</label>
+                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" value="1" v-model="config.git.authType">
+                                        <label for="one">Personal access token</label>
+                                        <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
+                                    </config-template>
+
+                                    <!-- <div name="content_github_auth_type">
+                                        <div class="field-pair">
+                                            <label for="git_username">
+                                                <span class="component-title">GitHub username</span>
+                                                <span class="component-desc">
+                                                    <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
+                                                        autocomplete="no" />
+                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="field-pair">
+                                            <label for="git_password">
+                                                <span class="component-title">GitHub password</span>
+                                                <span class="component-desc">
+                                                    <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
+                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div name="content_github_auth_type">
+                                        <div class="field-pair">
+                                            <label for="git_password">
+                                                <span class="component-title">GitHub personal access token</span>
+                                                <span class="component-desc">
+                                                    <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                                     if not app.GIT_TOKEN:
+                                                        <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                                     else:
+                                                        <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                                     endif
+                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="field-pair">
+                                        <label for="git_remote">
+                                            <span class="component-title">GitHub remote for branch</span>
+                                            <span class="component-desc">
+                                                <input type="text" name="git_remote" id="git_remote" value="${app.GIT_REMOTE}" class="form-control input-sm input300"/>
+                                                <div class="clear-left"><p>default:origin. Access repo configured remotes (save then refresh browser)</p></div>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="field-pair">
+                                        <label>
+                                            <span class="component-title">Git executable path</span>
+                                            <span class="component-desc">
+                                                <input type="text" name="git_path" value="${app.GIT_PATH}" class="form-control input-sm input300"/>
+                                                <div class="clear-left"><p>only needed if OS is unable to locate git from env</p></div>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="field-pair"${' hidden' if not app.DEVELOPER else ''}>
+                                        <label for="git_reset">
+                                            <span class="component-title">Git reset</span>
+                                            <span class="component-desc">
+                                                <input type="checkbox" name="git_reset" id="git_reset" ${'checked="checked"' if app.GIT_RESET else ''}/>
+                                                <p>removes untracked files and performs a hard reset on git branch automatically to help resolve update issues</p>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="field-pair"${' hidden' if not app.DEVELOPER else ''}>
+                                        <label for="git_reset_branches">
+                                            <span class="component-title">Branches to reset</span>
+                                            <span class="component-desc">
+                                                <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" class="form-control form-control-inline input-sm pull-left" style="height:99px;">
+                                                     for branch in app.GIT_RESET_BRANCHES:
+                                                        <option value="${branch}" selected="selected">${branch}</option>
+                                                     endfor
+                                                     if gh_branch:
+                                                         for branch in gh_branch:
+                                                             if branch not in app.GIT_RESET_BRANCHES:
+                                                            <option value="${branch}">${branch}</option>
+                                                             endif
+                                                         endfor
+                                                     endif
+                                                </select>
+                                                <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
+                                            </span>
+                                            <div class="clear-left">
+                                                <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
+                                            </div>
+                                        </label>
+                                    </div> -->
+                                    <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
+                                </fieldset>
+                            </div><!-- /col -->
+                        </div>
+                    </div><!-- /component-group3 //-->
+                    <br>
+                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{config.dataDir}}}</span></b> </h6>
+                    <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
+                </div><!-- /config-components -->
+            </form>
+        </div>
+    </div>
+</template>
+
+<script>
+import { api, apiRoute } from '../api.js';
+import { mapGetters, mapState } from 'vuex';
+import RootDirs from './root-dirs.vue';
+import {
+    AppLink,
+    ConfigTemplate,
+    ConfigTextbox,
+    ConfigTextboxNumber,
+    ConfigToggleSlider,
+    LanguageSelect
+} from './helpers';
+import { convertDateFormat } from '../utils/core.js';
+import { ToggleButton } from 'vue-js-toggle-button';
+
+export default {
+    name: 'config-general',
+    components: {
+        AppLink,
+        ConfigTemplate,
+        ConfigTextbox,
+        ConfigTextboxNumber,
+        ConfigToggleSlider,
+        LanguageSelect,
+        ToggleButton,
+        RootDirs
+    },
+    data() {
+        const defaultPageOptions = [
+            { value: 'home', text: 'Shows' },
+            { value: 'schedule', text: 'Schedule' },
+            { value: 'history', text: 'History' },
+            { value: 'news', text: 'News' },
+            { value: 'IRC', text: 'IRC' }
+        ];
+
+        const privacyLevelOptions = [
+            { value: 'high', text: 'HIGH' },
+            { value: 'normal', text: 'NORMAL' },
+            { value: 'low', text: 'LOW' },
+        ];
+
+        return {
+            defaultPageOptions,
+            privacyLevelOptions,
+            githubBranchesForced: []
+        };
+    },
+    // mounted() {
+    //     if ($('input[name="proxy_setting"]').val().length === 0) {
+    //         $('input[id="proxy_indexers"]').prop('checked', false);
+    //         $('label[for="proxy_indexers"]').hide();
+    //     }
+
+    //     $('#theme_name').on('change', function() {
+    //         api.patch('config/main', {
+    //             theme: {
+    //                 name: $(this).val()
+    //             }
+    //         }).then(response => {
+    //             console.info(response);
+    //             window.location.reload();
+    //         }).catch(error => {
+    //             console.error(error);
+    //         });
+    //     });
+
+    //     $('input[name="proxy_setting"]').on('input', function() {
+    //         if ($(this).val().length === 0) {
+    //             $('input[id="proxy_indexers"]').prop('checked', false);
+    //             $('label[for="proxy_indexers"]').hide();
+    //         } else {
+    //             $('label[for="proxy_indexers"]').show();
+    //         }
+    //     });
+
+    //     $('#log_dir').fileBrowser({
+    //         title: 'Select log file folder location'
+    //     });
+    // },
+    computed: {
+        ...mapState({
+            config: state => state.config,
+            statuses: state => state.consts.statuses,
+            configLoaded: state => state.consts.statuses.length > 0
+        }),
+        ...mapGetters([
+            'getStatus'
+        ]),
+        indexerDefault() {
+            const { config } = this;
+            const { indexerDefault  } = config;
+            return indexerDefault || 0;
+        },
+        indexerListOptions() {
+            const { config } = this;
+            const { indexers } = config.indexers.config;
+
+            const allIndexers = [{ text: 'All Indexers', value: 0 }];
+
+            const indexerOptions = Object.keys(indexers).map(indexer => ({ value: indexer.id, text: indexers[indexer].name }));
+            return [...allIndexers, ...indexerOptions];
+        },
+        datePresetOptions() {
+            const { config } = this;
+            const { datePresets } = config;
+            const systemDefault = [{ value: '%x', text: 'Use System Default' }];
+            // FIXME: replace the text with the current date
+            return [...systemDefault, ...datePresets.map(preset => ({ value: preset, text: convertDateFormat(preset) }))];
+        },
+        timePresetOptions() {
+            const { config } = this;
+            const { datePresets } = config;
+            const systemDefault = [{ value: '%x', text: 'Use System Default' }];
+            // FIXME: replace the text with the current time
+            return [...systemDefault, ...datePresets.map(preset => ({ value: preset, text: convertDateFormat(preset) }))];
+        },
+        availableThemesOptions() {
+            const { config } = this;
+            const { availableThemes } = config;
+            if (!availableThemes) {
+                return [];
+            }
+            return availableThemes.map(theme => ({ value: theme.name, text: `${theme.name} (${theme.version})` }));
+        },
+        cpuPresetOptions() {
+            const { config } = this;
+            const { cpuPresets } = config;
+            if (!cpuPresets) {
+                return [];
+            }
+            return Object.keys(cpuPresets).map(key => ({ value: cpuPresets[key], text: key }));
+        },
+        defaultDeletedEpOptions() {
+            const { config, configLoaded, getStatus } = this;
+            // Statuses is used by getStatuses. And we need to have it loaded in const.statuses before calling it.
+            if (!configLoaded) {
+                return [];
+            }
+
+            if (config.skipRemovedFiles) {
+                // Get status objects, when skip removed files is enabled
+                return ['skipped', 'ignored', 'archived'].map(key => getStatus({ key }));
+            }
+
+            // Get status objects, when skip removed files is disabled
+            return ['skipped', 'ignored'].map(key => getStatus({ key }));
+        },
+        githubRemoteBranchesOptions() {
+            const { config, githubBranches, githubBranchForceUpdate } = this;
+            const { developer } = this;
+            const { remoteBranches, username, password, token } = config.git;
+
+            if (!remoteBranches) {
+                return [];
+            }
+
+            if (!remoteBranches.length > 0) {
+                githubBranchForceUpdate();
+            }
+
+            let filteredBranches = [];
+
+            if (((username && password) || token) && developer) {
+                filteredBranches = githubBranches;
+            } else if ((username && password) || token) {
+                filteredBranches = githubBranches.filter(branch => ['master', 'develop'].includes(branch));
+            } else {
+                filteredBranches = githubBranches.filter(branch => ['master'].includes(branch));
+            }
+
+            return filteredBranches.map(branch => ({ text: branch, value: branch }));
+        },
+        githubBranches() {
+            const { config, githubBranchesForced } = this;
+            return config.git.remoteBranches || githubBranchesForced;
+        }
+    },
+    methods: {
+        async githubBranchForceUpdate() {
+
+            const response = await apiRoute('home/branchForceUpdate');
+            debugger;
+            if (response.data._size > 0) {
+                this.githubBranchesForced = response.data.resetBranches;
+            }
+        }
+    }
+};
+</script>
+<style>
+</style>
