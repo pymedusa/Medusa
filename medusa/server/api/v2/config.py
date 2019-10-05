@@ -562,6 +562,7 @@ class DataGenerator(object):
         section_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
         section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
+        section_data['layout']['wide'] = bool(app.LAYOUT_WIDE)
 
         section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
 
@@ -612,6 +613,7 @@ class DataGenerator(object):
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
         section_data['defaultPage'] = app.DEFAULT_PAGE
         section_data['trashRemoveShow'] = bool(app.TRASH_REMOVE_SHOW)
+        section_data['trashRotateLogs'] = bool(app.TRASH_ROTATE_LOGS)
         section_data['actualLogDir'] = app.ACTUAL_LOG_DIR
         section_data['logNr'] = int(app.LOG_NR)
         section_data['logSize'] = float(app.LOG_SIZE)
@@ -621,18 +623,19 @@ class DataGenerator(object):
         section_data['indexerTimeout'] = int(app.INDEXER_TIMEOUT)
         section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
-        section_data['plexFallBack'] = NonEmptyDict()
+        section_data['plexFallBack'] = {}
         section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
         section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
-        section_data['plexFallBack']['timeout'] = bool(app.FALLBACK_PLEX_TIMEOUT)
+        section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
         section_data['updateFrequency'] = int(app.UPDATE_FREQUENCY)
         section_data['notifyOnUpdate'] = bool(app.NOTIFY_ON_UPDATE)
-        section_data['availableThemes'] = bool(app.AVAILABLE_THEMES)
-
-        section_data['layoutWide'] = bool(app.LAYOUT_WIDE)
+        section_data['availableThemes'] = [{'name': theme.name,
+                                            'version': theme.version,
+                                            'author': theme.author}
+                                           for theme in app.AVAILABLE_THEMES]
 
         section_data['comingEpsMissedRange'] = int(app.COMING_EPS_MISSED_RANGE)
         section_data['timeStyle'] = bool(app.TIME_PRESET_W_SECONDS)
@@ -640,7 +643,7 @@ class DataGenerator(object):
         section_data['datePresets'] = list(date_presets)
         section_data['timezoneDisplay'] = bool(app.TIMEZONE_DISPLAY)
 
-        section_data['webInterface'] = NonEmptyDict()
+        section_data['webInterface'] = {}
         section_data['webInterface']['apiKey'] = app.API_KEY
         section_data['webInterface']['log'] = bool(app.WEB_LOG)
         section_data['webInterface']['username'] = app.WEB_USERNAME
@@ -671,20 +674,20 @@ class DataGenerator(object):
         section_data['privacyLevel'] = app.PRIVACY_LEVEL
         section_data['developer'] = bool(app.DEVELOPER)
 
-        section_data['git'] = NonEmptyDict()
+        section_data['git'] = {}
         # TODO: move main['gitUsername'] -> main['git']['username']
         section_data['git']['username'] = app.GIT_USERNAME
         section_data['git']['password'] = app.GIT_PASSWORD
         section_data['git']['token'] = app.GIT_TOKEN
         section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
         section_data['git']['remote'] = app.GIT_REMOTE
-        section_data['git']['remoteBanches'] = app.GIT_REMOTE_BRANCHES
+        section_data['git']['remoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['git']['path'] = app.GIT_PATH
         section_data['git']['org'] = app.GIT_ORG
         section_data['git']['reset'] = bool(app.GIT_RESET)
         section_data['git']['resetBranches'] = app.GIT_RESET_BRANCHES
         # TODO: move main['githubUrl'] -> main['git']['url']
-        section_data['git']['githubIoUrl'] = app.GITHUB_IO_URL
+        section_data['git']['url'] = app.GITHUB_IO_URL
 
         return section_data
 
