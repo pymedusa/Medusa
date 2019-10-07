@@ -219,7 +219,7 @@ import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
 import TimeAgo from 'javascript-time-ago';
-import timeAgoLocalEN from 'javascript-time-ago/locale/en'
+import timeAgoLocalEN from 'javascript-time-ago/locale/en';
 import QualityPill from './helpers/quality-pill.vue';
 
 // Add locale-specific relative date/time formatting rules.
