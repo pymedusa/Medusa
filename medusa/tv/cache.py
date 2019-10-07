@@ -483,16 +483,15 @@ class Cache(object):
                 if not naming.filter_bad_releases(search_result.name):
                     continue
 
-                all_wanted = True
-                for cur_ep in search_result.actual_episodes:
-                    # if the show says we want that episode then add it to the list
-                    if not search_result.series.want_episode(search_result.actual_season, cur_ep, search_result.quality,
-                                                             forced_search, down_cur_quality):
-                        log.debug('Ignoring {0} because one or more episodes are unwanted', search_result.name)
-                        all_wanted = False
-                        break
+                wanted_episodes = search_result.series.want_episodes(
+                    search_result.actual_season,
+                    search_result.actual_episodes,
+                    search_result.quality,
+                    forced_search=search_result.forced_search,
+                    download_current_quality=search_result.download_current_quality,
+                    search_type=search_result.search_type)
 
-                if not all_wanted:
+                if not wanted_episodes:
                     continue
 
                 log.debug(

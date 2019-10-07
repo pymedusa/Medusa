@@ -255,6 +255,10 @@ def filter_results(results):
     for cur_result in results:
         assert cur_result.series, 'Every SearchResult object should have a series object available at this point.'
 
+        # Skip the result if search delay is enabled for the provider
+        if delay_search(cur_result):
+            continue
+
         # Every SearchResult object should have a show attribute available at this point.
         series_obj = cur_result.series
 
@@ -263,23 +267,22 @@ def filter_results(results):
             if not series_obj.release_groups.is_valid(cur_result):
                 continue
 
-        log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
+        log.info('Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
 
         allowed_qualities, preferred_qualities = series_obj.current_qualities
         if cur_result.quality not in allowed_qualities + preferred_qualities:
-            log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
+            log.debug('{0} is an unwanted quality, rejecting it', cur_result.name)
             continue
 
-        wanted_ep = True
-        if cur_result.actual_episodes:
-            wanted_ep = False
-            for episode in cur_result.actual_episodes:
-                if series_obj.want_episode(cur_result.actual_season, episode, cur_result.quality,
-                                           cur_result.forced_search, cur_result.download_current_quality,
-                                           search_type=cur_result.search_type):
-                    wanted_ep = True
+        wanted_episodes = series_obj.want_episodes(
+            cur_result.actual_season,
+            cur_result.actual_episodes,
+            cur_result.quality,
+            forced_search=cur_result.forced_search,
+            download_current_quality=cur_result.download_current_quality,
+            search_type=cur_result.search_type)
 
-        if not wanted_ep:
+        if not wanted_episodes:
             continue
 
         # If doesnt have min seeders OR min leechers then discard it
@@ -365,7 +368,7 @@ def sort_results(results):
                                    wanted_results[0][0].quality == result.quality):
             log.debug(u'Rewarding release {0} (repack/proper/real/rerip)', result.name)
             # Stop at max. 4 proper tags
-            for tag in result.proper_tags[:4]:
+            for _tag in result.proper_tags[:4]:
                 score += percentage(2, score)
 
         if any(word in result.name.lower() for word in undesired_words):
@@ -548,9 +551,6 @@ def search_for_needed_episodes(scheduler_start_time, force=False):
                 continue
 
             best_result = pick_result(wanted_results)
-            # Skip the result if search delay is enabled for the provider.
-            if delay_search(best_result):
-                continue
 
             if episode_no in (SEASON_RESULT, MULTI_EP_RESULT):
                 multi_results.append(best_result)
@@ -704,14 +704,12 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
                 if not manual_search:
                     cache_search_results = cur_provider.search_results_in_cache(episodes)
                     if cache_search_results:
-                        # From our provider multi_episode and single_episode results, collect candidates.
+                        # From our provider multi_episode and single_episode results, collect results
                         cache_found_results = list_results_for_provider(cache_search_results, found_results, cur_provider)
                         # We're passing the empty lists, because we don't want to include previous candidates
-                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [],
-                                                                       [], series_obj, down_cur_quality)
+                        cache_multi, cache_single = collect_candidates(cache_found_results, cur_provider, [], [])
 
-                # For now we only search if we didn't get any results back from cache,
-                # but we might wanna check if there was something useful in cache.
+                # We only search if we didn't get any useful results from cache
                 if not (cache_multi or cache_single):
                     log.debug(u'Could not find any candidates in cache, searching provider.')
                     search_results = cur_provider.find_search_results(series_obj, episodes, search_mode, forced_search,
@@ -761,8 +759,9 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
             # Continue because we don't want to pick best results as we are running a manual search by user
             continue
 
-        multi_results, single_results = collect_candidates(found_results, cur_provider, multi_results,
-                                                           single_results, series_obj, down_cur_quality)
+        multi_results, single_results = collect_candidates(
+            found_results, cur_provider, multi_results, single_results
+        )
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name
@@ -774,13 +773,10 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
         return combine_results(multi_results, single_results)
 
 
-def collect_candidates(found_results, provider, multi_results, single_results, series_obj, down_cur_quality):
+def collect_candidates(found_results, provider, multi_results, single_results):
     """Collect candidates for episode, multi-episode or season results."""
-    candidates = (candidate for result, candidate in iteritems(found_results[provider.name])
-                  if result in (SEASON_RESULT, MULTI_EP_RESULT))
-    candidates = list(itertools.chain(*candidates))
-    if candidates:
-        multi_results += collect_multi_candidates(candidates, series_obj, down_cur_quality)
+    # Collect candidates for multi-episode or season results
+    multi_results = collect_multi_candidates(found_results[provider.name], multi_results)
 
     # Collect candidates for single-episode results
     single_results = collect_single_candidates(found_results[provider.name], single_results)
@@ -811,6 +807,20 @@ def list_results_for_provider(search_results, found_results, provider):
     return found_results
 
 
+def collect_multi_candidates(candidates, results):
+    """Collect mutli-episode and season result candidates."""
+    multi_results = list(results)
+    new_candidates = []
+
+    multi_candidates = (candidate for result, candidate in iteritems(candidates)
+                        if result in (SEASON_RESULT, MULTI_EP_RESULT))
+    multi_candidates = list(itertools.chain(*multi_candidates))
+    if multi_candidates:
+        new_candidates = filter_results(multi_candidates)
+
+    return multi_results + new_candidates
+
+
 def collect_single_candidates(candidates, results):
     """
     Collect single-episode result candidates.
@@ -819,7 +829,7 @@ def collect_single_candidates(candidates, results):
     collected list of results.
     :param results: The existing list of valid results.
     """
-    single_candidates = list(results)
+    single_results = list(results)
     new_candidates = []
 
     # of all the single-ep results narrow it down to the best one for each episode
@@ -833,67 +843,15 @@ def collect_single_candidates(candidates, results):
             continue
 
         result_candidates = []
-        for i, candidate in enumerate(single_candidates):
+        for i, candidate in enumerate(single_results):
             if episode in candidate.actual_episodes:
                 result_candidates.append(candidate)
-                del single_candidates[i]
+                del single_results[i]
 
         best_result = pick_result(result_candidates + wanted_results)
+        new_candidates.append(best_result)
 
-        # Skip the result if search delay is enabled for the provider
-        if not delay_search(best_result):
-            new_candidates.append(best_result)
-
-    return single_candidates + new_candidates
-
-
-def collect_multi_candidates(candidates, series_obj, down_cur_quality):
-    """Collect mutli-episode and season result candidates."""
-    multi_candidates = []
-
-    wanted_candidates = filter_results(candidates)
-    if not wanted_candidates:
-        return multi_candidates
-
-    for candidate in wanted_candidates:
-        wanted_episodes = [
-            series_obj.want_episode(ep_obj.season, ep_obj.episode, candidate.quality, down_cur_quality)
-            for ep_obj in candidate.episodes
-        ]
-
-        if all(wanted_episodes):
-            log.info(u'All episodes of this season are needed with this quality, adding {0} {1}',
-                     candidate.provider.provider_type,
-                     candidate.name)
-
-            # Skip the result if search delay is enabled for the provider
-            if not delay_search(candidate):
-                multi_candidates.append(candidate)
-
-        elif not any(wanted_episodes):
-            log.debug(u'No episodes of this season are needed with this quality, ignoring {0} {1}',
-                      candidate.provider.provider_type,
-                      candidate.name)
-            continue
-
-        else:
-            # If there are 2 candidates and only one is wanted it
-            # is likely a single episode released as multi episode
-            if len(candidate.episodes) == 2:
-                log.info(u'This is likely a single episode released as multi, adding {0} {1}',
-                         candidate.provider.provider_type,
-                         candidate.name)
-
-                # Skip the result if search delay is enabled for the provider
-                if not delay_search(candidate):
-                    multi_candidates.append(candidate)
-            else:
-                log.debug(u'Only some episodes of this season are needed with this quality, ignoring {0} {1}',
-                          candidate.provider.provider_type,
-                          candidate.name)
-                continue
-
-    return multi_candidates
+    return single_results + new_candidates
 
 
 def combine_results(multi_results, single_results):
