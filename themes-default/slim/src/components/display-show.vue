@@ -218,7 +218,12 @@ import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
+import TimeAgo from 'javascript-time-ago';
+import timeAgoLocalEN from 'javascript-time-ago/locale/en'
 import QualityPill from './helpers/quality-pill.vue';
+
+// Add locale-specific relative date/time formatting rules.
+TimeAgo.addLocale(timeAgoLocalEN);
 
 export default {
     name: 'show',
@@ -368,7 +373,8 @@ export default {
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisode: null,
             backlogSearchEpisodes: [],
-            filterByOverviewStatus: false
+            filterByOverviewStatus: false,
+            timeAgo: new TimeAgo('en-US')
         };
     },
     computed: {
@@ -590,8 +596,14 @@ export default {
             }
         },
         parseDateFn(row) {
-            const { config } = this;
-            if (config.datePreset === '%x') {
+            const { config, timeAgo } = this;
+            const { datePreset, fuzzyDating } = config;
+
+            if (fuzzyDating) {
+                return timeAgo.format(new Date(row.airDate));
+            }
+
+            if (datePreset === '%x') {
                 return new Date(row.airDate).toLocaleString();
             }
 
