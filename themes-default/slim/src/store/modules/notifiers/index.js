@@ -1,7 +1,9 @@
 import { ADD_CONFIG } from '../../mutation-types';
 import boxcar2 from './boxcar2';
+import discord from './discord';
 import email from './email';
 import emby from './emby';
+import freemobile from './freemobile';
 import growl from './growl';
 import kodi from './kodi';
 import libnotify from './libnotify';
@@ -37,8 +39,10 @@ const actions = {};
 
 const modules = {
     boxcar2,
+    discord,
     email,
     emby,
+    freemobile,
     growl,
     kodi,
     libnotify,

@@ -3,9 +3,8 @@ export const state = {
     notifyOnSnatch: null,
     notifyOnDownload: null,
     notifyOnSubtitleDownload: null,
-    dmto: null,
-    prefix: null,
-    directMessage: null
+    webhook: null,
+    tts: null
 };
 
 export const mutations = {};

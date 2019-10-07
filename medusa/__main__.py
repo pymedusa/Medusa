@@ -745,6 +745,15 @@ class Application(object):
             app.TELEGRAM_ID = check_setting_str(app.CFG, 'Telegram', 'telegram_id', '', censor_log='normal')
             app.TELEGRAM_APIKEY = check_setting_str(app.CFG, 'Telegram', 'telegram_apikey', '', censor_log='low')
 
+            app.USE_DISCORD = bool(check_setting_int(app.CFG, 'Discord', 'use_discord', 0))
+            app.DISCORD_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Discord', 'discord_notify_onsnatch', 0))
+            app.DISCORD_NOTIFY_ONDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_ondownload', 0))
+            app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
+            app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
+            app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
@@ -1752,6 +1761,14 @@ class Application(object):
         new_config['Telegram']['telegram_notify_onsubtitledownload'] = int(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Telegram']['telegram_id'] = app.TELEGRAM_ID
         new_config['Telegram']['telegram_apikey'] = app.TELEGRAM_APIKEY
+
+        new_config['Discord'] = {}
+        new_config['Discord']['use_discord'] = int(app.USE_DISCORD)
+        new_config['Discord']['discord_notify_onsnatch'] = int(app.DISCORD_NOTIFY_ONSNATCH)
+        new_config['Discord']['discord_notify_ondownload'] = int(app.DISCORD_NOTIFY_ONDOWNLOAD)
+        new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
+        new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
 
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
