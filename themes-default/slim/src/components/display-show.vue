@@ -118,7 +118,7 @@
                             {{props.row.title}}
                         </span>
 
-                        <span v-else-if="props.column.field == 'subtitles'">
+                        <span class="subtitles-container" v-else-if="props.column.field == 'subtitles'">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="`home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}&lang=${flag}">
@@ -1358,4 +1358,8 @@ td.col-footer {
     margin-right: 2px;
 }
 
+.subtitles-container {
+    display: flex;
+    justify-content: center;
+}
 </style>
