@@ -121,10 +121,10 @@
                         <span class="subtitles-container" v-else-if="props.column.field == 'subtitles'">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" href="`home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}&lang=${flag}">
-                                        <img :src="'images/subtitles/flags/' + flag + '.png'" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';">
-                                    </app-link>
-                                    <img v-if="flag === 'und'" :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                                    <!-- <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" :href="`home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}&lang=${flag}`"> -->
+                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex, flag)">
+                                    <!-- </app-link> -->
+                                    <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
                         </span>
@@ -622,11 +622,11 @@ export default {
         addFileSize(headerRow) {
             return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
-        searchSubtitle(event, season, episode, rowIndex) {
+        searchSubtitle(event, season, episode, rowIndex, lang) {
             const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
-                propsData: { show, season, episode, key: rowIndex },
+                propsData: { show, season, episode, key: rowIndex, lang },
                 parent: this
             });
 
@@ -643,6 +643,7 @@ export default {
             instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
+
         /**
          * Attaches IMDB tooltip,
          * Moves summary and checkbox controls backgrounds
@@ -970,13 +971,15 @@ export default {
 
             patchData[episode.slug] = { watched };
 
-            api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
+            api.patch(`series/${show.id.slug}/episodes`, patchData) // eslint-disable-line no-undef
                 .then(_ => {
                     console.info(`patched episode ${episode.slug} with watched set to ${watched}`);
                     getEpisodes({ id, indexer, season: episode.season });
                 }).catch(error => {
                     console.error(String(error));
                 });
+
+            episode.watched = watched;
         },
         updatePaginationPerPage(rows) {
             const { setCookie } = this;
