@@ -1056,7 +1056,7 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
 }
 
 .fanartBackground table {
-    table-layout: auto;
+    table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
     border-spacing: 0;
