@@ -590,6 +590,10 @@ export default {
             const { config, timeAgo } = this;
             const { datePreset, fuzzyDating } = config;
 
+            if (!row.airDate) {
+                return '';
+            }
+
             if (fuzzyDating) {
                 return timeAgo.format(new Date(row.airDate));
             }
