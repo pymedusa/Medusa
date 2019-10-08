@@ -121,9 +121,7 @@
                         <span class="subtitles-container" v-else-if="props.column.field == 'subtitles'">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <!-- <app-link v-if="flag !== 'und'" class="epRedownloadSubtitle" :href="`home/searchEpisodeSubtitles?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}&lang=${flag}`"> -->
                                     <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex, flag)">
-                                    <!-- </app-link> -->
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
@@ -197,13 +195,6 @@
             </transition>
         </modal>
         <!--eslint-enable-->
-
-        <!-- TODO: Implement subtitle modal in vue -->
-        <!-- <include file="subtitle_modal.mako"/> -->
-        <!--End - Bootstrap Modal-->
-        <!-- <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script> -->
     </div>
 </template>
 
