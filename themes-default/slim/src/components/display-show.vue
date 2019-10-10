@@ -87,11 +87,11 @@
                         <span v-else-if="props.column.field == 'content.hasTbn'">
                             <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
-                        <span v-else-if="props.column.field == 'download'">
+                        <span v-else-if="props.column.label == 'Download'">
                             <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
                         </span>
 
-                        <span v-else-if="props.column.field == 'episode'">
+                        <span v-else-if="props.column.label == 'Episode'">
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
@@ -113,12 +113,12 @@
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
-                        <span v-else-if="props.column.field == 'title'">
+                        <span v-else-if="props.column.label == 'Title'">
                             <plot-info v-if="props.row.description !== ''" :description="props.row.description" :show-slug="show.id.slug" :season="props.row.season" :episode="props.row.episode" />
                             {{props.row.title}}
                         </span>
 
-                        <span class="subtitles-container" v-else-if="props.column.field == 'subtitles'">
+                        <span v-else-if="props.column.label == 'Subtitles'" class="subtitles-container">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex, flag)">
@@ -127,9 +127,12 @@
                             </div>
                         </span>
 
-                        <span v-else-if="props.column.field == 'status'">
-                            {{props.row.status}} <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
-                            <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
+                        <span v-else-if="props.column.label == 'Status'">
+                            <div>
+                                {{props.row.status}}
+                                <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                                <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
+                            </div>
                         </span>
 
                         <span v-else-if="props.column.field == 'search'">
@@ -538,11 +541,11 @@ export default {
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
 
-            if (event.newQuality !== null) {
+            if (event.newQuality !== null && event.newQuality !== 'Change quality to:') {
                 setQuality(event.newQuality, selectedEpisodes);
             }
 
-            if (event.newStatus !== null) {
+            if (event.newStatus !== null && event.newStatus !== 'Change status to:') {
                 setStatus(event.newStatus, selectedEpisodes);
             }
         },
@@ -1056,7 +1059,7 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
 }
 
 .fanartBackground table {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
     border-collapse: collapse;
     border-spacing: 0;
@@ -1120,6 +1123,10 @@ tablesorter.css
     font-weight: normal;
     white-space: nowrap;
     color: rgb(255, 255, 255);
+}
+
+.vgt-table span.break-word {
+    word-wrap: break-word;
 }
 
 .vgt-table thead th.sorting.sorting-desc {
