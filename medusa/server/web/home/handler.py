@@ -895,10 +895,10 @@ class Home(WebRoot):
 
         # Check if the requested ep is in a search thread
         searched_item = [ep for ep in episodes_in_search
-                         if all([ep.get('indexer_id') == series_obj.identifier.indexer.id,
-                                 ep.get('series_id') == series_obj.identifier.id,
-                                 text_type(ep.get('season')) == season,
-                                 text_type(ep.get('episode')) == episode])]
+                         if all([ep['show']['indexer_id'] == series_obj.identifier.indexer.id,
+                                 ep['show']['series_id'] == series_obj.identifier.id,
+                                 text_type(ep['episode']['season']) == season,
+                                 text_type(ep['episode']['episode']) == episode])]
 
         # # No last_prov_updates available, let's assume we need to refresh until we get some
         # if not last_prov_updates:
