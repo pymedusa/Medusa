@@ -895,7 +895,7 @@ class Home(WebRoot):
 
         # Check if the requested ep is in a search thread
         searched_item = [ep for ep in episodes_in_search
-                         if all([ep['show']['indexer_id'] == series_obj.identifier.indexer.id,
+                         if all([ep['show']['indexer'] == series_obj.identifier.indexer.id,
                                  ep['show']['series_id'] == series_obj.identifier.id,
                                  text_type(ep['episode']['season']) == season,
                                  text_type(ep['episode']['episode']) == episode])]
@@ -931,7 +931,7 @@ class Home(WebRoot):
         # but then check if as soon as a search has finished
         # Move on and show results
         # Return a list of queues the episode has been found in
-        search_status = [item.get('searchstatus') for item in searched_item]
+        search_status = [item['search']['status'] for item in searched_item]
         if not searched_item or all([last_prov_updates,
                                      SEARCH_STATUS_QUEUED not in search_status,
                                      SEARCH_STATUS_SEARCHING not in search_status,
@@ -946,7 +946,7 @@ class Home(WebRoot):
         if not last_prov_updates and SEARCH_STATUS_FINISHED in search_status:
             return {'result': refresh_results}
 
-        return {'result': searched_item[0]['searchstatus']}
+        return {'result': searched_item[0]['search']['status']}
 
     def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
                         perform_search=0, down_cur_quality=0, show_all_results=0):
