@@ -9,6 +9,10 @@
 #### Fixes
 - Fixed AnimeBytes daily search, for multi-ep results ([#7190](https://github.com/pymedusa/Medusa/pull/7190))
 - Fixed rare UnicodeDecodeError when parsing titles with Python 2.7 ([#7192](https://github.com/pymedusa/Medusa/pull/7192))
+- Fixed torrent checker for client Transmission running on python 3 ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider beyond-hd due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider bj-share due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 
 -----
 

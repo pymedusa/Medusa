@@ -177,8 +177,6 @@ class BJShareProvider(TorrentProvider):
             for result in torrent_rows[1:]:
                 cells = result('td')
                 result_class = result.get('class')
-                # When "Grouping Torrents" is enabled, the structure of table change
-                group_index = -2 if 'group_torrent' in result_class else 0
                 try:
                     title = result.select('a[href^="torrents.php?id="]')[0].get_text()
                     title = re.sub(r'\s+', ' ', title).strip()  # clean empty lines and multiple spaces
@@ -201,8 +199,8 @@ class BJShareProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders') + group_index].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers') + group_index].get_text(strip=True))
+                    seeders = try_int(cells[4].get_text(strip=True))
+                    leechers = try_int(cells[5].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -224,7 +222,7 @@ class BJShareProvider(TorrentProvider):
                     torrent_details = torrent_details.replace('[', ' ').replace(']', ' ').replace('/', ' ')
                     torrent_details = torrent_details.replace('Full HD ', '1080p').replace('HD ', '720p')
 
-                    torrent_size = cells[labels.index('Tamanho') + group_index].get_text(strip=True)
+                    torrent_size = cells[2].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
