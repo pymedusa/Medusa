@@ -12,6 +12,7 @@
 - Fixed torrent checker for client Transmission running on python 3 ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider beyond-hd due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider bj-share due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 
 -----
 
