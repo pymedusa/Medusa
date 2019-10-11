@@ -201,8 +201,8 @@ class BJShareProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders') + group_index].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers') + group_index].get_text(strip=True))
+                    seeders = try_int(cells[4].get_text(strip=True))
+                    leechers = try_int(cells[5].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -224,7 +224,7 @@ class BJShareProvider(TorrentProvider):
                     torrent_details = torrent_details.replace('[', ' ').replace(']', ' ').replace('/', ' ')
                     torrent_details = torrent_details.replace('Full HD ', '1080p').replace('HD ', '720p')
 
-                    torrent_size = cells[labels.index('Tamanho') + group_index].get_text(strip=True)
+                    torrent_size = cells[2].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
                     torrent_name = '{0} {1}'.format(title, torrent_details.strip()).strip()
