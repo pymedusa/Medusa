@@ -70,8 +70,6 @@
                                 <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
-                            <div class="invert-table"><img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
-                            </div>
                         </h3>
                     </template>
 
@@ -103,7 +101,7 @@
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Absolute'" class="align-center">
+                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
                             <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
                                    class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
                                    :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
@@ -150,6 +148,18 @@
 
                         <span v-else>
                             {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
+
+                    <template slot="table-column" slot-scope="props">
+                        <span v-if="props.column.label =='Abs. #'">
+                            <span title="Absolute episode number" class="addQTip">{{props.column.label}}</span>
+                        </span>
+                        <span v-else-if="props.column.label =='Scene Abs. #'">
+                            <span title="Scene Absolute episode number" class="addQTip">{{props.column.label}}</span>
+                        </span>
+                        <span v-else>
+                            {{props.column.label}}
                         </span>
                     </template>
 
@@ -299,7 +309,7 @@ export default {
                 type: 'number',
                 hidden: getCookie('displayShow-hide-field-Episode')
             }, {
-                label: 'Absolute Number',
+                label: 'Abs. #',
                 field: 'absoluteNumber',
                 type: 'number',
                 hidden: getCookie('displayShow-hide-field-Absolute Number')
@@ -312,7 +322,7 @@ export default {
                 sortable: false,
                 hidden: getCookie('displayShow-hide-field-Scene')
             }, {
-                label: 'Scene Absolute',
+                label: 'Scene Abs. #',
                 field: row => {
                     const { getSceneAbsoluteNumbering } = this;
                     return getSceneAbsoluteNumbering(row);
