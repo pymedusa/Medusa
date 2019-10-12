@@ -12,7 +12,7 @@
 
     <div id="config-genaral">
         <div id="config-content">
-            <form id="configForm" action="config/general/saveGeneral" method="post">
+            <form id="configForm" method="post" @submit.prevent="save()">
                 <div id="config-components">
                     <ul>
                         <li><app-link href="#misc">Misc</app-link></li>
@@ -372,7 +372,7 @@
 
 
                                     <config-template label-for="ep_default_deleted_status" label="Default deleted episode status">
-                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.epDefaultDeletedStatus" class="form-control input-sm">
+                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.epDefaultDeletedStatus" class="form-control input-sm margin-bottom-5">
                                             <option :value="option.value" v-for="option in defaultDeletedEpOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>Define the status to be set for media file that has been deleted.</span>
@@ -428,7 +428,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="ep_default_deleted_status" label="Branch version">
-                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.branch" class="form-control input-sm">
+                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.branch" class="form-control input-sm margin-bottom-5">
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
@@ -444,93 +444,45 @@
                                         <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
                                     </config-template>
 
-                                    <!-- <div name="content_github_auth_type">
-                                        <div class="field-pair">
-                                            <label for="git_username">
-                                                <span class="component-title">GitHub username</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
-                                                        autocomplete="no" />
-                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="field-pair">
-                                            <label for="git_password">
-                                                <span class="component-title">GitHub password</span>
-                                                <span class="component-desc">
-                                                    <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
-                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
-                                                </span>
-                                            </label>
-                                        </div>
+                                    <div v-if="config.git.authType === '0'">
+                                        <!-- username + password authentication -->
+                                        <config-textbox v-model="config.git.username" label="GitHub username" id="git_username">
+                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
+                                        </config-textbox>
+                                        <config-textbox v-model="config.git.password" label="GitHub password" id="git_password" type="password">
+                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
+                                        </config-textbox>
                                     </div>
-                                    <div name="content_github_auth_type">
-                                        <div class="field-pair">
-                                            <label for="git_password">
-                                                <span class="component-title">GitHub personal access token</span>
-                                                <span class="component-desc">
-                                                    <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
-                                                     if not app.GIT_TOKEN:
-                                                        <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
-                                                     else:
-                                                        <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
-                                                     endif
-                                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
-                                                </span>
-                                            </label>
-                                        </div>
+                                    <div v-else>
+                                        <!-- Token authentication -->
+                                        <config-textbox v-model="config.git.token" label="GitHub personal access token" id="git_token" input-class="display-inline margin-bottom-5">
+                                            <input v-if="config.git.token === ''" class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                            <input v-else class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                            <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
+                                        </config-textbox>
                                     </div>
-                                    <div class="field-pair">
-                                        <label for="git_remote">
-                                            <span class="component-title">GitHub remote for branch</span>
-                                            <span class="component-desc">
-                                                <input type="text" name="git_remote" id="git_remote" value="${app.GIT_REMOTE}" class="form-control input-sm input300"/>
-                                                <div class="clear-left"><p>default:origin. Access repo configured remotes (save then refresh browser)</p></div>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair">
-                                        <label>
-                                            <span class="component-title">Git executable path</span>
-                                            <span class="component-desc">
-                                                <input type="text" name="git_path" value="${app.GIT_PATH}" class="form-control input-sm input300"/>
-                                                <div class="clear-left"><p>only needed if OS is unable to locate git from env</p></div>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair"${' hidden' if not app.DEVELOPER else ''}>
-                                        <label for="git_reset">
-                                            <span class="component-title">Git reset</span>
-                                            <span class="component-desc">
-                                                <input type="checkbox" name="git_reset" id="git_reset" ${'checked="checked"' if app.GIT_RESET else ''}/>
-                                                <p>removes untracked files and performs a hard reset on git branch automatically to help resolve update issues</p>
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div class="field-pair"${' hidden' if not app.DEVELOPER else ''}>
-                                        <label for="git_reset_branches">
-                                            <span class="component-title">Branches to reset</span>
-                                            <span class="component-desc">
-                                                <select id="git_reset_branches" name="git_reset_branches" multiple="multiple" class="form-control form-control-inline input-sm pull-left" style="height:99px;">
-                                                     for branch in app.GIT_RESET_BRANCHES:
-                                                        <option value="${branch}" selected="selected">${branch}</option>
-                                                     endfor
-                                                     if gh_branch:
-                                                         for branch in gh_branch:
-                                                             if branch not in app.GIT_RESET_BRANCHES:
-                                                            <option value="${branch}">${branch}</option>
-                                                             endif
-                                                         endfor
-                                                     endif
-                                                </select>
-                                                <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchForceUpdate" value="Update Branches">
-                                            </span>
-                                            <div class="clear-left">
-                                                <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
-                                            </div>
-                                        </label>
-                                    </div> -->
+
+                                    <config-textbox v-model="config.git.remote" label="GitHub remote for branch" id="git_remote">
+                                        <p>default:origin. Access repo configured remotes (save then refresh browser)</p>
+                                    </config-textbox>
+
+                                    <config-textbox v-model="config.git.path" label="Git executable path" id="git_path">
+                                        <p>only needed if OS is unable to locate git from env</p>
+                                    </config-textbox>
+
+                                    <config-toggle-slider v-if="config.developer" v-model="config.git.reset" label="Git reset" id="git_reset">
+                                        <p>removes untracked files and performs a hard reset on git branch automatically to help resolve update issues</p>
+                                    </config-toggle-slider>
+
+                                    <config-template v-if="config.developer" label-for="git_reset_branches" label="Branches to reset">
+                                        <multiselect
+                                            v-model="config.git.resetBranches"
+                                            :multiple="true"
+                                            :options="githubBranches"
+                                        />
+                                        <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="githubBranchForceUpdate">
+                                        <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
+                                    </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div><!-- /col -->
@@ -546,8 +498,8 @@
 </template>
 
 <script>
-import { api, apiRoute } from '../api.js';
-import { mapGetters, mapState } from 'vuex';
+import { apiRoute } from '../api.js';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import RootDirs from './root-dirs.vue';
 import {
     AppLink,
@@ -559,6 +511,8 @@ import {
 } from './helpers';
 import { convertDateFormat } from '../utils/core.js';
 import { ToggleButton } from 'vue-js-toggle-button';
+import Multiselect from 'vue-multiselect';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 
 export default {
     name: 'config-general',
@@ -569,6 +523,7 @@ export default {
         ConfigTextboxNumber,
         ConfigToggleSlider,
         LanguageSelect,
+        Multiselect,
         ToggleButton,
         RootDirs
     },
@@ -584,13 +539,14 @@ export default {
         const privacyLevelOptions = [
             { value: 'high', text: 'HIGH' },
             { value: 'normal', text: 'NORMAL' },
-            { value: 'low', text: 'LOW' },
+            { value: 'low', text: 'LOW' }
         ];
 
         return {
             defaultPageOptions,
             privacyLevelOptions,
-            githubBranchesForced: []
+            githubBranchesForced: [],
+            resetBranchSelected: null
         };
     },
     // mounted() {
@@ -676,7 +632,7 @@ export default {
             if (!cpuPresets) {
                 return [];
             }
-            return Object.keys(cpuPresets).map(key => ({ value: cpuPresets[key], text: key }));
+            return Object.keys(cpuPresets).map(key => ({ value: key, text: key }));
         },
         defaultDeletedEpOptions() {
             const { config, configLoaded, getStatus } = this;
@@ -724,6 +680,9 @@ export default {
         }
     },
     methods: {
+        ...mapActions([
+            'setConfig'
+        ]),
         async githubBranchForceUpdate() {
 
             const response = await apiRoute('home/branchForceUpdate');
@@ -731,9 +690,44 @@ export default {
             if (response.data._size > 0) {
                 this.githubBranchesForced = response.data.resetBranches;
             }
+        },
+        async save() {
+            const { config, setConfig } = this;
+            debugger;
+
+            // Disable the save button until we're done.
+            this.saving = true;
+            const section = 'main';
+
+            try {
+                await setConfig({ section, config });
+                this.$snotify.success(
+                    'Saved general config',
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            } catch (error) {
+                this.$snotify.error(
+                    'Error while trying to save general config',
+                    'Error'
+                );
+            } finally {
+                this.saving = false;
+            }
         }
     }
 };
 </script>
 <style>
+.display-inline {
+    display: inline;
+}
+
+.multiselect {
+    margin-bottom: 10px;
+}
+
+.margin-bottom-5 {
+    margin-bottom: 5px;
+}
 </style>
