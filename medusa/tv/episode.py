@@ -1104,6 +1104,7 @@ class Episode(TV):
 
         data['file'] = {}
         data['file']['location'] = self.location
+        data['file']['name'] = os.path.basename(self.location)
         if self.file_size:
             data['file']['size'] = self.file_size
 

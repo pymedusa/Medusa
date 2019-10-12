@@ -70,6 +70,8 @@
                                 <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
+                            <div class="invert-table"><img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                            </div>
                         </h3>
                     </template>
 
@@ -87,9 +89,6 @@
                         <span v-else-if="props.column.field == 'content.hasTbn'">
                             <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
                         </span>
-                        <span v-else-if="props.column.label == 'Download'">
-                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
-                        </span>
 
                         <span v-else-if="props.column.label == 'Episode'">
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
@@ -104,7 +103,7 @@
                                    style="padding: 0; text-align: center; max-width: 60px;">
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene Absolute'">
+                        <span v-else-if="props.column.label == 'Scene Absolute'" class="align-center">
                             <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
                                    class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
                                    :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
@@ -118,7 +117,15 @@
                             {{props.row.title}}
                         </span>
 
-                        <span v-else-if="props.column.label == 'Subtitles'" class="subtitles-container">
+                        <span v-else-if="props.column.label == 'File'">
+                            <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Download'">
+                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
                                     <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex, flag)">
@@ -340,6 +347,7 @@ export default {
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
+                sortable: false,
                 hidden: getCookie('displayShow-hide-field-Air date')
             }, {
                 label: 'Download',
@@ -393,7 +401,6 @@ export default {
             return themeName || 'light';
         },
         orderSeasons() {
-            // TODO: Make use of the getOverviewStatus function in the const module, to properly map the statuses.
             const { config, filterByOverviewStatus, invertTable, show } = this;
 
             if (!show.seasons) {
@@ -1363,7 +1370,7 @@ td.col-footer {
     margin-right: 2px;
 }
 
-.subtitles-container {
+.align-center {
     display: flex;
     justify-content: center;
 }
