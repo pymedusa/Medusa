@@ -13,6 +13,7 @@
 - Fixed provider beyond-hd due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider bj-share due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed exception when there is no anime XML ([#7256](https://github.com/pymedusa/Medusa/pull/7256))
 
 -----
 
