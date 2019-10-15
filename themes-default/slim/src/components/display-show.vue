@@ -47,20 +47,12 @@
                                     selectAllByGroup: true
                                 }"
                                 :row-style-class="rowStyleClassFn"
+                                :column-filter-options="{
+                                    enabled: true
+                                }"
                                 ref="table-seasons"
                                 @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
                                 @on-per-page-change="updatePaginationPerPage($event.currentPerPage)">
-                    <div slot="table-actions">
-                        <!-- Drowdown with checkboxes for showing / hiding table headers -->
-                        <div class="button-group pull-right">
-                            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cog" aria-hidden="false">Select Columns</span> <span class="caret" /></button>
-                            <ul class="dropdown-menu" style="top: auto; left: auto;">
-                                <li v-for="(column, index) in columns" :key="index">
-                                    <a href="#" class="small" tabIndex="-1" @click="toggleColumn( index, $event )"><input :checked="!column.hidden" type="checkbox">{{column.label}}</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
@@ -126,7 +118,7 @@
                         <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
                             <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
                                 <div v-for="flag in props.row.subtitles" :key="flag">
-                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex, flag)">
+                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
                                     <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                                 </div>
                             </div>
@@ -143,7 +135,7 @@
                         <span v-else-if="props.column.field == 'search'">
                             <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
                             <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
-                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row.season, props.row.episode, props.row.originalIndex)">
+                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                         </span>
 
                         <span v-else>
@@ -312,7 +304,7 @@ export default {
                 label: 'Abs. #',
                 field: 'absoluteNumber',
                 type: 'number',
-                hidden: getCookie('displayShow-hide-field-Absolute Number')
+                hidden: getCookie('displayShow-hide-field-Abs. #')
             }, {
                 label: 'Scene',
                 field: row => {
@@ -337,7 +329,7 @@ export default {
                 sortFn(x, y) {
                     return (x < y ? -1 : (x > y ? 1 : 0));
                 },
-                hidden: getCookie('displayShow-hide-field-Scene Absolute')
+                hidden: getCookie('displayShow-hide-field-Scene Abs. #')
             }, {
                 label: 'Title',
                 field: 'title',
@@ -637,11 +629,11 @@ export default {
         addFileSize(headerRow) {
             return humanFileSize(headerRow.episodes.reduce((a, b) => a + (b.file.size || 0), 0));
         },
-        searchSubtitle(event, season, episode, rowIndex, lang) {
+        searchSubtitle(event, episode, lang) {
             const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
-                propsData: { show, season, episode, key: rowIndex, lang },
+                propsData: { show, season: episode.season, episode: episode.episode, key: episode.originalIndex, lang },
                 parent: this
             });
 
@@ -649,12 +641,12 @@ export default {
             instance.$on('update', event => {
                 // This could be replaced by the generic websocket updates in future.
                 if (event.reason === 'new subtitles found') {
-                    getEpisodes({ id, indexer, season });
+                    getEpisodes({ id, indexer, season: episode.season });
                 }
             });
 
             const node = document.createElement('div');
-            this.$refs['table-seasons'].$refs[`row-${rowIndex}`][0].after(node);
+            this.$refs['table-seasons'].$refs[`row-${episode.originalIndex}`][0].after(node);
             instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
@@ -968,10 +960,6 @@ export default {
             }
 
             return bindData;
-        },
-        toggleColumn(index) {
-            // Set hidden to inverse of what it currently is
-            this.$set(this.columns[index], 'hidden', !this.columns[index].hidden);
         },
         getCookie(key) {
             const cookie = this.$cookies.get(key);
@@ -1384,4 +1372,28 @@ td.col-footer {
     display: flex;
     justify-content: center;
 }
+
+.vgt-dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-clip: padding-box;
+    border-radius: 4px;
+}
+
+.vgt-dropdown-menu > li > span {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    white-space: nowrap;
+}
+
 </style>
