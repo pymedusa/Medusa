@@ -2810,13 +2810,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     color: #333;
 }
 
-.vgt-dropdown-menu > li > a:hover,
-.vgt-dropdown-menu > li > a:focus {
-    color: rgb(38, 38, 38);
-    text-decoration: none;
-    background-color: rgb(245, 245, 245);
-}
-
 .form-control {
     color: rgb(0, 0, 0);
 }
