@@ -24,11 +24,13 @@ export default {
     },
     computed: {
         ...mapState({
-            shows: state => state.shows.shows
+            shows: state => state.shows.shows,
+            config: state => state.config
         }),
         ...mapGetters({
-            getShowById: 'getShowById',
-            show: 'getCurrentShow'
+            show: 'getCurrentShow',
+            effectiveIgnored: 'effectiveIgnored',
+            effectiveRequired: 'effectiveRequired'
         }),
         indexer() {
             return this.$route.query.indexername;
@@ -49,24 +51,46 @@ export default {
         }),
         /**
          * Attaches IMDB tooltip,
-         * Moves summary and checkbox controls backgrounds
          */
         reflowLayout() {
-            this.$nextTick(() => {
-                this.moveSummaryBackground();
-            });
-
             attachImdbTooltip(); // eslint-disable-line no-undef
         },
-        /**
-         * Adjust the summary background position and size on page load and resize
-         */
-        moveSummaryBackground() {
-            const height = $('#summary').height() + 10;
-            const top = $('#summary').offset().top + 5;
-            $('#summaryBackground').height(height);
-            $('#summaryBackground').offset({ top, left: 0 });
-            $('#summaryBackground').show();
+        getReleaseNameClasses(name) {
+            const { effectiveIgnored, effectiveRequired, show } = this;
+            const classes = [];
+
+            if (effectiveIgnored(show).map(word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length > 0) {
+                classes.push('global-ignored');
+            }
+
+            if (effectiveRequired(show).map(word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length > 0) {
+                classes.push('global-required');
+            }
+
+            if (this.$store.state.search.filters.undesired.map(word => {
+                return name.toLowerCase().includes(word.toLowerCase());
+            }).filter(x => x === true).length > 0) {
+                classes.push('global-undesired');
+            }
+
+            /** Disabled for now. Because global + series ignored can be concatenated or excluded. So it's not that simple to color them. */
+            // if (this.show.config.release.ignoredWords.map( word => {
+            //     return name.toLowerCase().includes(word.toLowerCase());
+            // }).filter(x => x === true).length) {
+            //     classes.push('show-ignored');
+            // }
+
+            // if (this.show.config.release.requiredWords.map( word => {
+            //     return name.toLowerCase().includes(word.toLowerCase());
+            // }).filter(x => x === true).length) {
+            //     classes.push('show-required');
+            // }
+
+            return classes.join(' ');
         }
     },
     mounted() {
@@ -362,5 +386,25 @@ export default {
 </script>
 
 <style>
+span.global-ignored {
+    color: red;
+}
 
+span.show-ignored {
+    color: red;
+    font-style: italic;
+}
+
+span.global-required {
+    color: green;
+}
+
+span.show-required {
+    color: green;
+    font-style: italic;
+}
+
+span.global-undesired {
+    color: orange;
+}
 </style>

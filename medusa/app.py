@@ -196,7 +196,6 @@ class MedusaApp(object):
         self.SORT_ARTICLE = False
         self.DEBUG = False
         self.DBDEBUG = False
-        self.DISPLAY_ALL_SEASONS = True
         self.DEFAULT_PAGE = 'home'
         self.SEEDERS_LEECHERS_IN_NOTIFY = True
         self.SHOW_LIST_ORDER = ['Anime', 'Series']

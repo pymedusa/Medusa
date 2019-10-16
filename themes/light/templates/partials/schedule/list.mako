@@ -63,7 +63,7 @@
             </td>
             <td class="triggerhighlight">
                 <% has_plot = 'has-plot' if cur_result['description'] else '' %>
-                <plot-info ${has_plot} show-slug="${indexer_id_to_name(cur_indexer) + str(cur_result['showid'])}" season="${str(cur_result['season'])}" episode="${str(cur_result['episode'])}"></plot-info>
+                <plot-info description="${cur_result['description']}" show-slug="${indexer_id_to_name(cur_indexer) + str(cur_result['showid'])}" season="${str(cur_result['season'])}" episode="${str(cur_result['episode'])}"></plot-info>
                 ${cur_result['name']}
             </td>
             <td align="center" class="triggerhighlight">
