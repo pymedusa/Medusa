@@ -12979,9 +12979,9 @@ vue-eslint-parser@^5.0.0:
     esquery "^1.0.1"
     lodash "^4.17.11"
 
-"vue-good-table@https://github.com/p0psicles/vue-good-table/archive/master.tar.gz":
+"vue-good-table@git+https://github.com/p0psicles/vue-good-table#25a6f282231426fbbdb44d8a6d1927e8abf21e4d":
   version "2.16.3"
-  resolved "https://github.com/p0psicles/vue-good-table/archive/master.tar.gz#d1560887a8778ebef7365115fc48084c9cc5d062"
+  resolved "git+https://github.com/p0psicles/vue-good-table#25a6f282231426fbbdb44d8a6d1927e8abf21e4d"
   dependencies:
     date-fns "2.0.0-alpha.7"
     diacriticless "1.0.1"
