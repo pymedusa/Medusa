@@ -5,10 +5,17 @@
 
 #### Improvements
 - Shows without any episodes can now be added ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
+- Vueified displayShow ([#6709](https://github.com/pymedusa/Medusa/pull/6709))
+  - New subtitles search ui component
+  - Direct toggle of show options on displayShow page like the checks for Subtitles, Season Folders, Paused, etc.
+  - Mark episodes as "watched"
+  - Added pagination
+  - Added search field, that searches columns like Title, File and Episode number
 
 #### Fixes
 - Fixed AnimeBytes daily search, for multi-ep results ([#7190](https://github.com/pymedusa/Medusa/pull/7190))
 - Fixed rare UnicodeDecodeError when parsing titles with Python 2.7 ([#7192](https://github.com/pymedusa/Medusa/pull/7192))
+- Fixed displayShow loading of large shows with many seasons like "the daily show" ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
 
 -----
 
