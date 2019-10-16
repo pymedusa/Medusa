@@ -84,7 +84,7 @@
                             <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
                         </span>
 
-                        <span v-else-if="props.column.label == 'Scene'">
+                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
                             <input type="text" :placeholder="`${props.formattedRow[props.column.field].season}x${props.formattedRow[props.column.field].episode}`" size="6" maxlength="8"
                                    class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
                                    :id="`sceneSeasonXEpisode_${show.id[show.indexer]}_${props.row.season}_${props.row.episode}`"
