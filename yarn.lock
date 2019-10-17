@@ -210,10 +210,10 @@ commander@2.14.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.14.1.tgz#2235123e37af8ca3c65df45b026dbd357b01b9aa"
   integrity sha512-+YR16o3rK53SmWHU3rEM3tPAh2rwb1yPcQX5irVn7mb0gXbwuCCrnkbV5+PBfETdfg1vui07nM6PCG1zndcjQw==
 
-commander@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.1.tgz#4595aec3530525e671fb6f85fb173df8ff8bf57a"
-  integrity sha512-UNgvDd+csKdc9GD4zjtkHKQbT8Aspt2jCBqNSPp53vAS0L1tS9sXB2TCEOPHJ7kt9bN/niWkYj8T3RQSoMXdSQ==
+commander@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.2.tgz#6837c3fb677ad9933d1cfba42dd14d5117d6b39e"
+  integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
 
 commander@^2.7.1:
   version "2.20.0"
@@ -351,10 +351,10 @@ dredd-transactions@9.0.6:
     fury-adapter-swagger "0.27.2"
     uri-template "1.0.1"
 
-dredd@12.0.7:
-  version "12.0.7"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.0.7.tgz#89166d3dd09cbae7ab345b88bb879cf1c8bf2c83"
-  integrity sha512-Le5PgRPqfDOwUEAbbF9RDtsGnuvAd6+abgTHCYZpIKXmnKQen9+Yrvkw6pewuTHG0CbnjJQVZ8OzI/cVKAavhQ==
+dredd@12.1.0:
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.1.0.tgz#1201e066d4d0512abcaca6bcc5d1a07206b121ef"
+  integrity sha512-kKTZpTjKYN4Q7+N6NCIBI0dkh14HCz7f1emqCjqV1R7s1wm0Hfp93Pry2eHyx3narZXs6Izvpn7LknTJWM4bpg==
   dependencies:
     async "3.1.0"
     caseless "0.12.0"
@@ -362,7 +362,7 @@ dredd@12.0.7:
     clone "2.1.2"
     cross-spawn "7.0.0"
     dredd-transactions "9.0.6"
-    gavel "8.0.5"
+    gavel "8.1.1"
     glob "7.1.4"
     html "1.0.0"
     htmlencode "0.0.4"
@@ -572,15 +572,15 @@ fury@3.0.0-beta.12:
   dependencies:
     api-elements "^0.2.2"
 
-gavel@8.0.5:
-  version "8.0.5"
-  resolved "https://registry.yarnpkg.com/gavel/-/gavel-8.0.5.tgz#b4502bf18b3436ed6a4b6716db41d2ce089db254"
-  integrity sha512-Yqha3C83yY3QNpsaFoh+Qda82rhEnHd3zkMc7gA1yKf6KIw6SW2XGnS2tPbDYI1A1W4eoLsGF40rI1Wipdq/2g==
+gavel@8.1.1:
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/gavel/-/gavel-8.1.1.tgz#c3f82e5ef468661bda9ff7800c58c51e979b3477"
+  integrity sha512-TgMghBKUOL7/zaNvn71X+e7jg16fL1lycDtltrfiSgGhHKNQHN9+77kkEpBVkwCl5kERId3kFlhjqU9W7l4ODw==
   dependencies:
     amanda "1.0.1"
     caseless "0.12.0"
     clone "2.1.2"
-    commander "3.0.1"
+    commander "3.0.2"
     content-type "1.0.4"
     curl-trace-parser "0.0.10"
     deep-equal "1.1.0"

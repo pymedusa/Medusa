@@ -8,7 +8,7 @@ export const apiKey = document.body.getAttribute('api-key');
  */
 export const apiRoute = axios.create({
     baseURL: webRoot + '/',
-    timeout: 30000,
+    timeout: 60000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'

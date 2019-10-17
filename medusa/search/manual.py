@@ -86,23 +86,31 @@ def get_episodes(search_thread, searchstatus):
     for ep_obj in search_thread.segment:
         ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
-            'indexer_id': series_obj.indexer,
-            'series_id': series_obj.series_id,
-            'episode': ep.episode,
-            'episodeindexerid': ep.indexerid,
-            'season': ep.season,
-            'searchstatus': searchstatus,
-            'status': statusStrings[ep.status],
-            # TODO: `quality_name` and `quality_style` should both be removed
-            # when converting forced/manual episode search to Vue (use QualityPill component directly)
-            'quality_name': Quality.qualityStrings[ep.quality],
-            'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
-            'overview': Overview.overviewStrings[series_obj.get_overview(
-                ep.status, ep.quality,
-                manually_searched=ep.manually_searched
-            )],
-            'queuetime': search_thread.queue_time.isoformat(),
-            'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None,
+            'show': {
+                'indexer': series_obj.indexer,
+                'series_id': series_obj.series_id,
+                'slug': series_obj.slug
+            },
+            'episode': {
+                'episode': ep.episode,
+                'season': ep.season,
+                'slug': ep.slug,
+                'indexerid': ep.indexerid,
+                'status': statusStrings[ep.status],
+                # TODO: `quality_name` and `quality_style` should both be removed
+                # when converting forced/manual episode search to Vue (use QualityPill component directly)
+                'quality_name': Quality.qualityStrings[ep.quality],
+                'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
+                'overview': Overview.overviewStrings[series_obj.get_overview(
+                    ep.status, ep.quality,
+                    manually_searched=ep.manually_searched
+                )]
+            },
+            'search': {
+                'status': searchstatus,
+                'queuetime': search_thread.queue_time.isoformat(),
+                'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None
+            }
         })
 
     return results
@@ -163,11 +171,11 @@ def collect_episodes_from_search_thread(series_obj):
             continue
 
         if isinstance(search_thread, ManualSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
+            if not [x for x in episodes if x['episode']['indexerid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += get_episodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
-            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexerid']]:
+            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episode']['indexerid']]:
                 episodes += get_episodes(search_thread, searchstatus)
 
     return episodes

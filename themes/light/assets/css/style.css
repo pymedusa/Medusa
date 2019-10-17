@@ -1383,6 +1383,10 @@ ul.tags li a {
     background-color: rgb(195, 227, 200);
 }
 
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
 .qual {
     background-color: rgb(255, 218, 138);
 }
@@ -2784,6 +2788,26 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+/* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+
+.vgt-dropdown-menu {
+    background-color: rgb(245, 241, 228);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+.vgt-dropdown-menu > li > a:hover,
+.vgt-dropdown-menu > li > a:focus {
+    color: rgb(38, 38, 38);
+    text-decoration: none;
+    background-color: rgb(245, 245, 245);
+}
+
+.vgt-dropdown-menu > li > span {
+    padding: 4px 36px 4px 20px;
+    color: #333;
 }
 
 .form-control {

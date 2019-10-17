@@ -565,7 +565,7 @@ class DataGenerator(object):
         section_data['layout']['history'] = app.HISTORY_LAYOUT
         section_data['layout']['home'] = app.HOME_LAYOUT
         section_data['layout']['show'] = {}
-        section_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
+
         section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
         section_data['layout']['wide'] = bool(app.LAYOUT_WIDE)

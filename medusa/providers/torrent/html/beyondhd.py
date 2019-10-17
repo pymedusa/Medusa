@@ -111,14 +111,14 @@ class BeyondHDProvider(TorrentProvider):
                 cells = result('td')
 
                 try:
-                    link = cells[1].find('a')
+                    link = cells[1].find('div')
                     download_url = urljoin(self.url, cells[2].find('a')['href'])
                     title = link.get_text(strip=True)
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(cells[6].find('span').get_text())
-                    leechers = int(cells[7].find('span').get_text())
+                    seeders = int(cells[5].find('span').get_text())
+                    leechers = int(cells[6].find('span').get_text())
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -128,10 +128,10 @@ class BeyondHDProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[5].find('span').get_text()
+                    torrent_size = cells[4].find('span').get_text()
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[4].find('span').get_text()
+                    pubdate_raw = cells[3].find('span').get_text()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {

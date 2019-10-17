@@ -39,7 +39,6 @@ export default {
         if (!this.enabled) {
             return;
         }
-
         const { opacity, slug, offset } = this;
         if (slug) {
             const imgUrl = `${webRoot}/api/v2/series/${slug}/asset/fanart?api_key=${apiKey}`;
