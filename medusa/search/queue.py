@@ -105,7 +105,7 @@ class SearchQueue(generic_queue.GenericQueue):
 
 
 class ForcedSearchQueue(generic_queue.GenericQueue):
-    """Search Queueu used for Manual, Failed Search."""
+    """Search Queue used for Manual, (forced) Backlog and Failed Search."""
 
     def __init__(self):
         """Initialize ForcedSearch Queue."""
@@ -346,7 +346,7 @@ class ManualSearchQueueItem(generic_queue.QueueItem):
         self.manual_search_type = manual_search_type
 
     def run(self):
-        """Run forced search thread."""
+        """Run manual search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
@@ -551,6 +551,9 @@ class BacklogQueueItem(generic_queue.QueueItem):
                 self.success = False
                 log.debug(traceback.format_exc())
 
+        # Keep a list with the 100 last executed searches
+        fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
+
         if self.success is None:
             self.success = False
 
@@ -648,7 +651,7 @@ class FailedQueueItem(generic_queue.QueueItem):
             self.success = False
             log.info(traceback.format_exc())
 
-        # ## Keep a list with the 100 last executed searches
+        # Keep a list with the 100 last executed searches
         fifo(SEARCH_HISTORY, self, SEARCH_HISTORY_SIZE)
 
         if self.success is None:

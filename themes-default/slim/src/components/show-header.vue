@@ -23,7 +23,7 @@
                 </div>
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
-                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
+                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Show' : 'Hide' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
@@ -76,7 +76,7 @@
                             <span
                                 v-if="show.rating.imdb && show.rating.imdb.rating"
                                 class="imdbstars"
-                                :qtip-content="show.rating.imdb.rating + ' / 10 Stars<br> ' + show.rating.imdb.votes + ' Votes'"
+                                :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
                                 <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
                             </span>
@@ -122,7 +122,7 @@
 
                     <div class="row">
                         <!-- Show Summary -->
-                        <div id="summary" class="col-md-12">
+                        <div v-if="configLoaded" id="summary" class="col-md-12">
                             <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
@@ -257,14 +257,14 @@
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                     <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" /></td></tr>
+                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
                                     <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" /></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" /></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" /></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" /></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" /></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" /></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -277,28 +277,25 @@
             <div id="col-show-episodes-controls" class="col-md-12">
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
-                        <div id="key-padding" class="pull-left top-5">
-                            <template v-if="show.seasons">
-                                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')"> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                                <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')"> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                                <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')"> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')"> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')"> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
-                            </template>
-                            <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
-                            <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
+                        <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
+                            <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
+                                <span :class="status.id">
+                                    <input type="checkbox" :id="status.id" v-model="status.checked" @change="$emit('update-overview-status', overviewStatus)">
+                                    {{status.name}}: <b>{{episodeSummary[status.name]}}</b>
+                                </span>
+                            </label>
                         </div>
                         <div class="pull-lg-right top-5">
 
-                            <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change status to:</option>
+                            <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                <option :value="'Change status to:'">Change status to:</option>
                                 <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
                                     {{ status.name }}
                                 </option>
                             </select>
 
-                            <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change quality to:</option>
+                            <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                <option :value="'Change quality to:'">Change quality to:</option>
                                 <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
                                     {{ quality.name }}
                                 </option>
@@ -319,11 +316,11 @@
 <script>
 import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
-import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
 import { mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
+import { attachImdbTooltip } from '../utils/jquery';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 /**
@@ -391,7 +388,36 @@ export default {
     },
     data() {
         return {
-            jumpToSeason: 'jump'
+            jumpToSeason: 'jump',
+            selectedStatus: 'Change status to:',
+            selectedQuality: 'Change quality to:',
+            overviewStatus: [
+                {
+                    id: 'wanted',
+                    checked: true,
+                    name: 'Wanted'
+                },
+                {
+                    id: 'allowed',
+                    checked: true,
+                    name: 'Allowed'
+                },
+                {
+                    id: 'preferred',
+                    checked: true,
+                    name: 'Preferred'
+                },
+                {
+                    id: 'skipped',
+                    checked: true,
+                    name: 'Skipped'
+                },
+                {
+                    id: 'snatched',
+                    checked: true,
+                    name: 'Snatched'
+                }
+            ]
         };
     },
     computed: {
@@ -403,10 +429,12 @@ export default {
             displaySpecials: state => state.config.layout.show.specials,
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
-            search: state => state.search
+            search: state => state.search,
+            configLoaded: state => state.config.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',
+            getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
         }),
@@ -427,6 +455,7 @@ export default {
             if (!show.indexer) {
                 return;
             }
+
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
@@ -437,6 +466,7 @@ export default {
             if (!showQueueStatus) {
                 return [];
             }
+
             return showQueueStatus.filter(status => status.active === true);
         },
         showGenres() {
@@ -448,10 +478,11 @@ export default {
             if (genres) {
                 result = dedupeGenres(genres.split('|'));
             }
+
             return result;
         },
         episodeSummary() {
-            const { show } = this;
+            const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
                 Skipped: 0,
@@ -462,14 +493,11 @@ export default {
                 Snatched: 0,
                 'Snatched (Proper)': 0,
                 'Snatched (Best)': 0,
-                Unset: 0,
-                Archived: 0
+                Unset: 0
             };
-
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
-                    // FIXME: with the overview status.
-                    summary[episode.status] += 1;
+                    summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
                 });
             });
             return summary;
@@ -501,88 +529,30 @@ export default {
             return show.seasonCount.map(season => season.season);
         }
     },
+    mounted() {
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
+        });
+        this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
+            // Show has changed. Meaning we should reflow the layout.
+            if (slug) {
+                const { reflowLayout } = this;
+                this.$nextTick(() => reflowLayout());
+            }
+        }, { deep: true });
+    },
     methods: {
         combineQualities,
         humanFileSize,
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
-            });
-
-            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
-        },
         changeStatusClicked() {
-            const { setQuality } = this;
-
-            const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
-
-            $('.epCheck').each((index, element) => {
-                if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
-                }
-            });
-
-            if (epArr.length === 0) {
-                return false;
-            }
-
-            if (quality) {
-                setQuality(quality, showSlug, epArr);
-            }
-
-            if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
-            }
-        },
-        showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
-                if (status) {
-                    $(element).show();
-                } else {
-                    $(element).hide();
-                }
-            });
-
-            // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
-                let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
-                    numRows++;
-                });
-                if (numRows === 0) {
-                    $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
-                } else {
-                    $(element).show();
-                    $('#' + seasonNo + '-cols').show();
-                }
-            });
-        },
-        selectEpisodesClicked() {
-            // Selects all visible episode checkboxes
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = true;
-            });
-        },
-        clearEpisodeSelectionClicked() {
-            // Clears all visible episode checkboxes and the season selectors
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = false;
+            const { changeStatusOptions, changeQualityOptions, selectedStatus, selectedQuality } = this;
+            this.$emit('update', {
+                newStatus: selectedStatus,
+                newQuality: selectedQuality,
+                statusOptions: changeStatusOptions,
+                qualityOptions: changeQualityOptions
             });
         },
         toggleSpecials() {
@@ -596,9 +566,7 @@ export default {
                     }
                 }
             };
-            this.$store.dispatch('setConfig', config).then(() => {
-                window.location.reload();
-            });
+            this.$store.dispatch('setConfig', config);
         },
         reverse(array) {
             return array ? array.slice().reverse() : [];
@@ -608,6 +576,49 @@ export default {
         },
         getCountryISO2ToISO3(country) {
             return getLanguage(country).iso639_2en;
+        },
+        toggleConfigOption(option) {
+            const { show } = this;
+            const { config } = show;
+            this.show.config[option] = !this.show.config[option];
+            const data = {
+                config: { [option]: config[option] }
+            };
+            api.patch('series/' + show.id.slug, data).then(_ => {
+                this.$snotify.success(
+                    `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "' + show.title + '": ' + error.message || 'Unknown',
+                    'Error'
+                );
+            });
+        },
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+            });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
+        moveSummaryBackground() {
+            const summary = $('#summary');
+            // A hack for now, to bail if the page hasn't fully been rendered yet.
+            if (Object.keys(summary).length === 0) {
+                return;
+            }
+
+            const height = summary.height() + 10;
+            const top = summary.offset().top + 5;
+            $('#summaryBackground').height(height);
+            $('#summaryBackground').offset({ top, left: 0 });
+            $('#summaryBackground').show();
         }
     },
     watch: {
@@ -665,7 +676,7 @@ span.required {
 }
 
 span.preferred {
-    color: blue;
+    color: rgb(41, 87, 48);
 }
 
 span.undesired {
@@ -755,6 +766,76 @@ div#col-show-summary {
     #col-show-summary img.show-image {
         max-width: 280px;
     }
+}
+
+.unaired {
+    background-color: rgb(245, 241, 228);
+}
+
+.skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.preferred {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
+.allowed {
+    background-color: rgb(255, 218, 138);
+}
+
+.wanted {
+    background-color: rgb(255, 176, 176);
+}
+
+.snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.downloaded {
+    background-color: rgb(195, 227, 200);
+}
+
+.failed {
+    background-color: rgb(255, 153, 153);
+}
+
+span.unaired {
+    color: rgb(88, 75, 32);
+}
+
+span.skipped {
+    color: rgb(29, 80, 104);
+}
+
+span.preffered {
+    color: rgb(41, 87, 48);
+}
+
+span.allowed {
+    color: rgb(118, 81, 0);
+}
+
+span.wanted {
+    color: rgb(137, 0, 0);
+}
+
+span.snatched {
+    color: rgb(101, 33, 100);
+}
+
+span.unaired b,
+span.skipped b,
+span.preferred b,
+span.allowed b,
+span.wanted b,
+span.snatched b {
+    color: rgb(0, 0, 0);
+    font-weight: 800;
 }
 
 span.global-filter {

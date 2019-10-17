@@ -72,7 +72,7 @@ class ConfigGeneral(Config):
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
-                    display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
+                    subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
                     dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None, ssl_ca_bundle=None):
 
         results = []
@@ -119,7 +119,6 @@ class ConfigGeneral(Config):
         app.SSL_CA_BUNDLE = ssl_ca_bundle
         # app.LOG_DIR is set in config.change_LOG_DIR()
         app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
-        app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
         app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)

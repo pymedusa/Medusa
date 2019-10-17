@@ -121,7 +121,7 @@ class BTDBProvider(TorrentProvider):
                     size = convert_size(torrent_size, default=-1)
 
                     pubdate_raw = spans[2].get_text()
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,
