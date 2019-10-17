@@ -163,7 +163,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="theme_name" label="Display theme">
-                                        <select id="theme_name" name="theme_name" v-model="config.themeName">
+                                        <select id="theme_name" name="theme_name" v-model="config.themeName" @change="save()">
                                             <option :value="option.value" v-for="option in availableThemesOptions"
                                                     :key="option.value">{{ option.text }}
                                             </option>
@@ -181,10 +181,6 @@
                                     <config-textbox-number v-model="config.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0" >
                                         <p>Transparency of the fanart in the background</p>
                                     </config-textbox-number>
-
-                                    <config-toggle-slider v-model="config.layout.show.allSeasons" label="Show all seasons" id="display_all_seasons">
-                                        <p>on the show summary page</p>
-                                    </config-toggle-slider>
 
                                     <config-toggle-slider v-model="config.layout.show.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
