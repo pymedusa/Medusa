@@ -8,6 +8,7 @@ export { default as Backstretch } from './backstretch.vue';
 export { default as Config } from './config.vue';
 export { default as ConfigPostProcessing } from './config-post-processing.vue';
 export { default as ConfigNotifications } from './config-notifications.vue';
+export { default as ConfigSearch } from './config-search.vue';
 export { default as EditShow } from './edit-show.vue';
 export { default as DisplayShow } from './display-show.vue';
 export { default as Home } from './home.vue';

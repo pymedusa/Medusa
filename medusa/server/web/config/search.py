@@ -29,11 +29,12 @@ class ConfigSearch(Config):
 
     def index(self):
         """
-        Render the Search configuration page
-        """
-        t = PageTemplate(rh=self, filename='config_search.mako')
+        Render the Search configuration page.
 
-        return t.render(controller='config', action='search')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
 
     def saveSearch(self, use_nzbs=None, use_torrents=None, nzb_dir=None, sab_username=None, sab_password=None,
                    sab_apikey=None, sab_category=None, sab_category_anime=None, sab_category_backlog=None,
