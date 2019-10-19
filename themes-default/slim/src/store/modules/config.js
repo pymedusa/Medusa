@@ -38,67 +38,6 @@ const state = {
     gitUsername: null,
     branch: null,
     commitHash: null,
-    indexers: {
-        config: {
-            main: {
-                externalMappings: {},
-                statusMap: {},
-                traktIndexers: {},
-                validLanguages: [],
-                langabbvToId: {}
-            },
-            indexers: {
-                tvdb: {
-                    apiParams: {
-                        useZip: null,
-                        language: null
-                    },
-                    baseUrl: null,
-                    enabled: null,
-                    icon: null,
-                    id: null,
-                    identifier: null,
-                    mappedTo: null,
-                    name: null,
-                    scene_loc: null, // eslint-disable-line camelcase
-                    showUrl: null,
-                    xemOrigin: null
-                },
-                tmdb: {
-                    apiParams: {
-                        useZip: null,
-                        language: null
-                    },
-                    baseUrl: null,
-                    enabled: null,
-                    icon: null,
-                    id: null,
-                    identifier: null,
-                    mappedTo: null,
-                    name: null,
-                    scene_loc: null, // eslint-disable-line camelcase
-                    showUrl: null,
-                    xemOrigin: null
-                },
-                tvmaze: {
-                    apiParams: {
-                        useZip: null,
-                        language: null
-                    },
-                    baseUrl: null,
-                    enabled: null,
-                    icon: null,
-                    id: null,
-                    identifier: null,
-                    mappedTo: null,
-                    name: null,
-                    scene_loc: null, // eslint-disable-line camelcase
-                    showUrl: null,
-                    xemOrigin: null
-                }
-            }
-        }
-    },
     sourceUrl: null,
     rootDirs: [],
     fanartBackgroundOpacity: null,
@@ -247,22 +186,6 @@ const getters = {
             return arrayUnique(globalRequired.concat(seriesRequired));
         }
         return arrayExclude(globalRequired, seriesRequired);
-    },
-    // Get an indexer's name using its ID.
-    indexerIdToName: state => indexerId => {
-        if (!indexerId) {
-            return undefined;
-        }
-        const { indexers } = state.indexers.config;
-        return Object.keys(indexers).find(name => indexers[name].id === parseInt(indexerId, 10));
-    },
-    // Get an indexer's ID using its name.
-    indexerNameToId: state => indexerName => {
-        if (!indexerName) {
-            return undefined;
-        }
-        const { indexers } = state.indexers.config;
-        return indexers[name].id;
     }
 };
 

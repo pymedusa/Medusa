@@ -652,9 +652,6 @@ class DataGenerator(object):
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 
-        section_data['indexers'] = {}
-        section_data['indexers']['config'] = get_indexer_config()
-
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
         section_data['defaultPage'] = app.DEFAULT_PAGE
@@ -1122,7 +1119,7 @@ class DataGenerator(object):
 
     @staticmethod
     def data_postprocessing():
-        """System information."""
+        """Postprocessing information."""
         section_data = {}
 
         section_data['naming'] = {}
@@ -1161,3 +1158,8 @@ class DataGenerator(object):
         section_data['multiEpStrings'] = common.MULTI_EP_STRINGS
 
         return section_data
+
+    @staticmethod
+    def data_indexers():
+        """Indexers config information."""
+        return get_indexer_config()
