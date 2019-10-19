@@ -23,19 +23,19 @@
                                             <span>Scheduled Postprocessor</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postProcessing.processAutomatically" sync />
+                                            <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postprocessing.processAutomatically" sync />
                                             <p>Enable the scheduled post processor to scan and process any files in your <i>Post Processing Dir</i>?</p>
                                             <div class="clear-left"><p><b>NOTE:</b> Do not use if you use an external Post Processing script</p></div>
                                         </div>
                                     </div>
 
-                                    <div v-show="postProcessing.processAutomatically" id="post-process-toggle-wrapper">
+                                    <div v-show="postprocessing.processAutomatically" id="post-process-toggle-wrapper">
                                         <div class="form-group">
                                             <label for="tv_download_dir" class="col-sm-2 control-label">
                                                 <span>Post Processing Dir</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postProcessing.showDownloadDir" @update="postProcessing.showDownloadDir = $event" />
+                                                <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
                                                 <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
                                                 <div class="clear-left"><p><b>NOTE:</b> Please use seperate downloading and completed folders in your download client if possible.</p></div>
                                             </div>
@@ -46,12 +46,12 @@
                                                 <span>Processing Method</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <select id="naming_multi_ep" name="naming_multi_ep" v-model="postProcessing.processMethod" class="form-control input-sm">
+                                                <select id="naming_multi_ep" name="naming_multi_ep" v-model="postprocessing.processMethod" class="form-control input-sm">
                                                     <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
                                                 </select>
                                                 <span>What method should be used to put files into the library?</span>
                                                 <p><b>NOTE:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
-                                                <p v-if="postProcessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
+                                                <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                             </div>
                                         </div>
 
@@ -60,7 +60,7 @@
                                                 <span>Auto Post-Processing Frequency</span>
                                             </label>
                                             <div class="col-sm-10 content">
-                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model.number="postProcessing.autoPostprocessorFrequency" class="form-control input-sm input75">
+                                                <input type="number" min="10" step="1" name="autopostprocessor_frequency" id="autopostprocessor_frequency" v-model.number="postprocessing.autoPostprocessorFrequency" class="form-control input-sm input75">
                                                 <span>Time in minutes to check for new files to auto post-process (min 10)</span>
                                             </div>
                                         </div>
@@ -81,7 +81,7 @@
                                             <span>Postpone post processing</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postProcessing.postponeIfSyncFiles" sync />
+                                            <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postprocessing.postponeIfSyncFiles" sync />
                                             <span>Wait to process a folder if sync files are present.</span>
                                         </div>
                                     </div>
@@ -91,7 +91,7 @@
                                             <span>Sync File Extensions</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postProcessing.syncFiles" @change="onChangeSyncFiles" />
+                                            <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
                                             <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
                                         </div>
                                     </div>
@@ -101,7 +101,7 @@
                                             <span>Postpone if no subtitle</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postProcessing.postponeIfNoSubs" sync />
+                                            <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postprocessing.postponeIfNoSubs" sync />
                                             <span>Wait to process a file until subtitles are present</span><br>
                                             <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
                                             <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
@@ -114,7 +114,7 @@
                                             <span>Rename Episodes</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="rename_episodes" name="rename_episodes" v-model="postProcessing.renameEpisodes" sync />
+                                            <toggle-button :width="45" :height="22" id="rename_episodes" name="rename_episodes" v-model="postprocessing.renameEpisodes" sync />
                                             <span>Rename episode using the Episode Naming settings?</span>
                                         </div>
                                     </div>
@@ -124,7 +124,7 @@
                                             <span>Create missing show directories</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postProcessing.createMissingShowDirs" sync />
+                                            <toggle-button :width="45" :height="22" id="create_missing_show_dirs" name="create_missing_show_dirs" v-model="postprocessing.createMissingShowDirs" sync />
                                             <span>Create missing show directories when they get deleted</span>
                                         </div>
                                     </div>
@@ -134,7 +134,7 @@
                                             <span>Add shows without directory</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="add_shows_wo_dir" name="add_shows_wo_dir" v-model="postProcessing.addShowsWithoutDir" sync />
+                                            <toggle-button :width="45" :height="22" id="add_shows_wo_dir" name="add_shows_wo_dir" v-model="postprocessing.addShowsWithoutDir" sync />
                                             <span>Add shows without creating a directory (not recommended)</span>
                                         </div>
                                     </div>
@@ -144,7 +144,7 @@
                                             <span>Delete associated files</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postProcessing.moveAssociatedFiles" sync />
+                                            <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postprocessing.moveAssociatedFiles" sync />
                                             <span>Delete srt/srr/sfv/etc files while post processing?</span>
                                         </div>
                                     </div>
@@ -154,7 +154,7 @@
                                             <span>Keep associated file extensions</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postProcessing.allowedExtensions" @change="onChangeAllowedExtensions" />
+                                            <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
                                             <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
                                             <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
@@ -165,7 +165,7 @@
                                             <span>Rename .nfo file</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postProcessing.nfoRename" sync />
+                                            <toggle-button :width="45" :height="22" id="nfo_rename" name="nfo_rename" v-model="postprocessing.nfoRename" sync />
                                             <span>Rename the original .nfo file to .nfo-orig to avoid conflicts?</span>
                                         </div>
                                     </div>
@@ -175,7 +175,7 @@
                                             <span>Change File Date</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postProcessing.airdateEpisodes" sync />
+                                            <toggle-button :width="45" :height="22" id="airdate_episodes" name="airdate_episodes" v-model="postprocessing.airdateEpisodes" sync />
                                             <span>Set last modified filedate to the date that the episode aired?</span>
                                         </div>
                                     </div>
@@ -185,7 +185,7 @@
                                             <span>Timezone for File Date:</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postProcessing.fileTimestampTimezone" class="form-control input-sm">
+                                            <select id="file_timestamp_timezone" name="file_timestamp_timezone" v-model="postprocessing.fileTimestampTimezone" class="form-control input-sm">
                                                 <option :value="option.value" v-for="option in timezoneOptions" :key="option.value">{{ option.text }}</option>
                                             </select>
                                             <span>What timezone should be used to change File Date?</span>
@@ -197,7 +197,7 @@
                                             <span>Unpack</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postProcessing.unpack" sync />
+                                            <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postprocessing.unpack" sync />
                                             <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
                                             <span><b>NOTE:</b> Only working with RAR archive</span>
                                         </div>
@@ -208,7 +208,7 @@
                                             <span>Delete RAR contents</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="del_rar_contents" name="del_rar_contents" v-model="postProcessing.deleteRarContent" sync />
+                                            <toggle-button :width="45" :height="22" id="del_rar_contents" name="del_rar_contents" v-model="postprocessing.deleteRarContent" sync />
                                             <span>Delete content of RAR files, even if Process Method not set to move?</span>
                                         </div>
                                     </div>
@@ -218,7 +218,7 @@
                                             <span>Don't delete empty folders</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postProcessing.noDelete" sync />
+                                            <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postprocessing.noDelete" sync />
                                             <span>Leave empty folders when Post Processing?</span><br>
                                             <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
                                         </div>
@@ -229,8 +229,8 @@
                                             <span>Extra Scripts</span>
                                         </label>
                                         <div class="col-sm-10 content">
-                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postProcessing.extraScripts" @change="onChangeExtraScripts" />
-                                            <span>See <app-link :href="postProcessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
+                                            <select-list name="extra_scripts" id="extra_scripts" csv-enabled :list-items="postprocessing.extraScripts" @change="onChangeExtraScripts" />
+                                            <span>See <app-link :href="postprocessing.extraScriptsUrl" class="wikie"><strong>Wiki</strong></app-link> for script arguments description and usage.</span>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -251,31 +251,31 @@
 
                                     <!-- default name-pattern component -->
                                     <name-pattern
-                                        class="component-item" :naming-pattern="postProcessing.naming.pattern"
-                                        :naming-presets="presets" :multi-ep-style="postProcessing.naming.multiEp"
+                                        class="component-item" :naming-pattern="postprocessing.naming.pattern"
+                                        :naming-presets="presets" :multi-ep-style="postprocessing.naming.multiEp"
                                         :multi-ep-styles="multiEpStringsSelect" @change="saveNaming" :flag-loaded="configLoaded"
                                     />
 
                                     <!-- default sports name-pattern component -->
                                     <name-pattern
-                                        class="component-item" :enabled="postProcessing.naming.enableCustomNamingSports"
-                                        :naming-pattern="postProcessing.naming.patternSports" :naming-presets="presets" type="sports"
-                                        :enabled-naming-custom="postProcessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded"
+                                        class="component-item" :enabled="postprocessing.naming.enableCustomNamingSports"
+                                        :naming-pattern="postprocessing.naming.patternSports" :naming-presets="presets" type="sports"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingSports" @change="saveNamingSports" :flag-loaded="configLoaded"
                                     />
 
                                     <!-- default airs by date name-pattern component -->
                                     <name-pattern
-                                        class="component-item" :enabled="postProcessing.naming.enableCustomNamingAirByDate"
-                                        :naming-pattern="postProcessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
-                                        :enabled-naming-custom="postProcessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded"
+                                        class="component-item" :enabled="postprocessing.naming.enableCustomNamingAirByDate"
+                                        :naming-pattern="postprocessing.naming.patternAirByDate" :naming-presets="presets" type="airs by date"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAirByDate" @change="saveNamingAbd" :flag-loaded="configLoaded"
                                     />
 
                                     <!-- default anime name-pattern component -->
                                     <name-pattern
-                                        class="component-item" :enabled="postProcessing.naming.enableCustomNamingAnime"
-                                        :naming-pattern="postProcessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postProcessing.naming.animeMultiEp"
-                                        :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postProcessing.naming.animeNamingType"
-                                        :enabled-naming-custom="postProcessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
+                                        class="component-item" :enabled="postprocessing.naming.enableCustomNamingAnime"
+                                        :naming-pattern="postprocessing.naming.patternAnime" :naming-presets="presets" type="anime" :multi-ep-style="postprocessing.naming.animeMultiEp"
+                                        :multi-ep-styles="multiEpStringsSelect" :anime-naming-type="postprocessing.naming.animeNamingType"
+                                        :enabled-naming-custom="postprocessing.naming.enableCustomNamingAnime" @change="saveNamingAnime" :flag-loaded="configLoaded"
                                     />
 
                                     <div class="form-group component-item">
@@ -285,7 +285,7 @@
                                         <div class="col-sm-10 content">
                                             <toggle-button
                                                 :width="45" :height="22" id="naming_strip_year" name="naming_strip_year"
-                                                v-model="postProcessing.naming.stripYear" sync
+                                                v-model="postprocessing.naming.stripYear" sync
                                             />
                                             <span>Remove the TV show's year when renaming the file?</span>
                                             <p>Only applies to shows that have year inside parentheses</p>
@@ -310,13 +310,13 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select id="metadataType" name="metadataType" v-model="metadataProviderSelected" class="form-control input-sm">
-                                                <option :value="option.id" v-for="option in metadataProviders" :key="option.id">{{ option.name }}</option>
+                                                <option :value="option.id" v-for="option in metadata.metadataProviders" :key="option.id">{{ option.name }}</option>
                                             </select>
                                             <span class="d-block">Toggle the metadata options that you wish to be created. <b>Multiple targets may be used.</b></span>
                                         </div>
                                     </div>
 
-                                    <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadataProviders" :key="provider.id" id="provider.id">
+                                    <div class="metadataDiv" v-show="provider.id === metadataProviderSelected" v-for="provider in metadata.metadataProviders" :key="provider.id" id="provider.id">
                                         <div class="metadata_options_wrapper">
                                             <h4>Create:</h4>
                                             <div class="metadata_options">
@@ -395,44 +395,6 @@ export default {
                 { value: 'local', text: 'Local' },
                 { value: 'network', text: 'Network' }
             ],
-            postProcessing: {
-                naming: {
-                    pattern: null,
-                    multiEp: null,
-                    enableCustomNamingSports: null,
-                    enableCustomNamingAirByDate: null,
-                    patternSports: null,
-                    patternAirByDate: null,
-                    enableCustomNamingAnime: null,
-                    patternAnime: null,
-                    animeMultiEp: null,
-                    animeNamingType: null,
-                    stripYear: null
-                },
-                showDownloadDir: null,
-                processAutomatically: null,
-                processMethod: null,
-                deleteRarContent: null,
-                unpack: null,
-                noDelete: null,
-                reflinkAvailable: null,
-                postponeIfSyncFiles: null,
-                autoPostprocessorFrequency: 10,
-                airdateEpisodes: null,
-                moveAssociatedFiles: null,
-                allowedExtensions: [],
-                addShowsWithoutDir: null,
-                createMissingShowDirs: null,
-                renameEpisodes: null,
-                postponeIfNoSubs: null,
-                nfoRename: null,
-                syncFiles: [],
-                fileTimestampTimezone: 'local',
-                extraScripts: [],
-                extraScriptsUrl: null,
-                multiEpStrings: {}
-            },
-            metadataProviders: {},
             metadataProviderSelected: null
         };
     },
@@ -441,46 +403,53 @@ export default {
             'setConfig'
         ]),
         onChangeSyncFiles(items) {
-            this.postProcessing.syncFiles = items.map(item => item.value);
+            const { postprocessing } = this;
+            postprocessing.syncFiles = items.map(item => item.value);
         },
         onChangeAllowedExtensions(items) {
-            this.postProcessing.allowedExtensions = items.map(item => item.value);
+            const { postprocessing } = this;
+            postprocessing.allowedExtensions = items.map(item => item.value);
         },
         onChangeExtraScripts(items) {
-            this.postProcessing.extraScripts = items.map(item => item.value);
+            const { postprocessing } = this;
+            postprocessing.extraScripts = items.map(item => item.value);
         },
         saveNaming(values) {
+            const { postprocessing } = this;
             if (!this.configLoaded) {
                 return;
             }
-            this.postProcessing.naming.pattern = values.pattern;
-            this.postProcessing.naming.multiEp = values.multiEpStyle;
+            postprocessing.naming.pattern = values.pattern;
+            postprocessing.naming.multiEp = values.multiEpStyle;
         },
         saveNamingSports(values) {
+            const { postprocessing } = this;
             if (!this.configLoaded) {
                 return;
             }
-            this.postProcessing.naming.patternSports = values.pattern;
-            this.postProcessing.naming.enableCustomNamingSports = values.enabled;
+            postprocessing.naming.patternSports = values.pattern;
+            postprocessing.naming.enableCustomNamingSports = values.enabled;
         },
         saveNamingAbd(values) {
+            const { postprocessing } = this;
             if (!this.configLoaded) {
                 return;
             }
-            this.postProcessing.naming.patternAirByDate = values.pattern;
-            this.postProcessing.naming.enableCustomNamingAirByDate = values.enabled;
+            postprocessing.naming.patternAirByDate = values.pattern;
+            postprocessing.naming.enableCustomNamingAirByDate = values.enabled;
         },
         saveNamingAnime(values) {
+            const { postprocessing } = this;
             if (!this.configLoaded) {
                 return;
             }
-            this.postProcessing.naming.patternAnime = values.pattern;
-            this.postProcessing.naming.animeMultiEp = values.multiEpStyle;
-            this.postProcessing.naming.animeNamingType = values.animeNamingType;
-            this.postProcessing.naming.enableCustomNamingAnime = values.enabled;
+            postprocessing.naming.patternAnime = values.pattern;
+            postprocessing.naming.animeMultiEp = values.multiEpStyle;
+            postprocessing.naming.animeNamingType = values.animeNamingType;
+            postprocessing.naming.enableCustomNamingAnime = values.enabled;
         },
         async save() {
-            const { postProcessing, metadataProviders, setConfig } = this;
+            const { postprocessing, metadata, setConfig } = this;
             // We want to wait until the page has been fully loaded, before starting to save stuff.
             if (!this.configLoaded) {
                 return;
@@ -490,14 +459,12 @@ export default {
 
             // Clone the config into a new object
             const config = Object.assign({}, {
-                postProcessing,
-                metadata: {
-                    metadataProviders
-                }
+                postprocessing,
+                metadata
             });
 
             // Use destructuring to remove the unwanted keys.
-            const { multiEpStrings, reflinkAvailable, ...rest } = config.postProcessing;
+            const { multiEpStrings, reflinkAvailable, ...rest } = postprocessing;
             // Assign the object with the keys removed to our copied object.
             config.postProcessing = rest;
 
@@ -525,8 +492,8 @@ export default {
          * @return {String} - The id of the first enabled provider.
          */
         getFirstEnabledMetadataProvider() {
-            const { metadataProviders } = this;
-            const firstEnabledProvider = Object.values(metadataProviders).find(provider => {
+            const { metadata } = this;
+            const firstEnabledProvider = Object.values(metadata.metadataProviders).find(provider => {
                 return provider.showMetadata || provider.episodeMetadata;
             });
             return firstEnabledProvider === undefined ? 'kodi' : firstEnabledProvider.id;
@@ -535,27 +502,23 @@ export default {
     computed: {
         ...mapState([
             'config',
-            'metadata'
+            'metadata',
+            'postprocessing'
         ]),
         configLoaded() {
-            return this.postProcessing.processAutomatically !== null;
+            const { postprocessing } = this;
+            return postprocessing.processAutomatically !== null;
         },
         multiEpStringsSelect() {
-            if (!this.postProcessing.multiEpStrings) {
+            const { postprocessing } = this;
+            if (!postprocessing.multiEpStrings) {
                 return [];
             }
-            return Object.keys(this.postProcessing.multiEpStrings).map(k => ({
+            return Object.keys(postprocessing.multiEpStrings).map(k => ({
                 value: Number(k),
-                text: this.postProcessing.multiEpStrings[k]
+                text: postprocessing.multiEpStrings[k]
             }));
         }
-    },
-    created() {
-        const { config, metadata, getFirstEnabledMetadataProvider } = this;
-        // Map the state values to local data.
-        this.postProcessing = Object.assign({}, this.postProcessing, config.postProcessing);
-        this.metadataProviders = Object.assign({}, this.metadataProviders, metadata.metadataProviders);
-        this.metadataProviderSelected = getFirstEnabledMetadataProvider();
     },
     beforeMount() {
         // Wait for the next tick, so the component is rendered
@@ -564,23 +527,11 @@ export default {
         });
     },
     watch: {
-        'config.postProcessing': {
-            handler(newValue) {
-                // Map the state values to local data.
-                this.postProcessing = Object.assign({}, this.postProcessing, newValue);
-            },
-            deep: true,
-            immediate: false
-        },
-        'metadata.metadataProviders': {
-            handler(newValue) {
-                // Map the state values to local data.
-                this.metadataProviders = Object.assign({}, this.metadataProviders, newValue);
-                // This is not properly worked out. metadata.metadataProviders watch is triggered, when a users clicks on one of the chechboxes.
-                // this.metadataProviderSelected = getFirstEnabledMetadataProvider();
-            },
-            deep: true,
-            immediate: false
+        'metadata.metadataProviders': function(providers) { // eslint-disable-line object-shorthand
+            const { getFirstEnabledMetadataProvider } = this;
+            if (Object.keys(providers).length > 0) {
+                this.metadataProviderSelected = getFirstEnabledMetadataProvider();
+            }
         }
     }
 };

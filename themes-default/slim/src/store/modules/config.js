@@ -20,23 +20,6 @@ const state = {
     programDir: null,
     dataDir: null,
     animeSplitHomeInTabs: null,
-    torrents: {
-        authType: null,
-        dir: null,
-        enabled: null,
-        highBandwidth: null,
-        host: null,
-        label: null,
-        labelAnime: null,
-        method: null,
-        path: null,
-        paused: null,
-        rpcurl: null,
-        seedLocation: null,
-        seedTime: null,
-        username: null,
-        verifySSL: null
-    },
     layout: {
         show: {
             specials: null,
@@ -48,31 +31,6 @@ const state = {
         wide: null
     },
     dbPath: null,
-    nzb: {
-        enabled: null,
-        method: null,
-        nzbget: {
-            category: null,
-            categoryAnime: null,
-            categoryAnimeBacklog: null,
-            categoryBacklog: null,
-            host: null,
-            priority: null,
-            useHttps: null,
-            username: null
-        },
-        sabnzbd: {
-            category: null,
-            forced: null,
-            categoryAnime: null,
-            categoryBacklog: null,
-            categoryAnimeBacklog: null,
-            host: null,
-            username: null,
-            password: null,
-            apiKey: null
-        }
-    },
     configFile: null,
     fanartBackground: null,
     trimZero: null,
@@ -172,43 +130,6 @@ const state = {
     failedDownloads: {
         enabled: null,
         deleteFailed: null
-    },
-    postProcessing: {
-        naming: {
-            pattern: null,
-            multiEp: null,
-            enableCustomNamingSports: null,
-            enableCustomNamingAirByDate: null,
-            patternSports: null,
-            patternAirByDate: null,
-            enableCustomNamingAnime: null,
-            patternAnime: null,
-            animeMultiEp: null,
-            animeNamingType: null,
-            stripYear: null
-        },
-        showDownloadDir: null,
-        processAutomatically: null,
-        processMethod: null,
-        deleteRarContent: null,
-        unpack: null,
-        noDelete: null,
-        reflinkAvailable: null,
-        postponeIfSyncFiles: null,
-        autoPostprocessorFrequency: 10,
-        airdateEpisodes: null,
-        moveAssociatedFiles: null,
-        allowedExtensions: [],
-        addShowsWithoutDir: null,
-        createMissingShowDirs: null,
-        renameEpisodes: null,
-        postponeIfNoSubs: null,
-        nfoRename: null,
-        syncFiles: [],
-        fileTimestampTimezone: 'local',
-        extraScripts: [],
-        extraScriptsUrl: null,
-        multiEpStrings: {}
     },
     sslVersion: null,
     pythonVersion: null,

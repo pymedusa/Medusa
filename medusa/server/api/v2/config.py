@@ -173,6 +173,14 @@ class ConfigHandler(BaseRequestHandler):
         'git.resetBranches': ListField(app, 'GIT_RESET_BRANCHES'),
         'git.url': StringField(app, 'GITHUB_IO_URL'),
 
+        'wikiUrl': StringField(app, 'WIKI_URL'),
+        'donationsUrl': StringField(app, 'DONATIONS_URL'),
+        'sourceUrl': StringField(app, 'APPLICATION_URL'),
+        'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
+        'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
+        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
+        'recentShows': ListField(app, 'SHOWS_RECENT'),
+
         # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
@@ -647,42 +655,6 @@ class DataGenerator(object):
         section_data['indexers'] = {}
         section_data['indexers']['config'] = get_indexer_config()
 
-        section_data['postProcessing'] = {}
-        section_data['postProcessing']['naming'] = {}
-        section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
-        section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
-        section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
-        section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
-        section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
-        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
-        section_data['postProcessing']['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
-        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
-        section_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
-        section_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
-        section_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
-        section_data['postProcessing']['showDownloadDir'] = app.TV_DOWNLOAD_DIR
-        section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
-        section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
-        section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
-        section_data['postProcessing']['renameEpisodes'] = bool(app.RENAME_EPISODES)
-        section_data['postProcessing']['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
-        section_data['postProcessing']['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
-        section_data['postProcessing']['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
-        section_data['postProcessing']['nfoRename'] = bool(app.NFO_RENAME)
-        section_data['postProcessing']['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
-        section_data['postProcessing']['unpack'] = bool(app.UNPACK)
-        section_data['postProcessing']['deleteRarContent'] = bool(app.DELRARCONTENTS)
-        section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
-        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
-        section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
-        section_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
-        section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
-        section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
-        section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
-        section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
-        section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
-        section_data['postProcessing']['multiEpStrings'] = common.MULTI_EP_STRINGS
-
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
         section_data['defaultPage'] = app.DEFAULT_PAGE
@@ -1145,5 +1117,47 @@ class DataGenerator(object):
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
         section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
         section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
+
+        return section_data
+
+    @staticmethod
+    def data_postprocessing():
+        """System information."""
+        section_data = {}
+
+        section_data['naming'] = {}
+        section_data['naming']['pattern'] = app.NAMING_PATTERN
+        section_data['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
+        section_data['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+        section_data['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+        section_data['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+        section_data['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
+        section_data['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
+        section_data['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
+        section_data['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
+        section_data['naming']['animeNamingType'] = int(app.NAMING_ANIME)
+        section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
+        section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+        section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
+        section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
+        section_data['renameEpisodes'] = bool(app.RENAME_EPISODES)
+        section_data['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
+        section_data['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
+        section_data['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
+        section_data['nfoRename'] = bool(app.NFO_RENAME)
+        section_data['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
+        section_data['unpack'] = bool(app.UNPACK)
+        section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
+        section_data['noDelete'] = bool(app.NO_DELETE)
+        section_data['processMethod'] = app.PROCESS_METHOD
+        section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+        section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
+        section_data['syncFiles'] = app.SYNC_FILES
+        section_data['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
+        section_data['allowedExtensions'] = app.ALLOWED_EXTENSIONS
+        section_data['extraScripts'] = app.EXTRA_SCRIPTS
+        section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
+        section_data['multiEpStrings'] = common.MULTI_EP_STRINGS
 
         return section_data

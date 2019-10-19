@@ -115,7 +115,9 @@ export default {
     computed: {
         ...mapState([
             'config',
-            'notifiers'
+            'clients',
+            'notifiers',
+            'postprocessing'
         ]),
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
@@ -151,8 +153,8 @@ export default {
             return '';
         },
         linkVisible() {
-            const { config, notifiers } = this;
-            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { clients, config, notifiers, postprocessing } = this;
+            const { failedDownloads, subtitles } = config;
             const { kodi, plex, emby } = notifiers;
 
             return {
@@ -161,10 +163,10 @@ export default {
                 /* @TODO: Originally there was a check to make sure the API key
                    was configured for Emby: ` app.EMBY_APIKEY != '' ` */
                 emby: emby.enabled && emby.host,
-                manageTorrents: torrents.enabled && torrents.method !== 'blackhole',
+                manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
                 failedDownloads: failedDownloads.enabled,
                 subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postProcessing.postponeIfNoSubs
+                subtitleMissedPP: postprocessing.postponeIfNoSubs
             };
         }
     },
