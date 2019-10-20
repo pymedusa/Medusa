@@ -567,7 +567,7 @@ class IntegerField(PatchField):
 
 
 class FloatField(PatchField):
-    """Patch integer fields."""
+    """Patch float fields."""
 
     def __init__(self, target, attr, validator=None, converter=None, default_value=None,
                  setter=None, post_processor=None):
