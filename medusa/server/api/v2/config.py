@@ -125,7 +125,8 @@ class ConfigHandler(BaseRequestHandler):
         'notifyOnUpdate': BooleanField(app, 'NOTIFY_ON_UPDATE'),
         # 'availableThemes': IgnoreField(app, 'AVAILABLE_THEMES'),
         'comingEpsMissedRange': IntegerField(app, 'COMING_EPS_MISSED_RANGE'),
-        'timeStyle': BooleanField(app, 'TIME_PRESET_W_SECONDS'),
+        'timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
+        'dateStyle': StringField(app, 'DATE_PRESET'),
         # 'timePresets': IgnoreField(app, 'time_presets'),
         # 'datePresets': IgnoreField(app, 'date_presets'),
         'timezoneDisplay': BooleanField(app, 'TIMEZONE_DISPLAY'),
@@ -166,7 +167,6 @@ class ConfigHandler(BaseRequestHandler):
         'git.token': StringField(app, 'GIT_TOKEN'),
         'git.authType': IntegerField(app, 'GIT_AUTH_TYPE'),
         'git.remote': StringField(app, 'GIT_REMOTE'),
-        # 'git.remoteBranches': IgnoreField(app, 'GIT_REMOTE_BRANCHES'),
         'git.path': StringField(app, 'GIT_PATH'),
         'git.org': StringField(app, 'GIT_ORG'),
         'git.reset': BooleanField(app, 'GIT_RESET'),
@@ -563,39 +563,18 @@ class DataGenerator(object):
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['comingEpsSort'] = app.COMING_EPS_SORT
         section_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
-        section_data['datePreset'] = app.DATE_PRESET
+        section_data['dateStyle'] = app.DATE_PRESET
         section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
         section_data['themeName'] = app.THEME_NAME
         section_data['posterSortby'] = app.POSTER_SORTBY
         section_data['posterSortdir'] = app.POSTER_SORTDIR
         section_data['rootDirs'] = app.ROOT_DIRS
         section_data['sortArticle'] = bool(app.SORT_ARTICLE)
-        section_data['timePreset'] = app.TIME_PRESET
         section_data['trimZero'] = bool(app.TRIM_ZERO)
         section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
         section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
         section_data['gitUsername'] = app.GIT_USERNAME
-        section_data['branch'] = app.BRANCH
-        section_data['commitHash'] = app.CUR_COMMIT_HASH
-        section_data['release'] = app.APP_VERSION
-        section_data['sslVersion'] = app.OPENSSL_VERSION
-        section_data['pythonVersion'] = sys.version
-        section_data['databaseVersion'] = {}
-        section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
-        section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
-        section_data['os'] = platform.platform()
-        section_data['pid'] = app.PID
-        section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
-        section_data['localUser'] = app.OS_USER or 'Unknown'
-        section_data['programDir'] = app.PROG_DIR
-        section_data['dataDir'] = app.DATA_DIR
-        section_data['configFile'] = app.CONFIG_FILE
-        section_data['dbPath'] = db.DBConnection().path
-        section_data['cacheDir'] = app.CACHE_DIR
-        section_data['logDir'] = app.LOG_DIR
-        section_data['appArgs'] = app.MY_ARGS
-        section_data['webRoot'] = app.WEB_ROOT
-        section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
+
         section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
@@ -681,7 +660,7 @@ class DataGenerator(object):
                                            for theme in app.AVAILABLE_THEMES]
 
         section_data['comingEpsMissedRange'] = int(app.COMING_EPS_MISSED_RANGE)
-        section_data['timeStyle'] = bool(app.TIME_PRESET_W_SECONDS)
+        section_data['timeStyle'] = app.TIME_PRESET_W_SECONDS
         section_data['timePresets'] = list(time_presets)
         section_data['datePresets'] = list(date_presets)
         section_data['timezoneDisplay'] = bool(app.TIMEZONE_DISPLAY)
@@ -724,7 +703,6 @@ class DataGenerator(object):
         section_data['git']['token'] = app.GIT_TOKEN
         section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
         section_data['git']['remote'] = app.GIT_REMOTE
-        section_data['git']['remoteBranches'] = app.GIT_REMOTE_BRANCHES
         section_data['git']['path'] = app.GIT_PATH
         section_data['git']['org'] = app.GIT_ORG
         section_data['git']['reset'] = bool(app.GIT_RESET)
@@ -1063,6 +1041,31 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+
+        section_data['branch'] = app.BRANCH
+        section_data['commitHash'] = app.CUR_COMMIT_HASH
+        section_data['release'] = app.APP_VERSION
+        section_data['sslVersion'] = app.OPENSSL_VERSION
+        section_data['pythonVersion'] = sys.version
+
+        section_data['databaseVersion'] = {}
+        section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
+        section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
+
+        section_data['os'] = platform.platform()
+        section_data['pid'] = app.PID
+        section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
+        section_data['localUser'] = app.OS_USER or 'Unknown'
+        section_data['programDir'] = app.PROG_DIR
+        section_data['dataDir'] = app.DATA_DIR
+        section_data['configFile'] = app.CONFIG_FILE
+        section_data['dbPath'] = db.DBConnection().path
+        section_data['cacheDir'] = app.CACHE_DIR
+        section_data['logDir'] = app.LOG_DIR
+        section_data['appArgs'] = app.MY_ARGS
+        section_data['webRoot'] = app.WEB_ROOT
+        section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
+        section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
 
         return section_data
 

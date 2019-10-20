@@ -31,7 +31,27 @@ import { ADD_CONFIG } from '../mutation-types';
 const state = {
     memoryUsage: null,
     schedulers: [],
-    showQueue: []
+    showQueue: [],
+    sslVersion: null,
+    pythonVersion: null,
+    pid: null,
+    os: null,
+    logDir: null,
+    dbPath: null,
+    configFile: null,
+    databaseVersion: {
+        major: null,
+        minor: null
+    },
+    locale: null,
+    localUser: null,
+    programDir: null,
+    dataDir: null,
+    cacheDir: null,
+    appArgs: [],
+    webRoot: null,
+    runsInDocker: null,
+    gitRemoteBranches: []
 };
 
 const mutations = {

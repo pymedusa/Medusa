@@ -57,8 +57,8 @@ export default {
             return raw.toFixed(1) + '%';
         },
         nowInUserPreset() {
-            const { datePreset, timePreset } = this.config;
-            const preset = convertDateFormat(`${datePreset} ${timePreset}`);
+            const { dateStyle, timeStyle } = this.config;
+            const preset = convertDateFormat(`${dateStyle} ${timeStyle}`);
             return formatDate(new Date(), preset);
         }
     },

@@ -1,15 +1,4 @@
 <template>
-    <!-- import datetime
-    import json
-    import locale
-    from medusa import app, config, metadata
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
-    from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
-    from medusa.sbdatetime import sbdatetime, date_presets, time_presets
-    from medusa.metadata.generic import GenericMetadata
-    from medusa.indexers.indexer_api import indexerApi
-    gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches() -->
-
     <div id="config-genaral">
         <div id="config-content">
             <form id="configForm" method="post" @submit.prevent="save()">
@@ -84,7 +73,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="show_root_dir" label="Default Indexer Language">
-                                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="config.indexerDefaultLanguage" :available="config.indexers.config.main.validLanguages.join(',')" class="form-control form-control-inline input-sm" />
+                                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="config.indexerDefaultLanguage" :available="indexers.main.validLanguages.join(',')" class="form-control form-control-inline input-sm" />
                                         <span>for adding shows and metadata providers</span>
                                     </config-template>
 
@@ -113,7 +102,7 @@
                                         <p>When this settings has been enabled, you may receive frequent notifications when falling back to the plex mirror.</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="config.plexFallBack.timeout" label="Timeout show indexer at" id="Fallback duration" :min="1" :step="1" >
+                                    <config-textbox-number v-model="config.plexFallBack.timeout" label="Timeout show indexer at" id="Fallback duration" :min="1" :step="1">
                                         <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
                                     </config-textbox-number>
                                 </fieldset>
@@ -138,7 +127,7 @@
                                             Updates are run on startup and in the background at the frequency set below*</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="config.updateFrequency" label="Check the server every*" id="update_frequency duration" :min="1" :step="1" >
+                                    <config-textbox-number v-model="config.updateFrequency" label="Check the server every*" id="update_frequency duration" :min="1" :step="1">
                                         <p>hours for software updates (default:1)</p>
                                     </config-textbox-number>
 
@@ -163,7 +152,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="theme_name" label="Display theme">
-                                        <select id="theme_name" name="theme_name" v-model="config.themeName" @change="save()">
+                                        <select id="theme_name" name="theme_name" v-model="config.themeName" @change="changeTheme(config.themeName)">
                                             <option :value="option.value" v-for="option in availableThemesOptions"
                                                     :key="option.value">{{ option.text }}
                                             </option>
@@ -178,7 +167,7 @@
                                         <p>on the show summary page</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="config.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0" >
+                                    <config-textbox-number v-model="config.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0">
                                         <p>Transparency of the fanart in the background</p>
                                     </config-textbox-number>
 
@@ -199,17 +188,14 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="date_preset" label="Date style">
-                                        <select id="date_preset" name="date_preset" v-model="config.datePreset" class="form-control input-sm">
+                                        <select id="date_preset" name="date_preset" v-model="config.dateStyle" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                     </config-template>
 
                                     <config-template label-for="time_preset" label="Time style">
-                                        <select id="time_preset" name="time_preset" v-model="config.timePreset" class="form-control input-sm">
+                                        <select id="time_preset" name="time_preset" v-model="config.timeStyle" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in timePresetOptions" :key="option.value">{{ option.text }}</option>
-                                            <!--  for cur_preset in time_presets:
-                                                    <option value="cur_preset}" 'selected="selected"' if app.TIME_PRESET_W_SECONDS == cur_preset else ''}>sbdatetime.now().sbftime(show_seconds=True, t_preset=cur_preset)}</option>
-                                                    endfor -->
                                         </select>
                                         <span><b>note:</b> seconds are only shown on the History page</span>
                                     </config-template>
@@ -244,7 +230,7 @@
 
                                     <!-- FIXME: config-textbox Should get a property that makes it read-only  -->
                                     <config-textbox v-model="config.webInterface.apiKey" label="API key" id="api_key" readonly="readonly">
-                                        <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate">
+                                        <input class="btn-medusa btn-inline" type="button" id="generate_new_apikey" value="Generate" @click="generateApiKey">
                                         <p>used to give 3rd party programs limited access to Medusa</p>
                                         <p>you can try all the features of the legacy API (v1) <app-link href="apibuilder/">here</app-link></p>
                                     </config-textbox>
@@ -260,7 +246,6 @@
                                     <config-textbox v-model="config.webInterface.password" label="HTTP password" id="web_password" type="password" autocomplete="no">
                                         <p>blank = no authentication</p>
                                     </config-textbox>
-
 
                                     <config-textbox-number v-model="config.webInterface.port" label="HTTP port" id="web_port" :min="1" :step="1">
                                         <p>web port to browse and access Medusa (default:8081)</p>
@@ -292,7 +277,7 @@
                                         <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no" >
+                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
                                         <p>Set a base URL, for use in reverse proxies.</p>
                                         <p>blank = disabled</p>
                                         <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
@@ -355,7 +340,7 @@
                                         <p>blank to disable or proxy to use when connecting to providers</p>
                                     </config-textbox>
 
-                                    <config-toggle-slider v-model="config.proxyIndexers" label="Use proxy for indexers" id="proxy_indexers">
+                                    <config-toggle-slider v-if="config.proxySetting !== ''" v-model="config.proxyIndexers" label="Use proxy for indexers" id="proxy_indexers">
                                         <p>use proxy host for connecting to indexers (thetvdb)</p>
                                     </config-toggle-slider>
 
@@ -366,9 +351,9 @@
                                         </span>
                                     </config-toggle-slider>
 
-
                                     <config-template label-for="ep_default_deleted_status" label="Default deleted episode status">
-                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.epDefaultDeletedStatus" class="form-control input-sm margin-bottom-5">
+                                        <select id="ep_default_deleted_status" name="ep_default_deleted_status" v-model="config.epDefaultDeletedStatus" class="form-control input-sm margin-bottom-5">
+                                            <option disabled value="">Please select a default status</option>
                                             <option :value="option.value" v-for="option in defaultDeletedEpOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>Define the status to be set for media file that has been deleted.</span>
@@ -423,8 +408,9 @@
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
 
-                                    <config-template label-for="ep_default_deleted_status" label="Branch version">
-                                        <select id="ep_default_deleted_status" name="time_preset" v-model="config.branch" class="form-control input-sm margin-bottom-5">
+                                    <config-template label-for="github_remote_branches" label="Branch version">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="config.branch" class="form-control input-sm margin-bottom-5">
+                                            <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <input :disabled="!githubBranches.length > 0" class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branchCheckout" value="Checkout Branch">
@@ -506,6 +492,7 @@ import {
     LanguageSelect
 } from './helpers';
 import { convertDateFormat } from '../utils/core.js';
+import formatDate from 'date-fns/format';
 import { ToggleButton } from 'vue-js-toggle-button';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
@@ -545,74 +532,60 @@ export default {
             resetBranchSelected: null
         };
     },
-    // mounted() {
-    //     if ($('input[name="proxy_setting"]').val().length === 0) {
-    //         $('input[id="proxy_indexers"]').prop('checked', false);
-    //         $('label[for="proxy_indexers"]').hide();
-    //     }
+    Mounted() {
+        $('#git_token').on('click', () => {
+            $('#git_token').select();
+        });
 
-    //     $('#theme_name').on('change', function() {
-    //         api.patch('config/main', {
-    //             theme: {
-    //                 name: $(this).val()
-    //             }
-    //         }).then(response => {
-    //             console.info(response);
-    //             window.location.reload();
-    //         }).catch(error => {
-    //             console.error(error);
-    //         });
-    //     });
+        $('#create_access_token').popover({
+            placement: 'left',
+            html: true, // Required if content has HTML
+            title: 'Github Token',
+            content: '<p>Copy the generated token and paste it in the token input box.</p>' +
+                '<p><a href="' + (MEDUSA.config.anonRedirect || '') + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
+                '<input class="btn-medusa" type="button" value="Continue to Github..."></a></p><br/>'
+        });
 
-    //     $('input[name="proxy_setting"]').on('input', function() {
-    //         if ($(this).val().length === 0) {
-    //             $('input[id="proxy_indexers"]').prop('checked', false);
-    //             $('label[for="proxy_indexers"]').hide();
-    //         } else {
-    //             $('label[for="proxy_indexers"]').show();
-    //         }
-    //     });
-
-    //     $('#log_dir').fileBrowser({
-    //         title: 'Select log file folder location'
-    //     });
-    // },
+        $('#manage_tokens').on('click', () => {
+            window.open((MEDUSA.config.anonRedirect || '') + 'https://github.com/settings/tokens', '_blank');
+        });
+    },
     computed: {
         ...mapState({
             config: state => state.config,
             statuses: state => state.consts.statuses,
-            configLoaded: state => state.consts.statuses.length > 0
+            configLoaded: state => state.consts.statuses.length > 0,
+            indexers: state => state.indexers,
+            system: state => state.system
         }),
         ...mapGetters([
             'getStatus'
         ]),
         indexerDefault() {
             const { config } = this;
-            const { indexerDefault  } = config;
+            const { indexerDefault } = config;
             return indexerDefault || 0;
         },
         indexerListOptions() {
-            const { config } = this;
-            const { indexers } = config.indexers.config;
-
+            const { indexers } = this;
             const allIndexers = [{ text: 'All Indexers', value: 0 }];
 
-            const indexerOptions = Object.keys(indexers).map(indexer => ({ value: indexer.id, text: indexers[indexer].name }));
+            const indexerOptions = Object.values(indexers.indexers).map(indexer => ({ value: indexer.id, text: indexer.name }));
             return [...allIndexers, ...indexerOptions];
         },
         datePresetOptions() {
             const { config } = this;
             const { datePresets } = config;
             const systemDefault = [{ value: '%x', text: 'Use System Default' }];
-            // FIXME: replace the text with the current date
-            return [...systemDefault, ...datePresets.map(preset => ({ value: preset, text: convertDateFormat(preset) }))];
+            const formattedDatePresets = datePresets.map(preset => ({ value: preset, text: formatDate(new Date(), convertDateFormat(preset)) }));
+            return [...systemDefault, ...formattedDatePresets];
         },
         timePresetOptions() {
             const { config } = this;
-            const { datePresets } = config;
+            const { timePresets } = config;
             const systemDefault = [{ value: '%x', text: 'Use System Default' }];
-            // FIXME: replace the text with the current time
-            return [...systemDefault, ...datePresets.map(preset => ({ value: preset, text: convertDateFormat(preset) }))];
+            const formattedTimePresets = timePresets.map(preset => ({ value: preset, text: formatDate(new Date(), convertDateFormat(preset)) }));
+            return [...systemDefault, ...formattedTimePresets];
         },
         availableThemesOptions() {
             const { config } = this;
@@ -631,36 +604,40 @@ export default {
             return Object.keys(cpuPresets).map(key => ({ value: key, text: key }));
         },
         defaultDeletedEpOptions() {
-            const { config, configLoaded, getStatus } = this;
-            // Statuses is used by getStatuses. And we need to have it loaded in const.statuses before calling it.
-            if (!configLoaded) {
-                return [];
-            }
+            const { config, getStatus } = this;
+            let status = [];
 
             if (config.skipRemovedFiles) {
+                status = ['skipped', 'ignored'].map(key => getStatus({
+                    key
+                }));
+            } else {
                 // Get status objects, when skip removed files is enabled
-                return ['skipped', 'ignored', 'archived'].map(key => getStatus({ key }));
+                status = ['skipped', 'ignored', 'archived'].map(key => getStatus({ key }));
             }
 
-            // Get status objects, when skip removed files is disabled
-            return ['skipped', 'ignored'].map(key => getStatus({ key }));
+            if (status.every(x => x !== undefined)) {
+                return status.map(status => ({ text: status.name, value: status.value }));
+            }
+
+            return [];
         },
         githubRemoteBranchesOptions() {
             const { config, githubBranches, githubBranchForceUpdate } = this;
-            const { developer } = this;
-            const { remoteBranches, username, password, token } = config.git;
+            const { system } = this;
+            const { username, password, token } = config.git;
 
-            if (!remoteBranches) {
+            if (!system.gitRemoteBranches) {
                 return [];
             }
 
-            if (!remoteBranches.length > 0) {
+            if (!system.gitRemoteBranches.length > 0) {
                 githubBranchForceUpdate();
             }
 
             let filteredBranches = [];
 
-            if (((username && password) || token) && developer) {
+            if (((username && password) || token) && config.developer) {
                 filteredBranches = githubBranches;
             } else if ((username && password) || token) {
                 filteredBranches = githubBranches.filter(branch => ['master', 'develop'].includes(branch));
@@ -671,25 +648,69 @@ export default {
             return filteredBranches.map(branch => ({ text: branch, value: branch }));
         },
         githubBranches() {
-            const { config, githubBranchesForced } = this;
-            return config.git.remoteBranches || githubBranchesForced;
+            const { system, githubBranchesForced } = this;
+            return system.gitRemoteBranches || githubBranchesForced;
         }
     },
     methods: {
         ...mapActions([
-            'setConfig'
+            'setConfig',
+            'setTheme',
+            'getApiKey'
         ]),
         async githubBranchForceUpdate() {
-
-            const response = await apiRoute('home/branchForceUpdate');
             debugger;
+            const response = await apiRoute('home/branchForceUpdate');
             if (response.data._size > 0) {
                 this.githubBranchesForced = response.data.resetBranches;
             }
         },
+        async generateApiKey() {
+            const { getApiKey, save } = this;
+            try {
+                await getApiKey();
+                this.$snotify.success(
+                    'Saving and reloading the page, to utilize the new api key',
+                    'Warning',
+                    { timeout: 5000 }
+                );
+                setTimeout(() => {
+                    // Save the new apiKey. No choice to reload because of /src/api.js
+                    save();
+                }, 500);
+                setTimeout(() => {
+                    // For now we reload the page since the layouts use python still
+                    location.reload();
+                }, 500);
+            } catch (error) {
+                this.$snotify.error(
+                    'Error while trying to get a new api key',
+                    'Error'
+                );
+            }
+        },
+        async changeTheme(themeName) {
+            const { setTheme } = this;
+            try {
+                await setTheme({ themeName });
+                this.$snotify.success(
+                    'Saving and reloading the page',
+                    'Saving',
+                    { timeout: 5000 }
+                );
+                setTimeout(() => {
+                    // For now we reload the page since the layouts use python still
+                    location.reload();
+                }, 1000);
+            } catch (error) {
+                this.$snotify.error(
+                    'Error while trying to change the theme',
+                    'Error'
+                );
+            }
+        },
         async save() {
             const { config, setConfig } = this;
-            debugger;
 
             // Disable the save button until we're done.
             this.saving = true;

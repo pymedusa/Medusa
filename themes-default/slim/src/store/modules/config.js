@@ -1,24 +1,14 @@
-import { api } from '../../api';
+import { api, apiRoute } from '../../api';
 import { ADD_CONFIG } from '../mutation-types';
 import { arrayUnique, arrayExclude } from '../../utils/core';
 
 const state = {
     wikiUrl: null,
     donationsUrl: null,
-    localUser: null,
     posterSortdir: null,
-    locale: null,
     themeName: null,
     selectedRootIndex: null,
-    webRoot: null,
     namingForceFolders: null,
-    cacheDir: null,
-    databaseVersion: {
-        major: null,
-        minor: null
-    },
-    programDir: null,
-    dataDir: null,
     animeSplitHomeInTabs: null,
     layout: {
         show: {
@@ -30,8 +20,6 @@ const state = {
         schedule: null,
         wide: null
     },
-    dbPath: null,
-    configFile: null,
     fanartBackground: null,
     trimZero: null,
     animeSplitHome: null,
@@ -41,10 +29,8 @@ const state = {
     sourceUrl: null,
     rootDirs: [],
     fanartBackgroundOpacity: null,
-    appArgs: [],
     comingEpsDisplayPaused: null,
     sortArticle: null,
-    timePreset: null,
     subtitles: {
         enabled: null
     },
@@ -69,17 +55,11 @@ const state = {
     failedDownloads: {
         enabled: null,
         deleteFailed: null
-    },
-    sslVersion: null,
-    pythonVersion: null,
+    },    
     comingEpsSort: null,
     githubUrl: null,
-    datePreset: null,
     subtitlesMulti: null,
-    pid: null,
-    os: null,
     anonRedirect: null,
-    logDir: null,
     recentShows: [],
     randomShowSlug: null, // @TODO: Recreate this in Vue when the webapp has a reliable list of shows to choose from.
     showDefaults: {
@@ -113,6 +93,7 @@ const state = {
     availableThemes: null,
     comingEpsMissedRange: null,
     timeStyle: null,
+    dateStyle: null,
     timePresets: [],
     datePresets: [],
     timezoneDisplay: null,
@@ -152,7 +133,6 @@ const state = {
         token: null,
         authType: null,
         remote: null,
-        remoteBranches: null,
         path: null,
         org: null,
         reset: null,
@@ -212,10 +192,15 @@ const actions = {
             return;
         }
 
-        // If an empty config object was passed, use the current state config
-        config = Object.keys(config).length === 0 ? context.state : config;
+        // Use destructuring to remove the unwanted keys.
+        const { datePresets, timePresets, availableThemes, logSize, randomShowSlug, githubUrl, ...rest } = config;
+        // Assign the object with the keys removed to our copied object.
+        let filteredConfig = rest;
 
-        return api.patch('config/' + section, config);
+        // If an empty config object was passed, use the current state config
+        filteredConfig = Object.keys(filteredConfig).length === 0 ? context.state : filteredConfig;
+
+        return api.patch(`config/${section}`, filteredConfig);
     },
     updateConfig(context, { section, config }) {
         const { commit } = context;
@@ -232,7 +217,25 @@ const actions = {
                 location.reload();
             }, 500);
         });
+    },
+    getApiKey(context) {
+        const { commit } = context;
+        const section = 'main';
+        const config = { webInterface: { apiKey: '' } };
+        return apiRoute.get('config/general/generate_api_key')
+            .then(response => {
+                config.webInterface.apiKey = response.data;
+                return commit(ADD_CONFIG, { section, config });
+            });
+    },
+    setTheme(context, { themeName }) {
+        const { commit } = context;
+        return api.patch('config/main', { themeName })
+            .then(() => {
+                return commit(ADD_CONFIG, { section: 'main', config: { config: themeName } });
+            });
     }
+
 };
 
 export default {

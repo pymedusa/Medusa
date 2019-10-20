@@ -600,7 +600,7 @@ export default {
         },
         parseDateFn(row) {
             const { config, timeAgo } = this;
-            const { datePreset, fuzzyDating } = config;
+            const { dateStyle, fuzzyDating, timeStyle } = config;
 
             if (!row.airDate) {
                 return '';
@@ -610,12 +610,12 @@ export default {
                 return timeAgo.format(new Date(row.airDate));
             }
 
-            if (datePreset === '%x') {
+            if (dateStyle === '%x') {
                 return new Date(row.airDate).toLocaleString();
             }
 
             const fdate = parseISO(row.airDate);
-            return formatDate(fdate, convertDateFormat(`${config.datePreset} ${config.timePreset}`));
+            return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
