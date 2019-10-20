@@ -659,7 +659,6 @@ export default {
             'getApiKey'
         ]),
         async githubBranchForceUpdate() {
-            debugger;
             const response = await apiRoute('home/branchForceUpdate');
             if (response.data._size > 0) {
                 this.githubBranchesForced = response.data.resetBranches;
