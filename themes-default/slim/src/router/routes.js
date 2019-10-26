@@ -181,8 +181,10 @@ const configRoutes = [
             title: 'Config - Episode Search',
             header: 'Search Settings',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-search.vue')
     },
     {
         path: '/config/subtitles',
