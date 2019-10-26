@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          medusa
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts Medusa
+# Description:       starts Medusa
+### END INIT INFO
+
+# Source function library.
+. /etc/init.d/functions
+
+# Source Medusa configuration
+if [ -f /etc/sysconfig/medusa ]; then
+        . /etc/sysconfig/medusa
+fi
+
+prog=medusa
+lockfile=/var/lock/subsys/$prog
+
+## Edit user configuation in /etc/sysconfig/medusa to change
+## the defaults
+username=${APP_USER-medusa}
+homedir=${APP_HOME-/opt/medusa}
+datadir=${APP_DATA-/opt/medusa}
+pidfile=${APP_PIDFILE-/var/run/PyMedusa/Medusa.pid}
+nice=${APP_NICE-}
+python_bin=${PYTHON_BIN-/usr/bin/python2.7}
+##
+
+pidpath=`dirname ${pidfile}`
+options=" --daemon --nolaunch --pidfile=${pidfile} --datadir=${datadir}"
+
+# create PID directory if not exist and ensure the Medusa user can write to it
+if [ ! -d $pidpath ]; then
+        mkdir -p $pidpath
+        chown $username $pidpath
+fi
+
+if [ ! -d $datadir ]; then
+        mkdir -p $datadir
+        chown $username $datadir
+fi
+
+start() {
+        # Start daemon.
+        echo -n $"Starting $prog: "
+        daemon --user=${username} --pidfile=${pidfile} ${nice} ${python_bin} ${homedir}/start.py ${options}
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch $lockfile
+        return $RETVAL
+}
+
+stop() {
+        echo -n $"Shutting down $prog: "
+        killproc -p ${pidfile} ${python_bin}
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f $lockfile
+        return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status $prog
+        ;;
+  restart|force-reload)
+        stop
+        sleep 2
+        start
+        ;;
+  try-restart|condrestart)
+        if status $prog > /dev/null; then
+            stop
+            start
+        fi
+        ;;
+  reload)
+        exit 3
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|status|restart|try-restart|force-reload}"
+        exit 2
+esac

@@ -1,0 +1,60 @@
+# Medusa systemd service unit file
+#
+# Configuration Notes
+#
+#    - Option names (e.g. ExecStart=, Type=) are case-sensitive)
+#
+#    - Adjust User= and Group= to the user/group you want Medusa to run as.
+#
+#    - Optional adjust EnvironmentFile= path to configuration file
+#        Can ONLY be used for configuring extra options used in ExecStart.
+#        Putting a minus (-) in front of file means no error warning if the file doesn't exist
+#
+#    - Adjust ExecStart= to point to your python and Medusa executables.
+#       The FIRST token of the command line must be an ABSOLUTE FILE NAME,
+#       then followed by arguments for the process.
+#       If no --datadir is given, data is stored in same dir as start.py
+#       Arguments can also be set in EnvironmentFile (except python)
+#
+#    - WantedBy= specifies which target (i.e. runlevel) to start Medusa for.
+#        multi-user.target equates to runlevel 3 (multi-user text mode)
+#        graphical.target  equates to runlevel 5 (multi-user X11 graphical mode)
+#
+
+### Example Using Medusa as daemon with pid file
+# Type=forking
+# PIDFile=/var/run/PyMedusa/Medusa.pid
+# ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --daemon --nolaunch --pidfile=/var/run/PyMedusa/Medusa.pid --datadir=/opt/medusa
+
+## Example Using Medusa as daemon without pid file
+# Type=forking
+# GuessMainPID=no
+# ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --daemon --nolaunch --datadir=/opt/medusa
+
+### Example Using simple
+# Type=simple
+# ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --nolaunch
+
+### Example Using simple with EnvironmentFile where APP_DATA=/home/medusa/.medusa in /etc/medusa.conf
+# Type=simple
+# EnvironmentFile=/etc/medusa.conf
+# ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --nolaunch --datadir=${APP_DATA}
+
+### Configuration
+
+[Unit]
+Description=Medusa Daemon
+After=network.target
+
+[Service]
+User=medusa
+Group=medusa
+
+Type=simple
+ExecStart=/usr/bin/python2.7 /opt/medusa/start.py -q --nolaunch --datadir=/opt/medusa
+TimeoutStopSec=25
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

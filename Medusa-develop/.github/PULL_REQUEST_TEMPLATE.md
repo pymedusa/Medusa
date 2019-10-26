@@ -1,0 +1,3 @@
+- [ ] PR is based on the DEVELOP branch
+- [ ] Don't send big changes all at once. Split up big PRs into multiple smaller PRs that are easier to manage and review
+- [ ] Read the [contribution guide](https://github.com/pymedusa/Medusa/blob/master/.github/CONTRIBUTING.md)

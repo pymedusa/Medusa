@@ -1,0 +1,18 @@
+{
+  "name": "Medusa",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PyMedusa/Medusa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PyMedusa/Medusa/issues"
+  },
+  "homepage": "https://github.com/PyMedusa/Medusa#readme",
+  "scripts": {
+    "test-api": "dredd --config dredd/dredd.yml"
+  },
+  "devDependencies": {
+    "dredd": "12.1.0"
+  }
+}

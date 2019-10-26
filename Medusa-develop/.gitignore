@@ -1,0 +1,92 @@
+#  Medusa User Related   #
+######################
+/cache/
+/Logs/
+/data/
+restore/
+backup*/
+backup-*.zip
+cache.db*
+config.ini*
+sickbeard.db*
+main.db.*
+failed.db*
+*.db
+autoProcessTV.cfg
+server.crt
+server.key
+
+#  Medusa Test Related   #
+######################
+/tests/legacy/Logs/
+/tests/cache/
+/tests/sickbeard.db*
+/tests/cache.db*
+/tests/failed.db
+/tests/data/
+.pytest_cache
+
+#  Compiled source   #
+######################
+*.py[cod]
+
+venv
+
+#  IDE specific      #
+######################
+*.bak
+*.tmp
+*.wpr
+*.project
+*.pydevproject
+*.cproject
+*.tmproj
+*.tmproject
+*.sw?
+Session.vim
+.ropeproject/*
+*.iml
+.idea
+*.ipr
+.settings/*
+**/.vscode/*
+launch.json
+
+# OS generated files #
+######################
+.Spotlight-V100
+.Trashes
+.DS_Store
+desktop.ini
+ehthumbs.db
+Thumbs.db
+.directory
+*~
+*.torrent
+
+# Python build related #
+######################
+build/
+dist/
+pymedusa.egg-info
+.eggs
+
+# Grunt/Gulp/Node build related #
+######################
+**/bower_components
+**/node_modules
+.build/dist
+**/package-lock.json
+
+# Unit test/Coverage #
+######################
+.tox/
+.coverage*
+.cache
+htmlcov
+xo-errors.log
+yarn-error.log
+
+# Contrib #
+######################
+/contrib/

@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-26 00:00:00
+      title: '[BakedFish] B-Project: Zecchou*Emotion - 06 [720p][AAC].mp4'
+      leechers: 2
+      link: https://anidex.info/dl/225941
+      size: 510656512
+    - seeders: 1
+      pubdate: 2017-11-26 00:00:00
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [720p][1FB3C050].mkv'
+      leechers: 12
+      link: https://anidex.info/dl/225940
+      size: 392167424
+    - seeders: 2
+      pubdate: 2017-11-26 00:00:00
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [1080p][5AF71C7D].mkv'
+      leechers: 5
+      link: https://anidex.info/dl/225939
+      size: 878706688
+
+backlog:
+  search_strings:
+    Episode: ['Dragon Ball Super 115']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-18 00:00:00
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [x264] [pseudo].mkv'
+      leechers: 0
+      link: https://anidex.info/dl/96848
+      size: 227540992
+    - seeders: 0
+      pubdate: 2017-11-18 00:00:00
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [HEVC] [x265] [pseudo].mkv'
+      leechers: 0
+      link: https://anidex.info/dl/96847
+      size: 178257920

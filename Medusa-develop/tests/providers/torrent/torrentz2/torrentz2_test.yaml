@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 4
+      pubdate: 2017-11-12 00:00:00
+      title: Marvels.The.Punisher.2017.S02.2160p.NF.WEBRip.H.264.RUS.LF.DDP5.1-EniaHD
+      leechers: 4
+      link: magnet:?xt=urn:btih:863bcf64fd3873ed7ae62559c497b51f9f0c799c
+      size: 34603008
+    - seeders: 0
+      pubdate: 2017-11-12 00:00:00
+      title: Saturday.Night.Live.S44E13.Don.Cheadle.Gary.Clark.Jr.1080p.HULU.WEBRip.AAC2.0.H264-monkee[rarbg]
+      leechers: 0
+      link: magnet:?xt=urn:btih:2db802cc4ba5a720941454e9b09a0c4be9c8ee0b
+      size: 3027238912
+    - seeders: 3
+      pubdate: 2017-11-12 00:00:00
+      title: World.Cup.2018.Semi-final.Croatia-England.HDTV.1080i.ts
+      leechers: 0
+      link: magnet:?xt=urn:btih:743015de447c2a28ecd48ec31211a9e40501f44d
+      size: 13631488
+
+backlog:
+  search_strings:
+    Episode: ['Lethal Weapon S03E05']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-12 00:00:00
+      title: Lethal.Weapon..Season.3.(WEB-DL.l.1080p.l.Jaskier)
+      leechers: 3
+      link: magnet:?xt=urn:btih:c8a9e817db0c92018168055bb4ee565b7c148b3e
+      size: 31457280
+    - seeders: 2
+      pubdate: 2017-11-12 00:00:00
+      title: Lethal.Weapon..Season.3.(WEB-DL.l.720p.l.Jaskier)
+      leechers: 23
+      link: magnet:?xt=urn:btih:1a36685aa7468edfc2b05590bc19034d4c7c402e
+      size: 13631488

@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[Erai-raws] Mahou Shoujo Tokushusen Asuka - 06 [1080p][Multiple Subtitle].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/188184/
+      size:  878916403
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [1080p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/188183/
+      size: 879199518
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [720p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/188182/
+      size: 392828026
+
+backlog:
+  search_strings:
+    Episode: ['Yu-Gi-Oh! VRAINS']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 89 [1080p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/188069/
+      size: 1428076625
+    - seeders: 1
+      pubdate: 2017-11-15 00:00:00
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 89 [720p].mkv'
+      leechers: 0
+      link: https://www.shanaproject.com/download/188068/
+      size: 566807756

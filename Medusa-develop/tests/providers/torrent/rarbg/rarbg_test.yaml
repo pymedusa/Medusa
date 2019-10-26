@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 1
+      pubdate: 2017-11-17 00:00:00
+      title: The.Voice.UK.S08E05.WEBRip.x264-ION10
+      leechers: 17
+      link: magnet:?xt=urn:btih:e40b39d3ff9301f18ddeef3e6ae5c0de1d7d219d
+      size: 675478909
+    - seeders: 14
+      pubdate: 2017-11-17 00:00:00
+      title: BBC.Williams.Formula.1.in.the.Blood.1080p.HDTV.x264.AAC.MVGroup.org.mkv
+      leechers: 55
+      link: magnet:?xt=urn:btih:a8a153c0390e6357b49a41d28e7b04150be9078d
+      size: 3586064806
+    - seeders: 16
+      pubdate: 2017-11-17 00:00:00
+      title: BBC.Williams.Formula.1.in.the.Blood.720p.HDTV.x265.AAC.MVGroup.org.mkv
+      leechers: 42
+      link: magnet:?xt=urn:btih:ead53a320f5c6dd012f8b4cb3cd70f5e70b8bc31
+      size: 1225778158
+
+backlog:
+  search_strings:
+    Episode: ['Lethal Weapon S02E05']
+  results:
+    - seeders: 16
+      pubdate: 2017-11-08 00:00:00
+      title: Lethal.Weapon.S02E05.HDTV.x264-KILLERS[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:0f414d9aba84fce80eacd0b9ca307ac39e748cb3
+      size: 311075131
+    - seeders: 7
+      pubdate: 2017-11-08 00:00:00
+      title: Lethal.Weapon.S02E05.1080p.WEB.x264-TBS[rartv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:8b5f178d7ab23b177a248fcb0f24e224015ef708
+      size: 1622606805

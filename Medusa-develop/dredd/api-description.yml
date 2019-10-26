@@ -1,0 +1,2924 @@
+swagger: '2.0'
+info:
+  title: Medusa API
+  description: DESCRIPTION
+  version: "1.0.0"
+host: localhost:8081
+schemes:
+  - http
+  - https
+securityDefinitions:
+  x-api-key:
+    type: apiKey
+    name: x-api-key
+    in: query
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+basePath: /api/v2
+consumes:
+  - "application/json"
+produces:
+  - "application/json; charset=UTF-8"
+  - "text/plain; charset=UTF-8"
+  - "image/jpeg"
+security: [ { x-api-key: [] }, { Bearer: []  } ]
+paths:
+  /series:
+    post:
+      summary: Add series
+      description: |
+        Given an indexer and its id, adds the series to Medusa.
+      parameters:
+        - name: series
+          in: body
+          required: true
+          description: Only id (with indexer information) should be specified
+          schema:
+            example:
+              id:
+                tvdb: 301824
+      responses:
+        201:
+          description: Series added
+          headers:
+            Location:
+              type: string
+              description: The location of the newly added series
+          schema:
+            $ref: '#/definitions/Series'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid request
+          x-request:
+            body: {}
+        404:
+          $ref: '#/responses/error'
+          description: Series not found in the indexer
+          x-request:
+            body:
+              id:
+                tvdb: 99999999
+        409:
+          $ref: '#/responses/error'
+          description: Series already added
+    get:
+      summary: Return series that the user has access to
+      description: |
+        The Series endpoint returns information about the Series added to Medusa.
+      parameters:
+        - name: paused
+          in: query
+          required: false
+          description: Filter series based on paused status
+          type: boolean
+        - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/episodes'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination'
+          description: A paged array of series
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Series'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid pagination parameters
+          x-request:
+            query-params:
+              sort: abc
+  /series/{id}:
+    get:
+      summary: Return information about a specific series
+      description: Retrieves information about a specific series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: id
+        - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/episodes'
+      responses:
+        200:
+          description: The series information
+          schema:
+            $ref: '#/definitions/Series'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id
+          x-request:
+            path-params:
+              id: 123456
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              id: tvdb999999999
+    patch:
+      summary: Partial update series
+      description: Partial update series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: id
+        - name: series
+          in: body
+          required: false
+          description: Currently, only pause field is supported
+          schema:
+            $ref: '#/definitions/Series'
+      responses:
+        200:
+          description: Response with only the updated fields
+          schema:
+            $ref: '#/definitions/Series'
+          x-request:
+            body:
+              {"tvdb": 301824, "paused": true}
+        400:
+          $ref: '#/responses/error'
+          description: Conflicting series identifier
+          x-request:
+            body:
+              id:
+                tvdb: 80379
+            path-params:
+              id: tvdb301824
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            body:
+              id:
+                tvdb: 999999999
+            path-params:
+              id: tvdb999999999
+    delete:
+      summary: Delete a series
+      description: Delete a series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: id
+        - name: remove-files
+          in: query
+          required: false
+          description: Whether files from the series should be removed
+          type: boolean
+      responses:
+        204:
+          description: Series is deleted successfully
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id
+          x-request:
+            path-params:
+              id: 123456
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              id: tvdb999999999
+        409:
+          $ref: '#/responses/error'
+          description: Unable to delete series
+  /series/{id}/{field}:
+    get:
+      summary: Return a specific field from a given series
+      description: Retrieves a specific field from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: id
+        - name: field
+          in: path
+          required: true
+          description: Any series field
+          x-example: network
+          type: string
+      responses:
+        200:
+          description: The series information
+          schema: {}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid field
+          x-request:
+            path-params:
+              field: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              id: tvdb999999999
+  /series/{seriesid}/episodes:
+    get:
+      summary: Return episodes from a given series
+      description: |
+        The Episode endpoint returns information about the Episodes from a given Series.
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - name: season
+          in: query
+          required: false
+          description: The episode season
+          type: integer
+          format: int32
+        - $ref: '#/parameters/detailed'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination'
+          description: A paged array of episodes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Episode'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            query-params:
+              sort: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
+    patch:
+      summary: Partial update episodes
+      description: Partial update episodes
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - name: season
+          in: query
+          required: false
+          description: The episode season
+          type: integer
+          format: int32
+      responses:
+        207:
+          description: Response with the status of the single patches
+          x-request:
+            body: {"s01e02": {"status": 2, "quality": 4}, "s01e03": {"status": 4, "quality": 64}}
+  /series/{seriesid}/episodes/{id}:
+    get:
+      summary: Return a specific episode from a given series
+      description: Retrieve a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+        - $ref: '#/parameters/detailed'
+      responses:
+        200:
+          description: The episode information
+          schema:
+            $ref: '#/definitions/Episode'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series or episode id
+          x-request:
+            path-params:
+              id: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series or episode not found
+          x-request:
+            path-params:
+              id: e999
+    patch:
+      summary: Update a specific episode from a given series
+      description: Update a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+      responses:
+        200:
+          description: Response with only the updated fields
+          x-request:
+            body: {"status": 2, "quality": 4}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid episode id
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: abc
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            body:
+              {"status": 2, "quality": 4}
+            path-params:
+              id: e999
+    delete:
+      summary: Delete a specific episode from a given series
+      description: Delete a specific episode from a given series
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id-delete'
+          name: id
+      responses:
+        204:
+          description: Episode is deleted successfully
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: 123456
+        404:
+          $ref: '#/responses/error'
+          description: Episode not found
+          x-request:
+            path-params:
+              seriesid: tvdb301824
+              id: s9999e9999
+        409:
+          $ref: '#/responses/error'
+          description: Unable to delete episode
+          x-disabled: true
+  /series/{seriesid}/episodes/{id}/{field}:
+    get:
+      summary: Return a specific field from a given episode
+      description: Retrieve a specific field from a given episode
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+        - name: field
+          in: path
+          required: true
+          description: The episode field
+          x-example: airDate
+          type: string
+      responses:
+        200:
+          description: The episode field value
+          schema: {}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series or episode id or invalid field
+          x-request:
+            path-params:
+              field: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series or episode not found
+          x-request:
+            path-params:
+              id: "2050-12-31"
+  /series/{seriesid}/episodes/{id}/metadata:
+    get:
+      summary: Return the video metadata from a specific episode
+      description: Retrieve the video metadata from a specific episode
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: id
+      responses:
+        200:
+          description: The video metadata
+          schema:
+            $ref: '#/definitions/Metadata'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series or episode id
+          x-request:
+            path-params:
+              id: s01
+        404:
+          $ref: '#/responses/error'
+          description: Series or episode not found
+          x-request:
+            path-params:
+              id: s99e99
+  /series/{seriesid}/asset/{id}:
+    get:
+      summary: Return a specific asset from a given series
+      description: Retrieves a specific asset from a given series
+      produces:
+        - "image/jpeg"
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/asset-id'
+          name: id
+      responses:
+        200:
+          description: The asset stream
+          x-expect:
+            no-body: true
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id
+          x-request:
+            path-params:
+              seriesid: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series or asset not found
+          x-request:
+            path-params:
+              id: abc
+  /series/{id}/operation:
+    post:
+      summary: Create an operation that relates to a specific series
+      description: >
+        Create an operation that relates to a specific series.
+        Currently only type='ARCHIVE_EPISODES' is supported
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: id
+        - name: operation
+          in: body
+          required: true
+          schema:
+            example:
+              type: ARCHIVE_EPISODES
+      responses:
+        201:
+          description: "When type='ARCHIVE_EPISODES': episodes were archived"
+          x-disabled: true
+        204:
+          description: "When type='ARCHIVE_EPISODES': no episode was archived"
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id or invalid operation type
+          x-request:
+            body:
+              type: SUPER_OPERATION
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              id: tvmaze999999999
+  /alias:
+    get:
+      summary: Return existing aliases
+      description: Retrieve existing aliases
+      parameters:
+        - name: series
+          in: query
+          required: false
+          description: "Series identifier. E.g.: tvdb1234"
+          type: string
+        - name: season
+          in: query
+          required: false
+          description: The season number
+          type: integer
+          format: int32
+        - name: type
+          in: query
+          required: false
+          description: Alias type
+          type: string
+          enum: [local]
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination'
+          description: A paged array of aliases
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Alias'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series or pagination parameters
+          x-request:
+            query-params:
+              limit: 0
+    post:
+      summary: Create a new alias
+      description: Create a new alias
+      parameters:
+        - name: alias
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Alias'
+      responses:
+        201:
+          description: Alias created
+          headers:
+            Location:
+              type: string
+              description: The location of the newly created alias
+          schema:
+            $ref: '#/definitions/Alias'
+          x-stash:
+            alias-id: "${body['id']}"
+        400:
+          $ref: '#/responses/error'
+          description: Invalid request
+          x-request:
+            body:
+              type: local
+        409:
+          $ref: '#/responses/error'
+          description: Unable to create alias
+          x-disabled: true
+  /alias/{id}/{field}:
+    get:
+      summary: Return a specific field from a given alias
+      description: Retrieve a specific field from a a given alias
+      parameters:
+        - $ref: '#/parameters/alias-id'
+        - name: field
+          in: path
+          required: true
+          description: Any alias field
+          x-example: name
+          type: string
+      responses:
+        200:
+          description: The alias information
+          schema: {}
+          x-request:
+            path-params:
+              id: "${stash['alias-id']}"
+        400:
+          $ref: '#/responses/error'
+          description: Invalid field
+          x-request:
+            path-params:
+              id: "${stash['alias-id']}"
+              field: abc
+        404:
+          $ref: '#/responses/error'
+          description: Alias not found
+          x-request:
+            path-params:
+              id: 999999999
+  /alias/{id}:
+    get:
+      summary: Return information about a given alias
+      description: Retrieves information about a given alias
+      parameters:
+        - $ref: '#/parameters/alias-id'
+      responses:
+        200:
+          description: The alias information
+          schema:
+            $ref: '#/definitions/Alias'
+          x-request:
+            path-params:
+              id: "${stash['alias-id']}"
+        404:
+          description: Alias not found
+          x-request:
+            path-params:
+              id: 999999999
+    put:
+      summary: Replace alias data
+      description: Replace alias data
+      parameters:
+        - $ref: '#/parameters/alias-id'
+          x-example: 1
+        - name: alias
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Alias'
+            example:
+              $ref: '#/definitions/Alias/example'
+              id: 1
+      responses:
+        204:
+          description: Alias data replaced
+          x-request:
+            path-params:
+              id: "${stash['alias-id']}"
+            body:
+              id: "${stash['alias-id']}"
+              series: tvdb301824
+              name: TheBig
+              type: local
+        400:
+          $ref: '#/responses/error'
+          description: Invalid request
+          x-request:
+            body:
+              id: 1
+        404:
+          $ref: '#/responses/error'
+          description: Alias not found
+          x-request:
+            body:
+              id: 999999999
+              series: tvdb301824
+              name: TheBig
+              type: local
+            path-params:
+              id: 999999999
+    delete:
+      summary: Delete an alias
+      description: Delete an alias
+      parameters:
+        - $ref: '#/parameters/alias-id'
+          x-example: 123456
+      responses:
+        204:
+          description: Alias deleted
+          x-request:
+            path-params:
+              id: "${stash['alias-id']}"
+        404:
+          $ref: '#/responses/error'
+          description: Alias not found
+          x-request:
+            path-params:
+              id: 999999999
+  /alias-source:
+    get:
+      summary: Return existing sources for aliases
+      description: Retrieve existing sources for aliases
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination'
+          description: A paged array of alias-source
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AliasSource'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid pagination parameters
+          x-request:
+            query-params:
+              page: abc
+  /alias-source/{id}:
+    get:
+      summary: Return a specific source for aliases
+      description: Retrieves a specific source for aliases
+      parameters:
+        - $ref: '#/parameters/alias-source-id'
+          name: id
+      responses:
+        200:
+          description: The alias source information
+          schema:
+            $ref: '#/definitions/AliasSource'
+        404:
+          $ref: '#/responses/error'
+          description: Alias source not found
+          x-request:
+            path-params:
+              id: abc
+  /alias-source/{id}/{field}:
+    get:
+      summary: Return a specific field from a given source for aliases
+      description: Retrieve a specific field from a given source for aliases
+      parameters:
+        - $ref: '#/parameters/alias-source-id'
+          name: id
+        - name: field
+          in: path
+          required: true
+          x-example: lastRefresh
+          type: string
+      responses:
+        200:
+          description: The alias source field value
+          schema: {}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid field
+          x-request:
+            path-params:
+              field: abc
+        404:
+          $ref: '#/responses/error'
+          description: Alias source not found
+          x-request:
+            path-params:
+              id: abc
+  /alias-source/{id}/operation:
+    post:
+      summary: Create an operation that relates to a given alias source
+      description: >
+        Create an operation that relates to a given alias source.
+        Currently only type='REFRESH' is supported
+      parameters:
+        - $ref: '#/parameters/alias-source-with-all-id'
+          name: id
+        - name: operation
+          in: body
+          required: true
+          schema:
+            example:
+              type: REFRESH
+      responses:
+        201:
+          description: "When type='REFRESH': aliases for that source were refreshed"
+          schema:
+            $ref: '#/definitions/Operation'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid id or invalid operation type
+          x-request:
+            body:
+              type: SUPER_OPERATION
+        404:
+          $ref: '#/responses/error'
+          description: Alias source not found
+          x-request:
+            path-params:
+              id: abc
+  /config:
+    get:
+      summary: Return configurations for Medusa
+      description: Retrieve configurations
+      responses:
+        200:
+          description: The configuration information
+          schema:
+            $ref: '#/definitions/Config'
+  /config/{id}:
+    get:
+      summary: Return information about a given configuration
+      description: Retrieve information about a given configuration
+      parameters:
+        - $ref: '#/parameters/config-id'
+          name: id
+      responses:
+        200:
+          description: The configuration information
+          schema:
+            $ref: '#/definitions/Config'
+        404:
+          $ref: '#/responses/error'
+          description: Configuration not found
+          x-request:
+            path-params:
+              id: super
+  /config/{id}/{field}:
+    get:
+      summary: Return a specific field from a given configuration
+      description: Retrieve a specific field from a given configuration
+      parameters:
+        - $ref: '#/parameters/config-id'
+          name: id
+        - name: field
+          in: path
+          required: true
+          description: Any configuration field
+          x-example: themeName
+          type: string
+      responses:
+        200:
+          description: The configuration information
+          schema: {}
+        400:
+          $ref: '#/responses/error'
+          description: Invalid field
+          x-request:
+            path-params:
+              field: abc
+        404:
+          $ref: '#/responses/error'
+          description: Configuration not found
+          x-request:
+            path-params:
+              id: abc
+  /log:
+    get:
+      summary: Return log messages from the application.
+      description: Retrieve log messages. Default sorting is descending by timestamp
+      parameters:
+        - $ref: '#/parameters/log-level'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination_stream'
+          description: A paged array of log messages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Log'
+          examples:
+            'application/json; charset=UTF-8':
+              - $ref: '#/definitions/Log/example'
+              - $ref: '#/definitions/Log/example'
+              - $ref: '#/definitions/Log/example'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid log level or pagination parameter
+          x-request:
+            query-params:
+              log-level: abc
+    post:
+      summary: Log a message
+      description: Log a message
+      parameters:
+        - name: log
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Log'
+      responses:
+        201:
+          description: Log message successfully created
+          x-request:
+            body-update:
+              thread: ''
+          x-expect:
+            no-body: true
+        400:
+          $ref: '#/responses/error'
+          description: Invalid request
+          x-request:
+            body:
+              level: error
+  /authenticate:
+    post:
+      security: []
+      summary: Return a JWT for the provided user. This is required for all other routes
+      description: DESCRIPTION
+      parameters:
+        - name: auth
+          in: body
+          description: auth object
+          required: true
+          schema:
+            $ref: '#/definitions/Auth'
+      responses:
+        200:
+          description: The JWT for the user
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+          x-no-api-key: true
+          x-request:
+            body:
+              username: "${stash['web-username']}"
+              password: "${stash['web-password']}"
+        401:
+          $ref: '#/responses/error'
+          description: No credentials provided or invalid credentials
+          x-request:
+            body: {}
+  /search/backlog:
+    put:
+      summary: Search providers for results
+      description: |
+        When provided with a json formed body of search parameters,
+        queue a backlog search for a specific show with optional episode(s) or season
+      parameters:
+        - $ref: '#/parameters/search-backlog'
+      responses:
+        202:
+          description: Queue a backlog search for a specific show and episode(s)
+          x-request:
+            body:
+              showSlug: tvdb301824
+              episodes: [s01e01", "s01e02"]
+        400:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              episodes: [s01e01", "s01e02"]
+        404:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              showSlug: tvdb12345
+              episodes: [s01e01", "s01e02"]
+  /search/failed:
+    put:
+      summary: Search providers for results
+      description: |
+        When provided with a json formed body of search parameters,
+        queue a failed search for a specific show with optional episode(s).
+        The episodes will be marked as failed. Which will prevent them from being snatched again.
+        A new backlog search is started for the episodes.
+      parameters:
+        - $ref: '#/parameters/search-backlog'
+      responses:
+        202:
+          description: Queue a failed search for a specific show and episode(s)
+          x-request:
+            body:
+              showSlug: tvdb301824
+              episodes: [s01e01", "s01e02"]
+        400:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              episodes: [s01e01", "s01e02"]
+        404:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              showSlug: tvdb12345
+              episodes: [s01e01", "s01e02"]
+  /search/manual:
+    put:
+      summary: Search providers for results
+      description: |
+        When provided with a json formed body of search parameters,
+        queue a manual search for a specific show with optional episode(s) or season
+      parameters:
+        - $ref: '#/parameters/search-manual'
+      responses:
+        202:
+          description: Queue a manual search for a specific show and episode(s)
+          x-request:
+            body:
+              showSlug: tvdb301824
+              episodes: [s01e01", "s01e02"]
+        400:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              episodes: [s01e01", "s01e02"]
+        404:
+          $ref: '#/responses/error'
+          x-request:
+            body:
+              showSlug: tvdb12345
+              episodes: [s01e01", "s01e02"]
+  /search/daily:
+    put:
+      summary: Queue a forced daily search
+      description: Queue a forced daily search
+      responses:
+        202:
+          description: Queue a new daily search
+        400:
+          $ref: '#/responses/error'
+          x-disabled: true
+  /search/{seriesid}:
+    get:
+      summary: Collect finished, running and queued searches for a specific show
+      description: |
+        The Series endpoint returns information about the Series added to Medusa.
+      parameters:
+        - $ref: '#/parameters/series-id'
+      responses:
+        200:
+          description: An array of searched episode objects with information on the type of search used
+          schema:
+            items:
+              $ref: '#/definitions/SearchedEpisode'
+        400:
+          $ref: '#/responses/error'
+          x-disabled: true
+
+definitions:
+  Series:
+    type: object
+    properties:
+      id:
+        type: object
+        description: |
+          All of the ids mapped to a certain Series, at least one of these is required.
+        properties:
+          tvdb:
+            type: integer
+            format: int32
+            minimum: 1
+            description: This is the ID from thetvdb.com
+          tvmaze:
+            type: integer
+            format: int32
+            minimum: 1
+            description: This is the ID from tvmaze.com
+          imdb:
+            type: string
+            description: This is the ID from imdb.com
+          slug:
+            type: string
+            description: Show's slug
+            example: tvdb1234
+        example:
+          tvdb: 1234
+          tvmaze: 5678
+          imdb: tt90123
+      title:
+        type: string
+        description: |
+          This is the title of the series, this should be in the main
+          language the series was originally created in. If other
+          titles exist for other languages they will be part of the "akas" field.
+      indexer:
+        type: string
+        description: "Indexer name"
+        example: tvdb
+      network:
+        type: string
+        example: CBS
+      type:
+        type: string
+        example: Scripted
+      status:
+        type: string
+        enum: [Continuing, Ended]
+      airs:
+        type: string
+        description: "Air time"
+        example: "Thursday 8:00 PM"
+      airsFormatValid:
+        type: boolean
+        description: "Tests the airs format"
+      language:
+        type: string
+        description: Language code
+        example: en
+      showType:
+        type: string
+        enum: [series, anime, sports]
+      seasonCount:
+        type: array
+        description: Array with shows seasons and their episode count
+        items:
+          type: object
+          properties:
+            season:
+              type: integer
+              description: Shows season number
+            episodeCount:
+              type: integer
+              description: Seasons episode count
+      imdbInfo:
+        type: object
+        description: "Object with additional show information retrieved from imdb"
+        properties:
+          akas:
+            type: string
+          certificates:
+            type: string
+          countries:
+            type: string
+          countryCodes:
+            type: string
+          genres:
+            type: string
+          imdbId:
+            type: string
+          imdbInfoId:
+            type: integer
+          indexer:
+            type: integer
+          indexerId:
+            type: integer
+          lastUpdate:
+            type: integer
+          plot:
+            type: string
+          rating:
+            type: string
+          runtimes:
+            type: integer
+          title:
+            type: string
+          votes:
+            type: integer
+      year:
+        type: object
+        properties:
+          start:
+            type: integer
+            format: int32
+            minimum: 1900
+            maximum: 2200
+            description: Starting year
+          end:
+            type: integer
+            format: int32
+            minimum: 1900
+            maximum: 2200
+            description: End year. Available in detailed view
+      nextAirDate:
+        type: string
+        format: date-time
+        description: Next episode air date
+        x-nullable: true
+      runtime:
+        type: integer
+        minimum: 1
+        format: int32
+        description: Episodes runtime in minutes
+      genres:
+        type: array
+        items:
+          type: string
+        example: [Drama, Romance]
+      rating:
+        type: object
+        properties:
+          imdb:
+            type: object
+            properties:
+              stars:
+                type: string
+                description: "IMDB's star rating from 0 to 10"
+              votes:
+                type: integer
+                format: int32
+                minimum: 1
+                description: "Total number of votes"
+        example:
+          imdb:
+            stars: '8.3'
+            votes: 558507
+      classification:
+        type: string
+        enum: ['', 'TV-Y', 'TV-Y7', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA']
+        description: TV Parental Guidelines
+      cache:
+        type: object
+        description: Image cache locations
+        properties:
+          banner:
+            type: string
+            example: "/home/user/Medusa/cache/images/301824.banner.jpg"
+          poster:
+            type: string
+            example: /home/user/Medusa/cache/images/301824.poster.jpg
+      countries:
+        type: array
+        items:
+          type: string
+          description: Country codes
+      config:
+        type: object
+        description: Series configuration and preferences
+        properties:
+          location:
+            type: string
+            description: Series home folder
+            example: "/library/My Series"
+          locationValid:
+            type: boolean
+            description: Result of a stat on the configured location
+          qualities:
+            type: object
+            description: Qualities settings
+            properties:
+              allowed:
+                type: array
+                items:
+                  type: integer
+                  format: int32
+              preferred:
+                type: array
+                items:
+                  type: integer
+                  format: int32
+          paused:
+            type: boolean
+            description: Whether series is paused
+          airByDate:
+            type: boolean
+            description: Whether episodes are indexed by air date
+          subtitlesEnabled:
+            type: boolean
+            description: Whether subtitles download is enabled
+          dvdOrder:
+            type: boolean
+            description: Whether episode numbering follows DVD order instead of air date
+          seasonFolders:
+            type: boolean
+            description: Whether episodes are stored in a season folder structure
+          scene:
+            type: boolean
+          defaultEpisodeStatus:
+            type: string
+            description: Initial status for newly added episodes
+          aliases:
+            type: array
+            description: Local aliases for the series
+            items:
+              type: string
+            example: [MySeries, MS]
+          release:
+            type: object
+            description: Release configuration
+            properties:
+              blacklist:
+                type: array
+                description: Blacklisted release words
+                items:
+                  type: string
+              whitelist:
+                type: array
+                description: Whitelisted release words
+                items:
+                  type: string
+              ignoredWords:
+                type: array
+                items:
+                  type: string
+              requiredWords:
+                type: array
+                description: Required release words
+                items:
+                  type: string
+              requiredWordsExclude:
+                type: boolean
+                description: Exclude required words from global required words list
+              ignoredWordsExclude:
+                type: boolean
+                description: Exclude ignored words from global ignored words list
+          airdateOffset:
+            type: integer
+            description: Amount of hours we want to start searching early (-1) or late (1) for new episodes
+      seasons:
+        type: array
+        description: Episodes grouped by season. Available through the episodes query param.
+        items:
+          type: object
+          properties:
+            season:
+              type: integer
+              format: int32
+              description: Season number
+            episodes:
+              type: array
+              description: Episodes for the given season
+              items:
+                $ref: '#/definitions/Episode'
+      episodeCount:
+        type: integer
+        description: Total number of episodes. Available through the episodes query param.
+      size:
+        type: integer
+        description: Show size on disk calculated from the shows configured location. Available through the detailed query param.
+      showQueueStatus:
+        type: array
+        description: Array of objects with information on the different queues used for operations on a show. Available through the detailed query param.
+        items:
+          type: object
+      xemNumbering:
+        type: array
+        description:
+          Array of objects with a mapping of indexer numbering to scene numbering. Available through the detailed query param.
+          Mappings are pulled from TheXem.de.
+        items:
+          $ref: '#/definitions/episodeMapping'
+      sceneAbsoluteNumbering:
+        type: array
+        description:
+          Array of manually configured episode mappings of absolute to scene absolute numbering.
+        items:
+          type: object
+          properties:
+            absolute:
+              type: integer
+              format: int32
+              description: Absolute episode number.
+            sceneAbsolute:
+              type: integer
+              format: int32
+              description: Scene absolute episode number.
+      allSceneExceptions:
+        type: array
+        description: Array of objects with xem indexer to scene mappings. Available through the detailed query param.
+        items:
+          type: object
+          properties:
+            season:
+              type: integer
+              format: int32
+              description: Absolute episode number.
+            exceptions:
+              type: array
+              description: Show name exceptions (season = -1) or season exceptions (season > 0)
+              items:
+                type: string
+                description: Scene name for a show or season
+      xemAbsoluteNumbering:
+        type: array
+        description:
+          Array of manually configured episode mappings of absolute to scene absolute numbering.
+          Mappings are pulled from TheXem.de.
+        items:
+          type: object
+          properties:
+            absolute:
+              type: integer
+              format: int32
+              description: Absolute episode number.
+            sceneAbsolute:
+              type: integer
+              format: int32
+              description: Scene absolute episode number.
+      sceneNumbering:
+        type: array
+        description: Array of objects with a mapping of indexer numbering to scene numbering. Available through the detailed query param.
+        items:
+          $ref: '#/definitions/episodeMapping'
+  Episode:
+    type: object
+    properties:
+      identifier:
+        type: string
+        example: s03e07
+      id:
+        type: object
+        properties:
+          tvdb:
+            type: integer
+            format: int32
+            description: This is the ID from thetvdb.com
+          tvmaze:
+            type: integer
+            format: int32
+            description: This is the ID from tvmaze.com
+          imdb:
+            type: string
+            description: This is the ID from imdb.com
+        example:
+          tvdb: 2345
+          tvmaze: 6789
+          imdb: tt0123
+      season:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 1000
+      episode:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 10000
+      absoluteNumber:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 10000
+      airDate:
+        type: string
+        format: date-time
+        x-nullable: true
+      title:
+        type: string
+        description: Episode title
+      description:
+        type: string
+        description: Episode plot
+      content:
+        type: object
+        description: Additional content
+        properties:
+          hasNfo:
+            type: boolean
+            description: Whether the episode has an .nfo file
+          hasTbn:
+            type: boolean
+            description: Whether the episode has a thumbnail file
+      subtitles:
+        type: array
+        items:
+          type: string
+          description: Available subtitle languages
+      status:
+        type: string
+        description: Episode status
+      release:
+        type: object
+        description: The release details
+        properties:
+          name:
+            type: string
+            description: Original release name
+          group:
+            type: string
+            description: Original release group
+          proper:
+            type: boolean
+            description: Whether the release is proper
+          version:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10
+            description: Episode version (common in animes)
+      scene:
+        type: object
+        properties:
+          season:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+          episode:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10000
+          absoluteNumber:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 10000
+      file:
+        type: object
+        description: The episode file details
+        properties:
+          location:
+            type: string
+            description: The episode file location
+            example: '/library/My Series/Season 10/My Series - S03E07 - Super Episode.avi'
+          size:
+            type: integer
+            format: int64
+            minimum: 1
+            description: The file size in bytes
+      statistics:
+        type: object
+        description: Episode statistics. Available only in detailed view.
+        properties:
+          subtitleSearch:
+            type: object
+            description: subtitle search statistics
+            properties:
+              last:
+                type: string
+                format: date-time
+                description: Last subtitle search timestamp
+              count:
+                type: integer
+                format: int32
+                minimum: 0
+                description: search count
+      relatedEpisodes:
+        type: array
+        example: [s03e08, s03e09]
+        items:
+          type: string
+      wantedQualities:
+        type: array
+        items:
+          type: string
+      watched:
+        type: boolean
+        description: Whether the episode has been marked as watched
+  Auth:
+    description: Auth object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      exp:
+        type: integer
+        minimum: 3600
+        maximum: 31536000
+    required:
+      - username
+      - password
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+  Operation:
+    type: object
+    properties:
+      type:
+        type: string
+      creation:
+        type: string
+        format: date-time
+  Config:
+    type: object
+    properties:
+      main:
+        type: object
+        properties:
+          wikiUrl:
+            type: string
+          donationsUrl:
+            type: string
+          themeName:
+            type: string
+          namingForceFolders:
+            type: boolean
+          databaseVersion:
+            type: object
+            properties:
+              major:
+                type: integer
+              minor:
+                type: integer
+          layout:
+            type: object
+            properties:
+              show:
+                type: object
+                properties:
+                  specials:
+                    type: boolean
+                  allSeasons:
+                    type: boolean
+              home:
+                type: string
+              history:
+                type: string
+              schedule:
+                type: string
+          trimZero:
+            type: boolean
+          configFile:
+            type: string
+          animeSplitHome:
+            type: boolean
+          sortArticle:
+            type: boolean
+          sourceUrl:
+            type: string
+          fanartBackgroundOpacity:
+            type: number
+          emby:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          logDir:
+            type: string
+          posterSortby:
+            type: string
+          subtitles:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          fuzzyDating:
+            type: boolean
+          timePreset:
+            type: string
+          kodi:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          dbPath:
+            type: string
+          pythonVersion:
+            type: string
+          downloadUrl:
+            type: string
+          nzb:
+            type: object
+            properties:
+              username:
+                type: string
+              host:
+                type: string
+              enabled:
+                type: boolean
+              priority:
+                type: integer
+          release:
+            type: string
+          posterSortDir:
+            type: string
+          locale:
+            type: string
+          webRoot:
+            type: string
+          runsInDocker:
+            type: boolean
+          torrents:
+            type: object
+            properties:
+              username:
+                type: string
+              seedTime:
+                type: integer
+              rpcurl:
+                type: string
+              authType:
+                type: string
+              paused:
+                type: boolean
+              host:
+                type: string
+              path:
+                type: string
+              verifySSL:
+                type: boolean
+              highBandwidth:
+                type: boolean
+              enabled:
+                type: boolean
+              label:
+                type: string
+              labelAnime:
+                type: string
+              method:
+                type: string
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
+          news:
+            type: object
+            properties:
+              unread:
+                description: Number of unread news
+                type: integer
+          logs:
+            type: object
+            properties:
+              debug:
+                type: boolean
+              dbDebug:
+                type: boolean
+              loggingLevels:
+                type: object
+                properties:
+                  error:
+                    type: integer
+                    example: 40
+                  warning:
+                    type: integer
+                    example: 30
+                  info:
+                    type: integer
+                    example: 20
+                  debug:
+                    type: integer
+                    example: 10
+                  db:
+                    type: integer
+                    example: 5
+              numErrors:
+                description: Number of logged errors
+                type: integer
+              numWarnings:
+                description: Number of logged warnings
+                type: integer
+          postProcessing:
+            type: object
+            properties:
+              naming:
+                type: object
+                properties:
+                  stripYear:
+                    type: boolean
+                  pattern:
+                    type: string
+                  multiEp:
+                    type: integer
+                  patternAirByDate:
+                    type: string
+                  patternSports:
+                    type: string
+                  patternAnime:
+                    type: string
+                  enableCustomNamingAirByDate:
+                    type: boolean
+                  enableCustomNamingSports:
+                    type: boolean
+                  enableCustomNamingAnime:
+                    type: boolean
+                  animeMultiEp:
+                    type: integer
+                  animeNamingType:
+                    type: integer
+              showDownloadDir:
+                type: string
+              processAutomatically:
+                type: boolean
+              postponeIfSyncFiles:
+                type: boolean
+              postponeIfNoSubs:
+                type: boolean
+              renameEpisodes:
+                type: boolean
+              createMissingShowDirs:
+                type: boolean
+              addShowsWithoutDir:
+                type: boolean
+              moveAssociatedFiles:
+                type: boolean
+              nfoRename:
+                type: boolean
+              airdateEpisodes:
+                type: boolean
+              unpack:
+                type: boolean
+              deleteRarContent:
+                type: boolean
+              noDelete:
+                type: boolean
+              processMethod:
+                type: string
+              reflinkAvailable:
+                type: boolean
+              autoPostprocessorFrequency:
+                type: integer
+              syncFiles:
+                type: array
+              fileTimestampTimezone:
+                type: string
+              allowedExtensions:
+                type: array
+              extraScripts:
+                type: array
+              extraScriptsUrl:
+                type: string
+              multiEpStrings:
+                type: object
+      search:
+        type: object
+        properties:
+          general:
+            type: object
+            properties:
+              randomizeProviders:
+                type: boolean
+              downloadPropers:
+                type: boolean
+              checkPropersInterval:
+                type: string
+              propersSearchDays:
+                type: integer
+              backlogDays:
+                type: integer
+              backlogFrequency:
+                type: integer
+              minBacklogFrequency:
+                type: integer
+              dailySearchFrequency:
+                type: integer
+              minDailySearchFrequency:
+                type: integer
+              removeFromClient:
+                type: boolean
+              torrentCheckerFrequency:
+                type: integer
+              minTorrentCheckerFrequency:
+                type: integer
+              usenetRetention:
+                type: integer
+              trackersList:
+                type: array
+              allowHighPriority:
+                type: boolean
+              useFailedDownloads:
+                type: boolean
+              deleteFailed:
+                type: boolean
+              cacheTrimming:
+                type: boolean
+              maxCacheAge:
+                type: integer
+          filters:
+            type: object
+            properties:
+              ignored:
+                type: array
+              undesired:
+                type: array
+              preferred:
+                type: array
+              required:
+                type: array
+              ignoredSubsList:
+                type: array
+              ignoreUnknownSubs:
+                type: boolean
+          showDownloadDir:
+            type: string
+          processAutomatically:
+            type: boolean
+          postponeIfSyncFiles:
+            type: boolean
+          postponeIfNoSubs:
+            type: boolean
+          renameEpisodes:
+            type: boolean
+          createMissingShowDirs:
+            type: boolean
+          addShowsWithoutDir:
+            type: boolean
+          moveAssociatedFiles:
+            type: boolean
+          nfoRename:
+            type: boolean
+          airdateEpisodes:
+            type: boolean
+          unpack:
+            type: boolean
+          deleteRarContent:
+            type: boolean
+          noDelete:
+            type: boolean
+          processMethod:
+            type: string
+          reflinkAvailable:
+            type: boolean
+          autoPostprocessorFrequency:
+            type: integer
+          syncFiles:
+            type: array
+          fileTimestampTimezone:
+            type: string
+          allowedExtensions:
+            type: array
+          extraScripts:
+            type: array
+          extraScriptsUrl:
+            type: string
+          multiEpStrings:
+            type: object
+      notifiers:
+        type: object
+        properties:
+          kodi:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              alwaysOn:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+              update:
+                type: object
+                properties:
+                  library:
+                    type: boolean
+                  full:
+                    type: boolean
+                  onlyFirst:
+                    type: boolean
+              host:
+                type: array
+              username:
+                type: string
+              password:
+                type: string
+              libraryCleanPending:
+                type: boolean
+              cleanLibrary:
+                type: boolean
+          plex:
+            type: object
+            properties:
+              server:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  updateLibrary:
+                    type: boolean
+                  host:
+                    type: array
+                  https:
+                    type: boolean
+                  username:
+                    type: string
+                  password:
+                    type: string
+                  token:
+                    type: string
+              client:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  username:
+                    type: string
+                  host:
+                    type: array
+                  notifyOnSnatch:
+                    type: boolean
+                  notifyOnDownload:
+                    type: boolean
+                  notifyOnSubtitleDownload:
+                    type: boolean
+          emby:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              apiKey:
+                type: string
+          nmj:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              database:
+                type: string
+              mount:
+                type: string
+          nmjv2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              dbloc:
+                type: string
+              database:
+                type: string
+          synologyIndex:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+          synology:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pyTivo:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              name:
+                type: string
+              shareName:
+                type: string
+          growl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              password:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          prowl:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: array
+              messageTitle:
+                type: string
+              priority:
+                type: integer
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          libnotify:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushover:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              apiKey:
+                type: string
+              userKey:
+                type: string
+              device:
+                type: array
+              sound:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          boxcar2:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              accessToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushalot:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              authToken:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          pushbullet:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          join:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              device:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          freemobile:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          telegram:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              api:
+                type: string
+              id:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          twitter:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dmto:
+                type: string
+              username:
+                type: string
+              password:
+                type: string
+              prefix:
+                type: string
+              directMessage:
+                type: boolean
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          trakt:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              pinUrl:
+                type: string
+              username:
+                type: string
+              accessToken:
+                type: string
+              timeout:
+                type: integer
+              defaultIndexer:
+                type: integer
+              sync:
+                type: boolean
+              syncRemove:
+                type: boolean
+              syncWatchlist:
+                type: boolean
+              methodAdd:
+                type: integer
+              removeWatchlist:
+                type: boolean
+              removeSerieslist:
+                type: boolean
+              removeShowFromApplication:
+                type: boolean
+              startPaused:
+                type: boolean
+              blacklistName:
+                type: string
+          email:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              host:
+                type: string
+              port:
+                type: integer
+              from:
+                type: string
+              tls:
+                type: boolean
+              username:
+                type: string
+              password:
+                type: string
+              addressList:
+                type: array
+              subject:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+          slack:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              webhook:
+                type: string
+              notifyOnSnatch:
+                type: boolean
+              notifyOnDownload:
+                type: boolean
+              notifyOnSubtitleDownload:
+                type: boolean
+      clients:
+        type: object
+        properties:
+          nzb:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+              dir:
+                type: string
+              method:
+                type: string
+              nzbget:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  host:
+                    type: string
+                  priority:
+                    type: integer
+                  useHttps:
+                    type: boolean
+                  username:
+                    type: string
+              sabnzbd:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  categoryAnime:
+                    type: string
+                  categoryAnimeBacklog:
+                    type: string
+                  categoryBacklog:
+                    type: string
+                  forced:
+                    type: boolean
+                  host:
+                    type: string
+                  username:
+                    type: string
+          torrents:
+            type: object
+            properties:
+              username:
+                type: string
+              seedTime:
+                type: integer
+              rpcurl:
+                type: string
+              authType:
+                type: string
+              paused:
+                type: boolean
+              host:
+                type: string
+              path:
+                type: string
+              verifySSL:
+                type: boolean
+              highBandwidth:
+                type: boolean
+              enabled:
+                type: boolean
+              label:
+                type: string
+              labelAnime:
+                type: string
+              method:
+                type: string
+                enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "downloadstation", "rtorrent", "qbittorrent", "mlnet"]
+  Log:
+    type: object
+    properties:
+      timestamp:
+        type: string
+        format: date-time
+      level:
+        type: string
+        enum: [ERROR, WARNING, INFO, DEBUG, DB]
+      commit:
+        type: string
+      thread:
+        type: string
+      message:
+        type: string
+      threadId:
+        type: number
+      extra:
+        type: string
+      traceback:
+        type: array
+        items:
+          type: string
+      args:
+        type: array
+        items:
+          type: object
+      kwargs:
+        type: array
+        items:
+          type: object
+    example:
+      commit: '6a1db77'
+      level: INFO
+      message: Waiting for the DAILYSEARCHER thread to exit
+      thread: EVENT-QUEUE
+      timestamp: '2017-03-19 08:03:23'
+  AliasSource:
+    type: object
+    properties:
+      id:
+        type: string
+      lastRefresh:
+        type: integer
+        description: Last refresh in seconds since Epoch
+  Alias:
+    type: object
+    properties:
+      id:
+        type: integer
+        minimum: 1
+      series:
+        type: string
+      name:
+        type: string
+      season:
+        type: integer
+        minimum: 1
+        x-nullable: true
+      type:
+        type: string
+        x-nullable: true
+    example:
+      series: tvdb301824
+      name: TheBig
+      type: local
+  Metadata:
+    type: object
+    properties:
+      title:
+        type: string
+        description: Video title
+      path:
+        type: string
+        description: Video full path
+      duration:
+        type: string
+        description: Video duration
+        example: '0:19:39.208000'
+      size:
+        type: integer
+        format: int64
+        minimum: 0
+        description: Video file size in bytes
+      overall_bit_rate:
+        type: integer
+        format: int32
+        minimum: 0
+        description: Video overall bitrate
+      video:
+        type: array
+        items:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Track number
+            name:
+              type: string
+              description: Track name
+            language:
+              type: string
+              description: Track language
+            duration:
+              type: string
+              description: Track duration
+            size:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Video stream size in bytes
+            width:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Video width size (pixels)
+            height:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Video height size (pixels)
+            scan_type:
+              type: string
+              enum: [Progressive, Interlaced]
+              description: Video scan type
+            aspect_ratio:
+              type: number
+              minimum: 0
+              description: Video aspect ratio
+            pixel_aspect_ratio:
+              type: number
+              minimum: 0
+              description: Pixel aspect ratio
+            resolution:
+              type: string
+              description: Video resolution
+              enum:
+                - "480i"
+                - "720i"
+                - "1080i"
+                - "2160i"
+                - "4320i"
+                - "480p"
+                - "720p"
+                - "1080p"
+                - "2160p"
+                - "4320p"
+                - "240i"
+                - "288i"
+                - "360i"
+                - "576i"
+                - "240p"
+                - "288p"
+                - "360p"
+                - "576p"
+            frame_rate:
+              type: number
+              minimum: 0
+              description: Video frame rate (frames per second)
+            bit_depth:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Video bit depth
+            bit_rate:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Video bit rate
+            codec:
+              type: string
+              description: Video codec
+              enum:
+                - h263
+                - h264
+                - h265
+                - Mpeg1
+                - Mpeg2
+                - MsMpeg4v2
+                - MsMpeg4v3
+                - Mpeg4
+                - XviD
+                - DivX
+                - Jpeg
+                - Wmv1
+                - Wmv2
+                - Wmv3
+                - VC1
+                - QuickTime
+                - VP6
+                - VP7
+                - VP9
+            profile:
+              type: string
+              description: Video codec profile
+            encoder:
+              type: string
+              description: Video encoder
+            media_type:
+              type: string
+              description: Video media type
+            forced:
+              type: boolean
+              description: Whether this track is forced
+            default:
+              type: boolean
+              description: Whether this track is default
+      audio:
+        type: array
+        items:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Track number
+            name:
+              type: string
+              description: Track name
+            language:
+              type: string
+              description: Track language
+            duration:
+              type: string
+              description: Track duration
+            size:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Audio stream size in bytes
+            codec:
+              type: string
+              description: Audio codec
+              enum:
+                - AC3
+                - EAC3
+                - TrueHD
+                - DolbyAtmos
+                - DTS
+                - DTS-HD
+                - AAC
+                - FLAC
+                - PCM
+                - MP2
+                - MP3
+                - Vorbis
+                - Opus
+                - WMAv1
+                - WMAv2
+                - WMAPro
+            profile:
+              type: string
+              description: Audio codec profile
+              enum:
+                - Main
+                - LC
+            channels_count:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Number of channels
+            channel_positions:
+              type: string
+              description: Channel positions
+            channels:
+              type: string
+              description: Audio channels
+              enum:
+                - "1.0"
+                - "2.0"
+                - "5.1"
+                - "7.1"
+            bit_depth:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Audio bit depth
+            bit_rate:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Audio bit rate
+            bit_rate_mode:
+              type: string
+              enum: [Constant, Variable]
+            sampling_rate:
+              type: integer
+              format: int32
+              description: Audio sampling rate
+            compression:
+              type: string
+              enum: [Lossy, Lossless]
+              description: Audio compression
+            forced:
+              type: boolean
+              description: Whether this track is forced
+            default:
+              type: boolean
+              description: Whether this track is default
+      subtitle:
+        type: array
+        items:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: int32
+              minimum: 0
+              description: Track number
+            name:
+              type: string
+              description: Track name
+            language:
+              type: string
+              description: Track language
+            hearing_impaired:
+              type: boolean
+              description: Whether this track is for hearing impaired people
+            format:
+              type: string
+              description: Subtitles format
+              enum:
+                - PGS
+                - VobSub
+                - SubRip
+                - SubStationAlpha
+                - AdvancedSubStationAlpha
+                - Tx3g
+            encoding:
+              type: string
+              description: Subtitles encoding
+              enum:
+                - 'utf-8'
+            forced:
+              type: boolean
+              description: Whether this track is forced
+            default:
+              type: boolean
+              description: Whether this track is default
+  episodeMapping:
+    type: object
+    description:
+      A mapping from a source season/episode number to a desition season/episode number. Used to map indexer numbering
+      like tvdb to scene numbering.
+    properties:
+      source:
+        type: object
+        properties:
+          season:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+          episode:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10000
+      destination:
+        type: object
+        properties:
+          season:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 1000
+          episode:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 10000
+
+
+  SearchedEpisode:
+      type: object
+      properties:
+        indexer:
+          type: integer
+          format: int32
+          description: Internal id for the shows indexer
+        series_id:
+          type: integer
+          format: int32
+          description: Unique id for the show from a shows indexer
+        episode:
+          type: integer
+          format: int32
+          description: Episode number
+        season:
+          type: integer
+          format: int32
+          description: Season number
+        episodeindexerid:
+          type: integer
+          format: int32
+          description: Unique id for the episode from a shows indexer
+        searchstatus:
+          enum:
+            - "finished"
+            - "searching"
+            - "queued"
+          description: Status of the search
+        status:
+          type: string
+          description: Episode status
+        quality_name:
+          type: string
+          description: Episode quality
+        overview:
+          type: string
+          description: Episode status/quality overview string
+
+parameters:
+  detailed:
+    name: detailed
+    in: query
+    required: false
+    description: Whether response should contain detailed information
+    type: boolean
+  episodes:
+    name: episodes
+    in: query
+    required: false
+    description: Whether response should contain episodes information
+    type: boolean
+  page:
+    name: page
+    in: query
+    required: false
+    description: The page to be returned. Default value is 1
+    type: integer
+    format: int32
+  limit:
+    name: limit
+    in: query
+    required: false
+    description: Maximum number of items per page. Default value is 20. Max value is 1000
+    type: integer
+    format: int32
+  sort:
+    name: sort
+    in: query
+    required: false
+    description: The field (or list of fields) to be used while sorting. Use + or - prefix to define sorting order.
+    type: string
+  series-id:
+    name: seriesid
+    in: path
+    required: true
+    description: The series id to retrieve. E.g. tvdb1234
+    x-example: tvdb301824
+    type: string
+  episode-id:
+    name: episode-id
+    in: path
+    required: true
+    description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
+    x-example: s01e01
+    type: string
+  episode-id-delete:
+    name: episode-id-delete
+    in: path
+    required: true
+    description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
+    x-example: s01e02
+    type: string
+  alias-id:
+    name: id
+    in: path
+    required: true
+    description: The alias id to retrieve
+    x-example: 123456
+    type: integer
+    format: int32
+  alias-source-id:
+    name: alias-source-id
+    in: path
+    required: true
+    description: The alias-source id to retrieve
+    type: string
+    enum: [local, xem, anidb]
+  alias-source-with-all-id:
+    name: alias-source-id
+    in: path
+    required: true
+    description: The alias-source id to retrieve
+    type: string
+    enum: [all, local, xem, anidb]
+  asset-id:
+    name: asset-id
+    in: path
+    required: true
+    description: The asset to retrieve
+    type: string
+    enum:
+      - banner
+      - bannerThumb
+      - fanart
+      - poster
+      - posterThumb
+      - network
+      - small
+  config-id:
+    name: config-id
+    in: path
+    required: true
+    description: The configuration to retrieve
+    type: string
+    enum:
+      - main # Keep main first, as the tests use it
+      - consts
+      - metadata
+      - notifiers
+      - search
+      - system
+  log-level:
+    name: level
+    in: query
+    required: false
+    description: The log level
+    type: string
+    enum: [ERROR, WARNING, INFO, DEBUG, DB]
+  search-backlog:
+    in: body
+    name: Search Config
+    description: Object with required information to search for a specific show's episode(s).
+    schema:
+      type: object
+      required:
+        - showSlug
+        - episodes
+      properties:
+        showSlug:
+          description: Show slug consisting of the indexer name + indexers id
+          type: string
+          example: tvdb301824
+        episodes:
+          description: An array of searched episode objects with information on the type of search used
+          type: array
+          items:
+            type: string
+          example: ["s01e01", "s03e03"]
+        options:
+          description: TBD
+          type: object
+  search-manual:
+    in: body
+    name: Search Config
+    description: Object with required information to search for a specific show's episode(s).
+    schema:
+      type: object
+      required:
+        - showSlug
+        - episodes
+      properties:
+        showSlug:
+          description: Show slug consisting of the indexer name + indexers id
+          type: string
+          example: tvdb301824
+        episodes:
+          description: An array of searched episode objects with information on the type of search used
+          type: array
+          items:
+            type: string
+          example: ["s01e01", "s03e03"]
+        options:
+          description: Type of the manual search. 'episode' or 'season' search.
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+                - 'episode'
+                - 'season'
+              example: 'episode'
+responses:
+  pagination:
+    description: Pagination response
+    headers:
+      X-Pagination-Page:
+        type: integer
+        format: int32
+        description: The page number
+      X-Pagination-Limit:
+        type: integer
+        format: int32
+        description: The pagination limit
+      X-Pagination-Count:
+        type: integer
+        format: int32
+        description: The total items count
+      Link:
+        type: string
+        description: "The pagination links: next, last, first and previous"
+  pagination_stream:
+    description: Pagination response
+    headers:
+      X-Pagination-Page:
+        type: integer
+        format: int32
+        description: The page number
+      X-Pagination-Limit:
+        type: integer
+        format: int32
+        description: The pagination limit
+      Link:
+        type: string
+        description: "The pagination links: next, last, first and previous"
+  error:
+    description: Unexpected error
+    schema:
+      $ref: '#/definitions/Error'

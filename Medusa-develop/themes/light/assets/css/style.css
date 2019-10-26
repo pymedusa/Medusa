@@ -1,0 +1,4192 @@
+strong.warning {
+    color: red;
+}
+
+/* =======================================================================
+inc_top.mako
+========================================================================== */
+
+.header {
+    display: block;
+    clear: right;
+}
+
+.navbaricon {
+    margin-top: -15px;
+    margin-bottom: -15px;
+}
+
+.icon-white {
+    background-image: url("../images/glyphicons-halflings-white.png");
+}
+
+.ui-autocomplete-loading {
+    background: rgb(255, 255, 255) url("../images/loading16.gif") right center no-repeat;
+}
+
+.browserDialog.busy .ui-dialog-buttonpane {
+    background: url("../images/loading.gif") 10px 50% no-repeat !important;
+}
+
+.ui-progressbar .ui-progressbar-overlay {
+    background: url("../css/lib/images/animated-overlay.gif");
+}
+
+.ui-dialog,
+.ui-dialog-buttonpane {
+    background: rgb(236, 234, 223) url("../css/lib/images/ui-bg_fine-grain_10_eceadf_60x60.png") 50% 50% repeat !important;
+}
+
+/* restore 1.8.x resize handle on dialog button pane */
+.ui-dialog .ui-resizable-se {
+    width: 14px;
+    height: 14px;
+    right: 3px;
+    bottom: 3px;
+    background-position: -80px -224px;
+}
+
+.ui-accordion-content,
+.ui-tabs-panel {
+    background: rgb(237, 237, 237) !important;
+    background-image: none !important;
+}
+
+.ui-widget {
+    font-family: inherit;
+    font-size: 1em;
+}
+
+.ui-widget-content {
+    background: rgb(220, 220, 220) url("../css/lib/images/ui-bg_highlight-soft_75_dcdcdc_1x100.png") 50% top repeat-x;
+}
+
+.ui-widget-header {
+    background: rgb(255, 255, 255) url("../css/lib/images/ui-bg_flat_0_ffffff_40x100.png") 50% 50% repeat-x;
+}
+
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgb(204, 204, 204);
+}
+
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+    background: rgb(255, 255, 255);
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+    background: rgb(247, 247, 247);
+}
+
+.ui-state-highlight,
+.ui-widget-content .ui-state-highlight,
+.ui-widget-header .ui-state-highlight {
+    background: rgb(251, 249, 238) url("../css/lib/images/ui-bg_glass_55_fbf9ee_1x400.png") 50% 50% repeat-x;
+}
+
+.ui-state-error,
+.ui-widget-content .ui-state-error,
+.ui-widget-header .ui-state-error {
+    background: rgb(254, 241, 236) url("../css/lib/images/ui-bg_glass_95_fef1ec_1x400.png") 50% 50% repeat-x;
+}
+
+.ui-icon,
+.ui-widget-content .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_222222_256x240.png");
+}
+
+.ui-widget-header .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_222222_256x240.png");
+}
+
+.ui-state-default .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_8c291d_256x240.png");
+}
+
+.ui-state-hover .ui-icon,
+.ui-state-focus .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_222222_256x240.png");
+}
+
+.ui-state-active .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_8c291d_256x240.png");
+}
+
+.ui-state-highlight .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_2e83ff_256x240.png");
+}
+
+.ui-state-error .ui-icon,
+.ui-state-error-text .ui-icon {
+    background-image: url("../css/lib/images/ui-icons_cd0a0a_256x240.png");
+}
+
+.ui-widget-overlay {
+    background: rgb(170, 170, 170) url("../css/lib/images/ui-bg_flat_0_aaaaaa_40x100.png") 50% 50% repeat-x;
+}
+
+.ui-widget-shadow {
+    background: rgb(0, 0, 0) url("../css/lib/images/ui-bg_flat_0_000000_40x100.png") 50% 50% repeat-x;
+}
+
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited {
+    color: rgb(20, 15, 6);
+    text-decoration: none;
+}
+
+.ui-state-default a,
+.ui-state-default a:link,
+.ui-state-default a:visited {
+    color: rgb(34, 34, 34);
+    text-decoration: none;
+}
+
+.ui-tabs {
+    padding: 0;
+    background: none;
+    border-width: 0;
+}
+
+.ui-tabs .ui-tabs-nav {
+    padding-left: 0;
+    background: transparent;
+    border-width: 0;
+    border-radius: 0;
+}
+
+.ui-tabs .ui-tabs-panel {
+    background-color: rgb(247, 247, 247) !important;
+    border: 1px solid rgb(204, 204, 204) !important;
+    padding: 1em;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.ui-tabs-nav > :not(.ui-tabs-active) {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+#content {
+    margin-left: auto;
+    margin-right: auto;
+    clear: both;
+}
+
+.upgrade-notification {
+    text-align: center;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+[class^="menu-icon-"],
+[class*=" menu-icon-"] {
+    background: url("../images/menu/16x_sprite_colored_menu_icons.png");
+    height: 16px;
+    width: 16px;
+    display: inline-block;
+    position: relative;
+    float: left;
+}
+
+.menu-icon-addshow {
+    background-position: 0 0;
+}
+
+.menu-icon-anime {
+    background-position: -21px 0;
+}
+
+.menu-icon-backlog-view {
+    background-position: -42px 0;
+}
+
+.menu-icon-backlog {
+    background-position: -63px 0;
+}
+
+.menu-icon-bittorrent {
+    background-position: -84px 0;
+}
+
+.menu-icon-config-index {
+    background-position: -105px 0;
+}
+
+.menu-icon-config {
+    background-position: -126px 0;
+}
+
+.menu-icon-failed-download {
+    background-position: -147px 0;
+}
+
+.menu-icon-home {
+    background-position: -168px 0;
+}
+
+.menu-icon-manage {
+    background-position: -189px 0;
+}
+
+.menu-icon-manage-searches {
+    background-position: -210px 0;
+}
+
+.menu-icon-poster {
+    background-position: -231px 0;
+}
+
+.menu-icon-postprocess {
+    background-position: -252px 0;
+}
+
+.menu-icon-restart {
+    background-position: -273px 0;
+}
+
+.menu-icon-shutdown {
+    background-position: -294px 0;
+}
+
+.menu-icon-update {
+    background-position: -315px 0;
+}
+
+.menu-icon-viewlog-errors {
+    background-position: -336px 0;
+}
+
+.menu-icon-viewlog {
+    background-position: -357px 0;
+}
+
+.menu-icon-kodi {
+    background-position: -378px 0;
+}
+
+.menu-icon-help {
+    background-position: -399px 0;
+}
+
+.menu-icon-info {
+    background-position: -418px 0;
+}
+
+.menu-icon-error {
+    background-position: -436px 0;
+}
+
+.menu-icon-news {
+    background-position: -456px 0;
+}
+
+.menu-icon-irc {
+    background-position: -478px 0;
+}
+
+.menu-icon-changelog {
+    background-position: -495px 0;
+}
+
+.menu-icon-support {
+    background-position: -516px 0;
+}
+
+.menu-icon-plex {
+    background-position: -536px 0;
+}
+
+.menu-icon-backup {
+    background-position: -556px 0;
+}
+
+.menu-icon-provider {
+    background-position: -576px 0;
+}
+
+.menu-icon-notification {
+    background-position: -597px 0;
+}
+
+.menu-icon-emby {
+    background-position: -614px 0;
+}
+
+.menu-icon-blackhole {
+    background-position: -632px 0;
+}
+
+.menu-icon-schedule {
+    background-position: -653px 0;
+}
+
+.menu-icon-manage2 {
+    background-position: -673px 0;
+}
+
+.menu-icon-history {
+    background-position: -695px 0;
+}
+
+.menu-icon-trash {
+    background-position: -711px 0;
+}
+
+.menu-icon-cut {
+    background-position: -727px 0;
+}
+
+.menu-icon-select {
+    background-position: -742px 0;
+}
+
+.enable-daily-search-icon {
+    background-image: url("../images/search_daily_8x8.png") !important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-backlog-search-icon {
+    background-image: url("../images/search_backlog_8x8.png") !important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+.enable-manual-search-icon {
+    background-image: url("../images/search_manual_8x8.png") !important;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    margin-right: 3px;
+}
+
+/* =======================================================================
+inc_bottom.mako
+========================================================================== */
+
+.footer {
+    width: 100%;
+    padding: 20px 0;
+    color: rgb(78, 78, 78);
+    text-align: center;
+    font-size: 12px;
+}
+
+.footerhighlight {
+    color: rgb(17, 17, 17);
+    display: inline;
+}
+
+/* =======================================================================
+history.mako
+========================================================================== */
+.layout-controls {
+    padding-top: 24px;
+}
+
+.fanartOpacity {
+    opacity: 0.9;
+}
+
+/* =======================================================================
+home.mako
+========================================================================== */
+
+.imgbanner .banner {
+    border: 1px solid rgb(204, 204, 204);
+    overflow: hidden;
+    height: 66px;
+    border-radius: 8px;
+    width: 360px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.imgsmallposter .small {
+    height: 66px;
+    overflow: hidden;
+    border-radius: 3px;
+    vertical-align: middle;
+    width: 45px;
+    border: 1px solid rgb(204, 204, 204);
+    margin-right: 5px;
+}
+
+.search {
+    margin-bottom: 10px;
+}
+
+.ui-progressbar {
+    height: 20px;
+    line-height: 18px;
+}
+
+.ui-progressbar .ui-progressbar-value {
+    box-sizing: content-box !important;
+    height: 20px;
+}
+
+.progressbarText {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    text-align: center;
+    text-shadow: 0 0 0.1em rgb(255, 255, 255);
+    font-size: 12px;
+    color: rgb(0, 0, 0);
+}
+
+.progress-100,
+.progress-80,
+.progress-60,
+.progress-40,
+.progress-20 {
+    border-radius: 3px;
+}
+
+.progress-100 {
+    background-image: -moz-linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
+    background-image: linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
+    background-image: -webkit-linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
+    background-image: -o-linear-gradient(rgb(57, 95, 7), rgb(42, 71, 5)) !important;
+}
+
+.progress-80 {
+    background-image: -moz-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+    background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
+}
+
+.progress-60 {
+    background-image: -moz-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+    background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
+}
+
+.progress-40 {
+    background-image: -moz-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+    background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
+}
+
+.progress-20 {
+    background-image: -moz-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+    background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
+}
+
+div.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 85%;
+}
+
+div.xem {
+    position: absolute;
+    right: 1px;
+    top: 0;
+}
+
+/* Show options */
+
+.show-option {
+    float: left;
+    margin-left: 10px;
+    line-height: 40px;
+}
+
+.show-add-options > div {
+    float: left;
+    padding-right: 10px;
+    line-height: 40px;
+}
+
+.show-grid {
+    display: none;
+    margin-bottom: 60px !important;
+}
+
+.nav-show-list {
+    position: relative;
+    margin-top: 4px;
+    background-color: transparent;
+    border: none;
+    float: left;
+}
+
+.nav-show-list .icon-bar {
+    display: block;
+    width: 22px;
+    height: 3px;
+    margin-top: 4px;
+    background-color: rgb(51, 51, 51);
+}
+
+#container-series,
+#container-anime {
+    margin: 0 auto;
+}
+
+.loading-spinner {
+    background-image: url("../images/loading32.gif");
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}
+
+.show-container {
+    margin: 4px;
+    background-color: rgb(243, 243, 243);
+    border: 5px solid rgb(243, 243, 243);
+    overflow: hidden;
+    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
+}
+
+.aligner {
+    display: flex;
+    align-items: center;
+}
+
+/* FF hack */
+@-moz-document url-prefix() {
+    .aligner {
+        flex-flow: column-reverse;
+        align-items: inherit;
+    }
+}
+
+/* IE 11 hack */
+@media all and (-ms-high-contrast: none) {
+    .poster-overlay {
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+
+.show-details {
+    height: 32px;
+    overflow: hidden;
+}
+
+/* Used by isotope scaling */
+.show-image {
+    max-width: 100%;
+    overflow: hidden;
+    border: 1px solid rgb(136, 136, 136);
+}
+
+.background-image img {
+    width: 100%;
+    overflow: hidden;
+}
+
+.poster-overlay {
+    position: absolute;
+}
+
+.show-container .ui-progressbar {
+    height: 7px !important;
+    top: -2px;
+}
+
+.show-container .ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-right,
+.ui-corner-br {
+    border-bottom-right-radius: 0;
+}
+
+.show-container .ui-corner-all,
+.ui-corner-bottom,
+.ui-corner-left,
+.ui-corner-bl {
+    border-bottom-left-radius: 0;
+}
+
+.show-container .ui-corner-all,
+.ui-corner-top,
+.ui-corner-right,
+.ui-corner-tr {
+    border-top-right-radius: 0;
+}
+
+.show-container .ui-corner-all,
+.ui-corner-top,
+.ui-corner-left,
+.ui-corner-tl {
+    border-top-left-radius: 0;
+}
+
+.show-container .ui-widget-content {
+    border-top: 1px solid rgb(17, 17, 17);
+    border-bottom: 1px solid rgb(17, 17, 17);
+    border-left: 0;
+    border-right: 0;
+}
+
+.ui-progressbar .progress-20 {
+    border: none;
+}
+
+.show-container .progress-20,
+.show-container .progress-40,
+.show-container .progress-60,
+.show-container .progress-80 {
+    border-radius: 0;
+    height: 7px;
+}
+
+.show-title {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 11px;
+    margin: 4px 4px 0;
+}
+
+.show-attributes {
+    margin: 4px 4px 0;
+}
+
+.show-title::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    width: 20px;
+    height: 100%;
+    top: 0;
+    right: 0;
+    background-image: -webkit-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -moz-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -ms-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -o-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: linear-gradient(to left, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+}
+
+.show-date {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 11px;
+    margin: 0 4px 4px;
+    color: rgb(148, 148, 148);
+}
+
+.show-date::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    width: 20px;
+    height: 100%;
+    top: 0;
+    right: 0;
+    background-image: -webkit-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -moz-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -ms-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: -o-linear-gradient(right, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+    background-image: linear-gradient(to left, rgba(243, 243, 243, 1), rgba(243, 243, 243, 0));
+}
+
+.show-table {
+    text-align: center;
+    vertical-align: middle;
+    width: 33%;
+}
+
+.show-add {
+    font-size: 11px;
+    text-align: left;
+    display: block;
+}
+
+.show-status {
+    font-size: 11px;
+    text-align: left;
+    display: block;
+}
+
+.show-network-image {
+    width: 50px;
+    height: auto;
+}
+
+.show-dlstats {
+    font-size: 11px;
+    text-align: left;
+    display: block;
+    margin-left: 4px;
+}
+
+.show-quality {
+    font-size: 11px;
+    text-align: right;
+    display: block;
+    margin-right: 4px;
+}
+
+#sort-by {
+    display: inline;
+    list-style-type: none;
+    padding: 0;
+    margin-left: 5px;
+}
+
+#sort-by ul,
+#sort-by li {
+    display: inline;
+    padding: 0;
+}
+
+.posterview {
+    margin: 0 auto;
+    position: relative;
+}
+
+td.tvShow a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(66, 139, 202);
+}
+
+#popover-target label {
+    margin: 2px 4px 2px 0;
+    display: block;
+}
+
+#popover-target input {
+    margin-left: 5px;
+}
+
+.popover {
+    margin-left: -50px;
+}
+
+.min-cell-width {
+    width: 1px;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+/* =======================================================================
+home_addShows.mako
+========================================================================== */
+
+#addShowPortal {
+    padding: 10px 0;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#addShowPortal a {
+    padding: 10px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-bottom: 15px;
+}
+
+div.button {
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 10px;
+}
+
+div.buttontext {
+    display: table-cell;
+    padding-left: 20px;
+    text-align: left;
+    white-space: normal;
+}
+
+div.buttontext h3 {
+    margin-top: 10px;
+}
+
+div.buttontext p {
+    font-size: 13px;
+}
+
+[class^="add-list-icon-"],
+[class*=" add-list-icon-"] {
+    background: url("../images/32x_sprite_colored_add_lists.png");
+    height: 32px;
+    width: 32px;
+    display: inline-block;
+    position: relative;
+    top: 2px;
+    float: left;
+}
+
+.add-list-icon-addnewshow {
+    background-position: 0 0;
+}
+
+.add-list-icon-addtrakt {
+    background-position: -37px 0;
+}
+
+.add-list-icon-addimdb {
+    background-position: -76px 0;
+}
+
+.add-list-icon-addexistingshow {
+    background-position: -113px 0;
+}
+
+.add-list-icon-addanime {
+    background-position: -150px 0;
+}
+
+/* =======================================================================
+home_newShow.mako
+========================================================================== */
+
+#addShowForm,
+#recommendedShowsForm {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 10px 0;
+    font-size: 13px;
+}
+
+#addShowForm > div {
+    width: 100% !important;
+}
+
+#addShowForm > div:nth-child(2) > div {
+    position: relative !important;
+}
+
+.newShowPortal {
+    max-width: 960px;
+    padding: 10px 0;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+#displayText {
+    padding: 8px;
+    overflow: hidden;
+    font-size: 14px;
+    background-color: rgb(239, 239, 239);
+    border: 1px solid rgb(223, 222, 222);
+}
+
+div.search-results {
+    height: 100%;
+}
+
+div.search-results > div.no-results {
+    margin-top: 15px;
+}
+
+table.search-results {
+    margin-top: 15px;
+    border-collapse: collapse;
+    border: 1px solid rgb(223, 222, 222);
+}
+
+table.search-results th,
+table.search-results td {
+    border: 1px solid rgb(223, 222, 222);
+    padding: 5px;
+    vertical-align: middle;
+    text-align: left;
+    max-width: 370px;
+}
+
+table.search-results th {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results tbody tr.selected,
+table.search-results tbody tr.selected:hover {
+    background-color: rgb(205, 233, 255);
+}
+
+table.search-results tbody tr:hover {
+    background-color: rgb(239, 239, 239);
+}
+
+table.search-results td.search-result {
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.search-results th.premiere,
+table.search-results td.premiere {
+    text-align: center;
+    max-width: 90px;
+}
+
+table.search-results th.network,
+table.search-results td.network {
+    max-width: 200px;
+}
+
+table.search-results th.indexer,
+table.search-results td.indexer {
+    text-align: center;
+    max-width: 100px;
+}
+
+table.search-results td.indexer img {
+    vertical-align: -3px;
+}
+
+table.search-results input[type="radio"] {
+    margin: 4px 0 0;
+}
+
+/* =======================================================================
+home_addExistingShow.mako
+========================================================================== */
+
+.existingtabs {
+    padding: 1em 1.4em;
+}
+
+ul#rootDirStaticList {
+    margin-right: auto;
+    margin-left: auto;
+    text-align: left;
+    padding-left: 0;
+}
+
+ul#rootDirStaticList li {
+    padding: 4px 5px;
+    margin: 2px;
+    list-style: none outside none;
+    cursor: pointer;
+    background: url("../css/lib/images/ui-bg_highlight-soft_75_efefef_1x100.png") repeat-x scroll 50% 50% rgb(239, 239, 239);
+}
+
+ul#rootDirStaticList li label {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+ul#rootDirStaticList li input[type="checkbox"] {
+    vertical-align: -2px;
+}
+
+/* =======================================================================
+home_recommendedShows.mako
+========================================================================== */
+
+.recommendedShowTitleIcons {
+    float: right;
+    padding-right: 4px;
+    padding-bottom: 4px;
+}
+
+.recommended-container p {
+    padding-top: 2px;
+}
+
+.recommended-container p img {
+    position: relative;
+    top: -2px;
+}
+
+div.recommended-image {
+    background-color: #dfdacf;
+}
+
+.show-in-list div.recommended-image {
+    opacity: 0.4;
+    zoom: 1;  /* needed to trigger "hasLayout" in IE if no width or height is set */
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.show-in-list div#check-overlay {
+    opacity: 0.8;
+    background-image: url("../images/green-check.png");
+    background-repeat: no-repeat;
+    background-position: 90% 5%;
+    background-size: 100px;
+    position: absolute;
+    height: 273px;
+    width: 187px;
+    top: 0;
+}
+
+.recommended-container p,
+.recommended-container i,
+.recommended-container a {
+    white-space: nowrap;
+    font-size: 12px;
+    overflow: hidden;
+    margin: 0;
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+}
+
+.recommended-container {
+    left: -4px;
+    position: relative;
+    margin: 12px;
+    width: 188px;
+    background-color: rgb(223, 218, 207);
+    border: 1px solid rgb(17, 17, 17);
+    border-radius: 6px;
+}
+
+.recommended-image {
+    height: 273px;
+    width: 186px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom: 1px solid rgb(17, 17, 17);
+}
+
+.recommended-container .anidb-url {
+    float: right;
+    padding-right: 4px;
+}
+
+.anidb-inline {
+    height: 16px;
+}
+
+.recommended-container .default-poster {
+    display: block;
+    z-index: 0;
+    background-image: url("../images/poster-dark.jpg");
+}
+
+/* =======================================================================
+home_postprocess.mako
+========================================================================== */
+
+#postProcess {
+    width: 800px;
+    padding-top: 10px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.lineH-40 {
+    line-height: 40px;
+}
+
+#episodeDir {
+    width: 70%;
+    margin-right: 5px;
+}
+
+.smallhelp {
+    line-height: 0;
+    font-size: 12px;
+}
+
+#process td:nth-child(1) {
+    padding-right: 10px;
+    width: 290px;
+}
+
+/* =======================================================================
+displayShow.mako
+========================================================================== */
+
+.modal-wide .modal-dialog {
+    width: 90%;
+}
+
+.modal-dialog {
+    overflow-y: initial !important;
+}
+
+.modal-body {
+    overflow-y: auto;
+}
+
+.container-navShow {
+    margin-top: -2px;
+    margin-left: 305px;
+    z-index: 10;
+}
+
+.tvshowImg {
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 5px;
+    height: 311px;
+    width: auto;
+    float: left;
+}
+
+@media (max-width: 767px) and (min-width: 341px) {
+    .container-navShow {
+        margin-left: 305px;
+        display: none;
+    }
+
+    #key-padding {
+        padding-bottom: 4px;
+    }
+}
+
+@media (max-width: 340px) {
+    .container-navShow {
+        margin-left: 265px;
+    }
+}
+
+@media (max-width: 767px) {
+    .pull-xs-left {
+        float: left;
+    }
+
+    .pull-xs-right {
+        float: right;
+    }
+
+    .no-padding-xs {
+        padding: 0;
+    }
+
+    .nocheck {
+        padding-left: 0 !important;
+    }
+
+    .tvshowImg {
+        margin-bottom: 10px;
+        float: none;
+    }
+
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+}
+
+@media (min-width: 768px) {
+    .tvshowImg {
+        max-height: 245px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .pull-md-left {
+        float: left;
+    }
+
+    .pull-md-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .pull-lg-left {
+        float: left;
+    }
+
+    .pull-lg-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
+}
+
+.navShow {
+    width: 18px;
+    max-height: 15px;
+    display: -webkit-box;
+    cursor: pointer;
+}
+
+#prevShow,
+#nextShow,
+#topcontrol {
+    -webkit-filter: grayscale(100%);
+    filter: url("data:image/svg+xml;utf8,<svg version='1.1' xmlns='https://www.w3.org/2000/svg' height='0'><filter id='greyscale'><feColorMatrix type='matrix' values='0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0' /></filter></svg>#greyscale");
+    filter: grayscale(100%);
+    filter: rgb(128, 128, 128);
+}
+
+h1.title {
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+    line-height: 30px;
+    text-align: left;
+    text-rendering: optimizelegibility;
+    border-bottom: 1px solid rgb(136, 136, 136);
+}
+
+h1.title a {
+    text-decoration: none;
+}
+
+.displayspecials {
+    position: relative;
+}
+
+#showinfo {
+    cursor: default;
+    display: inline-block;
+    position: relative;
+    top: -3px;
+}
+
+#showinfo a {
+    text-decoration: none;
+}
+
+span.imdbstars {
+    display: inline-block;
+    vertical-align: top;
+    cursor: help;
+    margin-top: 4px;
+}
+
+span.imdbstars,
+span.imdbstars > * {
+    height: 12px;
+    background: url("../images/rating.png") 0 -12px repeat-x;
+    width: 120px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+span.imdbstars > * {
+    background-position: 0 0;
+    max-width: 120px;
+}
+
+ul.tags {
+    list-style-type: none;
+    position: relative;
+    top: 4px;
+    margin-left: -40px;
+}
+
+ul.tags li {
+    margin-right: 4px;
+    margin-bottom: 5px;
+    padding: 2px 7px 2px 25px;
+    background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
+    border-radius: 1px;
+    border: 1px solid rgb(17, 17, 17);
+    color: rgb(255, 255, 255);
+    font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
+    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
+    float: left;
+}
+
+ul.tags li a {
+    color: rgb(255, 255, 255);
+}
+
+#summary {
+    margin-top: 5px;
+    padding: 10px;
+    width: 100%;
+    overflow: auto;
+    cursor: default;
+}
+
+#summaryBackground {
+    position: absolute;
+    top: 305px;
+    width: 100%;
+    height: 200px;
+    background-color: #efefef;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none;
+    border-color: rgb(136, 136, 136);
+}
+
+#checkboxControlsBackground {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 0;
+    background-color: #ddd;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none;
+    border-color: rgb(136, 136, 136);
+    z-index: -2;
+}
+
+#checkboxControls {
+    padding-top: 2px;
+}
+
+#checkboxControls span {
+    padding: 3px 10px 5px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+#checkboxControls label {
+    white-space: nowrap;
+    display: inline-block;
+}
+
+#checkboxControls input[type="checkbox"] {
+    vertical-align: -2px;
+}
+
+.unaired {
+    background-color: rgb(245, 241, 228);
+}
+
+.skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.good {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
+.qual {
+    background-color: rgb(255, 218, 138);
+}
+
+.wanted {
+    background-color: rgb(255, 176, 176);
+}
+
+.snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.downloaded {
+    background-color: rgb(195, 227, 200);
+}
+
+.failed {
+    background-color: rgb(255, 153, 153);
+}
+
+span.unaired {
+    color: rgb(88, 75, 32);
+}
+
+span.skipped {
+    color: rgb(29, 80, 104);
+}
+
+span.good {
+    color: rgb(41, 87, 48);
+}
+
+span.qual {
+    color: rgb(118, 81, 0);
+}
+
+span.wanted {
+    color: rgb(137, 0, 0);
+}
+
+span.snatched {
+    color: rgb(101, 33, 100);
+}
+
+span.unaired b,
+span.skipped b,
+span.good b,
+span.qual b,
+span.wanted b,
+span.snatched b {
+    color: rgb(0, 0, 0);
+    font-weight: 800;
+}
+
+.displayShowTable {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+    color: rgb(0, 0, 0) !important;
+}
+
+.displayShowTable.display_show {
+    clear: both;
+}
+
+.displayShowTable th.row-seasonheader {
+    border: none !important;
+    background-color: rgb(34, 34, 34) !important;
+    color: rgb(255, 255, 255) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
+}
+
+.displayShowTable td.col-search {
+    text-align: center;
+}
+
+.displayShowTableFanArt {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+    color: rgb(0, 0, 0) !important;
+}
+
+.displayShowTableFanArt.display_show {
+    clear: both;
+    opacity: 0.9;
+}
+
+.summaryFanArt {
+    opacity: 0.9;
+}
+
+.displayShowTableFanArt th.row-seasonheader {
+    border: none !important;
+    background-color: transparent !important;
+    color: rgb(255, 255, 255) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
+}
+
+.displayShowTableFanArt td.col-search {
+    text-align: center;
+}
+
+.snatchTitle {
+    color: rgb(255, 255, 255) !important;
+}
+
+.tablesorterFanArt {
+    background-color: transparent !important;
+}
+
+.defaultTable {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+}
+
+.defaultTable.display_show {
+    clear: both;
+}
+
+.defaultTable th {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    background-color: rgb(51, 51, 51);
+    white-space: nowrap;
+}
+
+.defaultTable th,
+.defaultTable td {
+    border-top: 1px solid rgb(255, 255, 255);
+    border-left: 1px solid rgb(255, 255, 255);
+    padding: 4px;
+}
+
+th.row-seasonheader {
+    border: none;
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    padding-top: 15px;
+    text-align: left;
+}
+
+tr.seasonheader {
+    padding-bottom: 5px;
+    padding-top: 10px;
+    text-align: left;
+    border: none;
+    color: rgb(255, 255, 255);
+}
+
+th.col-checkbox,
+td.col-checkbox {
+    width: 30px;
+    border-left: none;
+    text-align: center;
+}
+
+th.col-checkbox input[type="checkbox"],
+td.col-checkbox input[type="checkbox"] {
+    vertical-align: -2px;
+}
+
+th.col-metadata,
+td.col-metadata {
+    width: 28px;
+}
+
+th.col-ep,
+td.col-ep {
+    width: 50px;
+    white-space: nowrap;
+}
+
+th.col-airdate,
+td.col-airdate {
+    width: 86px;
+    white-space: nowrap;
+}
+
+th.col-name,
+td.col-name {
+    min-width: 100px;
+}
+
+td.col-name {
+    text-align: left;
+}
+
+th.col-footer {
+    text-align: left !important;
+}
+
+th.col-subtitles,
+td.col-subtitles {
+    width: 150px;
+    text-align: center;
+}
+
+th.col-status,
+td.col-status {
+    text-align: center;
+}
+
+@media screen and (min-width: 992px) {
+    td.col-status {
+        white-space: nowrap;
+    }
+}
+
+th.col-quality,
+td.col-quality {
+    width: 110px;
+}
+
+th.col-legend,
+td.col-legend {
+    width: 80px;
+}
+
+th.col-search,
+td.col-search {
+    width: 65px;
+}
+
+td.col-date {
+    text-align: center;
+    white-space: nowrap;
+}
+
+td.col-size {
+    text-align: center;
+    white-space: nowrap;
+}
+
+td.col-provider {
+    text-align: center;
+    white-space: nowrap;
+}
+
+td.col-group {
+    min-width: 90px;
+    text-align: center;
+}
+
+.input-scene {
+    height: 20px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+#editShow {
+    width: 700px;
+    padding-top: 10px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 768px) {
+    .form-group > div.content {
+        margin-top: 7px;
+        margin-bottom: 0;
+        text-align: left;
+    }
+}
+
+.form-group label.control-label {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+div.season-scene-exception {
+    display: inline;
+}
+
+.show-banner {
+    float: right;
+    height: 50px;
+    border: 1px solid rgb(136, 136, 136);
+}
+
+.fanart {
+    margin-top: -1px;
+    vertical-align: middle;
+}
+
+.showOptions {
+    width: 180px;
+    float: right;
+}
+
+button.selectColumns {
+    margin-right: 2px;
+}
+
+/* =======================================================================
+schedule.mako
+========================================================================== */
+
+.key {
+    line-height: 25px;
+}
+
+.listing-key {
+    padding: 2px 5px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.listing-default {
+    background-color: rgb(245, 241, 228);
+}
+
+.listing-current {
+    background-color: rgb(221, 255, 221);
+}
+
+.listing-overdue {
+    background-color: rgb(255, 221, 221);
+}
+
+.listing-toofar {
+    background-color: rgb(190, 222, 237);
+}
+
+span.listing-default {
+    color: rgb(130, 111, 48);
+    border: 1px solid rgb(130, 111, 48);
+}
+
+span.listing-current {
+    color: rgb(41, 87, 48);
+    border: 1px solid rgb(41, 87, 48);
+}
+
+span.listing-overdue {
+    color: rgb(137, 0, 0);
+    border: 1px solid rgb(137, 0, 0);
+}
+
+span.listing-toofar {
+    color: rgb(29, 80, 104);
+    border: 1px solid rgb(29, 80, 104);
+}
+
+h2.day,
+h2.network {
+    margin: 10px 0;
+    font-size: 24px;
+    line-height: 36px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+}
+
+.tvshowDiv {
+    display: block;
+    clear: both;
+    border: 1px solid rgb(204, 204, 204);
+    margin: auto;
+    padding: 0;
+    text-align: left;
+    border-radius: 5px;
+    background: rgb(255, 255, 255);
+    cursor: default;
+    overflow: hidden;
+}
+
+.tvshowDiv a:hover {
+    color: rgb(66, 139, 202);
+}
+
+.tvshowDiv a,
+.tvshowDiv a:link,
+.tvshowDiv a:visited,
+.tvshowDiv a:hover {
+    text-decoration: none;
+    background: none;
+}
+
+.tvshowTitle a {
+    color: rgb(0, 0, 0);
+    float: left;
+    line-height: 1.4em;
+    font-size: 1.4em;
+    text-shadow: -1px -1px 0 rgb(255, 255, 255);
+}
+
+.tvshowTitleIcons {
+    float: right;
+    padding: 3px 5px;
+}
+
+.tvshowDiv td {
+    padding: 5px 10px;
+}
+
+.tvshowDiv td.next_episode {
+    width: 100%;
+    height: 90%;
+    border-bottom: 1px solid rgb(204, 204, 204);
+    vertical-align: top;
+    color: rgb(0, 0, 0);
+}
+
+.bannerThumb {
+    vertical-align: top;
+    height: auto;
+    width: 748px;
+    border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.posterThumb {
+    vertical-align: top;
+    height: auto;
+    width: 180px;
+    border-right: 1px solid rgb(204, 204, 204);
+}
+
+.ep_listing {
+    width: auto;
+    border: 1px solid rgb(204, 204, 204);
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.ep_summary {
+    margin-left: 5px;
+    font-style: italic;
+}
+
+.ep_summaryTrigger {
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.ep_summaryTriggerNone {
+    opacity: 0.4;
+    vertical-align: middle;
+}
+
+.calendarWrapper {
+    width: 1000px;
+    margin: 0 auto;
+    padding: 0 3px;
+}
+
+.calendarTable {
+    float: left;
+    width: 142px !important;
+    white-space: nowrap;
+    table-layout: fixed !important;
+}
+
+.calendarShow {
+    padding: 0 !important;
+}
+
+.calendarShow .poster {
+    padding-bottom: 2px;
+    height: 212px;
+}
+
+.calendarShow .poster img {
+    width: 142px;
+    height: auto;
+}
+
+.calendarShow .text {
+    padding: 0 5px 10px;
+}
+
+.calendarShow .text .airtime,
+.calendarShow .text .episode-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    font-size: 11px;
+}
+
+.calendarShow .show-status {
+    padding: 5px 10px 10px;
+    text-align: center;
+}
+
+/* =======================================================================
+config*.mako
+========================================================================== */
+
+#config-content {
+    display: block;
+    padding: 0 0 40px;
+    margin: 0 auto;
+    clear: both;
+    text-align: left;
+}
+
+.component-group {
+    padding: 15px 15px 25px;
+    border-bottom: 1px dotted rgb(204, 204, 204);
+    min-height: 200px;
+}
+
+.component-item {
+    padding: 15px 15px 25px;
+    border-bottom: 1px dotted rgb(102, 102, 102);
+    min-height: 100px;
+}
+
+.component-group-desc-legacy {
+    margin-top: 5px;
+    float: left;
+    width: 250px;
+}
+
+.component-group-desc {
+    margin-top: 5px;
+}
+
+.component-group-desc h3 {
+    margin-top: 5px;
+}
+
+.component-group-desc p {
+    width: 90%;
+    margin: 10px 0;
+    color: rgb(102, 102, 102);
+}
+
+#config div.field-pair {
+    padding: 12px 0;
+}
+
+#config div.field-pair select,
+#config div.field-pair input {
+    margin-right: 6px;
+}
+
+#config div.field-pair input {
+    float: left;
+}
+
+#config .nocheck,
+.metadataDiv {
+    padding-left: 20px;
+}
+
+#config span.component-title {
+    float: left;
+    width: 172px;
+    margin-right: 10px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#config span.component-desc {
+    font-size: 12px;
+    font-weight: normal;
+    display: block;
+    max-width: 475px;
+    margin-left: 182px;
+}
+
+#config label.space-right {
+    margin-right: 10px;
+}
+
+.component-group-save {
+    float: right;
+    padding-top: 10px;
+}
+
+select .selected {
+    font-weight: 700;
+}
+
+.jumbo {
+    font-size: 15px !important;
+    line-height: 24px;
+}
+
+.testNotification {
+    padding: 5px;
+    margin-bottom: 10px;
+    line-height: 20px;
+    border: 1px dotted rgb(204, 204, 204);
+}
+
+#providerOrderList {
+    width: 250px;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+#provider_order_list,
+#service_order_list {
+    width: 250px;
+    padding-left: 20px;
+    list-style-type: none;
+}
+
+#provider_order_list li,
+#service_order_list li {
+    padding: 5px;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+#provider_order_list .ui-state-default.torrent-provider {
+    background-color: rgb(255, 255, 255) !important;
+}
+
+#provider_order_list .ui-state-default.nzb-provider {
+    background-color: rgb(221, 221, 221) !important;
+}
+
+#provider_order_list input,
+#service_order_list input {
+    margin: 0 2px;
+}
+
+#config .tip_scale label span.component-title {
+    width: 85px !important;
+    font-size: 12px !important;
+    margin-top: 2px !important;
+}
+
+#config .tip_scale label span.component-desc {
+    margin-left: 120px !important;
+    width: 220px !important;
+}
+
+.infoTableHeader,
+.infoTableCell {
+    padding: 5px;
+}
+
+.infoTableSeperator {
+    border-top: 1px dotted rgb(102, 102, 102);
+}
+
+.infoTableHeader {
+    vertical-align: top;
+}
+
+[class^="icon16-config-"],
+[class*=" icon16-config-"] {
+    background-image: url("../images/16x_sprite_colored_help-info.png");
+    background-position: -40px 0;
+    background-repeat: no-repeat;
+    display: inline-block;
+    height: 16px;
+    line-height: 16px;
+    vertical-align: text-top;
+    width: 16px;
+}
+
+.icon16-config-application {
+    background-position: 0 0;
+}
+
+.icon16-config-version {
+    background-position: -17px 0;
+}
+
+.icon16-config-python {
+    background-position: -37px 0;
+}
+
+.icon16-config-ssl {
+    background-position: -56px 0;
+}
+
+.icon16-config-locale {
+    background-position: -73px 0;
+}
+
+.icon16-config-user {
+    background-position: -91px 0;
+}
+
+.icon16-config-dir {
+    background-position: -111px 0;
+}
+
+.icon16-config-config {
+    background-position: -129px 0;
+}
+
+.icon16-config-db {
+    background-position: -147px 0;
+}
+
+.icon16-config-cache {
+    background-position: -166px 0;
+}
+
+.icon16-config-log {
+    background-position: -182px 0;
+}
+
+.icon16-config-arguments {
+    background-position: -204px 0;
+}
+
+.icon16-config-github {
+    background-position: -224px 0;
+}
+
+.icon16-config-mirc {
+    background-position: -243px 0;
+}
+
+.icon16-config-web {
+    background-position: -262px 0;
+}
+
+.icon16-config-os {
+    background-position: -280px 0;
+}
+
+.icon16-config-wiki {
+    background-position: -299px 0;
+}
+
+.icon16-config-docker {
+    background-position: -318px 0;
+}
+
+[class^="add-client-icon-"],
+[class*=" add-client-icon-"] {
+    background: url("../images/32x_sprite_colored_clients.png");
+    height: 32px;
+    width: 32px;
+    display: inline-block;
+    position: relative;
+    top: 2px;
+    float: left;
+}
+
+.add-client-icon-sabnzbd {
+    background-position: 0 0;
+}
+
+.add-client-icon-nzbget {
+    background-position: -34px 0;
+}
+
+.add-client-icon-blackhole {
+    background-position: -71px 0;
+}
+
+.add-client-icon-deluge {
+    background-position: -106px 0;
+}
+
+.add-client-icon-deluged {
+    background-position: -106px 0;
+}
+
+.add-client-icon-qbittorrent {
+    background-position: -138px 0;
+}
+
+.add-client-icon-rtorrent {
+    background-position: -172px 0;
+}
+
+.add-client-icon-downloadstation {
+    background-position: -205px 0;
+}
+
+.add-client-icon-transmission {
+    background-position: -241px 0;
+}
+
+.add-client-icon-utorrent {
+    background-position: -273px 0;
+}
+
+.add-client-icon-spotnet {
+    background-position: -311px 0;
+}
+
+.add-client-icon-mlnet {
+    background-position: -344px 0;
+}
+
+.add-client-icon-rss {
+    background-position: -380px 0;
+}
+
+.add-client-icon-folder {
+    background-position: -416px 0;
+}
+
+.add-client-icon-ftp {
+    background-position: -452px 0;
+}
+
+.add-client-icon-irc {
+    background-position: -488px 0;
+}
+
+/* =======================================================================
+config_postProcessing.mako
+========================================================================== */
+
+#config div.example {
+    padding: 10px;
+    background-color: rgb(239, 239, 239);
+}
+
+.Key {
+    width: 100%;
+    padding: 6px;
+    font-size: 13px;
+    background-color: rgb(244, 244, 244);
+    border: 1px solid rgb(204, 204, 204);
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.Key th,
+.tableHeader {
+    padding: 3px 9px;
+    margin: 0;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    background: none repeat scroll 0 0 rgb(102, 102, 102);
+}
+
+.Key td {
+    padding: 1px 5px !important;
+}
+
+.Key tr {
+    border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.Key tr.even {
+    background-color: rgb(223, 222, 222);
+}
+
+.legend {
+    position: relative;
+    top: 2px;
+}
+
+/* =======================================================================
+config_notifications.mako
+========================================================================== */
+
+div.metadata_options_wrapper {
+    float: left;
+    width: 190px;
+}
+
+div.metadata_example_wrapper {
+    float: right;
+    width: 325px;
+}
+
+div.metadata_options {
+    padding: 7px;
+    overflow: auto;
+    background: rgb(245, 241, 228);
+    border: 1px solid rgb(204, 204, 204);
+}
+
+div.metadata_options label:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgb(87, 68, 43);
+    cursor: pointer;
+}
+
+div.metadata_options label {
+    display: block;
+    padding-left: 7px;
+    line-height: 20px;
+    color: rgb(0, 51, 102);
+}
+
+div.metadata_example {
+    padding: 8px;
+}
+
+div.metadata_example label {
+    display: block;
+    line-height: 21px;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+}
+
+div.metadataDiv .disabled {
+    color: rgb(204, 204, 204);
+}
+
+.notifier-icon {
+    float: left;
+    margin: 6px 4px 0 0;
+}
+
+.warning {
+    border-color: rgb(248, 148, 6);
+    background: url("../images/warning16.png") no-repeat right 5px center rgb(255, 255, 255);
+}
+
+[class^="icon-notifiers-"],
+[class*=" icon-notifiers-"] {
+    background: url("../images/32x_sprite_colored_notifiers.png");
+    height: 32px;
+    width: 32px;
+    display: inline-block;
+    position: relative;
+    top: 2px;
+    float: left;
+}
+
+.icon-notifiers-kodi {
+    background-position: 0 0;
+}
+
+.icon-notifiers-plex {
+    background-position: -32px 0;
+}
+
+.icon-notifiers-plexth {
+    background-position: -64px 0;
+}
+
+.icon-notifiers-emby {
+    background-position: -96px 0;
+}
+
+.icon-notifiers-nmj {
+    background-position: -128px 0;
+}
+
+.icon-notifiers-syno1 {
+    background-position: -160px 0;
+}
+
+.icon-notifiers-syno2 {
+    background-position: -192px 0;
+}
+
+.icon-notifiers-pytivo {
+    background-position: -224px 0;
+}
+
+.icon-notifiers-growl {
+    background-position: -256px 0;
+}
+
+.icon-notifiers-prowl {
+    background-position: -288px 0;
+}
+
+.icon-notifiers-libnotify {
+    background-position: -320px 0;
+}
+
+.icon-notifiers-pushover {
+    background-position: -352px 0;
+}
+
+.icon-notifiers-boxcar2 {
+    background-position: -384px 0;
+}
+
+.icon-notifiers-pushalot {
+    background-position: -416px 0;
+}
+
+.icon-notifiers-pushbullet {
+    background-position: -448px 0;
+}
+
+.icon-notifiers-freemobile {
+    background-position: -480px 0;
+}
+
+.icon-notifiers-telegram {
+    background-position: -512px 0;
+}
+
+.icon-notifiers-twitter {
+    background-position: -544px 0;
+}
+
+.icon-notifiers-trakt {
+    background-position: -576px 0;
+}
+
+.icon-notifiers-email {
+    background-position: -608px 0;
+}
+
+.icon-notifiers-anime {
+    background-position: -640px 0;
+}
+
+.icon-notifiers-look {
+    background-position: -672px 0;
+}
+
+.icon-notifiers-slack {
+    background-position: -704px 0;
+}
+
+.icon-notifiers-join {
+    background-position: -736px 0;
+}
+
+.icon-notifiers-discord {
+    background-position: -768px 0;
+}
+
+div#config-components h3 > a {
+    padding-left: 5px;
+}
+
+/* =======================================================================
+manage*.mako
+========================================================================== */
+
+.manageTable th {
+    white-space: normal;
+    line-height: 24px;
+}
+
+.manageTable td.tableright {
+    text-align: left;
+}
+
+td.tableright {
+    text-align: center;
+}
+
+.optionWrapper {
+    width: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 6px 12px;
+}
+
+.optionWrapper span.selectTitle {
+    float: left;
+    text-align: left;
+    width: 225px;
+    padding: 6px 0;
+}
+
+.optionWrapper div.selectChoices {
+    float: left;
+    width: 175px;
+    margin-left: 25px;
+}
+
+.optionWrapper br {
+    clear: both;
+}
+
+.manageCustom {
+    text-align: center;
+    padding: 6px;
+    margin-left: 25px;
+}
+
+.separator {
+    font-size: 90%;
+    color: rgb(51, 51, 51);
+}
+
+a.whitelink {
+    color: rgb(255, 255, 255);
+}
+
+/* BacklogOverview */
+#status-summary {
+    padding-top: 10px;
+    padding-bottom: 2px;
+}
+
+/* =======================================================================
+Global
+========================================================================== */
+
+span.path {
+    padding: 3px 6px;
+    color: rgb(139, 0, 0);
+    background-color: rgb(245, 241, 228);
+}
+
+.align-left {
+    text-align: left !important;
+}
+
+.h2footer {
+    line-height: 18px;
+    clear: both;
+}
+
+/* red */
+span.false {
+    color: rgb(153, 51, 51);
+}
+
+/* green */
+span.true {
+    color: rgb(102, 153, 102);
+}
+
+.break-word {
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+a.wiki {
+    color: red;
+}
+
+a.wiki strong {
+    color: red;
+}
+
+option.flag {
+    padding-left: 35px;
+    background-repeat: no-repeat;
+    background-position: 10px 50%;
+}
+
+/*
+ * This is currently used by addShow_addExistingShows.mako and addShows_recommended.mako.
+ * Which in turn calls inc_addShowOptions.mako
+ * After these routes have been vueified, these templates can be removed as the below css.
+*/
+
+/* Anime section for editShow */
+.bwlWrapper {
+    height: auto;
+    margin: 0 auto;
+}
+
+#Anime {
+    clear: both;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    font-size: 14px;
+}
+
+#Anime div.component-group-desc {
+    float: left;
+    width: 165px;
+}
+
+#Anime div.component-group-desc p {
+    margin: 0.4em 0;
+    width: 95%;
+}
+
+div.blackwhitelist {
+    float: left;
+    text-align: center;
+}
+
+div.blackwhitelist input {
+    margin: 5px 0;
+}
+
+div.blackwhitelist.pool select {
+    width: 230px;
+}
+
+div.blackwhitelist.white select,
+div.blackwhitelist.black select {
+    width: 150px;
+}
+
+div.blackwhitelist span {
+    display: block;
+    text-align: center;
+}
+
+div.blackwhitelist.anidb,
+div.blackwhitelist.manual {
+    margin: 7px 0;
+}
+
+ul.simpleList {
+    padding-left: 0;
+}
+
+ul.simpleList li {
+    list-style-type: none;
+}
+
+/* =======================================================================
+bootstrap Overrides
+========================================================================== */
+
+#vue-wrap {
+    padding-top: 75px;
+}
+
+body {
+    overflow-y: scroll;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: rgb(0, 0, 0);
+}
+
+html * {
+    outline: 0 !important;
+}
+
+input[type="checkbox"] {
+    margin: 2px 5px 0;
+    line-height: normal;
+    transform: scale(1.2, 1.2);
+}
+
+input[type="radio"] {
+    margin: 2px 0 0;
+    line-height: normal;
+}
+
+input,
+textarea,
+select,
+.uneditable-input {
+    width: auto;
+    color: rgb(0, 0, 0);
+}
+
+.navbar-brand {
+    padding: 0;
+}
+
+/* navbar styling */
+.navbar-default .navbar-brand {
+    color: rgb(255, 255, 255);
+}
+
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+    color: rgb(255, 255, 255);
+    background-color: transparent;
+}
+
+.navbar-default .navbar-text {
+    color: rgb(221, 221, 221);
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: rgb(221, 221, 221);
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    color: rgb(255, 255, 255);
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+    color: rgb(255, 255, 255);
+    background-color: rgb(51, 51, 51);
+}
+
+.navbar-default .navbar-nav > .disabled > a,
+.navbar-default .navbar-nav > .disabled > a:hover,
+.navbar-default .navbar-nav > .disabled > a:focus {
+    color: rgb(204, 204, 204);
+    background-color: transparent;
+}
+
+.navbar-default .navbar-toggle {
+    border-color: rgb(204, 204, 204);
+}
+
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+    background-color: rgb(51, 51, 51);
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+    background-color: rgb(51, 51, 51);
+}
+
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+    background-color: rgb(51, 51, 51);
+    color: rgb(255, 255, 255);
+}
+
+.navbar-default .navbar-nav > li.navbar-split > a {
+    display: inline-block;
+    float: left;
+}
+
+.navbar-default .navbar-nav > li.navbar-split > a:first-child {
+    padding-right: 8px;
+}
+
+.navbar-default .navbar-nav > li.navbar-split > a:nth-child(2) {
+    padding-left: 8px;
+}
+
+@media (max-width: 767px) {
+    .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+        color: rgb(221, 221, 221);
+    }
+
+    .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+    .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+        color: rgb(255, 255, 255);
+        background-color: transparent;
+    }
+
+    .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+    .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+    .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+        color: rgb(255, 255, 255);
+        background-color: rgb(51, 51, 51);
+    }
+
+    .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
+    .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
+    .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:focus {
+        color: rgb(204, 204, 204);
+        background-color: transparent;
+    }
+}
+
+.navbar-default .navbar-link {
+    color: rgb(221, 221, 221);
+}
+
+.navbar-default .navbar-link:hover {
+    color: rgb(255, 255, 255);
+}
+
+.navbar-default .btn-link {
+    color: rgb(152, 151, 139);
+}
+
+.navbar-default .btn-link:hover,
+.navbar-default .btn-link:focus {
+    color: rgb(221, 221, 221);
+}
+
+.navbar-default .btn-link[disabled]:hover,
+fieldset[disabled] .navbar-default .btn-link:hover,
+.navbar-default .btn-link[disabled]:focus,
+fieldset[disabled] .navbar-default .btn-link:focus {
+    color: rgb(204, 204, 204);
+}
+
+.dropdown-menu > li > a:hover,
+.dropdown-menu > li > a:focus {
+    color: rgb(38, 38, 38);
+    text-decoration: none;
+    background-color: rgb(245, 245, 245);
+}
+
+.dropdown-menu > li > a {
+    padding: 4px 36px 4px 20px;
+}
+
+.dropdown-menu-custom > li > a {
+    padding: 15px 36px 15px 5px;
+    border-bottom: 1px solid darkgrey;
+}
+
+.dropdown-menu-custom > li:last-child > a {
+    border-bottom-style: none;
+}
+
+.dropdown-menu {
+    background-color: rgb(245, 241, 228);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+/* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+
+.vgt-dropdown-menu {
+    background-color: rgb(245, 241, 228);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+.vgt-dropdown-menu > li > a:hover,
+.vgt-dropdown-menu > li > a:focus {
+    color: rgb(38, 38, 38);
+    text-decoration: none;
+    background-color: rgb(245, 245, 245);
+}
+
+.vgt-dropdown-menu > li > span {
+    padding: 4px 36px 4px 20px;
+    color: #333;
+}
+
+.form-control {
+    color: rgb(0, 0, 0);
+}
+
+/* @TODO: Fix this stupid bootstrap hack http://stackoverflow.com/a/24008735/2311366 */
+.form-control-inline {
+    display: inline;
+    width: auto;
+}
+
+.form-control-inline-max {
+    display: inline;
+    width: 100%;
+}
+
+.input-sm-smallfont {
+    font-size: 11px;
+}
+
+.input-sm-custom {
+    padding: 2px 5px 3px;
+    border-radius: 1px;
+    line-height: 1.5;
+    height: auto;
+}
+
+.shadow {
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
+}
+
+.border-bottom {
+    border-width: 1px;
+    border-style: none none solid;
+    border-color: rgb(62, 63, 58);
+}
+
+.btn-medusa {
+    display: inline-block;
+    *display: inline;
+    padding: 4px 10px;
+    margin-bottom: 0;
+    *margin-left: 0.3em;
+    font-size: 12px;
+    line-height: 16px;
+    *line-height: 20px;
+    color: rgb(51, 51, 51);
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: rgb(245, 245, 245);
+    *background-color: rgb(230, 230, 230);
+    background-image: -ms-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
+    background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-repeat: repeat-x;
+    border: 1px solid rgb(204, 204, 204);
+    *border: 0;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    border-color: rgb(230, 230, 230) rgb(230, 230, 230) rgb(191, 191, 191);
+    border-bottom-color: rgb(179, 179, 179);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 1px;
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+    *zoom: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-medusa:hover,
+.btn-medusa:active,
+.btn-medusa.active,
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
+    background-color: rgb(230, 230, 230);
+    *background-color: rgb(217, 217, 217);
+}
+
+.btn-medusa:first-child {
+    *margin-left: 0;
+}
+
+.btn-medusa:hover {
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+    background-color: rgb(230, 230, 230);
+    *background-color: rgb(217, 217, 217);
+    background-position: 0 -15px;
+    -webkit-transition: background-position 0.1s linear;
+    -moz-transition: background-position 0.1s linear;
+    -ms-transition: background-position 0.1s linear;
+    -o-transition: background-position 0.1s linear;
+    transition: background-position 0.1s linear;
+}
+
+.btn-medusa:focus {
+    outline: thin dotted rgb(51, 51, 51);
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
+.btn-medusa.active,
+.btn-medusa:active {
+    background-color: rgb(230, 230, 230);
+    background-color: rgb(217, 217, 217) \9;
+    background-image: none;
+    outline: 0;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-medusa.disabled,
+.btn-medusa[disabled] {
+    cursor: default;
+    background-color: rgb(230, 230, 230);
+    background-image: none;
+    opacity: 0.65;
+    filter: alpha(opacity=65);
+    box-shadow: none;
+}
+
+.btn-large {
+    padding: 9px 14px;
+    font-size: 15px;
+    line-height: normal;
+    border-radius: 1px;
+}
+
+.btn-large [class^="icon-"] {
+    margin-top: 1px;
+}
+
+.btn-small {
+    padding: 5px 9px;
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.btn-small [class^="icon-"] {
+    margin-top: -1px;
+}
+
+.btn-mini {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-warning,
+.btn-warning:hover,
+.btn-danger,
+.btn-danger:hover,
+.btn-success,
+.btn-success:hover,
+.btn-info,
+.btn-info:hover,
+.btn-inverse,
+.btn-inverse:hover {
+    color: rgb(255, 255, 255);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary.active,
+.btn-warning.active,
+.btn-danger.active,
+.btn-success.active,
+.btn-info.active,
+.btn-inverse.active {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.btn-primary {
+    background-color: rgb(0, 116, 204);
+    *background-color: rgb(0, 85, 204);
+    background-image: -ms-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(0, 136, 204)), to(rgb(0, 85, 204)));
+    background-image: -webkit-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: -o-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: -moz-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: linear-gradient(to top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-repeat: repeat-x;
+    border-color: rgb(0, 85, 204) rgb(0, 85, 204) rgb(0, 53, 128);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#0088cc', endColorstr='#0055cc', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary.disabled,
+.btn-primary[disabled] {
+    background-color: rgb(0, 85, 204);
+    *background-color: rgb(0, 74, 179);
+}
+
+.btn-primary:active,
+.btn-primary.active {
+    background-color: rgb(0, 64, 153) \9;
+}
+
+.btn-warning {
+    background-color: rgb(250, 167, 50);
+    *background-color: rgb(248, 148, 6);
+    background-image: -ms-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(251, 180, 80)), to(rgb(248, 148, 6)));
+    background-image: -webkit-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: -o-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: -moz-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: linear-gradient(to top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-repeat: repeat-x;
+    border-color: rgb(248, 148, 6) rgb(248, 148, 6) rgb(173, 103, 4);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#fbb450', endColorstr='#f89406', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-warning:hover,
+.btn-warning:active,
+.btn-warning.active,
+.btn-warning.disabled,
+.btn-warning[disabled] {
+    background-color: rgb(248, 148, 6);
+    *background-color: rgb(223, 133, 5);
+}
+
+.btn-warning:active,
+.btn-warning.active {
+    background-color: rgb(198, 118, 5) \9;
+}
+
+.btn-danger {
+    background-color: rgb(218, 79, 73);
+    *background-color: rgb(189, 54, 47);
+    background-image: -ms-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(238, 95, 91)), to(rgb(189, 54, 47)));
+    background-image: -webkit-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: -o-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: -moz-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: linear-gradient(to top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-repeat: repeat-x;
+    border-color: rgb(189, 54, 47) rgb(189, 54, 47) rgb(128, 36, 32);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ee5f5b', endColorstr='#bd362f', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-danger:hover,
+.btn-danger:active,
+.btn-danger.active,
+.btn-danger.disabled,
+.btn-danger[disabled] {
+    background-color: rgb(189, 54, 47);
+    *background-color: rgb(169, 48, 42);
+}
+
+.btn-danger:active,
+.btn-danger.active {
+    background-color: rgb(148, 42, 37) \9;
+}
+
+.btn-success {
+    background-color: rgb(91, 183, 91);
+    *background-color: rgb(81, 163, 81);
+    background-image: -ms-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(98, 196, 98)), to(rgb(81, 163, 81)));
+    background-image: -webkit-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: -o-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: -moz-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: linear-gradient(to top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-repeat: repeat-x;
+    border-color: rgb(81, 163, 81) rgb(81, 163, 81) rgb(56, 112, 56);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#62c462', endColorstr='#51a351', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-success:hover,
+.btn-success:active,
+.btn-success.active,
+.btn-success.disabled,
+.btn-success[disabled] {
+    background-color: rgb(81, 163, 81);
+    *background-color: rgb(73, 146, 73);
+}
+
+.btn-success:active,
+.btn-success.active {
+    background-color: rgb(64, 129, 64) \9;
+}
+
+.btn-info {
+    background-color: rgb(73, 175, 205);
+    *background-color: rgb(47, 150, 180);
+    background-image: -ms-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(91, 192, 222)), to(rgb(47, 150, 180)));
+    background-image: -webkit-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: -o-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: -moz-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: linear-gradient(to top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-repeat: repeat-x;
+    border-color: rgb(47, 150, 180) rgb(47, 150, 180) rgb(31, 99, 119);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#5bc0de', endColorstr='#2f96b4', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-info:hover,
+.btn-info:active,
+.btn-info.active,
+.btn-info.disabled,
+.btn-info[disabled] {
+    background-color: rgb(47, 150, 180);
+    *background-color: rgb(42, 133, 160);
+}
+
+.btn-info:active,
+.btn-info.active {
+    background-color: rgb(36, 116, 140) \9;
+}
+
+.btn-inverse {
+    background-color: rgb(65, 65, 65);
+    *background-color: rgb(34, 34, 34);
+    background-image: -ms-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(85, 85, 85)), to(rgb(34, 34, 34)));
+    background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-repeat: repeat-x;
+    border-color: rgb(34, 34, 34) rgb(34, 34, 34) rgb(0, 0, 0);
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#222222', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-inverse:hover,
+.btn-inverse:active,
+.btn-inverse.active,
+.btn-inverse.disabled,
+.btn-inverse[disabled] {
+    background-color: rgb(34, 34, 34);
+    *background-color: rgb(21, 21, 21);
+}
+
+.btn-inverse:active,
+.btn-inverse.active {
+    background-color: rgb(8, 8, 8) \9;
+}
+
+.btn-xs {
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 1px;
+}
+
+@media (min-width: 768px) {
+    .navbar .nav > li > .dropdown-menu::after {
+        position: absolute;
+        top: -6px;
+        right: 12px;
+        display: inline-block;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid rgb(245, 241, 228);
+        border-left: 6px solid transparent;
+        content: "";
+    }
+}
+
+label {
+    font-weight: normal;
+}
+
+pre {
+    border: 1px solid;
+}
+
+.alert {
+    padding: 10px;
+    text-align: center;
+}
+
+/* =======================================================================
+input sizing (for config pages)
+========================================================================== */
+
+/* Don't style root-dirs select */
+#config select:not([size]) {
+    width: auto;
+    display: inline;
+}
+
+.btn-inline {
+    margin-top: -3px;
+}
+
+.input75 {
+    width: 75px;
+    margin-top: -4px;
+}
+
+.input100 {
+    width: 100px;
+    margin-top: -4px;
+}
+
+.input150 {
+    width: 150px;
+    margin-top: -4px;
+}
+
+.input200 {
+    width: 200px;
+    margin-top: -4px;
+}
+
+.input250 {
+    width: 250px;
+    margin-top: -4px;
+}
+
+.input300 {
+    width: 300px;
+    margin-top: -4px;
+}
+
+.input350 {
+    width: 350px;
+    margin-top: -4px;
+}
+
+/* Added max-width, as setting width is really not optimal on smaller viewports */
+.max-input75 {
+    max-width: 75px;
+    margin-top: -4px;
+}
+
+.max-input100 {
+    max-width: 100px;
+    margin-top: -4px;
+}
+
+.max-input150 {
+    max-width: 150px;
+    margin-top: -4px;
+}
+
+.max-input200 {
+    max-width: 200px;
+    margin-top: -4px;
+}
+
+.max-input250 {
+    max-width: 250px;
+    margin-top: -4px;
+}
+
+.max-input300 {
+    max-width: 300px;
+    margin-top: -4px;
+}
+
+.max-input350 {
+    max-width: 350px;
+    margin-top: -4px;
+}
+
+select.input-sm {
+    font-size: 0.9em;
+}
+
+/* =======================================================================
+formWizard.css
+========================================================================== */
+
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
+fieldset.sectionwrap {
+    padding: 5px;
+    text-align: left;
+    border-width: 0;
+    width: 100%;
+}
+
+legend.legendStep {
+    color: rgb(87, 68, 43);
+    margin-bottom: 0;
+}
+
+div.stepsguide {
+    margin-bottom: 15px;
+    overflow: hidden;
+    text-align: left;
+    cursor: pointer;
+    display: table;
+}
+
+div.stepsguide .step {
+    display: table-cell;
+    width: 33%;
+    font: bold 24px Arial, sans-serif;
+    border-bottom: 4px solid rgb(87, 68, 43);
+}
+
+div.stepsguide .disabledstep {
+    color: rgb(196, 196, 196);
+    border-bottom: 4px solid rgb(138, 119, 94);
+}
+
+div.stepsguide .disabledstep p {
+    border-bottom: none;
+}
+
+div.stepsguide .step .smalltext {
+    font-size: 13px;
+    font-weight: normal;
+}
+
+div.formpaginate {
+    width: 800px;
+    margin-top: 1em;
+    overflow: auto;
+    font-weight: bold;
+    text-align: center;
+}
+
+div.formpaginate .prev,
+div.formpaginate .next {
+    padding: 3px 6px;
+    color: rgb(255, 255, 255);
+    cursor: hand;
+    cursor: pointer;
+    background: rgb(87, 68, 43);
+    border-radius: 6px;
+}
+
+.stepDiv {
+    padding: 15px 0;
+}
+
+#tabs .nocheck,
+.stepDiv .nocheck {
+    padding-left: 16px;
+}
+
+#tabs label span.component-title,
+.stepDiv label span.component-title {
+    padding-bottom: 10px;
+    float: left;
+    width: 172px;
+    margin-right: 10px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#tabs label span.component-desc,
+.stepDiv label span.component-desc {
+    padding-bottom: 10px;
+    font-size: 12px;
+    font-weight: normal;
+    display: block;
+    margin-left: 182px;
+}
+
+div.field-pair input {
+    margin-right: 6px;
+    float: left;
+}
+
+/* =======================================================================
+tablesorter.css
+========================================================================== */
+
+.tablesorter {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    color: rgb(0, 0, 0);
+    text-align: left;
+    background-color: rgb(255, 255, 255);
+    border-spacing: 0;
+}
+
+.tablesorter th,
+.tablesorter td {
+    padding: 4px;
+    border-top: rgb(255, 255, 255) 1px solid;
+    border-left: rgb(255, 255, 255) 1px solid;
+    vertical-align: middle;
+}
+
+/* remove extra border from left edge */
+.tablesorter th:first-child,
+.tablesorter td:first-child {
+    border-left: none;
+}
+
+.tablesorter th {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    border-collapse: collapse;
+    font-weight: normal;
+}
+
+.tablesorter .tablesorter-header {
+    padding: 4px 18px;
+    cursor: pointer;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAAP///////yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+    background-position: center right;
+    background-repeat: no-repeat;
+}
+
+.tablesorter thead .tablesorter-headerDesc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.tablesorter thead .tablesorter-headerAsc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+
+.tablesorter thead .sorter-false {
+    background-image: none;
+    padding: 4px;
+    cursor: default;
+}
+
+thead.tablesorter-stickyHeader {
+    border-top: 2px solid rgb(255, 255, 255);
+    border-bottom: 2px solid rgb(255, 255, 255);
+}
+
+/* Zebra Widget - row alternating colors */
+.tablesorter tr.odd,
+.defaultTable tr.odd {
+    background-color: rgb(245, 241, 228);
+}
+
+.tablesorter tr.even,
+.defaultTable tr.even {
+    background-color: rgb(223, 218, 207);
+}
+
+/* filter widget */
+.tablesorter .filtered {
+    display: none;
+}
+
+.tablesorter input.tablesorter-filter {
+    width: 98%;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.tablesorter tr.tablesorter-filter-row,
+.tablesorter tr.tablesorter-filter-row td {
+    text-align: center;
+    background: rgb(238, 238, 238);
+    border-bottom: 1px solid rgb(221, 221, 221);
+}
+
+/* optional disabled input styling */
+.tablesorter input.tablesorter-filter-row .disabled {
+    display: none;
+}
+
+.tablesorter-header-inner {
+    padding: 0 2px;
+    text-align: center;
+}
+
+.tablesorter tfoot tr {
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+    border-collapse: collapse;
+}
+
+.tablesorter tfoot a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+/* =======================================================================
+token-input.css
+========================================================================== */
+
+ul.token-input-list {
+    overflow: hidden;
+    height: auto !important;
+    height: 1%;
+    width: 273px;
+    border: 1px solid rgb(204, 204, 204);
+    cursor: text;
+    font-size: 10px;
+    font-family: Verdana, sans-serif;
+    z-index: 999;
+    margin: 0;
+    padding: 0 0 1px;
+    background-color: rgb(255, 255, 255);
+    list-style-type: none;
+    border-radius: 3px;
+}
+
+ul.token-input-list li {
+    list-style-type: none;
+}
+
+ul.token-input-list li input {
+    border: 0;
+    padding: 3px 4px;
+    background-color: rgb(255, 255, 255);
+}
+
+li.token-input-token {
+    overflow: hidden;
+    height: auto !important;
+    height: 1%;
+    margin: 3px;
+    padding: 3px 5px 0;
+    background-color: rgb(208, 239, 160);
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    cursor: default;
+    display: block;
+}
+
+li.token-input-token img {
+    padding-right: 4px;
+    float: left;
+}
+
+li.token-input-token input {
+    padding-top: 2px !important;
+    padding-right: 4px !important;
+    float: left;
+}
+
+li.token-input-token p {
+    float: left;
+    padding: 0;
+    margin: 0;
+    line-height: 2 !important;
+}
+
+li.token-input-token span {
+    float: right;
+    color: rgb(119, 119, 119);
+    cursor: pointer;
+}
+
+li.token-input-selected-token {
+    background-color: rgb(8, 132, 78);
+    color: rgb(255, 255, 255);
+}
+
+li.token-input-selected-token span {
+    color: rgb(187, 187, 187);
+}
+
+li.token-input-input-token input {
+    margin: 3px !important;
+}
+
+div.token-input-dropdown {
+    position: absolute;
+    width: 273px;
+    overflow: hidden;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    cursor: default;
+    font-size: 11px;
+    font-family: Verdana, sans-serif;
+    z-index: 1;
+}
+
+div.token-input-dropdown p {
+    margin: 0;
+    padding: 3px;
+    font-weight: bold;
+    color: rgb(119, 119, 119);
+}
+
+div.token-input-dropdown ul {
+    margin: 0;
+    padding: 0;
+}
+
+div.token-input-dropdown ul li {
+    background-color: rgb(255, 255, 255);
+    padding: 3px;
+    list-style-type: none;
+}
+
+div.token-input-dropdown ul li.token-input-dropdown-item {
+    background-color: rgb(250, 250, 250);
+}
+
+div.token-input-dropdown ul li.token-input-dropdown-item2 {
+    background-color: rgb(255, 255, 255);
+}
+
+div.token-input-dropdown ul li em {
+    font-weight: bold;
+    font-style: normal;
+}
+
+div.token-input-dropdown ul li.token-input-selected-dropdown-item {
+    background-color: rgb(97, 150, 194);
+}
+
+span.token-input-delete-token {
+    margin: 0 1px;
+}
+
+.red-text {
+    color: rgb(221, 51, 51);
+}
+
+.clear-left {
+    clear: left;
+}
+
+.nextline-block {
+    display: block;
+}
+
+/* =======================================================================
+jquery.confirm.css
+========================================================================== */
+
+#confirmOverlay {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: url("../images/bg.gif");
+    background: -moz-linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)) repeat-x rgba(0, 0, 0, 0.5);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))) repeat-x rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+}
+
+#confirmBox {
+    background: rgb(245, 241, 228);
+    width: 460px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin: -130px 0 0 -230px;
+    border: 1px solid rgb(17, 17, 17);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.175);
+}
+
+#confirmBox h1,
+#confirmBox p {
+    padding: 6px 10px;
+}
+
+#confirmBox h1 {
+    background-color: rgb(51, 51, 51);
+    border-bottom: 1px solid rgb(17, 17, 17);
+    color: rgb(255, 255, 255);
+    margin: 0;
+    font-size: 22px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+}
+
+#confirmBox p {
+    padding-top: 20px;
+    color: rgb(0, 0, 0);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+}
+
+#confirmButtons {
+    padding: 15px 0;
+    text-align: center;
+}
+
+#confirmBox .button {
+    margin-right: 15px;
+    padding: 2px 20px;
+    text-decoration: none;
+    display: inline-block;
+    color: rgb(255, 255, 255);
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
+    background-clip: padding-box;
+    border: 1px solid rgb(17, 17, 17);
+    border-radius: 3px;
+    cursor: pointer;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+#confirmBox .button:last-child {
+    margin-right: 0;
+}
+
+#confirmBox .green {
+    background-color: rgb(63, 118, 54);
+}
+
+#confirmBox .green:hover {
+    background-color: rgb(72, 135, 62);
+}
+
+#confirmBox .red {
+    background-color: rgb(141, 45, 43);
+}
+
+#confirmBox .red:hover {
+    background-color: rgb(161, 51, 49);
+}
+
+/* =======================================================================
+pnotify.css
+========================================================================== */
+
+.ui-pnotify-sticker {
+    margin-top: -12px;
+}
+
+.ui-pnotify-closer {
+    margin-top: -12px;
+    margin-right: -10px;
+}
+
+/* =======================================================================
+Fix the file browser
+========================================================================== */
+.ui-button {
+    display: inline-block;
+    *display: inline;
+    padding: 4px 10px;
+    margin-bottom: 0;
+    *margin-left: 0.3em;
+    font-size: 12px;
+    line-height: 16px;
+    *line-height: 20px;
+    color: rgb(51, 51, 51);
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: rgb(245, 245, 245);
+    *background-color: rgb(230, 230, 230);
+    background-image: -ms-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
+    background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-repeat: repeat-x;
+    border: 1px solid rgb(204, 204, 204);
+    *border: 0;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    border-color: rgb(230, 230, 230) rgb(230, 230, 230) rgb(191, 191, 191);
+    border-bottom-color: rgb(179, 179, 179);
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 1px;
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+    *zoom: 1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* =======================================================================
+login.css
+========================================================================== */
+
+.login {
+    display: block;
+}
+
+.login h1 {
+    padding: 0 0 10px;
+    font-size: 60px;
+    font-family: Lobster, cursive;
+    font-weight: normal;
+}
+
+.login form {
+    padding: 0;
+    height: 300px;
+    width: 400px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    margin: -200px 0 0 -200px;
+}
+
+@media all and (max-width: 480px) {
+    .login form {
+        padding: 0;
+        height: 300px;
+        width: 90%;
+        position: absolute;
+        left: 5%;
+        top: 10px;
+        margin: 0;
+    }
+}
+
+.login .ctrlHolder {
+    padding: 0;
+    margin: 0 0 20px;
+}
+
+.login .ctrlHolder:hover {
+    background: none;
+}
+
+.login input[type=text],
+.login input[type=password] {
+    width: 100% !important;
+    font-size: 25px;
+    padding: 14px !important;
+}
+
+.login .remember_me {
+    font-size: 15px;
+    float: left;
+    width: 150px;
+    padding: 20px 0;
+}
+
+.login .remember_me .check {
+    margin: 5px 5px 0 0;
+}
+
+.login .button {
+    font-size: 25px;
+    padding: 20px;
+    float: right;
+}
+
+/* =======================================================================
+IMDB Popular
+========================================================================== */
+
+.popularShow {
+    margin-bottom: 30px;
+}
+
+.popularShow h3 {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    margin-right: 30px;
+}
+
+.popularShow .left {
+    float: left;
+    width: 100px;
+}
+
+.popularShow .right {
+    float: left;
+    width: 600px;
+}
+
+.popularShow .year {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.popularShow .coverImage {
+    width: 80%;
+    padding-left: 20px;
+    margin-top: 4px;
+}
+
+.popularShow .rating {
+    font-size: 90%;
+    display: inline-block;
+    margin-left: 0;
+}
+
+.popularShow p {
+    margin-bottom: 0;
+}
+
+table.home-header {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+input.tablesorter-filter.disabled {
+    display: none;
+}
+
+/* This fixes bold font be used | @TODO replace this with proper CSS overrides */
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header {
+    font-weight: normal !important;
+}
+
+/* =======================================================================
+snatchSelection.mako
+========================================================================== */
+
+div#searchNotification {
+    display: inline-block;
+}
+
+.left-30 {
+    margin-left: -30px;
+}
+
+.right-30 {
+    margin-right: -30px;
+}
+
+.vMiddle {
+    vertical-align: middle;
+}
+
+.curHelp {
+    cursor: help;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(1) tr:nth-child(1) {
+    height: 60px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(4) tr:nth-child(1) {
+    height: 30px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) tr:nth-child(2) {
+    height: 30px;
+}
+
+#snatchhistory th.row-seasonheader {
+    vertical-align: bottom;
+    width: auto;
+}
+
+#snatchhistory th.row-seasonheader h3 {
+    display: inline;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(1) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(2) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(3) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(4) {
+    width: 52%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(1) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(2) {
+    width: 18%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(3) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(4) {
+    width: 52%;
+}
+
+#srchresults.tablesorter td:nth-child(1) {
+    width: 56%;
+}
+
+#srchresults.tablesorter td:nth-child(n+2) {
+    width: 4%;
+    text-align: center;
+}
+
+.release-name-ellipses {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 250px;
+}
+
+.release-name-ellipses-toggled {
+    overflow: visible;
+    white-space: nowrap;
+    position: relative;
+    max-width: 250px;
+}
+
+.release-name-ellipses:hover {
+    text-decoration: underline;
+}
+
+.release-name-ellipses-toggled span {
+    background-color: rgb(190, 222, 237);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(136, 136, 136);
+    padding: 5px;
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
+}
+
+/* ========================================================================== */
+
+/* Pull left in mobile resolutions */
+@media (max-width: 767px) {
+    .pull-xs-right {
+        float: right !important;
+    }
+
+    .pull-xs-left {
+        float: left !important;
+    }
+
+    .radio-inline.pull-xs-left + .radio-inline.pull-xs-left,
+    .checkbox-inline.pull-xs-left + .checkbox-inline.pull-xs-left {
+        margin-left: 0;
+    }
+
+    .radio-inline.pull-xs-left,
+    .checkbox-inline.pull-xs-left {
+        margin-right: 10px;
+    }
+}
+
+/* ========================================================================
+CSS helper classes
+=========================================================================== */
+
+.top-5 {
+    margin-top: 5px;
+}
+
+.top-10 {
+    margin-top: 10px;
+}
+
+.top-15 {
+    margin-top: 15px;
+}
+
+.top-20 {
+    margin-top: 20px;
+}
+
+.top-25 {
+    margin-top: 25px;
+}
+
+.bottom-5 {
+    margin-bottom: 5px;
+}
+
+.bottom-10 {
+    margin-bottom: 10px;
+}
+
+.bottom-15 {
+    margin-bottom: 15px;
+}
+
+.bottom-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-25 {
+    margin-bottom: 25px;
+}
+
+.horizontal-scroll {
+    overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+}
+
+/* sub-menu */
+
+@media screen and (min-width: 0) and (max-width: 768px) {
+    .full-width { display: none; }  /* show it on small screens */
+    .mobile { display: block; }
+    .mobile .ui-icon { display: inline-block; }
+
+    .dropdown-menu-custom > li > a {
+        padding: 15px 36px 15px 5px;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+    }
+
+    .mobile > ul > li > a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 8px;
+    }
+
+    .mobile .img-align {
+        width: 25px;
+        float: left;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .full-width { display: block; }  /* show it on small screens */
+    .mobile { display: none; }
+}
+
+/* navbar padding, to make room for in-page scrollbars */
+.padding-right-15 {
+    padding-right: 15px !important;
+}
+
+.backlog-quality {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 55, 55);
+}
+
+@media (max-width: 1700px) {
+    #key-padding {
+        margin-left: 0;
+        margin-right: 5px;
+    }
+}
+
+.triggerhighlight {
+    cursor: default;
+}
+
+/* CSS for Nav dropdown hover
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+*/
+
+/* These classes should be natively available in bootstrap 4 */
+.d-block {
+    display: block;
+}

@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 4
+      pubdate: 2017-11-17 00:00:00
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [720p][1FB3C050].mkv'
+      leechers: 15
+      link: https://nyaa.si/download/1119253.torrent
+      size: 392481996
+    - seeders: 2
+      pubdate: 2017-11-17 00:00:00
+      title: '[PuyaSubs!] Mahou Shoujo Tokushusen Asuka - 06 [1080p][5AF71C7D].mkv'
+      leechers: 8
+      link: https://nyaa.si/download/1119252.torrent
+      size: 878811545
+    - seeders: 1
+      pubdate: 2017-11-17 00:00:00
+      title: '[AniDUB]_Yakusoku_no_Neverland_[06]_[1080p]'
+      leechers: 2
+      link: https://nyaa.si/download/1119251.torrent
+      size: 454557696
+
+backlog:
+  search_strings:
+    Episode: ['Dragon Ball Super 115']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-14 00:00:00
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [x264] [pseudo].mkv'
+      leechers: 0
+      link: https://nyaa.si/download/980046.torrent
+      size: 227331276
+    - seeders: 0
+      pubdate: 2017-11-14 00:00:00
+      title: '[AnimeRG] Dragon Ball Super - 115 [720p] [Multi-Sub] [HEVC] [x265] [pseudo].mkv'
+      leechers: 0
+      link: https://nyaa.si/download/980045.torrent
+      size: 178362777

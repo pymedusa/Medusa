@@ -1,0 +1,85 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched.
+* text=auto
+* eol=lf
+
+#
+# The above will handle all files NOT found below
+#
+
+# Linguist overrides for vendored files
+lib/**			linguist-vendored
+ext/**			linguist-vendored
+lib[23]/**		linguist-vendored
+ext[23]/**		linguist-vendored
+# Linguist overrides for generated code
+themes/**		linguist-generated
+
+#
+## These files are text and should be normalized (Convert crlf => lf)
+#
+
+# git config
+.gitattributes	text
+.gitignore		text
+
+# Documentation
+*.md			text
+
+# Startup script
+init.*			text
+
+# Various
+*.ini			text
+*.txt			text
+*.less			text
+*.h				text
+*.in			text
+
+# Python Source files
+*.pxd			text
+*.py 			text
+*.py3 			text
+*.pyw 			text
+*.pyx  			text
+
+# Mako template
+*.mako			text
+
+# Web file
+*.htm			text
+*.html			text
+*.css			text
+*.js			text
+*.xml			text
+
+#
+## These files are binary and should be left untouched
+## (binary is a macro for -text -diff)
+#
+
+# Python Binary files
+*.db			binary
+*.p 			binary
+*.pkl 			binary
+*.py[cod] 		binary
+
+# These files are binary and should be left untouched
+*.png			binary
+*.jpg			binary
+*.jpeg			binary
+*.gif			binary
+*.ico			binary
+*.swf			binary
+*.gz			binary
+*.zip			binary
+*.7z			binary
+*.ttf			binary
+*.svg			binary
+*.woff			binary
+*.eot			binary
+*.rar			binary
+*.dll			binary
+*.lib			binary

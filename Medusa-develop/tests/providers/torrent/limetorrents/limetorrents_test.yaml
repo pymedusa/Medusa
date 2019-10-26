@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-14 00:00:00
+      title: Arrow S07E05 720p HDTV x264-SVA
+      leechers: 0
+      link: magnet:?xt=urn:btih:610F125EADED845BB11396F9610222482C995DAB
+      size: 780769689
+    - seeders: 0
+      pubdate: 2017-11-14 00:00:00
+      title: beat bobby flay s19e06 choc o love hdtv x264-w4f[eztv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:5682459258E0672D6EFB80D0EDD13309DA064A31
+      size: 188974366
+    - seeders: 0
+      pubdate: 2017-11-14 00:00:00
+      title: Doom Patrol S01E01 WEB x264-PHOENiX[TGx]
+      leechers: 0
+      link: magnet:?xt=urn:btih:62C04640C66E80E83BD58A25068DA55B6654C84A
+      size: 426455859
+
+backlog:
+  search_strings:
+    Episode: ['Arrow S05E07']
+  results:
+    - seeders: 63
+      pubdate: 2017-10-27 00:00:00
+      title: Arrow S05E07 HDTV x264-LOL[ettv]
+      leechers: 9
+      link: magnet:?xt=urn:btih:AF16348EAF93C015C9F16B0807C24635406B4FFD
+      size: 283629322
+    - seeders: 18
+      pubdate: 2017-10-27 00:00:00
+      title: Arrow S05E07 Dual &Aacute;udio 720p WEB-DL
+      leechers: 6
+      link: magnet:?xt=urn:btih:FAAAD71EBE82432BDFA5E8B8EAFA43B569D279DD
+      size: 478465228

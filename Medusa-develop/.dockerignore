@@ -1,0 +1,26 @@
+.build/
+.dockerignore
+.git/
+.gitattributes
+.github/
+[Dd]ata/
+[Ll]ogs/
+**/__pycache__
+**/.gitignore
+**/*.db
+**/*.db.*
+**/*.log
+**/*.py[cod]
+**/node_modules/
+cache/
+Dockerfile
+dredd/
+hooks/
+runscripts/
+tests/
+themes-default/
+venv/
+
+# Ignore Windows and MacOS specific files
+lib/native/**/*.dll
+lib/native/**/*.dylib

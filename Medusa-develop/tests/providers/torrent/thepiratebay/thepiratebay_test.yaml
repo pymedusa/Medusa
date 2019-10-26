@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate:
+      title: Hospital.S04E06.XviD-AFG
+      leechers: 0
+      link: magnet:?xt=urn:btih:bef700a68338e37c53e3b42837d8282a3489b6b3
+      size: 554371645
+    - seeders: 0
+      pubdate:
+      title: Great.British.Railway.Journeys.S10E10.720p.HDTV.x264-QPEL
+      leechers: 0
+      link: magnet:?xt=urn:btih:586cab8cbd80ab21e5230f19b1a9a86bc0c9c7f6
+      size: 571211776
+    - seeders: 0
+      pubdate:
+      title: Show.Me.The.Movie.S02E02.480p.x264-mSD
+      leechers: 0
+      link: magnet:?xt=urn:btih:f4915f92e8462c3769fcfca886448fd48d1861fb
+      size: 212504412
+
+backlog:
+  search_strings:
+    Episode: ['Arrow S05E07']
+  results:
+    - seeders: 0
+      pubdate:
+      title: Arrow S05E07 Vigilante 1080p AMZN WEBRip HEVC DD5.1 x265
+      leechers: 0
+      link: magnet:?xt=urn:btih:1a8317696f560d19336d13dfaaa70048130c73ce
+      size: 645587271
+    - seeders: 1
+      pubdate:
+      title: Arrow.S05E07.1080p.WEB-DL.6CH.x265.HEVC-PSA
+      leechers: 2
+      link: magnet:?xt=urn:btih:d540765a1d0b49ec1c7bf6186c42d9e652500aaa
+      size: 524350914

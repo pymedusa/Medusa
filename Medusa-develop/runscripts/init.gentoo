@@ -1,0 +1,74 @@
+#!/sbin/openrc-run
+# Copyright 1999-2013 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+# History
+# -------
+# 1/29 Created          Richard Powell          richard@powell.ws
+
+# You will need to create a configuration file in order for this script
+# to work properly. Please create /etc/conf.d/medusa with the following:
+#
+# MEDUSA_USER=<user you want medusa to run under>
+# MEDUSA_GROUP=<group you want medusa to run under>
+# MEDUSA_DIR=<path to start.py>
+# PATH_TO_PYTHON_2=/usr/bin/python2
+# MEDUSA_DATADIR=<directory that contains main.db file>
+# MEDUSA_CONFDIR=<directory that contains Medusa's config.ini file>
+#
+
+RUNDIR=/var/run/medusa
+
+depend() {
+    need net
+}
+
+get_pidfile() {
+    # Parse the config.ini file for the value of web_port in the General section
+   eval web_port="$(grep -Po 'web_port = \K[^ ]+' \
+   "${MEDUSA_CONFDIR}/config.ini")"
+   echo "${RUNDIR}/medusa-${web_port}.pid"
+}
+
+start() {
+    ebegin "Starting Medusa"
+
+    checkpath -q -d -o "${MEDUSA_USER}":"${MEDUSA_GROUP}" -m 0770 "${RUNDIR}"
+
+    start-stop-daemon \
+        --quiet \
+        --start \
+        --user "${MEDUSA_USER}" \
+        --group "${MEDUSA_GROUP}" \
+        --background \
+        --pidfile "$(get_pidfile)" \
+        --exec "${PATH_TO_PYTHON_2}" \
+        -- \
+        "${MEDUSA_DIR}/start.py" \
+        -d \
+        --pidfile "$(get_pidfile)" \
+        --config "${MEDUSA_CONFDIR}/config.ini" \
+        --datadir "${MEDUSA_DATADIR}"
+    eend $?
+}
+
+start_pre() {
+    if [ "$RC_CMD" == "restart" ]; then
+        local pidfile
+        pidfile=$(get_pidfile)
+        while [ -e "${pidfile}" ]; do
+            sleep 1
+        done
+    fi
+
+    return 0
+}
+
+stop() {
+    local pidfile
+    pidfile=$(get_pidfile)
+
+    ebegin "Stopping Medusa"
+    start-stop-daemon --stop --pidfile "$(get_pidfile)" --retry 15
+    eend $?
+}

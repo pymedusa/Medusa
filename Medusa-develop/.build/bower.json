@@ -1,0 +1,23 @@
+{
+  "name": "medusa",
+  "private": true,
+  "dependencies": {
+    "jquery-ui": "1.12.1",
+    "jqueryui-touch-punch": "*",
+    "jquery-form": "4.0.1",
+    "jquery-tokeninput": "^1.7.0",
+    "jquery-confirm": "2.5.2",
+    "jquery-backstretch": "^2.1.15",
+    "bootstrap3-typeahead": "4.0.2",
+    "timeago": "1.5.4",
+    "pnotify": "2.1.0",
+    "qtip2": "2.2.1",
+    "isotope": "3.0.1",
+
+    "fizzy-ui-utils": "2.0.5",
+    "get-size": "2.0.2",
+    "masonry": "4.2.0",
+    "ev-emitter": "1.1.0",
+    "imagesloaded": "4.1.3"
+  }
+}

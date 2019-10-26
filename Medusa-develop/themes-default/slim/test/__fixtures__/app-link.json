@@ -1,0 +1,60 @@
+{
+  "state": {
+    "config": {
+      "indexers": {
+        "config": {
+          "indexers": {
+            "tvdb": {
+              "xemOrigin": "tvdb",
+              "apiParams": {
+                "useZip": true,
+                "language": "en"
+              },
+              "showUrl": "https://www.thetvdb.com/dereferrer/series/",
+              "id": 1,
+              "icon": "thetvdb16.png",
+              "name": "TVDBv2",
+              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json",
+              "enabled": true,
+              "baseUrl": "https://api.thetvdb.com/",
+              "mappedTo": "tvdb_id",
+              "identifier": "tvdb"
+            },
+            "tmdb": {
+              "xemOrigin": null,
+              "apiParams": {
+                "useZip": true,
+                "language": "en"
+              },
+              "showUrl": "https://www.themoviedb.org/tv/",
+              "id": 4,
+              "icon": "tmdb16.png",
+              "name": "TMDB",
+              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json",
+              "enabled": true,
+              "baseUrl": "https://www.themoviedb.org/",
+              "mappedTo": "tmdb_id",
+              "identifier": "tmdb"
+            },
+            "tvmaze": {
+              "xemOrigin": null,
+              "apiParams": {
+                "useZip": true,
+                "language": "en"
+              },
+              "showUrl": "http://www.tvmaze.com/shows/",
+              "id": 3,
+              "icon": "tvmaze16.png",
+              "name": "TVmaze",
+              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json",
+              "enabled": true,
+              "baseUrl": "http://api.tvmaze.com/",
+              "mappedTo": "tvmaze_id",
+              "identifier": "tvmaze"
+            }
+          }
+        }
+      }
+    }
+  }
+}

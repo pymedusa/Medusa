@@ -1,0 +1,205 @@
+[{
+    "episode": 1,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 1,
+        "season": 3,
+        "absoluteNumber": 8
+    },
+    "status": "Skipped",
+    "identifier": "s03e01",
+    "title": "Nosedive",
+    "file": {
+        "location": ""
+    },
+    "description": "Insecure office worker Lacie lives in a happy, smiley, status-obsessed nightmare world. Her old friend Naomi is one of society\u2019s elites, and Lacie may have found a way to join her\u2026",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5692427
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 8,
+    "slug": "s03e01"
+}, {
+    "episode": 2,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 2,
+        "season": 3,
+        "absoluteNumber": 9
+    },
+    "status": "Skipped",
+    "identifier": "s03e02",
+    "title": "Playtest",
+    "file": {
+        "location": ""
+    },
+    "description": "A thrill-seeking globetrotter visits Britain, hooks up with a woman and tests the latest in video game technology \u2013 \u201ca device as mind-bendingly sophisticated as it is terrifying.\u201d",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5692430
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 9,
+    "slug": "s03e02"
+}, {
+    "episode": 3,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 3,
+        "season": 3,
+        "absoluteNumber": 10
+    },
+    "status": "Skipped",
+    "identifier": "s03e03",
+    "title": "Shut Up and Dance",
+    "file": {
+        "location": ""
+    },
+    "description": "When withdrawn 19-year-old Kenny stumbles headlong into an online trap, he is quickly forced into an uneasy alliance with shifty Hector \u2013 both of them at the mercy of persons unknown.",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5692426
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 10,
+    "slug": "s03e03"
+}, {
+    "episode": 4,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 4,
+        "season": 3,
+        "absoluteNumber": 11
+    },
+    "status": "Skipped",
+    "identifier": "s03e04",
+    "title": "San Junipero",
+    "file": {
+        "location": ""
+    },
+    "description": "California, 1987: San Junipero is a fun-loving beach town synonymous with sun, surf, and sex. And for recent arrivals Yorkie and Kelly, it\u2019s going to be a life-changer\u2026",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5691929
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 11,
+    "slug": "s03e04"
+}, {
+    "episode": 5,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 5,
+        "season": 3,
+        "absoluteNumber": 12
+    },
+    "status": "Skipped",
+    "identifier": "s03e05",
+    "title": "Men Against Fire",
+    "file": {
+        "location": ""
+    },
+    "description": "A military story set in a post-war future. A rookie soldier is posted overseas, protecting frightened villagers from an infestation of vicious feral mutants alongside fellow soldier Raiman. They\u2019re hoping some new technological advantage will save them. ",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5692428
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 12,
+    "slug": "s03e05"
+}, {
+    "episode": 6,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 6,
+        "season": 3,
+        "absoluteNumber": 13
+    },
+    "status": "Skipped",
+    "identifier": "s03e06",
+    "title": "Hated in the Nation",
+    "file": {
+        "location": ""
+    },
+    "description": "A police detective and her geeky young sidekick investigate a string of grisly murders with a sinister link to social media.",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 3,
+    "id": {
+        "tvdb": 5692429
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 13,
+    "slug": "s03e06"
+}]

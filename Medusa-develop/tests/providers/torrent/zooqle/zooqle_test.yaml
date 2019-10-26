@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 10
+      pubdate: 2017-11-08 00:00:00
+      title: Beat Bobby Flay S19E06 Choc O Love 480p x264-mSD [eztv]
+      leechers: 5
+      link: magnet:?xt=urn:btih:7D0358FC19C33367196F67FA11D74D88AB5EBC3D
+      size: 131072000
+    - seeders: 2
+      pubdate: 2017-11-08 00:00:00
+      title: Beat Bobby Flay S19E06 Choc O Love 480p x264-mSD
+      leechers: 2
+      link: magnet:?xt=urn:btih:8529C50A64665EF8B82B579F7C6195612C6ABEA0
+      size: -1
+    - seeders: 3
+      pubdate: 2017-11-08 00:00:00
+      title: Beat Bobby Flay S19E06 Choc O Love XviD-AFG
+      leechers: 1
+      link: magnet:?xt=urn:btih:7B9FA4071A993775F9F5430B33B83F015E8D5591
+      size: 337641472
+
+backlog:
+  search_strings:
+    Episode: ['Chance S02E03']
+  results:
+    - seeders: 33
+      pubdate: 2017-10-09 00:00:00
+      title: Chance S02E03 WEB h264-TBS [eztv]
+      leechers: 46
+      link: magnet:?xt=urn:btih:3E0044197C6FFD4B410FD924D7ED8467E01812D9
+      size: 255852544
+    - seeders: 16
+      pubdate: 2017-10-09 00:00:00
+      title: Chance S02E03 720p WEB h264-TBS [eztv]
+      leechers: 18
+      link: magnet:?xt=urn:btih:5ED81FEECA5BAB5193D260185B4BF863D02B14FD
+      size: 740294656

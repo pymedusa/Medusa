@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 312
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [1080p].mkv'
+      leechers: 322
+      link: magnet:?xt=urn:btih:Z4UZDVBQZFNWIV4TIARGO7KB6B2BHBQ3&tr=http
+      size:  -1
+    - seeders: 10
+      pubdate: 2017-11-16 00:00:00
+      title: '[Erai-raws] Mahou Shoujo Tokushusen Asuka - 06 [1080p][Multiple Subtitle].mkv'
+      leechers: 27
+      link: magnet:?xt=urn:btih:VOY4MC3IBY3OOP5H53Z6XASJE6ANLAVN&tr=http
+      size: -1
+    - seeders: 504
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Mahou Shoujo Tokushusen Asuka - 06 [720p].mkv'
+      leechers: 324
+      link: magnet:?xt=urn:btih:ELMQHCQLVLS2GMI27ZJDLWS3KOHCORBO&tr=http
+      size: -1
+
+backlog:
+  search_strings:
+    Episode: ['Yu-Gi-Oh! VRAINS 27']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-16 00:00:00
+      title: Yu-Gi-Oh! VRAINS - 27 (1280x720 HEVC2 AAC).mkv
+      leechers: 0
+      link: magnet:?xt=urn:btih:5OSHGHPWV5Q4NLO7SWWF3N4P3OJKIMLC&tr=http
+      size: -1
+    - seeders: 3
+      pubdate: 2017-11-16 00:00:00
+      title: '[HorribleSubs] Yu-Gi-Oh! VRAINS - 27 [1080p].mkv'
+      leechers: 0
+      link: magnet:?xt=urn:btih:GW4QGTAFSIQK2FM6QGNVT652YV3UP77L&tr=http
+      size: -1

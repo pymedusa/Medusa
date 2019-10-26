@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# PROVIDE: medusa
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+#
+# Add the following lines to /etc/rc.conf.local or /etc/rc.conf
+# to enable this service:
+#
+# medusa_enable (bool):	Set to NO by default.
+#			Set it to YES to enable it.
+# medusa_user:	The user account Medusa daemon runs as what
+#			you want it to be. It uses 'medusa' user by
+#			default. Do not sets it as empty or it will run
+#			as root.
+# medusa_group:	The group account Medusa daemon runs as what
+#			you want it to be. It uses 'medusa' group by
+#			default. Do not sets it as empty or it will run
+#			as wheel.
+# medusa_dir:	Directory where Medusa lives.
+#			Default: /usr/local/medusa
+# medusa_datadir:	Data directory for Medusa (DB, Logs, config)
+#			Default is same as medusa_dir
+
+. /etc/rc.subr
+
+name="medusa"
+rcvar=${name}_enable
+
+load_rc_config ${name}
+
+: ${medusa_enable:="NO"}
+: ${medusa_user:="medusa"}
+: ${medusa_group:="medusa"}
+: ${medusa_dir:="/usr/local/medusa"}
+: ${medusa_datadir:="${medusa_dir}"}
+
+pidfile="/var/run/PyMedusa/Medusa.pid"
+command="/usr/local/bin/python2.7"
+command_args="${medusa_dir}/start.py --datadir ${medusa_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
+
+start_precmd="medusa_prestart"
+medusa_prestart() {
+	if [ -f ${pidfile} ]; then
+		rm -f ${pidfile}
+		echo "Removing stale pidfile."
+	elif [ ! -d ${pidfile%/*} ]; then
+		install -d -o ${medusa_user} -g ${medusa_group} ${pidfile%/*}
+	fi
+
+	if [ ! -d ${medusa_datadir} ]; then
+		install -d -o ${medusa_user} -g ${medusa_group} ${medusa_datadir}
+	fi
+}
+
+run_rc_command "$1"
