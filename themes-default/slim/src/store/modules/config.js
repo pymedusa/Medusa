@@ -5,45 +5,12 @@ import { arrayUnique, arrayExclude } from '../../utils/core';
 const state = {
     wikiUrl: null,
     donationsUrl: null,
-    posterSortdir: null,
-    themeName: null,
     selectedRootIndex: null,
     namingForceFolders: null,
-    animeSplitHomeInTabs: null,
-    layout: {
-        show: {
-            specials: null,
-            showListOrder: []
-        },
-        home: null,
-        history: null,
-        schedule: null,
-        wide: null
-    },
-    fanartBackground: null,
-    trimZero: null,
-    animeSplitHome: null,
-    gitUsername: null,
-    branch: null,
-    commitHash: null,
     sourceUrl: null,
     rootDirs: [],
-    fanartBackgroundOpacity: null,
-    comingEpsDisplayPaused: null,
-    sortArticle: null,
     subtitles: {
         enabled: null
-    },
-    fuzzyDating: null,
-    backlogOverview: {
-        status: null,
-        period: null
-    },
-    posterSortby: null,
-    news: {
-        lastRead: null,
-        latest: null,
-        unread: null
     },
     logs: {
         debug: null,
@@ -55,9 +22,8 @@ const state = {
     failedDownloads: {
         enabled: null,
         deleteFailed: null
-    },    
-    comingEpsSort: null,
-    githubUrl: null,
+    },
+    cpuPreset: null,
     subtitlesMulti: null,
     anonRedirect: null,
     recentShows: [],
@@ -91,7 +57,6 @@ const state = {
     updateFrequency: null,
     notifyOnUpdate: null,
     availableThemes: null,
-    comingEpsMissedRange: null,
     timeStyle: null,
     dateStyle: null,
     timePresets: [],
@@ -110,8 +75,6 @@ const state = {
         httpsKey: null,
         handleReverseProxy: null
     },
-    cpuPreset: null,
-    cpuPresets: null,
     sslVerify: null,
     sslCaBundle: null,
     noRestart: null,
@@ -188,35 +151,11 @@ const actions = {
         });
     },
     setConfig(context, { section, config }) {
-        if (section !== 'main') {
-            return;
-        }
-
-        // Use destructuring to remove the unwanted keys.
-        const { datePresets, timePresets, availableThemes, logSize, randomShowSlug, githubUrl, ...rest } = config;
-        // Assign the object with the keys removed to our copied object.
-        let filteredConfig = rest;
-
-        // If an empty config object was passed, use the current state config
-        filteredConfig = Object.keys(filteredConfig).length === 0 ? context.state : filteredConfig;
-
-        return api.patch(`config/${section}`, filteredConfig);
+        return api.patch(`config/${section}`, config);
     },
     updateConfig(context, { section, config }) {
         const { commit } = context;
         return commit(ADD_CONFIG, { section, config });
-    },
-    setLayout(context, { page, layout }) {
-        return api.patch('config/main', {
-            layout: {
-                [page]: layout
-            }
-        }).then(() => {
-            setTimeout(() => {
-                // For now we reload the page since the layouts use python still
-                location.reload();
-            }, 500);
-        });
     },
     getApiKey(context) {
         const { commit } = context;
@@ -226,13 +165,6 @@ const actions = {
             .then(response => {
                 config.webInterface.apiKey = response.data;
                 return commit(ADD_CONFIG, { section, config });
-            });
-    },
-    setTheme(context, { themeName }) {
-        const { commit } = context;
-        return api.patch('config/main', { themeName })
-            .then(() => {
-                return commit(ADD_CONFIG, { section: 'main', config: { config: themeName } });
             });
     }
 

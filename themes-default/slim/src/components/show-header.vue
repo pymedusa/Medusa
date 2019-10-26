@@ -425,7 +425,6 @@ export default {
             config: state => state.config,
             shows: state => state.shows.shows,
             indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownloads: state => state.config.failedDownloads,
             displaySpecials: state => state.config.layout.show.specials,
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
@@ -503,7 +502,7 @@ export default {
             return summary;
         },
         changeStatusOptions() {
-            const { failedDownloads, getStatus, statuses } = this;
+            const { search, getStatus, statuses } = this;
 
             if (statuses.length === 0) {
                 return [];
@@ -513,7 +512,7 @@ export default {
             const defaultOptions = ['wanted', 'skipped', 'ignored', 'downloaded', 'archived']
                 .map(key => getStatus({ key }));
 
-            if (failedDownloads.enabled) {
+            if (search.useFailedDownloads) {
                 defaultOptions.push(getStatus({ key: 'failed' }));
             }
 

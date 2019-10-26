@@ -68,11 +68,9 @@
                             Filter(s)</button>
                     </span>&nbsp;
                 </template>
-                Layout: <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
-                    <option value="poster">Poster</option>
-                    <option value="small">Small Poster</option>
-                    <option value="banner">Banner</option>
-                    <option value="simple">Simple</option>
+                Layout: 
+                <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                    <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
                 </select>
             </div>
         </div>

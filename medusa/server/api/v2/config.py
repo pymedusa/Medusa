@@ -81,14 +81,7 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         # Main
         'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
-        'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
-                                     default_value='banner', post_processor=layout_schedule_post_processor),
-        'layout.history': EnumField(app, 'HISTORY_LAYOUT', ('compact', 'detailed'), default_value='detailed'),
-        'layout.home': EnumField(app, 'HOME_LAYOUT', ('poster', 'small', 'banner', 'simple', 'coverflow'),
-                                 default_value='poster'),
-        'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
-        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
-        'themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
+
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
@@ -124,7 +117,6 @@ class ConfigHandler(BaseRequestHandler):
         'updateFrequency': IntegerField(app, 'UPDATE_FREQUENCY'),
         'notifyOnUpdate': BooleanField(app, 'NOTIFY_ON_UPDATE'),
         # 'availableThemes': IgnoreField(app, 'AVAILABLE_THEMES'),
-        'comingEpsMissedRange': IntegerField(app, 'COMING_EPS_MISSED_RANGE'),
         'timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'dateStyle': StringField(app, 'DATE_PRESET'),
         # 'timePresets': IgnoreField(app, 'time_presets'),
@@ -144,7 +136,6 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.handleReverseProxy': BooleanField(app, 'HANDLE_REVERSE_PROXY'),
 
         'cpuPreset': StringField(app, 'CPU_PRESET'),
-        # 'cpuPresets': IgnoreField(app, 'cpu_presets'),
         'sslVerify': BooleanField(app, 'SSL_VERIFY'),
         'sslCaBundle': StringField(app, 'SSL_CA_BUNDLE'),
         'noRestart': BooleanField(app, 'NO_RESTART'),
@@ -156,8 +147,8 @@ class ConfigHandler(BaseRequestHandler):
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
         'epDefaultDeletedStatus': BooleanField(app, 'EP_DEFAULT_DELETED_STATUS'),
-        'debug': BooleanField(app, 'DEBUG'),
-        'dbDebug': BooleanField(app, 'DBDEBUG'),
+        'logs.debug': BooleanField(app, 'DEBUG'),
+        'logs.dbDebug': BooleanField(app, 'DBDEBUG'),
         'subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
         'privacyLevel': BooleanField(app, 'PRIVACY_LEVEL'),
         'developer': BooleanField(app, 'DEVELOPER'),
@@ -456,6 +447,26 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.slack.notifyOnDownload': BooleanField(app, 'SLACK_NOTIFY_DOWNLOAD'),
         'notifiers.slack.notifyOnSubtitleDownload': BooleanField(app, 'SLACK_NOTIFY_SUBTITLEDOWNLOAD'),
 
+        'layout.comingEps.missedRange': IntegerField(app, 'COMING_EPS_MISSED_RANGE'),
+        'layout.comingEps.layout': StringField(app, 'COMING_EPS_LAYOUT'),
+        'layout.comingEps.sort': StringField(app, 'COMING_EPS_SORT'),
+        'layout.comingEps.displayPaused': BooleanField(app, 'COMING_EPS_DISPLAY_PAUSED'),
+        'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
+                                     default_value='banner', post_processor=layout_schedule_post_processor),
+        'layout.history': EnumField(app, 'HISTORY_LAYOUT', ('compact', 'detailed'), default_value='detailed'),
+        'layout.home': EnumField(app, 'HOME_LAYOUT', ('poster', 'small', 'banner', 'simple', 'coverflow'),
+                                 default_value='poster'),
+        'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
+        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
+        'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
+        'layout.posterSortdir': BooleanField(app, 'POSTER_SORTDIR'),
+        'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
+        'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
+        'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
+        'layout.fuzzyDating': BooleanField(app, 'FUZZY_DATING'),
+        'layout.posterSortby': StringField(app, 'POSTER_SORTBY'),
     }
 
     def get(self, identifier, path_param=None):
@@ -559,21 +570,10 @@ class DataGenerator(object):
         section_data = {}
 
         section_data['anonRedirect'] = app.ANON_REDIRECT
-        section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
-        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
-        section_data['comingEpsSort'] = app.COMING_EPS_SORT
-        section_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
+
         section_data['dateStyle'] = app.DATE_PRESET
         section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
-        section_data['themeName'] = app.THEME_NAME
-        section_data['posterSortby'] = app.POSTER_SORTBY
-        section_data['posterSortdir'] = app.POSTER_SORTDIR
         section_data['rootDirs'] = app.ROOT_DIRS
-        section_data['sortArticle'] = bool(app.SORT_ARTICLE)
-        section_data['trimZero'] = bool(app.TRIM_ZERO)
-        section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
-        section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
-        section_data['gitUsername'] = app.GIT_USERNAME
 
         section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
@@ -599,31 +599,12 @@ class DataGenerator(object):
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
-        section_data['news'] = {}
-        section_data['news']['lastRead'] = app.NEWS_LAST_READ
-        section_data['news']['latest'] = app.NEWS_LATEST
-        section_data['news']['unread'] = app.NEWS_UNREAD
-
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)
         section_data['logs']['dbDebug'] = bool(app.DBDEBUG)
         section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
         section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
         section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
-
-        section_data['failedDownloads'] = {}
-        section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
-        section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
-
-        section_data['layout'] = {}
-        section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
-        section_data['layout']['history'] = app.HISTORY_LAYOUT
-        section_data['layout']['home'] = app.HOME_LAYOUT
-        section_data['layout']['show'] = {}
-
-        section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
-        section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
-        section_data['layout']['wide'] = bool(app.LAYOUT_WIDE)
 
         section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
 
@@ -659,7 +640,6 @@ class DataGenerator(object):
                                             'author': theme.author}
                                            for theme in app.AVAILABLE_THEMES]
 
-        section_data['comingEpsMissedRange'] = int(app.COMING_EPS_MISSED_RANGE)
         section_data['timeStyle'] = app.TIME_PRESET_W_SECONDS
         section_data['timePresets'] = list(time_presets)
         section_data['datePresets'] = list(date_presets)
@@ -679,7 +659,6 @@ class DataGenerator(object):
         section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
 
         section_data['cpuPreset'] = app.CPU_PRESET
-        section_data['cpuPresets'] = cpu_presets
         section_data['sslVerify'] = bool(app.SSL_VERIFY)
         section_data['sslCaBundle'] = app.SSL_CA_BUNDLE
         section_data['noRestart'] = bool(app.NO_RESTART)
@@ -690,14 +669,11 @@ class DataGenerator(object):
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
-        section_data['debug'] = bool(app.DEBUG)
-        section_data['dbDebug'] = bool(app.DBDEBUG)
         section_data['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['privacyLevel'] = app.PRIVACY_LEVEL
         section_data['developer'] = bool(app.DEVELOPER)
 
         section_data['git'] = {}
-        # TODO: move main['gitUsername'] -> main['git']['username']
         section_data['git']['username'] = app.GIT_USERNAME
         section_data['git']['password'] = app.GIT_PASSWORD
         section_data['git']['token'] = app.GIT_TOKEN
@@ -707,7 +683,6 @@ class DataGenerator(object):
         section_data['git']['org'] = app.GIT_ORG
         section_data['git']['reset'] = bool(app.GIT_RESET)
         section_data['git']['resetBranches'] = app.GIT_RESET_BRANCHES
-        # TODO: move main['githubUrl'] -> main['git']['url']
         section_data['git']['url'] = app.GITHUB_IO_URL
 
         return section_data
@@ -1066,6 +1041,12 @@ class DataGenerator(object):
         section_data['webRoot'] = app.WEB_ROOT
         section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
         section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
+        section_data['cpuPresets'] = cpu_presets
+
+        section_data['news'] = {}
+        section_data['news']['lastRead'] = app.NEWS_LAST_READ
+        section_data['news']['latest'] = app.NEWS_LATEST
+        section_data['news']['unread'] = app.NEWS_UNREAD
 
         return section_data
 
@@ -1166,3 +1147,40 @@ class DataGenerator(object):
     def data_indexers():
         """Indexers config information."""
         return get_indexer_config()
+
+    @staticmethod
+    def data_layout():
+        """Layout configuration."""
+        section_data = {}
+
+        section_data['schedule'] = app.COMING_EPS_LAYOUT
+        section_data['history'] = app.HISTORY_LAYOUT
+        section_data['historyLimit'] = app.HISTORY_LIMIT
+
+        section_data['home'] = app.HOME_LAYOUT
+
+        section_data['show'] = {}
+        section_data['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
+        section_data['show']['showListOrder'] = app.SHOW_LIST_ORDER
+
+        section_data['wide'] = bool(app.LAYOUT_WIDE)
+
+        section_data['posterSortdir'] = bool(app.POSTER_SORTDIR)
+        section_data['themeName'] = app.THEME_NAME
+        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+        section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
+        section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
+        section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+
+        section_data['trimZero'] = bool(app.TRIM_ZERO)
+        section_data['sortArticle'] = bool(app.SORT_ARTICLE)
+        section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
+        section_data['posterSortby'] = bool(app.POSTER_SORTBY)
+
+        section_data['comingEps'] = {}
+        section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
+        section_data['comingEps']['sort'] = app.COMING_EPS_SORT
+        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
+
+        return section_data

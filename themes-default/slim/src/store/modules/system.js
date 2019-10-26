@@ -29,6 +29,7 @@ import { ADD_CONFIG } from '../mutation-types';
  */
 
 const state = {
+    branch: null,
     memoryUsage: null,
     schedulers: [],
     showQueue: [],
@@ -51,7 +52,13 @@ const state = {
     appArgs: [],
     webRoot: null,
     runsInDocker: null,
-    gitRemoteBranches: []
+    gitRemoteBranches: [],
+    cpuPresets: null,
+    news: {
+        lastRead: null,
+        latest: null,
+        unread: null
+    }
 };
 
 const mutations = {

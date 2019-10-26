@@ -80,7 +80,7 @@
                             <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
-                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
+                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="system.news.unread > 0" class="badge">{{ system.news.unread }}</span></app-link></li>
                             <li><app-link href="IRC/"><i class="menu-icon-irc" />&nbsp;IRC</app-link></li>
                             <li><app-link href="changes/"><i class="menu-icon-changelog" />&nbsp;Changelog</app-link></li>
                             <li><app-link :href="config.donationsUrl"><i class="menu-icon-support" />&nbsp;Support Medusa</app-link></li>
@@ -117,7 +117,8 @@ export default {
             'config',
             'clients',
             'notifiers',
-            'postprocessing'
+            'postprocessing',
+            'system'
         ]),
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
@@ -138,7 +139,9 @@ export default {
         },
         toolsBadgeCount() {
             const { config } = this;
-            const { news, logs } = config;
+            const { system } = this;
+            const { logs } = config;
+            const { news } = system;
             return logs.numErrors + logs.numWarnings + news.unread;
         },
         toolsBadgeClass() {

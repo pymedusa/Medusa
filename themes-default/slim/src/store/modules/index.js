@@ -4,6 +4,7 @@ export { default as config } from './config';
 export { default as consts } from './consts';
 export { default as defaults } from './defaults';
 export { default as indexers } from './indexers';
+export { default as layout } from './layout';
 export { default as metadata } from './metadata';
 export { default as notifications } from './notifications';
 export { default as notifiers } from './notifiers';

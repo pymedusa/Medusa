@@ -20,6 +20,7 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
+    History,
     Home,
     LanguageSelect,
     ManualPostProcess,
@@ -27,6 +28,7 @@ import {
     QualityChooser,
     QualityPill,
     RootDirs,
+    Schedule,
     ScrollButtons,
     SelectList,
     ShowSelector,
@@ -84,8 +86,10 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
+        History,
         Home,
         ManualPostProcess,
+        Schedule,
         SnatchSelection,
         Status
     ]);

@@ -152,38 +152,38 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="theme_name" label="Display theme">
-                                        <select id="theme_name" name="theme_name" v-model="config.themeName" @change="changeTheme(config.themeName)">
+                                        <select id="theme_name" name="theme_name" v-model="layout.themeName" @change="changeTheme(layout.themeName)">
                                             <option :value="option.value" v-for="option in availableThemesOptions"
                                                     :key="option.value">{{ option.text }}
                                             </option>
                                         </select>
                                     </config-template>
 
-                                    <config-toggle-slider v-model="config.layout.wide" label="Use wider layout" id="layout_wide">
+                                    <config-toggle-slider v-model="layout.wide" label="Use wider layout" id="layout_wide">
                                         <p>uses all available space in the page</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-model="config.fanartBackground" label="Show fanart in the background" id="fanart_background">
+                                    <config-toggle-slider v-model="layout.fanartBackground" label="Show fanart in the background" id="fanart_background">
                                         <p>on the show summary page</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="config.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0">
+                                    <config-textbox-number v-if="layout.fanartBackground" v-model="layout.fanartBackgroundOpacity" label="Fanart transparency" id="fanart_background_opacity duration" :step="0.1" :min="0.1" :max="1.0">
                                         <p>Transparency of the fanart in the background</p>
                                     </config-textbox-number>
 
-                                    <config-toggle-slider v-model="config.layout.show.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
+                                    <config-toggle-slider v-model="layout.show.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="config.comingEpsMissedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
+                                    <config-textbox-number v-model="layout.comingEpsMissedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
                                         <p>Set the range in days of the missed episodes in the Schedule page</p>
                                     </config-textbox-number>
 
-                                    <config-toggle-slider v-model="config.fuzzyDating" label="Display fuzzy dates" id="fuzzy_dating">
+                                    <config-toggle-slider v-model="layout.fuzzyDating" label="Display fuzzy dates" id="fuzzy_dating">
                                         <p>move absolute dates into tooltips and display e.g. "Last Thu", "On Tue"</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-model="config.trimZero" label="Trim zero padding" id="trim_zero">
+                                    <config-toggle-slider v-model="layout.trimZero" label="Trim zero padding" id="trim_zero">
                                         <p>remove the leading number "0" shown on hour of day, and date of month</p>
                                     </config-toggle-slider>
 
@@ -277,7 +277,7 @@
                                         <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
+                                    <config-textbox v-model="system.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
                                         <p>Set a base URL, for use in reverse proxies.</p>
                                         <p>blank = disabled</p>
                                         <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
@@ -409,7 +409,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="github_remote_branches" label="Branch version">
-                                        <select id="github_remote_branches" name="github_remote_branches" v-model="config.branch" class="form-control input-sm margin-bottom-5">
+                                        <select id="github_remote_branches" name="github_remote_branches" v-model="system.branch" class="form-control input-sm margin-bottom-5">
                                             <option disabled value="">Please select a branch</option>
                                             <option :value="option.value" v-for="option in githubRemoteBranchesOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
@@ -553,8 +553,9 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            statuses: state => state.consts.statuses,
             configLoaded: state => state.consts.statuses.length > 0,
+            layout: state => state.layout,
+            statuses: state => state.consts.statuses,
             indexers: state => state.indexers,
             system: state => state.system
         }),
@@ -709,14 +710,25 @@ export default {
             }
         },
         async save() {
-            const { config, setConfig } = this;
+            const { config, layout, setConfig } = this;
 
             // Disable the save button until we're done.
             this.saving = true;
-            const section = 'main';
+
+            const { datePresets, loggingLevels, timePresets, availableThemes, randomShowSlug, recentShows, logs, ...filteredConfig } = config;
+
+            const configMain = {
+                section: 'main',
+                config: Object.assign(
+                    {},
+                    filteredConfig,
+                    { layout },
+                    { logs: { debug: config.logs.debug, dbDebug: config.logs.dbDebug } }
+                )
+            };
 
             try {
-                await setConfig({ section, config });
+                await setConfig(configMain);
                 this.$snotify.success(
                     'Saved general config',
                     'Saved',
