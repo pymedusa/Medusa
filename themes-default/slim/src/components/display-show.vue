@@ -866,7 +866,7 @@ export default {
         },
         retryDownload(episode) {
             const { stateSearch } = this;
-            return (search.general.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+            return (stateSearch.general.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         search(episodes, searchType) {
             const { show } = this;
