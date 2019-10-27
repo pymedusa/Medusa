@@ -1,7 +1,7 @@
 <template>
     <div class="display-show-template" :class="theme">
         <vue-snotify />
-        <backstretch v-if="config.fanartBackground" v-bind="{indexer, id}" />
+        <backstretch v-if="layout.fanartBackground" v-bind="{indexer, id}" />
         <input type="hidden" id="series-id" value="">
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
@@ -14,7 +14,7 @@
                      @update-overview-status="filterByOverviewStatus = $event" />
 
         <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
+            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
                                 :columns="columns"
                                 :rows="orderSeasons"
@@ -384,8 +384,10 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config
+            configLoaded: state => state.layout.fanartBackground !== null,
+            config: state => state.config,
+            layout: state => state.layout,
+            stateSearch: state => state.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -398,18 +400,18 @@ export default {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         theme() {
-            const { config } = this;
-            const { themeName } = config;
+            const { layout } = this;
+            const { themeName } = layout;
             return themeName || 'light';
         },
         orderSeasons() {
-            const { config, filterByOverviewStatus, invertTable, show } = this;
+            const { filterByOverviewStatus, invertTable, layout, show } = this;
 
             if (!show.seasons) {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || !config.layout.show.specials);
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || !layout.show.specials);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
@@ -599,8 +601,9 @@ export default {
             }
         },
         parseDateFn(row) {
-            const { config, timeAgo } = this;
-            const { dateStyle, fuzzyDating, timeStyle } = config;
+            const { config, layout, timeAgo } = this;
+            const { dateStyle, timeStyle } = config;
+            const { fuzzyDating } = layout;
 
             if (!row.airDate) {
                 return '';
@@ -862,8 +865,8 @@ export default {
             this.failedSearchEpisode = event.params.episode;
         },
         retryDownload(episode) {
-            const { config } = this;
-            return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+            const { stateSearch } = this;
+            return (search.general.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         search(episodes, searchType) {
             const { show } = this;

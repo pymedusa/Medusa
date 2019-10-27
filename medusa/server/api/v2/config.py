@@ -81,9 +81,6 @@ class ConfigHandler(BaseRequestHandler):
     patches = {
         # Main
         'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
-
-        'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
-        'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
@@ -102,13 +99,11 @@ class ConfigHandler(BaseRequestHandler):
         'defaultPage': StringField(app, 'DEFAULT_PAGE'),
         'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
         'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
-        'actualLogDir': StringField(app, 'ACTUAL_LOG_DIR'),
-        'logNr': IntegerField(app, 'LOG_NR'),
-        'logSize': FloatField(app, 'LOG_SIZE'),
+
         'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
         'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
         'indexerTimeout': IntegerField(app, 'INDEXER_TIMEOUT'),
-        'indexerDefault': StringField(app, 'INDEXER_DEFAULT'),
+        'indexerDefault': IntegerField(app, 'INDEXER_DEFAULT'),
         'plexFallBack.enable': BooleanField(app, 'FALLBACK_PLEX_ENABLE'),
         'plexFallBack.notifications': BooleanField(app, 'FALLBACK_PLEX_NOTIFICATIONS'),
         'plexFallBack.timeout': IntegerField(app, 'FALLBACK_PLEX_TIMEOUT'),
@@ -128,7 +123,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.username': StringField(app, 'WEB_USERNAME'),
         'webInterface.password': StringField(app, 'WEB_PASSWORD'),
         'webInterface.port': IntegerField(app, 'WEB_PORT'),
-        'webInterface.notifyOnLogin': StringField(app, 'NOTIFY_ON_LOGIN'),
+        'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
         'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
         'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
         'webInterface.httpsCert': StringField(app, 'HTTPS_CERT'),
@@ -146,11 +141,16 @@ class ConfigHandler(BaseRequestHandler):
         'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
 
         'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
-        'epDefaultDeletedStatus': BooleanField(app, 'EP_DEFAULT_DELETED_STATUS'),
+        'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
+
         'logs.debug': BooleanField(app, 'DEBUG'),
         'logs.dbDebug': BooleanField(app, 'DBDEBUG'),
-        'subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
-        'privacyLevel': BooleanField(app, 'PRIVACY_LEVEL'),
+        'logs.actualLogDir': StringField(app, 'ACTUAL_LOG_DIR'),
+        'logs.nr': IntegerField(app, 'LOG_NR'),
+        'logs.size': FloatField(app, 'LOG_SIZE'),
+        'logs.subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
+        'logs.privacyLevel': StringField(app, 'PRIVACY_LEVEL'),
+
         'developer': BooleanField(app, 'DEVELOPER'),
 
         'git.username': StringField(app, 'GIT_USERNAME'),
@@ -167,6 +167,7 @@ class ConfigHandler(BaseRequestHandler):
         'wikiUrl': StringField(app, 'WIKI_URL'),
         'donationsUrl': StringField(app, 'DONATIONS_URL'),
         'sourceUrl': StringField(app, 'APPLICATION_URL'),
+        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
         'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
         'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
         'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
@@ -261,10 +262,10 @@ class ConfigHandler(BaseRequestHandler):
         'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
         'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
         'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
-        'search.general.useFailedDownloads': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
-        'search.general.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
         'search.general.cacheTrimming': BooleanField(app, 'CACHE_TRIMMING'),
         'search.general.maxCacheAge': IntegerField(app, 'MAX_CACHE_AGE'),
+        'search.general.failedDownloads.enabled': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
+        'search.general.failedDownloads.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
 
         'search.filters.ignored': ListField(app, 'IGNORE_WORDS'),
         'search.filters.undesired': ListField(app, 'UNDESIRED_WORDS'),
@@ -459,7 +460,7 @@ class ConfigHandler(BaseRequestHandler):
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
-        'layout.posterSortdir': BooleanField(app, 'POSTER_SORTDIR'),
+        'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
         'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
         'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
@@ -467,6 +468,12 @@ class ConfigHandler(BaseRequestHandler):
         'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
         'layout.fuzzyDating': BooleanField(app, 'FUZZY_DATING'),
         'layout.posterSortby': StringField(app, 'POSTER_SORTBY'),
+        'layout.historyLimit': StringField(app, 'HISTORY_LIMIT'),
+        'layout.fanartBackground': BooleanField(app, 'FANART_BACKGROUND'),
+        'layout.fanartBackgroundOpacity': FloatField(app, 'FANART_BACKGROUND_OPACITY'),
+        'layout.backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
+        'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+
     }
 
     def get(self, identifier, path_param=None):
@@ -569,13 +576,14 @@ class DataGenerator(object):
         """Main."""
         section_data = {}
 
+        # Can't get rid of this because of the usage of themeName in MEDUSA.config.themeName.
+        section_data['themeName'] = app.THEME_NAME
+
         section_data['anonRedirect'] = app.ANON_REDIRECT
 
         section_data['dateStyle'] = app.DATE_PRESET
-        section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
         section_data['rootDirs'] = app.ROOT_DIRS
 
-        section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
@@ -605,21 +613,19 @@ class DataGenerator(object):
         section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
         section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
         section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
+        section_data['logs']['actualLogDir'] = app.ACTUAL_LOG_DIR
+        section_data['logs']['nr'] = int(app.LOG_NR)
+        section_data['logs']['size'] = float(app.LOG_SIZE)
+        section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
+        section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
 
         section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
-
-        section_data['backlogOverview'] = {}
-        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
-        section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
         section_data['defaultPage'] = app.DEFAULT_PAGE
         section_data['trashRemoveShow'] = bool(app.TRASH_REMOVE_SHOW)
         section_data['trashRotateLogs'] = bool(app.TRASH_ROTATE_LOGS)
-        section_data['actualLogDir'] = app.ACTUAL_LOG_DIR
-        section_data['logNr'] = int(app.LOG_NR)
-        section_data['logSize'] = float(app.LOG_SIZE)
 
         section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
         section_data['showUpdateHour'] = int(app.SHOWUPDATE_HOUR)
@@ -669,8 +675,6 @@ class DataGenerator(object):
         section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
         section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
         section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
-        section_data['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
-        section_data['privacyLevel'] = app.PRIVACY_LEVEL
         section_data['developer'] = bool(app.DEVELOPER)
 
         section_data['git'] = {}
@@ -684,6 +688,12 @@ class DataGenerator(object):
         section_data['git']['reset'] = bool(app.GIT_RESET)
         section_data['git']['resetBranches'] = app.GIT_RESET_BRANCHES
         section_data['git']['url'] = app.GITHUB_IO_URL
+
+        # backlogOverview has been moved to layout. It's still located here, because manage_backlogOvervew uses it
+        # and still needs to be vieuified. After vueifying it, remove this.
+        section_data['backlogOverview'] = {}
+        section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
 
         return section_data
 
@@ -786,10 +796,12 @@ class DataGenerator(object):
         section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
-        section_data['general']['useFailedDownloads'] = bool(app.USE_FAILED_DOWNLOADS)
-        section_data['general']['deleteFailed'] = bool(app.DELETE_FAILED)
         section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
         section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
+
+        section_data['general']['failedDownloads'] = {}
+        section_data['general']['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['general']['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
         section_data['filters'] = {}
         section_data['filters']['ignored'] = app.IGNORE_WORDS
@@ -1165,7 +1177,7 @@ class DataGenerator(object):
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-        section_data['posterSortdir'] = bool(app.POSTER_SORTDIR)
+        section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
         section_data['themeName'] = app.THEME_NAME
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -1175,12 +1187,16 @@ class DataGenerator(object):
         section_data['trimZero'] = bool(app.TRIM_ZERO)
         section_data['sortArticle'] = bool(app.SORT_ARTICLE)
         section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
-        section_data['posterSortby'] = bool(app.POSTER_SORTBY)
+        section_data['posterSortby'] = app.POSTER_SORTBY
 
         section_data['comingEps'] = {}
         section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['comingEps']['sort'] = app.COMING_EPS_SORT
         section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
         section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
+
+        section_data['backlogOverview'] = {}
+        section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
 
         return section_data

@@ -966,7 +966,7 @@ export default {
         traktIndexersOptions() {
             const { indexers } = this;
             const { traktIndexers } = indexers.main;
-            
+
             const validTraktIndexer = Object.keys(indexers.indexers).filter(k => traktIndexers[k]);
             return validTraktIndexer.map(indexer => {
                 return { text: indexer, value: indexers.indexers[indexer].id };

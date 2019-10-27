@@ -123,7 +123,7 @@
                     <div class="row">
                         <!-- Show Summary -->
                         <div v-if="configLoaded" id="summary" class="col-md-12">
-                            <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
+                            <div id="show-summary" :class="[{ summaryFanArt: layout.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
@@ -257,14 +257,14 @@
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                     <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
-                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
+                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="layout.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="layout.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="layout.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -423,13 +423,14 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
+            layout: state => state.layout,
             shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers,
-            displaySpecials: state => state.config.layout.show.specials,
+            indexerConfig: state => state.indexers.indexers,
+            displaySpecials: state => state.layout.show.specials,
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
             search: state => state.search,
-            configLoaded: state => state.config.fanartBackground !== null
+            configLoaded: state => state.layout.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',

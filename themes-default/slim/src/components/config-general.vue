@@ -43,13 +43,13 @@
                                         <p>selected actions use trash (recycle bin) instead of the default permanent delete</p>
                                     </config-template>
 
-                                    <config-textbox v-model="config.actualLogDir" label="Log file folder location" id="log_id" @change="save()" />
+                                    <config-textbox v-model="config.logs.actualLogDir" label="Log file folder location" id="log_id" @change="save()" />
 
-                                    <config-textbox-number v-model="config.logNr" label="Number of Log files saved" id="log_nr" :min="1" :step="1">
+                                    <config-textbox-number v-model="config.logs.nr" label="Number of Log files saved" id="log_nr" :min="1" :step="1">
                                         <p>number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)</p>
                                     </config-textbox-number>
 
-                                    <config-textbox-number v-model="config.logSize" label="Size of Log files saved" id="log_size" :min="0.5" :step="0.1">
+                                    <config-textbox-number v-model="config.logs.size" label="Size of Log files saved" id="log_size" :min="0.5" :step="0.1">
                                         <p>maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)</p>
                                     </config-textbox-number>
 
@@ -171,7 +171,7 @@
                                         <p>Transparency of the fanart in the background</p>
                                     </config-textbox-number>
 
-                                    <config-toggle-slider v-model="layout.show.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
+                                    <config-toggle-slider v-model="layout.sortArticle" label="Sort with 'The' 'A', 'An'" id="sort_article">
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
                                     </config-toggle-slider>
 
@@ -201,9 +201,9 @@
                                     </config-template>
 
                                     <config-template label-for="timezone_display" label="Timezone">
-                                        <input type="radio" name="timezone_display_local" id="timezone_display_local" value="local" v-model="config.timezoneDisplay">
+                                        <input type="radio" name="timezone_display_local" id="timezone_display_local" value="local" v-model="layout.timezoneDisplay">
                                         <label for="one">local</label>
-                                        <input type="radio" name="timezone_display_network" id="timezone_display_network" value="network" v-model="config.timezoneDisplay">
+                                        <input type="radio" name="timezone_display_network" id="timezone_display_network" value="network" v-model="layout.timezoneDisplay">
                                         <label for="one">network</label>
                                         <p>display dates and times in either your timezone or the shows network timezone</p>
                                         <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
@@ -373,20 +373,20 @@
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
 
-                                    <config-toggle-slider v-model="config.debug" label="Enable debug" id="debug">
+                                    <config-toggle-slider v-model="config.logs.debug" label="Enable debug" id="debug">
                                         <p>Enable debug logs</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-if="config.developer" v-model="config.dbDebug" label="Enable DB debug" id="dbdebug">
+                                    <config-toggle-slider v-if="config.developer" v-model="config.logs.dbDebug" label="Enable DB debug" id="dbdebug">
                                         <p>Enable DB debug logs</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-model="config.subliminalLog" label="Subliminal logs" id="subliminal_log">
+                                    <config-toggle-slider v-model="config.logs.subliminalLog" label="Subliminal logs" id="subliminal_log">
                                         <p>enable logs from subliminal library (subtitles)</p>
                                     </config-toggle-slider>
 
                                     <config-template label-for="privacy_level" label="Privacy">
-                                        <select id="privacy_level" name="privacy_level" v-model="config.privacyLevel" class="form-control input-sm">
+                                        <select id="privacy_level" name="privacy_level" v-model="config.logs.privacyLevel" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in privacyLevelOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>
@@ -419,14 +419,14 @@
                                     </config-template>
 
                                     <config-template label-for="date_presets" label="GitHub authentication type">
-                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" value="0" v-model="config.git.authType">
+                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value.integer="0" v-model="config.git.authType">
                                         <label for="one">Username and password</label>
-                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" value="1" v-model="config.git.authType">
+                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value.integer="1" v-model="config.git.authType">
                                         <label for="one">Personal access token</label>
                                         <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
                                     </config-template>
 
-                                    <div v-if="config.git.authType === '0'">
+                                    <div v-if="config.git.authType === 0">
                                         <!-- username + password authentication -->
                                         <config-textbox v-model="config.git.username" label="GitHub username" id="git_username">
                                             <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
@@ -532,7 +532,13 @@ export default {
             resetBranchSelected: null
         };
     },
-    Mounted() {
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#config-components').tabs();
+        });
+    },
+    mounted() {
         $('#git_token').on('click', () => {
             $('#git_token').select();
         });
@@ -597,8 +603,8 @@ export default {
             return availableThemes.map(theme => ({ value: theme.name, text: `${theme.name} (${theme.version})` }));
         },
         cpuPresetOptions() {
-            const { config } = this;
-            const { cpuPresets } = config;
+            const { system } = this;
+            const { cpuPresets } = system;
             if (!cpuPresets) {
                 return [];
             }
@@ -715,7 +721,17 @@ export default {
             // Disable the save button until we're done.
             this.saving = true;
 
-            const { datePresets, loggingLevels, timePresets, availableThemes, randomShowSlug, recentShows, logs, ...filteredConfig } = config;
+            const {
+                availableThemes,
+                backlogOverview,
+                datePresets,
+                loggingLevels,
+                logs,
+                timePresets,
+                randomShowSlug,
+                recentShows,
+                themeName,
+                ...filteredConfig } = config;
 
             const configMain = {
                 section: 'main',
@@ -723,7 +739,15 @@ export default {
                     {},
                     filteredConfig,
                     { layout },
-                    { logs: { debug: config.logs.debug, dbDebug: config.logs.dbDebug } }
+                    { logs: {
+                        debug: config.logs.debug,
+                        dbDebug: config.logs.dbDebug,
+                        actualLogDir: config.logs.actualLogDir,
+                        nr: config.logs.nr,
+                        size: config.logs.size,
+                        subliminalLog: config.logs.subliminalLog,
+                        privacyLevel: config.logs.privacyLevel
+                    } }
                 )
             };
 

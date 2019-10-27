@@ -572,7 +572,7 @@ class FloatField(PatchField):
     def __init__(self, target, attr, validator=None, converter=None, default_value=None,
                  setter=None, post_processor=None):
         """Constructor."""
-        super(FloatField, self).__init__(target, attr, float, validator=validator, converter=converter,
+        super(FloatField, self).__init__(target, attr, (int, float), validator=validator, converter=converter,
                                            default_value=default_value, setter=setter, post_processor=post_processor)
 
 

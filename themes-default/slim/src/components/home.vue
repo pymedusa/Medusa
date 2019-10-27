@@ -17,6 +17,10 @@ export default {
                 { value: 'small', text: 'Small Poster' },
                 { value: 'banner', text: 'Banner' },
                 { value: 'simple', text: 'Simple' }
+            ],
+            postSortDirOptions: [
+                { value: '0', text: 'Descending' },
+                { value: '1', text: 'Ascending' },
             ]
         };
     },

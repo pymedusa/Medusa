@@ -8,6 +8,7 @@ const state = {
     selectedRootIndex: null,
     namingForceFolders: null,
     sourceUrl: null,
+    downloadUrl: null,
     rootDirs: [],
     subtitles: {
         enabled: null
@@ -17,11 +18,12 @@ const state = {
         dbDebug: null,
         loggingLevels: {},
         numErrors: null,
-        numWarnings: null
-    },
-    failedDownloads: {
-        enabled: null,
-        deleteFailed: null
+        numWarnings: null,
+        actualLogDir: null,
+        nr: null,
+        size: null,
+        subliminalLog: null,
+        privacyLevel: null
     },
     cpuPreset: null,
     subtitlesMulti: null,
@@ -40,9 +42,6 @@ const state = {
     launchBrowser: null,
     defaultPage: null,
     trashRemoveShow: null,
-    actualLogDir: null,
-    logNr: null,
-    logSize: null,
     indexerDefaultLanguage: null,
     showUpdateHour: null,
     indexerTimeout: null,
@@ -85,10 +84,6 @@ const state = {
     proxyIndexers: null,
     skipRemovedFiles: null,
     epDefaultDeletedStatus: null,
-    debug: null,
-    dbDebug: null,
-    subliminalLog: null,
-    privacyLevel: null,
     developer: null,
     git: {
         username: null,
@@ -101,7 +96,14 @@ const state = {
         reset: null,
         resetBranches: null,
         url: null
-    }
+    },
+    // Remove backlogOverview after manage_backlogOverview.mako is gone.
+    backlogOverview: {
+        status: null,
+        period: null
+    },
+    // Remove themeName when we get fully rid of MEDUSA.config.
+    themeName: null
 };
 
 const mutations = {

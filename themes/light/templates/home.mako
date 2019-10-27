@@ -22,13 +22,12 @@
                     <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                 </div>
                 <div class="show-option pull-right"> Direction:
-                    <select :value.number="config.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
-                        <option :value="1" data-sort="setPosterSortDir/?direction=1">Ascending</option>
-                        <option :value="0" data-sort="setPosterSortDir/?direction=0">Descending</option>
+                    <select :value.number="stateLayout.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                        <option :value="option.value" v-for="option in postSortDirOptions" :key="option.value" :data-sort="'setPosterSortDir/?direction=' + option.value">{{ option.text }}</option>
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
-                <select :value="config.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                <select :value="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
                     <option value="name" data-sort="setPosterSortBy/?sort=name">Name</option>
                     <option value="date" data-sort="setPosterSortBy/?sort=date">Next Episode</option>
                     <option value="network" data-sort="setPosterSortBy/?sort=network">Network</option>
@@ -79,7 +78,7 @@
     <div class="row">
         <div class="col-md-12">
             <!-- Split in tabs -->
-            <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
+            <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
                 % for cur_show_list in show_lists:

@@ -118,6 +118,7 @@ export default {
             'clients',
             'notifiers',
             'postprocessing',
+            'search',
             'system'
         ]),
         ...mapState({
@@ -156,8 +157,9 @@ export default {
             return '';
         },
         linkVisible() {
-            const { clients, config, notifiers, postprocessing } = this;
-            const { failedDownloads, subtitles } = config;
+            const { clients, config, notifiers, postprocessing, search } = this;
+            const { subtitles } = config;
+            const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
             return {
@@ -167,7 +169,7 @@ export default {
                    was configured for Emby: ` app.EMBY_APIKEY != '' ` */
                 emby: emby.enabled && emby.host,
                 manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
-                failedDownloads: failedDownloads.enabled,
+                failedDownloads: general.failedDownloads.enabled,
                 subtitleMissed: subtitles.enabled,
                 subtitleMissedPP: postprocessing.postponeIfNoSubs
             };
