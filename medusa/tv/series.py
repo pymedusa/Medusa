@@ -111,6 +111,7 @@ from medusa.subtitles import (
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
+from medusa.quality_profile import QualityProfile
 
 from six import iteritems, itervalues, string_types, text_type, viewitems
 
@@ -240,6 +241,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self.quality_profile = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -1522,6 +1524,9 @@ class Series(TV):
 
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
+
+            # Load the quality profile from db
+            self.quality_profile = QualityProfile(profile_id=sql_results[0]['quality_profile_id'])
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
