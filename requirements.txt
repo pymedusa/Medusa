@@ -10,7 +10,7 @@ configobj==5.0.6
 contextlib2==0.5.5
 deluge-client==1.7.1
 dirtyjson==1.0.7
-dogpile.cache==0.7.1
+dogpile.cache==0.9.0
 enum34==1.1.6 ; python_version == '2.*'
 enzyme @ https://codeload.github.com/pymedusa/enzyme/tar.gz/665cf6948aab1c249dcc99bd9624a81d17b3302a#egg=enzyme
 feedparser @ https://codeload.github.com/kurtmckee/feedparser/tar.gz/2b11c8028321ed43cbaf313f83b0c94820143d66#egg=feedparser
