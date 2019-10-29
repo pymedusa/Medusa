@@ -1,7 +1,7 @@
 <template>
     <div class="display-show-template" :class="theme">
         <vue-snotify />
-        <backstretch v-if="config.fanartBackground" v-bind="{indexer, id}" />
+        <backstretch v-if="show.id.slug" :slug="show.id.slug" />
         <input type="hidden" id="series-id" value="">
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
