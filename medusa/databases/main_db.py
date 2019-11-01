@@ -8,6 +8,7 @@ import sys
 import warnings
 
 from medusa import common, db, subtitles
+from medusa import app
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import STATUS_MAP
@@ -897,5 +898,60 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
             self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
         if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
             self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+class AddQualityProfiles(AddReleaseIgnoreRequireExludeOptions):
+    """Add quality profiles tables."""
+
+    def test(self):
+        """Test if the version is at least 44.15"""
+        return self.connection.version >= (44, 15)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        if not self.hasTable('quality_profiles'):
+            log.info(u'Adding quality_profiles table')
+            self.connection.action('''
+                CREATE TABLE "quality_profiles" (
+               `quality_profile_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+               `description`	TEXT,
+               `enabled`	INTEGER NOT NULL DEFAULT 0,
+               `default`	INTEGER NOT NULL DEFAULT 0);
+            ''')
+
+        if not self.hasTable('quality_profile_options'):
+            log.info(u'Adding quality_profiles table')
+            self.connection.action('''
+                CREATE TABLE "quality_profile_options" (
+                `option_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+                `quality_profile_id`	INTEGER NOT NULL,
+                `allowed`	INTEGER,
+                `preferred`	INTEGER,
+                `size_min`	INTEGER,
+                `size_max`	INTEGER,
+                `rls_require_words`	TEXT,
+                `rls_ignore_words`	TEXT,
+                `rls_require_exclude`	INTEGER,
+                `rls_ignore_exclude`	INTEGER,
+                `priority`	INTEGER );
+            ''')
+
+        if not len(self.connection.select(
+                    'SELECT * FROM quality_profiles'
+        )):
+            log.info(u'Adding the default (0) quality profile')
+
+            from medusa.quality_profile import QualityProfile
+            new_profile = QualityProfile(description='default', enabled=True, default=True, quality=app.QUALITY_DEFAULT)
+            new_profile.save()
+
+        # Add new field 'quality_profile_id'
+        log.info(u'Adding new quality_profile_id field in the tv_shows table')
+        # Set it's default value to 1, for now. Each tvshow can have a different composite quality, so we need to
+        # add these profiles on the fly.
+        if not self.hasColumn('tv_shows', 'quality_profile_id'):
+            self.addColumn('tv_shows', 'quality_profile_id', 'NUMERIC', 1)
 
         self.inc_minor_version()
