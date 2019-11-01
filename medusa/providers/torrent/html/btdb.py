@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+from collections import OrderedDict
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -51,9 +52,7 @@ class BTDBProvider(TorrentProvider):
         results = []
 
         # Search Params
-        search_params = {
-            'category': 'show',
-        }
+        search_params = OrderedDict()
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -64,11 +63,13 @@ class BTDBProvider(TorrentProvider):
                 if mode != 'RSS':
                     search_url = self.url
 
-                    search_params['search'] = search_string
+                    search_params['s'] = search_string
                     search_params['sort'] = 'popular'
 
                     log.debug('Search string: {search}',
                               {'search': search_string})
+                else:
+                    search_params['category'] = 'show'
 
                 response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
