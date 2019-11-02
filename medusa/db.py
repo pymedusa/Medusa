@@ -345,6 +345,7 @@ class DBConnection(object):
         """
 
         changesBefore = self.connection.total_changes
+        action_result = None
 
         def gen_params(my_dict):
             return [x + ' = ?' for x in my_dict]
@@ -357,7 +358,9 @@ class DBConnection(object):
         if self.connection.total_changes == changesBefore:
             query = 'INSERT INTO [' + tableName + '] (' + ', '.join(list(valueDict) + list(keyDict)) + ')' + \
                     ' VALUES (' + ', '.join(['?'] * len(list(valueDict) + list(keyDict))) + ')'
-            self.action(query, list(itervalues(valueDict)) + list(itervalues(keyDict)))
+            action_result = self.action(query, list(itervalues(valueDict)) + list(itervalues(keyDict)))
+
+        return action_result
 
     def tableInfo(self, tableName):
         """

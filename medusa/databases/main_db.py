@@ -14,6 +14,7 @@ from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
+from medusa.quality_profile import QualityProfile
 
 from six import iteritems
 
@@ -918,7 +919,7 @@ class AddQualityProfiles(AddReleaseIgnoreRequireExludeOptions):
                `quality_profile_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
                `description`	TEXT,
                `enabled`	INTEGER NOT NULL DEFAULT 0,
-               `default`	INTEGER NOT NULL DEFAULT 0);
+               `defaultprofile`	INTEGER NOT NULL DEFAULT 0);
             ''')
 
         if not self.hasTable('quality_profile_options'):
@@ -942,8 +943,6 @@ class AddQualityProfiles(AddReleaseIgnoreRequireExludeOptions):
                     'SELECT * FROM quality_profiles'
         )):
             log.info(u'Adding the default (0) quality profile')
-
-            from medusa.quality_profile import QualityProfile
             new_profile = QualityProfile(description='default', enabled=True, default=True, quality=app.QUALITY_DEFAULT)
             new_profile.save()
 
@@ -953,5 +952,28 @@ class AddQualityProfiles(AddReleaseIgnoreRequireExludeOptions):
         # add these profiles on the fly.
         if not self.hasColumn('tv_shows', 'quality_profile_id'):
             self.addColumn('tv_shows', 'quality_profile_id', 'NUMERIC', 1)
+
+        # loop through each show and get it's current configured quality
+        show_qualities = {app.QUALITY_DEFAULT: 1}
+        qualities = self.connection.select('SELECT quality, show_id, show_name FROM tv_shows')
+        counter = 1
+        for row in qualities:
+            if row['quality'] not in show_qualities:
+                profile_description = 'migrated quality profile ({0})'.format(counter)
+                counter += 1
+
+                # Create the profile
+                log.info(u'Adding a new quality profile {profile_description} for show {show}',
+                         {'profile_description': profile_description, 'show': row['show_name']})
+                profile = QualityProfile(description=profile_description, enabled=True, default=False,
+                                             quality=row['quality'])
+                profile.save()
+                show_qualities[row['quality']] = profile.profile_id
+
+            # Update the show's quality_profile_id field with the newly create profile_id
+            self.connection.action('UPDATE tv_shows SET quality_profile_id = ? WHERE show_id = ?',
+                                   [show_qualities[row['quality']], row['show_id']])
+
+
 
         self.inc_minor_version()

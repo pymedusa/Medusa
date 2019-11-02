@@ -13,18 +13,18 @@ logger.logger.addHandler(logging.NullHandler())
 class QualityOption(object):
     """Quality option object."""
     def __init__(
-        self, profile_id=None,
-             option_id=None,
-             allowed=None,
-             preferred=None,
-             size_min=None,
-             size_max=None,
-             required_words=None,
-             ignored_words=None,
-             priority=None,
-             db_row=None,
-             profile=None
-        ):
+        self,
+        option_id=None,
+        allowed=None,
+        preferred=None,
+        size_min=None,
+        size_max=None,
+        required_words=None,
+        ignored_words=None,
+        priority=None,
+        db_row=None,
+        profile=None
+    ):
         if db_row:
             self.option_id = db_row['option_id']
             self.profile_id = db_row['quality_profile_id']
@@ -37,7 +37,6 @@ class QualityOption(object):
             self.required_words = db_row['rls_require_words']
             self.ignored_words = db_row['rls_ignore_words']
         else:
-            self.profile_id = profile_id
             self.option_id = option_id
             self.allowed = allowed
             self.preferred = preferred
@@ -47,6 +46,8 @@ class QualityOption(object):
             self.required_words = required_words
             self.ignored_words = ignored_words
             self.profile = profile
+            if self.profile:
+                self.profile_id = self.profile.profile_id
 
     def save(self):
         """Save the QualityOption to db."""
@@ -103,7 +104,7 @@ class QualityProfile(object):
 
         self.description = quality_profile[0]['description']
         self.enabled = quality_profile[0]['enabled']
-        self.default = quality_profile[0]['default']
+        self.default = quality_profile[0]['defaultprofile']
 
         if len(quality_profile) > 0:
             quality_options = self.main_db.select(
@@ -118,24 +119,20 @@ class QualityProfile(object):
 
     def save(self):
         """Save current profile object."""
-        # Save the QualityProfile
-        if not (self.profile_id and len(self.main_db.select(
-            'SELECT * FROM quality_profiles WHERE quality_profile_id = ?', [self.profile_id]
-        ))):
-            # Insert
-            result = self.main_db.action('''
-               INSERT INTO quality_profiles
-               (description, enabled, `default`)
-               VALUES (?, ?, ?)
-            ''', [self.description, self.enabled, self.default])
+        key_dict = {'quality_profile_id': self.profile_id}
 
-            if result:
-                self.profile_id = result.lastrowid
-            for quality in self.qualities:
-                quality.save()
-        else:
-            # Update
-            pass
+        value_dict = {
+            'description': self.description,
+            'enabled': self.enabled,
+            'defaultprofile': self.default
+        }
+        result = self.main_db.upsert('quality_profiles', value_dict, key_dict)
+        if result:
+            self.profile_id = result.lastrowid
+
+        # If there are qualities save them
+        for quality in self.qualities:
+            quality.save()
 
     def _create(self, db_row):
         """Create Quality Profile object."""
@@ -148,7 +145,6 @@ class QualityProfile(object):
         for quality in allowed:
             self.qualities.append(
                 QualityOption(
-                    profile_id=self.profile_id,
                     allowed=quality,
                     priority=priority,
                     profile=self
@@ -160,7 +156,6 @@ class QualityProfile(object):
         for quality in preferred:
             self.qualities.append(
                 QualityOption(
-                    profile_id=self.profile_id,
                     preferred=quality,
                     priority=priority,
                     profile=self
