@@ -37,6 +37,29 @@ class InitialSchema(db.SchemaUpgrade):
             else:
                 self.connection.action(query[0], query[1:])
 
+    def _get_provider_tables(self):
+        return self.connection.select(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('lastUpdate',"
+            " 'lastSearch', 'scene_names', 'network_timezones', 'scene_exceptions_refresh',"
+            " 'db_version', 'scene_exceptions', 'last_update');")
+
+    def clear_provider_tables(self):
+        for provider in self._get_provider_tables():
+            self.connection.action("DELETE FROM '{name}';".format(name=provider['name']))
+
+    def drop_provider_tables(self):
+        for provider in self._get_provider_tables():
+            self.connection.action("DROP TABLE '{name}';".format(name=provider['name']))
+
+    def inc_major_version(self):
+        major_version, minor_version = self.connection.version
+        major_version += 1
+        self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
+        log.info('[CACHE-DB] Updated major version to: {}.{}', *self.connection.version)
+
+        return self.connection.version
+
+
 
 class AddSceneExceptions(InitialSchema):
     def test(self):
@@ -182,19 +205,16 @@ class ClearProviderTables(AddIndexerIds):
         self.clear_provider_tables()
         self.inc_major_version()
 
-    def clear_provider_tables(self):
-        providers = self.connection.select(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT IN ('lastUpdate',"
-            " 'lastSearch', 'scene_names', 'network_timezones', 'scene_exceptions_refresh',"
-            " 'db_version', 'scene_exceptions', 'last_update');")
 
-        for provider in providers:
-            self.connection.action("DELETE FROM '{name}';".format(name=provider['name']))
+class AddProviderTablesIdentifier(ClearProviderTables):
+    """Add new pk field `identifier`."""
 
-    def inc_major_version(self):
-        major_version, minor_version = self.connection.version
-        major_version += 1
-        self.connection.action('UPDATE db_version SET db_version = ?;', [major_version])
-        log.info('[CACHE-DB] Updated major version to: {}.{}', *self.connection.version)
+    def test(self):
+        """Test if the version is at least 3."""
+        return self.connection.version >= (3, None)
 
-        return self.connection.version
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        self.drop_provider_tables()
+        self.inc_major_version()
