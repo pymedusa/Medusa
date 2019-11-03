@@ -22,6 +22,7 @@
 - Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed exception when there is no anime XML ([#7256](https://github.com/pymedusa/Medusa/pull/7256))
 - Fixed BTDB manual search & updated Xthor domain ([#7303](https://github.com/pymedusa/Medusa/pull/7303))
+- Fixed duplicate manual search results for providers without unqiue URLs ([#7305](https://github.com/pymedusa/Medusa/pull/7305))
 
 -----
 
