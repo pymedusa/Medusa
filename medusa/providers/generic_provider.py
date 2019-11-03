@@ -781,7 +781,8 @@ class GenericProvider(object):
 
         return title, url
 
-    def _get_identifier(self, item):
+    @staticmethod
+    def _get_identifier(item):
         """
         Return the identifier for the item.
 

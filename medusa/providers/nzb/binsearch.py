@@ -288,7 +288,8 @@ class BinSearchProvider(NZBProvider):
         """
         return item.get('size', -1)
 
-    def _get_identifier(self, item):
+    @staticmethod
+    def _get_identifier(item):
         """
         Return the identifier for the item.
 

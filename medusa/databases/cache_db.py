@@ -60,7 +60,6 @@ class InitialSchema(db.SchemaUpgrade):
         return self.connection.version
 
 
-
 class AddSceneExceptions(InitialSchema):
     def test(self):
         return self.hasTable('scene_exceptions')
