@@ -198,6 +198,14 @@ class Cache(object):
         """Check item auth."""
         return True
 
+    def _get_identifier(self, item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return self.provider._get_identifier(item)
+
     def update_cache(self, search_start_time):
         """Update provider cache."""
         # check if we should update
@@ -264,7 +272,8 @@ class Cache(object):
                           item.name)
                 result = self.add_cache_entry(
                     item.name, item.url, item.seeders,
-                    item.leechers, item.size, item.pubdate
+                    item.leechers, item.size, item.pubdate,
+                    identifier=self._get_identifier(item)
                 )
                 if result is not None:
                     results.append(result)
@@ -303,6 +312,7 @@ class Cache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
+        identifier = self._get_identifier(item)
 
         self._check_item_auth(title, url)
 
@@ -310,8 +320,9 @@ class Cache(object):
             title = self._translate_title(title)
             url = self._translate_link_url(url)
 
-            return self.add_cache_entry(title, url, seeders,
-                                        leechers, size, pubdate)
+            return self.add_cache_entry(
+                title, url, seeders, leechers, size, pubdate, identifier=identifier
+            )
 
         else:
             log.debug('The data returned from the {0} feed is incomplete,'

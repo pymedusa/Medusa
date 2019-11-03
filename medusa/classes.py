@@ -226,7 +226,9 @@ class SearchResult(object):
             # This can happen when there are unicode decoded chars in the release name.
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders,
-                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
+                                         self.leechers, self.size, self.pubdate,
+                                         parsed_result=self.parsed_result,
+                                         identifier=self.provider._get_identifier(self))
         return None
 
     def create_episode_object(self):

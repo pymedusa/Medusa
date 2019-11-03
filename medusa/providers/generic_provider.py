@@ -781,6 +781,18 @@ class GenericProvider(object):
 
         return title, url
 
+    def _get_identifier(self, item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        if isinstance(item, SearchResult):
+            return item.url
+
+        # Daily Search does not create SearchResult objects.
+        return item['link']
+
     @property
     def recent_results(self):
         """Return recent RSS results from provier."""
