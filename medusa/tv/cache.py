@@ -430,7 +430,9 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            if not self.item_in_cache(url):
+            identifier = identifier or url
+
+            if not self.item_in_cache(identifier):
                 log.debug('Added item: {0} to cache: {1} with url: {2}', name, self.provider_id, url)
                 return [
                     'INSERT INTO [{name}] '
@@ -440,7 +442,7 @@ class Cache(object):
                     'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [identifier or url, name, season, episode_text, parse_result.series.series_id, url,
+                    [identifier, name, season, episode_text, parse_result.series.series_id, url,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
                 ]
@@ -456,16 +458,16 @@ class Cache(object):
                     ),
                     [name, url, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, identifier or url]
+                     seeders, leechers, size, pubdate, proper_tags, identifier]
                 ]
 
-    def item_in_cache(self, url, identifier=None):
+    def item_in_cache(self, identifier):
         """Check if the url is already available for the specific provider."""
         cache_db_con = self._get_db()
         return cache_db_con.select(
             'SELECT COUNT(url) as count '
             'FROM [{provider}] '
-            'WHERE identifier=?'.format(provider=self.provider_id), [identifier or url]
+            'WHERE identifier=?'.format(provider=self.provider_id), [identifier]
         )[0]['count']
 
     def find_needed_episodes(self, episodes, forced_search=False, down_cur_quality=False):
