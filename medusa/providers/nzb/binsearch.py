@@ -11,7 +11,6 @@ from os.path import join
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.classes import SearchResult
 from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
 from medusa.logger.adapters.style import BraceAdapter
@@ -295,11 +294,7 @@ class BinSearchProvider(NZBProvider):
 
         By default this is the url. Providers can overwrite this, when needed.
         """
-        if isinstance(item, SearchResult):
-            return '{name}_{size}'.format(name=item.name, size=item.size)
-
-        # Daily Search does not create SearchResult objects.
-        return '{name}_{size}'.format(name=item['title'], size=item['size'])
+        return '{name}_{size}'.format(name=item.name, size=item.size)
 
 
 provider = BinSearchProvider()

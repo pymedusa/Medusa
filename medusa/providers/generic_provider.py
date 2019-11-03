@@ -787,11 +787,7 @@ class GenericProvider(object):
 
         By default this is the url. Providers can overwrite this, when needed.
         """
-        if isinstance(item, SearchResult):
-            return item.url
-
-        # Daily Search does not create SearchResult objects.
-        return item['link']
+        return item.url
 
     @property
     def recent_results(self):

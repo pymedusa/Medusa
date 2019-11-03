@@ -64,7 +64,7 @@ class CacheDBConnection(db.DBConnection):
                     '    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
-                    'SELECT identifier, url, COUNT(identifier) AS count '
+                    'SELECT identifier, COUNT(identifier) AS count '
                     'FROM [{name}] '
                     'GROUP BY identifier '
                     'HAVING count > 1'.format(name=provider_id)
@@ -267,14 +267,10 @@ class Cache(object):
 
         results = []
         try:
-            for item in manual_data:
+            for search_result in manual_data:
                 log.debug('Adding to cache item found in manual search: {0}',
-                          item.name)
-                result = self.add_cache_entry(
-                    item.name, item.url, item.seeders,
-                    item.leechers, item.size, item.pubdate,
-                    identifier=self._get_identifier(item)
-                )
+                          search_result.name)
+                result = self.add_cache_entry(search_result)
                 if result is not None:
                     results.append(result)
         except Exception as error:
@@ -308,26 +304,27 @@ class Cache(object):
 
     def _parse_item(self, item):
         """Parse item to create cache entry."""
-        title, url = self._get_title_and_url(item)
-        seeders, leechers = self._get_result_info(item)
-        size = self._get_size(item)
-        pubdate = self._get_pubdate(item)
-        identifier = self._get_identifier(item)
+        search_result = self.provider.get_result()
 
+        title, url = self._get_title_and_url(item)
         self._check_item_auth(title, url)
+        title = self._translate_title(title)
+        url = self._translate_link_url(url)
+        search_result.name = title
+        search_result.url = url
+
+        seeders, leechers = self._get_result_info(item)
+        search_result.seeders = seeders
+        search_result.leechers = leechers
+
+        search_result.size = self._get_size(item)
+        search_result.pubdate = self._get_pubdate(item)
 
         if title and url:
-            title = self._translate_title(title)
-            url = self._translate_link_url(url)
-
-            return self.add_cache_entry(
-                title, url, seeders, leechers, size, pubdate, identifier=identifier
-            )
-
+            return self.add_cache_entry(search_result)
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
                       ' this result is unusable', self.provider.name)
-        return None
 
     @property
     def updated(self):
@@ -388,10 +385,11 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None, identifier=None):
+    def add_cache_entry(self, search_result, parsed_result=None):
         """Add item into cache database."""
         try:
-            # Use the already passed parsed_result of possible.
+            # Use the already passed parsed_result if possible.
+            name = search_result.name
             parse_result = parsed_result or NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
             log.debug('{0}', error)
@@ -430,7 +428,12 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            identifier = identifier or url
+            identifier = self._get_identifier(search_result)
+            url = search_result.url
+            seeders = search_result.seeders
+            leechers = search_result.leechers
+            size = search_result.size
+            pubdate = search_result.pubdate
 
             if not self.item_in_cache(identifier):
                 log.debug('Added item: {0} to cache: {1} with url: {2}', name, self.provider_id, url)
