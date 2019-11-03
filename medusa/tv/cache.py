@@ -51,7 +51,8 @@ class CacheDBConnection(db.DBConnection):
                 log.debug('Creating cache table for provider {0}', provider_id)
                 self.action(
                     'CREATE TABLE [{name}]'
-                    '   (name TEXT,'
+                    '   (identifier TEXT,'
+                    '    name TEXT,'
                     '    season NUMERIC,'
                     '    episodes TEXT,'
                     '    indexer NUMERIC,'
@@ -63,27 +64,27 @@ class CacheDBConnection(db.DBConnection):
                     '    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
-                    'SELECT url, COUNT(url) AS count '
+                    'SELECT identifier, COUNT(identifier) AS count '
                     'FROM [{name}] '
-                    'GROUP BY url '
+                    'GROUP BY identifier '
                     'HAVING count > 1'.format(name=provider_id)
                 )
                 for duplicate in sql_results:
                     self.action(
                         'DELETE FROM [{name}] '
-                        'WHERE url = ?'.format(name=provider_id),
-                        [duplicate['url']]
+                        'WHERE identifier = ?'.format(name=provider_id),
+                        [duplicate['identifier']]
                     )
 
             # remove wrong old index
             self.action('DROP INDEX IF EXISTS idx_url')
 
             # add unique index if one does not exist to prevent further dupes
-            log.debug('Creating UNIQUE URL index for {0}', provider_id)
+            log.debug('Creating UNIQUE IDENTIFIER index for {0}', provider_id)
             self.action(
                 'CREATE UNIQUE INDEX '
-                'IF NOT EXISTS idx_url_{name} '
-                'ON [{name}] (url)'.format(name=provider_id)
+                'IF NOT EXISTS idx_identifier_{name} '
+                'ON [{name}] (identifier)'.format(name=provider_id)
             )
 
             # add release_group column to table if missing
@@ -197,6 +198,14 @@ class Cache(object):
         """Check item auth."""
         return True
 
+    def _get_identifier(self, item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return self.provider._get_identifier(item)
+
     def update_cache(self, search_start_time):
         """Update provider cache."""
         # check if we should update
@@ -258,13 +267,10 @@ class Cache(object):
 
         results = []
         try:
-            for item in manual_data:
+            for search_result in manual_data:
                 log.debug('Adding to cache item found in manual search: {0}',
-                          item.name)
-                result = self.add_cache_entry(
-                    item.name, item.url, item.seeders,
-                    item.leechers, item.size, item.pubdate
-                )
+                          search_result.name)
+                result = self.add_cache_entry(search_result)
                 if result is not None:
                     results.append(result)
         except Exception as error:
@@ -298,24 +304,27 @@ class Cache(object):
 
     def _parse_item(self, item):
         """Parse item to create cache entry."""
-        title, url = self._get_title_and_url(item)
-        seeders, leechers = self._get_result_info(item)
-        size = self._get_size(item)
-        pubdate = self._get_pubdate(item)
+        search_result = self.provider.get_result()
 
+        title, url = self._get_title_and_url(item)
         self._check_item_auth(title, url)
+        title = self._translate_title(title)
+        url = self._translate_link_url(url)
+        search_result.name = title
+        search_result.url = url
+
+        seeders, leechers = self._get_result_info(item)
+        search_result.seeders = seeders
+        search_result.leechers = leechers
+
+        search_result.size = self._get_size(item)
+        search_result.pubdate = self._get_pubdate(item)
 
         if title and url:
-            title = self._translate_title(title)
-            url = self._translate_link_url(url)
-
-            return self.add_cache_entry(title, url, seeders,
-                                        leechers, size, pubdate)
-
+            return self.add_cache_entry(search_result)
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
                       ' this result is unusable', self.provider.name)
-        return None
 
     @property
     def updated(self):
@@ -376,10 +385,11 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None):
+    def add_cache_entry(self, search_result, parsed_result=None):
         """Add item into cache database."""
         try:
-            # Use the already passed parsed_result of possible.
+            # Use the already passed parsed_result if possible.
+            name = search_result.name
             parse_result = parsed_result or NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
             log.debug('{0}', error)
@@ -418,17 +428,24 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            if not self.item_in_cache(url):
+            identifier = self._get_identifier(search_result)
+            url = search_result.url
+            seeders = search_result.seeders
+            leechers = search_result.leechers
+            size = search_result.size
+            pubdate = search_result.pubdate
+
+            if not self.item_in_cache(identifier):
                 log.debug('Added item: {0} to cache: {1} with url: {2}', name, self.provider_id, url)
                 return [
                     'INSERT INTO [{name}] '
-                    '   (name, season, episodes, indexerid, url, time, quality, '
+                    '   (identifier, name, season, episodes, indexerid, url, time, quality, '
                     '    release_group, version, seeders, leechers, size, pubdate, '
                     '    proper_tags, date_added, indexer ) '
-                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.series.series_id, url,
+                    [identifier, name, season, episode_text, parse_result.series.series_id, url,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parse_result.series.indexer]
                 ]
@@ -436,24 +453,24 @@ class Cache(object):
                 log.debug('Updating item: {0} to cache: {1}', name, self.provider_id)
                 return [
                     'UPDATE [{name}] '
-                    'SET name=?, season=?, episodes=?, indexer=?, indexerid=?, '
+                    'SET name=?, url=?, season=?, episodes=?, indexer=?, indexerid=?, '
                     '    time=?, quality=?, release_group=?, version=?, '
                     '    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
-                    'WHERE url=?'.format(
+                    'WHERE identifier=?'.format(
                         name=self.provider_id
                     ),
-                    [name, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
+                    [name, url, season, episode_text, parse_result.series.indexer, parse_result.series.series_id,
                      cur_timestamp, quality, release_group, version,
-                     seeders, leechers, size, pubdate, proper_tags, url]
+                     seeders, leechers, size, pubdate, proper_tags, identifier]
                 ]
 
-    def item_in_cache(self, url):
+    def item_in_cache(self, identifier):
         """Check if the url is already available for the specific provider."""
         cache_db_con = self._get_db()
         return cache_db_con.select(
             'SELECT COUNT(url) as count '
             'FROM [{provider}] '
-            'WHERE url=?'.format(provider=self.provider_id), [url]
+            'WHERE identifier=?'.format(provider=self.provider_id), [identifier]
         )[0]['count']
 
     def find_needed_episodes(self, episodes, forced_search=False, down_cur_quality=False):

@@ -781,6 +781,15 @@ class GenericProvider(object):
 
         return title, url
 
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return item.url
+
     @property
     def recent_results(self):
         """Return recent RSS results from provier."""
