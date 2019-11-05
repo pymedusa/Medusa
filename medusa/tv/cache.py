@@ -222,7 +222,6 @@ class Cache(object):
 
         try:
             data = self._get_rss_data()
-            data['entries'] = self.provider.remove_duplicate_mappings(data['entries'])
             if self._check_auth(data):
                 # clear cache
                 self._clear_cache()

@@ -19,15 +19,15 @@
 from __future__ import unicode_literals
 
 import logging
-
 from datetime import datetime
+
 from dateutil import parser
 
 from medusa import app
 from medusa.common import (
     MULTI_EP_RESULT,
-    SEASON_RESULT,
     Quality,
+    SEASON_RESULT,
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import SearchType

@@ -5,13 +5,12 @@
 from __future__ import unicode_literals
 
 import logging
+import operator
 import re
 from builtins import map
 from builtins import object
 from builtins import str
-from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
-from itertools import chain
 from os.path import join
 
 from dateutil import parser, tz
@@ -44,15 +43,13 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
-from medusa.search import PROPER_SEARCH, FORCED_SEARCH
+from medusa.search import FORCED_SEARCH, PROPER_SEARCH
 from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
-
-from six import itervalues
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -212,22 +209,6 @@ class GenericProvider(object):
 
         return results
 
-    @staticmethod
-    def remove_duplicate_mappings(items, pk='link'):
-        """
-        Remove duplicate items from an iterable of mappings.
-
-        :param items: An iterable of mappings
-        :param pk: Primary key for removing duplicates
-        :return: An iterable of unique mappings
-        """
-        return list(
-            itervalues(OrderedDict(
-                (item[pk], item)
-                for item in items
-            ))
-        )
-
     def search_results_in_cache(self, episodes):
         """
         Search episodes based on param in cache.
@@ -258,9 +239,8 @@ class GenericProvider(object):
         self._check_auth()
         self.series = series
 
-        results = {}
-        items_list = []
         season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
+        results = []
 
         for episode in episodes:
             search_strings = []
@@ -271,53 +251,30 @@ class GenericProvider(object):
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(
-                    search_string, ep_obj=episode, manual_search=manual_search
-                )
+                items = self.search(search_string, ep_obj=episode, manual_search=manual_search)
+                for item in items:
+                    result = self.get_result(series=series, item=item)
+                    if result not in results:
+                        result.quality = Quality.quality_from_name(result.name, series.is_anime)
+                        results.append(result)
 
             # In season search, we can't loop in episodes lists as we
             # only need one episode to get the season string
             if search_mode == 'sponly':
                 break
 
-        # Remove duplicate items
-        unique_items = self.remove_duplicate_mappings(items_list)
-        log.debug('Found {0} unique items', len(unique_items))
-
-        # categorize the items into lists by quality
-        categorized_items = defaultdict(list)
-        for item in unique_items:
-            quality = self.get_quality(item, anime=series.is_anime)
-            categorized_items[quality].append(item)
+        log.debug('Found {0} unique search results', len(results))
 
         # sort qualities in descending order
-        sorted_qualities = sorted(categorized_items, reverse=True)
-        log.debug('Found qualities: {0}', sorted_qualities)
+        results.sort(key=operator.attrgetter('quality'), reverse=True)
 
-        # chain items sorted by quality
-        sorted_items = chain.from_iterable(
-            categorized_items[quality]
-            for quality in sorted_qualities
-        )
-
-        # unpack all of the quality lists into a single sorted list
-        items_list = list(sorted_items)
-
-        # Move through each item and parse it into a quality
-        search_results = []
-        for item in items_list:
-            # Make sure we start with a TorrentSearchResult,
-            # NZBDataSearchResult or NZBSearchResult search result obj.
-            search_result = self.get_result(series=series, item=item)
-            if search_result in search_results:
-                continue
+        # Move through each item and parse with NameParser()
+        for search_result in results:
 
             if forced_search:
                 search_result.search_type = FORCED_SEARCH
             search_result.download_current_quality = download_current_quality
             search_result.result_wanted = True
-
-            search_results.append(search_result)
 
             try:
                 search_result.parsed_result = NameParser(
@@ -448,9 +405,10 @@ class GenericProvider(object):
                             search_result.actual_season = int(sql_results[0]['season'])
                             search_result.actual_episodes = [int(sql_results[0]['episode'])]
 
+        final_results = {}
         cl = []
         # Iterate again over the search results, and see if there is anything we want.
-        for search_result in search_results:
+        for search_result in results:
 
             # Try to cache the item if we want to.
             cache_result = search_result.add_result_to_cache(self.cache)
@@ -479,28 +437,21 @@ class GenericProvider(object):
                           search_result.name,
                           search_result.url)
 
-            if episode_number not in results:
-                results[episode_number] = [search_result]
+            if episode_number not in final_results:
+                final_results[episode_number] = [search_result]
             else:
-                results[episode_number].append(search_result)
+                final_results[episode_number].append(search_result)
 
         if cl:
             # Access to a protected member of a client class
             db = self.cache._get_db()
             db.mass_action(cl)
 
-        return results
+        return final_results
 
     def get_id(self):
         """Get ID of the provider."""
         return GenericProvider.make_id(self.name)
-
-    def get_quality(self, item, anime=False):
-        """Get quality of the result from its name."""
-        (title, _) = self._get_title_and_url(item)
-        quality = Quality.quality_from_name(title, anime)
-
-        return quality
 
     def get_result(self, series, item=None, cache=None):
         """Get result."""

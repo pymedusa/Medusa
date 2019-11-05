@@ -19,7 +19,6 @@ from medusa import (
     subtitles,
     ui,
 )
-from medusa.classes import SearchResult
 from medusa.clients import torrent
 from medusa.clients.nzb import (
     nzbget,
@@ -90,8 +89,8 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
-from medusa.tv.series import Series, SeriesIdentifier
 from medusa.tv.cache import Cache
+from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
 from requests.compat import (
