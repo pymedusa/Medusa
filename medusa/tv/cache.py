@@ -149,6 +149,7 @@ class Cache(object):
             self.trim(days=app.MAX_CACHE_AGE)
 
     def load_from_row(self, rowid):
+        """Load cached result from a single row."""
         cache_db_con = self._get_db()
         cached_result = cache_db_con.action(
             'SELECT * '
