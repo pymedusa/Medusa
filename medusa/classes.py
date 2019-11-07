@@ -49,6 +49,7 @@ class SearchResult(object):
         self.series = series
         # Raw result in a dictionary
         self.item = item
+        # Cached search result
         self.cache = cache
 
         # list of Episode objects that this result is associated with
@@ -78,7 +79,7 @@ class SearchResult(object):
         # hash
         self.hash = None
         # proper_tags
-        self.proper_tags = ''
+        self.proper_tags = []
         # manually_searched
         self._manually_searched = False
         # content
@@ -87,7 +88,8 @@ class SearchResult(object):
         self.result_type = ''
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
-        # Store if the search was started by a forced search.
+        # Store the epsiode number we use internally.
+        # This can be the single episode number, MULTI_EP_RESULT or SEASON_RESULT
         self.episode_number = None
         # Search flag for specifying if we want to re-download the already downloaded quality.
         self.download_current_quality = None
@@ -101,11 +103,12 @@ class SearchResult(object):
         self.actual_season = None
         # The actual parsed episode. Stored as an iterable of integers.
         self._actual_episodes = None
-        # Some of the searches, expect a max of one episode object, per search result. Then this episode can be used
-        # to store a single episode number, as an int.
+        # Some of the searches, expect a max of one episode object, per search result.
+        # Then this episode can be used to store a single episode number, as an int.
         self._actual_episode = None
         # Search type. Use the medusa.search.SearchType enum, as value.
-        # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH, SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
+        # For example SearchType.MANUAL_SEARCH, SearchType.FORCED_SEARCH,
+        # SearchType.DAILY_SEARCH, SearchType.PROPER_SEARCH
         self.search_type = None
 
         if item is not None:
@@ -278,7 +281,7 @@ class SearchResult(object):
         self.version = int(cached_result['version'])
         self.pubdate = cached_result['pubdate']
         self.proper_tags = cached_result['proper_tags'].split('|') \
-            if cached_result['proper_tags'] else ''
+            if cached_result['proper_tags'] else []
         self.date = datetime.today()
 
     def __eq__(self, other):
