@@ -26,8 +26,9 @@ class BeyondHDProvider(TorrentProvider):
         """Initialize the class."""
         super(BeyondHDProvider, self).__init__('Beyond-HD')
 
-        self.username = None
-        self.password = None
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies = ('remember_web_[**long_hash**]',)
 
         self.url = 'https://beyond-hd.me'
         self.urls = {
@@ -99,7 +100,7 @@ class BeyondHDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='table-striped')
+            torrent_table = html.find('div', class_='table-torrents').find('table')
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if one release is found
@@ -111,7 +112,7 @@ class BeyondHDProvider(TorrentProvider):
                 cells = result('td')
 
                 try:
-                    link = cells[1].find('div')
+                    link = cells[1].find('a')
                     download_url = urljoin(self.url, cells[2].find('a')['href'])
                     title = link.get_text(strip=True)
                     if not all([title, download_url]):
@@ -154,33 +155,16 @@ class BeyondHDProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+        return self.cookie_login('Login now')
 
-        if 'pass' in dict_from_cookiejar(self.session.cookies):
-            return True
+    def check_required_cookies(self):
+        """
+        Check if we have the required cookies in the requests sessions object.
 
-        login_html = self.session.get(self.urls['login'])
-        with BS4Parser(login_html.text, 'html5lib') as html:
-            token = html.find('input', attrs={'name': '_token'}).get('value')
-
-        login_params = {
-            '_token': token,
-            'username': self.username,
-            'password': self.password,
-            'remember': 'on',
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if 'These credentials do not match our records.' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        return True
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
+        Note! This doesn't mean the cookies are correct!
+        """
+        return False
 
 
 provider = BeyondHDProvider()
