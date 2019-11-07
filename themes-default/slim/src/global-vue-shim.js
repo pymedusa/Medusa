@@ -110,7 +110,7 @@ export const registerPlugins = () => {
     Vue.use(VModal);
     Vue.use(VTooltip);
 
-    // set default config
+    // Set default cookie expire time
     VueCookies.config('10y');
 };
 
