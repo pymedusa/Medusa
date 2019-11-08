@@ -17,11 +17,12 @@
 - Fixed rare UnicodeDecodeError when parsing titles with Python 2.7 ([#7192](https://github.com/pymedusa/Medusa/pull/7192))
 - Fixed displayShow loading of large shows with many seasons e.g. daily shows ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
 - Fixed torrent checker for client Transmission running on python 3 ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
-- Fixed provider beyond-hd due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider beyond-hd due to added captcha and layout changes ([#7323](https://github.com/pymedusa/Medusa/pull/7323))
 - Fixed provider bj-share due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed exception when there is no anime XML ([#7256](https://github.com/pymedusa/Medusa/pull/7256))
 - Fixed BTDB manual search & updated Xthor domain ([#7303](https://github.com/pymedusa/Medusa/pull/7303))
+
 
 -----
 
