@@ -23,7 +23,6 @@
 - Fixed exception when there is no anime XML ([#7256](https://github.com/pymedusa/Medusa/pull/7256))
 - Fixed BTDB manual search & updated Xthor domain ([#7303](https://github.com/pymedusa/Medusa/pull/7303))
 
-
 -----
 
 ## 0.3.5 (2019-09-08)
