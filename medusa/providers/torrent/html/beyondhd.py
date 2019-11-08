@@ -99,8 +99,18 @@ class BeyondHDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('div', class_='table-torrents').find('table')
+            if html.find('div', class_='table-torrents'):
+                theme = 'modern'
+                torrent_table = html.find('div', class_='table-torrents').find('table')
+            else:
+                theme = 'classic'
+                torrent_table = html.find('div', class_='table-responsive').find('table')
+
             torrent_rows = torrent_table('tr') if torrent_table else []
+            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
+            # For the classic theme, the tr don't match the td.
+            if theme == 'classic':
+                del labels[3]
 
             # Continue only if one release is found
             if len(torrent_rows) < 2:
@@ -120,8 +130,8 @@ class BeyondHDProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(cells[6].find('span').get_text())
-                    leechers = int(cells[7].find('span').get_text())
+                    seeders = int(cells[labels.index('S')].find('span').get_text())
+                    leechers = int(cells[labels.index('L')].find('span').get_text())
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -131,10 +141,10 @@ class BeyondHDProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[5].find('span').get_text()
+                    torrent_size = cells[labels.index('Size')].find('span').get_text()
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[4].find('span').get_text()
+                    pubdate_raw = cells[labels.index('Age')].find('span').get_text()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
