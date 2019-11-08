@@ -848,7 +848,6 @@ class GenericProvider(object):
                                .format(provider_url=self.name, required_cookies=self.required_cookies)
                 }
 
-
         # cookie_validator got at least one cookie key/value pair, let's return success
         add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
         return {'result': True,
