@@ -11,6 +11,7 @@
   - Mark episodes as "watched"
   - Added pagination
   - Added search field, that searches columns like Title, File and Episode number
+- Added ability to use custom domain for TorrentDay provider ([#7326](https://github.com/pymedusa/Medusa/pull/7326))
 
 #### Fixes
 - Fixed AnimeBytes daily search, for multi-ep results ([#7190](https://github.com/pymedusa/Medusa/pull/7190))
