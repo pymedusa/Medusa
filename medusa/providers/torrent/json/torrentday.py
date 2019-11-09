@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import validators
 
 import dirtyjson as djson
 
@@ -16,6 +15,8 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
+import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -70,7 +71,7 @@ class TorrentDayProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        
+
         if self.custom_url:
             if not validators.url(self.custom_url):
                 log.warning('Invalid custom url: {0}', self.custom_url)
