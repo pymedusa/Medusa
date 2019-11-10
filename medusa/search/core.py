@@ -260,7 +260,7 @@ def filter_results(results):
         series_obj = cur_result.series
 
         # build the black and white list
-        if series_obj.is_anime:
+        if series_obj.is_anime and series_obj.release_groups:
             if not series_obj.release_groups.is_valid(cur_result):
                 continue
 
