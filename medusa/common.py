@@ -39,7 +39,7 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 INSTANCE_ID = text_type(uuid.uuid1())
-VERSION = '0.3.5'
+VERSION = '0.3.6'
 USER_AGENT = 'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
@@ -808,8 +808,8 @@ class Overview(object):
     overviewStrings = {
         SKIPPED: 'skipped',
         WANTED: 'wanted',
-        QUAL: 'qual',
-        GOOD: 'good',
+        QUAL: 'allowed',
+        GOOD: 'preferred',
         UNAIRED: 'unaired',
         SNATCHED: 'snatched',
         # we can give these a different class later, otherwise

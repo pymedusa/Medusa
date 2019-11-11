@@ -283,7 +283,7 @@ class TransmissionAPI(GenericClient):
             return
 
         try:
-            returned_data = json.loads(self.response.content)
+            returned_data = json.loads(self.response.text)
         except ValueError:
             log.warning('Unexpected data received from Transmission: {resp}',
                         {'resp': self.response.content})

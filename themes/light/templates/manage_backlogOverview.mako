@@ -83,10 +83,10 @@ window.app = new Vue({
 
         function updateForcedSearch(data) {
             $.each(data.episodes, (name, ep) => {
-                const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+                const el = $('a[id=' + ep.show.indexer + 'x' + ep.show.series_id + 'x' + ep.episode.season + 'x' + ep.episode.episode + ']');
                 const img = el.children('img[data-ep-search]');
-                const episodeStatus = ep.status.toLowerCase();
-                const episodeSearchStatus = ep.searchstatus.toLowerCase();
+                const episodeStatus = ep.episode.status.toLowerCase();
+                const episodeSearchStatus = ep.search.status.toLowerCase();
                 if (el) {
                     if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
                         // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');

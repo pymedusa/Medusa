@@ -210,10 +210,10 @@ commander@2.14.1:
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.14.1.tgz#2235123e37af8ca3c65df45b026dbd357b01b9aa"
   integrity sha512-+YR16o3rK53SmWHU3rEM3tPAh2rwb1yPcQX5irVn7mb0gXbwuCCrnkbV5+PBfETdfg1vui07nM6PCG1zndcjQw==
 
-commander@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.1.tgz#4595aec3530525e671fb6f85fb173df8ff8bf57a"
-  integrity sha512-UNgvDd+csKdc9GD4zjtkHKQbT8Aspt2jCBqNSPp53vAS0L1tS9sXB2TCEOPHJ7kt9bN/niWkYj8T3RQSoMXdSQ==
+commander@3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-3.0.2.tgz#6837c3fb677ad9933d1cfba42dd14d5117d6b39e"
+  integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
 
 commander@^2.7.1:
   version "2.20.0"
@@ -351,10 +351,10 @@ dredd-transactions@9.0.6:
     fury-adapter-swagger "0.27.2"
     uri-template "1.0.1"
 
-dredd@12.0.6:
-  version "12.0.6"
-  resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.0.6.tgz#4c8b07ff176fc1a0c9931aba7e4413edbad16cfe"
-  integrity sha512-gYI5iNvwHTPV/a+86DPPhOO8U48HokJSwtmO8UrRACCMvz7PTvypLeBOFm0QRELrd+OD4jnAfQc4eJie37bFCg==
+dredd@12.1.0:
+  version "12.1.0"
+  resolved "https://registry.yarnpkg.com/dredd/-/dredd-12.1.0.tgz#1201e066d4d0512abcaca6bcc5d1a07206b121ef"
+  integrity sha512-kKTZpTjKYN4Q7+N6NCIBI0dkh14HCz7f1emqCjqV1R7s1wm0Hfp93Pry2eHyx3narZXs6Izvpn7LknTJWM4bpg==
   dependencies:
     async "3.1.0"
     caseless "0.12.0"
@@ -362,14 +362,14 @@ dredd@12.0.6:
     clone "2.1.2"
     cross-spawn "7.0.0"
     dredd-transactions "9.0.6"
-    gavel "8.0.5"
+    gavel "8.1.1"
     glob "7.1.4"
     html "1.0.0"
     htmlencode "0.0.4"
     inquirer "7.0.0"
     js-yaml "3.13.1"
     make-dir "3.0.0"
-    markdown-it "9.1.0"
+    markdown-it "10.0.0"
     optimist "0.6.1"
     proxyquire "2.1.3"
     ramda "0.26.1"
@@ -393,10 +393,10 @@ emoji-regex@^8.0.0:
   resolved "https://registry.yarnpkg.com/emoji-regex/-/emoji-regex-8.0.0.tgz#e818fd69ce5ccfcb404594f842963bf53164cc37"
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
 
-entities@~1.1.1:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.2.tgz#bdfa735299664dfafd34529ed4f8522a275fea56"
-  integrity sha512-f2LZMYl1Fzu7YSBKg+RoROelpOaNrcGmE9AZubeDfrCEia483oW4MI4VyFd5VNHIgQ/7qm1I0wUHK1eJnn2y2w==
+entities@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-2.0.0.tgz#68d6084cab1b079767540d80e56a39b423e4abf4"
+  integrity sha512-D9f7V0JSRwIxlRI2mjMqufDrRDnx8p+eEOz7aUM9SuvF8gsBzra0/6tbjl1m8eQHrZlYj6PxqE00hZ1SAIKPLw==
 
 escape-string-regexp@^1.0.5:
   version "1.0.5"
@@ -572,15 +572,15 @@ fury@3.0.0-beta.12:
   dependencies:
     api-elements "^0.2.2"
 
-gavel@8.0.5:
-  version "8.0.5"
-  resolved "https://registry.yarnpkg.com/gavel/-/gavel-8.0.5.tgz#b4502bf18b3436ed6a4b6716db41d2ce089db254"
-  integrity sha512-Yqha3C83yY3QNpsaFoh+Qda82rhEnHd3zkMc7gA1yKf6KIw6SW2XGnS2tPbDYI1A1W4eoLsGF40rI1Wipdq/2g==
+gavel@8.1.1:
+  version "8.1.1"
+  resolved "https://registry.yarnpkg.com/gavel/-/gavel-8.1.1.tgz#c3f82e5ef468661bda9ff7800c58c51e979b3477"
+  integrity sha512-TgMghBKUOL7/zaNvn71X+e7jg16fL1lycDtltrfiSgGhHKNQHN9+77kkEpBVkwCl5kERId3kFlhjqU9W7l4ODw==
   dependencies:
     amanda "1.0.1"
     caseless "0.12.0"
     clone "2.1.2"
-    commander "3.0.1"
+    commander "3.0.2"
     content-type "1.0.4"
     curl-trace-parser "0.0.10"
     deep-equal "1.1.0"
@@ -879,13 +879,13 @@ make-dir@3.0.0:
   dependencies:
     semver "^6.0.0"
 
-markdown-it@9.1.0:
-  version "9.1.0"
-  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-9.1.0.tgz#df9601c168568704d554b1fff9af0c5b561168d9"
-  integrity sha512-xHKG4C8iPriyfu/jc2hsCC045fKrMQ0VexX2F1FGYiRxDxqMB2aAhF8WauJ3fltn2kb90moGBkiiEdooGIg55w==
+markdown-it@10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-10.0.0.tgz#abfc64f141b1722d663402044e43927f1f50a8dc"
+  integrity sha512-YWOP1j7UbDNz+TumYP1kpwnP0aEa711cJjrAQrzd0UXlbJfc5aAq0F/PZHjiioqDC1NKgvIMX+o+9Bk7yuM2dg==
   dependencies:
     argparse "^1.0.7"
-    entities "~1.1.1"
+    entities "~2.0.0"
     linkify-it "^2.0.0"
     mdurl "^1.0.1"
     uc.micro "^1.0.5"

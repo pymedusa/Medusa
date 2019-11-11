@@ -1687,7 +1687,11 @@ def ensure_list(value):
     :param value:
     :rtype: list
     """
-    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    try:
+        return sorted(value) if isinstance(value, list) else [value] if value is not None else []
+    except TypeError:
+        log.debug('Could not sort list with values: {value}', {'value': value})
+        return []
 
 
 def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozenset()):

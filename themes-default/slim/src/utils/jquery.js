@@ -97,26 +97,26 @@ export const updateSearchIcons = (showSlug, vm) => {
             const queuedImage = 'queued.png';
             const searchImage = 'search16.png';
 
-            if (`${ep.indexer_name}${ep.series_id}` !== vm.show.id.slug) {
+            if (ep.show.slug !== vm.show.id.slug) {
                 return true;
             }
 
             // Try to get the <a> Element
-            const img = vm.$refs[`search-${ep.slug}`];
+            const img = vm.$refs[`search-${ep.episode.slug}`];
             if (img) {
-                if (ep.searchstatus.toLowerCase() === 'searching') {
+                if (ep.search.status.toLowerCase() === 'searching') {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.title = 'Searching';
                     img.alt = 'Searching';
                     img.src = 'images/' + loadingImage;
                     disableLink(img);
-                } else if (ep.searchstatus.toLowerCase() === 'queued') {
+                } else if (ep.search.status.toLowerCase() === 'queued') {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.title = 'Queued';
                     img.alt = 'queued';
                     img.src = 'images/' + queuedImage;
                     disableLink(img);
-                } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                } else if (ep.search.status.toLowerCase() === 'finished') {
                     // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.title = 'Searching';
                     img.alt = 'searching';

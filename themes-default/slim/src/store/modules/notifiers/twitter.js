@@ -4,8 +4,6 @@ export const state = {
     notifyOnDownload: null,
     notifyOnSubtitleDownload: null,
     dmto: null,
-    username: null,
-    password: null,
     prefix: null,
     directMessage: null
 };

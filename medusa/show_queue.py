@@ -57,7 +57,6 @@ from medusa.indexers.indexer_exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowAlreadyInLibrary,
-    IndexerShowIncomplete,
     IndexerShowNotFound,
     IndexerShowNotFoundInLanguage,
 )
@@ -423,20 +422,6 @@ class QueueItemAdd(ShowQueueItem):
                 )
                 self._finishEarly()
                 return
-            # if the show has no episodes/seasons
-            if not s:
-                log.info(
-                    'Show {series_name} is on {indexer_name} but contains no season/episode data.',
-                    {'series_name': s['seriesname'], 'indexer_name': indexerApi(self.indexer).name}
-                )
-                ui.notifications.error(
-                    'Unable to add show',
-                    'Show {series_name} is on {indexer_name} but contains no season/episode data.'.format(
-                        series_name=s['seriesname'], indexer_name=indexerApi(self.indexer).name)
-                )
-                self._finishEarly()
-
-                return
 
             # Check if we can already find this show in our current showList.
             try:
@@ -469,20 +454,6 @@ class QueueItemAdd(ShowQueueItem):
                 'Unable to look up the show in {path} using id {id} on {indexer}.'
                 ' Delete metadata files from the folder and try adding it again.'.format(
                     path=self.showDir, id=self.indexer_id, indexer=indexerApi(self.indexer).name)
-            )
-            self._finishEarly()
-            return
-        except IndexerShowIncomplete as error:
-            log.warning(
-                '{id}: Error while loading information from indexer {indexer}. Error: {error}',
-                {'id': self.indexer_id, 'indexer': indexerApi(self.indexer).name, 'error': error}
-            )
-            ui.notifications.error(
-                'Unable to add show',
-                'Unable to look up the show in {path} on {indexer} using ID {id}'
-                ' Reason: {error}'.format(
-                    path=self.showDir, indexer=indexerApi(self.indexer).name,
-                    id=self.indexer_id, error=error)
             )
             self._finishEarly()
             return

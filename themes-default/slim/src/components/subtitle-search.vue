@@ -4,7 +4,8 @@
             <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
             <div v-if="displayQuestion" class="search-question">
                 <div class="question">
-                    <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+                    <p v-if="!lang">Do you want to manually pick subtitles or let us choose it for you?</p>
+                    <p v-else>Do you want to manually pick subtitles or search a subtitle with the language code <b>{{lang}}</b> for you?</p>
                 </div>
                 <div class="options">
                     <button type="button" class="btn-medusa btn-info" @click="autoSearch">Auto</button>
@@ -86,6 +87,10 @@ export default {
         episode: {
             type: [String, Number],
             required: true
+        },
+        lang: {
+            type: String,
+            required: false
         }
     },
     data() {
@@ -147,12 +152,17 @@ export default {
     },
     methods: {
         autoSearch() {
-            const { subtitleParams } = this;
+            const { lang, subtitleParams } = this;
+            const params = subtitleParams;
+
+            if (lang !== undefined) {
+                params.lang = lang;
+            }
 
             this.displayQuestion = false;
             this.loadingMessage = 'Searching for subtitles and downloading if available... ';
             this.loading = true;
-            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams })
+            apiRoute('home/searchEpisodeSubtitles', { params })
                 .then(response => {
                     if (response.data.result !== 'failure') {
                         // Update the show, as we have new information (subtitles)
@@ -189,6 +199,31 @@ export default {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
                 }).finally(() => {
                     this.loading = false;
+                });
+        },
+        redownloadLang() {
+            const { subtitleParams } = this;
+
+            apiRoute('home/searchEpisodeSubtitles', { params: subtitleParams })
+                .then(response => {
+                    if (response.data.result !== 'failure') {
+                        // Update the show, as we have new information (subtitles)
+                        // Let's emit an event, telling the displayShow component, to update the show using the api/store.
+                        this.$emit('update', {
+                            reason: 'new subtitles found',
+                            codes: response.data.subtitles,
+                            languages: response.data.languages
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.log(`Error trying to search for subtitles. Error: ${error}`);
+                })
+                .finally(() => {
+                    // Cleanup
+                    this.loadingMessage = '';
+                    this.loading = false;
+                    this.close();
                 });
         },
         pickSubtitle(subtitleId) {

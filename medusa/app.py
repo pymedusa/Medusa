@@ -196,7 +196,6 @@ class MedusaApp(object):
         self.SORT_ARTICLE = False
         self.DEBUG = False
         self.DBDEBUG = False
-        self.DISPLAY_ALL_SEASONS = True
         self.DEFAULT_PAGE = 'home'
         self.SEEDERS_LEECHERS_IN_NOTIFY = True
         self.SHOW_LIST_ORDER = ['Anime', 'Series']
@@ -391,6 +390,15 @@ class MedusaApp(object):
         self.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD = False
         self.TELEGRAM_ID = ''
         self.TELEGRAM_APIKEY = ''
+
+        self.USE_DISCORD = False
+        self.DISCORD_NOTIFY_ONSNATCH = False
+        self.DISCORD_NOTIFY_ONDOWNLOAD = False
+        self.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = False
+        self.DISCORD_WEBHOOK = None
+        self.DISCORD_NAME = 'pymedusa'
+        self.DISCORD_AVATAR_URL = '{base_url}/images/ico/favicon-144.png'.format(base_url=self.BASE_PYMEDUSA_URL)
+        self.DISCORD_TTS = False
 
         self.USE_PROWL = False
         self.PROWL_NOTIFY_ONSNATCH = False

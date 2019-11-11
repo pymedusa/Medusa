@@ -581,7 +581,10 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 # adjust title to append the series name.
                 # Only the season.parent contains the S prefix in its value
                 new_title = copy.copy(title)
-                new_title.value = ' '.join([title.value, season.parent.value])
+                if six.PY3:
+                    new_title.value = ' '.join([title.value, season.parent.value])
+                else:
+                    new_title.value = b' '.join([title.value, season.parent.value])
                 new_title.end = season.end
 
                 # other fileparts might have the same season to be removed from the matches
