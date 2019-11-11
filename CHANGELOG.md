@@ -1,4 +1,4 @@
-## Unreleased
+## 0.3.6 (2019-11-11)
 
 #### New Features
 - Added notifier for Discord (discordapp.com) ([#7189](https://github.com/pymedusa/Medusa/pull/7189))
