@@ -11,18 +11,20 @@
   - Mark episodes as "watched"
   - Added pagination
   - Added search field, that searches columns like Title, File and Episode number
+- Added ability to use custom domain for TorrentDay provider ([#7326](https://github.com/pymedusa/Medusa/pull/7326))
 
 #### Fixes
 - Fixed AnimeBytes daily search, for multi-ep results ([#7190](https://github.com/pymedusa/Medusa/pull/7190))
 - Fixed rare UnicodeDecodeError when parsing titles with Python 2.7 ([#7192](https://github.com/pymedusa/Medusa/pull/7192))
 - Fixed displayShow loading of large shows with many seasons e.g. daily shows ([#6977](https://github.com/pymedusa/Medusa/pull/6977))
 - Fixed torrent checker for client Transmission running on python 3 ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
-- Fixed provider beyond-hd due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
+- Fixed provider beyond-hd due to added captcha and layout changes ([#7323](https://github.com/pymedusa/Medusa/pull/7323))
 - Fixed provider bj-share due to layout changes ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed provider btdb due date format change in layout ([#7250](https://github.com/pymedusa/Medusa/pull/7250))
 - Fixed exception when there is no anime XML ([#7256](https://github.com/pymedusa/Medusa/pull/7256))
 - Fixed BTDB manual search & updated Xthor domain ([#7303](https://github.com/pymedusa/Medusa/pull/7303))
 - Fixed duplicate manual search results for providers without unqiue URLs ([#7305](https://github.com/pymedusa/Medusa/pull/7305))
+- Fixed exception when release groups aren't available for anime shows ([#7333](https://github.com/pymedusa/Medusa/pull/7333))
 
 -----
 
