@@ -19,7 +19,7 @@ from babelfish.language import Language
 
 import jwt
 
-from medusa import app
+from medusa import app, db
 from medusa.logger.adapters.style import BraceAdapter
 
 from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
@@ -412,6 +412,29 @@ class BaseRequestHandler(RequestHandler):
         self.set_header('Link', ', '.join(links))
 
         return self._ok(data=results, headers=headers)
+
+    def paginate_query(self, query, identifier, where=None, params=None):
+        """Paginate query."""
+        arg_page = self._get_page()
+        arg_limit = self._get_limit()
+
+        headers = {
+            'X-Pagination-Page': arg_page,
+            'X-Pagination-Limit': arg_limit
+        }
+
+        query += ' WHERE {identifier} > ?'.format(identifier=identifier)
+        base_params = []
+        params.append(arg_limit * arg_page)
+
+        if where and params:
+            query += ' AND '.join([where + ' = ? ' for where in sql_where])
+            base_params += params
+
+        query += ' LIMIT {limit}'.format(limit=arg_limit)
+
+        main_db_con = db.DBConnection()
+        return main_db_con.select(query, params)
 
     @classmethod
     def _parse(cls, value, function=int):
