@@ -44,10 +44,11 @@ class HistoryHandler(BaseRequestHandler):
             if not series_identifier:
                 return self._bad_request('Invalid series')
 
-            sql_where += ['indexer_id', 'show_id']
+            sql_base += ' WHERE indexer_id = ? AND showid = ?'
             params += [series_identifier.indexer.id, series_identifier.id]
-
-        results = self.paginate_query(sql_base, 'rowid', sql_where, params)
+            results = db.DBConnection().select(sql_base, params)
+        else:
+            results = self.paginate_query(sql_base, 'rowid', sql_where, params)
 
         data = []
         for item in results:

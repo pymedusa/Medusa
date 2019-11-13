@@ -425,10 +425,10 @@ class BaseRequestHandler(RequestHandler):
 
         query += ' WHERE {identifier} > ?'.format(identifier=identifier)
         base_params = []
-        params.append(arg_limit * arg_page)
+        params.append(arg_page - 1 * arg_limit or 1)
 
         if where and params:
-            query += ' AND '.join([where + ' = ? ' for where in sql_where])
+            query += ' AND ' + ' AND '.join([item + ' = ? ' for item in where])
             base_params += params
 
         query += ' LIMIT {limit}'.format(limit=arg_limit)
