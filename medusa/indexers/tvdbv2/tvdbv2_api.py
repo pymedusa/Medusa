@@ -10,7 +10,7 @@ from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowNotFound,
+from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerShowNotFound,
                                                 IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
@@ -448,60 +448,61 @@ class TVDBv2(BaseIndexer):
             return
 
         for image_type, image_count in viewitems(self._object_to_dict(series_images_count)):
-            try:
-                if search_for_image_type and search_for_image_type != image_type:
-                    # We want to use the 'poster' image also for the 'poster_thumb' type
-                    if image_type != 'poster' or image_type == 'poster' and search_for_image_type != 'poster_thumb':
-                        continue
+            if not image_count:
+                continue
 
-                if not image_count:
+            if search_for_image_type and search_for_image_type != image_type:
+                # We want to use the 'poster' image also for the 'poster_thumb' type
+                if image_type != 'poster' or image_type == 'poster' and search_for_image_type != 'poster_thumb':
                     continue
 
-                if image_type not in _images:
-                    _images[image_type] = {}
-
+            try:
                 images = self.config['session'].series_api.series_id_images_query_get(
                     sid, key_type=image_type, accept_language=self.config['language']
                 )
-                for image in images.data:
-                    # Store the images for each resolution available
-                    # Always provide a resolution or 'original'.
-                    resolution = image.resolution or 'original'
-                    if resolution not in _images[image_type]:
-                        _images[image_type][resolution] = {}
-
-                    # _images[image_type][resolution][image.id] = image_dict
-                    image_attributes = self._object_to_dict(image, key_mapping)
-
-                    bid = image_attributes.pop('id')
-
-                    if image_type in ['season', 'seasonwide']:
-                        if int(image.sub_key) not in _images[image_type][resolution]:
-                            _images[image_type][resolution][int(image.sub_key)] = {}
-                        if bid not in _images[image_type][resolution][int(image.sub_key)]:
-                            _images[image_type][resolution][int(image.sub_key)][bid] = {}
-                        base_path = _images[image_type][resolution][int(image.sub_key)][bid]
-                    else:
-                        if bid not in _images[image_type][resolution]:
-                            _images[image_type][resolution][bid] = {}
-                        base_path = _images[image_type][resolution][bid]
-
-                    for k, v in viewitems(image_attributes):
-                        if k is None or v is None:
-                            continue
-
-                        if k.endswith('path'):
-                            k = '_{0}'.format(k)
-                            log.debug('Adding base url for image: {0}', v)
-                            v = self.config['artwork_prefix'].format(image=v)
-
-                        base_path[k] = v
             except ApiException as error:
                 log.warning(
-                    'Could not parse Poster for show ID: {0}, with exception: {1}',
-                    sid, error.reason
+                    'Could not parse {image} for show ID: {sid}, with exception: {reason}',
+                    {'image': image_type, 'sid': sid, 'reason': error.reason}
                 )
-                return
+                continue
+
+            if image_type not in _images:
+                _images[image_type] = {}
+
+            for image in images.data:
+                # Store the images for each resolution available
+                # Always provide a resolution or 'original'.
+                resolution = image.resolution or 'original'
+                if resolution not in _images[image_type]:
+                    _images[image_type][resolution] = {}
+
+                # _images[image_type][resolution][image.id] = image_dict
+                image_attributes = self._object_to_dict(image, key_mapping)
+
+                bid = image_attributes.pop('id')
+
+                if image_type in ['season', 'seasonwide']:
+                    if int(image.sub_key) not in _images[image_type][resolution]:
+                        _images[image_type][resolution][int(image.sub_key)] = {}
+                    if bid not in _images[image_type][resolution][int(image.sub_key)]:
+                        _images[image_type][resolution][int(image.sub_key)][bid] = {}
+                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                else:
+                    if bid not in _images[image_type][resolution]:
+                        _images[image_type][resolution][bid] = {}
+                    base_path = _images[image_type][resolution][bid]
+
+                for k, v in viewitems(image_attributes):
+                    if k is None or v is None:
+                        continue
+
+                    if k.endswith('path'):
+                        k = '_{0}'.format(k)
+                        log.debug('Adding base url for image: {0}', v)
+                        v = self.config['artwork_prefix'].format(image=v)
+
+                    base_path[k] = v
 
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
