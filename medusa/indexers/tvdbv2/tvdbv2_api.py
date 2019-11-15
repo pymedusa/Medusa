@@ -461,7 +461,7 @@ class TVDBv2(BaseIndexer):
                     sid, key_type=image_type, accept_language=self.config['language']
                 )
             except ApiException as error:
-                log.warning(
+                log.debug(
                     'Could not parse {image} for show ID: {sid}, with exception: {reason}',
                     {'image': image_type, 'sid': sid, 'reason': error.reason}
                 )
@@ -481,17 +481,9 @@ class TVDBv2(BaseIndexer):
                 image_attributes = self._object_to_dict(image, key_mapping)
 
                 bid = image_attributes.pop('id')
-
-                if image_type in ['season', 'seasonwide']:
-                    if int(image.sub_key) not in _images[image_type][resolution]:
-                        _images[image_type][resolution][int(image.sub_key)] = {}
-                    if bid not in _images[image_type][resolution][int(image.sub_key)]:
-                        _images[image_type][resolution][int(image.sub_key)][bid] = {}
-                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
-                else:
-                    if bid not in _images[image_type][resolution]:
-                        _images[image_type][resolution][bid] = {}
-                    base_path = _images[image_type][resolution][bid]
+                if bid not in _images[image_type][resolution]:
+                    _images[image_type][resolution][bid] = {}
+                base_path = _images[image_type][resolution][bid]
 
                 for k, v in viewitems(image_attributes):
                     if k is None or v is None:
