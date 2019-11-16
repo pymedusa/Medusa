@@ -172,6 +172,14 @@
                                         <td>{{show.config.aliases.join(', ')}}</td>
                                     </tr>
 
+                                    <tr v-if="type === 'snatch-selection' && seasonSceneExceptions !== false">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span title="Season Name Exceptions">Season Ex.:</span>
+                                        </td>
+                                        <td>{{seasonSceneExceptions}}
+                                        </td>
+                                    </tr>
+
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">
                                             <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
@@ -527,6 +535,19 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
+        },
+        seasonSceneExceptions() {
+            const { show, season } = this;
+            if (!show.allSceneExceptions || show.allSceneExceptions.length === 0 || show.allSceneExceptions.filter(ex => ex.season === season).length === 0) {
+                return false;
+            }
+
+            const seasonExceptions = show.allSceneExceptions.filter(ex => ex.season === season);
+            if (seasonExceptions.length === 0) {
+                return false;
+            }
+
+            return seasonExceptions[0].exceptions.join(', ');
         }
     },
     mounted() {

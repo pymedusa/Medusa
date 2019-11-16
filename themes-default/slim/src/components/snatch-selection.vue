@@ -110,7 +110,7 @@ export default {
 
         // We need the show info, so let's get it.
         if (!show || !show.id.slug) {
-            getShow({ id, indexer, detailed: false });
+            getShow({ id, indexer, detailed: true });
         }
 
         this.$watch('show', () => {
