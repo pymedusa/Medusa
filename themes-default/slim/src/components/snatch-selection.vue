@@ -25,7 +25,8 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            config: state => state.config
+            config: state => state.config,
+            history: state => state.history
         }),
         ...mapGetters({
             show: 'getCurrentShow',
