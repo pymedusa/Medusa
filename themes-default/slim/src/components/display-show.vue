@@ -1348,6 +1348,7 @@ td.col-footer {
     border-radius: 0;
     border: 1px solid rgba(0, 0, 0, 0.2);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: white;
 }
 
 .modal-body {
