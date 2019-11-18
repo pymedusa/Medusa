@@ -45,6 +45,10 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
 
     features = [NAME, PERMISSIVE, HTML_5, HTML]
 
+    # html5lib can tell us which line number and position in the
+    # original file is the source of an element.
+    TRACKS_LINE_NUMBERS = True
+    
     def prepare_markup(self, markup, user_specified_encoding,
                        document_declared_encoding=None, exclude_encodings=None):
         # Store the user-specified encoding for use later on.
@@ -62,7 +66,7 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
         if self.soup.parse_only is not None:
             warnings.warn("You provided a value for parse_only, but the html5lib tree builder doesn't support parse_only. The entire document will be parsed.")
         parser = html5lib.HTMLParser(tree=self.create_treebuilder)
-
+        self.underlying_builder.parser = parser
         extra_kwargs = dict()
         if not isinstance(markup, unicode):
             if new_html5lib:
@@ -70,7 +74,7 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
             else:
                 extra_kwargs['encoding'] = self.user_specified_encoding
         doc = parser.parse(markup, **extra_kwargs)
-
+        
         # Set the character encoding detected by the tokenizer.
         if isinstance(markup, unicode):
             # We need to special-case this because html5lib sets
@@ -84,10 +88,13 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
                 # with other tree builders.
                 original_encoding = original_encoding.name
             doc.original_encoding = original_encoding
-
+        self.underlying_builder.parser = None
+            
     def create_treebuilder(self, namespaceHTMLElements):
         self.underlying_builder = TreeBuilderForHtml5lib(
-            namespaceHTMLElements, self.soup)
+            namespaceHTMLElements, self.soup,
+            store_line_numbers=self.store_line_numbers
+        )
         return self.underlying_builder
 
     def test_fragment_to_document(self, fragment):
@@ -96,15 +103,26 @@ class HTML5TreeBuilder(HTMLTreeBuilder):
 
 
 class TreeBuilderForHtml5lib(treebuilder_base.TreeBuilder):
-
-    def __init__(self, namespaceHTMLElements, soup=None):
+    
+    def __init__(self, namespaceHTMLElements, soup=None,
+                 store_line_numbers=True, **kwargs):
         if soup:
             self.soup = soup
         else:
             from bs4 import BeautifulSoup
-            self.soup = BeautifulSoup("", "html.parser")
+            # TODO: Why is the parser 'html.parser' here? To avoid an
+            # infinite loop?
+            self.soup = BeautifulSoup(
+                "", "html.parser", store_line_numbers=store_line_numbers,
+                **kwargs
+            )
         super(TreeBuilderForHtml5lib, self).__init__(namespaceHTMLElements)
 
+        # This will be set later to an html5lib.html5parser.HTMLParser
+        # object, which we can use to track the current line number.
+        self.parser = None
+        self.store_line_numbers = store_line_numbers
+        
     def documentClass(self):
         self.soup.reset()
         return Element(self.soup, self.soup, None)
@@ -118,7 +136,16 @@ class TreeBuilderForHtml5lib(treebuilder_base.TreeBuilder):
         self.soup.object_was_parsed(doctype)
 
     def elementClass(self, name, namespace):
-        tag = self.soup.new_tag(name, namespace)
+        kwargs = {}
+        if self.parser and self.store_line_numbers:
+            # This represents the point immediately after the end of the
+            # tag. We don't know when the tag started, but we do know
+            # where it ended -- the character just before this one.
+            sourceline, sourcepos = self.parser.tokenizer.stream.position()
+            kwargs['sourceline'] = sourceline
+            kwargs['sourcepos'] = sourcepos-1
+        tag = self.soup.new_tag(name, namespace, **kwargs)
+
         return Element(tag, self.soup, namespace)
 
     def commentClass(self, data):
@@ -126,6 +153,8 @@ class TreeBuilderForHtml5lib(treebuilder_base.TreeBuilder):
 
     def fragmentClass(self):
         from bs4 import BeautifulSoup
+        # TODO: Why is the parser 'html.parser' here? To avoid an
+        # infinite loop?
         self.soup = BeautifulSoup("", "html.parser")
         self.soup.name = "[document_fragment]"
         return Element(self.soup, self.soup, None)
@@ -199,7 +228,7 @@ class AttrList(object):
     def __setitem__(self, name, value):
         # If this attribute is a multi-valued attribute for this element,
         # turn its value into a list.
-        list_attr = HTML5TreeBuilder.cdata_list_attributes
+        list_attr = self.element.cdata_list_attributes
         if (name in list_attr['*']
             or (self.element.name in list_attr
                 and name in list_attr[self.element.name])):
