@@ -48,7 +48,8 @@ export default {
     },
     methods: {
         ...mapActions({
-            getShow: 'getShow' // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+            getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
+            getHistory: 'getHistory'
         }),
         /**
          * Attaches IMDB tooltip,
@@ -96,6 +97,7 @@ export default {
     },
     mounted() {
         const {
+            getHistory,
             indexer,
             id,
             show,
@@ -108,6 +110,8 @@ export default {
             indexer,
             id
         });
+
+        getHistory();
 
         // We need the show info, so let's get it.
         if (!show || !show.id.slug) {

@@ -4,29 +4,14 @@ import { api } from '../../api';
 import { ADD_HISTORY } from '../mutation-types';
 
 const state = {
-    history: []
+    history: [],
+    page: 0
 };
 
 const mutations = {
     [ADD_HISTORY](state, history) {
-        // Maybe we can just check the last id. And if the id's are newer, add them. Less fancy, much more fast.
-        const existingHistory = state.history.find(row => history.id === row.id);
-
-        if (!existingHistory) {
-            state.history.push(history);
-            return;
-        }
-
-        // Merge new show object over old one
-        // this allows detailed queries to update the record
-        // without the non-detailed removing the extra data
-        const newHistory = {
-            ...existingHistory,
-            ...history
-        };
-
         // Update state
-        Vue.set(state.shows, state.shows.indexOf(existingHistory), newHistory);
+        state.history.push(...history);
     }
 };
 
@@ -65,23 +50,27 @@ const actions = {
         });
     },
     /**
-     * Get shows from API and commit them to the store.
+     * Get history from API and commit them to the store.
      *
      * @param {*} context - The store context.
      * @param {(ShowIdentifier&ShowGetParameters)[]} shows Shows to get. If not provided, gets the first 1k shows.
      * @returns {undefined|Promise} undefined if `shows` was provided or the API response if not.
      */
     async getHistory(context) {
-        const { commit } = context;
+        const { commit, state } = context;
         const limit = 1000;
+        const params = { limit };
 
         let lastPage = false;
         let response = null;
-        while (lastPage) {
-            response = await api.get(`/history`); // No way around this.
-            response.data.forEach(history => {
-                commit(ADD_HISTORY, history);
-            });
+        while (!lastPage) {
+            state.page += 1;
+            params.page = state.page;
+            response = await api.get(`/history`, { params }); // No way around this.
+            // response.data.forEach(history => {
+            //     commit(ADD_HISTORY, history);
+            // });
+            commit(ADD_HISTORY, response.data);
 
             if (response.data.length < limit) {
                 lastPage = true;

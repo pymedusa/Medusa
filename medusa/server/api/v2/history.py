@@ -34,10 +34,12 @@ class HistoryHandler(BaseRequestHandler):
                    provider, version, resource, size, 
                    indexer_id, showid, season, episode
             FROM history 
+            ORDER BY date DESC
         '''
-
-        sql_where = []
         params = []
+
+        arg_page = self._get_page()
+        arg_limit = self._get_limit(default=50)
 
         if series_slug is not None:
             series_identifier = SeriesIdentifier.from_slug(series_slug)
@@ -46,43 +48,40 @@ class HistoryHandler(BaseRequestHandler):
 
             sql_base += ' WHERE indexer_id = ? AND showid = ?'
             params += [series_identifier.indexer.id, series_identifier.id]
-            results = db.DBConnection().select(sql_base, params)
-        else:
-            results = self.paginate_query(sql_base, 'rowid', sql_where, params)
 
-        data = []
-        for item in results:
-            d = {}
-            d['id'] = item['rowid']
+        results = db.DBConnection().select(sql_base, params)
 
-            if item['indexer_id'] and item['showid']:
-                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
+        def data_generator():
+            """Read log lines based on the specified criteria."""
+            start = arg_limit * (arg_page - 1) + 1
 
-            d['status'] = item['action']
-            d['actionDate'] = item['date']
+            for item in results[start - 1:start - 1 + arg_limit]:
+                d = {}
+                d['id'] = item['rowid']
 
-            d['resource'] = basename(item['resource'])
-            d['size'] = item['size']
-            d['statusName'] = statusStrings.get(item['action'])
+                if item['indexer_id'] and item['showid']:
+                    d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
 
-            provider = get_provider_class(GenericProvider.make_id(item['provider']))
-            d['provider'] = {}
-            if provider:
-                d['provider']['id'] = provider.get_id()
-                d['provider']['name'] = provider.name
-                d['provider']['imageName'] = provider.image_name()
+                d['status'] = item['action']
+                d['actionDate'] = item['date']
 
-            data.append(d)
+                d['resource'] = basename(item['resource'])
+                d['size'] = item['size']
+                d['statusName'] = statusStrings.get(item['action'])
 
-        if not data:
+                provider = get_provider_class(GenericProvider.make_id(item['provider']))
+                d['provider'] = {}
+                if provider:
+                    d['provider']['id'] = provider.get_id()
+                    d['provider']['name'] = provider.name
+                    d['provider']['imageName'] = provider.image_name()
+
+                yield d
+
+        if not len(results):
             return self._not_found('History data not found')
 
-        if path_param:
-            if path_param not in data:
-                return self._bad_request('Invalid path parameter')
-            data = data[path_param]
-
-        return self._ok(data=data)
+        return self._paginate(data_generator=data_generator)
 
 
     def delete(self, identifier, **kwargs):
