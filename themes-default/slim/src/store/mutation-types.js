@@ -17,6 +17,7 @@ const ADD_SHOW = '📺 Show added to store';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
 const ADD_HISTORY = '📺 History added to store';
+const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
 
 export {
     LOGIN_PENDING,
@@ -37,5 +38,6 @@ export {
     ADD_HISTORY,
     ADD_SHOW,
     ADD_SHOW_EPISODE,
-    ADD_STATS
+    ADD_STATS,
+    ADD_SHOW_HISTORY
 };

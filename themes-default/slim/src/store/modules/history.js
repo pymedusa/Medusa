@@ -1,22 +1,28 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_HISTORY } from '../mutation-types';
+import { ADD_HISTORY, ADD_SHOW_HISTORY } from '../mutation-types';
 
 const state = {
     history: [],
-    page: 0
+    page: 0,
+    showHistory: {}
 };
 
 const mutations = {
     [ADD_HISTORY](state, history) {
         // Update state
         state.history.push(...history);
+    },
+    [ADD_SHOW_HISTORY](state, { showSlug, history }) {
+        // Keep an array of shows, with their history
+        // Maybe we can just check the last id. And if the id's are newer, add them. Less fancy, much more fast.
+        Vue.set(state.showHistory, showSlug, history);
     }
 };
 
 const getters = {
-    getShowHistoryBySlug: state => showSlug => state.history.find(history => history.series === showSlug)
+    getShowHistoryBySlug: state => showSlug => state.showHistory[showSlug]
 };
 
 /**
@@ -35,19 +41,13 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    getShowHistory(context, { slug }) {
-        return new Promise((resolve, reject) => {
-            const { commit } = context;
+    async getShowHistory(context, { slug }) {
+        const { commit } = context;
 
-            api.get(`/history/${slug}`)
-                .then(res => {
-                    commit(ADD_HISTORY, res.data);
-                    resolve(res.data);
-                })
-                .catch(error => {
-                    reject(error);
-                });
-        });
+        const response = await api.get(`/history/${slug}`);
+        if (response.data.length > 0) {
+            commit(ADD_SHOW_HISTORY, { showSlug: slug, history: response.data });
+        }
     },
     /**
      * Get history from API and commit them to the store.
@@ -67,9 +67,6 @@ const actions = {
             state.page += 1;
             params.page = state.page;
             response = await api.get(`/history`, { params }); // No way around this.
-            // response.data.forEach(history => {
-            //     commit(ADD_HISTORY, history);
-            // });
             commit(ADD_HISTORY, response.data);
 
             if (response.data.length < limit) {

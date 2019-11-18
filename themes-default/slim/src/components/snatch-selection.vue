@@ -2,13 +2,15 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink } from './helpers';
 import ShowHeader from './show-header.vue';
+import ShowHistory from './show-history.vue';
 
 export default {
     name: 'snatch-selection',
     template: '#snatch-selection-template',
     components: {
         AppLink,
-        ShowHeader
+        ShowHeader,
+        ShowHistory
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -31,7 +33,8 @@ export default {
         ...mapGetters({
             show: 'getCurrentShow',
             effectiveIgnored: 'effectiveIgnored',
-            effectiveRequired: 'effectiveRequired'
+            effectiveRequired: 'effectiveRequired',
+            getShowHistoryBySlug: 'getShowHistoryBySlug'
         }),
         indexer() {
             return this.$route.query.indexername;
@@ -44,6 +47,14 @@ export default {
         },
         episode() {
             return Number(this.$route.query.episode) || undefined;
+        },
+        showHistory() {
+            const { getShowHistoryBySlug, show } = this;
+            if (!show) {
+                return;
+            }
+            const history = getShowHistoryBySlug(show.id.slug);
+            return history;
         }
     },
     methods: {

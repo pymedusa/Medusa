@@ -18,6 +18,7 @@ export { default as Logs } from './logs.vue';
 export { default as ManualPostProcess } from './manual-post-process.vue';
 export { default as RootDirs } from './root-dirs.vue';
 export { default as ShowHeader } from './show-header.vue';
+export { default as ShowHistory } from './show-history.vue';
 export { default as SnatchSelection } from './snatch-selection.vue';
 export { default as Status } from './status.vue';
 export { default as SubMenu } from './sub-menu.vue';
