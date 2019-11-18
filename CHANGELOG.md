@@ -1,8 +1,4 @@
-## Unreleased
-
-#### New Features
-
-#### Improvements
+## 0.3.7 (2019-11-18)
 
 #### Fixes
 - Fixed broken TheTVDB caused by API v3 changes ([#7355](https://github.com/pymedusa/Medusa/pull/7355))
