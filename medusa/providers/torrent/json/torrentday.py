@@ -16,6 +16,8 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
+import validators
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -29,11 +31,7 @@ class TorrentDayProvider(TorrentProvider):
 
         # URLs
         self.url = 'https://www.torrentday.com'
-        self.urls = {
-            'login': urljoin(self.url, '/torrents/'),
-            'search': urljoin(self.url, '/t.json'),
-            'download': urljoin(self.url, '/download.php/')
-        }
+        self.custom_url = None
 
         # Proper Strings
 
@@ -73,6 +71,19 @@ class TorrentDayProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.custom_url:
+            if not validators.url(self.custom_url):
+                log.warning('Invalid custom url: {0}', self.custom_url)
+                return results
+            self.url = self.custom_url
+
+        self.urls = {
+            'login': urljoin(self.url, '/torrents/'),
+            'search': urljoin(self.url, '/t.json'),
+            'download': urljoin(self.url, '/download.php/')
+        }
+
         if not self.login():
             return results
 

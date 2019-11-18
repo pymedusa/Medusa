@@ -3,6 +3,9 @@ import Vue from 'vue';
 import AsyncComputed from 'vue-async-computed';
 import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
+import VueCookies from 'vue-cookies';
+import VModal from 'vue-js-modal';
+import { VTooltip } from 'v-tooltip';
 
 import {
     AddShowOptions,
@@ -26,7 +29,6 @@ import {
     RootDirs,
     ScrollButtons,
     SelectList,
-    Show,
     ShowSelector,
     SnatchSelection,
     StateSwitch,
@@ -84,7 +86,6 @@ export const registerGlobalComponents = () => {
     components = components.concat([
         Home,
         ManualPostProcess,
-        Show,
         SnatchSelection,
         Status
     ]);
@@ -105,6 +106,12 @@ export const registerPlugins = () => {
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
     Vue.use(Snotify);
+    Vue.use(VueCookies);
+    Vue.use(VModal);
+    Vue.use(VTooltip);
+
+    // Set default cookie expire time
+    VueCookies.config('10y');
 };
 
 /**

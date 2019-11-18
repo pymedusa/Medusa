@@ -54,6 +54,37 @@ const getters = {
         }
         return state.statuses.find(status => key === status.key || value === status.value);
     },
+    // Get an episode overview status using the episode status and quality
+    // eslint-disable-next-line no-unused-vars
+    getOverviewStatus: _state => (status, quality, showQualities) => {
+        if (['Unset', 'Unaired'].includes(status)) {
+            return 'Unaired';
+        }
+
+        if (['Skipped', 'Ignored'].includes(status)) {
+            return 'Skipped';
+        }
+
+        if (['Wanted', 'Failed'].includes(status)) {
+            return 'Wanted';
+        }
+
+        if (['Snatched', 'Snatched (Proper)', 'Snatched (Best)'].includes(status)) {
+            return 'Snatched';
+        }
+
+        if (['Downloaded'].includes(status)) {
+            if (showQualities.preferred.includes(quality)) {
+                return 'Preferred';
+            }
+
+            if (showQualities.allowed.includes(quality)) {
+                return 'Allowed';
+            }
+        }
+
+        return status;
+    },
     splitQuality: state => {
         /**
          * Split a combined quality to allowed and preferred qualities.

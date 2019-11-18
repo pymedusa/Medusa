@@ -114,7 +114,6 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
         result = create_search_result(
             provider=search_provider(**provider_attrs),
             series=series,
-            episodes=[tvepisode],
             **item
         )
 
@@ -434,8 +433,7 @@ def test_pick_result(p, app_config, create_search_result, search_provider, creat
     make_result = functools.partial(
         create_search_result,
         provider=search_provider(**provider_attrs),
-        series=series,
-        episodes=[tvepisode]
+        series=series
     )
 
     results = [make_result(**item) for item in p['results']]

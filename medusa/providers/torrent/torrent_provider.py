@@ -42,6 +42,13 @@ class TorrentProvider(GenericProvider):
         """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()
 
+    def get_result(self, series, item=None, cache=None):
+        """Get result."""
+        search_result = TorrentSearchResult(provider=self, series=series,
+                                            item=item, cache=cache)
+
+        return search_result
+
     @property
     def _custom_trackers(self):
         """Check if provider has custom trackers."""
@@ -49,10 +56,6 @@ class TorrentProvider(GenericProvider):
             return ''
 
         return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST if x.strip())
-
-    def _get_result(self, episodes):
-        """Return a provider result object."""
-        return TorrentSearchResult(episodes, provider=self)
 
     def _get_size(self, item):
         """Get result size."""

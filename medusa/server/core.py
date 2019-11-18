@@ -77,6 +77,7 @@ def clean_url_path(*args, **kwargs):
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
+
         # Order: Most specific to most generic
 
         # /api/v2/search

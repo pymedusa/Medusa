@@ -970,7 +970,6 @@ class Application(object):
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
-            app.DISPLAY_ALL_SEASONS = bool(check_setting_int(app.CFG, 'General', 'display_all_seasons', 1))
             app.RECENTLY_DELETED = set()
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
@@ -1602,7 +1601,6 @@ class Application(object):
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
         new_config['General']['python_version'] = app.PYTHON_VERSION
-        new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
