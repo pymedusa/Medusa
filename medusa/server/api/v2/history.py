@@ -34,7 +34,6 @@ class HistoryHandler(BaseRequestHandler):
                    provider, version, resource, size, 
                    indexer_id, showid, season, episode
             FROM history 
-            ORDER BY date DESC
         '''
         params = []
 
@@ -49,6 +48,7 @@ class HistoryHandler(BaseRequestHandler):
             sql_base += ' WHERE indexer_id = ? AND showid = ?'
             params += [series_identifier.indexer.id, series_identifier.id]
 
+        sql_base += ' ORDER BY date DESC'
         results = db.DBConnection().select(sql_base, params)
 
         def data_generator():
@@ -68,6 +68,8 @@ class HistoryHandler(BaseRequestHandler):
                 d['resource'] = basename(item['resource'])
                 d['size'] = item['size']
                 d['statusName'] = statusStrings.get(item['action'])
+                d['season'] = item['season']
+                d['episode'] = item['episode']
 
                 provider = get_provider_class(GenericProvider.make_id(item['provider']))
                 d['provider'] = {}
