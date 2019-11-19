@@ -2,25 +2,16 @@
 """Request handler for series and episodes."""
 from __future__ import unicode_literals
 
+import datetime
+from dateutil import parser
 import logging
 
-from medusa import ws
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
-    BooleanField,
-    IntegerField,
-    ListField,
-    StringField,
-    iter_nested_items,
-    set_nested_value
 )
 from medusa import providers
-from medusa.tv.series import Series, SeriesIdentifier
 
-from six import itervalues, viewitems
-
-from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -32,26 +23,72 @@ class ProvidersHandler(BaseRequestHandler):
     #: resource name
     name = 'providers'
     #: identifier
-    identifier = ('provider', r'\w+')
+    identifier = ('identifier', r'\w+')
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
-    def get(self, provider, path_param=None):
+    def get(self, identifier, path_param=None):
         """Query provider information.
 
         Return a list of provider id's.
 
-        :param series_slug: series slug. E.g.: tvdb1234
+        :param identifier: provider id. E.g.: myawesomeprovider
         :param path_param:
         """
-        # arg_paused = self._parse_boolean(self.get_argument('paused', default=None))
-        #
-        # def filter_series(current):
-        #     return arg_paused is None or current.paused == arg_paused
 
-        if not provider:
+        show_slug = self._parse(self.get_argument('showslug', default=None), str)
+        season = self._parse(self.get_argument('season', default=None), str)
+        episode = self._parse(self.get_argument('episode', default=None), str)
+
+        if not identifier:
             # return a list of provider id's
             provider_list = providers.sorted_provider_list()
             return self._ok([provider.to_json() for provider in provider_list])
+
+        provider = providers.get_provider_class(identifier)
+        if not provider:
+            return self._not_found('Provider not found')
+
+        if not path_param == 'results':
+            return self._bad_request('You need to provide the path_param `results` for this route')
+
+        provider_results = provider.cache.get_results(show_slug=show_slug, season=season, episode=episode)
+
+        arg_page = self._get_page()
+        arg_limit = self._get_limit(default=50)
+        def data_generator():
+            """Read log lines based on the specified criteria."""
+            start = arg_limit * (arg_page - 1) + 1
+
+            for item in provider_results[start - 1:start - 1 + arg_limit]:
+                yield {
+                    'identifier': item['identifier'],
+                    'release': item['name'],
+                    'season': item['season'],
+                    'episodes': [int(ep) for ep in item['episodes'].strip('|').split('|') if ep != ''],
+                    'seasonPack': item['episodes'] == '||',
+                    'indexer': item['indexer'],
+                    'seriesId': item['indexerid'],
+                    'showSlug': identifier,
+                    'url': item['url'],
+                    'time': datetime.datetime.fromtimestamp(item['time']),
+                    'quality': item['quality'],
+                    'releaseGroup': item['release_group'],
+                    'dateAdded':  datetime.datetime.fromtimestamp(item['date_added']),
+                    'version': item['version'],
+                    'seeders': item['seeders'],
+                    'leechers': item['leechers'],
+                    'pubdate': parser.parse(item['pubdate']),
+                    'provider': {
+                        'id': provider.get_id(),
+                        'name': provider.name,
+                        'imageName': provider.image_name()
+                    }
+                }
+
+        if not len(provider_results):
+            return self._not_found('Provider cache results not found')
+
+        return self._paginate(data_generator=data_generator)

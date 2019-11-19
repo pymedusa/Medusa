@@ -28,6 +28,7 @@ from medusa.rss_feeds import getFeed
 from medusa.search import FORCED_SEARCH
 from medusa.show import naming
 from medusa.show.show import Show
+from medusa.tv.series import SeriesIdentifier
 
 from six import text_type, viewitems
 
@@ -621,3 +622,38 @@ class Cache(object):
         self.searched = time()
 
         return cache_results
+
+    def get_results(self, show_slug=None, season=None, episode=None):
+        """Get cached results for this provider."""
+        cache_db_con = self._get_db()
+
+        param = []
+        where = []
+
+        if show_slug:
+            show = SeriesIdentifier.from_slug(show_slug)
+            where += ['indexer', 'indexerid']
+            param += [show.indexer.id, show.id]
+
+        if season:
+            where += ['season']
+            param += [season]
+
+        if episode:
+            where += ['episode']
+            param += [episode]
+
+        base_sql = 'SELECT * FROM [{name}]'.format(name=self.provider_id)
+        base_params = []
+
+        if where and param:
+            base_sql += ' WHERE '
+            base_sql += ' AND '.join([item + ' = ? ' for item in where])
+            base_params += param
+
+        results = cache_db_con.select(
+            base_sql,
+            base_params
+        )
+
+        return results

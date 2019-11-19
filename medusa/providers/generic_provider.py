@@ -874,12 +874,18 @@ class GenericProvider(object):
                         'enabled': self.enable_backlog
                     },
                     'daily': {
-                        'enabled': self.enable_backlog
+                        'enabled': self.enable_backlog,
+                        'maxRecentItems': self.max_recent_items,
+                        'stopAt': self.stop_at
                     },
                     'fallback': self.search_fallback,
                     'mode': self.search_mode,
                     'separator': self.search_separator,
-                    'delay': self.search_delay
+                    'seasonTemplates': self.season_templates,
+                    'delay': {
+                        'enabled': self.enable_search_delay,
+                        'duration': self.search_delay
+                    }
                 }
             },
             'animeOnly': self.anime_only,
@@ -891,5 +897,9 @@ class GenericProvider(object):
             'supportsAbsoluteNumbering': self.supports_absolute_numbering,
             'supportsBacklog': self.supports_backlog,
             'url': self.url,
-            'urls': self.urls
+            'urls': self.urls,
+            'cookies': {
+                'enabled': self.enable_cookies,
+                'required': self.cookies
+            }
         }
