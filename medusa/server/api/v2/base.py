@@ -573,7 +573,7 @@ class FloatField(PatchField):
                  setter=None, post_processor=None):
         """Constructor."""
         super(FloatField, self).__init__(target, attr, (int, float), validator=validator, converter=converter,
-                                           default_value=default_value, setter=setter, post_processor=post_processor)
+                                         default_value=default_value, setter=setter, post_processor=post_processor)
 
 
 class ListField(PatchField):
