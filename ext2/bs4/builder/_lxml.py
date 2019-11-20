@@ -57,6 +57,12 @@ class LXMLTreeBuilderForXML(TreeBuilder):
 
     DEFAULT_NSMAPS_INVERTED = _invert(DEFAULT_NSMAPS)
 
+    # NOTE: If we parsed Element objects and looked at .sourceline,
+    # we'd be able to see the line numbers from the original document.
+    # But instead we build an XMLParser or HTMLParser object to serve
+    # as the target of parse messages, and those messages don't include
+    # line numbers.
+    
     def initialize_soup(self, soup):
         """Let the BeautifulSoup object know about the standard namespace
         mapping.
@@ -94,7 +100,7 @@ class LXMLTreeBuilderForXML(TreeBuilder):
             parser = parser(target=self, strip_cdata=False, encoding=encoding)
         return parser
 
-    def __init__(self, parser=None, empty_element_tags=None):
+    def __init__(self, parser=None, empty_element_tags=None, **kwargs):
         # TODO: Issue a warning if parser is present but not a
         # callable, since that means there's no way to create new
         # parsers for different encodings.
@@ -103,6 +109,7 @@ class LXMLTreeBuilderForXML(TreeBuilder):
             self.empty_element_tags = set(empty_element_tags)
         self.soup = None
         self.nsmaps = [self.DEFAULT_NSMAPS_INVERTED]
+        super(LXMLTreeBuilderForXML, self).__init__(**kwargs)
         
     def _getNsTag(self, tag):
         # Split the namespace URL out of a fully-qualified lxml tag
@@ -168,7 +175,7 @@ class LXMLTreeBuilderForXML(TreeBuilder):
                     self.parser.feed(data)
             self.parser.close()
         except (UnicodeDecodeError, LookupError, etree.ParserError), e:
-            raise ParserRejectedMarkup(str(e))
+            raise ParserRejectedMarkup(e)
 
     def close(self):
         self.nsmaps = [self.DEFAULT_NSMAPS_INVERTED]
@@ -287,7 +294,7 @@ class LXMLTreeBuilder(HTMLTreeBuilder, LXMLTreeBuilderForXML):
             self.parser.feed(markup)
             self.parser.close()
         except (UnicodeDecodeError, LookupError, etree.ParserError), e:
-            raise ParserRejectedMarkup(str(e))
+            raise ParserRejectedMarkup(e)
 
 
     def test_fragment_to_document(self, fragment):

@@ -89,6 +89,7 @@ from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown
+from medusa.tv.cache import Cache
 from medusa.tv.series import Series, SeriesIdentifier
 from medusa.updater.version_checker import CheckVersion
 
@@ -794,19 +795,12 @@ class Home(WebRoot):
 
         @return: A json with a {'success': true} or false.
         """
-
         # Try to retrieve the cached result from the providers cache table.
         # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+        provider_obj = providers.get_provider_class(provider)
 
         try:
-            main_db_con = db.DBConnection('cache.db')
-            cached_result = main_db_con.action(
-                'SELECT * '
-                "FROM '{provider}' "
-                'WHERE rowid = ?'.format(provider=provider),
-                [rowid],
-                fetchone=True
-            )
+            cached_result = Cache(provider_obj).load_from_row(rowid)
         except Exception as msg:
             error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
@@ -830,23 +824,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Could not find a show with id {0} in the list of shows, '
                                                  'did you remove the show?'.format(cached_result['indexerid']))
 
-        # Create a list of episode object(s)
-        # Multi-episode: |1|2|
-        # Single-episode: |1|
-        # Season pack: || so we need to get all episodes from season and create all ep objects
-        ep_objs = []
-        result_episodes = cached_result['episodes'].strip('|')
-        if result_episodes:
-            for episode in result_episodes.split('|'):
-                ep_objs.append(series_obj.get_episode(int(cached_result['season']), int(episode)))
-        else:
-            ep_objs.extend(series_obj.get_all_episodes([int(cached_result['season'])]))
-
-        search_result = providers.get_provider_class(provider).get_result(ep_objs)
-
-        # Map the db fields to result attributes
-        search_result.update_from_db(series_obj, ep_objs, cached_result)
-
+        search_result = provider_obj.get_result(series=series_obj, cache=cached_result)
         search_result.search_type = SearchType.MANUAL_SEARCH
 
         # Create the queue item

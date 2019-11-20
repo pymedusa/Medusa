@@ -36,7 +36,7 @@ load_rc_config ${name}
 : ${medusa_datadir:="${medusa_dir}"}
 
 pidfile="/var/run/PyMedusa/Medusa.pid"
-command="/usr/local/bin/python2.7"
+command="/usr/local/bin/python3"
 command_args="${medusa_dir}/start.py --datadir ${medusa_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
 
 start_precmd="medusa_prestart"

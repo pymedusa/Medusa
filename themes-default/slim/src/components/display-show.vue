@@ -1,7 +1,7 @@
 <template>
     <div class="display-show-template" :class="theme">
         <vue-snotify />
-        <backstretch v-if="layout.fanartBackground" v-bind="{indexer, id}" />
+        <backstretch v-if="show.id.slug" :slug="show.id.slug" />
         <input type="hidden" id="series-id" value="">
         <input type="hidden" id="indexer-name" value="">
         <input type="hidden" id="series-slug" value="">
@@ -58,10 +58,11 @@
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
                             {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
                             <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
-                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&amp;season=' + props.row.season + '&amp;episode=1&amp;manual_search_type=season'">
+                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
                                 <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
                             </app-link>
                             <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
+                            <img v-bind="getSeasonExceptions(props.row.season)">
                         </h3>
                     </template>
 
@@ -538,9 +539,6 @@ export default {
 
             setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
         });
-
-        // Get the season exceptions and the xem season mappings.
-        // getSeasonSceneExceptions();
     },
     methods: {
         humanFileSize,
@@ -950,15 +948,15 @@ export default {
             }
 
             // Check if there is a season exception for this season
-            if (allSceneExceptions[season]) {
+            if (allSceneExceptions.find(x => x.season === season)) {
                 // If there is not a match on the xem table, display it as a medusa scene exception
                 bindData = {
                     id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
                     alt: foundInXem ? '[xem]' : '[medusa]',
                     src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
-                    title: xemSeasons.reduce((a, b) => {
-                        return a.concat(allSceneExceptions[b]);
-                    }, []).join(', ')
+                    title: foundInXem ? xemSeasons.reduce((a, b) => {
+                        return a.concat(allSceneExceptions.find(x => x.season === b).exceptions);
+                    }, []).join(', ') : allSceneExceptions.find(x => x.season === season).exceptions.join(', ')
                 };
             }
 
@@ -1351,6 +1349,7 @@ td.col-footer {
     border-radius: 0;
     border: 1px solid rgba(0, 0, 0, 0.2);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: white;
 }
 
 .modal-body {
