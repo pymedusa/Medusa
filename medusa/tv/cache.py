@@ -509,7 +509,6 @@ class Cache(object):
                     search_result.actual_season,
                     search_result.actual_episodes,
                     search_result.quality,
-                    forced_search=search_result.forced_search,
                     download_current_quality=search_result.download_current_quality,
                     search_type=search_result.search_type)
 

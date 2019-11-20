@@ -97,6 +97,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.sbdatetime import sbdatetime
+from medusa.search import FORCED_SEARCH
 from medusa.scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from medusa.scene_numbering import (
     get_scene_absolute_numbering_for_show, get_scene_numbering_for_show,
@@ -2260,7 +2261,7 @@ class Series(TV):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
-    def want_episode(self, season, episode, quality, forced_search=False,
+    def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):
         """Whether or not the episode with the specified quality is wanted.
 
@@ -2279,6 +2280,8 @@ class Series(TV):
         :return:
         :rtype: bool
         """
+        forced_search = True if search_type == FORCED_SEARCH else False
+
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = self.current_qualities
         log.debug(
@@ -2357,14 +2360,13 @@ class Series(TV):
         )
         return should_replace
 
-    def want_episodes(self, season, episodes, quality, forced_search=False,
+    def want_episodes(self, season, episodes, quality,
                       download_current_quality=False, search_type=None):
         if not episodes:
             episodes = list(self.episodes[season].keys())
 
         wanted_episodes = [
             self.want_episode(season, episode, quality,
-                              forced_search=forced_search,
                               download_current_quality=download_current_quality,
                               search_type=search_type)
             for episode in episodes

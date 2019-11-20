@@ -48,7 +48,6 @@ from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.search import FORCED_SEARCH
 from medusa.show import naming
 
 from six import iteritems, itervalues
@@ -279,7 +278,6 @@ def filter_results(results):
             cur_result.actual_season,
             cur_result.actual_episodes,
             cur_result.quality,
-            forced_search=cur_result.forced_search,
             download_current_quality=cur_result.download_current_quality,
             search_type=cur_result.search_type)
 
