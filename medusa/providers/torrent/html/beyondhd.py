@@ -13,7 +13,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -26,8 +25,9 @@ class BeyondHDProvider(TorrentProvider):
         """Initialize the class."""
         super(BeyondHDProvider, self).__init__('Beyond-HD')
 
-        self.username = None
-        self.password = None
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies = ('remember_web_[**long_hash**]',)
 
         self.url = 'https://beyond-hd.me'
         self.urls = {
@@ -99,8 +99,18 @@ class BeyondHDProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='table-striped')
+            if html.find('div', class_='table-torrents'):
+                theme = 'modern'
+                torrent_table = html.find('div', class_='table-torrents').find('table')
+            else:
+                theme = 'classic'
+                torrent_table = html.find('div', class_='table-responsive').find('table')
+
             torrent_rows = torrent_table('tr') if torrent_table else []
+            labels = [label.get_text(strip=True) for label in torrent_rows[0]('th')]
+            # For the classic theme, the tr don't match the td.
+            if theme == 'classic':
+                del labels[3]
 
             # Continue only if one release is found
             if len(torrent_rows) < 2:
@@ -111,14 +121,17 @@ class BeyondHDProvider(TorrentProvider):
                 cells = result('td')
 
                 try:
+                    if len(cells) < 2:
+                        continue
+
                     link = cells[1].find('a')
                     download_url = urljoin(self.url, cells[2].find('a')['href'])
                     title = link.get_text(strip=True)
                     if not all([title, download_url]):
                         continue
 
-                    seeders = int(cells[6].find('span').get_text())
-                    leechers = int(cells[7].find('span').get_text())
+                    seeders = int(cells[labels.index('S')].find('span').get_text())
+                    leechers = int(cells[labels.index('L')].find('span').get_text())
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
@@ -128,10 +141,10 @@ class BeyondHDProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[5].find('span').get_text()
+                    torrent_size = cells[labels.index('Size')].find('span').get_text()
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = cells[4].find('span').get_text()
+                    pubdate_raw = cells[labels.index('Age')].find('span').get_text()
                     pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
@@ -154,33 +167,16 @@ class BeyondHDProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
+        return self.cookie_login('Login now')
 
-        if 'pass' in dict_from_cookiejar(self.session.cookies):
-            return True
+    def check_required_cookies(self):
+        """
+        Check if we have the required cookies in the requests sessions object.
 
-        login_html = self.session.get(self.urls['login'])
-        with BS4Parser(login_html.text, 'html5lib') as html:
-            token = html.find('input', attrs={'name': '_token'}).get('value')
-
-        login_params = {
-            '_token': token,
-            'username': self.username,
-            'password': self.password,
-            'remember': 'on',
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if 'These credentials do not match our records.' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        return True
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
+        Note! This doesn't mean the cookies are correct!
+        """
+        return False
 
 
 provider = BeyondHDProvider()

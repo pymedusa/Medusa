@@ -48,6 +48,7 @@ from medusa.helpers import chmod_as_parent
 from medusa.helpers.utils import to_timestamp
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
+from medusa.search import FORCED_SEARCH
 from medusa.show import naming
 
 from six import iteritems, itervalues
@@ -263,7 +264,7 @@ def filter_results(results):
         series_obj = cur_result.series
 
         # build the black and white list
-        if series_obj.is_anime:
+        if series_obj.is_anime and series_obj.release_groups:
             if not series_obj.release_groups.is_valid(cur_result):
                 continue
 

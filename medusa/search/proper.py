@@ -198,14 +198,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # Map our Proper instance
             cur_proper.series = cur_proper.parse_result.series
-            cur_proper.actual_season = cur_proper.parse_result.season_number \
-                if cur_proper.parse_result.season_number is not None else 1
+            cur_proper.actual_season = cur_proper.parse_result.season_number
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
             cur_proper.release_group = cur_proper.parse_result.release_group
             cur_proper.version = cur_proper.parse_result.version
             cur_proper.quality = cur_proper.parse_result.quality
-            cur_proper.content = None
             cur_proper.proper_tags = cur_proper.parse_result.proper_tags
+
+            cur_proper.update_search_result()
 
             # filter release, in this case, it's just a quality gate. As we only send one result.
             wanted_results = filter_results(cur_proper)
@@ -377,7 +377,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     break
 
             else:
-                candidate.create_episode_object()
                 # snatch it
                 snatch_episode(candidate)
 

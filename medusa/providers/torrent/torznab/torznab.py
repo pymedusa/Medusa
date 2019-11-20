@@ -54,6 +54,9 @@ class TorznabProvider(TorrentProvider):
             'Season {season}',  # example: 'Series.Name Season 3'
         )
 
+        # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
+
         self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, force_query=False, manual_search=False, **kwargs):
@@ -225,6 +228,15 @@ class TorznabProvider(TorrentProvider):
     def get_providers_list(providers):
         """Return custom rss torrent providers."""
         return [TorznabProvider(custom_provider) for custom_provider in providers]
+
+    @staticmethod
+    def _get_identifier(item):
+        """
+        Return the identifier for the item.
+
+        By default this is the url. Providers can overwrite this, when needed.
+        """
+        return '{name}_{size}'.format(name=item.name, size=item.size)
 
     def image_name(self):
         """

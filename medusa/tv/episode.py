@@ -243,6 +243,7 @@ class Episode(TV):
         self.name = ''
         self.season = season
         self.episode = episode
+        self.slug = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
         self.absolute_number = 0
         self.description = ''
         self.subtitles = []
@@ -1074,7 +1075,7 @@ class Episode(TV):
         data = {}
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
-        data['slug'] = 's{season:02d}e{episode:02d}'.format(season=self.season, episode=self.episode)
+        data['slug'] = self.slug
         data['season'] = self.season
         data['episode'] = self.episode
 
@@ -1103,6 +1104,7 @@ class Episode(TV):
 
         data['file'] = {}
         data['file']['location'] = self.location
+        data['file']['name'] = os.path.basename(self.location)
         if self.file_size:
             data['file']['size'] = self.file_size
 

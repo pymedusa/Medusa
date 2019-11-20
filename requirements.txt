@@ -1,6 +1,6 @@
-adba @ https://codeload.github.com/pymedusa/adba/tar.gz/112c04b50d318802b4a0c7924f8e26aaf9e60a5b#egg=adba
+adba @ https://codeload.github.com/pymedusa/adba/tar.gz/6efeff3a6bdcb6d45a4a79f424939ade2930e5f0#egg=adba
 babelfish @ https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cfaaae80be9f309fd85c7f20c9#egg=babelfish
-beautifulsoup4==4.7.1
+beautifulsoup4==4.8.1
 bencode.py==2.1.0
 CacheControl==0.12.5
 certifi==2019.6.16
