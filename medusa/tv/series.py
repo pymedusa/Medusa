@@ -2373,6 +2373,7 @@ class Series(TV):
 
         Returns:
             bool: Whether the episode(s) are wanted.
+
         """
         wanted_episodes = [
             self.want_episode(season, episode, quality,
