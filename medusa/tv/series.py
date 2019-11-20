@@ -2362,9 +2362,6 @@ class Series(TV):
 
     def want_episodes(self, season, episodes, quality,
                       download_current_quality=False, search_type=None):
-        if not episodes:
-            episodes = list(self.episodes[season].keys())
-
         wanted_episodes = [
             self.want_episode(season, episode, quality,
                               download_current_quality=download_current_quality,
