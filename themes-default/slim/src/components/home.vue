@@ -20,7 +20,7 @@ export default {
             ],
             postSortDirOptions: [
                 { value: '0', text: 'Descending' },
-                { value: '1', text: 'Ascending' },
+                { value: '1', text: 'Ascending' }
             ]
         };
     },

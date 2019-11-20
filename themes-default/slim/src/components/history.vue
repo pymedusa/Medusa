@@ -8,9 +8,9 @@ export default {
         return {
             layoutOptions: [
                 { value: 'compact', text: 'Compact' },
-                { value: 'detailed', text: 'Detailed' },
+                { value: 'detailed', text: 'Detailed' }
             ]
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -56,7 +56,7 @@ export default {
                     };
                     if (config.subtitles.enabled) {
                         // 4: Subtitled, 5: Quality
-                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'),
+                        compactExtract[4] = node => $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title');
                         compactExtract[5] = node => $(node).attr('quality');
                     } else {
                         // 4: Quality

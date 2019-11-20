@@ -55,7 +55,7 @@ export default {
                     show: 2,
                     network: 5
                 };
-                const sort = comingEps.sort;
+                const { sort } = comingEps;
                 const sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
                 $('#showListTable:has(tbody tr)').tablesorter({

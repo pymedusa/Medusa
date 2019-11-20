@@ -419,9 +419,9 @@
                                     </config-template>
 
                                     <config-template label-for="date_presets" label="GitHub authentication type">
-                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value.integer="0" v-model="config.git.authType">
+                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value="0" v-model="config.git.authType">
                                         <label for="one">Username and password</label>
-                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value.integer="1" v-model="config.git.authType">
+                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value="1" v-model="config.git.authType">
                                         <label for="one">Personal access token</label>
                                         <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
                                     </config-template>
