@@ -254,7 +254,7 @@ exports[`Logs.test.js renders 1`] = `
   </div>
    
   <pre
-    class="col-md-12"
+    class="col-md-12 fanartOpacity"
   >
     <div
       class="notepad"
@@ -301,6 +301,8 @@ RuntimeError: generator didn't yield
     </div>
   </pre>
    
-  <backstretch-stub />
+  <backstretch-stub
+    slug="tvdb294002"
+  />
 </div>
 `;

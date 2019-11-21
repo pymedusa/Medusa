@@ -268,34 +268,23 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
              
+            <!---->
+             
             <li>
               <app-link-stub
-                href="home/updatePLEX/"
+                href="home/updateKODI/"
                 placeholder="indexer-to-name"
               >
                 <i
-                  class="menu-icon-plex"
+                  class="menu-icon-kodi"
                 />
-                 Update PLEX
+                 Update KODI
               </app-link-stub>
             </li>
              
             <!---->
              
             <!---->
-             
-            <li>
-              <app-link-stub
-                href="manage/manageTorrents/"
-                placeholder="indexer-to-name"
-                target="_blank"
-              >
-                <i
-                  class="menu-icon-bittorrent"
-                />
-                 Manage Torrents
-              </app-link-stub>
-            </li>
              
             <li>
               <app-link-stub
@@ -321,17 +310,7 @@ exports[`AppHeader.test.js renders 1`] = `
               </app-link-stub>
             </li>
              
-            <li>
-              <app-link-stub
-                href="manage/subtitleMissedPP/"
-                placeholder="indexer-to-name"
-              >
-                <i
-                  class="menu-icon-backlog"
-                />
-                 Missed Subtitle in Post-Process folder
-              </app-link-stub>
-            </li>
+            <!---->
           </ul>
            
           <div
