@@ -15,7 +15,7 @@
                     Memory used: <span class="footerhighlight">{{ system.memoryUsage }}</span> |
                 </template>
                 <!-- Load time: <span class="footerhighlight">{{ loadTime }}s</span> / Mako: <span class="footerhighlight">{{ makoTime }}s</span> | -->
-                Branch: <span class="footerhighlight">{{ config.branch || 'Unknown' }}</span> |
+                Branch: <span class="footerhighlight">{{ system.branch || 'Unknown' }}</span> |
                 Now: <span class="footerhighlight">{{ nowInUserPreset }}</span>
             </div>
         </div>

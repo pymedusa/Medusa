@@ -13,7 +13,7 @@
                     <span v-else>Unknown</span>
                     <br>
                     Version:
-                    <span v-if="system.release"><app-link :href="`${config.sourceUrl}/releases/tag/v${config.release}`">{{system.release}}</app-link></span>
+                    <span v-if="system.release"><app-link :href="`${config.sourceUrl}/releases/tag/v${system.release}`">{{system.release}}</app-link></span>
                     <span v-else>Unknown</span>
                     <br>
                     Database:
