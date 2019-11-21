@@ -1,5 +1,5 @@
 import browserEnv from 'browser-env';
-import $ from 'jquery';
+import $ from '../__mocks__/jquery';
 
 // Setup browser environment
 browserEnv({
