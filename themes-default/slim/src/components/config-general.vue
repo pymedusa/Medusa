@@ -31,12 +31,10 @@
 
                                     <config-template label-for="trash_remove_show" label="Send to trash for actions">
                                         <label for="trash_remove_show" class="nextline-block">
-                                            <!-- <input type="checkbox" name="trash_remove_show" id="trash_remove_show" 'checked="checked"' if app.TRASH_REMOVE_SHOW else ''}/> -->
                                             <toggle-button :width="45" :height="22" id="trash_remove_show" name="trash_remove_show" v-model="config.trashRemoveShow" sync />
                                             <p>when using show "Remove" and delete files</p>
                                         </label>
                                         <label for="trash_rotate_logs" class="nextline-block">
-                                            <!-- <input type="checkbox" name="trash_rotate_logs" id="trash_rotate_logs" 'checked="checked"' if app.TRASH_ROTATE_LOGS else ''}/> -->
                                             <toggle-button :width="45" :height="22" id="trash_rotate_logs" name="trash_rotate_logs" v-model="config.trashRotateLogs" sync />
                                             <p>on scheduled deletes of the oldest log files</p>
                                         </label>
@@ -426,7 +424,7 @@
                                         <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
                                     </config-template>
 
-                                    <div v-if="config.git.authType === 0">
+                                    <div v-show="config.git.authType === 0">
                                         <!-- username + password authentication -->
                                         <config-textbox v-model="config.git.username" label="GitHub username" id="git_username">
                                             <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
@@ -435,11 +433,37 @@
                                             <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
                                         </config-textbox>
                                     </div>
-                                    <div v-else>
+                                    <div v-show="config.git.authType !== 0">
                                         <!-- Token authentication -->
-                                        <config-textbox v-model="config.git.token" label="GitHub personal access token" id="git_token" input-class="display-inline margin-bottom-5">
-                                            <input v-if="config.git.token === ''" class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
-                                            <input v-else class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                        <config-textbox v-model="config.git.token" @focus.native="$event.target.select()" label="GitHub personal access token" id="git_token" input-class="display-inline margin-bottom-5">
+                                            <template v-if="config.git.token === ''">
+                                                <v-popover
+                                                    trigger="click"
+                                                    offset="16"
+                                                    placement="left"
+                                                    popoverBaseClass="tooltip-base"
+                                                    :popoverClass="`tooltip-themed${layout.themeName === 'dark' ? '-dark' : '-light'}`"
+                                                >
+                                                    <input class="btn-medusa btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                                    <template slot="popover">
+                                                        <div class="tooltip-title">Github Token</div>
+                                                        <div class="tooltip-content">
+                                                            <p>Copy the generated token and paste it in the token input box.</p>
+                                                            <p>
+                                                                <a :href="`${(config.anonRedirect || '')}https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo`" target="_blank">
+                                                                    <input class="btn-medusa" type="button" value="Continue to Github...">
+                                                                </a>
+                                                            </p><br>
+                                                        </div>
+                                                    </template>
+                                                </v-popover>
+                                            </template>
+                                            <template v-else>
+                                                <a :href="`${(config.anonRedirect || '')}https://github.com/settings/tokens`" target="_blank">
+                                                    <input class="btn-medusa btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                                </a>
+                                            </template>
+
                                             <p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p>
                                         </config-textbox>
                                     </div>
@@ -497,6 +521,8 @@ import { ToggleButton } from 'vue-js-toggle-button';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
 
+import { VTooltip, VPopover } from 'v-tooltip';
+
 export default {
     name: 'config-general',
     components: {
@@ -507,8 +533,12 @@ export default {
         ConfigToggleSlider,
         LanguageSelect,
         Multiselect,
+        VPopover,
         ToggleButton,
         RootDirs
+    },
+    directives: {
+        tooltip: VTooltip
     },
     data() {
         const defaultPageOptions = [
@@ -536,24 +566,6 @@ export default {
         // Wait for the next tick, so the component is rendered
         this.$nextTick(() => {
             $('#config-components').tabs();
-        });
-    },
-    mounted() {
-        $('#git_token').on('click', () => {
-            $('#git_token').select();
-        });
-
-        $('#create_access_token').popover({
-            placement: 'left',
-            html: true, // Required if content has HTML
-            title: 'Github Token',
-            content: '<p>Copy the generated token and paste it in the token input box.</p>' +
-                '<p><a href="' + (MEDUSA.config.anonRedirect || '') + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
-                '<input class="btn-medusa" type="button" value="Continue to Github..."></a></p><br/>'
-        });
-
-        $('#manage_tokens').on('click', () => {
-            window.open((MEDUSA.config.anonRedirect || '') + 'https://github.com/settings/tokens', '_blank');
         });
     },
     computed: {
@@ -657,6 +669,12 @@ export default {
         githubBranches() {
             const { system, githubBranchesForced } = this;
             return system.gitRemoteBranches || githubBranchesForced;
+        },
+        githubTokenPopover() {
+            const { config } = this;
+            return '<p>Copy the generated token and paste it in the token input box.</p>' +
+                `<p><a href="${(config.anonRedirect || '')}https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">` +
+                '<input class="btn-medusa" type="button" value="Continue to Github..."></a></p><br/>';
         }
     },
     methods: {
@@ -782,4 +800,163 @@ export default {
 .margin-bottom-5 {
     margin-bottom: 5px;
 }
+
+.plotInfo {
+    cursor: help;
+    float: right;
+    position: relative;
+    top: 2px;
+}
+
+.plotInfoNone {
+    cursor: help;
+    float: right;
+    position: relative;
+    top: 2px;
+    opacity: 0.4;
+}
+
+v-popover {
+    display: inline;
+}
+
+.tooltip-base {
+    display: block !important;
+    z-index: 10000;
+    border-radius: 6px;
+    max-width: 276px;
+    padding: 1px;
+    font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.42857143;
+    line-break: auto;
+    text-align: start;
+    text-decoration: none;
+    text-shadow: none;
+    text-transform: none;
+    letter-spacing: normal;
+    word-break: normal;
+    word-spacing: normal;
+    word-wrap: normal;
+    white-space: normal;
+    font-size: 14px;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.2);
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tooltip-base.tooltip-themed-dark {
+    background-color: rgb(35, 35, 35);
+    border-bottom-color: #111;
+}
+
+.tooltip-base.tooltip-themed-light {
+    background-color: rgb(35, 35, 35);
+    color: rgb(34, 34, 34);
+    border-bottom-color: #111;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.2);
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+}
+
+.tooltip-base .tooltip-inner {
+    background-color: inherit;
+    color: inherit;
+    text-align: inherit;
+    max-width: inherit;
+    padding: 0;
+    border-radius: 6px;
+}
+
+.tooltip-title {
+    padding: 8px 14px;
+    margin: 0;
+    border-radius: 5px 5px 0 0;
+}
+
+.tooltip-content {
+    padding: 9px 14px;
+    margin: 0;
+}
+
+.tooltip-themed-dark .tooltip-title {
+    background-color: rgb(35, 35, 35);
+    border-bottom-color: #111;
+}
+
+.tooltip-themed-light .tooltip-title {
+    padding: 8px 14px;
+    margin: 0;
+    font-size: 14px;
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #ebebeb;
+    border-radius: 5px 5px 0 0;
+}
+
+.tooltip-base {
+	position: relative;
+	background: #FFF;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.tooltip-base[x-placement^="left"]:after, .tooltip-base[x-placement^="left"]:before {
+	left: 100%;
+	top: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.tooltip-base[x-placement^="left"]:after {
+	border-color: rgba(255, 255, 255, 0);
+	border-left-color: #FFF;
+	border-width: 11px;
+	margin-top: -11px;
+}
+
+.tooltip-base[x-placement^="left"]:before {
+	border-color: rgba(0, 0, 0, 0);
+	border-left-color: rgba(0, 0, 0, 0.2);
+	border-width: 12px;
+	margin-top: -12px;
+}
+
+.tooltip-base[x-placement^="right"]:after, .tooltip-base[x-placement^="right"]:before {
+	right: 100%;
+	top: 50%;
+	border: solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+}
+
+.tooltip-base[x-placement^="right"]:after {
+	border-color: rgba(255, 255, 255, 0);
+	border-right-color: #FFF;
+	border-width: 11px;
+	margin-top: -11px;
+}
+.tooltip-base[x-placement^="right"]:before {
+	border-color: rgba(0, 0, 0, 0);
+	border-right-color: rgba(0, 0, 0, 0.2);
+	border-width: 12px;
+	margin-top: -12px;
+}
+
+.tooltip-arrow {
+    display: none;
+}
+
 </style>
