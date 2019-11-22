@@ -173,7 +173,7 @@
                                         <p>include articles ("The", "A", "An") when sorting show lists</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox-number v-model="layout.comingEpsMissedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
+                                    <config-textbox-number v-model="layout.comingEps.missedRange" label="Missed episodes range" id="coming_eps_missed_range duration" :step="1" :min="7">
                                         <p>Set the range in days of the missed episodes in the Schedule page</p>
                                     </config-textbox-number>
 
@@ -186,23 +186,27 @@
                                     </config-toggle-slider>
 
                                     <config-template label-for="date_preset" label="Date style">
-                                        <select id="date_preset" name="date_preset" v-model="config.dateStyle" class="form-control input-sm">
+                                        <select id="date_preset" name="date_preset" v-model="layout.dateStyle" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in datePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                     </config-template>
 
                                     <config-template label-for="time_preset" label="Time style">
-                                        <select id="time_preset" name="time_preset" v-model="config.timeStyle" class="form-control input-sm">
+                                        <select id="time_preset" name="time_preset" v-model="layout.timeStyle" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in timePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span><b>note:</b> seconds are only shown on the History page</span>
                                     </config-template>
 
                                     <config-template label-for="timezone_display" label="Timezone">
-                                        <input type="radio" name="timezone_display_local" id="timezone_display_local" value="local" v-model="layout.timezoneDisplay">
-                                        <label for="one">local</label>
-                                        <input type="radio" name="timezone_display_network" id="timezone_display_network" value="network" v-model="layout.timezoneDisplay">
-                                        <label for="one">network</label>
+                                        <div class="radio-item">
+                                            <input type="radio" name="timezone_display_local" id="timezone_display_local" value="local" v-model="layout.timezoneDisplay">
+                                            <label for="one">local</label>
+                                        </div>
+                                        <div class="radio-item">
+                                            <input type="radio" name="timezone_display_network" id="timezone_display_network" value="network" v-model="layout.timezoneDisplay">
+                                            <label for="one">network</label>
+                                        </div>
                                         <p>display dates and times in either your timezone or the shows network timezone</p>
                                         <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
                                     </config-template>
@@ -306,7 +310,7 @@
                                         <p>backlink protection via anonymizer service, must end in "?"</p>
                                     </config-textbox>
 
-                                    <config-toggle-slider v-model="config.webInterface.sslVerify" label="Verify SSL Certs" id="ssl_verify">
+                                    <config-toggle-slider v-model="config.sslVerify" label="Verify SSL Certs" id="ssl_verify">
                                         <p>Verify SSL Certificates (Disable this for broken SSL installs (Like QNAP))</p>
                                     </config-toggle-slider>
 
@@ -417,10 +421,14 @@
                                     </config-template>
 
                                     <config-template label-for="date_presets" label="GitHub authentication type">
-                                        <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value="0" v-model="config.git.authType">
-                                        <label for="one">Username and password</label>
-                                        <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value="1" v-model="config.git.authType">
-                                        <label for="one">Personal access token</label>
+                                        <div class="radio-item">
+                                            <input type="radio" name="git_auth_type_basic" id="git_auth_type_basic" :value="0" v-model="config.git.authType">
+                                            <label for="one">Username and password</label>
+                                        </div>
+                                        <div class="radio-item">
+                                            <input type="radio" name="git_auth_type_token" id="git_auth_type_token" :value="1" v-model="config.git.authType">
+                                            <label for="one">Personal access token</label>
+                                        </div>
                                         <p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p>
                                     </config-template>
 
@@ -788,9 +796,13 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .display-inline {
     display: inline;
+}
+
+.radio-item {
+    display: block;
 }
 
 .multiselect {

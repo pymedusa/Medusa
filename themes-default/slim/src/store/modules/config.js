@@ -56,11 +56,8 @@ const state = {
     updateFrequency: null,
     notifyOnUpdate: null,
     availableThemes: null,
-    timeStyle: null,
-    dateStyle: null,
     timePresets: [],
     datePresets: [],
-    timezoneDisplay: null,
     webInterface: {
         apiKey: null,
         log: null,

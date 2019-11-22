@@ -112,11 +112,8 @@ class ConfigHandler(BaseRequestHandler):
         'updateFrequency': IntegerField(app, 'UPDATE_FREQUENCY'),
         'notifyOnUpdate': BooleanField(app, 'NOTIFY_ON_UPDATE'),
         # 'availableThemes': IgnoreField(app, 'AVAILABLE_THEMES'),
-        'timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
-        'dateStyle': StringField(app, 'DATE_PRESET'),
         # 'timePresets': IgnoreField(app, 'time_presets'),
         # 'datePresets': IgnoreField(app, 'date_presets'),
-        'timezoneDisplay': BooleanField(app, 'TIMEZONE_DISPLAY'),
 
         'webInterface.apiKey': StringField(app, 'API_KEY'),
         'webInterface.log': BooleanField(app, 'WEB_LOG'),
@@ -464,6 +461,7 @@ class ConfigHandler(BaseRequestHandler):
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
         'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
         'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.timezoneDisplay': StringField(app, 'TIMEZONE_DISPLAY'),
         'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
         'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
         'layout.fuzzyDating': BooleanField(app, 'FUZZY_DATING'),
@@ -473,6 +471,8 @@ class ConfigHandler(BaseRequestHandler):
         'layout.fanartBackgroundOpacity': FloatField(app, 'FANART_BACKGROUND_OPACITY'),
         'layout.backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+        'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
+        'layout.dateStyle': StringField(app, 'DATE_PRESET'),
 
     }
 
@@ -578,12 +578,8 @@ class DataGenerator(object):
 
         # Can't get rid of this because of the usage of themeName in MEDUSA.config.themeName.
         section_data['themeName'] = app.THEME_NAME
-
         section_data['anonRedirect'] = app.ANON_REDIRECT
-
-        section_data['dateStyle'] = app.DATE_PRESET
         section_data['rootDirs'] = app.ROOT_DIRS
-
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
@@ -646,10 +642,8 @@ class DataGenerator(object):
                                             'author': theme.author}
                                            for theme in app.AVAILABLE_THEMES]
 
-        section_data['timeStyle'] = app.TIME_PRESET_W_SECONDS
         section_data['timePresets'] = list(time_presets)
         section_data['datePresets'] = list(date_presets)
-        section_data['timezoneDisplay'] = bool(app.TIMEZONE_DISPLAY)
 
         section_data['webInterface'] = {}
         section_data['webInterface']['apiKey'] = app.API_KEY
@@ -1183,6 +1177,9 @@ class DataGenerator(object):
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
         section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
         section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+        section_data['timezoneDisplay'] = app.TIMEZONE_DISPLAY
+        section_data['dateStyle'] = app.DATE_PRESET
+        section_data['timeStyle'] = app.TIME_PRESET_W_SECONDS
 
         section_data['trimZero'] = bool(app.TRIM_ZERO)
         section_data['sortArticle'] = bool(app.SORT_ARTICLE)
