@@ -608,6 +608,111 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 return to_remove, to_append
 
 
+class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
+    """Add season to title and remove episode for specific anime patterns.
+
+    There are animes where the title contains the season number and they
+    are mistakenly treated as multiple episodes instead.
+
+    Medusa rule:
+    - The season should be part of the series name
+    - The first episode should be removed
+
+    e.g.: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+
+    guessit -t episode "[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+
+    without this rule:
+        For: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+        GuessIt found: {
+            "release_group": "Mad le Zisell",
+            "title": "High Score Girl",
+            "episode": [
+                2,
+                1
+            ],
+            "screen_size": "720p",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+        GuessIt found: {
+            "release_group": "Mad le Zisell",
+            "title": "High Score Girl 2",
+            "episode": "1",
+            "absolute_episode": "1",
+            "screen_size": "720p",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    ends_with_digit = re.compile(r'(_|\W)\d+$')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        if context.get('show_type') == 'normal' or not matches.tagged('anime'):
+            return
+
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episodes = matches.named('episode')
+        if not (2 <= len(episodes) <= 4):
+            return
+
+        unique_eps = set([ep.initiator.value for ep in episodes])
+        if len(unique_eps) != 2:
+            return
+
+        to_remove = []
+        to_append = []
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            episodes = sorted(matches.range(filepart.start, filepart.end,
+                                            predicate=lambda match: match.name == 'episode'))
+
+            if not episodes:
+                if len(titles) > 1:
+                    bad_title = sorted(titles)[0]
+                    to_remove.append(bad_title)
+                continue
+
+            title = matches.previous(episodes[0], index=-1,
+                                     predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
+            if not title or self.ends_with_digit.search(str(title.value)):
+                continue
+
+            for i, episode in enumerate(episodes):
+                if i == 0:
+                    new_title = copy.copy(title)
+                    if six.PY3:
+                        new_title.value = ' '.join([title.value, str(episode.value)])
+                    else:
+                        new_title.value = b' '.join([title.value, str(episode.value)])
+                    new_title.end = episode.end
+
+                    to_remove.append(title)
+                    to_append.append(new_title)
+                    to_remove.append(episode)
+
+                if i == 1 and len(episodes) in (3, 4):
+                    to_remove.append(episode)
+
+        return to_remove, to_append
+
+
 class AnimeAbsoluteEpisodeNumbers(Rule):
     """Move episode numbers to absolute episode numbers for animes.
 
@@ -1383,6 +1488,7 @@ def rules():
         FixAnimeReleaseGroup,
         FixInvalidAbsoluteReleaseGroups,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
+        AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
         PartsAsEpisodeNumbers,
