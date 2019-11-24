@@ -490,29 +490,26 @@ class ConfigHandler(BaseRequestHandler):
         :param path_param:
         :type path_param: str
         """
-        try:
-            config_sections = DataGenerator.sections()
+        config_sections = DataGenerator.sections()
 
-            if identifier and identifier not in config_sections:
-                return self._not_found('Config not found')
+        if identifier and identifier not in config_sections:
+            return self._not_found('Config not found')
 
-            if not identifier:
-                config_data = {}
+        if not identifier:
+            config_data = {}
 
-                for section in config_sections:
-                    config_data[section] = DataGenerator.get_data(section)
+            for section in config_sections:
+                config_data[section] = DataGenerator.get_data(section)
 
-                return self._ok(data=config_data)
+            return self._ok(data=config_data)
 
-            config_data = DataGenerator.get_data(identifier)
+        config_data = DataGenerator.get_data(identifier)
 
-            if path_param:
-                if path_param not in config_data:
-                    return self._bad_request('{key} is a invalid path'.format(key=path_param))
+        if path_param:
+            if path_param not in config_data:
+                return self._bad_request('{key} is a invalid path'.format(key=path_param))
 
-                config_data = config_data[path_param]
-        except Exception as error:
-            pass
+            config_data = config_data[path_param]
 
         return self._ok(data=config_data)
 
@@ -584,7 +581,6 @@ class DataGenerator(object):
     @staticmethod
     def data_main():
         """Main."""
-
         section_data = {}
 
         # Can't get rid of this because of the usage of themeName in MEDUSA.config.themeName.
@@ -626,7 +622,7 @@ class DataGenerator(object):
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
 
-        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1) # All paths
+        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)

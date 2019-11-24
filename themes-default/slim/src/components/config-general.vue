@@ -150,7 +150,7 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="theme_name" label="Display theme">
-                                        <select id="theme_name" name="theme_name" v-model="layout.themeName" @change="changeTheme(layout.themeName)">
+                                        <select id="theme_name" name="theme_name" class="form-control input-sm" v-model="layout.themeName" @change="changeTheme(layout.themeName)">
                                             <option :value="option.value" v-for="option in availableThemesOptions"
                                                     :key="option.value">{{ option.text }}
                                             </option>
@@ -796,7 +796,7 @@ export default {
     }
 };
 </script>
-<style scoped>
+<style>
 .display-inline {
     display: inline;
 }
@@ -833,9 +833,9 @@ v-popover {
 }
 
 .tooltip-base {
+    position: relative;
     display: block !important;
-    z-index: 10000;
-    border-radius: 6px;
+    z-index: 999;
     max-width: 276px;
     padding: 1px;
     font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
@@ -853,29 +853,16 @@ v-popover {
     word-spacing: normal;
     word-wrap: normal;
     white-space: normal;
-    font-size: 14px;
     background-color: #fff;
     background-clip: padding-box;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0,0,0,.2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .tooltip-base.tooltip-themed-dark {
-    background-color: rgb(35, 35, 35);
-    border-bottom-color: #111;
-}
-
-.tooltip-base.tooltip-themed-light {
-    background-color: rgb(35, 35, 35);
-    color: rgb(34, 34, 34);
-    border-bottom-color: #111;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0,0,0,.2);
-    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    background-color: rgb(51, 51, 51);
+    border-color: #111;
 }
 
 .tooltip-base .tooltip-inner {
@@ -912,59 +899,80 @@ v-popover {
     border-radius: 5px 5px 0 0;
 }
 
-.tooltip-base {
-	position: relative;
-	background: #FFF;
-	border: 1px solid rgba(0, 0, 0, 0.2);
+.tooltip-base[x-placement^="left"]::after,
+.tooltip-base[x-placement^="left"]::before {
+    left: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
-.tooltip-base[x-placement^="left"]:after, .tooltip-base[x-placement^="left"]:before {
-	left: 100%;
-	top: 50%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
+.tooltip-base[x-placement^="left"]::after {
+    border-color: rgba(255, 255, 255, 0);
+    border-left-color: #fff;
+    border-width: 11px;
+    margin-top: -11px;
+    content: " ";
 }
 
-.tooltip-base[x-placement^="left"]:after {
-	border-color: rgba(255, 255, 255, 0);
-	border-left-color: #FFF;
-	border-width: 11px;
-	margin-top: -11px;
+.tooltip-base[x-placement^="left"]::before {
+    border-color: rgba(0, 0, 0, 0);
+    border-left-color: rgba(0, 0, 0, 0.2);
+    border-width: 12px;
+    margin-top: -12px;
+    content: " ";
 }
 
-.tooltip-base[x-placement^="left"]:before {
-	border-color: rgba(0, 0, 0, 0);
-	border-left-color: rgba(0, 0, 0, 0.2);
-	border-width: 12px;
-	margin-top: -12px;
+.tooltip-base[x-placement^="right"]::after,
+.tooltip-base[x-placement^="right"]::before {
+    right: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
-.tooltip-base[x-placement^="right"]:after, .tooltip-base[x-placement^="right"]:before {
-	right: 100%;
-	top: 50%;
-	border: solid transparent;
-	content: " ";
-	height: 0;
-	width: 0;
-	position: absolute;
-	pointer-events: none;
+.tooltip-base[x-placement^="right"]::after {
+    border-color: rgba(255, 255, 255, 0);
+    border-right-color: #fff;
+    border-width: 11px;
+    margin-top: -11px;
+    content: " ";
 }
 
-.tooltip-base[x-placement^="right"]:after {
-	border-color: rgba(255, 255, 255, 0);
-	border-right-color: #FFF;
-	border-width: 11px;
-	margin-top: -11px;
+.tooltip-base[x-placement^="right"]::before {
+    border-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0.2);
+    border-width: 12px;
+    margin-top: -12px;
+    content: " ";
 }
-.tooltip-base[x-placement^="right"]:before {
-	border-color: rgba(0, 0, 0, 0);
-	border-right-color: rgba(0, 0, 0, 0.2);
-	border-width: 12px;
-	margin-top: -12px;
+
+/* The background of the arrow, the outline */
+.tooltip-themed-dark[x-placement^="left"]::before {
+    border-left-color: #000 !important;
+}
+
+/* The background of the arrow, the outline */
+.tooltip-themed-dark[x-placement^="right"]::before {
+    border-right-color: #000 !important;
+}
+
+/* The foreground of the arrow, the filling  */
+.tooltip-themed-dark[x-placement^="left"]::after {
+    border-left-color: rgb(51, 51, 51) !important;
+}
+
+/* The foreground of the arrow, the filling  */
+.tooltip-themed-dark[x-placement^="right"]::after {
+    border-right-color: rgb(51, 51, 51) !important;
 }
 
 .tooltip-arrow {

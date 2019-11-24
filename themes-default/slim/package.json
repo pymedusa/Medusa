@@ -125,7 +125,13 @@
         }
       ],
       "no-empty-source": null,
-      "no-descending-specificity": null
+      "no-descending-specificity": null,
+      "selector-type-no-unknown": [
+          false,
+          {
+            "ignoreNamespaces": ["/^v-/"]
+          }
+      ]
     },
     "ignoreFiles": [
       "static/css/lib/**",
