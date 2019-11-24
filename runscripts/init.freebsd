@@ -21,8 +21,6 @@
 #			Default: /usr/local/medusa
 # medusa_datadir:	Data directory for Medusa (DB, Logs, config)
 #			Default is same as medusa_dir
-# medusa_restart_time: The amount of time before medusa restarts in seconds. 
-#			Defaults to 3 seconds 
 # medusa_python_dir: The directory where python is installed.
 #			Default: /usr/local/bin/python3.7
 
@@ -38,13 +36,12 @@ load_rc_config ${name}
 : ${medusa_group:="medusa"}
 : ${medusa_dir:="/usr/local/medusa"}
 : ${medusa_datadir:="${medusa_dir}"}
-: ${medusa_restart_time:=3}
 : ${medusa_python_dir="/usr/local/bin/python3.7"}
 
 pidfile="/var/run/PyMedusa/Medusa.pid"
 pidfile_child="/var/run/PyMedusa/Medusa_child.pid"
 command="/usr/sbin/daemon"
-command_args="-cf -P ${pidfile} -p ${pidfile_child} -R ${medusa_restart_time} ${medusa_python_dir} ${medusa_dir}/start.py -q --nolaunch --pidfile /var/run/Pymedusa/child.pid --datadir ${medusa_datadir}"
+command_args="-cf -P ${pidfile} -p ${pidfile_child} ${medusa_python_dir} ${medusa_dir}/start.py -q --nolaunch --pidfile /var/run/Pymedusa/child.pid --datadir ${medusa_datadir}"
 
 start_precmd="medusa_prestart"
 stop_precmd="medusa_prestop"
@@ -72,6 +69,7 @@ medusa_prestop() {
 medusa_poststop() {	
 	_MEDUSA_CHILDREN=$(pgrep -g ${_MEDUSAPID})
 	echo "Waiting for child processes to stop."
+	kill -3 ${_MEDUSA_CHILDREN}
 	wait_for_pids ${_MEDUSA_CHILDREN}
 }
 
