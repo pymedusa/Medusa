@@ -986,7 +986,7 @@ class DataGenerator(object):
         section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
         section_data['trakt']['username'] = app.TRAKT_USERNAME
         section_data['trakt']['accessToken'] = app.TRAKT_ACCESS_TOKEN
-        section_data['trakt']['timeout'] =  int_default(app.TRAKT_TIMEOUT, 20)
+        section_data['trakt']['timeout'] = int_default(app.TRAKT_TIMEOUT, 20)
         section_data['trakt']['defaultIndexer'] = int_default(app.TRAKT_DEFAULT_INDEXER, INDEXER_TVDBV2)
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
