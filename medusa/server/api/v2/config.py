@@ -21,7 +21,7 @@ from medusa import (
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import to_camel_case
-from medusa.indexers.indexer_config import get_indexer_config
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.server.api.v2.base import (
@@ -64,6 +64,13 @@ def theme_name_setter(object, name, value):
 def season_folders_validator(value):
     """Validate default season folders setting."""
     return not (app.NAMING_FORCE_FOLDERS and value is False)
+
+
+def int_default(value, default=0):
+    """Cast value to integer or default if None."""
+    if value is not None:
+        return int(value)
+    return default
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -483,26 +490,29 @@ class ConfigHandler(BaseRequestHandler):
         :param path_param:
         :type path_param: str
         """
-        config_sections = DataGenerator.sections()
+        try:
+            config_sections = DataGenerator.sections()
 
-        if identifier and identifier not in config_sections:
-            return self._not_found('Config not found')
+            if identifier and identifier not in config_sections:
+                return self._not_found('Config not found')
 
-        if not identifier:
-            config_data = {}
+            if not identifier:
+                config_data = {}
 
-            for section in config_sections:
-                config_data[section] = DataGenerator.get_data(section)
+                for section in config_sections:
+                    config_data[section] = DataGenerator.get_data(section)
 
-            return self._ok(data=config_data)
+                return self._ok(data=config_data)
 
-        config_data = DataGenerator.get_data(identifier)
+            config_data = DataGenerator.get_data(identifier)
 
-        if path_param:
-            if path_param not in config_data:
-                return self._bad_request('{key} is a invalid path'.format(key=path_param))
+            if path_param:
+                if path_param not in config_data:
+                    return self._bad_request('{key} is a invalid path'.format(key=path_param))
 
-            config_data = config_data[path_param]
+                config_data = config_data[path_param]
+        except Exception as error:
+            pass
 
         return self._ok(data=config_data)
 
@@ -574,6 +584,7 @@ class DataGenerator(object):
     @staticmethod
     def data_main():
         """Main."""
+
         section_data = {}
 
         # Can't get rid of this because of the usage of themeName in MEDUSA.config.themeName.
@@ -615,7 +626,7 @@ class DataGenerator(object):
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
 
-        section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
+        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1) # All paths
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
@@ -624,8 +635,8 @@ class DataGenerator(object):
         section_data['trashRotateLogs'] = bool(app.TRASH_ROTATE_LOGS)
 
         section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
-        section_data['showUpdateHour'] = int(app.SHOWUPDATE_HOUR)
-        section_data['indexerTimeout'] = int(app.INDEXER_TIMEOUT)
+        section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+        section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
         section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
         section_data['plexFallBack'] = {}
@@ -635,7 +646,7 @@ class DataGenerator(object):
 
         section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
         section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
-        section_data['updateFrequency'] = int(app.UPDATE_FREQUENCY)
+        section_data['updateFrequency'] = int_default(app.UPDATE_FREQUENCY, app.DEFAULT_UPDATE_FREQUENCY)
         section_data['notifyOnUpdate'] = bool(app.NOTIFY_ON_UPDATE)
         section_data['availableThemes'] = [{'name': theme.name,
                                             'version': theme.version,
@@ -650,7 +661,7 @@ class DataGenerator(object):
         section_data['webInterface']['log'] = bool(app.WEB_LOG)
         section_data['webInterface']['username'] = app.WEB_USERNAME
         section_data['webInterface']['password'] = app.WEB_PASSWORD
-        section_data['webInterface']['port'] = int(app.WEB_PORT)
+        section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
         section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
         section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
         section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
@@ -780,18 +791,18 @@ class DataGenerator(object):
         # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
         section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
         section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
-        section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
+        section_data['general']['backlogFrequency'] = int_default(app.BACKLOG_FREQUENCY, app.DEFAULT_BACKLOG_FREQUENCY)
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
-        section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
         section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-        section_data['general']['torrentCheckerFrequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
         section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
-        section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
+        section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
         section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
-        section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
+        section_data['general']['maxCacheAge'] = int_default(app.MAX_CACHE_AGE, 30)
 
         section_data['general']['failedDownloads'] = {}
         section_data['general']['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
@@ -979,12 +990,12 @@ class DataGenerator(object):
         section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
         section_data['trakt']['username'] = app.TRAKT_USERNAME
         section_data['trakt']['accessToken'] = app.TRAKT_ACCESS_TOKEN
-        section_data['trakt']['timeout'] = int(app.TRAKT_TIMEOUT)
-        section_data['trakt']['defaultIndexer'] = int(app.TRAKT_DEFAULT_INDEXER)
+        section_data['trakt']['timeout'] =  int_default(app.TRAKT_TIMEOUT, 20)
+        section_data['trakt']['defaultIndexer'] = int_default(app.TRAKT_DEFAULT_INDEXER, INDEXER_TVDBV2)
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
         section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
-        section_data['trakt']['methodAdd'] = int(app.TRAKT_METHOD_ADD)
+        section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
         section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
         section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)
         section_data['trakt']['removeShowFromApplication'] = bool(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
@@ -1122,7 +1133,7 @@ class DataGenerator(object):
         section_data['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
         section_data['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
         section_data['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
-        section_data['naming']['animeNamingType'] = int(app.NAMING_ANIME)
+        section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
         section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
         section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
