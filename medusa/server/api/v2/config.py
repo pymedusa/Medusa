@@ -480,7 +480,6 @@ class ConfigHandler(BaseRequestHandler):
         'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'layout.dateStyle': StringField(app, 'DATE_PRESET'),
-
     }
 
     def get(self, identifier, path_param=None):

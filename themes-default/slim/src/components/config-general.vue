@@ -448,7 +448,7 @@
                                                 <v-popover
                                                     trigger="click"
                                                     offset="16"
-                                                    placement="left"
+                                                    placement="right"
                                                     popoverBaseClass="tooltip-base"
                                                     :popoverClass="`tooltip-themed${layout.themeName === 'dark' ? '-dark' : '-light'}`"
                                                 >
@@ -828,13 +828,13 @@ export default {
     opacity: 0.4;
 }
 
-v-popover {
+.v-popover {
     display: inline;
 }
 
 .tooltip-base {
     position: relative;
-    display: block !important;
+    display: inline-block !important;
     z-index: 999;
     max-width: 276px;
     padding: 1px;
