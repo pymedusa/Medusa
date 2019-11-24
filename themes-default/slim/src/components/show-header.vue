@@ -78,7 +78,7 @@
                                 class="imdbstars"
                                 :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
+                                <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
                             </span>
                             <template v-if="!show.id.imdb">
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
