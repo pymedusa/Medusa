@@ -27,9 +27,7 @@ def config_main(monkeypatch, app_config):
     python_version = 'Python Test v1.2.3.4'
     monkeypatch.setattr(sys, 'version', python_version)
     app_config('PID', 4321)
-    os_user = app_config('OS_USER', 'superuser')
     app_config('LOCALE', (None, 'ABC'))
-    app_locale = 'Unknown.ABC'
 
     # postProcessing.naming
     app_config('NAMING_ANIME', 3)
@@ -186,7 +184,7 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config_main,
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, config_main):
+def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/main/abcdef/')
 
@@ -199,7 +197,7 @@ def test_config_get_detailed_bad_request(http_client, create_url, auth_headers, 
 
 
 @pytest.mark.gen_test
-def test_config_get_not_found(http_client, create_url, auth_headers, config_main):
+def test_config_get_not_found(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
@@ -298,7 +296,7 @@ def test_config_get_metadata(http_client, create_url, auth_headers, config_metad
 
 
 @pytest.fixture
-def config_system(monkeypatch, app_config):
+def config_system(monkeypatch):
     def memory_usage_mock(*args, **kwargs):
         return '124.86 MB'
     monkeypatch.setattr(helpers, 'memory_usage', memory_usage_mock)
@@ -358,8 +356,7 @@ def test_config_get_system(http_client, create_url, auth_headers, config_system)
 
 
 @pytest.fixture
-def config_postprocessing(monkeypatch, app_config):
-
+def config_postprocessing():
     section_data = {}
 
     section_data['naming'] = {}
@@ -416,7 +413,7 @@ def test_config_get_postprocessing(http_client, create_url, auth_headers, config
 
 
 @pytest.fixture
-def config_clients(monkeypatch, app_config):
+def config_clients():
 
     section_data = {}
 
@@ -483,7 +480,7 @@ def test_config_get_clients(http_client, create_url, auth_headers, config_client
 
 
 @pytest.fixture
-def config_notifiers(monkeypatch, app_config):
+def config_notifiers():
 
     section_data = {}
 
