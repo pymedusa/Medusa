@@ -545,7 +545,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   min="0.1"
                   placeholder=""
                   step="0.1"
-                  value="0.1"
+                  value="0.3"
                 >
                   <p>
                     Transparency of the fanart in the background

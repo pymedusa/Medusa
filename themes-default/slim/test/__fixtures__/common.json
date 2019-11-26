@@ -94,7 +94,6 @@
                     "author": "p0psicles"
                 }
             ],
-            "timeStyle": "%I:%M:%S %p",
             "timePresets": [
                 "%I:%M:%S %p",
                 "%H:%M:%S"
@@ -269,7 +268,10 @@
             "animeSplitHomeInTabs": true,
             "animeSplitHome": true,
             "fanartBackground": true,
-            "fanartBackgroundOpacity": 0.1,
+            "fanartBackgroundOpacity": 0.3,
+            "timezoneDisplay": "local",
+            "dateStyle": "%A, %m/%d/%y",
+            "timeStyle": "%H:%M:%S",
             "trimZero": false,
             "sortArticle": false,
             "fuzzyDating": false,
