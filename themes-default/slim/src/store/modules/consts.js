@@ -56,7 +56,7 @@ const getters = {
     },
     // Get an episode overview status using the episode status and quality
     // eslint-disable-next-line no-unused-vars
-    getOverviewStatus: _state => (status, quality, showQualities) => {
+    getOverviewStatus: (_state, getters) => (status, quality, showConfig) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
         }
@@ -74,11 +74,26 @@ const getters = {
         }
 
         if (['Downloaded'].includes(status)) {
-            if (showQualities.preferred.includes(quality)) {
+            // Check if the show has been configured with a default quality preset.
+            if (showConfig.qualities.allowed.length > 0 && showConfig.qualities.preferred.length === 0) {
+                const reducedAllowed = showConfig.qualities.allowed.reduce((result, value) => {
+                    return result + value;
+                }, 0);
+
+                if (getters.getQualityPreset({ value: reducedAllowed })) {
+                    if (showConfig.qualities.allowed.includes(quality)) {
+                        // This is a hack, because technically the quality does not fit in the Preferred quality.
+                        // But because 'preferred' translates to the css color "green", we use it.
+                        return 'Preferred';
+                    }
+                }
+            }
+
+            if (showConfig.qualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
 
-            if (showQualities.allowed.includes(quality)) {
+            if (showConfig.qualities.allowed.includes(quality)) {
                 return 'Allowed';
             }
         }

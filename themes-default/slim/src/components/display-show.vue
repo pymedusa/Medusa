@@ -418,7 +418,7 @@ export default {
                 for (const season of sortedSeasons) {
                     const { episodes, ...res } = season;
                     const filteredEpisodes = episodes.filter(episode => {
-                        const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config.qualities);
+                        const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config);
                         const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episodeOverviewStatus);
                         return !filteredStatus || filteredStatus.checked;
                     });
@@ -617,7 +617,8 @@ export default {
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
-            return getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+            const overview = getOverviewStatus(row.status, row.quality, show.config).toLowerCase().trim();
+            return overview;
         },
         /**
          * Add (reduce) the total episodes filesize.
@@ -1232,7 +1233,7 @@ tablesorter.css
 }
 
 .downloaded {
-    background-color: rgb(195, 227, 200);
+    background-color: rgb(255, 218, 138);
 }
 
 .failed {

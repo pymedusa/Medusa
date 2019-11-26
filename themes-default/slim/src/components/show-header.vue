@@ -485,6 +485,7 @@ export default {
             const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
+                Downloaded: 0,
                 Skipped: 0,
                 Wanted: 0,
                 Allowed: 0,
@@ -497,7 +498,7 @@ export default {
             };
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
-                    summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
+                    summary[getOverviewStatus(episode.status, episode.quality, show.config)] += 1;
                 });
             });
             return summary;
