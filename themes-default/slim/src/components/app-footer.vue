@@ -36,7 +36,7 @@ export default {
     },
     computed: {
         ...mapState([
-            'config',
+            'layout',
             'stats',
             'system'
         ]),
@@ -57,7 +57,7 @@ export default {
             return raw.toFixed(1) + '%';
         },
         nowInUserPreset() {
-            const { dateStyle, timeStyle } = this.config;
+            const { dateStyle, timeStyle } = this.layout;
             const preset = convertDateFormat(`${dateStyle} ${timeStyle}`);
             return formatDate(new Date(), preset);
         }
