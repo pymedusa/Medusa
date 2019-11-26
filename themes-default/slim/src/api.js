@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-// This should be more dynanim. As now when we change the apiKey in config/general. This won't work anymore. And a page reload is required.
+// This should be more dynamic. As now when we change the apiKey in config/general. This won't work anymore.
+// Because of this, a page reload is required.
 export const webRoot = document.body.getAttribute('web-root');
 export const apiKey = document.body.getAttribute('api-key');
 

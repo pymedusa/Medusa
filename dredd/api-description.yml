@@ -2825,6 +2825,10 @@ parameters:
       - notifiers
       - search
       - system
+      - postprocessing
+      - client
+      - layout
+      - indexers
   log-level:
     name: level
     in: query

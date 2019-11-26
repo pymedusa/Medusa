@@ -496,6 +496,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   labelfor="theme_name"
                 >
                   <select
+                    class="form-control input-sm"
                     id="theme_name"
                     name="theme_name"
                   >
@@ -569,7 +570,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   min="7"
                   placeholder=""
                   step="1"
-                  value="10"
+                  value="7"
                 >
                   <p>
                     Set the range in days of the missed episodes in the Schedule page
@@ -686,31 +687,39 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   label="Timezone"
                   labelfor="timezone_display"
                 >
-                  <input
-                    id="timezone_display_local"
-                    name="timezone_display_local"
-                    type="radio"
-                    value="local"
-                  />
-                   
-                  <label
-                    for="one"
+                  <div
+                    class="radio-item"
                   >
-                    local
-                  </label>
+                    <input
+                      id="timezone_display_local"
+                      name="timezone_display_local"
+                      type="radio"
+                      value="local"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      local
+                    </label>
+                  </div>
                    
-                  <input
-                    id="timezone_display_network"
-                    name="timezone_display_network"
-                    type="radio"
-                    value="network"
-                  />
-                   
-                  <label
-                    for="one"
+                  <div
+                    class="radio-item"
                   >
-                    network
-                  </label>
+                    <input
+                      id="timezone_display_network"
+                      name="timezone_display_network"
+                      type="radio"
+                      value="network"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      network
+                    </label>
+                  </div>
                    
                   <p>
                     display dates and times in either your timezone or the shows network timezone
@@ -1018,6 +1027,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   explanations=""
                   id="ssl_verify"
                   label="Verify SSL Certs"
+                  value="true"
                 >
                   <p>
                     Verify SSL Certificates (Disable this for broken SSL installs (Like QNAP))
@@ -1345,31 +1355,39 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   label="GitHub authentication type"
                   labelfor="date_presets"
                 >
-                  <input
-                    id="git_auth_type_basic"
-                    name="git_auth_type_basic"
-                    type="radio"
-                    value="0"
-                  />
-                   
-                  <label
-                    for="one"
+                  <div
+                    class="radio-item"
                   >
-                    Username and password
-                  </label>
+                    <input
+                      id="git_auth_type_basic"
+                      name="git_auth_type_basic"
+                      type="radio"
+                      value="0"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      Username and password
+                    </label>
+                  </div>
                    
-                  <input
-                    id="git_auth_type_token"
-                    name="git_auth_type_token"
-                    type="radio"
-                    value="1"
-                  />
-                   
-                  <label
-                    for="one"
+                  <div
+                    class="radio-item"
                   >
-                    Personal access token
-                  </label>
+                    <input
+                      id="git_auth_type_token"
+                      name="git_auth_type_token"
+                      type="radio"
+                      value="1"
+                    />
+                     
+                    <label
+                      for="one"
+                    >
+                      Personal access token
+                    </label>
+                  </div>
                    
                   <p>
                     You must use a personal access token if you're using "two-factor authentication" on GitHub.
@@ -1425,7 +1443,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                       handleresize="true"
                       offset="16"
                       openclass="open"
-                      placement="left"
+                      placement="right"
                       popoverarrowclass="tooltip-arrow popover-arrow"
                       popoverbaseclass="tooltip-base"
                       popoverclass="tooltip-themed-light"
