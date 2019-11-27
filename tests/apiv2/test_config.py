@@ -10,8 +10,8 @@ import sys
 from medusa import app, classes, common, db, helpers, logger, metadata
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.common import cpu_presets
+from medusa.helpers.utils import int_default
 from medusa.sbdatetime import date_presets, time_presets
-from medusa.server.api.v2.config import int_default
 from medusa.system.schedulers import all_schedulers
 from tests.apiv2.conftest import TEST_API_KEY
 

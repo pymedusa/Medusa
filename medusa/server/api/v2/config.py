@@ -20,7 +20,7 @@ from medusa import (
     ws,
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
-from medusa.helpers.utils import to_camel_case
+from medusa.helpers.utils import int_default, to_camel_case
 from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import date_presets, time_presets
@@ -64,13 +64,6 @@ def theme_name_setter(object, name, value):
 def season_folders_validator(value):
     """Validate default season folders setting."""
     return not (app.NAMING_FORCE_FOLDERS and value is False)
-
-
-def int_default(value, default=0):
-    """Cast value to integer or default if None."""
-    if value is not None:
-        return int(value)
-    return default
 
 
 class ConfigHandler(BaseRequestHandler):
