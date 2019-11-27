@@ -135,3 +135,10 @@ def timedelta_in_milliseconds(td):
         return 0
 
     return int(td.total_seconds() * 1000)
+
+
+def int_default(value, default=0):
+    """Cast value to integer or default if None."""
+    if value is not None:
+        return int(value)
+    return default

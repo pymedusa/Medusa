@@ -252,11 +252,12 @@ export default {
             'getStatus'
         ]),
         defaultEpisodeStatusOptions() {
+            const { getStatus } = this;
             if (this.episodeStatuses.length === 0) {
                 return [];
             }
             // Get status objects, in this order
-            return ['skipped', 'wanted', 'ignored'].map(key => this.getStatus({ key }));
+            return ['skipped', 'wanted', 'ignored'].map(key => getStatus({ key }));
         },
         /**
          * Calculate the combined value of the selected qualities.

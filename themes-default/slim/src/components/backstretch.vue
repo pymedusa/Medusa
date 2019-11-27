@@ -17,8 +17,8 @@ export default {
     },
     computed: {
         ...mapState({
-            enabled: state => state.config.fanartBackground,
-            opacity: state => state.config.fanartBackgroundOpacity
+            enabled: state => state.layout.fanartBackground,
+            opacity: state => state.layout.fanartBackgroundOpacity
         }),
         offset() {
             let offset = '90px';
