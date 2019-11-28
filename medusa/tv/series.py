@@ -2503,6 +2503,51 @@ class Series(TV):
                       {'show': self.name})
             return False
 
+    def get_wanted_segments(self, from_date=None):
+        """Get episodes that should be backlog searched."""
+        wanted = {}
+        if self.paused:
+            log.debug(u'Skipping backlog for {0} because the show is paused', self.name)
+            return wanted
+
+        log.debug(u'Seeing if we need anything from {0}', self.name)
+
+        from_date = from_date or datetime.date.fromordinal(1)
+
+        con = db.DBConnection()
+        sql_results = con.select(
+            'SELECT status, quality, season, episode, manually_searched '
+            'FROM tv_episodes '
+            'WHERE airdate > ?'
+            ' AND indexer = ? '
+            ' AND showid = ?',
+            [from_date.toordinal(), self.indexer, self.series_id]
+        )
+
+        # check through the list of statuses to see if we want any
+        for episode in sql_results:
+            cur_status, cur_quality = int(episode['status'] or UNSET), int(episode['quality'] or Quality.NA)
+            should_search, should_search_reason = Quality.should_search(
+                cur_status, cur_quality, self, episode['manually_searched']
+            )
+            if not should_search:
+                continue
+            log.debug(
+                u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
+                    'show': self.name,
+                    'ep': episode_num(episode['season'], episode['episode']),
+                    'reason': should_search_reason,
+                }
+            )
+            ep_obj = self.get_episode(episode['season'], episode['episode'])
+
+            if ep_obj.season not in wanted:
+                wanted[ep_obj.season] = [ep_obj]
+            else:
+                wanted[ep_obj.season].append(ep_obj)
+
+        return wanted
+
     def pause(self):
         """Pause the series."""
         self.paused = True

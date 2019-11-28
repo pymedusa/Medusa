@@ -132,7 +132,7 @@
                             <td>${showname}</td>
                         % except Exception:
                             % if app.show_queue_scheduler.action.currentItem.action_id == ShowQueueActions.ADD:
-                                <td>${app.show_queue_scheduler.action.currentItem.showDir}</td>
+                                <td>${app.show_queue_scheduler.action.currentItem.show_dir}</td>
                             % else:
                                 <td></td>
                             % endif
@@ -164,7 +164,7 @@
                             <td>${showname}</td>
                         % except Exception:
                             % if item.action_id == ShowQueueActions.ADD:
-                                <td>${item.showDir}</td>
+                                <td>${item.show_dir}</td>
                             % else:
                                 <td></td>
                             % endif

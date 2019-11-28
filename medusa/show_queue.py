@@ -61,6 +61,9 @@ from medusa.indexers.indexer_exceptions import (
     IndexerShowNotFoundInLanguage,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.search.queue import (
+    BacklogQueueItem
+)
 from medusa.tv import Series
 
 from requests import RequestException
@@ -238,14 +241,14 @@ class ShowQueue(generic_queue.GenericQueue):
 
         return queueItemObj
 
-    def addShow(self, indexer, indexer_id, showDir, default_status=None, quality=None, season_folders=None,
+    def addShow(self, indexer, indexer_id, show_dir, default_status=None, quality=None, season_folders=None,
                 lang=None, subtitles=None, anime=None, scene=None, paused=None, blacklist=None, whitelist=None,
                 default_status_after=None, root_dir=None):
 
         if lang is None:
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
-        queueItemObj = QueueItemAdd(indexer, indexer_id, showDir, default_status, quality, season_folders, lang,
+        queueItemObj = QueueItemAdd(indexer, indexer_id, show_dir, default_status, quality, season_folders, lang,
                                     subtitles, anime, scene, paused, blacklist, whitelist, default_status_after,
                                     root_dir)
 
@@ -312,13 +315,13 @@ class ShowQueueItem(generic_queue.QueueItem):
 
 
 class QueueItemAdd(ShowQueueItem):
-    def __init__(self, indexer, indexer_id, showDir, default_status, quality, season_folders, lang, subtitles, anime,
+    def __init__(self, indexer, indexer_id, show_dir, default_status, quality, season_folders, lang, subtitles, anime,
                  scene, paused, blacklist, whitelist, default_status_after, root_dir):
 
-        if isinstance(showDir, binary_type):
-            self.showDir = text_type(showDir, 'utf-8')
+        if isinstance(show_dir, binary_type):
+            self.show_dir = text_type(show_dir, 'utf-8')
         else:
-            self.showDir = showDir
+            self.show_dir = show_dir
 
         self.indexer = indexer
         self.indexer_id = indexer_id
@@ -349,7 +352,7 @@ class QueueItemAdd(ShowQueueItem):
         the dir that the show is being added to.
         """
         if self.show is None:
-            return self.showDir
+            return self.show_dir
         return self.show.name
 
     show_name = property(_getName)
@@ -371,8 +374,8 @@ class QueueItemAdd(ShowQueueItem):
 
         log.info(
             'Starting to add show by {0}',
-            ('ShowDir: {0}'.format(self.showDir)
-             if self.showDir else
+            ('show_dir: {0}'.format(self.show_dir)
+             if self.show_dir else
              'Indexer Id: {0}'.format(self.indexer_id))
         )
 
@@ -392,18 +395,18 @@ class QueueItemAdd(ShowQueueItem):
 
             # Let's try to create the show Dir if it's not provided. This way we force the show dir
             # to build build using the Indexers provided series name
-            if not self.showDir and self.root_dir:
+            if not self.show_dir and self.root_dir:
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
-                    self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
-                    dir_exists = make_dir(self.showDir)
+                    self.show_dir = os.path.join(self.root_dir, sanitize_filename(show_name))
+                    dir_exists = make_dir(self.show_dir)
                     if not dir_exists:
-                        log.info("Unable to create the folder {0}, can't add the show", self.showDir)
+                        log.info("Unable to create the folder {0}, can't add the show", self.show_dir)
                         return
 
-                    chmod_as_parent(self.showDir)
+                    chmod_as_parent(self.show_dir)
                 else:
-                    log.info("Unable to get a show {0}, can't add the show", self.showDir)
+                    log.info("Unable to get a show {0}, can't add the show", self.show_dir)
                     return
 
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
@@ -411,14 +414,14 @@ class QueueItemAdd(ShowQueueItem):
             if getattr(s, 'seriesname', None) is None:
                 log.error(
                     'Show in {path} has no name on {indexer}, probably searched with the wrong language.',
-                    {'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
+                    {'path': self.show_dir, 'indexer': indexerApi(self.indexer).name}
                 )
 
                 ui.notifications.error(
                     'Unable to add show',
                     'Show in {path} has no name on {indexer}, probably the wrong language.'
                     ' Delete .nfo and manually add the correct language.'.format(
-                        path=self.showDir, indexer=indexerApi(self.indexer).name)
+                        path=self.show_dir, indexer=indexerApi(self.indexer).name)
                 )
                 self._finishEarly()
                 return
@@ -439,21 +442,24 @@ class QueueItemAdd(ShowQueueItem):
                 self._finishEarly()
 
                 # Clean up leftover if the newly created directory is empty.
-                delete_empty_folders(self.showDir)
+                delete_empty_folders(self.show_dir)
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
-        except IndexerShowNotFound:
+        except IndexerShowNotFound as error:
             log.warning(
                 '{id}: Unable to look up the show in {path} using id {id} on {indexer}.'
-                ' Delete metadata files from the folder and try adding it again.',
-                {'id': self.indexer_id, 'path': self.showDir, 'indexer': indexerApi(self.indexer).name}
+                ' Delete metadata files from the folder and try adding it again.\n'
+                'With error: {error}',
+                {'id': self.indexer_id, 'path': self.show_dir,
+                 'indexer': indexerApi(self.indexer).name,
+                 'error': error}
             )
             ui.notifications.error(
                 'Unable to add show',
                 'Unable to look up the show in {path} using id {id} on {indexer}.'
                 ' Delete metadata files from the folder and try adding it again.'.format(
-                    path=self.showDir, id=self.indexer_id, indexer=indexerApi(self.indexer).name)
+                    path=self.show_dir, id=self.indexer_id, indexer=indexerApi(self.indexer).name)
             )
             self._finishEarly()
             return
@@ -479,7 +485,7 @@ class QueueItemAdd(ShowQueueItem):
             ui.notifications.error(
                 'Unable to add show',
                 'Unable to look up the show in {path} on {indexer} using ID {id}.'.format(
-                    path=self.showDir, indexer=indexerApi(self.indexer).name, id=self.indexer_id)
+                    path=self.show_dir, indexer=indexerApi(self.indexer).name, id=self.indexer_id)
             )
             self._finishEarly()
             return
@@ -491,7 +497,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show = newShow
 
             # set up initial values
-            self.show.location = self.showDir
+            self.show.location = self.show_dir
             self.show.subtitles = self.subtitles if self.subtitles is not None else app.SUBTITLES_DEFAULT
             self.show.quality = self.quality if self.quality else app.QUALITY_DEFAULT
             self.show.season_folders = self.season_folders if self.season_folders is not None \
@@ -539,12 +545,12 @@ class QueueItemAdd(ShowQueueItem):
         except MultipleShowObjectsException:
             log.warning(
                 'The show in {show_dir} is already in your show list, skipping',
-                {'show_dir': self.showDir}
+                {'show_dir': self.show_dir}
             )
             ui.notifications.error(
                 'Show skipped',
                 'The show in {show_dir} is already in your show list'.format(
-                    show_dir=self.showDir)
+                    show_dir=self.show_dir)
             )
             self._finishEarly()
             return
@@ -597,10 +603,19 @@ class QueueItemAdd(ShowQueueItem):
             log.debug(traceback.format_exc())
 
         # if they set default ep status to WANTED then run the backlog to search for episodes
-        # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             log.info('Launching backlog for this show since its episodes are WANTED')
-            app.backlog_search_scheduler.action.search_backlog([self.show])
+            wanted_segments = self.show.get_wanted_segments()
+            for season, segment in viewitems(wanted_segments):
+                cur_backlog_queue_item = BacklogQueueItem(self.show, segment)
+                app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
+
+                log.info(
+                    'Sending forced backlog for {show} season {season}'
+                    ' because some episodes were set to wanted'.format(
+                        show=self.show.name, season=season
+                    )
+                )
 
         self.show.write_metadata()
         self.show.update_metadata()
