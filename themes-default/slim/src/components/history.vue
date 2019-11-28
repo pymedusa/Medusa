@@ -33,7 +33,7 @@ export default {
     mounted() {
         const unwatch = this.$watch('stateLayout.history', () => {
             unwatch();
-            const { layout, config } = this;
+            const { historyLayout: layout, config } = this;
 
             $('#historyTable:has(tbody tr)').tablesorter({
                 widgets: ['saveSort', 'zebra', 'filter'],
