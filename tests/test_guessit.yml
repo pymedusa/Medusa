@@ -2985,6 +2985,30 @@
   release_group: Mad le Zisell
   type: episode
 
+? "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
+  type: episode
+
+? "Kemono.Michi.Rise.Up/Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
+  type: episode
+
 # Anime show containing number in its title and show with :
 ? /Anime/Mobile Suit Gundam UC RE0096/Season 01/Mobile Suit Gundam UC RE0096 - s01e15 - Title
 : title: Mobile Suit Gundam UC RE0096

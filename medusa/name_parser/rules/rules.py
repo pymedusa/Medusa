@@ -906,6 +906,97 @@ class AbsoluteEpisodeNumbers(Rule):
             return to_remove, to_append
 
 
+class OnePreGroupAsMultiEpisode(Rule):
+    """Remove last episode (one) and add the first episode as absolute.
+
+    There are animes where the absolute episode is detected as
+    multi episode because of a number (one) before the group.
+
+    Medusa rule:
+    - The first episode should be added as absolute
+    - The last episode should be removed
+    - Episode title should be release group
+
+    e.g.: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+
+    guessit -t episode "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+
+    without this rule:
+        For: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+        GuessIt found: {
+            "title": "Kemono Michi Rise Up",
+            "episode": [
+                3,
+                1
+            ],
+            "screen_size": "1080p",
+            "source": "Web",
+            "video_codec": "H.264",
+            "episode_title": "URANiME",
+            "other": "Obfuscated",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+        GuessIt found: {
+            "title": "Kemono Michi Rise Up",
+            "episode": 3,
+            "absolute_episode": 3,
+            "screen_size": "1080p",
+            "source": "Web",
+            "video_codec": "H.264",
+            "release_group": "URANiME",
+            "other": "Obfuscated",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episodes = matches.named('episode')
+        if not episodes or len(episodes) != 2:
+            return
+
+        is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
+        if is_anime or matches.named('season'):
+            return
+
+        sorted_episodes = sorted(episodes)
+        if sorted_episodes[-1].value != 1:
+            return
+
+        episode = copy.copy(sorted_episodes[0])
+        episode.name = 'absolute_episode'
+
+        to_remove = [sorted_episodes[-1]]
+        to_append = [episode]
+
+        episode_titles = matches.named('episode_title')
+        if episode_titles:
+            release_group = copy.copy(episode_titles[0])
+            release_group.name = 'release_group'
+
+            to_remove.append(episode_titles[0])
+            to_append.append(release_group)
+
+        return to_remove, to_append
+
+
 class PartsAsEpisodeNumbers(Rule):
     """Move part to episode.
 
@@ -1491,6 +1582,7 @@ def rules():
         AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
+        OnePreGroupAsMultiEpisode,
         PartsAsEpisodeNumbers,
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
