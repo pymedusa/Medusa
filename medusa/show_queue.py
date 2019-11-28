@@ -605,14 +605,17 @@ class QueueItemAdd(ShowQueueItem):
         # if they set default ep status to WANTED then run the backlog to search for episodes
         if self.show.default_ep_status == WANTED:
             log.info('Launching backlog for this show since its episodes are WANTED')
-            for season, segment in viewitems(self.show.get_wanted_segments()):
+            wanted_segments = self.show.get_wanted_segments()
+            for season, segment in viewitems(wanted_segments):
                 cur_backlog_queue_item = BacklogQueueItem(self.show, segment)
                 app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
-                log.info('Sending backlog for {show} season {season} '
-                         'because some episodes were set to wanted'.format(
-                    show=self.show.name, season=season
-                ))
+                log.info(
+                    'Sending forced backlog for {show} season {season}'
+                    ' because some episodes were set to wanted'.format(
+                        show=self.show.name, season=season
+                    )
+                )
 
         self.show.write_metadata()
         self.show.update_metadata()

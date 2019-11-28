@@ -2503,7 +2503,7 @@ class Series(TV):
                       {'show': self.name})
             return False
 
-    def get_wanted_segments(self, from_date=datetime.date.fromordinal(1)):
+    def get_wanted_segments(self, from_date=None):
         """Get episodes that should be backlog searched."""
         wanted = {}
         if self.paused:
@@ -2511,6 +2511,8 @@ class Series(TV):
             return wanted
 
         log.debug(u'Seeing if we need anything from {0}', self.name)
+
+        from_date = from_date or datetime.date.fromordinal(1)
 
         con = db.DBConnection()
         sql_results = con.select(

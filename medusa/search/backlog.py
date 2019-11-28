@@ -10,8 +10,6 @@ from builtins import object
 from builtins import str
 
 from medusa import app, db, scheduler, ui
-from medusa.common import Quality, UNSET
-from medusa.helper.common import episode_num
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem
 
