@@ -503,7 +503,8 @@ export default {
         ...mapState([
             'config',
             'metadata',
-            'postprocessing'
+            'postprocessing',
+            'system'
         ]),
         configLoaded() {
             const { postprocessing } = this;

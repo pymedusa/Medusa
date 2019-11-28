@@ -3173,7 +3173,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             <span
               class="path"
             >
-              
+              C:\\Medusa\\Data
             </span>
           </b>
         </h6>
