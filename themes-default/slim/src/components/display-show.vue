@@ -599,8 +599,8 @@ export default {
             }
         },
         parseDateFn(row) {
-            const { config, layout, timeAgo } = this;
-            const { dateStyle, timeStyle } = config;
+            const { layout, timeAgo } = this;
+            const { dateStyle, timeStyle } = layout;
             const { fuzzyDating } = layout;
 
             if (!row.airDate) {
