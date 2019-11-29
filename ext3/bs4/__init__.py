@@ -17,12 +17,10 @@ http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 
 """
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "4.6.3"
-__copyright__ = "Copyright (c) 2004-2018 Leonard Richardson"
+__version__ = "4.8.1"
+__copyright__ = "Copyright (c) 2004-2019 Leonard Richardson"
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 __all__ = ['BeautifulSoup']
@@ -65,7 +63,7 @@ class BeautifulSoup(Tag):
       handle_starttag(name, attrs) # See note about return value
       handle_endtag(name)
       handle_data(data) # Appends to the current data node
-      endData(containerClass=NavigableString) # Ends the current data node
+      endData(containerClass) # Ends the current data node
 
     No matter how complicated the underlying parser is, you should be
     able to build a tree using 'start tag' events, 'end tag' events,
@@ -80,14 +78,14 @@ class BeautifulSoup(Tag):
     # If the end-user gives no indication which tree builder they
     # want, look for one with these features.
     DEFAULT_BUILDER_FEATURES = ['html', 'fast']
-
+   
     ASCII_SPACES = '\x20\x0a\x09\x0c\x0d'
 
     NO_PARSER_SPECIFIED_WARNING = "No parser was explicitly specified, so I'm using the best available %(markup_type)s parser for this system (\"%(parser)s\"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.\n\nThe code that caused this warning is on line %(line_number)s of the file %(filename)s. To get rid of this warning, pass the additional argument 'features=\"%(parser)s\"' to the BeautifulSoup constructor.\n"
 
     def __init__(self, markup="", features=None, builder=None,
                  parse_only=None, from_encoding=None, exclude_encodings=None,
-                 **kwargs):
+                 element_classes=None, **kwargs):
         """Constructor.
 
         :param markup: A string or a file-like object representing
@@ -100,8 +98,10 @@ class BeautifulSoup(Tag):
         name a specific parser, so that Beautiful Soup gives you the
         same results across platforms and virtual environments.
 
-        :param builder: A specific TreeBuilder to use instead of looking one
-        up based on `features`. You shouldn't need to use this.
+        :param builder: A TreeBuilder subclass to instantiate (or
+        instance to use) instead of looking one up based on
+        `features`. You only need to use this if you've implemented a
+        custom TreeBuilder.
 
         :param parse_only: A SoupStrainer. Only parts of the document
         matching the SoupStrainer will be considered. This is useful
@@ -117,14 +117,26 @@ class BeautifulSoup(Tag):
         the document's encoding but you know Beautiful Soup's guess is
         wrong.
 
+        :param element_classes: A dictionary mapping BeautifulSoup
+        classes like Tag and NavigableString to other classes you'd
+        like to be instantiated instead as the parse tree is
+        built. This is useful for using subclasses to modify the
+        default behavior of Tag or NavigableString.
+
         :param kwargs: For backwards compatibility purposes, the
         constructor accepts certain keyword arguments used in
         Beautiful Soup 3. None of these arguments do anything in
-        Beautiful Soup 4 and there's no need to actually pass keyword
-        arguments into the constructor.
+        Beautiful Soup 4; they will result in a warning and then be ignored.
+
+        Apart from this, any keyword arguments passed into the BeautifulSoup
+        constructor are propagated to the TreeBuilder constructor. This
+        makes it possible to configure a TreeBuilder beyond saying
+        which one to use.
+
         """
 
         if 'convertEntities' in kwargs:
+            del kwargs['convertEntities']
             warnings.warn(
                 "BS4 does not respect the convertEntities argument to the "
                 "BeautifulSoup constructor. Entities are always converted "
@@ -179,13 +191,19 @@ class BeautifulSoup(Tag):
             warnings.warn("You provided Unicode markup but also provided a value for from_encoding. Your from_encoding will be ignored.")
             from_encoding = None
 
-        if len(kwargs) > 0:
-            arg = list(kwargs.keys()).pop()
-            raise TypeError(
-                "__init__() got an unexpected keyword argument '%s'" % arg)
+        self.element_classes = element_classes or dict()
 
-        if builder is None:
-            original_features = features
+        # We need this information to track whether or not the builder
+        # was specified well enough that we can omit the 'you need to
+        # specify a parser' warning.
+        original_builder = builder
+        original_features = features
+            
+        if isinstance(builder, type):
+            # A builder class was passed in; it needs to be instantiated.
+            builder_class = builder
+            builder = None
+        elif builder is None:
             if isinstance(features, str):
                 features = [features]
             if features is None or len(features) == 0:
@@ -196,9 +214,16 @@ class BeautifulSoup(Tag):
                     "Couldn't find a tree builder with the features you "
                     "requested: %s. Do you need to install a parser library?"
                     % ",".join(features))
-            builder = builder_class()
-            if not (original_features == builder.NAME or
-                    original_features in builder.ALTERNATE_NAMES):
+
+        # At this point either we have a TreeBuilder instance in
+        # builder, or we have a builder_class that we can instantiate
+        # with the remaining **kwargs.
+        if builder is None:
+            builder = builder_class(**kwargs)
+            if not original_builder and not (
+                    original_features == builder.NAME or
+                    original_features in builder.ALTERNATE_NAMES
+            ):
                 if builder.is_xml:
                     markup_type = "XML"
                 else:
@@ -233,13 +258,17 @@ class BeautifulSoup(Tag):
                         markup_type=markup_type
                     )
                     warnings.warn(self.NO_PARSER_SPECIFIED_WARNING % values, stacklevel=2)
-
+        else:
+            if kwargs:
+                warnings.warn("Keyword arguments to the BeautifulSoup constructor will be ignored. These would normally be passed into the TreeBuilder constructor, but a TreeBuilder instance was passed in as `builder`.")
+                    
         self.builder = builder
         self.is_xml = builder.is_xml
         self.known_xml = self.is_xml
-        self.builder.soup = self
-
+        self._namespaces = dict()
         self.parse_only = parse_only
+
+        self.builder.initialize_soup(self)
 
         if hasattr(markup, 'read'):        # It's a file-type object.
             markup = markup.read()
@@ -273,6 +302,8 @@ class BeautifulSoup(Tag):
                     ' Beautiful Soup.' % markup)
             self._check_markup_is_url(markup)
 
+        rejections = []
+        success = False
         for (self.markup, self.original_encoding, self.declared_html_encoding,
          self.contains_replacement_characters) in (
              self.builder.prepare_markup(
@@ -280,9 +311,17 @@ class BeautifulSoup(Tag):
             self.reset()
             try:
                 self._feed()
+                success = True
                 break
-            except ParserRejectedMarkup:
+            except ParserRejectedMarkup as e:
+                rejections.append(e)
                 pass
+
+        if not success:
+            other_exceptions = [str(e) for e in rejections]
+            raise ParserRejectedMarkup(
+                "The markup you provided was rejected by the parser. Trying a different parser or a different encoding may help.\n\nOriginal exception(s) from parser:\n " + "\n ".join(other_exceptions)
+            )
 
         # Clear out the markup and remove the builder's circular
         # reference to this object.
@@ -356,13 +395,20 @@ class BeautifulSoup(Tag):
         self.preserve_whitespace_tag_stack = []
         self.pushTag(self)
 
-    def new_tag(self, name, namespace=None, nsprefix=None, attrs={}, **kwattrs):
+    def new_tag(self, name, namespace=None, nsprefix=None, attrs={},
+                sourceline=None, sourcepos=None, **kwattrs):
         """Create a new tag associated with this soup."""
         kwattrs.update(attrs)
-        return Tag(None, self.builder, name, namespace, nsprefix, kwattrs)
+        return self.element_classes.get(Tag, Tag)(
+            None, self.builder, name, namespace, nsprefix, kwattrs,
+            sourceline=sourceline, sourcepos=sourcepos
+        )
 
-    def new_string(self, s, subclass=NavigableString):
+    def new_string(self, s, subclass=None):
         """Create a new NavigableString associated with this soup."""
+        subclass = subclass or self.element_classes.get(
+            NavigableString, NavigableString
+        )
         return subclass(s)
 
     def insert_before(self, successor):
@@ -382,14 +428,24 @@ class BeautifulSoup(Tag):
 
     def pushTag(self, tag):
         #print "Push", tag.name
-        if self.currentTag:
+        if self.currentTag is not None:
             self.currentTag.contents.append(tag)
         self.tagStack.append(tag)
         self.currentTag = self.tagStack[-1]
         if tag.name in self.builder.preserve_whitespace_tags:
             self.preserve_whitespace_tag_stack.append(tag)
 
-    def endData(self, containerClass=NavigableString):
+    def endData(self, containerClass=None):
+
+        # Default container is NavigableString.
+        containerClass = containerClass or NavigableString
+
+        # The user may want us to instantiate some alias for the
+        # container class.
+        containerClass = self.element_classes.get(
+            containerClass, containerClass
+        )
+        
         if self.current_data:
             current_data = ''.join(self.current_data)
             # If whitespace is not preserved, and this string contains
@@ -421,60 +477,71 @@ class BeautifulSoup(Tag):
 
     def object_was_parsed(self, o, parent=None, most_recent_element=None):
         """Add an object to the parse tree."""
-        parent = parent or self.currentTag
-        previous_element = most_recent_element or self._most_recent_element
+        if parent is None:
+            parent = self.currentTag
+        if most_recent_element is not None:
+            previous_element = most_recent_element
+        else:
+            previous_element = self._most_recent_element
 
         next_element = previous_sibling = next_sibling = None
         if isinstance(o, Tag):
             next_element = o.next_element
             next_sibling = o.next_sibling
             previous_sibling = o.previous_sibling
-            if not previous_element:
+            if previous_element is None:
                 previous_element = o.previous_element
+
+        fix = parent.next_element is not None
 
         o.setup(parent, previous_element, next_element, previous_sibling, next_sibling)
 
         self._most_recent_element = o
         parent.contents.append(o)
 
-        if parent.next_sibling:
-            # This node is being inserted into an element that has
-            # already been parsed. Deal with any dangling references.
-            index = len(parent.contents)-1
-            while index >= 0:
-                if parent.contents[index] is o:
-                    break
-                index -= 1
-            else:
-                raise ValueError(
-                    "Error building tree: supposedly %r was inserted "
-                    "into %r after the fact, but I don't see it!" % (
-                        o, parent
-                    )
-                )
-            if index == 0:
-                previous_element = parent
-                previous_sibling = None
-            else:
-                previous_element = previous_sibling = parent.contents[index-1]
-            if index == len(parent.contents)-1:
-                next_element = parent.next_sibling
-                next_sibling = None
-            else:
-                next_element = next_sibling = parent.contents[index+1]
+        # Check if we are inserting into an already parsed node.
+        if fix:
+            self._linkage_fixer(parent)
 
-            o.previous_element = previous_element
-            if previous_element:
-                previous_element.next_element = o
-            o.next_element = next_element
-            if next_element:
-                next_element.previous_element = o
-            o.next_sibling = next_sibling
-            if next_sibling:
-                next_sibling.previous_sibling = o
-            o.previous_sibling = previous_sibling
-            if previous_sibling:
-                previous_sibling.next_sibling = o
+    def _linkage_fixer(self, el):
+        """Make sure linkage of this fragment is sound."""
+
+        first = el.contents[0]
+        child = el.contents[-1]
+        descendant = child
+
+        if child is first and el.parent is not None:
+            # Parent should be linked to first child
+            el.next_element = child
+            # We are no longer linked to whatever this element is
+            prev_el = child.previous_element
+            if prev_el is not None and prev_el is not el:
+                prev_el.next_element = None
+            # First child should be linked to the parent, and no previous siblings.
+            child.previous_element = el
+            child.previous_sibling = None
+
+        # We have no sibling as we've been appended as the last.
+        child.next_sibling = None
+
+        # This index is a tag, dig deeper for a "last descendant"
+        if isinstance(child, Tag) and child.contents:
+            descendant = child._last_descendant(False)
+
+        # As the final step, link last descendant. It should be linked
+        # to the parent's next sibling (if found), else walk up the chain
+        # and find a parent with a sibling. It should have no next sibling.
+        descendant.next_element = None
+        descendant.next_sibling = None
+        target = el
+        while True:
+            if target is None:
+                break
+            elif target.next_sibling is not None:
+                descendant.next_element = target.next_sibling
+                target.next_sibling.previous_element = child
+                break
+            target = target.parent
 
     def _popToTag(self, name, nsprefix=None, inclusivePop=True):
         """Pops the tag stack up to and including the most recent
@@ -499,7 +566,8 @@ class BeautifulSoup(Tag):
 
         return most_recently_popped
 
-    def handle_starttag(self, name, namespace, nsprefix, attrs):
+    def handle_starttag(self, name, namespace, nsprefix, attrs, sourceline=None,
+                        sourcepos=None):
         """Push a start tag on to the stack.
 
         If this method returns None, the tag was rejected by the
@@ -516,11 +584,14 @@ class BeautifulSoup(Tag):
                  or not self.parse_only.search_tag(name, attrs))):
             return None
 
-        tag = Tag(self, self.builder, name, namespace, nsprefix, attrs,
-                  self.currentTag, self._most_recent_element)
+        tag = self.element_classes.get(Tag, Tag)(
+            self, self.builder, name, namespace, nsprefix, attrs,
+            self.currentTag, self._most_recent_element,
+            sourceline=sourceline, sourcepos=sourcepos
+        )
         if tag is None:
             return tag
-        if self._most_recent_element:
+        if self._most_recent_element is not None:
             self._most_recent_element.next_element = tag
         self._most_recent_element = tag
         self.pushTag(tag)

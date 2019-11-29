@@ -1,5 +1,6 @@
 # coding=utf-8
 """Test config package."""
+from __future__ import unicode_literals
 
 # pylint: disable=line-too-long
 

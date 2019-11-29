@@ -35,6 +35,12 @@ except ImportError:
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+BANNER = 1
+POSTER = 2
+BANNER_THUMB = 3
+POSTER_THUMB = 4
+FANART = 5
+
 
 class GenericMetadata(object):
     """
@@ -159,19 +165,29 @@ class GenericMetadata(object):
         return self._check_exists(self.get_season_all_banner_path(show_obj))
 
     def get_show_file_path(self, show_obj):
-        return os.path.join(show_obj.location, self._show_metadata_filename)
+        return os.path.join(show_obj.validate_location, self._show_metadata_filename)
 
     def get_episode_file_path(self, ep_obj):
         return replace_extension(ep_obj.location, self._ep_nfo_extension)
 
     def get_fanart_path(self, show_obj):
-        return os.path.join(show_obj.location, self.fanart_name)
+        return os.path.join(show_obj.validate_location, self.fanart_name)
 
     def get_poster_path(self, show_obj):
-        return os.path.join(show_obj.location, self.poster_name)
+        return os.path.join(show_obj.validate_location, self.poster_name)
 
     def get_banner_path(self, show_obj):
-        return os.path.join(show_obj.location, self.banner_name)
+        return os.path.join(show_obj.validate_location, self.banner_name)
+
+    def get_image_path(self, show_obj, image_type):
+        """Based on the image_type (banner, poster, fanart) call the correct method, and return the path."""
+        banner_path = {
+            BANNER: self.get_banner_path,
+            POSTER: self.get_poster_path,
+            FANART: self.get_fanart_path
+        }
+        if banner_path.get(image_type):
+            return banner_path[image_type](show_obj)
 
     @staticmethod
     def get_episode_thumb_path(ep_obj):
@@ -208,7 +224,7 @@ class GenericMetadata(object):
         else:
             season_poster_filename = u'season' + str(season).zfill(2)
 
-        return os.path.join(show_obj.location, season_poster_filename + u'-poster.jpg')
+        return os.path.join(show_obj.validate_location, season_poster_filename + u'-poster.jpg')
 
     @staticmethod
     def get_season_banner_path(show_obj, season):
@@ -225,13 +241,13 @@ class GenericMetadata(object):
         else:
             season_banner_filename = u'season' + str(season).zfill(2)
 
-        return os.path.join(show_obj.location, season_banner_filename + u'-banner.jpg')
+        return os.path.join(show_obj.validate_location, season_banner_filename + u'-banner.jpg')
 
     def get_season_all_poster_path(self, show_obj):
-        return os.path.join(show_obj.location, self.season_all_poster_name)
+        return os.path.join(show_obj.validate_location, self.season_all_poster_name)
 
     def get_season_all_banner_path(self, show_obj):
-        return os.path.join(show_obj.location, self.season_all_banner_name)
+        return os.path.join(show_obj.validate_location, self.season_all_banner_name)
 
     # pylint: disable=unused-argument,no-self-use
     def _show_data(self, show_obj):
@@ -408,7 +424,7 @@ class GenericMetadata(object):
             try:
                 indexer_episode = indexer_series[ep.season][ep.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound) as error:
-                log.debug(u'Unable to find season or episode. Reason: {0!r}', error.message)
+                log.debug(u'Unable to find season or episode. Reason: {0!r}', error)
                 continue
 
             thumb_url = getattr(indexer_episode, 'filename', None)
@@ -767,19 +783,29 @@ class GenericMetadata(object):
 
         if image_type == u'thumbnail' and episode:
             image_url = self._get_episode_thumb_url(indexer_show_obj, episode)
+
         elif image_type == u'poster_thumb':
             if getattr(indexer_show_obj, u'poster', None):
-                image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
+                if show_obj.indexer == INDEXER_TVDBV2:
+                    image_url = indexer_show_obj[u'poster'].replace('.jpg', '_t.jpg')
+                else:
+                    image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
+
             if not image_url:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
+
         elif image_type == u'banner_thumb':
             if getattr(indexer_show_obj, u'banner', None):
-                image_url = re.sub(u'graphical', u'_cache/graphical', indexer_show_obj[u'banner'])
+                if show_obj.indexer == INDEXER_TVDBV2:
+                    image_url = indexer_show_obj[u'banner'].replace('.jpg', '_t.jpg')
+                else:
+                    image_url = re.sub(u'graphical', u'_cache/graphical', indexer_show_obj[u'banner'])
         else:
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
-            if not image_url and show_obj.indexer != 4:
+
+            if not image_url and show_obj.indexer != INDEXER_TMDB:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 

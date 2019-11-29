@@ -6,8 +6,7 @@ necessary. It is heavily based on code from Mark Pilgrim's Universal
 Feed Parser. It works best on XML and HTML, but it does not rewrite the
 XML or HTML to reflect a new encoding; that's the tree builder's job.
 """
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
 import codecs
@@ -23,6 +22,8 @@ try:
     #  PyPI package: cchardet
     import cchardet
     def chardet_dammit(s):
+        if isinstance(s, str):
+            return None
         return cchardet.detect(s)['encoding']
 except ImportError:
     try:
@@ -31,6 +32,8 @@ except ImportError:
         #  PyPI package: chardet
         import chardet
         def chardet_dammit(s):
+            if isinstance(s, str):
+                return None
             return chardet.detect(s)['encoding']
         #import chardet.constants
         #chardet.constants._debug = 1
@@ -45,10 +48,19 @@ try:
 except ImportError:
     pass
 
-xml_encoding_re = re.compile(
-    '^<\\?.*encoding=[\'"](.*?)[\'"].*\\?>'.encode(), re.I)
-html_meta_re = re.compile(
-    '<\\s*meta[^>]+charset\\s*=\\s*["\']?([^>]*?)[ /;\'">]'.encode(), re.I)
+# Build bytestring and Unicode versions of regular expressions for finding
+# a declared encoding inside an XML or HTML document.
+xml_encoding = '^\s*<\\?.*encoding=[\'"](.*?)[\'"].*\\?>'
+html_meta = '<\\s*meta[^>]+charset\\s*=\\s*["\']?([^>]*?)[ /;\'">]'
+encoding_res = dict()
+encoding_res[bytes] = {
+    'html' : re.compile(html_meta.encode("ascii"), re.I),
+    'xml' : re.compile(xml_encoding.encode("ascii"), re.I),
+}
+encoding_res[str] = {
+    'html' : re.compile(html_meta, re.I),
+    'xml' : re.compile(xml_encoding, re.I)
+}
 
 class EntitySubstitution(object):
 
@@ -58,15 +70,24 @@ class EntitySubstitution(object):
         lookup = {}
         reverse_lookup = {}
         characters_for_re = []
-        for codepoint, name in list(codepoint2name.items()):
+
+        # &apos is an XHTML entity and an HTML 5, but not an HTML 4
+        # entity. We don't want to use it, but we want to recognize it on the way in.
+        #
+        # TODO: Ideally we would be able to recognize all HTML 5 named
+        # entities, but that's a little tricky.
+        extra = [(39, 'apos')]
+        for codepoint, name in list(codepoint2name.items()) + extra:
             character = chr(codepoint)
-            if codepoint != 34:
+            if codepoint not in (34, 39):
                 # There's no point in turning the quotation mark into
-                # &quot;, unless it happens within an attribute value, which
-                # is handled elsewhere.
+                # &quot; or the single quote into &apos;, unless it
+                # happens within an attribute value, which is handled
+                # elsewhere.
                 characters_for_re.append(character)
                 lookup[character] = name
-            # But we do want to turn &quot; into the quotation mark.
+            # But we do want to recognize those entities on the way in and
+            # convert them to Unicode characters.
             reverse_lookup[name] = character
         re_definition = "[%s]" % "".join(characters_for_re)
         return lookup, reverse_lookup, re.compile(re_definition)
@@ -311,14 +332,22 @@ class EncodingDetector:
             xml_endpos = 1024
             html_endpos = max(2048, int(len(markup) * 0.05))
 
+        if isinstance(markup, bytes):
+            res = encoding_res[bytes]
+        else:
+            res = encoding_res[str]
+
+        xml_re = res['xml']
+        html_re = res['html']
         declared_encoding = None
-        declared_encoding_match = xml_encoding_re.search(markup, endpos=xml_endpos)
+        declared_encoding_match = xml_re.search(markup, endpos=xml_endpos)
         if not declared_encoding_match and is_html:
-            declared_encoding_match = html_meta_re.search(markup, endpos=html_endpos)
+            declared_encoding_match = html_re.search(markup, endpos=html_endpos)
         if declared_encoding_match is not None:
-            declared_encoding = declared_encoding_match.groups()[0].decode(
-                'ascii', 'replace')
+            declared_encoding = declared_encoding_match.groups()[0]
         if declared_encoding:
+            if isinstance(declared_encoding, bytes):
+                declared_encoding = declared_encoding.decode('ascii', 'replace')
             return declared_encoding.lower()
         return None
 

@@ -35,10 +35,19 @@ class TorrentProvider(GenericProvider):
 
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
+        self.minseed = 0
+        self.minleech = 0
 
     def is_active(self):
         """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()
+
+    def get_result(self, series, item=None, cache=None):
+        """Get result."""
+        search_result = TorrentSearchResult(provider=self, series=series,
+                                            item=item, cache=cache)
+
+        return search_result
 
     @property
     def _custom_trackers(self):
@@ -48,10 +57,6 @@ class TorrentProvider(GenericProvider):
 
         return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST if x.strip())
 
-    def _get_result(self, episodes):
-        """Return a provider result object."""
-        return TorrentSearchResult(episodes, provider=self)
-
     def _get_size(self, item):
         """Get result size."""
         if isinstance(item, dict):
@@ -59,10 +64,6 @@ class TorrentProvider(GenericProvider):
         elif isinstance(item, (list, tuple)) and len(item) > 2:
             size = item[2]
         else:
-            size = -1
-
-        # Make sure we didn't select seeds/leechers by accident
-        if not size or size < 1024 * 1024:
             size = -1
 
         return try_int(size, -1)
@@ -148,9 +149,17 @@ class TorrentProvider(GenericProvider):
         return pubdate
 
     def get_redirect_url(self, url):
-        """Get the address that the provided URL redirects to."""
+        """Get the final address that the provided URL redirects to."""
         log.debug('Retrieving redirect URL for {url}', {'url': url})
 
+        response = self.session.get(url, stream=True)
+        if response:
+            response.close()
+            return response.url
+
+        # Jackett redirects to a magnet causing InvalidSchema.
+        # Use an alternative method to get the redirect URL.
+        log.debug('Using alternative method to retrieve redirect URL')
         response = self.session.get(url, allow_redirects=False)
         if response and response.headers.get('Location'):
             return response.headers['Location']

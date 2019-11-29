@@ -1,18 +1,11 @@
 <template>
-    <span :class="override.class || ['quality', pill.class]" :title="title">{{ override.text || pill.text }}</span>
+    <span :class="override.class || ['quality', pill.key]" :title="title">{{ override.text || pill.name }}</span>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import { combineQualities } from '../../utils';
 
-/**
- * An object representing a split quality.
- *
- * @typedef {Object} Quality
- * @property {number[]} allowed - Allowed qualities
- * @property {number[]} preferred - Preferred qualities
- */
 export default {
     name: 'quality-pill',
     props: {
@@ -40,14 +33,14 @@ export default {
     },
     computed: {
         ...mapState({
-            qualityValues: state => state.qualities.values,
-            qualityValueStrings: state => state.qualities.strings.values,
-            qualityAnySets: state => state.qualities.anySets,
-            qualityAnySetStrings: state => state.qualities.strings.anySets,
-            qualityPresets: state => state.qualities.presets,
-            qualityPresetStrings: state => state.qualities.strings.presets,
-            qualityCssClassStrings: state => state.qualities.strings.cssClass
+            qualityValues: state => state.consts.qualities.values
         }),
+        ...mapGetters([
+            'getQuality',
+            'getQualityAnySet',
+            'getQualityPreset',
+            'splitQuality'
+        ]),
         qualities() {
             const { allowed, preferred, quality, splitQuality } = this;
 
@@ -61,7 +54,7 @@ export default {
             return splitQuality(quality);
         },
         title() {
-            const { override, qualities, qualityValueStrings, showTitle } = this;
+            const { override, qualities, getQuality, showTitle } = this;
 
             if (override.title) {
                 return override.title;
@@ -71,43 +64,24 @@ export default {
                 return undefined;
             }
 
+            const getQualityName = value => getQuality({ value }).name;
+
             let title = '';
-            title += 'Allowed Quality:\n';
+            title += 'Allowed Qualities:\n';
             if (qualities.allowed.length === 0) {
                 title += '  None';
             } else {
-                title += qualities.allowed.map(curQual => `  ${qualityValueStrings[curQual]}`).join('\n');
+                title += qualities.allowed.map(curQual => `  ${getQualityName(curQual)}`).join('\n');
             }
 
-            title += '\n\nPreferred Quality:\n';
+            title += '\n\nPreferred Qualities:\n';
             if (qualities.preferred.length === 0) {
                 title += '  None';
             } else {
-                title += qualities.preferred.map(curQual => `  ${qualityValueStrings[curQual]}`).join('\n');
+                title += qualities.preferred.map(curQual => `  ${getQualityName(curQual)}`).join('\n');
             }
 
             return title;
-        },
-        setHDTV() {
-            return this.makeQualitySet('hdtv', 'rawhdtv', 'fullhdtv', 'uhd4ktv', 'uhd8ktv');
-        },
-        setWEBDL() {
-            return this.makeQualitySet('hdwebdl', 'fullhdwebdl', 'uhd4kwebdl', 'uhd8kwebdl');
-        },
-        setBluRay() {
-            return this.makeQualitySet('hdbluray', 'fullhdbluray', 'uhd4kbluray', 'uhd8kbluray');
-        },
-        set720p() {
-            return this.makeQualitySet('hdtv', 'rawhdtv', 'hdwebdl', 'hdbluray');
-        },
-        set1080p() {
-            return this.makeQualitySet('fullhdtv', 'fullhdwebdl', 'fullhdbluray');
-        },
-        setUHD4K() {
-            return this.makeQualitySet('uhd4ktv', 'uhd4kwebdl', 'uhd4kbluray');
-        },
-        setUHD8K() {
-            return this.makeQualitySet('uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray');
         },
         pill() {
             let { quality, allowed, preferred } = this;
@@ -124,104 +98,97 @@ export default {
                 quality = sumAllowed;
             }
 
-            const {
-                isSubsetOf,
-                qualities,
-                qualityAnySets,
-                qualityAnySetStrings,
-                qualityCssClassStrings,
-                qualityPresets,
-                qualityPresetStrings,
-                qualityValues,
-                qualityValueStrings,
-                setHDTV,
-                setWEBDL,
-                setBluRay,
-                set720p,
-                set1080p,
-                setUHD4K,
-                setUHD8K
-            } = this;
-
-            // This are the fallback values, if none of the checks below match
-            const result = {
-                class: 'Custom',
-                text: 'Custom'
-            };
-
+            const matched =
             // Is quality a preset?
-            if (Object.values(qualityPresets).includes(quality)) {
-                result.class = qualityPresetStrings[quality];
-                result.text = qualityPresetStrings[quality];
+                this.getQualityPreset({ value: quality }) ||
             // Is quality an 'anySet'? (any HDTV, any WEB-DL, any BluRay)
-            } else if (Object.values(qualityAnySets).includes(quality)) {
-                result.class = qualityCssClassStrings[quality];
-                result.text = qualityAnySetStrings[quality];
+                this.getQualityAnySet({ value: quality }) ||
             // Is quality a specific quality? (720p HDTV, 1080p WEB-DL, etc.)
-            } else if (Object.values(qualityValues).includes(quality)) {
-                result.class = qualityCssClassStrings[quality];
-                result.text = qualityValueStrings[quality];
-            // Check if all sources are HDTV
-            } else if (isSubsetOf(qualities.allowed, setHDTV) && isSubsetOf(qualities.preferred, setHDTV)) {
-                result.class = qualityCssClassStrings[qualityAnySets.anyhdtv];
-                result.text = 'HDTV';
-            // Check if all sources are WEB-DL
-            } else if (isSubsetOf(qualities.allowed, setWEBDL) && isSubsetOf(qualities.preferred, setWEBDL)) {
-                result.class = qualityCssClassStrings[qualityAnySets.anywebdl];
-                result.text = 'WEB-DL';
-            // Check if all sources are BluRay
-            } else if (isSubsetOf(qualities.allowed, setBluRay) && isSubsetOf(qualities.preferred, setBluRay)) {
-                result.class = qualityCssClassStrings[qualityAnySets.anybluray];
-                result.text = 'BluRay';
-            // Check if all resolutions are 720p
-            } else if (isSubsetOf(qualities.allowed, set720p) && isSubsetOf(qualities.preferred, set720p)) {
-                result.class = qualityCssClassStrings[qualityValues.hdbluray];
-                result.text = '720p';
-            // Check if all resolutions are 1080p
-            } else if (isSubsetOf(qualities.allowed, set1080p) && isSubsetOf(qualities.preferred, set1080p)) {
-                result.class = qualityCssClassStrings[qualityValues.fullhdbluray];
-                result.text = '1080p';
-            // Check if all resolutions are 4K UHD
-            } else if (isSubsetOf(qualities.allowed, setUHD4K) && isSubsetOf(qualities.preferred, setUHD4K)) {
-                result.class = qualityCssClassStrings[qualityValues.uhd4kbluray];
-                result.text = 'UHD-4K';
-            // Check if all resolutions are 8K UHD
-            } else if (isSubsetOf(qualities.allowed, setUHD8K) && isSubsetOf(qualities.preferred, setUHD8K)) {
-                result.class = qualityCssClassStrings[qualityValues.uhd8kbluray];
-                result.text = 'UHD-8K';
+                this.getQuality({ value: quality });
+
+            if (matched !== undefined) {
+                return matched;
             }
 
-            return result;
+            const customQualitySets = [
+                // All sources are HDTV
+                {
+                    name: 'HDTV',
+                    key: 'anyhdtv',
+                    elements: ['hdtv', 'rawhdtv', 'fullhdtv', 'uhd4ktv', 'uhd8ktv']
+                },
+                // All sources are WEB-DL
+                {
+                    name: 'WEB-DL',
+                    key: 'anywebdl',
+                    elements: ['hdwebdl', 'fullhdwebdl', 'uhd4kwebdl', 'uhd8kwebdl']
+                },
+                // All sources are BluRay
+                {
+                    name: 'BluRay',
+                    key: 'anybluray',
+                    elements: ['hdbluray', 'fullhdbluray', 'uhd4kbluray', 'uhd8kbluray']
+                },
+                // All resolutions are 720p
+                {
+                    name: '720p',
+                    key: 'hd720p',
+                    elements: ['hdtv', 'rawhdtv', 'hdwebdl', 'hdbluray']
+                },
+                // All resolutions are 1080p
+                {
+                    name: '1080p',
+                    key: 'hd1080p',
+                    elements: ['fullhdtv', 'fullhdwebdl', 'fullhdbluray']
+                },
+                // All resolutions are 4K UHD
+                {
+                    name: 'UHD-4K',
+                    key: 'anyuhd4k',
+                    elements: ['uhd4ktv', 'uhd4kwebdl', 'uhd4kbluray']
+                },
+                // All resolutions are 8K UHD
+                {
+                    name: 'UHD-8K',
+                    key: 'anyuhd8k',
+                    elements: ['uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray']
+        }
+            ];
+
+            const { isSubsetOf, qualities, makeQualitySet } = this;
+
+            for (const { name, key, elements } of customQualitySets) {
+                const qualitySet = makeQualitySet(elements);
+                // Check if both quality lists match the set.
+                if (isSubsetOf(qualities.allowed, qualitySet) && isSubsetOf(qualities.preferred, qualitySet)) {
+                    return { name, key };
+                }
+            }
+
+            // These are the fallback values, if none of the checks above matched
+            return {
+                key: 'custom',
+                name: 'Custom'
+            };
         }
     },
     methods: {
         /**
-         * Split a combined quality to allowed and preferred qualities.
-         * Converted Python method from `medusa.common.Quality.split_quality`.
-         *
-         * @param {Number} quality - The combined quality to split
-         * @returns {Quality} - The split quality
+         * Make a quality set.
+         * @param {string[]} keys - An array of quality keys to add their values to the set.
+         * @returns {number[]} An array of the quality values.
          */
-        splitQuality(quality) {
-            const { qualityValues } = this;
-            // Sort the quality list first
-            const qualities = [...Object.values(qualityValues)].sort((a, b) => a - b);
-            return qualities.reduce((result, curQuality) => {
-                quality >>>= 0; // Unsigned int
-                if (curQuality & quality) {
-                    result.allowed.push(curQuality);
-                }
-                if ((curQuality << 16) & quality) {
-                    result.preferred.push(curQuality);
+        makeQualitySet(keys) {
+            return this.qualityValues.reduce((result, { key, value }) => {
+                if (keys.includes(key)) {
+                    return result.concat(value);
                 }
                 return result;
-            }, { allowed: [], preferred: [] });
-        },
-        makeQualitySet(...keys) {
-            return keys.map(key => this.qualityValues[key]);
+            }, []);
         },
         /**
          * Check if all the items of `set1` are items of `set2`.
+         * Note that when `set1` is empty, it returns `true`.
          * Assumption: Each array contains unique items only.
          * Source: https://stackoverflow.com/a/48211214/7597273
          *
@@ -237,6 +204,7 @@ export default {
 </script>
 
 <style scoped>
+/* Base class */
 .quality {
     font: 12px/13px "Open Sans", verdana, sans-serif;
     background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
@@ -254,10 +222,18 @@ export default {
     white-space: nowrap;
 }
 
-.any-hd {
+/* Custom */
+.custom {
+    background-color: rgb(98, 25, 147);
+}
+
+/* HD-720p + FHD-1080p */
+.hd, /* Preset */
+.anyhdtv, /* AnySet */
+.anywebdl, /* AnySet */
+.anybluray { /* AnySet */
     background-color: rgb(38, 114, 182);
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background:
+    background-image:
         repeating-linear-gradient(
         -45deg,
         rgb(38, 114, 182),
@@ -265,66 +241,79 @@ export default {
         rgb(91, 153, 13) 10px,
         rgb(91, 153, 13) 20px
     );
-    /* stylelint-enable */
 }
 
-.Custom {
-    background-color: rgb(98, 25, 147);
-}
-
-.HD {
-    background-color: rgb(38, 114, 182);
-}
-
-.HDTV {
-    background-color: rgb(38, 114, 182);
-}
-
-.HD720p {
+/* HD-720p */
+.hd720p, /* Preset */
+.hdtv,
+.hdwebdl,
+.hdbluray {
     background-color: rgb(91, 153, 13);
 }
 
-.HD1080p {
+/* FHD-1080p */
+.hd1080p, /* Preset */
+.fullhdtv,
+.fullhdwebdl,
+.fullhdbluray {
     background-color: rgb(38, 114, 182);
 }
 
-.UHD-4K {
+/* UHD-4K + UHD-8K */
+.uhd { /* Preset */
+    background-color: rgb(117, 0, 255);
+    background-image:
+        repeating-linear-gradient(
+        -45deg,
+        rgb(117, 0, 255),
+        rgb(117, 0, 255) 10px,
+        rgb(65, 0, 119) 10px,
+        rgb(65, 0, 119) 20px
+    );
+}
+
+/* UHD-4K */
+.uhd4k, /* Preset */
+.anyuhd4k, /* Custom Set */
+.uhd4ktv,
+.uhd4kwebdl,
+.uhd4kbluray {
     background-color: rgb(117, 0, 255);
 }
 
-.UHD-8K {
+/* UHD-8K */
+.uhd8k, /* Preset */
+.anyuhd8k, /* Custom Set */
+.uhd8ktv,
+.uhd8kwebdl,
+.uhd8kbluray {
     background-color: rgb(65, 0, 119);
 }
 
-.RawHD {
+/* RawHD/RawHDTV */
+.rawhdtv {
     background-color: rgb(205, 115, 0);
 }
 
-.RawHDTV {
-    background-color: rgb(205, 115, 0);
-}
-
-.SD {
+/* SD */
+.sd, /* Preset */
+.sdtv,
+.sddvd {
     background-color: rgb(190, 38, 37);
 }
 
-.SDTV {
-    background-color: rgb(190, 38, 37);
-}
-
-.SDDVD {
-    background-color: rgb(190, 38, 37);
-}
-
-.Any {
+/* Any */
+.any { /* Preset */
     background-color: rgb(102, 102, 102);
 }
 
-.Unknown {
+/* Unknown */
+.unknown {
     background-color: rgb(153, 153, 153);
 }
 
-.Proper {
+/* Proper (used on History page) */
+.proper {
     background-color: rgb(63, 127, 0);
 }
 </style>

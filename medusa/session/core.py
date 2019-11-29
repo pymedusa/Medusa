@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+import collections
 import errno
 import logging
 import traceback
@@ -161,7 +162,8 @@ class MedusaSafeSession(MedusaSession):
             log.debug(u'Error requesting url {url} Error: {err_msg}', url=url, err_msg=error)
             return resp or error.response
         except Exception as error:
-            if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
+            if ((isinstance(error, collections.Iterable) and u'ECONNRESET' in error) or
+                    (hasattr(error, u'errno') and error.errno == errno.ECONNRESET)):
                 log.warning(
                     u'Connection reset by peer accessing url {url} Error: {err_msg}'.format(url=url, err_msg=error)
                 )

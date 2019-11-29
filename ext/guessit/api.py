@@ -82,6 +82,19 @@ def properties(options=None):
     return default_api.properties(options)
 
 
+def suggested_expected(titles, options=None):
+    """
+    Return a list of suggested titles to be used as `expected_title` based on the list of titles
+    :param titles: the filename or release name
+    :type titles: list|set|dict
+    :param options:
+    :type options: str|dict
+    :return:
+    :rtype: list of str
+    """
+    return default_api.suggested_expected(titles, options)
+
+
 class GuessItApi(object):
     """
     An api class that can be configured with custom Rebulk configuration.
@@ -227,6 +240,24 @@ class GuessItApi(object):
         if hasattr(self.rebulk, 'customize_properties'):
             ordered = self.rebulk.customize_properties(ordered)
         return ordered
+
+    def suggested_expected(self, titles, options=None):
+        """
+        Return a list of suggested titles to be used as `expected_title` based on the list of titles
+        :param titles: the filename or release name
+        :type titles: list|set|dict
+        :param options:
+        :type options: str|dict
+        :return:
+        :rtype: list of str
+        """
+        suggested = []
+        for title in titles:
+            guess = self.guessit(title, options)
+            if len(guess) != 2 or 'title' not in guess:
+                suggested.append(title)
+
+        return suggested
 
 
 default_api = GuessItApi()

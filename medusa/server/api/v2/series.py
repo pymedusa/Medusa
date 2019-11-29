@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import ws
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -34,9 +35,9 @@ class SeriesHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'PATCH', 'DELETE', )
+    allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
-    def http_get(self, series_slug, path_param=None):
+    def get(self, series_slug, path_param=None):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234
@@ -49,9 +50,9 @@ class SeriesHandler(BaseRequestHandler):
 
         if not series_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
-            fetch = self._parse_boolean(self.get_argument('fetch', default=False))
+            episodes = self._parse_boolean(self.get_argument('episodes', default=False))
             data = [
-                s.to_json(detailed=detailed, fetch=fetch)
+                s.to_json(detailed=detailed, episodes=episodes)
                 for s in Series.find_series(predicate=filter_series)
             ]
             return self._paginate(data, sort='title')
@@ -64,9 +65,9 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        detailed = self._parse_boolean(self.get_argument('detailed', default=True))
-        fetch = self._parse_boolean(self.get_argument('fetch', default=False))
-        data = series.to_json(detailed=detailed, fetch=fetch)
+        detailed = self._parse_boolean(self.get_argument('detailed', default=False))
+        episodes = self._parse_boolean(self.get_argument('episodes', default=False))
+        data = series.to_json(detailed=detailed, episodes=episodes)
         if path_param:
             if path_param not in data:
                 return self._bad_request("Invalid path parameter '{0}'".format(path_param))
@@ -74,7 +75,7 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._ok(data)
 
-    def http_post(self, series_slug=None, path_param=None):
+    def post(self, series_slug=None, path_param=None):
         """Add a new series."""
         if series_slug is not None:
             return self._bad_request('Series slug should not be specified')
@@ -101,7 +102,7 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._created(series.to_json(), identifier=identifier.slug)
 
-    def http_patch(self, series_slug, path_param=None):
+    def patch(self, series_slug, path_param=None):
         """Patch series."""
         if not series_slug:
             return self._method_not_allowed('Patching multiple series is not allowed')
@@ -130,17 +131,20 @@ class SeriesHandler(BaseRequestHandler):
             'config.scene': BooleanField(series, 'scene'),
             'config.sports': BooleanField(series, 'sports'),
             'config.paused': BooleanField(series, 'paused'),
-            'config.location': StringField(series, '_location'),
+            'config.location': StringField(series, 'location'),
             'config.airByDate': BooleanField(series, 'air_by_date'),
             'config.subtitlesEnabled': BooleanField(series, 'subtitles'),
             'config.release.requiredWords': ListField(series, 'release_required_words'),
             'config.release.ignoredWords': ListField(series, 'release_ignore_words'),
             'config.release.blacklist': ListField(series, 'blacklist'),
             'config.release.whitelist': ListField(series, 'whitelist'),
+            'config.release.requiredWordsExclude': BooleanField(series, 'rls_require_exclude'),
+            'config.release.ignoredWordsExclude': BooleanField(series, 'rls_ignore_exclude'),
             'language': StringField(series, 'lang'),
             'config.qualities.allowed': ListField(series, 'qualities_allowed'),
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
+            'config.airdateOffset': IntegerField(series, 'airdate_offset'),
         }
 
         for key, value in iter_nested_items(data):
@@ -156,9 +160,13 @@ class SeriesHandler(BaseRequestHandler):
         if ignored:
             log.warning('Series patch ignored {items!r}', {'items': ignored})
 
+        # Push an update to any open Web UIs through the WebSocket
+        msg = ws.Message('showUpdated', series.to_json(detailed=False))
+        msg.push()
+
         return self._ok(data=accepted)
 
-    def http_delete(self, series_slug, path_param=None):
+    def delete(self, series_slug, path_param=None):
         """Delete the series."""
         if not series_slug:
             return self._method_not_allowed('Deleting multiple series are not allowed')

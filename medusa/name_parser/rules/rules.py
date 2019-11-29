@@ -397,6 +397,10 @@ class CreateAliasWithCountryOrYear(Rule):
         :type context: dict
         :return:
         """
+        # Don't add additional alias if we already have one from the previous rules
+        if matches.named('alias'):
+            return
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
@@ -577,7 +581,10 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 # adjust title to append the series name.
                 # Only the season.parent contains the S prefix in its value
                 new_title = copy.copy(title)
-                new_title.value = ' '.join([title.value, season.parent.value])
+                if six.PY3:
+                    new_title.value = ' '.join([title.value, season.parent.value])
+                else:
+                    new_title.value = b' '.join([title.value, season.parent.value])
                 new_title.end = season.end
 
                 # other fileparts might have the same season to be removed from the matches
@@ -599,6 +606,111 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
                 to_append.append(absolute_episode)
                 to_append.append(episode)
                 return to_remove, to_append
+
+
+class AnimeWithSeasonMultipleEpisodeNumbers(Rule):
+    """Add season to title and remove episode for specific anime patterns.
+
+    There are animes where the title contains the season number and they
+    are mistakenly treated as multiple episodes instead.
+
+    Medusa rule:
+    - The season should be part of the series name
+    - The first episode should be removed
+
+    e.g.: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+
+    guessit -t episode "[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+
+    without this rule:
+        For: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+        GuessIt found: {
+            "release_group": "Mad le Zisell",
+            "title": "High Score Girl",
+            "episode": [
+                2,
+                1
+            ],
+            "screen_size": "720p",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: [Mad le Zisell] High Score Girl 2 - 01 [720p]
+        GuessIt found: {
+            "release_group": "Mad le Zisell",
+            "title": "High Score Girl 2",
+            "episode": "1",
+            "absolute_episode": "1",
+            "screen_size": "720p",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    ends_with_digit = re.compile(r'(_|\W)\d+$')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        if context.get('show_type') == 'normal' or not matches.tagged('anime'):
+            return
+
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episodes = matches.named('episode')
+        if not (2 <= len(episodes) <= 4):
+            return
+
+        unique_eps = set([ep.initiator.value for ep in episodes])
+        if len(unique_eps) != 2:
+            return
+
+        to_remove = []
+        to_append = []
+
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            episodes = sorted(matches.range(filepart.start, filepart.end,
+                                            predicate=lambda match: match.name == 'episode'))
+
+            if not episodes:
+                if len(titles) > 1:
+                    bad_title = sorted(titles)[0]
+                    to_remove.append(bad_title)
+                continue
+
+            title = matches.previous(episodes[0], index=-1,
+                                     predicate=lambda match: match.name == 'title' and match.end <= filepart.end)
+            if not title or self.ends_with_digit.search(str(title.value)):
+                continue
+
+            for i, episode in enumerate(episodes):
+                if i == 0:
+                    new_title = copy.copy(title)
+                    if six.PY3:
+                        new_title.value = ' '.join([title.value, str(episode.value)])
+                    else:
+                        new_title.value = b' '.join([title.value, str(episode.value)])
+                    new_title.end = episode.end
+
+                    to_remove.append(title)
+                    to_append.append(new_title)
+                    to_remove.append(episode)
+
+                if i == 1 and len(episodes) in (3, 4):
+                    to_remove.append(episode)
+
+        return to_remove, to_append
 
 
 class AnimeAbsoluteEpisodeNumbers(Rule):
@@ -690,7 +802,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
                     index=0,
                     predicate=lambda match: match.name == 'episode_title' and match.value.isdigit(),
                 )
-                if episode_title:
+                if episode_title and to_append:
                     if matches.input_string[episode.end:episode_title.start + 1] in range_separator:
                         end_value = int(episode_title.value)
                         for i in range(absolute_episode.value + 1, end_value + 1):
@@ -792,6 +904,97 @@ class AbsoluteEpisodeNumbers(Rule):
                 to_append.append(absolute_episode)
 
             return to_remove, to_append
+
+
+class OnePreGroupAsMultiEpisode(Rule):
+    """Remove last episode (one) and add the first episode as absolute.
+
+    There are animes where the absolute episode is detected as
+    multi episode because of a number (one) before the group.
+
+    Medusa rule:
+    - The first episode should be added as absolute
+    - The last episode should be removed
+    - Episode title should be release group
+
+    e.g.: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+
+    guessit -t episode "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+
+    without this rule:
+        For: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+        GuessIt found: {
+            "title": "Kemono Michi Rise Up",
+            "episode": [
+                3,
+                1
+            ],
+            "screen_size": "1080p",
+            "source": "Web",
+            "video_codec": "H.264",
+            "episode_title": "URANiME",
+            "other": "Obfuscated",
+            "type": "episode"
+        }
+
+    with this rule:
+        For: Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated
+        GuessIt found: {
+            "title": "Kemono Michi Rise Up",
+            "episode": 3,
+            "absolute_episode": 3,
+            "screen_size": "1080p",
+            "source": "Web",
+            "video_codec": "H.264",
+            "release_group": "URANiME",
+            "other": "Obfuscated",
+            "type": "episode"
+        }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        titles = matches.named('title')
+        if not titles:
+            return
+
+        episodes = matches.named('episode')
+        if not episodes or len(episodes) != 2:
+            return
+
+        is_anime = context.get('show_type') == 'anime' or matches.tagged('anime')
+        if is_anime or matches.named('season'):
+            return
+
+        sorted_episodes = sorted(episodes)
+        if sorted_episodes[-1].value != 1:
+            return
+
+        episode = copy.copy(sorted_episodes[0])
+        episode.name = 'absolute_episode'
+
+        to_remove = [sorted_episodes[-1]]
+        to_append = [episode]
+
+        episode_titles = matches.named('episode_title')
+        if episode_titles:
+            release_group = copy.copy(episode_titles[0])
+            release_group.name = 'release_group'
+
+            to_remove.append(episode_titles[0])
+            to_append.append(release_group)
+
+        return to_remove, to_append
 
 
 class PartsAsEpisodeNumbers(Rule):
@@ -919,116 +1122,6 @@ class RemoveInvalidEpisodeSeparator(Rule):
                 return to_remove
 
 
-class FixWordAsLanguage(Rule):
-    """Fix word getting parsed as language with multiple fileparts.
-
-    Related bug report: https://github.com/guessit-io/guessit/issues/578
-
-    e.g.: Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]/Por Trece Razones 2x01 [des202].mkv
-
-    without the rule:
-        GuessIt found: {
-            "language": [
-                "Portuguese",
-                "Catalan"
-            ],
-            "title": "Trece Razones",
-            "season": 2,
-            "source": "HDTV",
-            "screen_size": "720p",
-            "episode": 1,
-            "audio_codec": "Dolby Digital",
-            "audio_channels": "5.1",
-            "release_group": "des202",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-
-    with the rule:
-        GuessIt found: {
-            "language": "Catalan",
-            "title": "Por Trece Razones",
-            "season": 2,
-            "source": "HDTV",
-            "screen_size": "720p",
-            "episode": 1,
-            "audio_codec": "Dolby Digital",
-            "audio_channels": "5.1",
-            "release_group": "des202",
-            "container": "mkv",
-            "mimetype": "video/x-matroska",
-            "type": "episode"
-        }
-    """
-
-    priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
-
-    def when(self, matches, context):
-        """Evaluate the rule.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        languages = matches.named('language')
-        if not languages:
-            return
-
-        fileparts = matches.markers.named('path')
-        parts_len = len(fileparts)
-        if parts_len < 2:
-            return
-
-        titles = matches.named('title')
-        if not titles:
-            return
-
-        first_title = titles[0]
-        last_title = titles[-1]
-
-        # Always use the first language
-        first_language = languages[0]
-        for language in languages[1:]:
-            if language.start < first_language.start:
-                first_language = language
-
-        lang_start = first_language.start
-        lang_end = first_language.end
-
-        start = end = None
-        # Language is before titles
-        if lang_end == first_title.start:
-            start = lang_start
-            end = last_title.end
-        # Language is after titles
-        elif last_title.end == lang_start:
-            start = first_title.start
-            end = lang_end
-        # Language is between titles
-        elif len(titles) > 1:
-            lang_code = last_title.value.split()[0].lower()
-            if lang_code in context.get('allowed_languages', []):
-                start = first_title.start
-                end = last_title.end
-
-        if start is not None:
-            second_filepart = fileparts[parts_len - 2]
-            rel_start = start - second_filepart.start
-            rel_end = end - second_filepart.end
-
-            new_title = second_filepart.value[rel_start:rel_end]
-            titles[0].value = cleanup(new_title)
-
-            to_append = titles[0]
-            to_remove = first_language
-
-            return to_remove, to_append
-
-
 class FixParentFolderReplacingTitle(Rule):
     """Fix folder name replacing title when it ends with digits.
 
@@ -1083,12 +1176,19 @@ class FixParentFolderReplacingTitle(Rule):
             second_part = fileparts[parts_len - 2].value
             if self.ends_with_digit.search(second_part):
                 title = matches.named('title')
-                if not title or second_part.startswith(title[0].value):
+                if not title:
                     episode_title[0].name = 'title'
                     to_append = episode_title
-                    to_remove = title
-
+                    to_remove = None
                     return to_remove, to_append
+
+                if second_part.startswith(title[0].value):
+                    season = matches.named('season')
+                    if season and not second_part.endswith(str(season[-1].initiator.value)):
+                        episode_title[0].name = 'title'
+                        to_append = episode_title
+                        to_remove = title
+                        return to_remove, to_append
 
 
 class FixMultipleSources(Rule):
@@ -1479,15 +1579,16 @@ def rules():
         FixAnimeReleaseGroup,
         FixInvalidAbsoluteReleaseGroups,
         AnimeWithSeasonAbsoluteEpisodeNumbers,
+        AnimeWithSeasonMultipleEpisodeNumbers,
         AnimeAbsoluteEpisodeNumbers,
         AbsoluteEpisodeNumbers,
+        OnePreGroupAsMultiEpisode,
         PartsAsEpisodeNumbers,
         RemoveInvalidEpisodeSeparator,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         ReleaseGroupPostProcessor,
         FixParentFolderReplacingTitle,
-        FixWordAsLanguage,
         FixMultipleSources,
         AudioCodecStandardizer,
         SourceStandardizer,

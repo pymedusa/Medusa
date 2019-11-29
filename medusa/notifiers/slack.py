@@ -12,8 +12,6 @@ from medusa.logger.adapters.style import BraceAdapter
 
 import requests
 
-import six
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
@@ -21,7 +19,7 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """Slack notifier class."""
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification to a Slack channel when an episode is snatched.
 
@@ -29,8 +27,8 @@ class Notifier(object):
         :param is_proper: Boolean. If snatch is proper or not
         """
         if app.SLACK_NOTIFY_SNATCH:
-            message = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
-            self._notify_slack('{message} : {ep_name}'.format(message=message, ep_name=ep_name))
+            self._notify_slack('{title}: {message}'.format(title=title,
+                                                           message=message))
 
     def notify_download(self, ep_obj):
         """
@@ -40,9 +38,8 @@ class Notifier(object):
         """
         if app.SLACK_NOTIFY_DOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_DOWNLOAD]
-            self._notify_slack('{message} : {ep_name}'.format(message=message,
-                                                              ep_name=ep_obj.pretty_name_with_quality()
-                                                              ))
+            self._notify_slack('{message}: {ep_name}'.format(message=message,
+                                                             ep_name=ep_obj.pretty_name_with_quality()))
 
     def notify_subtitle_download(self, ep_obj, lang):
         """
@@ -53,7 +50,8 @@ class Notifier(object):
         """
         if app.SLACK_NOTIFY_SUBTITLEDOWNLOAD:
             message = common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]
-            self._notify_slack('{message} {ep_name}: {lang}'.format(message=message, ep_name=ep_obj.pretty_name(), lang=lang))
+            self._notify_slack('{message} {ep_name}: {lang}'.format(message=message, ep_name=ep_obj.pretty_name(),
+                                                                    lang=lang))
 
     def notify_git_update(self, new_version='??'):
         """
@@ -64,7 +62,8 @@ class Notifier(object):
         if app.USE_SLACK:
             message = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._notify_slack('{title} - {message} {version}'.format(title=title, message=message, version=new_version))
+            self._notify_slack('{title} - {message} {version}'.format(title=title, message=message,
+                                                                      version=new_version))
 
     def notify_login(self, ipaddress=''):
         """
@@ -92,9 +91,6 @@ class Notifier(object):
 
         log.info('Sending slack message: {message}', {'message': message})
         log.info('Sending slack message  to url: {url}', {'url': webhook})
-
-        if isinstance(message, six.text_type):
-            message = message.encode('utf-8')
 
         headers = {'Content-Type': 'application/json'}
         data = {

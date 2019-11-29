@@ -15,8 +15,6 @@ failed.db*
 autoProcessTV.cfg
 server.crt
 server.key
-medusa.egg-info
-.eggs
 
 #  Medusa Test Related   #
 ######################
@@ -66,6 +64,13 @@ Thumbs.db
 *~
 *.torrent
 
+# Python build related #
+######################
+build/
+dist/
+pymedusa.egg-info
+.eggs
+
 # Grunt/Gulp/Node build related #
 ######################
 **/bower_components
@@ -84,4 +89,4 @@ yarn-error.log
 
 # Contrib #
 ######################
-contrib/
+/contrib/

@@ -6,7 +6,7 @@ import logging
 
 from medusa.logger.adapters.style import BraceAdapter
 
-from six import text_type
+from six import ensure_text
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -26,28 +26,12 @@ def log_url(response, **kwargs):
 
     if request.method.upper() == 'POST':
         if request.body:
+            text_body = ensure_text(request.body, errors='replace')
             if 'multipart/form-data' not in request.headers.get('content-type', ''):
-                body = request.body
+                body = text_body
+            elif len(text_body) > 99:
+                body = text_body[0:99].replace('\n', ' ') + '...'
             else:
-                body = request.body[1:99].replace('\n', ' ') + '...'
-        else:
-            body = ''
+                body = text_body.replace('\n', ' ')
 
-        # try to log post data using various codecs to decode
-        if isinstance(body, text_type):
             log.debug('With post data: {0}', body)
-            return
-
-        codecs = ('utf-8', 'latin1', 'cp1252')
-        for codec in codecs:
-            try:
-                data = body.decode(codec)
-            except UnicodeError as error:
-                log.debug('Failed to decode post data as {codec}: {msg}',
-                          {'codec': codec, 'msg': error})
-            else:
-                log.debug('With post data: {0}', data)
-                break
-        else:
-            log.warning('Failed to decode post data with {codecs}',
-                        {'codecs': codecs})

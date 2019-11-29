@@ -1,0 +1,94 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AppFooter renders 1`] = `
+<footer>
+  <div
+    class="footer clearfix"
+  >
+    <span
+      class="footerhighlight"
+    >
+      2
+    </span>
+     Shows (
+    <span
+      class="footerhighlight"
+    >
+      2
+    </span>
+     Active)
+        | 
+    <span
+      class="footerhighlight"
+    >
+      100
+    </span>
+     
+    <span
+      class="footerhighlight"
+    >
+      <app-link-stub
+        href="manage/episodeStatuses?whichStatus=2"
+        placeholder="indexer-to-name"
+        title="View overview of snatched episodes"
+      >
+        +5
+      </app-link-stub>
+    </span>
+    
+            Snatched
+        
+        / 
+    <span
+      class="footerhighlight"
+    >
+      150
+    </span>
+     Episodes Downloaded 
+    <span
+      class="footerhighlight"
+    >
+      (66.7%)
+    </span>
+    
+        | Daily Search: 
+    <span
+      class="footerhighlight"
+    >
+      0:39:46
+    </span>
+    
+        | Backlog Search: 
+    <span
+      class="footerhighlight"
+    >
+      11:59:46
+    </span>
+     
+    <div>
+      
+                Memory used: 
+      <span
+        class="footerhighlight"
+      >
+        56.85 MB
+      </span>
+       |
+             
+            Branch: 
+      <span
+        class="footerhighlight"
+      >
+        master
+      </span>
+       |
+            Now: 
+      <span
+        class="footerhighlight"
+      >
+        Wednesday, 07/10/19 09:51:21
+      </span>
+    </div>
+  </div>
+</footer>
+`;

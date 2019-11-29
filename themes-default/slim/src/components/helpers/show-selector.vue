@@ -1,8 +1,10 @@
 <template>
-    <span v-if="shows.length === 0">Loading...</span>
-    <div v-else class="show-selector form-inline hidden-print">
+    <div class="show-selector form-inline hidden-print">
         <div class="select-show-group pull-left top-5 bottom-5">
-            <select v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
+            <select v-if="shows.length === 0" :class="selectClass" disabled>
+                <option>Loading...</option>
+            </select>
+            <select v-else v-model="selectedShowSlug" :class="selectClass" @change="$emit('change', selectedShowSlug)">
                 <option v-if="placeholder" :value="placeholder" disabled :selected="!selectedShowSlug" hidden>{{placeholder}}</option>
                 <template v-if="whichList === -1">
                     <optgroup v-for="curShowList in showLists" :key="curShowList.type" :label="curShowList.type">
@@ -41,11 +43,13 @@ export default {
         };
     },
     computed: {
-        ...mapState(['config']),
-        ...mapState({ shows: state => state.shows.shows }),
+        ...mapState({
+            layout: state => state.layout,
+            shows: state => state.shows.shows
+        }),
         showLists() {
-            const { config, shows } = this;
-            const { animeSplitHome, sortArticle } = config;
+            const { layout, shows } = this;
+            const { animeSplitHome, sortArticle } = layout;
             const lists = [
                 { type: 'Shows', shows: [] },
                 { type: 'Anime', shows: [] }
@@ -112,9 +116,8 @@ export default {
             }
             const indexerName = selectedShow.indexer;
             const showId = selectedShow.id[indexerName];
-            const base = document.getElementsByTagName('base')[0].getAttribute('href');
-            const path = 'home/displayShow?indexername=' + indexerName + '&seriesid=' + showId;
-            window.location.href = base + path;
+            const base = document.querySelector('base').getAttribute('href');
+            window.location.href = `${base}home/displayShow?indexername=${indexerName}&seriesid=${showId}`;
         }
     }
 };
@@ -124,6 +127,7 @@ select.select-show {
     display: inline-block;
     height: 25px;
     padding: 1px;
+    min-width: 200px;
 }
 
 .show-selector {

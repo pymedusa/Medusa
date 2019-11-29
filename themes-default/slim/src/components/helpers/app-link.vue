@@ -6,13 +6,15 @@
         :target="linkProperties.target"
         :rel="linkProperties.rel"
         :false-link="linkProperties.falseLink"
+        :class="{ 'router-link': linkProperties.is === 'router-link' }"
     >
-        <slot></slot>
+        <slot />
     </component>
 </template>
 <script>
-import { mapState } from 'vuex';
-import router from '../../router';
+import { mapGetters, mapState } from 'vuex';
+
+import router, { base as routerBase } from '../../router';
 
 export default {
     name: 'app-link',
@@ -29,17 +31,14 @@ export default {
     },
     computed: {
         ...mapState(['config']),
+        ...mapGetters(['indexerIdToName']),
         indexerName() {
-            const { config, indexerId } = this;
-            const { indexers } = config.indexers.config;
-            if (!indexerId) {
-                return undefined;
-            }
             // Returns `undefined` if not found
-            return Object.keys(indexers).find(indexer => indexers[indexer].id === parseInt(indexerId, 10));
+            const { indexerId, indexerIdToName } = this;
+            return indexerIdToName(indexerId);
         },
         computedBase() {
-            return document.getElementsByTagName('base')[0].getAttribute('href');
+            return document.querySelector('base').getAttribute('href');
         },
         computedHref() {
             const { href, indexerId, placeholder, indexerName } = this;
@@ -84,8 +83,17 @@ export default {
             return anonRedirect ? anonRedirect + href : href;
         },
         matchingVueRoute() {
-            const normalise = str => str ? str.replace(/^\/+|\/+$/g, '') : '';
-            return router.options.routes.find(({ path }) => normalise(path) === normalise(this.href));
+            const { isAbsolute, isExternal, computedHref } = this;
+            if (isAbsolute && isExternal) {
+                return undefined;
+            }
+
+            const { route } = router.resolve(routerBase + computedHref);
+            if (!route.name) {
+                return undefined;
+            }
+
+            return route;
         },
         linkProperties() {
             const { to, isIRC, isAbsolute, isExternal, isHashPath, anonymisedHref, matchingVueRoute } = this;
@@ -96,19 +104,12 @@ export default {
             if (to) {
                 return {
                     is: 'router-link',
-                    to: (() => {
-                        if (typeof to === 'object') {
-                            return to;
-                        }
-                        return {
-                            name: to
-                        };
-                    })()
+                    to
                 };
             }
 
             // Just return a boring link with other attrs
-            // @NOTE: This is for scroll achors as it uses the id
+            // @NOTE: This is for scroll anchors as it uses the id
             if (!href) {
                 return {
                     is: 'a',
@@ -123,9 +124,7 @@ export default {
                 if (window.loadMainApp) {
                     return {
                         is: 'router-link',
-                        to: {
-                            name: matchingVueRoute.name
-                        }
+                        to: matchingVueRoute.fullPath
                     };
                 }
             }
@@ -172,5 +171,10 @@ e.g. displayShow?indexername=tvdb&seriesid=83462#season-5
     height: 100px;
     margin-top: -100px;
     z-index: -100;
+}
+
+.router-link,
+.router-link-active {
+    cursor: pointer;
 }
 </style>

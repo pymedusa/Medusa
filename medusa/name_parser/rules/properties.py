@@ -14,6 +14,8 @@ from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
 
+import six
+
 
 def blacklist():
     """Blacklisted patterns.
@@ -107,7 +109,10 @@ def container():
                     other.name == 'container' and 'extension' not in other.tags
                     else '__default__')
 
-    nzb = [b'nzb']
+    if six.PY3:
+        nzb = ['nzb']
+    else:
+        nzb = [b'nzb']
 
     rebulk.regex(r'\.' + build_or_pattern(nzb) + '$', exts=nzb, tags=['extension', 'torrent'])
 

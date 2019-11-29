@@ -127,7 +127,7 @@ def sendNZB(nzb, proper=False):
     nzbcontent64 = None
     if nzb.result_type == 'nzbdata':
         data = nzb.extra_info[0]
-        nzbcontent64 = standard_b64encode(data)
+        nzbcontent64 = standard_b64encode(data).decode()
 
     log.info('Sending NZB to NZBget')
     log.debug('URL: {}', url)
@@ -157,7 +157,7 @@ def sendNZB(nzb, proper=False):
                     if data is None:
                         return False
 
-                    nzbcontent64 = standard_b64encode(data)
+                    nzbcontent64 = standard_b64encode(data).decode()
 
                 nzbget_result = nzbGetRPC.append(
                     nzb.name + '.nzb',
@@ -206,6 +206,6 @@ def sendNZB(nzb, proper=False):
                         {'name': nzb.name})
             return False
     except Exception:
-        log.warning('Connect Error to NZBget: could not add {file}.nzb to the'
+        log.warning('Connect Error to NZBget: could not add {name}.nzb to the'
                     ' queue', {'name': nzb.name})
         return False

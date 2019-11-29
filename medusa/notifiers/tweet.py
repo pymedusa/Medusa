@@ -12,7 +12,7 @@ from requests.exceptions import RequestException
 
 from requests_oauthlib import OAuth1Session
 
-from six import text_type
+from six import PY2, text_type
 
 import twitter
 
@@ -30,7 +30,7 @@ class Notifier(object):
     ACCESS_TOKEN_URL = 'https://api.twitter.com/oauth/access_token'
     AUTHORIZATION_URL = 'https://api.twitter.com/oauth/authorize'
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """
         Send a notification that an episode was snatched.
 
@@ -38,7 +38,7 @@ class Notifier(object):
         :param is_proper: Boolean. If snatch is proper or not
         """
         if app.TWITTER_NOTIFY_ONSNATCH:
-            self._notify_twitter('{0}: {1}'.format(common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]], ep_name))
+            self._notify_twitter('{0}: {1}'.format(title, message))
 
     def notify_download(self, ep_obj):
         """
@@ -186,7 +186,9 @@ class Notifier(object):
             'message': message
         })
         try:
-            api.PostDirectMessage(message.encode('utf-8'), screen_name=dmdest)
+            if PY2:
+                message = message.encode('utf-8')
+            api.PostDirectMessage(message, screen_name=dmdest)
         except Exception as error:
             log.error('Error Sending Tweet (DM): {0!r}', error)
             return False
@@ -199,7 +201,8 @@ class Notifier(object):
         if not app.USE_TWITTER and not force:
             return False
 
+        message = '{prefix}: {message}'.format(prefix=prefix, message=message)
         if app.TWITTER_USEDM and app.TWITTER_DMTO:
-            return self._send_dm(prefix + ': ' + message)
+            return self._send_dm(message)
         else:
-            return self._send_tweet(prefix + ': ' + message)
+            return self._send_tweet(message)

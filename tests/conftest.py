@@ -1,5 +1,8 @@
 # coding=utf-8
 """Configuration for pytest."""
+from __future__ import unicode_literals
+
+import json
 import logging
 import os
 from logging.handlers import RotatingFileHandler
@@ -19,11 +22,11 @@ from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, i
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import Episode, Series
-from medusa.version_checker import CheckVersion
+from medusa.updater.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
 
-from six import iteritems
+from six import iteritems, text_type
 from subliminal.subtitle import Subtitle
 from subliminal.video import Video
 import yaml
@@ -108,13 +111,6 @@ def tvshow(create_tvshow):
 
 
 @pytest.fixture
-def tvepisode(tvshow, create_tvepisode):
-    return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
-                            name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
-                            release_group='SuperGroup')
-
-
-@pytest.fixture
 def parse_method(create_tvshow):
     def parse(self, name):
         """Parse the string and add a TVShow object with the parsed series name."""
@@ -162,10 +158,10 @@ def create_tvepisode(monkeypatch):
 
 @pytest.fixture
 def create_search_result(monkeypatch):
-    def create(provider, series, episodes, **kwargs):
-        target = provider.get_result(episodes=episodes)
-        target.provider = provider
-        target.series = series
+    def create(provider, series, episode, **kwargs):
+        target = provider.get_result(series=series)
+        target.actual_season = episode.season
+        target.actual_episodes = [episode.episode]
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
@@ -175,14 +171,14 @@ def create_search_result(monkeypatch):
 def create_file(tmpdir):
     def create(filename, lines=None, size=0, **kwargs):
         f = tmpdir.ensure(filename)
-        content = '\n'.join(lines or [])
+        content = b'\n'.join(lines or [])
         f.write_binary(content)
         if size:
             tmp_size = f.size()
             if tmp_size < size:
-                add_size = '\0' * (size - tmp_size)
+                add_size = b'\0' * (size - tmp_size)
                 f.write_binary(content + add_size)
-        return str(f)
+        return text_type(f)
 
     return create
 
@@ -191,7 +187,7 @@ def create_file(tmpdir):
 def create_dir(tmpdir):
     def create(dirname):
         f = tmpdir.ensure_dir(dirname)
-        return str(f)
+        return text_type(f)
 
     return create
 
@@ -201,13 +197,13 @@ def create_structure(tmpdir, create_file, create_dir):
     def create(path, structure):
         for element in structure:
             if isinstance(element, dict):
-                for name, values in element.iteritems():
+                for name, values in iteritems(element):
                     path = os.path.join(path, name)
                     create_dir(path)
                     create(path, values)
             else:
                 create_file(os.path.join(path, element))
-        return str(tmpdir)
+        return text_type(tmpdir)
 
     return create
 
@@ -228,7 +224,7 @@ def commit_hash(monkeypatch):
 
 @pytest.fixture
 def logfile(tmpdir):
-    target = str(tmpdir.ensure('logfile.log'))
+    target = text_type(tmpdir.ensure('logfile.log'))
     instance.log_file = target
     return target
 
@@ -243,7 +239,7 @@ def rotating_file_handler(logfile):
 
 @pytest.fixture
 def logger(rotating_file_handler, commit_hash):
-    print('Using commit_hash {}'.format(commit_hash))
+    print('Using commit_hash {0}'.format(commit_hash))
     target = logging.getLogger('testing_logger')
     target.addFilter(ContextFilter())
     target.addHandler(rotating_file_handler)
@@ -298,16 +294,17 @@ def github_repo():
 
 @pytest.fixture
 def create_github_issue(monkeypatch):
-    def create(title, body=None, locked=False, number=1, **kwargs):
+    def create(title, body=None, locked=False, number=1, labels=[], **kwargs):
         raw_data = {
             'title': title,
             'body': body,
             'number': number,
-            'locked': locked
+            'locked': locked,
+            'labels': [dict(name=label) for label in labels]
         }
         raw_data.update(kwargs)
         # Set url to a unique value, because that's how issues are compared
-        raw_data['url'] = str(hash(tuple(raw_data.values())))
+        raw_data['url'] = text_type(hash(json.dumps(raw_data)))
         return Issue(Mock(), Mock(), raw_data, True)
 
     return create

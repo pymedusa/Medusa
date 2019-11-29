@@ -34,7 +34,7 @@ import sys
 
 from .rar_exceptions import *
 
-if sys.version_info > (3,3):
+if sys.version_info > (3,3) and sys.stderr is not None:
     import faulthandler
     faulthandler.enable()
 

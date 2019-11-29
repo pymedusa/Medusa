@@ -1,7 +1,3 @@
-const searchStatusUrl = 'home/getManualSearchStatus';
-let failedDownload = false;
-let qualityDownload = false;
-let selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
 $.fn.forcedSearches = [];
@@ -26,25 +22,25 @@ function updateImages(data) {
         const searchImage = 'search16.png';
         let htmlContent = '';
         // Try to get the <a> Element
-        const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const el = $('a[id=' + ep.show.indexer + 'x' + ep.show.series_id + 'x' + ep.episode.season + 'x' + ep.episode.episode + ']');
         const img = el.children('img[data-ep-search]');
         const parent = el.parent();
         if (el) {
-            if (ep.searchstatus.toLowerCase() === 'searching') {
+            if (ep.search.status.toLowerCase() === 'searching') {
                 // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
-                htmlContent = ep.searchstatus;
-            } else if (ep.searchstatus.toLowerCase() === 'queued') {
+                htmlContent = ep.search.status;
+            } else if (ep.search.status.toLowerCase() === 'queued') {
                 // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Queued');
                 img.prop('alt', 'queued');
                 img.prop('src', 'images/' + queuedImage);
                 disableLink(el);
-                htmlContent = ep.searchstatus;
-            } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                htmlContent = ep.search.status;
+            } else if (ep.search.status.toLowerCase() === 'finished') {
                 // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'searching');
@@ -54,34 +50,34 @@ function updateImages(data) {
 
                 // Update Status and Quality
                 let qualityPill = '';
-                if (ep.quality_style !== 'na') {
-                    // @FIXME: (sharkykh) This is a hack to get the scoped style to work.
-                    const qualityPillScopeId = window.components.find(c => c.name === 'quality-pill')._scopeId;
-                    qualityPill = ' <span ' + qualityPillScopeId + ' class="quality ' + ep.quality_style + '">' + ep.quality_name + '</span>';
+                if (ep.episode.quality_style !== 'na') {
+                    // @FIXME: (sharkykh) This is a hack to get the QualityPill's scoped style to work.
+                    const qualityPillScopeId = window.Vue.options.components['quality-pill'].options._scopeId;
+                    qualityPill = ' <span ' + qualityPillScopeId + ' class="quality ' + ep.episode.quality_style + '">' + ep.episode.quality_name + '</span>';
                 }
-                htmlContent = ep.status + qualityPill;
-                parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
+                htmlContent = ep.episode.status + qualityPill;
+                parent.closest('tr').prop('class', ep.episode.overview + ' season-' + ep.episode.season + ' seasonstyle');
             }
             // Update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
+        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show.indexer + 'x' + ep.show.series_id + 'x' + ep.episode.season + 'x' + ep.episode.episode + ']');
         const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
-            if (ep.searchstatus.toLowerCase() === 'searching') {
+            if (ep.search.status.toLowerCase() === 'searching') {
                 imageCompleteEpisodes.prop('title', 'Searching');
                 imageCompleteEpisodes.prop('alt', 'Searching');
                 imageCompleteEpisodes.prop('src', 'images/' + loadingImage);
                 disableLink(elementCompleteEpisodes);
-            } else if (ep.searchstatus.toLowerCase() === 'queued') {
+            } else if (ep.search.status.toLowerCase() === 'queued') {
                 imageCompleteEpisodes.prop('title', 'Queued');
                 imageCompleteEpisodes.prop('alt', 'queued');
                 imageCompleteEpisodes.prop('src', 'images/' + queuedImage);
-            } else if (ep.searchstatus.toLowerCase() === 'finished') {
+            } else if (ep.search.status.toLowerCase() === 'finished') {
                 imageCompleteEpisodes.prop('title', 'Forced Search');
                 imageCompleteEpisodes.prop('alt', '[search]');
                 imageCompleteEpisodes.prop('src', 'images/' + searchImage);
-                if (ep.overview.toLowerCase() === 'snatched') {
+                if (ep.episode.overview.toLowerCase() === 'snatched') {
                     elementCompleteEpisodes.closest('tr').remove();
                 } else {
                     enableLink(elementCompleteEpisodes);
@@ -93,6 +89,7 @@ function updateImages(data) {
 
 function checkManualSearches() {
     let pollInterval = 5000;
+    const searchStatusUrl = 'home/getManualSearchStatus';
 
     // Try to get a indexer name and series id. If we can't get any, we request the manual search status for all shows.
     const indexerName = $('#indexer-name').val();
@@ -143,7 +140,7 @@ $.ajaxEpSearch = function(options) {
             return false;
         }
 
-        selectedEpisode = $(this);
+        $.selectedEpisode = $(this);
 
         $('#forcedSearchModalFailed').modal('show');
     });
@@ -151,19 +148,21 @@ $.ajaxEpSearch = function(options) {
     function forcedSearch() {
         let imageName;
         let imageResult;
+        const failedDownload = false;
+        const qualityDownload = false;
 
-        const parent = selectedEpisode.parent();
+        const parent = $.selectedEpisode.parent();
 
         // Create var for anchor
-        const link = selectedEpisode;
+        const link = $.selectedEpisode;
 
         // Create var for img under anchor and set options for the loading gif
-        const img = selectedEpisode.children('img');
+        const img = $.selectedEpisode.children('img');
         img.prop('title', 'loading');
         img.prop('alt', '');
         img.prop('src', 'images/' + options.loadingImage);
 
-        let url = selectedEpisode.prop('href');
+        let url = $.selectedEpisode.prop('href');
 
         if (!failedDownload) {
             url = url.replace('retryEpisode', 'searchEpisode');
@@ -212,7 +211,7 @@ $.ajaxEpSearch = function(options) {
             return false;
         }
 
-        selectedEpisode = $(this);
+        $.selectedEpisode = $(this);
 
         // @TODO: Replace this with an easier to read selector
         if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
@@ -239,15 +238,5 @@ $.ajaxEpSearch = function(options) {
         } else {
             window.location = url;
         }
-    });
-
-    $('#forcedSearchModalFailed .btn-medusa').on('click', function() {
-        failedDownload = ($(this).text().toLowerCase() === 'yes');
-        $('#forcedSearchModalQuality').modal('show');
-    });
-
-    $('#forcedSearchModalQuality .btn-medusa').on('click', function() {
-        qualityDownload = ($(this).text().toLowerCase() === 'yes');
-        forcedSearch();
     });
 };

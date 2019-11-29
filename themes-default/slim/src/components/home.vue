@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import debounce from 'lodash/debounce';
 import { api } from '../api';
 import { AppLink } from './helpers';
@@ -12,19 +12,35 @@ export default {
         AppLink,
         ShowList
     },
+    data() {
+        return {
+            layoutOptions: [
+                { value: 'poster', text: 'Poster' },
+                { value: 'small', text: 'Small Poster' },
+                { value: 'banner', text: 'Banner' },
+                { value: 'simple', text: 'Simple' }
+            ],
+            postSortDirOptions: [
+                { value: '0', text: 'Descending' },
+                { value: '1', text: 'Ascending' }
+            ]
+        };
+    },
     computed: {
-        ...mapState([
-            'config'
-        ]),
+        ...mapState({
+            config: state => state.config,
+            // Renamed because of the computed property 'layout'.
+            stateLayout: state => state.layout
+        }),
         layout: {
             get() {
-                const { config } = this;
-                return config.layout.home;
+                const { stateLayout } = this;
+                return stateLayout.home;
             },
             set(layout) {
-                const { $store } = this;
+                const { setLayout } = this;
                 const page = 'home';
-                $store.dispatch('setLayout', { page, layout });
+                setLayout({ page, layout });
             }
         },
         showLists() {
@@ -100,6 +116,10 @@ export default {
         }
     },
     methods: {
+        ...mapActions({
+            setLayout: 'setLayout',
+            setConfig: 'setConfig'
+        }),
         initializePosterSizeSlider() {
             const resizePosters = newSize => {
                 let fontSize;
@@ -163,6 +183,7 @@ export default {
         }
     },
     mounted() {
+        const { config, stateLayout, setConfig } = this;
         this.$store.dispatch('getShows');
         this.$store.dispatch('stats/getStats');
 
@@ -181,7 +202,7 @@ export default {
             $('.show-grid').isotope({
                 filter() {
                     const name = $(this).attr('data-name').toLowerCase();
-                    return name.indexOf($('#filterShowName').val().toLowerCase()) > -1;
+                    return name.includes($('#filterShowName').val().toLowerCase());
                 }
             });
         }, 500));
@@ -335,8 +356,8 @@ export default {
                 $('.loading-spinner').hide();
                 $('.show-grid').show().isotope({
                     itemSelector: '.show-container',
-                    sortBy: MEDUSA.config.posterSortby,
-                    sortAscending: MEDUSA.config.posterSortdir,
+                    sortBy: stateLayout.posterSortby,
+                    sortAscending: stateLayout.posterSortdir,
                     layoutMode: 'masonry',
                     masonry: {
                         isFitWidth: true
@@ -344,7 +365,7 @@ export default {
                     getSortData: {
                         name(itemElem) {
                             const name = $(itemElem).attr('data-name') || '';
-                            return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                            return (stateLayout.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                         },
                         network: '[data-network]',
                         date(itemElem) {
@@ -444,13 +465,13 @@ export default {
             }).on('shown.bs.popover', () => { // Bootstrap popover event triggered when the popover opens
                 // call this function to copy the column selection code into the popover
                 $.tablesorter.columnSelector.attachTo($('#showListTableSeries'), '#popover-target');
-                if (MEDUSA.config.animeSplitHome) {
+                if (stateLayout.animeSplitHome) {
                     $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
                 }
             });
 
-            const rootDir = MEDUSA.config.rootDirs;
-            const rootDirIndex = MEDUSA.config.selectedRootIndex;
+            const rootDir = config.rootDirs;
+            const rootDirIndex = config.selectedRootIndex;
             if (rootDir) {
                 const backendDirs = rootDir.slice(1);
                 if (backendDirs.length >= 2) {
@@ -503,15 +524,18 @@ export default {
                     const showListOrder = $(event.target.children).map((index, el) => {
                         return $(el).data('list');
                     });
-                    api.patch('config/main', {
-                        layout: {
+
+                    const layout = {
                             show: {
                                 showListOrder: showListOrder.toArray()
                             }
-                        }
-                    }).then(response => {
+                    };
+                    const section = 'layout';
+                    setConfig({ section, config: { layout } })
+                        .then(response => {
                         console.info(response);
-                    }).catch(error => {
+                        })
+                        .catch(error => {
                         console.error(error);
                     });
                 }
@@ -524,5 +548,5 @@ export default {
 </script>
 
 <style>
-/* placeholder */
+
 </style>

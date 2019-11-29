@@ -127,7 +127,7 @@ def initialize():
         return
 
     affected_functions = {
-        certifi: ['where', 'old_where'],
+        certifi: ['where'],
         glob: ['glob'],
         io: ['open'],
         os: ['access', 'chdir', 'listdir', 'makedirs', 'mkdir', 'remove',

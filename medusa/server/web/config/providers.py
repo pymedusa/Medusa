@@ -36,8 +36,7 @@ class ConfigProviders(Config):
         """Render the Provider configuration page."""
         t = PageTemplate(rh=self, filename='config_providers.mako')
 
-        return t.render(submenu=self.ConfigMenu(),
-                        controller='config', action='providers')
+        return t.render(controller='config', action='providers')
 
     @staticmethod
     def canAddTorrentRssProvider(name, url, cookies, title_tag):
@@ -365,11 +364,11 @@ class ConfigProviders(Config):
                 provider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
         if hasattr(provider, 'enable_search_delay'):
-                try:
-                    provider.enable_search_delay = config.checkbox_to_value(
-                        kwargs['{id}_enable_search_delay'.format(id=provider.get_id())])
-                except (AttributeError, KeyError):
-                    provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+            try:
+                provider.enable_search_delay = config.checkbox_to_value(
+                    kwargs['{id}_enable_search_delay'.format(id=provider.get_id())])
+            except (AttributeError, KeyError):
+                provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
 
         if hasattr(provider, 'search_delay'):
             try:

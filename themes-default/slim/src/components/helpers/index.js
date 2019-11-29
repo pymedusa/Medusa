@@ -9,6 +9,7 @@ export { default as LanguageSelect } from './language-select.vue';
 export { default as NamePattern } from './name-pattern.vue';
 export { default as PlotInfo } from './plot-info.vue';
 export { default as ProgressBar } from './progress-bar.vue';
+export { default as QualityChooser } from './quality-chooser.vue';
 export { default as QualityPill } from './quality-pill.vue';
 export { default as ScrollButtons } from './scroll-buttons.vue';
 export { default as SelectList } from './select-list.vue';

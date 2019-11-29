@@ -28,57 +28,52 @@ class Notifier(object):
         """Sends test notification from config screen."""
         log.debug('Sending a test Join notification.')
         return self._sendjoin(
+            title='Test',
+            message='Testing Join settings from Medusa',
             join_api=join_api,
             join_device=join_device,
-            event='Test',
-            message='Testing Join settings from Medusa',
             force=True
         )
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         """Send Join notification when nzb snatched if selected in config."""
         if app.JOIN_NOTIFY_ONSNATCH:
             self._sendjoin(
-                join_api=None,
-                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
-                message=ep_name
+                title=title,
+                message=message
             )
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         """Send Join notification when nzb download completed if selected in config."""
         if app.JOIN_NOTIFY_ONDOWNLOAD:
             self._sendjoin(
-                join_api=None,
-                event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ' : ' + ep_name,
-                message=ep_name
+                title=common.notifyStrings[common.NOTIFY_DOWNLOAD],
+                message=ep_obj.pretty_name_with_quality()
             )
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         """Send Join notification when subtitles downloaded if selected in config."""
         if app.JOIN_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendjoin(
-                join_api=None,
-                event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
-                message=ep_name + ': ' + lang
+                title=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
+                message=ep_obj.pretty_name() + ': ' + lang
             )
 
     def notify_git_update(self, new_version='??'):
         """Send Join notification when new version available from git."""
         self._sendjoin(
-            join_api=None,
-            event=common.notifyStrings[common.NOTIFY_GIT_UPDATE],
+            title=common.notifyStrings[common.NOTIFY_GIT_UPDATE],
             message=common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT] + new_version,
         )
 
     def notify_login(self, ipaddress=''):
         """Send Join notification when login detected."""
         self._sendjoin(
-            join_api=None,
-            event=common.notifyStrings[common.NOTIFY_LOGIN],
+            title=common.notifyStrings[common.NOTIFY_LOGIN],
             message=common.notifyStrings[common.NOTIFY_LOGIN_TEXT].format(ipaddress)
         )
 
-    def _sendjoin(self, join_api=None, join_device=None, event=None, message=None, force=False):
+    def _sendjoin(self, title, message, join_api=None, join_device=None, force=False):
         """Compose and send Join notification."""
         push_result = {'success': False, 'error': ''}
 
@@ -89,15 +84,9 @@ class Notifier(object):
         join_device = join_device or app.JOIN_DEVICE
         icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-310.png'
 
-        log.debug('Join title: {0!r}', event)
-        log.debug('Join message: {0!r}', message)
-        log.debug('Join api: {0!r}', join_api)
-        log.debug('Join devices: {0!r}', join_device)
+        params = {'title': title, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
 
-        post_data = {'title': event, 'text': message, 'deviceId': join_device, 'apikey': join_api, 'icon': icon_url}
-
-        r = requests.get(self.url, params=post_data)
-
+        r = requests.get(self.url, params=params)
         try:
             response = r.json()
         except ValueError:
@@ -107,8 +96,8 @@ class Notifier(object):
 
         failed = response.pop('errorMessage', {})
         if failed:
-            log.warning('Join notification failed: {0}', failed.get('message'))
-            push_result['error'] = 'Join notification failed: {0}'.format(failed.get('message'))
+            log.warning('Join notification failed: {0}', failed)
+            push_result['error'] = 'Join notification failed: {0}'.format(failed)
         else:
             log.debug('Join notification sent.')
             push_result['success'] = True

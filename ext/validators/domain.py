@@ -3,10 +3,10 @@ import re
 from .utils import validator
 
 pattern = re.compile(
-    r'^(:?(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|'  # domain pt.1
-    r'([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|'  # domain pt.2
-    r'([a-zA-Z0-9][-_a-zA-Z0-9]{0,61}[a-zA-Z0-9]))\.)+'  # domain pt.3
-    r'([a-zA-Z]{2,13}|(xn--[a-zA-Z0-9]{2,30}))$'  # TLD
+    r'^(?:[a-z0-9]'  # First character of the domain
+    r'(?:[a-z0-9-_]{0,61}[a-z0-9])?\.)'  # Sub domain + hostname
+    r'+[a-z0-9][a-z0-9-_]{0,61}'  # First 61 characters of the gTLD
+    r'[a-z0-9]$'  # Last character of the gTLD
 )
 
 

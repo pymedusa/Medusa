@@ -53,7 +53,7 @@ pre {
 
 <div class="row">
 <div class="col-md-12">
-<pre>
+<pre v-pre>
 % if errors:
 ${'\n'.join([html_escape(logline) for logline in errors[:500]])}
 % else:

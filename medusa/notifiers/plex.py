@@ -37,7 +37,7 @@ class Notifier(object):
         })
 
     @staticmethod
-    def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
+    def _notify_pht(title, message, host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
         """Internal wrapper for the notify_snatch and notify_download functions
 
         Args:
@@ -62,41 +62,41 @@ class Notifier(object):
         username = username or app.PLEX_CLIENT_USERNAME
         password = password or app.PLEX_CLIENT_PASSWORD
 
-        return kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app='PLEX')  # pylint: disable=protected-access
+        return kodi_notifier._notify_kodi(title, message, host=host, username=username, password=password, force=force, dest_app='PLEX')  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions
 ##############################################################################
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         if app.PLEX_NOTIFY_ONSNATCH:
-            self._notify_pht(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_pht(title, message)
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.PLEX_NOTIFY_ONDOWNLOAD:
-            self._notify_pht(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
+            self._notify_pht(common.notifyStrings[common.NOTIFY_DOWNLOAD], ep_obj.pretty_name_with_quality())
 
     def notify_subtitle_download(self, ep_obj, lang):
         if app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD:
-            self._notify_pht(ep_obj.pretty_name() + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
+            self._notify_pht(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD], ep_obj.pretty_name() + ': ' + lang)
 
     def notify_git_update(self, new_version='??'):
         if app.NOTIFY_ON_UPDATE:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             if update_text and title and new_version:
-                self._notify_pht(update_text + new_version, title)
+                self._notify_pht(title, update_text + new_version)
 
     def notify_login(self, ipaddress=''):
         if app.NOTIFY_ON_LOGIN:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             if update_text and title and ipaddress:
-                self._notify_pht(update_text.format(ipaddress), title)
+                self._notify_pht(title, update_text.format(ipaddress))
 
     def test_notify_pht(self, host, username, password):
-        return self._notify_pht('This is a test notification from Medusa',
-                                'Test Notification', host, username, password, force=True)
+        return self._notify_pht('Test Notification', 'This is a test notification from Medusa',
+                                host, username, password, force=True)
 
     def test_notify_pms(self, host, username, password, plex_server_token):
         return self.update_library(hosts=host, username=username, password=password,

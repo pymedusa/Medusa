@@ -22,9 +22,6 @@ log.logger.addHandler(logging.NullHandler())
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
-# Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 12
-
 
 class MainSanityCheck(db.DBSanityCheck):
     def check(self):
@@ -159,8 +156,9 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
-        for old_status, new_status in iteritems(STATUS_MAP):
-            self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
+        for new_status, mappings in iteritems(STATUS_MAP):
+            for old_status in mappings:
+                self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
 
     def fix_episode_statuses(self):
         sql_results = self.connection.select('SELECT episode_id, showid FROM tv_episodes WHERE status IS NULL')
@@ -864,4 +862,40 @@ class AddEpisodeWatchedField(ShiftQualities):
         )
 
         self.connection.action('DROP TABLE tmp_tv_episodes;')
+        self.inc_minor_version()
+
+
+class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
+    """Add tv_show airdate_offset field."""
+
+    def test(self):
+        """Test if the version is at least 44.13"""
+        return self.connection.version >= (44, 13)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding new airdate_offset field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'airdate_offset'):
+            self.addColumn('tv_shows', 'airdate_offset', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+    """Add release ignore and require exclude option flags."""
+
+    def test(self):
+        """Test if the version is at least 44.14"""
+        return self.connection.version >= (44, 14)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info(u'Adding release ignore and require exclude option flags to the tv_shows table')
+        if not self.hasColumn('tv_shows', 'rls_require_exclude'):
+            self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
+        if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
+            self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
         self.inc_minor_version()

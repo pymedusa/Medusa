@@ -1,15 +1,14 @@
 {
-  "manifest_version": 1,
   "version": "0.1.0",
   "name": "slim",
   "author": "p0psicles",
   "scripts": {
-    "lint": "xo",
-    "lint-css": "stylelint ./static/css/*.css ./src/components/**/*.vue",
+    "lint": "eslint **/*.{js,vue}",
+    "lint-css": "stylelint \"./static/css/*.css\" \"./src/components/**/*.vue\"",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "install": "yarn run lint",
-    "test": "cross-env NODE_ENV=test nyc ava",
+    "test": "cross-env NODE_ENV=test nyc --clean jest --coverage",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -F frontend"
   },
   "config": {
@@ -26,131 +25,81 @@
       }
     }
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "7.1.2",
-    "@babel/plugin-proposal-object-rest-spread": "7.0.0",
-    "@babel/plugin-syntax-dynamic-import": "7.0.0",
-    "@babel/polyfill": "7.0.0",
-    "@babel/preset-env": "7.1.0",
-    "@babel/register": "7.0.0",
-    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
-    "@vue/test-utils": "1.0.0-beta.25",
-    "ava": "1.0.0-rc.1",
-    "axios": "0.18.0",
-    "babel-eslint": "10.0.1",
-    "babel-loader": "8.0.4",
-    "babel-plugin-istanbul": "5.1.0",
-    "bootstrap": "3.3.7",
-    "browser-env": "3.2.5",
-    "clean-webpack-plugin": "0.1.19",
-    "codecov": "3.1.0",
-    "copy-webpack-plugin": "4.6.0",
-    "cross-env": "5.2.0",
-    "css-loader": "1.0.1",
-    "date-fns": "1.29.0",
-    "eslint": "5.8.0",
-    "eslint-config-xo": "0.25.0",
-    "eslint-plugin-vue": "5.0.0-beta.3",
-    "esm": "3.0.84",
-    "file-loader": "2.0.0",
-    "filemanager-webpack-plugin": "2.0.5",
-    "glob": "7.1.3",
-    "gulp": "3.9.1",
-    "gulp-changed": "3.2.0",
-    "gulp-imagemin": "4.1.0",
-    "imagemin-pngquant": "6.0.0",
-    "is-visible": "2.2.0",
-    "jquery": "3.3.1",
-    "lodash": "4.17.11",
-    "mini-css-extract-plugin": "0.4.4",
-    "nyc": "13.1.0",
-    "pretty-bytes": "5.1.0",
-    "require-extension-hooks": "0.3.3",
-    "require-extension-hooks-babel": "1.0.0-beta.1",
-    "require-extension-hooks-vue": "1.1.0",
-    "run-sequence": "2.2.1",
-    "stylelint": "9.7.1",
-    "stylelint-config-standard": "18.2.0",
-    "tablesorter": "2.31.0",
-    "vue": "2.5.17",
-    "vue-async-computed": "3.4.1",
-    "vue-js-toggle-button": "1.3.0",
-    "vue-loader": "15.4.2",
-    "vue-meta": "1.5.5",
-    "vue-native-websocket": "2.0.12",
-    "vue-router": "3.0.1",
-    "vue-scrollto": "2.13.0",
-    "vue-snotify": "3.2.1",
-    "vue-template-compiler": "2.5.17",
-    "vue-truncate-collapsed": "2.1.0",
-    "vuex": "3.0.1",
-    "webpack": "4.24.0",
-    "webpack-cli": "3.1.2",
-    "xo": "0.23.0"
+  "resolutions": {
+    "**/jquery": "3.4.1",
+    "**/date-fns": "2.0.1"
   },
-  "xo": {
-    "space": 4,
-    "extends": [
-      "plugin:vue/essential"
-    ],
-    "extensions": [
-      "vue"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {
-      "object-curly-spacing": [
-        "error",
-        "always"
-      ],
-      "space-before-function-paren": [
-        "error",
-        {
-          "anonymous": "never",
-          "named": "never",
-          "asyncArrow": "always"
-        }
-      ],
-      "valid-jsdoc": [
-        "error"
-      ]
-    },
-    "envs": [
-      "browser"
-    ],
-    "globals": [
-      "PNotify",
-      "LazyLoad",
-      "_",
-      "$",
-      "MEDUSA",
-      "api",
-      "apiv1",
-      "apiRoute",
-      "jQuery",
-      "axios",
-      "webRoot",
-      "apiRoot",
-      "apiKey",
-      "Vuex"
-    ],
-    "ignores": [
-      "static/js/lib/**",
-      "static/js/*.min.js",
-      "static/js/vender.js"
-    ],
-    "overrides": [
-      {
-        "files": "src/**",
-        "globals": [
-          "$",
-          "MEDUSA"
-        ]
-      }
-    ],
-    "esnext": true
+  "dependencies": {
+    "axios": "0.19.0",
+    "bootstrap": "3.4.1",
+    "country-language": "0.1.7",
+    "date-fns": "2.0.1",
+    "is-visible": "2.2.0",
+    "javascript-time-ago": "2.0.2",
+    "jquery": "3.4.1",
+    "lodash": "4.17.15",
+    "tablesorter": "2.31.1",
+    "v-tooltip": "2.0.2",
+    "vue": "2.6.10",
+    "vue-async-computed": "3.7.0",
+    "vue-cookies": "1.5.13",
+    "vue-good-table": "git+https://github.com/p0psicles/vue-good-table#25a6f282231426fbbdb44d8a6d1927e8abf21e4d",
+    "vue-js-modal": "1.3.31",
+    "vue-js-toggle-button": "1.3.2",
+    "vue-meta": "2.0.5",
+    "vue-multiselect": "2.1.6",
+    "vue-native-websocket": "2.0.13",
+    "vue-router": "3.0.7",
+    "vue-scrollto": "2.15.0",
+    "vue-snotify": "3.2.1",
+    "vue-template-compiler": "2.6.10",
+    "vue-truncate-collapsed": "2.1.0",
+    "vuex": "3.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.6.0",
+    "@babel/plugin-transform-runtime": "7.6.0",
+    "@babel/preset-env": "7.6.0",
+    "@babel/runtime": "7.6.0",
+    "@mapbox/stylelint-processor-arbitrary-tags": "0.2.0",
+    "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
+    "@vue/test-utils": "1.0.0-beta.29",
+    "babel-core": "7.0.0-bridge.0",
+    "babel-eslint": "10.0.3",
+    "babel-loader": "8.0.6",
+    "browser-env": "3.2.6",
+    "clean-webpack-plugin": "3.0.0",
+    "codecov": "3.6.1",
+    "copy-webpack-plugin": "5.0.5",
+    "cross-env": "6.0.3",
+    "css-loader": "3.2.0",
+    "eslint": "6.7.1",
+    "eslint-config-xo": "0.26.0",
+    "eslint-import-resolver-webpack": "0.11.1",
+    "eslint-plugin-eslint-comments": "3.1.2",
+    "eslint-plugin-import": "2.18.2",
+    "eslint-plugin-jest": "23.0.4",
+    "eslint-plugin-unicorn": "10.0.0",
+    "eslint-plugin-vue": "6.0.1",
+    "file-loader": "4.3.0",
+    "filemanager-webpack-plugin": "2.0.5",
+    "glob": "7.1.6",
+    "gulp": "4.0.2",
+    "gulp-changed": "4.0.2",
+    "gulp-imagemin": "6.2.0",
+    "imagemin-pngquant": "8.0.0",
+    "jest": "24.9.0",
+    "jest-serializer-vue": "2.0.2",
+    "mini-css-extract-plugin": "0.8.0",
+    "nyc": "14.1.1",
+    "optimize-css-assets-webpack-plugin": "5.0.3",
+    "stylelint": "12.0.0",
+    "stylelint-config-standard": "19.0.0",
+    "timekeeper": "2.2.0",
+    "vue-jest": "3.0.5",
+    "vue-loader": "15.7.2",
+    "webpack": "4.41.2",
+    "webpack-cli": "3.3.10"
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
@@ -175,6 +124,7 @@
           "severity": "error"
         }
       ],
+      "no-empty-source": null,
       "no-descending-specificity": null
     },
     "ignoreFiles": [
@@ -182,29 +132,32 @@
       "static/css/*.min.css"
     ]
   },
-  "ava": {
-    "require": [
-      "esm",
-      "@babel/register",
-      "@babel/polyfill",
+  "jest": {
+    "setupFiles": [
       "./test/helpers/setup.js"
     ],
-    "files": [
-      "test/specs/**/*.spec.js"
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
     ],
-    "sources": [
-      "src/**/*.vue",
-      "src/**/*.js"
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^.+\\.(css|less|sass|scss)$": "<rootDir>/test/__mocks__/stylemock.js",
+      "^.+\\.(gif|ttf|eot|svg)$": "<rootDir>/test/__mocks__/filemock.js"
+    },
+    "transform": {
+      "^.+\\.js$": "babel-jest",
+      "^.+\\.vue$": "vue-jest"
+    },
+    "snapshotSerializers": [
+      "jest-serializer-vue"
     ],
-    "concurrency": 5,
-    "failWithoutAssertions": true,
-    "powerAssert": true
+    "coverageReporters": [
+      "json"
+    ]
   },
   "nyc": {
-    "require": [
-      "@babel/register",
-      "@babel/polyfill"
-    ],
     "sourceMap": false,
     "instrument": false,
     "extension": [
@@ -217,6 +170,7 @@
     "reporter": [
       "lcov",
       "text"
-    ]
+    ],
+    "tempDirectory": "./coverage"
   }
 }

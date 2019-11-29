@@ -2,19 +2,19 @@
     <div id="scroll-buttons-wrapper">
         <div class="scroll-wrapper top" :class="{ show: showToTop }" @click.prevent="scrollTop">
             <span class="scroll-top-inner">
-                <i class="glyphicon glyphicon-circle-arrow-up"></i>
+                <i class="glyphicon glyphicon-circle-arrow-up" />
             </span>
         </div>
 
         <div class="scroll-wrapper left" :class="{ show: showLeftRight }">
             <span class="scroll-left-inner">
-                <i @click.prevent="scrollLeft" class="glyphicon glyphicon-circle-arrow-left"></i>
+                <i @click.prevent="scrollLeft" class="glyphicon glyphicon-circle-arrow-left" />
             </span>
         </div>
 
         <div class="scroll-wrapper right" :class="{ show: showLeftRight }">
             <span class="scroll-right-inner">
-                <i @click.prevent="scrollRight" class="glyphicon glyphicon-circle-arrow-right"></i>
+                <i @click.prevent="scrollRight" class="glyphicon glyphicon-circle-arrow-right" />
             </span>
         </div>
     </div>

@@ -1,8 +1,8 @@
 # encoding: utf-8
 """Use the HTMLParser library to parse HTML files that aren't too bad."""
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Use of this source code is governed by the MIT license.
+__license__ = "MIT"
 
 __all__ = [
     'HTMLParserTreeBuilder',
@@ -99,7 +99,11 @@ class BeautifulSoupHTMLParser(HTMLParser):
             attr_dict[key] = value
             attrvalue = '""'
         #print "START", name
-        tag = self.soup.handle_starttag(name, None, None, attr_dict)
+        sourceline, sourcepos = self.getpos()
+        tag = self.soup.handle_starttag(
+            name, None, None, attr_dict, sourceline=sourceline,
+            sourcepos=sourcepos
+        )
         if tag and tag.is_empty_element and handle_empty_element:
             # Unlike other parsers, html.parser doesn't send separate end tag
             # events for empty-element tags. (It's handled in
@@ -214,12 +218,19 @@ class HTMLParserTreeBuilder(HTMLTreeBuilder):
     NAME = HTMLPARSER
     features = [NAME, HTML, STRICT]
 
-    def __init__(self, *args, **kwargs):
+    # The html.parser knows which line number and position in the
+    # original file is the source of an element.
+    TRACKS_LINE_NUMBERS = True
+    
+    def __init__(self, parser_args=None, parser_kwargs=None, **kwargs):
+        super(HTMLParserTreeBuilder, self).__init__(**kwargs)
+        parser_args = parser_args or []
+        parser_kwargs = parser_kwargs or {}
         if CONSTRUCTOR_TAKES_STRICT and not CONSTRUCTOR_STRICT_IS_DEPRECATED:
-            kwargs['strict'] = False
+            parser_kwargs['strict'] = False
         if CONSTRUCTOR_TAKES_CONVERT_CHARREFS:
-            kwargs['convert_charrefs'] = False
-        self.parser_args = (args, kwargs)
+            parser_kwargs['convert_charrefs'] = False
+        self.parser_args = (parser_args, parser_kwargs)
 
     def prepare_markup(self, markup, user_specified_encoding=None,
                        document_declared_encoding=None, exclude_encodings=None):

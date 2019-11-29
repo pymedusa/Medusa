@@ -87,7 +87,7 @@
             else:
                 den = 1
                 download_stat_tip = "Unaired"
-            progressbar_percent = nom * 100 / den
+            progressbar_percent = nom * 100 // den
             data_date = '6000000000.0'
             if cur_airs_next:
                 data_date = calendar.timegm(sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)).timetuple())
