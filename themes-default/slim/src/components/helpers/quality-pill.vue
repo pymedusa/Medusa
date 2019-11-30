@@ -4,7 +4,7 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex';
-import { combineQualities } from '../../utils';
+import { combineQualities } from '../../utils/core';
 
 export default {
     name: 'quality-pill',

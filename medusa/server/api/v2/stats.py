@@ -121,10 +121,10 @@ def per_show_stats():
     sql_result = main_db_con.select(query)
 
     stats_data = {}
-    stats_data['seriesStat'] = []
+    stats_data['stats'] = []
     stats_data['maxDownloadCount'] = 1000
     for cur_result in sql_result:
-        stats_data['seriesStat'].append(cur_result)
+        stats_data['stats'].append(cur_result)
         if cur_result['epTotal'] > stats_data['maxDownloadCount']:
             stats_data['maxDownloadCount'] = cur_result['epTotal']
 

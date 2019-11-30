@@ -79,11 +79,11 @@ const getters = {
     },
     // Get an indexer's ID using its name.
     indexerNameToId: state => indexerName => {
-        if (!indexerName) {
+        const { indexers } = state;
+        if (!indexerName || !indexers) {
             return undefined;
         }
-        const { indexers } = state;
-        return indexers[name].id;
+        return indexers[indexerName].id;
     }
 };
 

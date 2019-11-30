@@ -148,5 +148,5 @@ export default {
     methods: {
         prettyBytes: bytes => pretty(bytes)
     }
-}
+};
 </script>

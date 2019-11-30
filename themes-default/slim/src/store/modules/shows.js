@@ -107,6 +107,50 @@ const getters = {
     },
     getCurrentShow: (state, getters, rootState) => {
         return state.shows.find(show => Number(show.id[state.currentShow.indexer]) === Number(state.currentShow.id)) || rootState.defaults.show;
+    },
+    showsWithStats: (state, getters, rootState) => {
+        if (!state.shows) {
+            return [];
+        }
+
+        return state.shows.map(show => {
+            const showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
+            const newLine = '\u000d';
+            let text = 'Unaired';
+            let title = '';
+
+            if (showStats.epTotal >= 1) {
+                text = showStats.epDownloaded;
+                title = `Downloaded: ${showStats.epDownloaded}`;
+
+                if (showStats.epSnatched) {
+                    text += `+${showStats.epSnatched}`;
+                    title += `${newLine}Snatched: ${showStats.epSnatched}`;
+                }
+
+                text += ` / ${showStats.epTotal}`;
+                title += `${newLine}Total: ${showStats.epTotal}`;
+            }
+
+            show.stats = {
+                episodes: {
+                    total: showStats.epTotal,
+                    snatched: showStats.epSnatched,
+                    downloaded: showStats.epDownloaded,
+                    size: showStats.seriesSize
+                },
+                airs: {
+                    prev: showStats.epAirsPrev,
+                    next: showStats.epAirsNext
+                },
+                tooltip: {
+                    text,
+                    title,
+                    percentage: (showStats.epDownloaded * 100) / (showStats.epTotal || 1)
+                }
+            };
+            return show;
+        });
     }
 };
 

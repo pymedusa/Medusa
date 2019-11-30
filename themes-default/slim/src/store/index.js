@@ -17,7 +17,6 @@ import {
     shows,
     socket,
     stats,
-    statuses
     system
 } from './modules';
 import {
@@ -48,7 +47,6 @@ const store = new Store({
         shows,
         socket,
         stats,
-        statuses,
         system
     },
     state: {},

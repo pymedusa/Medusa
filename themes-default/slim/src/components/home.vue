@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import debounce from 'lodash/debounce';
 import { api } from '../api';
 import { AppLink } from './helpers';
@@ -29,8 +29,14 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
+            // We don't directly need this. But at some point we need to translate indexerName to id, which uses the state.indexers module.
+            indexers: state => state.indexers,
             // Renamed because of the computed property 'layout'.
-            stateLayout: state => state.layout
+            stateLayout: state => state.layout,
+            stats: state => state.stats
+        }),
+        ...mapGetters({
+            showsWithStats: 'showsWithStats'
         }),
         layout: {
             get() {
@@ -44,81 +50,23 @@ export default {
             }
         },
         showLists() {
-            if (this.$store.state.stats.stats.length === 0) {
+            const { config, indexers, stateLayout, showsWithStats, stats } = this;
+            if (stats.show.stats.length === 0 || !indexers.indexers) {
                 return;
             }
 
-            const toShowObject = show => {
-                const { epTotal, seriesSize, epAirsPrev, epSnatched, epDownloaded, epAirsNext } = this.$store.state.stats.stats.find(({ indexerId, seriesId }) => {
-                    return {
-                        // @TODO: fill these in
-                        1: 'tvdb',
-                        2: '',
-                        3: '',
-                        4: ''
-                    }[indexerId] === show.indexer && seriesId === show.id[show.indexer];
-                });
-
-                // @NOTE: The newLine cannot be a HTML linebreak as Vue will escape it
-                // @SEE: https://github.com/vuejs/vue/issues/7970#issuecomment-388881520
-                // @SEE: https://stackoverflow.com/questions/41512561/javascript-set-title-with-new-lines/41512954#41512954
-                const newLine = '\u000d';
-                let text = 'Unaired';
-                let title = '';
-
-                if (epTotal >= 1) {
-                    text = epDownloaded;
-                    title = `Downloaded: ${epDownloaded}`;
-
-                    if (epSnatched) {
-                        text += `+${epSnatched}`;
-                        title += `${newLine}Snatched: ${epSnatched}`
-                    }
-
-                    text += ` / ${epTotal}`;
-                    title += `${newLine}Total: ${epTotal}`;
-                }
-
-                // This is the final stats object
-                return {
-                    ...show,
-                    stats: {
-                        episodes: {
-                            total: epTotal,
-                            snatched: epSnatched,
-                            downloaded: epDownloaded,
-                            size: seriesSize
-                        },
-                        airs: {
-                            prev: epAirsPrev,
-                            next: epAirsNext
-                        },
-                        tooltip: {
-                            text,
-                            title,
-                            percentage: (epDownloaded * 100) / (epTotal || 1)
-                        }
-                    }
-                };
-            };
-
-            // This is the final show object
-            const { state } = this.$store;
-            const { config } = state;
-            const shows = state.shows.shows.map(toShowObject);
-
-            return config.animeSplitHome ? {
-                anime: shows.filter(show => show.config.anime),
-                series: shows.filter(show => !show.config.anime)
-            } : {
-                series: shows
-            }
+            const shows = showsWithStats;
+            return stateLayout.show.showListOrder.map(showType => {
+                return {showType, shows: shows.filter(show => show.config.anime === (showType === 'Anime'))}
+            });
         }
     },
     methods: {
         ...mapActions({
             setLayout: 'setLayout',
-            setConfig: 'setConfig'
+            setConfig: 'setConfig',
+            getShows: 'getShows',
+            getStats: 'getStats'
         }),
         initializePosterSizeSlider() {
             const resizePosters = newSize => {
@@ -183,9 +131,10 @@ export default {
         }
     },
     mounted() {
-        const { config, stateLayout, setConfig } = this;
-        this.$store.dispatch('getShows');
-        this.$store.dispatch('stats/getStats');
+        const { config, getShows, getStats, stateLayout, setConfig } = this;
+
+        getShows();
+        getStats('show');
 
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
@@ -526,18 +475,18 @@ export default {
                     });
 
                     const layout = {
-                            show: {
-                                showListOrder: showListOrder.toArray()
-                            }
+                        show: {
+                            showListOrder: showListOrder.toArray()
+                        }
                     };
                     const section = 'layout';
                     setConfig({ section, config: { layout } })
                         .then(response => {
-                        console.info(response);
+                            console.info(response);
                         })
                         .catch(error => {
-                        console.error(error);
-                    });
+                            console.error(error);
+                        });
                 }
             });
         }; // END initializePage()

@@ -12,6 +12,10 @@ const state = {
             active: null,
             total: null
         }
+    },
+    show: {
+        maxDownloadCount: 0,
+        stats: []
     }
 };
 
@@ -33,7 +37,7 @@ const getters = {};
 const actions = {
     getStats(context, type) {
         const { commit } = context;
-        return api.get('/stats/' + (type || '')).then(res => {
+        return api.get(`/stats/${(type || '')}`).then(res => {
             commit(ADD_STATS, {
                 type: (type || 'overall'),
                 stats: res.data
@@ -43,7 +47,6 @@ const actions = {
 };
 
 export default {
-    namespaced: true,
     state,
     mutations,
     getters,
