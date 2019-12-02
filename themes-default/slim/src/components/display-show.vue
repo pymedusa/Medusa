@@ -24,7 +24,7 @@
                                     customChildObject: 'episodes'
                                 }"
                                 :pagination-options="{
-                                    enabled: true,
+                                    enabled: layout.show.pagination.enable,
                                     perPage: paginationPerPage,
                                     perPageDropdown
                                 }"
@@ -412,7 +412,7 @@ export default {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || !layout.show.specials);
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || layout.show.specials);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {

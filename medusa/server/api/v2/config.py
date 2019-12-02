@@ -456,6 +456,7 @@ class ConfigHandler(BaseRequestHandler):
                                  default_value='poster'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
+        'layout.show.pagination.enable': BooleanField(app, 'SHOW_USE_PAGINATION'),
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
         'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
@@ -1167,6 +1168,8 @@ class DataGenerator(object):
         section_data['show'] = {}
         section_data['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['show']['showListOrder'] = app.SHOW_LIST_ORDER
+        section_data['show']['pagination'] = {}
+        section_data['show']['pagination']['enable'] = bool(app.SHOW_USE_PAGINATION)
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 
