@@ -64,7 +64,7 @@ const actions = {
     },
     setTheme(context, { themeName }) {
         const { commit } = context;
-        return api.patch('config/main', { config: { layout: { themeName } } })
+        return api.patch('config/main', { layout: { themeName } })
             .then(() => {
                 return commit(ADD_CONFIG, { section: 'layout', config: { themeName } });
             });
@@ -74,7 +74,7 @@ const actions = {
         const show = Object.assign({}, state.show);
         show.specials = specials;
 
-        return api.patch('config/main', { config: { layout: show } })
+        return api.patch('config/main', { layout: { show } })
             .then(() => {
                 return commit(ADD_CONFIG, { section: 'layout', config: { show } });
             });
