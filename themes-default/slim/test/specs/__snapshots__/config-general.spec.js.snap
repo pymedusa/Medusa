@@ -749,6 +749,13 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </span>
                 </config-textbox-stub>
                  
+                <config-toggle-slider-stub
+                  explanations=""
+                  id="show_pagination"
+                  label="Use table pagination"
+                  value="true"
+                />
+                 
                 <input
                   class="btn-medusa config_submitter"
                   type="submit"

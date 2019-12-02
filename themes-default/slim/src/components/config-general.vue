@@ -215,6 +215,8 @@
                                         <span class="component-desc">URL where the shows can be downloaded.</span>
                                     </config-textbox>
 
+                                    <config-toggle-slider v-model="layout.show.pagination.enable" label="Use table pagination" id="show_pagination" />
+
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>
                             </div>
