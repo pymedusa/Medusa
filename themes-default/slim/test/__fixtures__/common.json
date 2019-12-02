@@ -260,7 +260,10 @@
                 "showListOrder": [
                     "Anime",
                     "Series"
-                ]
+                ],
+                "pagination": {
+                    "enable": true
+                }
             },
             "wide": false,
             "posterSortdir": 1,
