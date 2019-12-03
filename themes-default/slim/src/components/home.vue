@@ -1,3 +1,94 @@
+<template>
+    <div id="home">
+        <input type="hidden" id="background-series-slug" value="" />
+
+        <div class="row" v-if="layout === 'poster'">
+            <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
+                <div class="pull-right">
+                    <div class="show-option pull-right">
+                        <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                    </div>
+                    <div class="show-option pull-right"> Direction:
+                        <select :value.number="config.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                            <option :value="1" data-sort="setPosterSortDir/?direction=1">Ascending</option>
+                            <option :value="0" data-sort="setPosterSortDir/?direction=0">Descending</option>
+                        </select>
+                    </div>
+                    <div class="show-option pull-right"> Sort By:
+                    <select :value="config.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                        <option value="name" data-sort="setPosterSortBy/?sort=name">Name</option>
+                        <option value="date" data-sort="setPosterSortBy/?sort=date">Next Episode</option>
+                        <option value="network" data-sort="setPosterSortBy/?sort=network">Network</option>
+                        <option value="progress" data-sort="setPosterSortBy/?sort=progress">Progress</option>
+                        <option value="indexer" data-sort="setPosterSortBy/?sort=indexer">Indexer</option>
+                    </select>
+                    </div>
+                    <div class="show-option pull-right">
+                        Poster Size:
+                        <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- row !-->
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="pull-left" id="showRoot" style="display: none;">
+                    <select name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm"></select>
+                </div>
+                <div class="show-option pull-right">
+                    <template v-if="layout !== 'poster'">
+                        <span class="show-option">
+                            <button id="popover" type="button" class="btn-medusa btn-inline">
+                                Select Columns <b class="caret"></b>
+                            </button>
+                        </span> <span class="show-option">
+                            <button type="button" class="resetsorting btn-medusa btn-inline">Clear
+                                Filter(s)</button>
+                        </span>&nbsp;
+                    </template>
+                    Layout: <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                        <option value="poster">Poster</option>
+                        <option value="small">Small Poster</option>
+                        <option value="banner">Banner</option>
+                        <option value="simple">Simple</option>
+                    </select>
+                </div>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Split in tabs -->
+                <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
+                    <!-- Nav tabs -->
+                    <ul>
+                        <li v-for="showList in showLists" :key="showList.listTitle">
+                            <app-link :href="`#${listTitle}TabContent`" :id="`${listTitle}Tab`">{{ listTitle }}</app-link>
+                        </li>
+                    </ul>
+                    <!-- Tab panes -->
+                    <div id="showTabPanes">
+                        <template v-if="['banner', 'simple'].includes(layout)">
+                            <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
+                                <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
+                            </div> <!-- #...TabContent -->
+                        </template>
+                    </div><!-- #showTabPanes -->
+                </div> <!-- #showTabs -->
+                <template v-else>
+                    <!-- if not app.HOME_LAYOUT in ['banner', 'simple']:
+                        <include file="/partials/home/{app.HOME_LAYOUT}.mako"/>
+                     endif -->
+                    <template v-if="['banner', 'simple'].includes(layout)">
+                        <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"/>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
 import debounce from 'lodash/debounce';
@@ -7,7 +98,6 @@ import ShowList from './show-list';
 
 export default {
     name: 'home',
-    template: '#home-template',
     components: {
         AppLink,
         ShowList
@@ -50,14 +140,16 @@ export default {
             }
         },
         showLists() {
-            const { config, indexers, stateLayout, showsWithStats, stats } = this;
+            const { indexers, stateLayout, showsWithStats, stats } = this;
             if (stats.show.stats.length === 0 || !indexers.indexers) {
                 return;
             }
 
             const shows = showsWithStats;
-            return stateLayout.show.showListOrder.map(showType => {
-                return {showType, shows: shows.filter(show => show.config.anime === (showType === 'Anime'))}
+            return stateLayout.show.showListOrder.map(listTitle => {
+                return (
+                    { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
+                );
             });
         }
     },
@@ -497,5 +589,4 @@ export default {
 </script>
 
 <style>
-
 </style>

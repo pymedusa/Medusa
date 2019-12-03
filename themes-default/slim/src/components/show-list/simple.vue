@@ -34,7 +34,7 @@
             <tbody>
                 <tr v-for="show in sortedShows" :key="show.title">
                     <template v-if="show.stats.airs.next">
-                        <!-- <%
+                        <!-- <
                             try:
                                 airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network))
                                 datetime = airDate.isoformat('T')
@@ -42,14 +42,14 @@
                             except ValueError:
                                 datetime = ""
                                 text = ""
-                        %> -->
+                        > -->
                         <td align="center" class="nowrap">
-                            <!-- <time datetime="${datetime}" class="date">${text}</time> -->
+                            <!-- <time datetime="{datetime}" class="date">{text}</time> -->
                         </td>
                     </template>
                     <td v-else align="center" class="nowrap"></td>
                     <template v-if="show.stats.airs.prev">
-                        <!-- <%
+                        <!-- <
                             try:
                                 airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network))
                                 datetime = airDate.isoformat('T')
@@ -57,9 +57,9 @@
                             except ValueError:
                                 datetime = ""
                                 text = ""
-                        %> -->
+                        > -->
                         <td align="center" class="nowrap">
-                            <!-- <time datetime="${datetime}" class="date">${text}</time> -->
+                            <!-- <time datetime="{datetime}" class="date">{text}</time> -->
                         </td>
                     </template>
                     <td v-else align="center" class="nowrap"></td>
@@ -80,11 +80,12 @@
                         <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
                             <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                         </app-link>
-                        <!-- <app-link data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
-                            <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
+                        <!-- <app-link data-indexer-name="{indexerApi(cur_show.indexer).name}" href="{indexerApi(cur_show.indexer).config['show_url']}{cur_show.series_id}" title="{indexerApi(cur_show.indexer).config['show_url']}{cur_show.series_id}">
+                            <img alt="{indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/{indexerApi(cur_show.indexer).config['icon']}" />
                         </app-link> -->
                     </td>
-                    <td align="center"><quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" show-title></quality-pill></td>
+                    <td align="center">
+                        <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" show-title></quality-pill></td>
                     <td align="center">
                         <!-- This first span is used for sorting and is never displayed to user -->
                         <span style="display: none;">{{ show.stats.tooltip.text }}</span>
@@ -97,8 +98,8 @@
                     </td>
                     <td align="center">{{ show.status }}</td>
                     <td align="center">
-                        <!-- <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
-                        <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" /> -->
+                        <!-- < have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) >
+                        <img src="images/{('no16.png', 'yes16.png')[have_xem]}" alt="{('No', 'Yes')[have_xem]}" width="16" height="16" /> -->
                     </td>
                 </tr>
             </tbody>
@@ -107,10 +108,12 @@
 </template>
 <script>
 import pretty from 'pretty-bytes';
-import { Asset } from '../helpers';
+
+import { mapState } from 'vuex';
 import { AppLink } from '../helpers';
 import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
+import { Asset } from '../helpers';
 
 export default {
     name: 'simple',
@@ -140,9 +143,12 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            config: state => state.config,
+        }),
         sortedShows() {
             const removeArticle = str => this.sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return this.shows.sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+            return this.shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         }
     },
     methods: {
@@ -150,3 +156,5 @@ export default {
     }
 };
 </script>
+<style>
+</style>

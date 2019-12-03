@@ -13,10 +13,9 @@
 </%block>
 <%block name="scripts">
 <script type="text/x-template" id="home-template">
-<%
-    # pick a random series to show as background
-    random_show = choice(app.showList) if app.showList else None
-%>
+    <!-- # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None -->
+
 <div>
     <input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
 
@@ -101,7 +100,7 @@
                         <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                     % endif
                     <template v-if="['banner', 'simple'].includes(layout)">
-                        <div v-for="(shows, listTitle) in showLists" :key="listTitle" :id="listTitle + 'TabContent'">
+                        <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
                             <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
                         </div> <!-- #...TabContent -->
                     </template>
@@ -112,7 +111,7 @@
                     <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                 % endif
                 <template v-if="['banner', 'simple'].includes(layout)">
-                    <show-list v-for="(shows, listTitle) in showLists" :key="listTitle" v-bind="{ listTitle, layout, shows, header: Object.keys(showLists).length > 1, sortArticle: config.sortArticle }"></show-list>
+                    <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ showList.listTitle, layout, showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"></show-list>
                 </template>
             </template>
         </div>

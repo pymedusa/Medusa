@@ -1,6 +1,6 @@
 <template>
     <div class="horizontal-scroll">
-        <table :id="'showListTable' + listTitle.charAt(0).toUpperCase() + listTitle.substr(1)" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
+        <table :id="`showListTable${listTitle.charAt(0).toUpperCase() + listTitle.substr(1)}`" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr>
                     <th class="nowrap">Next Ep</th>
@@ -116,6 +116,7 @@
     </div> <!-- .horizontal-scroll -->
 </template>
 <script>
+import { mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { Asset } from '../helpers';
 import { AppLink } from '../helpers';
@@ -150,9 +151,12 @@ export default {
         }
     },
     computed: {
+        ...mapState({
+            config: state => state.config,
+        }),
         sortedShows() {
             const removeArticle = str => this.sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return this.shows.sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+            return this.shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         }
     },
     methods: {

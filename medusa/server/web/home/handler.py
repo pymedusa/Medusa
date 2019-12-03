@@ -121,48 +121,55 @@ class Home(WebRoot):
         return t.render(message=message, subject=subject, title='')
 
     def index(self):
-        t = PageTemplate(rh=self, filename='home.mako')
-        selected_root = int(app.SELECTED_ROOT)
-        shows_dir = None
-        if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS
-            backend_dirs = backend_pieces[1:]
-            try:
-                shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
-            except IndexError:
-                # If user have a root selected in /home and remove the root folder a IndexError is raised
-                shows_dir = None
-                app.SELECTED_ROOT = -1
+        """
+        Render the home page.
 
-        if not app.HOME_LAYOUT in ['simple', 'banner']:
-            series = []
-            if app.ANIME_SPLIT_HOME:
-                anime = []
-                for show in app.showList:
-                    if shows_dir and not show._location.startswith(shows_dir):
-                        continue
-                    if show.is_anime:
-                        anime.append(show)
-                    else:
-                        series.append(show)
-
-                show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
-            else:
-                for show in app.showList:
-                    if shows_dir and not show._location.startswith(shows_dir):
-                        continue
-                    series.append(show)
-                show_lists = [['Series', series]]
-
-            all_stats = self.show_statistics()
-            stats = all_stats[0]
-            max_download_count = all_stats[1]
-        else:
-            show_lists = []
-            stats = []
-            max_download_count = 0
-        return t.render(show_lists=show_lists, show_stat=stats,
-                        max_download_count=max_download_count, controller='home', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()
+        # t = PageTemplate(rh=self, filename='home.mako')
+        # selected_root = int(app.SELECTED_ROOT)
+        # shows_dir = None
+        # if selected_root is not None and app.ROOT_DIRS:
+        #     backend_pieces = app.ROOT_DIRS
+        #     backend_dirs = backend_pieces[1:]
+        #     try:
+        #         shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+        #     except IndexError:
+        #         # If user have a root selected in /home and remove the root folder a IndexError is raised
+        #         shows_dir = None
+        #         app.SELECTED_ROOT = -1
+        #
+        # if not app.HOME_LAYOUT in ['simple', 'banner']:
+        #     series = []
+        #     if app.ANIME_SPLIT_HOME:
+        #         anime = []
+        #         for show in app.showList:
+        #             if shows_dir and not show._location.startswith(shows_dir):
+        #                 continue
+        #             if show.is_anime:
+        #                 anime.append(show)
+        #             else:
+        #                 series.append(show)
+        #
+        #         show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
+        #     else:
+        #         for show in app.showList:
+        #             if shows_dir and not show._location.startswith(shows_dir):
+        #                 continue
+        #             series.append(show)
+        #         show_lists = [['Series', series]]
+        #
+        #     all_stats = self.show_statistics()
+        #     stats = all_stats[0]
+        #     max_download_count = all_stats[1]
+        # else:
+        #     show_lists = []
+        #     stats = []
+        #     max_download_count = 0
+        # return t.render(show_lists=show_lists, show_stat=stats,
+        #                 max_download_count=max_download_count, controller='home', action='index')
 
     @staticmethod
     def show_statistics():
