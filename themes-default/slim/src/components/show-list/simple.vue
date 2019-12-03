@@ -1,5 +1,23 @@
 <template>
     <div class="horizontal-scroll">
+        <vue-good-table v-if="shows.length > 0"
+            :columns="columns"
+            :rows="shows"
+            :search-options="{
+                enabled: true,
+                trigger: 'enter',
+                skipDiacritics: false,
+                placeholder: 'Search',
+            }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: { field: 'title', type: 'asc' }
+            }"
+            :column-filter-options="{
+                enabled: true
+            }">
+        </vue-good-table>
+
         <table :id="'showListTable' + listTitle.charAt(0).toUpperCase() + listTitle.substr(1)" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
             <thead>
                 <tr>
@@ -114,6 +132,7 @@ import { AppLink } from '../helpers';
 import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import { Asset } from '../helpers';
+import { VueGoodTable } from 'vue-good-table';
 
 export default {
     name: 'simple',
@@ -121,7 +140,8 @@ export default {
         Asset,
         AppLink,
         ProgressBar,
-        QualityPill
+        QualityPill,
+        VueGoodTable
     },
     props: {
         layout: {
@@ -140,6 +160,44 @@ export default {
         },
         sortArticle: {
             type: Boolean
+        }
+    },
+    data() {
+        return {
+            columns: [{
+                label: 'Next Ep',
+                field: 'stats.airs.next',
+            }, {
+                label: 'Prev Ep',
+                field: 'show.stats.airs.prev',
+            }, {
+                label: 'Show',
+                field: 'title'
+            }, {
+                label: 'Network',
+                field: 'network'
+            }, {
+                label: 'Indexer',
+                field: 'id'
+            }, {
+                label: 'Quality',
+                field: 'quality'
+            }, {
+                label: 'Downloads',
+                field: 'stats.tooltip.text'
+            }, {
+                label: 'Size',
+                field: 'size'
+            }, {
+                label: 'Active',
+                field: 'config.paused'
+            }, {
+                label: 'Status',
+                field: 'status'
+            }, {
+                label: 'Xem',
+                field: 'status'
+            }]
         }
     },
     computed: {
