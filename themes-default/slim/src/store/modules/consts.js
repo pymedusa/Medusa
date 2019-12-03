@@ -89,13 +89,14 @@ const getters = {
                 }
             }
 
-            if (showConfig.qualities.preferred.includes(quality)) {
+            if (showConfig.qualities.allowed.includes(quality) && showConfig.qualities.preferred.length > 0) {
+                return 'Allowed';
+            }
+
+            if (showConfig.qualities.allowed.includes(quality) || showConfig.qualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
 
-            if (showConfig.qualities.allowed.includes(quality)) {
-                return 'Allowed';
-            }
         }
 
         return status;
