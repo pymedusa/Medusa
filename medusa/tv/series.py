@@ -604,7 +604,7 @@ class Series(TV):
     @property
     def xem_numbering(self):
         """Return series episode xem numbering."""
-        return get_xem_numbering_for_show(self)
+        return get_xem_numbering_for_show(self, False)
 
     @property
     def xem_absolute_numbering(self):
@@ -2153,6 +2153,9 @@ class Series(TV):
         data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
 
+        # Moved from detailed, as the home page, needs it to display the Xem icon.
+        data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
+
         # These are for now considered anime-only options
         if self.is_anime:
             bw_list = self.release_groups or BlackAndWhiteList(self)
@@ -2162,7 +2165,6 @@ class Series(TV):
         if detailed:
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
-            data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
             data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
             data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
             if self.is_scene:
