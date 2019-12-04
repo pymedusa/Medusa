@@ -956,6 +956,7 @@ export default {
     computed: {
         ...mapState([
             'config',
+            'indexers',
             'notifiers'
         ]),
         traktNewTokenMessage() {
@@ -963,12 +964,12 @@ export default {
             return 'Get ' + accessToken ? 'New ' : ' Trakt PIN';
         },
         traktIndexersOptions() {
-            const { traktIndexers } = this.config.indexers.config.main;
-            const { indexers } = this.config.indexers.config;
+            const { indexers } = this;
+            const { traktIndexers } = indexers.main;
 
-            const validTraktIndexer = Object.keys(indexers).filter(k => traktIndexers[k]);
+            const validTraktIndexer = Object.keys(indexers.indexers).filter(k => traktIndexers[k]);
             return validTraktIndexer.map(indexer => {
-                return { text: indexer, value: indexers[indexer].id };
+                return { text: indexer, value: indexers.indexers[indexer].id };
             });
         }
     },

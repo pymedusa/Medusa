@@ -62,12 +62,12 @@
 
                                     <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" />
 
-                                    <config-toggle-slider v-model="search.general.useFailedDownloads" label="Use Failed Downloads" id="use_failed_downloads">
+                                    <config-toggle-slider v-model="search.general.failedDownloads.enabled" label="Use Failed Downloads" id="use_failed_downloads">
                                         <p>Use Failed Download Handling?'</p>
                                         <p>Will only work with snatched/downloaded episodes after enabling this</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-show="search.general.useFailedDownloads" v-model="search.general.deleteFailed" label="Delete Failed" id="delete_failed">
+                                    <config-toggle-slider v-show="search.general.failedDownloads.enabled" v-model="search.general.failedDownloads.deleteFailed" label="Delete Failed" id="delete_failed">
                                         Delete files left over from a failed download?<br>
                                         <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
                                     </config-toggle-slider>
@@ -326,7 +326,7 @@
                         </div>
                     </div><!-- /#torrent-search //-->
                     <br>
-                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{config.dataDir}}</span></b> </h6>
+                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
                     <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
                 </div><!-- /config-components //-->
             </form>
@@ -589,7 +589,11 @@ export default {
             this.saving = true;
 
             // Clone the config into a new object
-            const config = Object.assign({}, { search }, { clients });
+            const config = Object.assign(
+                {},
+                { search },
+                { clients }
+            );
             const section = 'main';
             try {
                 await setConfig({ section, config });

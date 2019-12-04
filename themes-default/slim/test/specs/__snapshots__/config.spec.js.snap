@@ -51,10 +51,10 @@ exports[`Config.test.js renders 1`] = `
                 
         <span>
           <app-link-stub
-            href="https://github.com/pymedusa/Medusa/releases/tag/v0.2.8"
+            href="https://github.com/pymedusa/Medusa/releases/tag/v0.3.7"
             placeholder="indexer-to-name"
           >
-            0.2.8
+            0.3.7
           </app-link-stub>
         </span>
          
@@ -63,7 +63,7 @@ exports[`Config.test.js renders 1`] = `
                 Database:
                 
         <span>
-          44.11
+          44.15
         </span>
       </td>
     </tr>
@@ -88,7 +88,7 @@ exports[`Config.test.js renders 1`] = `
          SSL Version:
       </td>
       <td>
-        OpenSSL 1.1.0j  20 Nov 2018
+        OpenSSL 1.1.1c  28 May 2019
       </td>
     </tr>
      
@@ -156,7 +156,7 @@ exports[`Config.test.js renders 1`] = `
          Program Folder:
       </td>
       <td>
-        C:\\Medusa\\
+        C:\\Medusa
       </td>
     </tr>
      
@@ -255,10 +255,10 @@ exports[`Config.test.js renders 1`] = `
       </td>
       <td>
         <app-link-stub
-          href="https://github.com/pymedusa/pymedusa.github.io"
+          href="https://github.com/pymedusa/medusa.github.io"
           placeholder="indexer-to-name"
         >
-          https://github.com/pymedusa/pymedusa.github.io
+          https://github.com/pymedusa/medusa.github.io
         </app-link-stub>
       </td>
     </tr>

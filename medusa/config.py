@@ -495,7 +495,7 @@ def change_theme(theme_name):
     log.info('Switching theme from "{old}" to "{new}"', {'old': old_theme_name, 'new': theme_name})
 
     for rule in static_file_handlers.target.rules:
-        if old_data_root not in rule.target_kwargs['path']:
+        if not rule.target_kwargs['path'] or old_data_root not in rule.target_kwargs['path']:
             # Skip other static file handlers
             continue
 

@@ -80,7 +80,7 @@
                             <b class="caret" />
                         </app-link>
                         <ul class="dropdown-menu">
-                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="config.news.unread > 0" class="badge">{{ config.news.unread }}</span></app-link></li>
+                            <li><app-link href="news/"><i class="menu-icon-news" />&nbsp;News <span v-if="system.news.unread > 0" class="badge">{{ system.news.unread }}</span></app-link></li>
                             <li><app-link href="IRC/"><i class="menu-icon-irc" />&nbsp;IRC</app-link></li>
                             <li><app-link href="changes/"><i class="menu-icon-changelog" />&nbsp;Changelog</app-link></li>
                             <li><app-link :href="config.donationsUrl"><i class="menu-icon-support" />&nbsp;Support Medusa</app-link></li>
@@ -89,9 +89,9 @@
                             <li v-if="config.logs.numWarnings > 0"><app-link :href="`errorlogs/?level=${warningLevel}`"><i class="menu-icon-viewlog-errors" />&nbsp;View Warnings <span class="badge btn-warning">{{config.logs.numWarnings}}</span></app-link></li>
                             <li><app-link href="errorlogs/viewlog/"><i class="menu-icon-viewlog" />&nbsp;View Log</app-link></li>
                             <li role="separator" class="divider" />
-                            <li><app-link :href="`home/updateCheck?pid=${config.pid}`"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
-                            <li><app-link :href="`home/restart/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
-                            <li><app-link :href="`home/shutdown/?pid=${config.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
+                            <li><app-link :href="`home/updateCheck?pid=${system.pid}`"><i class="menu-icon-update" />&nbsp;Check For Updates</app-link></li>
+                            <li><app-link :href="`home/restart/?pid=${system.pid}`" @click.native.prevent="confirmDialog($event, 'restart')"><i class="menu-icon-restart" />&nbsp;Restart</app-link></li>
+                            <li><app-link :href="`home/shutdown/?pid=${system.pid}`" @click.native.prevent="confirmDialog($event, 'shutdown')"><i class="menu-icon-shutdown" />&nbsp;Shutdown</app-link></li>
                             <li v-if="username"><app-link href="logout" @click.native.prevent="confirmDialog($event, 'logout')"><i class="menu-icon-shutdown" />&nbsp;Logout</app-link></li>
                             <li role="separator" class="divider" />
                             <li><app-link href="home/status/"><i class="menu-icon-info" />&nbsp;Server Status</app-link></li>
@@ -115,7 +115,11 @@ export default {
     computed: {
         ...mapState([
             'config',
-            'notifiers'
+            'clients',
+            'notifiers',
+            'postprocessing',
+            'search',
+            'system'
         ]),
         ...mapState({
             isAuthenticated: state => state.auth.isAuthenticated,
@@ -136,7 +140,9 @@ export default {
         },
         toolsBadgeCount() {
             const { config } = this;
-            const { news, logs } = config;
+            const { system } = this;
+            const { logs } = config;
+            const { news } = system;
             return logs.numErrors + logs.numWarnings + news.unread;
         },
         toolsBadgeClass() {
@@ -151,8 +157,9 @@ export default {
             return '';
         },
         linkVisible() {
-            const { config, notifiers } = this;
-            const { torrents, failedDownloads, subtitles, postProcessing } = config;
+            const { clients, config, notifiers, postprocessing, search } = this;
+            const { subtitles } = config;
+            const { general } = search;
             const { kodi, plex, emby } = notifiers;
 
             return {
@@ -161,10 +168,10 @@ export default {
                 /* @TODO: Originally there was a check to make sure the API key
                    was configured for Emby: ` app.EMBY_APIKEY != '' ` */
                 emby: emby.enabled && emby.host,
-                manageTorrents: torrents.enabled && torrents.method !== 'blackhole',
-                failedDownloads: failedDownloads.enabled,
+                manageTorrents: clients.torrents.enabled && clients.torrents.method !== 'blackhole',
+                failedDownloads: general.failedDownloads.enabled,
                 subtitleMissed: subtitles.enabled,
-                subtitleMissedPP: postProcessing.postponeIfNoSubs
+                subtitleMissedPP: postprocessing.postponeIfNoSubs
             };
         }
     },
