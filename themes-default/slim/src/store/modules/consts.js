@@ -96,9 +96,7 @@ const getters = {
             if (showConfig.qualities.allowed.includes(quality) || showConfig.qualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
-
         }
-
         return status;
     },
     splitQuality: state => {
