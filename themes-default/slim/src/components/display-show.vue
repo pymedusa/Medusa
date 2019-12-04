@@ -420,7 +420,7 @@ export default {
                 for (const season of sortedSeasons) {
                     const { episodes, ...res } = season;
                     const filteredEpisodes = episodes.filter(episode => {
-                        const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config);
+                        const episodeOverviewStatus = this.getOverviewStatus(episode.status, episode.quality, show.config.qualities);
                         const filteredStatus = filterByOverviewStatus.find(overviewStatus => overviewStatus.name === episodeOverviewStatus);
                         return !filteredStatus || filteredStatus.checked;
                     });
@@ -620,7 +620,7 @@ export default {
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
-            const overview = getOverviewStatus(row.status, row.quality, show.config).toLowerCase().trim();
+            const overview = getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
             return overview;
         },
         /**

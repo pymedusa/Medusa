@@ -54,9 +54,16 @@ const getters = {
         }
         return state.statuses.find(status => key === status.key || value === status.value);
     },
-    // Get an episode overview status using the episode status and quality
+    /**
+     * Get an episode overview status using the episode status and quality.
+     *
+     * @typedef {Object} - Episode status
+     * @property {Object} quality - Episode quality
+     * @property {Object} configQualities - Shows configured qualities (allowed and preferred)
+     * @returns {String} The overview status
+     */
     // eslint-disable-next-line no-unused-vars
-    getOverviewStatus: (_state, getters) => (status, quality, showConfig) => {
+    getOverviewStatus: (_state, getters) => (status, quality, configQualities) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
         }
@@ -75,13 +82,13 @@ const getters = {
 
         if (['Downloaded'].includes(status)) {
             // Check if the show has been configured with a default quality preset.
-            if (showConfig.qualities.allowed.length > 0 && showConfig.qualities.preferred.length === 0) {
-                const reducedAllowed = showConfig.qualities.allowed.reduce((result, value) => {
+            if (configQualities.allowed.length > 0 && configQualities.preferred.length === 0) {
+                const reducedAllowed = configQualities.allowed.reduce((result, value) => {
                     return result + value;
                 }, 0);
 
                 if (getters.getQualityPreset({ value: reducedAllowed })) {
-                    if (showConfig.qualities.allowed.includes(quality)) {
+                    if (configQualities.allowed.includes(quality)) {
                         // This is a hack, because technically the quality does not fit in the Preferred quality.
                         // But because 'preferred' translates to the css color "green", we use it.
                         return 'Preferred';
@@ -89,14 +96,15 @@ const getters = {
                 }
             }
 
-            if (showConfig.qualities.allowed.includes(quality) && showConfig.qualities.preferred.length > 0) {
+            if (configQualities.allowed.includes(quality) && configQualities.preferred.length > 0) {
                 return 'Allowed';
             }
 
-            if (showConfig.qualities.allowed.includes(quality) || showConfig.qualities.preferred.includes(quality)) {
+            if (configQualities.allowed.includes(quality) || configQualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
         }
+
         return status;
     },
     splitQuality: state => {
