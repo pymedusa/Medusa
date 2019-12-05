@@ -169,7 +169,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
     def queue_length(self):
         """Get queue length."""
-        length = {'forced_search': 0, 'manual_search': 0, 'failed': 0}
+        length = {'backlog_search': 0, 'manual_search': 0, 'failed': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, FailedQueueItem):
                 length['failed'] += 1
