@@ -63,7 +63,7 @@ const getters = {
      * @returns {String} The overview status
      */
     // eslint-disable-next-line no-unused-vars
-    getOverviewStatus: (_state, getters) => (status, quality, configQualities) => {
+    getOverviewStatus: _state => (status, quality, configQualities) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
         }
@@ -81,27 +81,21 @@ const getters = {
         }
 
         if (['Downloaded'].includes(status)) {
-            // Check if the show has been configured with a default quality preset.
+            // Check if the show has been configured with only allowed qualities.
             if (configQualities.allowed.length > 0 && configQualities.preferred.length === 0) {
-                const reducedAllowed = configQualities.allowed.reduce((result, value) => {
-                    return result + value;
-                }, 0);
-
-                if (getters.getQualityPreset({ value: reducedAllowed })) {
-                    if (configQualities.allowed.includes(quality)) {
-                        // This is a hack, because technically the quality does not fit in the Preferred quality.
-                        // But because 'preferred' translates to the css color "green", we use it.
-                        return 'Preferred';
-                    }
+                // This is a hack, because technically the quality does not fit in the Preferred quality.
+                // But because 'preferred' translates to the css color "green", we use it.
+                if (configQualities.allowed.includes(quality)) {
+                    return 'Preferred';
                 }
             }
 
-            if (configQualities.allowed.includes(quality) && configQualities.preferred.length > 0) {
-                return 'Allowed';
+            if (configQualities.preferred.includes(quality)) {
+                return 'Preferred';
             }
 
-            if (configQualities.allowed.includes(quality) || configQualities.preferred.includes(quality)) {
-                return 'Preferred';
+            if (configQualities.allowed.includes(quality)) {
+                return 'Allowed';
             }
         }
 
