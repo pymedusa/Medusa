@@ -485,8 +485,8 @@ export default {
     computed: {
         ...mapState([
             'clients',
-            'config',
-            'search'
+            'search',
+            'system'
         ]),
         torrentUsernameIsDisabled() {
             const { clients } = this;

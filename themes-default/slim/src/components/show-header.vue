@@ -8,7 +8,7 @@
                     <!-- @TODO: Remove data attributes -->
                     <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142 -->
                     <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
-                        <app-link :href="`home/displayShow?indexername=${show.indexer$}&seriesid=${show.id[show.indexer]}`" class="snatchTitle">{{ show.title }}</app-link>
+                        <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`" class="snatchTitle">{{ show.title }}</app-link>
                     </h1>
                 </div>
 
