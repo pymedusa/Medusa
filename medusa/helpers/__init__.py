@@ -92,6 +92,14 @@ def indent_xml(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
+def is_ignore_file(file_path):
+    """
+    Checks if the file marks that another file should be ignored.
+    E.g., Movie.ignore tells the post-processor to ignore Movie.mkv or Movie.avi.
+    :param filename: Path of the file to check.
+    """
+    return get_extension(file_path) == "ignore"
+
 
 def is_media_file(filename):
     """Check if named file may contain media.

@@ -311,13 +311,39 @@ class ProcessResult(object):
 
     def prepare_files(self, path, files, force=False):
         """Prepare files for post-processing."""
+        ignore_file_bases = []
         video_files = []
         rar_files = []
+
         for each_file in files:
             if helpers.is_media_file(each_file):
                 video_files.append(each_file)
             elif helpers.is_rar_file(each_file):
                 rar_files.append(each_file)
+            elif helpers.is_ignore_file(each_file):
+                (base, _, _) = each_file.rpartition('.')
+                ignore_file_bases.append(base)
+
+        # Skip all the rar and video files which have an ignore file.
+        # for ignore_file_base in ignore_file_bases:
+        #     (base, _, _) = ignore_file.rpartition()
+        video_files_todo = []
+        rar_files_todo = []
+
+        for video_file in video_files:
+            filename = os.path.basename(video_file)
+            (base, _, _) = filename.rpartition('.')
+            if base not in ignore_file_bases:
+                video_files_todo.append(video_file)
+
+        for rar_file in rar_files:
+            filename = os.path.basename(rar_file)
+            (base, _, _) = filename.rpartition('.')
+            if base not in ignore_file_bases:
+                rar_files_todo.append(rar_file)
+
+        video_files = video_files_todo
+        rar_files = rar_files_todo
 
         rar_content = []
         video_in_rar = []
@@ -608,6 +634,11 @@ class ProcessResult(object):
 
             if self.result:
                 self.log('Processing succeeded for {0}'.format(file_path))
+
+                (base, _, _) = file_path.rpartition('.')
+                ignore_path = base + ".ignore"
+                open(ignore_path, 'a').close()
+
             else:
                 self.log('Processing failed for {0}: {1}'.format(file_path, process_fail_message), logger.WARNING)
                 self.missedfiles.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
