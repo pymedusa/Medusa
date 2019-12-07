@@ -485,6 +485,7 @@ export default {
             const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
+                Downloaded: 0,
                 Skipped: 0,
                 Wanted: 0,
                 Allowed: 0,

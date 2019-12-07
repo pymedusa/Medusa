@@ -620,7 +620,8 @@ export default {
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
-            return getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+            const overview = getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+            return overview;
         },
         /**
          * Add (reduce) the total episodes filesize.
@@ -1235,7 +1236,7 @@ tablesorter.css
 }
 
 .downloaded {
-    background-color: rgb(195, 227, 200);
+    background-color: rgb(255, 218, 138);
 }
 
 .failed {
