@@ -1,10 +1,15 @@
-## Unreleased
-
-#### New Features
+## 0.3.8 (2019-12-08)
 
 #### Improvements
+- Display Show: Display qualities in presets or allowed as green instead of yellow ([#7415](https://github.com/pymedusa/Medusa/pull/7415))
+- Display Show: Add option to disable pagination ([#7438](https://github.com/pymedusa/Medusa/pull/7438))
+- Improve a number of anime release names parsed by guessit ([#7418](https://github.com/pymedusa/Medusa/pull/7418)) ([#7396](https://github.com/pymedusa/Medusa/pull/7396)) ([#7427](https://github.com/pymedusa/Medusa/pull/7427))
 
 #### Fixes
+
+- Show Header: Fix showing correct amount of stars for the IMDB rating ([#7401](https://github.com/pymedusa/Medusa/pull/7401))
+- Re-implement tvdb season poster/banners (was disabled because of tvdb api issues ([#7460](https://github.com/pymedusa/Medusa/pull/7460))
+- Fix showing the data directory in the bottom of some config pages ([#7424](https://github.com/pymedusa/Medusa/pull/7424))
 
 -----
 
