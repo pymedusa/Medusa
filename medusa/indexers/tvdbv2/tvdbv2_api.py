@@ -481,9 +481,17 @@ class TVDBv2(BaseIndexer):
                 image_attributes = self._object_to_dict(image, key_mapping)
 
                 bid = image_attributes.pop('id')
-                if bid not in _images[image_type][resolution]:
-                    _images[image_type][resolution][bid] = {}
-                base_path = _images[image_type][resolution][bid]
+
+                if image_type in ['season', 'seasonwide']:
+                    if int(image.sub_key) not in _images[image_type][resolution]:
+                        _images[image_type][resolution][int(image.sub_key)] = {}
+                    if bid not in _images[image_type][resolution][int(image.sub_key)]:
+                        _images[image_type][resolution][int(image.sub_key)][bid] = {}
+                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                else:
+                    if bid not in _images[image_type][resolution]:
+                        _images[image_type][resolution][bid] = {}
+                    base_path = _images[image_type][resolution][bid]
 
                 for k, v in viewitems(image_attributes):
                     if k is None or v is None:
