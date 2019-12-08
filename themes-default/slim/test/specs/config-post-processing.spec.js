@@ -33,6 +33,11 @@ describe('ConfigPostProcessing.test.js', () => {
             ]
         });
 
+        // Need to set metadataProviderSelected explicitely, as the watch won't trigger in jest.
+        wrapper.setData({
+            metadataProviderSelected: wrapper.vm.getFirstEnabledMetadataProvider()
+        });
+
         expect(wrapper.element).toMatchSnapshot();
     });
 });

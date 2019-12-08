@@ -41,9 +41,11 @@ const state = {
         torrentCheckerFrequency: 60,
         backlogFrequency: 720,
         cacheTrimming: false,
-        deleteFailed: false,
         downloadPropers: true,
-        useFailedDownloads: false,
+        failedDownloads: {
+            enabled: null,
+            deleteFailed: null
+        },
         minTorrentCheckerFrequency: 30,
         removeFromClient: false,
         randomizeProviders: false,

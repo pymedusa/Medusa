@@ -12,7 +12,7 @@
 
         <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
-        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
                 <div id="config-components">
                     <ul>
@@ -273,7 +273,8 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            indexers: state => state.indexers,
+            layout: state => state.layout,
             episodeStatuses: state => state.consts.statuses
         }),
         ...mapGetters({
@@ -297,8 +298,8 @@ export default {
             return ['wanted', 'skipped', 'ignored'].map(key => this.getStatus({ key }));
         },
         availableLanguages() {
-            if (this.config.indexers.config.main.validLanguages) {
-                return this.config.indexers.config.main.validLanguages.join(',');
+            if (this.indexers.main.validLanguages) {
+                return this.indexers.main.validLanguages.join(',');
             }
 
             return '';

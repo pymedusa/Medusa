@@ -2012,9 +2012,9 @@
 
 # Corner Case: Episode 2 with a number after it
 ? "[GroupName].Show.Name.-.02.5.(Special).[BD.1080p]"
-: title: Show Name
-  absolute_episode: 2
-  episode: 2
+: title: Show Name 2
+  absolute_episode: 5
+  episode: 5
   episode_details: Special
   screen_size: 1080p
   source: BDRip
@@ -2959,6 +2959,54 @@
   release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
+  type: episode
+
+? "[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "High Score Girl 2/[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "High Score Girl/[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
+  type: episode
+
+? "Kemono.Michi.Rise.Up/Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
   type: episode
 
 # Anime show containing number in its title and show with :

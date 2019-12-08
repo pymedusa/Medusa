@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <pre class="col-md-12" :class="{ fanartOpacity: config.fanartBackground }"><!--
+        <pre class="col-md-12" :class="{ fanartOpacity: layout.fanartBackground }"><!--
             --><div class="notepad"><!--
                 --><app-link :href="rawViewLink"><!--
                     --><img src="images/notepad.png"><!--
@@ -142,7 +142,8 @@ export default {
     },
     computed: {
         ...mapState([
-            'config'
+            'config',
+            'layout'
         ]),
         rawViewLink() {
             const qs = new URLSearchParams();

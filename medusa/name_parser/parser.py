@@ -337,8 +337,10 @@ class NameParser(object):
         if new_absolute_numbers:
             result.ab_episode_numbers = new_absolute_numbers
 
-        if new_season_numbers and new_episode_numbers:
+        if new_episode_numbers:
             result.episode_numbers = new_episode_numbers
+
+        if new_season_numbers:
             result.season_number = new_season_numbers[0]
 
         # For anime that we still couldn't get a season, let's assume we should use 1.

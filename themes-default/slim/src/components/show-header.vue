@@ -8,7 +8,7 @@
                     <!-- @TODO: Remove data attributes -->
                     <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142 -->
                     <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
-                        <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]" class="snatchTitle">{{ show.title }}</app-link>
+                        <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`" class="snatchTitle">{{ show.title }}</app-link>
                     </h1>
                 </div>
 
@@ -16,14 +16,14 @@
                     <span class="h2footer display-specials">
                         Manual search for:<br>
                         <app-link
-                            :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
+                            :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`"
                             class="snatchTitle"
                         >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
-                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Show' : 'Hide' }}</a>
+                        Display Specials: <a @click.prevent="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
@@ -78,7 +78,7 @@
                                 class="imdbstars"
                                 :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
+                                <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
                             </span>
                             <template v-if="!show.id.imdb">
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
@@ -91,31 +91,31 @@
                                 <span>
                                     {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                 </span>
-                                <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
+                                <app-link :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
                                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
                                 </app-link>
                             </template>
-                            <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
+                            <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                             </app-link>
                             <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
+                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
+                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
                                 <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.id.tvdb" :href="'https://fanart.tv/series/' + show.id.tvdb" :title="'https://fanart.tv/series/' + show.id[show.indexer]">
+                            <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
                                 <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
                             </app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                             <ul class="tags" v-if="show.genres">
-                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
+                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="`https://trakt.tv/shows/popular/?genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on trakt.tv`"><li>{{ genre }}</li></app-link>
                             </ul>
                             <ul class="tags" v-else>
-                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
+                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="`https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on IMDB`"><li>{{ genre }}</li></app-link>
                             </ul>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                     <div class="row">
                         <!-- Show Summary -->
                         <div v-if="configLoaded" id="summary" class="col-md-12">
-                            <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
+                            <div id="show-summary" :class="[{ summaryFanArt: layout.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
@@ -257,14 +257,14 @@
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                     <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
-                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
+                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="layout.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="layout.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="layout.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -317,7 +317,7 @@
 import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
 import { scrollTo } from 'vue-scrollto';
-import { mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
 import { attachImdbTooltip } from '../utils/jquery';
@@ -423,14 +423,14 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
+            layout: state => state.layout,
             shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownloads: state => state.config.failedDownloads,
-            displaySpecials: state => state.config.layout.show.specials,
+            indexerConfig: state => state.indexers.indexers,
+            displaySpecials: state => state.layout.show.specials,
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
             search: state => state.search,
-            configLoaded: state => state.config.fanartBackground !== null
+            configLoaded: state => state.layout.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -485,6 +485,7 @@ export default {
             const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
+                Downloaded: 0,
                 Skipped: 0,
                 Wanted: 0,
                 Allowed: 0,
@@ -503,7 +504,7 @@ export default {
             return summary;
         },
         changeStatusOptions() {
-            const { failedDownloads, getStatus, statuses } = this;
+            const { search, getStatus, statuses } = this;
 
             if (statuses.length === 0) {
                 return [];
@@ -513,7 +514,7 @@ export default {
             const defaultOptions = ['wanted', 'skipped', 'ignored', 'downloaded', 'archived']
                 .map(key => getStatus({ key }));
 
-            if (failedDownloads.enabled) {
+            if (search.useFailedDownloads) {
                 defaultOptions.push(getStatus({ key: 'failed' }));
             }
 
@@ -544,6 +545,9 @@ export default {
         }, { deep: true });
     },
     methods: {
+        ...mapActions([
+            'setSpecials'
+        ]),
         combineQualities,
         humanFileSize,
         changeStatusClicked() {
@@ -556,17 +560,8 @@ export default {
             });
         },
         toggleSpecials() {
-            const config = {
-                section: 'main',
-                config: {
-                    layout: {
-                        show: {
-                            specials: !this.displaySpecials
-                        }
-                    }
-                }
-            };
-            this.$store.dispatch('setConfig', config);
+            const { setSpecials } = this;
+            setSpecials(!this.displaySpecials);
         },
         reverse(array) {
             return array ? array.slice().reverse() : [];

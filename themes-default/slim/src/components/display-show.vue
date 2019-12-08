@@ -14,7 +14,7 @@
                      @update-overview-status="filterByOverviewStatus = $event" />
 
         <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
+            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
                 <vue-good-table v-if="show.seasons"
                                 :columns="columns"
                                 :rows="orderSeasons"
@@ -24,7 +24,7 @@
                                     customChildObject: 'episodes'
                                 }"
                                 :pagination-options="{
-                                    enabled: true,
+                                    enabled: layout.show.pagination.enable,
                                     perPage: paginationPerPage,
                                     perPageDropdown
                                 }"
@@ -385,8 +385,10 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            configLoaded: state => state.config.fanartBackground !== null,
-            config: state => state.config
+            configLoaded: state => state.layout.fanartBackground !== null,
+            config: state => state.config,
+            layout: state => state.layout,
+            stateSearch: state => state.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -399,18 +401,18 @@ export default {
             return this.showId || Number(this.$route.query.seriesid) || undefined;
         },
         theme() {
-            const { config } = this;
-            const { themeName } = config;
+            const { layout } = this;
+            const { themeName } = layout;
             return themeName || 'light';
         },
         orderSeasons() {
-            const { config, filterByOverviewStatus, invertTable, show } = this;
+            const { filterByOverviewStatus, invertTable, layout, show } = this;
 
             if (!show.seasons) {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || !config.layout.show.specials);
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || layout.show.specials);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
@@ -597,8 +599,9 @@ export default {
             }
         },
         parseDateFn(row) {
-            const { config, timeAgo } = this;
-            const { datePreset, fuzzyDating } = config;
+            const { layout, timeAgo } = this;
+            const { dateStyle, timeStyle } = layout;
+            const { fuzzyDating } = layout;
 
             if (!row.airDate) {
                 return '';
@@ -608,16 +611,17 @@ export default {
                 return timeAgo.format(new Date(row.airDate));
             }
 
-            if (datePreset === '%x') {
+            if (dateStyle === '%x') {
                 return new Date(row.airDate).toLocaleString();
             }
 
             const fdate = parseISO(row.airDate);
-            return formatDate(fdate, convertDateFormat(`${config.datePreset} ${config.timePreset}`));
+            return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
-            return getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+            const overview = getOverviewStatus(row.status, row.quality, show.config.qualities).toLowerCase().trim();
+            return overview;
         },
         /**
          * Add (reduce) the total episodes filesize.
@@ -860,8 +864,8 @@ export default {
             this.failedSearchEpisode = event.params.episode;
         },
         retryDownload(episode) {
-            const { config } = this;
-            return (config.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
+            const { stateSearch } = this;
+            return (stateSearch.general.failedDownloads.enabled && ['Snatched', 'Snatched (Proper)', 'Snatched (Best)', 'Downloaded'].includes(episode.status));
         },
         search(episodes, searchType) {
             const { show } = this;
@@ -1232,7 +1236,7 @@ tablesorter.css
 }
 
 .downloaded {
-    background-color: rgb(195, 227, 200);
+    background-color: rgb(255, 218, 138);
 }
 
 .failed {

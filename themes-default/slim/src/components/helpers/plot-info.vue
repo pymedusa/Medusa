@@ -23,7 +23,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .plotInfo {
     cursor: help;
     float: right;
