@@ -8,7 +8,7 @@
 #### Fixes
 
 - Show Header: Fix showing correct amount of stars for the IMDB rating ([#7401](https://github.com/pymedusa/Medusa/pull/7401))
-- Re-implement tvdb season poster/banners (was disabled because of tvdb api issues ([#7460](https://github.com/pymedusa/Medusa/pull/7460))
+- Re-implement tvdb season poster/banners (was disabled because of tvdb api issues) ([#7460](https://github.com/pymedusa/Medusa/pull/7460))
 - Fix showing the data directory in the bottom of some config pages ([#7424](https://github.com/pymedusa/Medusa/pull/7424))
 
 -----
