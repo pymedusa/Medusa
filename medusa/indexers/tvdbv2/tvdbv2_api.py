@@ -483,11 +483,12 @@ class TVDBv2(BaseIndexer):
                 bid = image_attributes.pop('id')
 
                 if image_type in ['season', 'seasonwide']:
-                    if int(image.sub_key) not in _images[image_type][resolution]:
-                        _images[image_type][resolution][int(image.sub_key)] = {}
-                    if bid not in _images[image_type][resolution][int(image.sub_key)]:
-                        _images[image_type][resolution][int(image.sub_key)][bid] = {}
-                    base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                    sub_key = int(image.sub_key)
+                    if sub_key not in _images[image_type][resolution]:
+                        _images[image_type][resolution][sub_key] = {}
+                    if bid not in _images[image_type][resolution][sub_key]:
+                        _images[image_type][resolution][sub_key][bid] = {}
+                    base_path = _images[image_type][resolution][sub_key][bid]
                 else:
                     if bid not in _images[image_type][resolution]:
                         _images[image_type][resolution][bid] = {}
