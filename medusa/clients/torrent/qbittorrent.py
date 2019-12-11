@@ -79,13 +79,27 @@ class QBittorrentAPI(GenericClient):
         except Exception:
             return None
 
+        if self.response.status_code == 200:
+            if self.response.text == 'Fails.':
+                log.warning('{name}: Invalid Username or Password, check your config',
+                            {'name': self.name})
+                return None
+
+            # Successful log in
+            self.session.cookies = self.response.cookies
+            self.auth = self.response.content
+
+            return self.auth
+
         if self.response.status_code == 404:
+            # API v2 is not available, use legacy API
             return None
 
-        self.session.cookies = self.response.cookies
-        self.auth = self.response.content
-
-        return self.auth
+        if self.response.status_code == 403:
+            log.warning('{name}: Your IP address has been banned after too many failed authentication attempts.'
+                        ' Restart {name} to unban.',
+                        {'name': self.name})
+            return None
 
     def _get_auth_legacy(self):
         """Authenticate using the legacy method (API v1)."""
