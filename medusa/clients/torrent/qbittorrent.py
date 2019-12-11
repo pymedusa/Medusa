@@ -44,10 +44,9 @@ class QBittorrentAPI(GenericClient):
             version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT,
                                        cookies=self.session.cookies)
             # Make sure version is using the (major, minor, release) format
-            version = list(map(int, version.text.split('.')))
-            if len(version) < 2:
-                version.append(0)
-            return tuple(version)
+            version = tuple(map(int, version.text.split('.')))
+            # Fill up with zeros to get the correct format. e.g: (2, 3) => (2, 3, 0)
+            return version + (0,) * (3 - len(version))
         except (AttributeError, ValueError) as error:
             log.error('{name}: Unable to get API version. Error: {error!r}',
                       {'name': self.name, 'error': error})
