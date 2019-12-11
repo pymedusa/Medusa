@@ -153,7 +153,14 @@ class QBittorrentAPI(GenericClient):
             'hashes': result.hash.lower(),
             label_key.lower(): label.replace(' ', '_'),
         }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        ok = self._request(method='post', data=data, cookies=self.session.cookies)
+
+        if self.response.status_code == 409:
+            log.warning('{name}: Unable to set torrent label. You need to create the label '
+                        ' in {name} first.', {'name': self.name})
+            ok = False
+
+        return ok
 
     def _set_torrent_priority(self, result):
 
