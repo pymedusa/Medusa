@@ -63,7 +63,7 @@ class QBittorrentAPI(GenericClient):
         return version
 
     def _get_auth(self):
-        """Select between api v2 and legacy."""
+        """Authenticate with the client using the most recent API version available for use."""
         return self._get_auth_v2() or self._get_auth_legacy()
 
     def _get_auth_v2(self):
