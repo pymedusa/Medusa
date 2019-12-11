@@ -220,8 +220,14 @@ class SearchResult(object):
         if self.actual_season is not None and self.series:
             if self.actual_episodes:
                 self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+                if len(self.actual_episodes) == 1:
+                    self.episode_number = self.actual_episodes[0]
+                else:
+                    self.episode_number = MULTI_EP_RESULT
             else:
                 self.episodes = self.series.get_all_episodes(self.actual_season)
+                self.actual_episodes = [ep.episode for ep in self.episodes]
+                self.episode_number = SEASON_RESULT
 
         return self.episodes
 
@@ -245,12 +251,6 @@ class SearchResult(object):
         # Season result
         if not sql_episodes:
             ep_objs = series_obj.get_all_episodes(actual_season)
-            if not ep_objs:
-                # We couldn't get any episodes for this season, which is odd, skip the result.
-                log.debug("We couldn't get any episodes for season {0} of {1}, skipping",
-                          actual_season, cached_data['name'])
-                return
-
             self.actual_episodes = [ep.episode for ep in ep_objs]
             self.episode_number = SEASON_RESULT
 
