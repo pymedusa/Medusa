@@ -424,23 +424,20 @@ class GenericProvider(object):
 
             search_result.update_search_result()
 
-            if not search_result.actual_episodes:
-                episode_number = SEASON_RESULT
+            if search_result.episode_number == SEASON_RESULT:
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
-            elif len(search_result.actual_episodes) == 1:
-                episode_number = search_result.actual_episode
-                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
-            else:
-                episode_number = MULTI_EP_RESULT
+            elif search_result.episode_number == MULTI_EP_RESULT:
                 log.debug('Found multi-episode ({0}) result {1} at {2}',
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
-
-            if episode_number not in final_results:
-                final_results[episode_number] = [search_result]
             else:
-                final_results[episode_number].append(search_result)
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
+
+            if search_result.episode_number not in final_results:
+                final_results[search_result.episode_number] = [search_result]
+            else:
+                final_results[search_result.episode_number].append(search_result)
 
         if cl:
             # Access to a protected member of a client class

@@ -609,11 +609,10 @@ class Cache(object):
                 continue
 
             search_result = self.provider.get_result(series=series_obj, cache=cur_result)
-            if search_result.episode_number is not None:
-                if search_result in cache_results[search_result.episode_number]:
-                    continue
-                # add it to the list
-                cache_results[search_result.episode_number].append(search_result)
+            if search_result in cache_results[search_result.episode_number]:
+                continue
+            # add it to the list
+            cache_results[search_result.episode_number].append(search_result)
 
         # datetime stamp this search so cache gets cleared
         self.searched = time()
