@@ -1,3 +1,14 @@
+## 0.3.9 (2019-12-12)
+
+#### Improvements
+- Improved qBittorrent client ([#7474](https://github.com/pymedusa/Medusa/pull/7474))
+
+#### Fixes
+- Fixed season pack downloads occurring even if not needed ([#7472](https://github.com/pymedusa/Medusa/pull/7472))
+- Fixed changing default indexer language and initial indexer in config-general ([#7478](https://github.com/pymedusa/Medusa/pull/7478))
+
+-----
+
 ## 0.3.8 (2019-12-08)
 
 #### Improvements
@@ -6,7 +17,6 @@
 - Improve a number of anime release names parsed by guessit ([#7418](https://github.com/pymedusa/Medusa/pull/7418)) ([#7396](https://github.com/pymedusa/Medusa/pull/7396)) ([#7427](https://github.com/pymedusa/Medusa/pull/7427))
 
 #### Fixes
-
 - Show Header: Fix showing correct amount of stars for the IMDB rating ([#7401](https://github.com/pymedusa/Medusa/pull/7401))
 - Re-implement tvdb season poster/banners (was disabled because of tvdb api issues) ([#7460](https://github.com/pymedusa/Medusa/pull/7460))
 - Fix showing the data directory in the bottom of some config pages ([#7424](https://github.com/pymedusa/Medusa/pull/7424))
@@ -60,7 +70,7 @@
 - Converted the footer to a Vue component ([#4520](https://github.com/pymedusa/Medusa/pull/4520))
 - Converted Edit Show to a Vue SFC ([#4486](https://github.com/pymedusa/Medusa/pull/4486)
 - Improved API v2 exception reporting on Python 2 ([#6931](https://github.com/pymedusa/Medusa/pull/6931))
-- Added support for qbittorrent api v2. Required from qbittorrent version > 3.2.0. ([#7040](https://github.com/pymedusa/Medusa/pull/7040))
+- Added support for qBittorrent API v2. Required from qBittorrent version 4.2.0. ([#7040](https://github.com/pymedusa/Medusa/pull/7040))
 - Removed the forced search queue item in favor of the backlog search queue item. ([#6718](https://github.com/pymedusa/Medusa/pull/6718))
 - Show Header: Improved visibility of local and global configured required and ignored words. ([#7085](https://github.com/pymedusa/Medusa/pull/7085))
 - Reduced frequency of file system access when not strictly required ([#7102](https://github.com/pymedusa/Medusa/pull/7102))
