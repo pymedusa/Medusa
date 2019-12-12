@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Improved qBittorrent client ([#7474](https://github.com/pymedusa/Medusa/pull/7474))
 
 #### Fixes
 - Fixed season pack downloads occurring even if not needed ([#7472](https://github.com/pymedusa/Medusa/pull/7472))
@@ -70,7 +71,7 @@
 - Converted the footer to a Vue component ([#4520](https://github.com/pymedusa/Medusa/pull/4520))
 - Converted Edit Show to a Vue SFC ([#4486](https://github.com/pymedusa/Medusa/pull/4486)
 - Improved API v2 exception reporting on Python 2 ([#6931](https://github.com/pymedusa/Medusa/pull/6931))
-- Added support for qbittorrent api v2. Required from qbittorrent version > 3.2.0. ([#7040](https://github.com/pymedusa/Medusa/pull/7040))
+- Added support for qBittorrent API v2. Required from qBittorrent version 4.2.0. ([#7040](https://github.com/pymedusa/Medusa/pull/7040))
 - Removed the forced search queue item in favor of the backlog search queue item. ([#6718](https://github.com/pymedusa/Medusa/pull/6718))
 - Show Header: Improved visibility of local and global configured required and ignored words. ([#7085](https://github.com/pymedusa/Medusa/pull/7085))
 - Reduced frequency of file system access when not strictly required ([#7102](https://github.com/pymedusa/Medusa/pull/7102))

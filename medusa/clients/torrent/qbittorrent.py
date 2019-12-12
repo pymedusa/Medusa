@@ -11,9 +11,14 @@ from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.auth import HTTPDigestAuth
+from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class APIUnavailableError(Exception):
+    """Raised when the API version is not available."""
 
 
 class QBittorrentAPI(GenericClient):
@@ -29,47 +34,54 @@ class QBittorrentAPI(GenericClient):
         :param password:
         :type password: string
         """
-        super(QBittorrentAPI, self).__init__('qbittorrent', host, username, password)
+        super(QBittorrentAPI, self).__init__('qBittorrent', host, username, password)
         self.url = self.host
+        # Auth for API v1.0.0 (qBittorrent v3.1.x and older)
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
-    @property
-    def api(self):
-        """Get API version."""
-        # Update the auth method to v2
-        self._get_auth = self._get_auth_v2
-        # Attempt to get API v2 version first
-        self.url = '{host}api/v2/app/webapiVersion'.format(host=self.host)
-        try:
-            version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT,
-                                       cookies=self.session.cookies)
-            # Make sure version is using the (major, minor, release) format
-            version = list(map(int, version.text.split('.')))
-            if len(version) < 2:
-                version.append(0)
-            return tuple(version)
-        except (AttributeError, ValueError) as error:
-            log.error('{name}: Unable to get API version. Error: {error!r}',
-                      {'name': self.name, 'error': error})
-
-        # Fall back to API v1
-        self._get_auth = self._get_auth_legacy
-        try:
-            self.url = '{host}version/api'.format(host=self.host)
-            version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)
-            # Convert old API versioning to new versioning (major, minor, release)
-            version = (1, version % 100, 0)
-        except Exception:
-            version = (1, 0, 0)
-        return version
+        self.api = None
 
     def _get_auth(self):
-        """Select between api v2 and legacy."""
-        return self._get_auth_v2() or self._get_auth_legacy()
+        """Authenticate with the client using the most recent API version available for use."""
+        try:
+            auth = self._get_auth_v2()
+            version = 2
+        except APIUnavailableError:
+            auth = self._get_auth_legacy()
+            version = 1
+
+        # Authentication failed /or/ We already have the API version
+        if not auth or self.api:
+            return auth
+
+        # Get API version
+        if version == 2:
+            self.url = urljoin(self.host, 'api/v2/app/webapiVersion')
+            try:
+                response = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT)
+                if not response.text:
+                    raise ValueError('Response from client is empty. [Status: {0}]'.format(response.status_code))
+                # Make sure version is using the (major, minor, release) format
+                version = tuple(map(int, response.text.split('.')))
+                # Fill up with zeros to get the correct format. e.g: (2, 3) => (2, 3, 0)
+                self.api = version + (0,) * (3 - len(version))
+            except (AttributeError, ValueError) as error:
+                log.error('{name}: Unable to get API version. Error: {error!r}',
+                          {'name': self.name, 'error': error})
+        elif version == 1:
+            try:
+                self.url = urljoin(self.host, 'version/api')
+                version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).text)
+                # Convert old API versioning to new versioning (major, minor, release)
+                self.api = (1, version % 100, 0)
+            except Exception:
+                self.api = (1, 0, 0)
+
+        return auth
 
     def _get_auth_v2(self):
-        """Authenticate using the new method (API v2)."""
-        self.url = '{host}api/v2/auth/login'.format(host=self.host)
+        """Authenticate using API v2."""
+        self.url = urljoin(self.host, 'api/v2/auth/login')
         data = {
             'username': self.username,
             'password': self.password,
@@ -78,18 +90,32 @@ class QBittorrentAPI(GenericClient):
             self.response = self.session.post(self.url, data=data)
         except Exception:
             return None
+
+        if self.response.status_code == 200:
+            if self.response.text == 'Fails.':
+                log.warning('{name}: Invalid Username or Password, check your config',
+                            {'name': self.name})
+                return None
+
+            # Successful log in
+            self.session.cookies = self.response.cookies
+            self.auth = self.response.text
+
+            return self.auth
 
         if self.response.status_code == 404:
+            # API v2 is not available
+            raise APIUnavailableError()
+
+        if self.response.status_code == 403:
+            log.warning('{name}: Your IP address has been banned after too many failed authentication attempts.'
+                        ' Restart {name} to unban.',
+                        {'name': self.name})
             return None
 
-        self.session.cookies = self.response.cookies
-        self.auth = self.response.content
-
-        return self.auth
-
     def _get_auth_legacy(self):
-        """Authenticate using the legacy method (API v1)."""
-        self.url = '{host}login'.format(host=self.host)
+        """Authenticate using legacy API."""
+        self.url = urljoin(self.host, 'login')
         data = {
             'username': self.username,
             'password': self.password,
@@ -99,7 +125,7 @@ class QBittorrentAPI(GenericClient):
         except Exception:
             return None
 
-        # Pre-API v1
+        # API v1.0.0 (qBittorrent v3.1.x and older)
         if self.response.status_code == 404:
             try:
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
@@ -107,14 +133,14 @@ class QBittorrentAPI(GenericClient):
                 return None
 
         self.session.cookies = self.response.cookies
-        self.auth = self.response.content
+        self.auth = (self.response.status_code != 404) or None
 
-        return self.auth if not self.response.status_code == 404 else None
+        return self.auth
 
     def _add_torrent_uri(self, result):
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/download'
-        self.url = '{host}{command}'.format(host=self.host, command=command)
+        self.url = urljoin(self.host, command)
         data = {
             'urls': result.url,
         }
@@ -123,7 +149,7 @@ class QBittorrentAPI(GenericClient):
     def _add_torrent_file(self, result):
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
-        self.url = '{host}{command}'.format(host=self.host, command=command)
+        self.url = urljoin(self.host, command)
         files = {
             'torrents': (
                 '{result}.torrent'.format(result=result.name),
@@ -140,27 +166,30 @@ class QBittorrentAPI(GenericClient):
 
         api = self.api
         if api >= (2, 0, 0):
-            self.url = '{host}api/v2/torrents/setCategory'.format(host=self.host)
+            self.url = urljoin(self.host, 'api/v2/torrents/setCategory')
             label_key = 'category'
         elif api > (1, 6, 0):
             label_key = 'Category' if api >= (1, 10, 0) else 'Label'
-            self.url = '{host}command/set{key}'.format(
-                host=self.host,
-                key=label_key,
-            )
+            self.url = urljoin(self.host, 'command/set' + label_key)
 
         data = {
             'hashes': result.hash.lower(),
             label_key.lower(): label.replace(' ', '_'),
         }
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        ok = self._request(method='post', data=data, cookies=self.session.cookies)
+
+        if self.response.status_code == 409:
+            log.warning('{name}: Unable to set torrent label. You need to create the label '
+                        ' in {name} first.', {'name': self.name})
+            ok = False
+
+        return ok
 
     def _set_torrent_priority(self, result):
 
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         method = 'increase' if result.priority == 1 else 'decrease'
-        self.url = '{host}{command}/{method}Prio'.format(
-            host=self.host, command=command, method=method)
+        self.url = urljoin(self.host, '{command}/{method}Prio'.format(command=command, method=method))
         data = {
             'hashes': result.hash.lower(),
         }
@@ -178,7 +207,7 @@ class QBittorrentAPI(GenericClient):
         state = 'pause' if app.TORRENT_PAUSED else 'resume'
         command = 'api/v2/torrents' if api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
-        self.url = '{host}{command}/{state}'.format(host=self.host, command=command, state=state)
+        self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
         data = {
             hashes_key: result.hash.lower(),
         }
@@ -196,10 +225,10 @@ class QBittorrentAPI(GenericClient):
             'hashes': info_hash.lower(),
         }
         if self.api >= (2, 0, 0):
-            self.url = '{host}api/v2/torrents/delete'.format(host=self.host)
+            self.url = urljoin(self.host, 'api/v2/torrents/delete')
             data['deleteFiles'] = True
         else:
-            self.url = '{host}command/deletePerm'.format(host=self.host)
+            self.url = urljoin(self.host, 'command/deletePerm')
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
