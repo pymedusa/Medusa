@@ -17,6 +17,10 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+class APIUnavailableError(Exception):
+    """Raised when the API version is not available."""
+
+
 class QBittorrentAPI(GenericClient):
     """qBittorrent API class."""
 
@@ -34,38 +38,45 @@ class QBittorrentAPI(GenericClient):
         # Auth for API v1.0.0 (qBittorrent v3.1.x and older)
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
-    @property
-    def api(self):
-        """Get API version."""
-        # Update the auth method to v2
-        self._get_auth = self._get_auth_v2
-        # Attempt to get API v2 version first
-        self.url = '{host}api/v2/app/webapiVersion'.format(host=self.host)
-        try:
-            version = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT,
-                                       cookies=self.session.cookies)
-            # Make sure version is using the (major, minor, release) format
-            version = tuple(map(int, version.text.split('.')))
-            # Fill up with zeros to get the correct format. e.g: (2, 3) => (2, 3, 0)
-            return version + (0,) * (3 - len(version))
-        except (AttributeError, ValueError) as error:
-            log.error('{name}: Unable to get API version. Error: {error!r}',
-                      {'name': self.name, 'error': error})
-
-        # Fall back to API v1
-        self._get_auth = self._get_auth_legacy
-        try:
-            self.url = '{host}version/api'.format(host=self.host)
-            version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)
-            # Convert old API versioning to new versioning (major, minor, release)
-            version = (1, version % 100, 0)
-        except Exception:
-            version = (1, 0, 0)
-        return version
+        self.api = None
 
     def _get_auth(self):
         """Authenticate with the client using the most recent API version available for use."""
-        return self._get_auth_v2() or self._get_auth_legacy()
+        try:
+            auth = self._get_auth_v2()
+            version = 2
+        except APIUnavailableError:
+            auth = self._get_auth_legacy()
+            version = 1
+
+        # Authentication failed /or/ We already have the API version
+        if not auth or self.api:
+            return auth
+
+        # Get API version
+        if version == 2:
+            self.url = urljoin(self.host, 'api/v2/app/webapiVersion')
+            try:
+                response = self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT)
+                if not response.text:
+                    raise ValueError('Response from client is empty. [Status: {0}]'.format(response.status_code))
+                # Make sure version is using the (major, minor, release) format
+                version = tuple(map(int, response.text.split('.')))
+                # Fill up with zeros to get the correct format. e.g: (2, 3) => (2, 3, 0)
+                self.api = version + (0,) * (3 - len(version))
+            except (AttributeError, ValueError) as error:
+                log.error('{name}: Unable to get API version. Error: {error!r}',
+                          {'name': self.name, 'error': error})
+        elif version == 1:
+            try:
+                self.url = urljoin(self.host, 'version/api')
+                version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).text)
+                # Convert old API versioning to new versioning (major, minor, release)
+                self.api = (1, version % 100, 0)
+            except Exception:
+                self.api = (1, 0, 0)
+
+        return auth
 
     def _get_auth_v2(self):
         """Authenticate using API v2."""
@@ -87,13 +98,13 @@ class QBittorrentAPI(GenericClient):
 
             # Successful log in
             self.session.cookies = self.response.cookies
-            self.auth = self.response.content
+            self.auth = self.response.text
 
             return self.auth
 
         if self.response.status_code == 404:
-            # API v2 is not available, use legacy API
-            return None
+            # API v2 is not available
+            raise APIUnavailableError()
 
         if self.response.status_code == 403:
             log.warning('{name}: Your IP address has been banned after too many failed authentication attempts.'
@@ -121,9 +132,9 @@ class QBittorrentAPI(GenericClient):
                 return None
 
         self.session.cookies = self.response.cookies
-        self.auth = self.response.content
+        self.auth = (self.response.status_code != 404) or None
 
-        return self.auth if not self.response.status_code == 404 else None
+        return self.auth
 
     def _add_torrent_uri(self, result):
 
