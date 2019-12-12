@@ -35,6 +35,7 @@ class QBittorrentAPI(GenericClient):
         :type password: string
         """
         super(QBittorrentAPI, self).__init__('qBittorrent', host, username, password)
+        self.url = self.host
         # Auth for API v1.0.0 (qBittorrent v3.1.x and older)
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
