@@ -71,9 +71,9 @@
                                 <fieldset class="component-group-list">
 
                                     <config-template label-for="show_root_dir" label="Default Indexer Language">
-                                        <language-select @update-language="config.indexerDefaultLanguage = $event" ref="indexerLanguage" 
-                                            :language="config.indexerDefaultLanguage" :available="indexers.main.validLanguages.join(',')" 
-                                            class="form-control form-control-inline input-sm" />
+                                        <language-select @update-language="config.indexerDefaultLanguage = $event" ref="indexerLanguage"
+                                                         :language="config.indexerDefaultLanguage" :available="indexers.main.validLanguages.join(',')"
+                                                         class="form-control form-control-inline input-sm" />
                                         <span>for adding shows and metadata providers</span>
                                     </config-template>
 
