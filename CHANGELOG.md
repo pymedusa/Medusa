@@ -7,7 +7,7 @@
 
 #### Fixes
 - Fixed season pack downloads occurring even if not needed ([#7472](https://github.com/pymedusa/Medusa/pull/7472))
-- Fixed changing default indexer language and initial indexer in config-general ([#????](https://github.com/pymedusa/Medusa/pull/????))
+- Fixed changing default indexer language and initial indexer in config-general ([#7478](https://github.com/pymedusa/Medusa/pull/7478))
 
 -----
 
