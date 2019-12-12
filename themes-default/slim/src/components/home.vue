@@ -109,6 +109,12 @@ export default {
             });
         }
     },
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#showTabs').tabs();
+        });
+    },
     mounted() {
         const { config, stateLayout, setConfig } = this;
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
