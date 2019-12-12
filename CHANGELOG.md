@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 0.3.9 (2019-12-12)
 
 #### Improvements
 - Improved qBittorrent client ([#7474](https://github.com/pymedusa/Medusa/pull/7474))
