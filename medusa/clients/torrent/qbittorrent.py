@@ -11,6 +11,7 @@ from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.auth import HTTPDigestAuth
+from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -30,7 +31,7 @@ class QBittorrentAPI(GenericClient):
         :type password: string
         """
         super(QBittorrentAPI, self).__init__('qBittorrent', host, username, password)
-        self.url = self.host
+        # Auth for API v1.0.0 (qBittorrent v3.1.x and older)
         self.session.auth = HTTPDigestAuth(self.username, self.password)
 
     @property
@@ -67,8 +68,8 @@ class QBittorrentAPI(GenericClient):
         return self._get_auth_v2() or self._get_auth_legacy()
 
     def _get_auth_v2(self):
-        """Authenticate using the new method (API v2)."""
-        self.url = '{host}api/v2/auth/login'.format(host=self.host)
+        """Authenticate using API v2."""
+        self.url = urljoin(self.host, 'api/v2/auth/login')
         data = {
             'username': self.username,
             'password': self.password,
@@ -101,8 +102,8 @@ class QBittorrentAPI(GenericClient):
             return None
 
     def _get_auth_legacy(self):
-        """Authenticate using the legacy method (API v1)."""
-        self.url = '{host}login'.format(host=self.host)
+        """Authenticate using legacy API."""
+        self.url = urljoin(self.host, 'login')
         data = {
             'username': self.username,
             'password': self.password,
@@ -112,7 +113,7 @@ class QBittorrentAPI(GenericClient):
         except Exception:
             return None
 
-        # Pre-API v1
+        # API v1.0.0 (qBittorrent v3.1.x and older)
         if self.response.status_code == 404:
             try:
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
@@ -127,7 +128,7 @@ class QBittorrentAPI(GenericClient):
     def _add_torrent_uri(self, result):
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/download'
-        self.url = '{host}{command}'.format(host=self.host, command=command)
+        self.url = urljoin(self.host, command)
         data = {
             'urls': result.url,
         }
@@ -136,7 +137,7 @@ class QBittorrentAPI(GenericClient):
     def _add_torrent_file(self, result):
 
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
-        self.url = '{host}{command}'.format(host=self.host, command=command)
+        self.url = urljoin(self.host, command)
         files = {
             'torrents': (
                 '{result}.torrent'.format(result=result.name),
@@ -153,14 +154,11 @@ class QBittorrentAPI(GenericClient):
 
         api = self.api
         if api >= (2, 0, 0):
-            self.url = '{host}api/v2/torrents/setCategory'.format(host=self.host)
+            self.url = urljoin(self.host, 'api/v2/torrents/setCategory')
             label_key = 'category'
         elif api > (1, 6, 0):
             label_key = 'Category' if api >= (1, 10, 0) else 'Label'
-            self.url = '{host}command/set{key}'.format(
-                host=self.host,
-                key=label_key,
-            )
+            self.url = urljoin(self.host, 'command/set' + label_key)
 
         data = {
             'hashes': result.hash.lower(),
@@ -179,8 +177,7 @@ class QBittorrentAPI(GenericClient):
 
         command = 'api/v2/torrents' if self.api >= (2, 0, 0) else 'command'
         method = 'increase' if result.priority == 1 else 'decrease'
-        self.url = '{host}{command}/{method}Prio'.format(
-            host=self.host, command=command, method=method)
+        self.url = urljoin(self.host, '{command}/{method}Prio'.format(command=command, method=method))
         data = {
             'hashes': result.hash.lower(),
         }
@@ -198,7 +195,7 @@ class QBittorrentAPI(GenericClient):
         state = 'pause' if app.TORRENT_PAUSED else 'resume'
         command = 'api/v2/torrents' if api >= (2, 0, 0) else 'command'
         hashes_key = 'hashes' if self.api >= (1, 18, 0) else 'hash'
-        self.url = '{host}{command}/{state}'.format(host=self.host, command=command, state=state)
+        self.url = urljoin(self.host, '{command}/{state}'.format(command=command, state=state))
         data = {
             hashes_key: result.hash.lower(),
         }
@@ -216,10 +213,10 @@ class QBittorrentAPI(GenericClient):
             'hashes': info_hash.lower(),
         }
         if self.api >= (2, 0, 0):
-            self.url = '{host}api/v2/torrents/delete'.format(host=self.host)
+            self.url = urljoin(self.host, 'api/v2/torrents/delete')
             data['deleteFiles'] = True
         else:
-            self.url = '{host}command/deletePerm'.format(host=self.host)
+            self.url = urljoin(self.host, 'command/deletePerm')
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
