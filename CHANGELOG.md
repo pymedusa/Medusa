@@ -3,6 +3,15 @@
 #### New Features
 
 #### Improvements
+- Add `uniqueid` to Kodi 12+ show metadata ([#7483](https://github.com/pymedusa/Medusa/pull/7483))
+
+#### Fixes
+
+----
+
+## 0.3.9 (2019-12-12)
+
+#### Improvements
 - Improved qBittorrent client ([#7474](https://github.com/pymedusa/Medusa/pull/7474))
 
 #### Fixes
