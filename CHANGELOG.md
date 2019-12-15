@@ -4,6 +4,7 @@
 
 #### Improvements
 - Add `uniqueid` to Kodi 12+ show metadata ([#7483](https://github.com/pymedusa/Medusa/pull/7483))
+- Update AppLink to enable native mouse navigation ([#7498](https://github.com/pymedusa/Medusa/pull/7498))
 
 #### Fixes
 - Fix Emby notifier error on Python 3 ([#7497](https://github.com/pymedusa/Medusa/pull/7497))
