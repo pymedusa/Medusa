@@ -181,7 +181,7 @@ class QBittorrentAPI(GenericClient):
         if self.response.status_code == 409:
             log.warning('{name}: Unable to set torrent label. You need to create the label '
                         ' in {name} first.', {'name': self.name})
-            ok = False
+            ok = True
 
         return ok
 
