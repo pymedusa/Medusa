@@ -10,6 +10,7 @@
 - Fix Emby notifier error on Python 3 ([#7497](https://github.com/pymedusa/Medusa/pull/7497))
 - Fix more qBittorrent authentication bugs ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
 - Fix `torrents.verifyCert` config patch ignored warning ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
+- Fix dragging and saving Anime / Series list handles in Home - Poster layout ([#7502](https://github.com/pymedusa/Medusa/pull/7502))
 
 -----
 
@@ -21,7 +22,6 @@
 #### Fixes
 - Fixed season pack downloads occurring even if not needed ([#7472](https://github.com/pymedusa/Medusa/pull/7472))
 - Fixed changing default indexer language and initial indexer in config-general ([#7478](https://github.com/pymedusa/Medusa/pull/7478))
-- Fixed dragging and saving Anime / Series list handles in Home - Poster layout ([#????](https://github.com/pymedusa/Medusa/pull/????))
 
 -----
 
