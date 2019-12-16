@@ -450,6 +450,7 @@ export default {
                         labelOption: true,
                         labelAnimeOption: true,
                         pausedOption: true,
+                        verifyCertOption: true,
                         testStatus: 'Click below to test'
                     },
                     mlnet: {
