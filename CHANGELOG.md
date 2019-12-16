@@ -21,6 +21,7 @@
 #### Fixes
 - Fixed season pack downloads occurring even if not needed ([#7472](https://github.com/pymedusa/Medusa/pull/7472))
 - Fixed changing default indexer language and initial indexer in config-general ([#7478](https://github.com/pymedusa/Medusa/pull/7478))
+- Fixed dragging and saving Anime / Series list handles in Home - Poster layout ([#????](https://github.com/pymedusa/Medusa/pull/????))
 
 -----
 
