@@ -87,7 +87,7 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception:
             return None
 
@@ -121,7 +121,7 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
         except Exception:
             return None
 
