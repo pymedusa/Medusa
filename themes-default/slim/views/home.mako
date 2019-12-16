@@ -14,6 +14,7 @@
 <script type="text/x-template" id="home-template">
 <div>
     <backstretch :slug="config.randomShowSlug"></backstretch>
+    <vue-snotify></vue-snotify>
 
     <div class="row" v-if="layout === 'poster'">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
