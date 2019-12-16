@@ -50,8 +50,8 @@ class QBittorrentAPI(GenericClient):
             auth = self._get_auth_legacy()
             version = 1
 
-        # Authentication failed /or/ We already have the API version
-        if not auth or self.api:
+        if not auth:
+            # Authentication failed
             return auth
 
         # Get API version
