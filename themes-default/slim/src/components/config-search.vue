@@ -247,7 +247,7 @@
                                                 </select>
                                             </config-template>
 
-                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifyCertOption" v-model="clients.torrents.verifyCert" label="Verify certificate" id="torrent_verify_cert">
+                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL" label="Verify certificate" id="torrent_verify_cert">
                                                 <p>Verify SSL certificates for HTTPS requests</p>
                                                 <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                             </config-toggle-slider>
@@ -413,7 +413,7 @@ export default {
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     deluged: {
@@ -426,7 +426,7 @@ export default {
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     downloadstation: {
@@ -441,7 +441,7 @@ export default {
                         pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     qbittorrent: {
@@ -450,13 +450,13 @@ export default {
                         labelOption: true,
                         labelAnimeOption: true,
                         pausedOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     mlnet: {
                         title: 'MLDonkey',
                         description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     }
                 },
