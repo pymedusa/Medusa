@@ -50,8 +50,8 @@ class QBittorrentAPI(GenericClient):
             auth = self._get_auth_legacy()
             version = 1
 
-        # Authentication failed /or/ We already have the API version
-        if not auth or self.api:
+        if not auth:
+            # Authentication failed
             return auth
 
         # Get API version
@@ -87,8 +87,10 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
-        except Exception:
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
+        except Exception as error:
+            log.warning('{name}: Exception while trying to authenticate: {error}',
+                        {'name': self.name, 'error': error}, exc_info=1)
             return None
 
         if self.response.status_code == 200:
@@ -121,15 +123,19 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
-        except Exception:
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
+        except Exception as error:
+            log.warning('{name}: Exception while trying to authenticate: {error}',
+                        {'name': self.name, 'error': error}, exc_info=1)
             return None
 
         # API v1.0.0 (qBittorrent v3.1.x and older)
         if self.response.status_code == 404:
             try:
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
-            except Exception:
+            except Exception as error:
+                log.warning('{name}: Exception while trying to authenticate: {error}',
+                            {'name': self.name, 'error': error}, exc_info=1)
                 return None
 
         self.session.cookies = self.response.cookies
