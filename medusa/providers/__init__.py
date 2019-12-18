@@ -30,6 +30,7 @@ from medusa.providers.torrent import (
     cinemaz,
     danishbits,
     elitetracker,
+    eztv,
     gimmepeers,
     hdbits,
     hdspace,
@@ -65,7 +66,7 @@ from medusa.providers.torrent import (
 )
 
 __all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday',
+    'eztv', 'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday',
     'hdbits', 'speedcd', 'nyaa', 'torrentbytes', 'morethantv', 'tokyotoshokan',
     'iptorrents', 'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg',
     'binsearch', 'xthor', 'abnormal', 'scenetime', 'nebulance', 'tvchaosuk',
