@@ -27,7 +27,7 @@ from requests import RequestException
 
 from simpleanidb import REQUEST_HOT
 
-from six import text_type
+from six import ensure_text, text_type
 
 from tornroutes import route
 
@@ -494,11 +494,11 @@ class HomeAddShows(Home):
         if whitelist:
             if not isinstance(whitelist, list):
                 whitelist = [whitelist]
-            whitelist = short_group_names(whitelist)
+            whitelist = short_group_names([ensure_text(w) for w in whitelist])
         if blacklist:
             if not isinstance(blacklist, list):
                 blacklist = [blacklist]
-            blacklist = short_group_names(blacklist)
+            blacklist = short_group_names([ensure_text(b) for b in blacklist])
 
         if not allowed_qualities:
             allowed_qualities = []
