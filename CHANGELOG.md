@@ -10,6 +10,7 @@
 - Fix Emby notifier error on Python 3 ([#7497](https://github.com/pymedusa/Medusa/pull/7497))
 - Fix more qBittorrent authentication bugs ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
 - Fix `torrents.verifyCert` config patch ignored warning ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
+- Fix adding Anime with white/black listed release groups ([#????](https://github.com/pymedusa/Medusa/pull/????))
 
 -----
 
