@@ -44,6 +44,7 @@ from medusa.providers.torrent.json import (
     bitcannon,
     btn,
     danishbits,
+    eztv,
     hdbits,
     ncore,
     norbits,
