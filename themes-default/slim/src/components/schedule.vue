@@ -46,7 +46,7 @@ export default {
     mounted() {
         // $store.dispatch('getShows');
 
-        this.$once('loaded', () => {
+        this.$root.$once('loaded', () => {
             const { scheduleLayout, stateLayout, themeSpinner } = this;
             const { comingEps } = stateLayout;
             if (scheduleLayout === 'list') {

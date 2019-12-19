@@ -12,6 +12,7 @@
 - Fix `torrents.verifyCert` config patch ignored warning ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
 - Fix dragging and saving Anime / Series list handles in Home - Poster layout ([#7502](https://github.com/pymedusa/Medusa/pull/7502))
 - Fix adding Anime with white/black listed release groups ([#7507](https://github.com/pymedusa/Medusa/pull/7507))
+- Fix Schedule page and Forced Search on Schedule page ([#7512](https://github.com/pymedusa/Medusa/pull/#7512))
 
 -----
 
