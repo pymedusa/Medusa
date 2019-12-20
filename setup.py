@@ -105,7 +105,8 @@ setup(
         'pytest-flake8>=1.0.2',
         'pytest-tornado5>=2.0.0',
         'PyYAML>=5.1',
-        'vcrpy>=2.0.1',
+        'vcrpy<4.0.0 ; python_version < "3.5"',
+        'vcrpy>=4.0.0 ; python_version >= "3.5"',
         'mock>=2.0.0',
     ],
     classifiers=[
