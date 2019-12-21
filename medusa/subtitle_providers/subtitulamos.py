@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 import logging
 import re
-import json
 
-from babelfish import Language, language_converters, LanguageReverseConverter
+from babelfish import Language, LanguageReverseConverter, language_converters
+
 from guessit import guessit
+
 from requests import Session
 
-from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal import __short_version__
 from subliminal.cache import EPISODE_EXPIRATION_TIME, region
 from subliminal.exceptions import ProviderError
+from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal.score import get_equivalent_release_groups
 from subliminal.subtitle import Subtitle, fix_line_ending, guess_matches
 from subliminal.utils import sanitize, sanitize_release_group
@@ -25,7 +27,7 @@ basename = __name__.split('.')[0]
 class SubtitulamosConverter(LanguageReverseConverter):
     def __init__(self):
         self.name_converter = language_converters['name']
-        self.from_subtitulamos = {u'Español': ('spa',), u'Español (España)': ('spa',), u'Español (Latinoamérica)': ('spa','MX'),
+        self.from_subtitulamos = {u'Español': ('spa',), u'Español (España)': ('spa',), u'Español (Latinoamérica)': ('spa', 'MX'),
                                   u'Català': ('cat',), 'English': ('eng',), 'Galego': ('glg',), 'Portuguese': ('por',),
                                   'English (US)': ('eng', 'US'), 'English (UK)': ('eng', 'GB'), 'Brazilian': ('por', 'BR')}
 
@@ -179,14 +181,6 @@ class SubtitulamosProvider(Provider):
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # get episode title
-#        title_pattern = re.compile('{}(.+){}x{:02d}- (.+)'.format(series, season, episode).lower())
-#        title = title_pattern.search(soup.select('#episode_title')[0].get_text().strip().lower()).group(2)
-
-
-#        title_pattern = re.compile('(.+)')
-#        title = title_pattern.search(soup.select('#episode_title')[0].get_text().strip().lower()).group(1)
-
-
         logger.info('%s: Getting episode title', self.__class__.__name__.upper())
 
         title_pattern = re.compile('{}x{:02d} - (.+)'.format(season, episode))
