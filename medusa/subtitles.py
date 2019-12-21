@@ -69,6 +69,7 @@ PROVIDER_URLS = {
     'opensubtitles': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
+    'subtitulamos': 'https://www.subtitulamos.tv',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net',
     'wizdom': 'http://wizdom.xyz'
