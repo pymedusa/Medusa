@@ -57,7 +57,7 @@ language_converters.register('subtitulamos = {basename}.subtitle_providers.subti
 
 class SubtitulamosSubtitle(Subtitle):
     """Subtitulamos Subtitle."""
-    
+
     provider_name = 'subtitulamos'
 
     def __init__(self, language, hearing_impaired, page_link, series, season, episode, title, year, version,
@@ -110,7 +110,7 @@ class SubtitulamosSubtitle(Subtitle):
 
 class SubtitulamosProvider(Provider):
     """Subtitulamos Provider."""
-    
+
     languages = {Language('por', 'BR')} | {Language(l) for l in [
         'cat', 'eng', 'glg', 'por', 'spa'
     ]}
