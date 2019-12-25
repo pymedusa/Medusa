@@ -459,12 +459,12 @@ export default {
 
             // Clone the config into a new object
             const config = Object.assign({}, {
-                postprocessing,
+                postProcessing: postprocessing,
                 metadata
             });
 
             // Use destructuring to remove the unwanted keys.
-            const { multiEpStrings, reflinkAvailable, ...rest } = postprocessing;
+            const { multiEpStrings, reflinkAvailable, extraScriptsUrl, ...rest } = postprocessing;
             // Assign the object with the keys removed to our copied object.
             config.postProcessing = rest;
 
