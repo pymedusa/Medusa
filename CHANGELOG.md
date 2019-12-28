@@ -14,6 +14,7 @@
 - Fix adding Anime with white/black listed release groups ([#7507](https://github.com/pymedusa/Medusa/pull/7507))
 - Fix Schedule page and Forced Search on Schedule page ([#7512](https://github.com/pymedusa/Medusa/pull/7512))
 - Fix manual search page release name bug ([#7517](https://github.com/pymedusa/Medusa/pull/7517))
+- Fix being unable to save post-processing config ([#7526](https://github.com/pymedusa/Medusa/pull/7526))
 
 -----
 
