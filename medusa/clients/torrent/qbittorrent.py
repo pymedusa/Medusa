@@ -157,10 +157,7 @@ class QBittorrentAPI(GenericClient):
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
         self.url = urljoin(self.host, command)
         files = {
-            'torrents': (
-                '{result}.torrent'.format(result=result.name),
-                result.content,
-            ),
+            'torrents': result.content
         }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
