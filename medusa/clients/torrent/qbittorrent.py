@@ -198,7 +198,7 @@ class QBittorrentAPI(GenericClient):
         }
         ok = self._request(method='post', data=data, cookies=self.session.cookies)
 
-        if self.response.status_code == 403:
+        if self.response.status_code == (409 if self.api >= (2, 0, 0) else 403):
             log.info('{name}: Unable to set torrent priority because torrent queueing'
                      ' is disabled in {name} settings.', {'name': self.name})
             ok = True
