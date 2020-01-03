@@ -208,7 +208,7 @@ class SubtitulamosProvider(Provider):
 
             # ignore incomplete subtitles
             status = sub.find_next('div', class_='subtitle_buttons').contents[1]
-			# if there isn't <a> tag, subtitle not finished and no link available to download it
+            # if there isn't <a> tag, subtitle not finished and no link available to download it
             if status.name != 'a':
                 logger.info('Ignoring subtitle in [%s] because it is not finished', language)
                 continue
