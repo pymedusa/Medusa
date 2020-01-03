@@ -138,7 +138,7 @@ class SubtitulamosProvider(Provider):
 
         """
         # make the search
-        logger.info('%s: Searching episode url for %s, season %d, episode %d', self.__class__.__name__.upper(), series, season, episode)
+        logger.info('Searching episode url for %s, season %d, episode %d', series, season, episode)
         episode_url = None
 
         search = '{} {}x{}'.format(series, season, episode)
@@ -146,7 +146,7 @@ class SubtitulamosProvider(Provider):
         r.raise_for_status()
 
         if r.status_code != 200:
-            logger.error('%s: Error getting episode url', self.__class__.__name__.upper())
+            logger.warning('Error getting episode url')
             raise ProviderError('%s: Error getting episode url', self.__class__.__name__.upper())
 
         results = json.loads(r.text)
@@ -159,14 +159,14 @@ class SubtitulamosProvider(Provider):
                 for episode_data in result['episodes']:
                     if season == episode_data['season'] and episode == episode_data['number']:
                         episode_url = self.server_url + 'episodes/{}'.format(episode_data['id'])
-                        logger.info('%s: Episode url found with year %s', self.__class__.__name__.upper(), episode_url)
+                        logger.info('Episode url found with year %s', episode_url)
                         return episode_url
             # attempt series without year
             elif sanitize(series) in title:
                 for episode_data in result['episodes']:
                     if season == episode_data['season'] and episode == episode_data['number']:
                         episode_url = self.server_url + 'episodes/{}'.format(episode_data['id'])
-                        logger.info('%s: Episode url found without year %s', self.__class__.__name__.upper(), episode_url)
+                        logger.info('Episode url found without year %s', episode_url)
                         return episode_url
 
         return episode_url
@@ -175,7 +175,7 @@ class SubtitulamosProvider(Provider):
         # get the episode url
         episode_url = self._search_url_titles(series, season, episode, year)
         if episode_url is None:
-            logger.warning('%s: No episode url found for %s, season %d, episode %d', self.__class__.__name__.upper(), series, season, episode)
+            logger.info('No episode url found for %s, season %d, episode %d', series, season, episode)
             return []
 
         r = self.session.get(episode_url, headers={'Referer': self.server_url}, timeout=10)
@@ -183,17 +183,17 @@ class SubtitulamosProvider(Provider):
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # get episode title
-        logger.info('%s: Getting episode title', self.__class__.__name__.upper())
+        logger.debug('Getting episode title')
 
         title_pattern = re.compile('{}x{:02d} - (.+)'.format(season, episode))
-        title = title_pattern.search(soup.select('.episode-name')[0].get_text().strip().lower()).group(1)
+        title = title_pattern.search(soup.select('.episode-name')[0].get_text(strip=True).lower()).group(1)
 
-        logger.info('%s: Episode title found: "%s"', self.__class__.__name__.upper(), title.upper())
+        logger.debug('Episode title found: "%s"', title.upper())
 
         subtitles = []
         for sub in soup.find_all('div', attrs={'id': 'progress_buttons_row'}):
             # read the language
-            language = Language.fromsubtitulamos(sub.find_previous('div', class_='subtitle_language').get_text().strip())
+            language = Language.fromsubtitulamos(sub.find_previous('div', class_='subtitle_language').get_text(strip=True))
             hearing_impaired = False
 
             # modify spanish latino subtitle language to only spanish and set hearing_impaired = True
@@ -204,19 +204,20 @@ class SubtitulamosProvider(Provider):
                 hearing_impaired = True
 
             # read the release subtitle
-            release = sub.find_next('div', class_='version_name').get_text().strip()
+            release = sub.find_next('div', class_='version_name').get_text(strip=True)
 
             # ignore incomplete subtitles
             status = sub.find_next('div', class_='subtitle_buttons').contents[1]
+			# if there isn't <a> tag, subtitle not finished and no link available to download it
             if status.name != 'a':
-                logger.info('%s: Ignoring subtitle in [%s] not finished', self.__class__.__name__.upper(), language)
+                logger.info('Ignoring subtitle in [%s] because it is not finished', language)
                 continue
 
             # read the subtitle url
             subtitle_url = self.server_url + status['href'][1:]
             subtitle = SubtitulamosSubtitle(language, hearing_impaired, episode_url, series, season, episode, title,
                                             year, release, subtitle_url)
-            logger.info('%s: Found subtitle %r', self.__class__.__name__.upper(), subtitle)
+            logger.info('Found subtitle %r', subtitle)
             subtitles.append(subtitle)
 
         return subtitles
@@ -228,7 +229,7 @@ class SubtitulamosProvider(Provider):
 
     def download_subtitle(self, subtitle):
         # download the subtitle
-        logger.info('%s: Downloading subtitle %s', self.__class__.__name__.upper(), subtitle.download_link)
+        logger.info('Downloading subtitle %s', subtitle.download_link)
         r = self.session.get(subtitle.download_link, headers={'Referer': subtitle.page_link},
                              timeout=10)
         r.raise_for_status()
