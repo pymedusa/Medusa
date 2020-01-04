@@ -5,7 +5,7 @@ import json
 import logging
 import re
 
-from babelfish import Language, LanguageReverseConverter, language_converters
+from babelfish import Language, language_converters
 
 from guessit import guessit
 
@@ -21,38 +21,8 @@ from subliminal.utils import sanitize, sanitize_release_group
 from subliminal.video import Episode
 
 logger = logging.getLogger(__name__)
-basename = __name__.split('.')[0]
 
-
-class SubtitulamosConverter(LanguageReverseConverter):
-    def __init__(self):
-        self.name_converter = language_converters['name']
-        self.from_subtitulamos = {u'Español': ('spa',), u'Español (España)': ('spa',), u'Español (Latinoamérica)': ('spa', 'MX'),
-                                  u'Català': ('cat',), 'English': ('eng',), 'Galego': ('glg',), 'Portuguese': ('por',),
-                                  'English (US)': ('eng', 'US'), 'English (UK)': ('eng', 'GB'), 'Brazilian': ('por', 'BR')}
-
-        self.to_subtitulamos = {('cat',): u'Català', ('glg',): 'Galego', ('por', 'BR'): 'Brazilian'}
-
-        self.codes = set(self.from_subtitulamos.keys())
-
-    def convert(self, alpha3, country=None, script=None):
-        if (alpha3, country, script) in self.to_subtitulamos:
-            return self.to_subtitulamos[[alpha3, country, script]]
-        if (alpha3, country) in self.to_subtitulamos:
-            return self.to_subtitulamos[(alpha3, country)]
-        if (alpha3,) in self.to_subtitulamos:
-            return self.to_subtitulamos[(alpha3,)]
-
-        return self.name_converter.convert(alpha3, country, script)
-
-    def reverse(self, subtitulamos):
-        if subtitulamos in self.from_subtitulamos:
-            return self.from_subtitulamos[subtitulamos]
-
-        return self.name_converter.reverse(subtitulamos)
-
-
-language_converters.register('subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosConverter'.format(basename=basename))
+language_converters.register('subtitulamos = medusa.subtitle_providers.converters.subtitulamos:SubtitulamosConverter')
 
 
 class SubtitulamosSubtitle(Subtitle):
@@ -95,9 +65,10 @@ class SubtitulamosSubtitle(Subtitle):
         if video.original_series and self.year is None or video.year and video.year == self.year:
             matches.add('year')
         # release_group
-        if (video.release_group and self.version and
-                any(r in sanitize_release_group(self.version)
-                    for r in get_equivalent_release_groups(sanitize_release_group(video.release_group)))):
+        if (video.release_group and self.version
+                and any(r in sanitize_release_group(self.version)
+                        for r in get_equivalent_release_groups(
+                            sanitize_release_group(video.release_group)))):
             matches.add('release_group')
         # resolution
         if video.resolution and self.version and video.resolution in self.version.lower():
@@ -180,6 +151,7 @@ class SubtitulamosProvider(Provider):
 
         r = self.session.get(episode_url, headers={'Referer': self.server_url}, timeout=10)
         r.raise_for_status()
+
         soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
 
         # get episode title
@@ -193,7 +165,9 @@ class SubtitulamosProvider(Provider):
         subtitles = []
         for sub in soup.find_all('div', attrs={'id': 'progress_buttons_row'}):
             # read the language
-            language = Language.fromsubtitulamos(sub.find_previous('div', class_='subtitle_language').get_text(strip=True))
+            language = Language.fromsubtitulamos(
+                sub.find_previous('div', class_='subtitle_language').get_text(strip=True)
+            )
             hearing_impaired = False
 
             # modify spanish latino subtitle language to only spanish and set hearing_impaired = True
