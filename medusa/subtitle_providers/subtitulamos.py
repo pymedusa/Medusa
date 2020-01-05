@@ -11,12 +11,12 @@ from guessit import guessit
 
 from requests import Session
 
-from subliminal import __short_version__
 from subliminal.cache import EPISODE_EXPIRATION_TIME, region
 from subliminal.exceptions import ProviderError
 from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal.score import get_equivalent_release_groups
-from subliminal.subtitle import Subtitle, fix_line_ending, guess_matches
+from subliminal.subtitle import Subtitle, fix_line_ending
+from subliminal.matches import guess_matches
 from subliminal.utils import sanitize, sanitize_release_group
 from subliminal.video import Episode
 
@@ -91,7 +91,7 @@ class SubtitulamosProvider(Provider):
 
     def initialize(self):
         self.session = Session()
-        self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
+        self.session.headers['User-Agent'] = self.user_agent
 
     def terminate(self):
         self.session.close()
