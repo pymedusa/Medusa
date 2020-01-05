@@ -116,7 +116,7 @@ export default {
         });
     },
     mounted() {
-        const { config, stateLayout, setConfig } = this;
+        const { $snotify, config, stateLayout, setConfig } = this;
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
             $('table').trigger('filterReset');
@@ -450,7 +450,7 @@ export default {
                         }
                     }
                 },
-                update(event) {
+                async update(event) {
                     const showListOrder = $(event.target.children).map((index, el) => {
                         return $(el).data('list');
                     });
@@ -460,14 +460,20 @@ export default {
                             showListOrder: showListOrder.toArray()
                         }
                     };
-                    const section = 'layout';
-                    setConfig({ section, config: { layout } })
-                        .then(response => {
-                            console.info(response);
-                        })
-                        .catch(error => {
-                            console.error(error);
-                        });
+
+                    try {
+                        await setConfig({ section: 'main', config: { layout } });
+                        $snotify.success(
+                            'Saved Home poster list type order',
+                            'Saved',
+                            { timeout: 5000 }
+                        );
+                    } catch (error) {
+                        $snotify.error(
+                            'Error while trying to save home poster list type order',
+                            'Error'
+                        );
+                    }
                 }
             });
         }; // END initializePage()

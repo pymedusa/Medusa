@@ -14,6 +14,7 @@
 <script type="text/x-template" id="home-template">
 <div>
     <backstretch :slug="config.randomShowSlug"></backstretch>
+    <vue-snotify></vue-snotify>
 
     <div class="row" v-if="layout === 'poster'">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
@@ -67,7 +68,7 @@
                             Filter(s)</button>
                     </span>&nbsp;
                 </template>
-                Layout: 
+                Layout:
                 <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
                     <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
                 </select>
@@ -78,7 +79,7 @@
     <div class="row">
         <div class="col-md-12">
             <!-- Split in tabs -->
-            <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
+            <div id="showTabs" v-show="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
                 % for cur_show_list in show_lists:
@@ -93,7 +94,7 @@
                     % endif
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
-            <template v-else>
+            <template v-show="!stateLayout.animeSplitHome || !stateLayout.animeSplitHomeInTabs">
                 ## Checking with Mako as well, so we don't import the home page layout multiple times.
                 % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
                 <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>

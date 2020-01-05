@@ -170,7 +170,7 @@ const actions = {
                 limit
             };
 
-            if (season) {
+            if (season !== undefined) {
                 params.season = season;
             }
 
