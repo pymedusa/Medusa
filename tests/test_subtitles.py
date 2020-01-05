@@ -35,6 +35,7 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
+        {'name': 'subtitulamos', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
         {'name': 'wizdom', 'enabled': False},
     ]
