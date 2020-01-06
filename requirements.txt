@@ -35,7 +35,7 @@ rebulk==2.0.0
 requests==2.22.0
 requests-oauthlib==1.2.0
 six==1.12.0
-subliminal @ https://codeload.github.com/Diaoul/subliminal/tar.gz/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
+subliminal @ https://codeload.github.com/Diaoul/subliminal/tar.gz/76525cc2f6545aeeccf620ca46d40c2f0aa53c6d#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284#egg=tvdbapiv2

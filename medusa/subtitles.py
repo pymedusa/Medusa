@@ -62,9 +62,11 @@ episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
+    'argenteam': 'https://argenteam.net',
     'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
+    'opensubtitlesvip': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
     'subtitulamos': 'https://www.subtitulamos.tv',
@@ -520,7 +522,9 @@ def get_provider_pool():
                         'legendastv': {'username': app.LEGENDASTV_USER,
                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
-                                          'password': app.OPENSUBTITLES_PASS}}
+                                          'password': app.OPENSUBTITLES_PASS},
+                        'opensubtitlesvip': {'username': app.OPENSUBTITLES_USER,
+                                             'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)
 
 
