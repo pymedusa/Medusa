@@ -68,7 +68,7 @@ def packages():
 
 # These requirements probably won't be needed
 # when `install_requires` is populated with `requirements.txt`
-tests_runtime_require = ['tornado==5.1.1', 'six', 'profilehooks', 'contextlib2', ]
+tests_runtime_require = ['tornado==5.1.1', 'six>=1.13.0', 'profilehooks', 'contextlib2', ]
 
 setup(
     name='pymedusa',
