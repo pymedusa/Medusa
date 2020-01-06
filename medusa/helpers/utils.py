@@ -4,12 +4,12 @@
 from __future__ import unicode_literals
 
 from builtins import str
-from collections import Iterable
 from datetime import datetime
 
 from dateutil import tz
 
 from six import string_types, viewitems
+from six.moves.collections_abc import Iterable
 
 
 def generate(it):
