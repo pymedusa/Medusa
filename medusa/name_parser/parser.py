@@ -631,7 +631,7 @@ class NameParserCache(object):
             ]
             for item in to_remove:
                 del self.cache[item]
-                log.debug('Removed parsed cached result for {name}', {'name': item})
+                log.debug('Removed cached parse result for {name}', {'name': item})
 
 
 name_parser_cache = NameParserCache()
