@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import logging
 import time
 from collections import OrderedDict
+from threading import Lock
 
 import guessit
 
@@ -591,6 +592,7 @@ class NameParserCache(object):
         """Initialize the cache with a maximum size."""
         self.cache = OrderedDict()
         self.max_size = max_size
+        self.lock = Lock()
 
     def add(self, name, parse_result):
         """Add the result to the parser cache.
@@ -600,9 +602,10 @@ class NameParserCache(object):
         :param parse_result:
         :type parse_result: ParseResult
         """
-        while len(self.cache) >= self.max_size:
-            self.cache.popitem(last=False)
-        self.cache[name] = parse_result
+        with self.lock:
+            while len(self.cache) >= self.max_size:
+                self.cache.popitem(last=False)
+            self.cache[name] = parse_result
 
     def get(self, name):
         """Return the cached parsed result.
@@ -612,23 +615,23 @@ class NameParserCache(object):
         :return:
         :rtype: ParseResult
         """
-        if name in self.cache:
-            log.debug('Using cached parse result for {name}', {'name': name})
-            return self.cache[name]
+        with self.lock:
+            if name in self.cache:
+                log.debug('Using cached parse result for {name}', {'name': name})
+                return self.cache[name]
 
     def remove(self, indexer, indexer_id):
         """Remove cache item given indexer and indexer_id."""
-        if not indexer or not indexer_id:
-            return
-        to_remove = [
-            cached_name
-            for cached_name, cached_parsed_result in iteritems(self.cache)
-            if cached_parsed_result.series.indexer == indexer
-            and cached_parsed_result.series.indexerid == indexer_id
-        ]
-        for item in to_remove:
-            del self.cache[item]
-            log.debug('Removed parsed cached result for release: {release}'.format(release=item))
+        with self.lock:
+            to_remove = [
+                cached_name
+                for cached_name, cached_parsed_result in iteritems(self.cache)
+                if cached_parsed_result.series.indexer == indexer
+                and cached_parsed_result.series.indexerid == indexer_id
+            ]
+            for item in to_remove:
+                del self.cache[item]
+                log.debug('Removed cached parse result for {name}', {'name': item})
 
 
 name_parser_cache = NameParserCache()
