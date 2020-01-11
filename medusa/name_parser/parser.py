@@ -208,6 +208,8 @@ class NameParser(object):
                 # Translate the absolute episode number, back to the indexers season and episode.
                 (season, episodes) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
                 if season and episodes:
+                    new_episode_numbers.extend(episodes)
+
                     if result.season_number is None and scene_season is not None and scene_season > 0:
                         log.debug(
                             'Detected a season scene exception [{series_name} -> {scene_season}] without a '
@@ -216,21 +218,21 @@ class NameParser(object):
                             {'series_name': result.series_name, 'scene_season': scene_season, 'abs': absolute_episode,
                              'indexer_absolute': a, 'ep': episode_num(season, episodes[0])}
                         )
+                        new_season_numbers.append(scene_season)
                     elif result.series.is_scene:
                         log.debug(
                             'Scene numbering enabled anime series {name} using indexer numbering #{absolute}: {ep}',
                             {'name': result.series.name, 'season': season, 'absolute': a,
                              'ep': episode_num(season, episodes[0])}
                         )
+                        new_season_numbers.append(season)
                     else:
                         log.debug(
                             'Anime series {name} using indexer numbering #{absolute}: {ep}',
                             {'name': result.series.name, 'season': season, 'absolute': a,
                              'ep': episode_num(season, episodes[0])}
                         )
-
-                    new_episode_numbers.extend(episodes)
-                    new_season_numbers.append(season)
+                        new_season_numbers.append(season)
 
         # It's possible that we map a parsed result to an anime series,
         # but the result is not detected/parsed as an anime. In that case, we're using the result.episode_numbers.
