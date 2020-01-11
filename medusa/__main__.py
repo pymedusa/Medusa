@@ -318,14 +318,14 @@ class Application(object):
 
         app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
-        # Initialize the config and our threads
-        self.initialize(console_logging=self.console_logging)
-
         if self.run_as_daemon:
             self.daemonize()
 
         # Get PID
         app.PID = os.getpid()
+
+        # Initialize the config and our threads
+        self.initialize(console_logging=self.console_logging)
 
         # Build from the DB to start with
         self.load_shows_from_db()
