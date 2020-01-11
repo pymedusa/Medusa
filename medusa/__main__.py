@@ -323,7 +323,7 @@ class Application(object):
 
         # Get PID
         app.PID = os.getpid()
-        
+
         # Initialize the config and our threads
         self.initialize(console_logging=self.console_logging)
 
