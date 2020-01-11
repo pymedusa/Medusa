@@ -347,7 +347,7 @@ class NameParser(object):
         # For anime that we still couldn't get a season, let's assume we should use 1.
         if result.series.is_anime and result.season_number is None and result.episode_numbers:
             result.season_number = 1
-            log.warning(
+            log.info(
                 'Unable to parse season number for anime {name}, '
                 'assuming absolute numbered anime with season 1',
                 {'name': result.series.name}
@@ -450,8 +450,7 @@ class NameParser(object):
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
-                           episode_numbers=helpers.ensure_list(guess.get('episode'))
-                           if guess.get('episode') != guess.get('absolute_episode') else [],
+                           episode_numbers=helpers.ensure_list(guess.get('episode')),
                            ab_episode_numbers=helpers.ensure_list(guess.get('absolute_episode')),
                            air_date=guess.get('date'), release_group=guess.get('release_group'),
                            proper_tags=helpers.ensure_list(guess.get('proper_tag')), version=guess.get('version', -1))
