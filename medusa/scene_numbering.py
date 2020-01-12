@@ -164,8 +164,12 @@ def get_indexer_absolute_numbering(series_obj, scene_episode, fallback_to_xem=Tr
 
     if rows:
         return int(rows[0]['absolute_number'])
-    elif fallback_to_xem:
-        return get_indexer_absolute_numbering_for_xem(series_obj, scene_episode)
+
+    if fallback_to_xem:
+        a = get_indexer_absolute_numbering_for_xem(series_obj, scene_episode)
+        return a or scene_episode
+
+    return scene_episode
 
 
 def set_scene_numbering(series_obj, season=None, episode=None,  # pylint:disable=too-many-arguments
