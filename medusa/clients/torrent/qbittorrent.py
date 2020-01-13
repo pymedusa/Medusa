@@ -50,8 +50,8 @@ class QBittorrentAPI(GenericClient):
             auth = self._get_auth_legacy()
             version = 1
 
-        # Authentication failed /or/ We already have the API version
-        if not auth or self.api:
+        if not auth:
+            # Authentication failed
             return auth
 
         # Get API version
@@ -87,8 +87,10 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
-        except Exception:
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
+        except Exception as error:
+            log.warning('{name}: Exception while trying to authenticate: {error}',
+                        {'name': self.name, 'error': error}, exc_info=1)
             return None
 
         if self.response.status_code == 200:
@@ -121,15 +123,19 @@ class QBittorrentAPI(GenericClient):
             'password': self.password,
         }
         try:
-            self.response = self.session.post(self.url, data=data)
-        except Exception:
+            self.response = self.session.post(self.url, data=data, verify=app.TORRENT_VERIFY_CERT)
+        except Exception as error:
+            log.warning('{name}: Exception while trying to authenticate: {error}',
+                        {'name': self.name, 'error': error}, exc_info=1)
             return None
 
         # API v1.0.0 (qBittorrent v3.1.x and older)
         if self.response.status_code == 404:
             try:
                 self.response = self.session.get(self.host, verify=app.TORRENT_VERIFY_CERT)
-            except Exception:
+            except Exception as error:
+                log.warning('{name}: Exception while trying to authenticate: {error}',
+                            {'name': self.name, 'error': error}, exc_info=1)
                 return None
 
         self.session.cookies = self.response.cookies
@@ -151,10 +157,7 @@ class QBittorrentAPI(GenericClient):
         command = 'api/v2/torrents/add' if self.api >= (2, 0, 0) else 'command/upload'
         self.url = urljoin(self.host, command)
         files = {
-            'torrents': (
-                '{result}.torrent'.format(result=result.name),
-                result.content,
-            ),
+            'torrents': result.content
         }
         return self._request(method='post', files=files, cookies=self.session.cookies)
 
@@ -181,7 +184,7 @@ class QBittorrentAPI(GenericClient):
         if self.response.status_code == 409:
             log.warning('{name}: Unable to set torrent label. You need to create the label '
                         ' in {name} first.', {'name': self.name})
-            ok = False
+            ok = True
 
         return ok
 
@@ -195,7 +198,7 @@ class QBittorrentAPI(GenericClient):
         }
         ok = self._request(method='post', data=data, cookies=self.session.cookies)
 
-        if self.response.status_code == 403:
+        if self.response.status_code == (409 if self.api >= (2, 0, 0) else 403):
             log.info('{name}: Unable to set torrent priority because torrent queueing'
                      ' is disabled in {name} settings.', {'name': self.name})
             ok = True

@@ -230,7 +230,6 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
         'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
         'postProcessing.extraScripts': ListField(app, 'EXTRA_SCRIPTS'),
-        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS_URL'),
         'postProcessing.naming.pattern': StringField(app, 'NAMING_PATTERN'),
         'postProcessing.naming.enableCustomNamingAnime': BooleanField(app, 'NAMING_CUSTOM_ANIME'),
         'postProcessing.naming.enableCustomNamingSports': BooleanField(app, 'NAMING_CUSTOM_SPORTS'),

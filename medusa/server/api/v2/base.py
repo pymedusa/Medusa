@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import base64
-import collections
 import json
 import logging
 import sys
@@ -23,6 +22,7 @@ from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
 from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
+from six.moves import collections_abc
 
 from tornado.concurrent import Future as TornadoFuture
 from tornado.gen import coroutine
@@ -485,7 +485,7 @@ def iter_nested_items(data, prefix=''):
     """
     for key, value in viewitems(data):
         p = prefix + key
-        if isinstance(value, collections.Mapping):
+        if isinstance(value, collections_abc.Mapping):
             for inner_key, inner_value in iter_nested_items(value, prefix=p + '.'):
                 yield inner_key, inner_value
         else:

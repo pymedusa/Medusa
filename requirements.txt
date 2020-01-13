@@ -4,7 +4,7 @@ beautifulsoup4==4.8.1
 bencode.py==2.1.0
 CacheControl==0.12.5
 certifi==2019.6.16
-cfscrape==2.0.8
+cfscrape @ https://codeload.github.com/Anorov/cloudflare-scrape/tar.gz/713e3b4017442d87ad0d638f7991cc330abeee5e#egg=cfscrape
 chardet==3.0.4
 configobj==5.0.6
 contextlib2==0.5.5
@@ -20,7 +20,7 @@ gntp==1.0.3
 guessit==3.1.0
 html5lib==1.0.1
 imdbpie==5.6.4
-Js2Py==0.66
+Js2Py==0.67
 jsonrpclib-pelix==0.4.0
 knowit @ https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e#egg=knowit
 Mako==1.1.0
@@ -34,8 +34,8 @@ rarfile==3.0
 rebulk==2.0.0
 requests==2.22.0
 requests-oauthlib==1.2.0
-six==1.12.0
-subliminal @ https://codeload.github.com/Diaoul/subliminal/tar.gz/6ac2fa23ee5baa7d8452552edaa7c4a8a00d237a#egg=subliminal
+six==1.13.0
+subliminal @ https://codeload.github.com/Diaoul/subliminal/tar.gz/76525cc2f6545aeeccf620ca46d40c2f0aa53c6d#egg=subliminal
 tornado==5.1.1
 tornroutes==0.5.1
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284#egg=tvdbapiv2
