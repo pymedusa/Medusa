@@ -1,4 +1,4 @@
-## Unreleased
+## 0.3.10 (2019-01-13)
 
 #### New Features
 - Add Opensubtitles VIP, aRGENTeaM and Subtitulamos subtitle providers ([#7555](https://github.com/pymedusa/Medusa/pull/7555), [#7518](https://github.com/pymedusa/Medusa/pull/7518))
