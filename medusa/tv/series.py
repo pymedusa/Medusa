@@ -1526,6 +1526,10 @@ class Series(TV):
             # Load external id's from indexer_mappings table.
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
+            # Load search templates
+            self.search_templates = SearchTemplates(self)
+            self.search_templates.generate()
+
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -1542,10 +1546,6 @@ class Series(TV):
             return
         else:
             self.imdb_info = sql_results[0]
-
-        # Load search templates
-        self.search_templates = SearchTemplates(self)
-        self.search_templates.generate()
 
         self.reset_dirty()
         return True
@@ -2160,6 +2160,7 @@ class Series(TV):
         data['config']['release']['ignoredWordsExclude'] = bool(self.rls_ignore_exclude)
         data['config']['release']['requiredWordsExclude'] = bool(self.rls_require_exclude)
         data['config']['airdateOffset'] = self.airdate_offset
+        data['config']['searchTemplates'] = self.search_templates.to_json()
 
         # These are for now considered anime-only options
         if self.is_anime:

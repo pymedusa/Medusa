@@ -7,11 +7,9 @@ from __future__ import unicode_literals
 import logging
 from collections import namedtuple
 
-from medusa import (config, db)
+from medusa import db
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.scene_exceptions import get_all_scene_exceptions, get_season_scene_exceptions
-
-from six import iteritems
+from medusa.scene_exceptions import get_season_scene_exceptions
 
 logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
@@ -143,3 +141,13 @@ class SearchTemplates(object):
             return self._create_anime_search_string(title, season)
         else:
             return self._create_default_search_string(title)
+
+    def to_json(self):
+        """Return in json format."""
+        return [
+            {'title': search_template.title,
+             'template': search_template.template,
+             'season': search_template.season,
+             'enabled': search_template.enabled,
+             'default': search_template.default} for search_template in self.templates
+        ]
