@@ -54,9 +54,9 @@ class SearchTemplates(object):
 
             existing_templates.append(SearchTemplate(
                 # search_template_id=search_template_id,
-                series=self.show_obj,
                 template=search_template,
                 title=title,
+                series=self.show_obj,
                 season=season,
                 enabled=enabled,
                 default=default
@@ -66,12 +66,13 @@ class SearchTemplates(object):
         scene_exceptions = main_db_con.select(
             'SELECT season, show_name '
             'FROM scene_exceptions '
-            'WHERE indexer=? AND series_id=?',
-            [self.show_obj.indexer, self.show_obj.series_id]
+            'WHERE indexer=? AND series_id=? AND show_name IS NOT ?',
+            [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.name]
         ) or []
 
         show_name = {'season': -1, 'show_name': self.show_obj.name}
         existing_default_template_titles = [template.title for template in existing_templates if template.default]
+
 
         for exception in [show_name] + scene_exceptions:
             if exception['show_name'] not in existing_default_template_titles:
@@ -79,8 +80,8 @@ class SearchTemplates(object):
                 template = self._get_episode_search_strings(exception['show_name'], exception['season'])
                 main_db_con.action('INSERT INTO search_templates (template, title, indexer, series_id, season, enabled, `default`) '
                                    'VALUES (?,?,?,?,?,?,?)', [
-                    exception['show_name'],
                     template,
+                    exception['show_name'],
                     self.show_obj.indexer,
                     self.show_obj.series_id,
                     exception['season'], 1, 1
@@ -88,13 +89,15 @@ class SearchTemplates(object):
 
                 # Add the search template to the list
                 existing_templates.append(SearchTemplate(
-                    series=self.show_obj,
                     template=template,
                     title=exception['show_name'],
+                    series=self.show_obj,
                     season=exception['season'],
                     enabled=True,
                     default=True
                 ))
+
+        self.templates = existing_templates
 
     def _create_air_by_date_search_string(self, title):
         """Create a search string used for series that are indexed by air date."""
