@@ -6,13 +6,15 @@ from __future__ import unicode_literals
 
 import logging
 import time
+import threading
 from collections import defaultdict
 from os.path import join
 
 import adba
-from medusa.helpers import sanitize_scene_name
+from collections import namedtuple
 
 from medusa import app, db
+from medusa.helpers import sanitize_scene_name
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -24,8 +26,12 @@ logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
+exceptionLock = threading.Lock()
+
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
+
+TitleException = namedtuple('TitleException', 'series_name, season, indexer, series_id')
 
 
 def refresh_exceptions_cache():
@@ -43,18 +49,25 @@ def refresh_exceptions_cache():
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
-        indexer = int(exception[b'indexer'])
-        series_id = int(exception[b'series_id'])
-        season = int(exception[b'season'])
-        series_name = exception[b'show_name']
+        indexer = int(exception['indexer'])
+        series_id = int(exception['series_id'])
+        season = int(exception['season'])
+        series_name = exception['show_name']
 
 
         # To support multiple indexers with same series_id, we have to combine the min a tuple.
         series = (indexer, series_id)
+        series_exception = TitleException(
+            series_name=series_name,
+            season=season,
+            indexer=indexer,
+            series_id=series_id
+        )
 
-        # exceptions_cache[(1, 12345)][season] = ['showname 1', 'showname 2']
-        if series_name not in exceptions_cache[series][season]:
-            exceptions_cache[series][season].add(series_name)
+        # exceptions_cache[(1, 12345)][season] =
+        # TitleExeption('series_name', 'season', indexer, series_id)
+        if series_exception not in exceptions_cache[series][season]:
+            exceptions_cache[series][season].add(series_exception)
 
     logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
@@ -130,8 +143,7 @@ def get_all_scene_exceptions(series_obj):
     """
     Get all scene exceptions for a show ID.
 
-    :param indexer_id: Indexer.
-    :param series_id: Series id.
+    :param series_obj: series object.
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
     return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
@@ -243,7 +255,7 @@ def retrieve_exceptions(force=False, exception_type=None):
                 'series_id = ?',
                 [indexer, series_id]
             )
-            existing_exceptions = [x[b'show_name'] for x in sql_ex]
+            existing_exceptions = [x['show_name'] for x in sql_ex]
 
             for exception_dict in combined_exceptions[indexer][series_id]:
                 for scene_exception, season in iteritems(exception_dict):
@@ -279,7 +291,7 @@ def _get_custom_exceptions(force):
             location = indexerApi(indexer).config['scene_loc']
             logger.info(
                 'Checking for scene exception updates from {location}',
-                {'location': location}
+                location=location
             )
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
@@ -287,8 +299,9 @@ def _get_custom_exceptions(force):
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed. Unable to '
-                    'update from {location}. Error: {error}',
-                    {'location': location, 'error': error}
+                    'update from {location}. Error: {error}'.format(
+                        location=location, error=error
+                    )
                 )
                 # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
                 return custom_exceptions

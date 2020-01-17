@@ -188,7 +188,7 @@ class NameParser(object):
         if found_exceptions:
             scene_season = found_exceptions[0].season
 
-        if result.ab_episode_numbers:
+        if result.ab_episode_numbers and scene_season:
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
 

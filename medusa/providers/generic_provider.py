@@ -624,7 +624,7 @@ class GenericProvider(object):
         if not episode:
             return []
 
-        from medusa.scene_exceptions import get_scene_exceptions_by_name, get_all_scene_exceptions, get_scene_exceptions
+        from medusa.scene_exceptions import get_scene_exceptions_by_name
 
         search_string = {
             'Episode': []
@@ -646,15 +646,6 @@ class GenericProvider(object):
                 self._create_anime_search_string(show_name, episode, search_string, add_string=add_string)
             else:
                 self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
-
-            for exception in get_scene_exceptions_by_name(show_name):
-                if exception.episode_search_template:
-                    anime_type = app.NAMING_ANIME
-                    if not self.series.is_anime:
-                        anime_type = 3
-                    search_string['Episode'].append(
-                        episode.formatted_search_string(exception.episode_search_template, anime_type=anime_type)
-                    )
 
         return [search_string]
 

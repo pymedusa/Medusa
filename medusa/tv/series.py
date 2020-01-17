@@ -104,6 +104,7 @@ from medusa.scene_numbering import (
     numbering_tuple_to_dict,
 )
 from medusa.search import FORCED_SEARCH
+from medusa.search_templates import SearchTemplates
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -241,6 +242,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self.search_templates = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -1540,6 +1542,10 @@ class Series(TV):
             return
         else:
             self.imdb_info = sql_results[0]
+
+        # Load search templates
+        self.search_templates = SearchTemplates(self)
+        self.search_templates.generate()
 
         self.reset_dirty()
         return True
