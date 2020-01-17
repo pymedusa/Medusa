@@ -34,33 +34,7 @@ class SearchTemplates(object):
         """
 
         assert self.show_obj, 'You need to configure a show object before generating exceptions.'
-
         main_db_con = db.DBConnection()
-        templates = main_db_con.select(
-            'SELECT * '
-            'FROM search_templates '
-            'WHERE indexer=? AND series_id=?',
-            [self.show_obj.indexer, self.show_obj.series_id]
-        ) or []
-
-        existing_templates = []
-        for template in templates:
-            # search_template_id = template['search_template_id']
-            search_template = template['template']
-            title = template['title']
-            season = template['season']
-            enabled = bool(template['enabled'])
-            default = bool(template['default'])
-
-            existing_templates.append(SearchTemplate(
-                # search_template_id=search_template_id,
-                template=search_template,
-                title=title,
-                series=self.show_obj,
-                season=season,
-                enabled=enabled,
-                default=default
-            ))
 
         # Create the default templates. Don't add them when their already in the list
         scene_exceptions = main_db_con.select(
@@ -71,33 +45,58 @@ class SearchTemplates(object):
         ) or []
 
         show_name = {'season': -1, 'show_name': self.show_obj.name}
-        existing_default_template_titles = [template.title for template in existing_templates if template.default]
-
 
         for exception in [show_name] + scene_exceptions:
-            if exception['show_name'] not in existing_default_template_titles:
-                # Add the default search template to db
-                template = self._get_episode_search_strings(exception['show_name'], exception['season'])
-                main_db_con.action('INSERT INTO search_templates (template, title, indexer, series_id, season, enabled, `default`) '
-                                   'VALUES (?,?,?,?,?,?,?)', [
-                    template,
-                    exception['show_name'],
-                    self.show_obj.indexer,
-                    self.show_obj.series_id,
-                    exception['season'], 1, 1
-                ])
+            # Add the default search template to db
+            template = self._get_episode_search_strings(exception['show_name'], exception['season'])
 
-                # Add the search template to the list
-                existing_templates.append(SearchTemplate(
-                    template=template,
-                    title=exception['show_name'],
-                    series=self.show_obj,
-                    season=exception['season'],
-                    enabled=True,
-                    default=True
-                ))
+            new_values = {
+                'template': template,
+                'title': exception['show_name'],
+                'indexer': self.show_obj.indexer,
+                'series_id': self.show_obj.series_id,
+                'season': exception['season'],
+                '`default`': 1
+            }
+            control_values = {
+                'indexer': self.show_obj.indexer,
+                'series_id': self.show_obj.series_id,
+                'title': exception['show_name'],
+                '`default`': 1
+            }
 
-        self.templates = existing_templates
+            # use a custom update/insert method to get the data into the DB
+            main_db_con.upsert('search_templates', new_values, control_values)
+
+        self.read_from_db()
+
+    def read_from_db(self):
+        self.templates = []
+        main_db_con = db.DBConnection()
+        templates = main_db_con.select(
+            'SELECT * '
+            'FROM search_templates '
+            'WHERE indexer=? AND series_id=?',
+            [self.show_obj.indexer, self.show_obj.series_id]
+        ) or []
+
+        for template in templates:
+            # search_template_id = template['search_template_id']
+            search_template = template['template']
+            title = template['title']
+            season = template['season']
+            enabled = bool(template['enabled'])
+            default = bool(template['default'])
+
+            self.templates.append(SearchTemplate(
+                # search_template_id=search_template_id,
+                template=search_template,
+                title=title,
+                series=self.show_obj,
+                season=season,
+                enabled=enabled,
+                default=default
+            ))
 
     def _create_air_by_date_search_string(self, title):
         """Create a search string used for series that are indexed by air date."""
