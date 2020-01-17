@@ -5,7 +5,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         clean: {
             dist: './dist/',
             bower_components: './bower_components', // eslint-disable-line camelcase
-            fonts: '../themes-default/slim/static/css/*.ttf',
             options: {
                 force: true
             }
@@ -24,28 +23,19 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                     css: './dist/bower.css'
                 },
                 exclude: [
+                    // Moved to Webpack
+                    'jquery',
+                    'bootstrap'
                 ],
                 dependencies: {
                 },
                 mainFiles: {
-                    tablesorter: [
-                        'dist/js/jquery.tablesorter.combined.js',
-                        'dist/js/widgets/widget-columnSelector.min.js',
-                        'dist/css/theme.blue.min.css'
-                    ],
-                    bootstrap: [
-                        'dist/css/bootstrap.min.css',
-                        'dist/js/bootstrap.min.js'
-                    ],
                     isotope: [
                         'dist/isotope.pkgd.min.js'
                     ],
                     outlayer: [
                         'item.js',
                         'outlayer.js'
-                    ],
-                    openSans: [
-                        'openSans.css'
                     ]
                 },
                 bowerOptions: {
@@ -54,32 +44,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
             }
         },
         copy: {
-            openSans: {
-                files: [{
-                    expand: true,
-                    dot: true,
-                    cwd: 'bower_components/openSans',
-                    src: [
-                        '*.ttf'
-                    ],
-                    dest: '../themes-default/slim/static/css/'
-                }]
-            },
-            glyphicon: {
-                files: [{
-                    expand: true,
-                    dot: true,
-                    cwd: 'bower_components/bootstrap/fonts',
-                    src: [
-                        '*.eot',
-                        '*.svg',
-                        '*.ttf',
-                        '*.woff',
-                        '*.woff2'
-                    ],
-                    dest: '../themes-default/slim/static/fonts/'
-                }]
-            },
             vender: {
                 files: [{
                     expand: true,

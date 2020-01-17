@@ -50,10 +50,6 @@ class TVChaosUKProvider(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = None
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
         self.cache = tv.Cache(self)
 
@@ -153,7 +149,7 @@ class TVChaosUKProvider(TorrentProvider):
                     leechers = try_int(row.find(title='Leechers').get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -231,8 +227,12 @@ class TVChaosUKProvider(TorrentProvider):
         # Strip trailing 3 dots
         title = title[:-3]
         search_params = {'input': title}
-        result = self.session.get(self.urls['query'], params=search_params)
-        with BS4Parser(result.text, 'html5lib') as html:
+        response = self.session.get(self.urls['query'], params=search_params)
+        if not response or not response.text:
+            log.debug("Couldn't retrieve the full release title")
+            return title
+
+        with BS4Parser(response.text, 'html5lib') as html:
             titles = html('results')
             for item in titles:
                 title = item.text

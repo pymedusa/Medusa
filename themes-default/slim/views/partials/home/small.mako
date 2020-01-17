@@ -7,7 +7,6 @@
     from medusa.helper.common import pretty_file_size
     from medusa.scene_numbering import get_xem_numbering_for_show
 %>
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
@@ -115,7 +114,7 @@
                 else:
                     den = 1
                     download_stat_tip = "Unaired"
-                progressbar_percent = nom * 100 / den
+                progressbar_percent = nom * 100 // den
             %>
                 <tr>
                 % if cur_airs_next:
@@ -145,7 +144,7 @@
                     <td class="tvShow">
                         <div class="imgsmallposter small">
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" title="${cur_show.name | h}">
-                                <asset default="images/poster.png" series-slug="${cur_show.slug}" type="posterThumb" cls="small" :link="false"></asset>
+                                <asset default="images/poster.png" show-slug="${cur_show.slug}" type="posterThumb" cls="small" :link="false"></asset>
                             </app-link>
                             <app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}" style="vertical-align: middle;">${cur_show.name | h}</app-link>
                         </div>
@@ -153,7 +152,7 @@
                     <td align="center">
                     % if cur_show.network:
                         <span title="${cur_show.network}" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" series-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
+                            <asset default="images/network/nonetwork.png" show-slug="${cur_show.slug}" type="network" cls="show-network-image" :link="false" width="54" height="27" alt="${cur_show.network}" title="${cur_show.network}"></asset>
                         </span>
                         <span class="visible-print-inline">${cur_show.network}</span>
                     % else:
@@ -176,7 +175,7 @@
                             <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                         </app-link>
                     </td>
-                    <td align="center" class="min-cell-width">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+                    <td align="center" class="min-cell-width"><quality-pill :quality="${cur_show.quality}" show-title></quality-pill></td>
                     <td align="center" class="min-cell-width">
                         ## This first span is used for sorting and is never displayed to user
                         <span style="display: none;">${download_stat}</span>

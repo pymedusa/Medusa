@@ -1,41 +1,4 @@
 MEDUSA.common.init = function() {
-    // Import underscore.string using it's mixin export.
-    _.mixin(s.exports());
-
-    // Reset the layout for the activated tab (when using ui tabs)
-    $('#showTabs').tabs({
-        activate() {
-            $('.show-grid').isotope('layout');
-        }
-    });
-
-    // Background Fanart Functions
-    if (MEDUSA.config.fanartBackground) {
-        const seriesSlug = $('#series-slug').attr('value') || $('#background-series-slug').attr('value');
-
-        if (seriesSlug) {
-            const path = apiRoot + 'series/' + seriesSlug + '/asset/fanart?api_key=' + apiKey;
-            $.backstretch(path);
-            $('.backstretch').css('top', backstretchOffset());
-            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
-        }
-    }
-
-    function backstretchOffset() {
-        let offset = '90px';
-        if ($('#sub-menu-container').length === 0) {
-            offset = '50px';
-        }
-        if ($(window).width() < 1280) {
-            offset = '50px';
-        }
-        return offset;
-    }
-
-    $(window).on('resize', () => {
-        $('.backstretch').css('top', backstretchOffset());
-    });
-
     // Scroll to Anchor
     $('a[href^="#season"]').on('click', function(e) {
         e.preventDefault();

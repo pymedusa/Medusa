@@ -123,6 +123,9 @@ class IssueSubmitter(object):
             # Skip pull requests without calling GitHub for more information
             if issue._pull_request is not GithubObject.NotSet:
                 continue
+            # Skip issues marked as duplicates
+            if any(label.name.lower() == 'duplicate' for label in issue.labels):
+                continue
             issue_title = issue.title
             if issue_title.startswith(cls.TITLE_PREFIX):
                 issue_title = issue_title[len(cls.TITLE_PREFIX):]

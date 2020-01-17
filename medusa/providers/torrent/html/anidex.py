@@ -36,11 +36,6 @@ class AniDexProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
-        self.anime_only = True
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -51,13 +46,17 @@ class AniDexProvider(TorrentProvider):
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
-        :param ep_obj: Not used
+        :param ep_obj: An episode object
         :returns: A list of search results (structure)
         """
         results = []
 
+        category = '1,2,3'
+        if ep_obj and not ep_obj.series.is_anime:
+            category = '4,5'
+
         search_params = {
-            'id': '1,2,3'
+            'id': category
         }
 
         for mode in search_strings:
@@ -109,7 +108,7 @@ class AniDexProvider(TorrentProvider):
                 cells = row.find_all('td')
 
                 try:
-                    title = cells[labels.index('Filename')].span.get_text()
+                    title = cells[labels.index('Filename')].span.get('title')
                     download_url = cells[labels.index('Torrent')].a.get('href')
                     if not all([title, download_url]):
                         continue
@@ -120,7 +119,7 @@ class AniDexProvider(TorrentProvider):
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',

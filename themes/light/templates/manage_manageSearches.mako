@@ -8,10 +8,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Manage Searches'
-    },
     data() {
         return {
             // Python conversions
@@ -51,6 +49,7 @@ window.app = new Vue({
         };
     },
     computed: {
+        // @TODO: Replace with mapState
         config() {
             return this.$store.state.config;
         },
@@ -78,7 +77,7 @@ window.app = new Vue({
                 api.get('alias-source').then(response => {
                     updateExceptionData(response.data);
                 }).catch(error => {
-                    log.error('Trying to get scene exceptions failed with error: ' + error);
+                    console.error('Trying to get scene exceptions failed with error: ' + error);
                     sceneRefresh.showSpinner = false;
                     sceneRefresh.inProgress = false;
                     sceneRefresh.message = 'Trying to get scene exceptions failed with error: ' + error;
@@ -86,7 +85,7 @@ window.app = new Vue({
 
                 sceneRefresh.message = 'Finished updating scene exceptions.';
             }).catch(error => {
-                log.error('Trying to update scene exceptions failed with error: ' + error);
+                console.error('Trying to update scene exceptions failed with error: ' + error);
                 sceneRefresh.message = 'Trying to update scene exceptions failed with error: ' + error;
                 sceneRefresh.inProgress = false;
             }).finally(() => {
@@ -111,7 +110,7 @@ window.app = new Vue({
             sceneRefresh.inProgress = false;
         },
         goTo(url) {
-            const base = document.getElementsByTagName('base')[0].getAttribute('href');
+            const base = document.querySelector('base').getAttribute('href');
             window.location.href = base + 'manage/manageSearches/' + url;
         },
         toggleBacklog() {
@@ -125,14 +124,14 @@ window.app = new Vue({
         api.get('alias-source').then(response => {
             updateExceptionData(response.data);
         }).catch(error => {
-            log.error('Trying to get scene exceptions failed with error: ' + error);
+            console.error('Trying to get scene exceptions failed with error: ' + error);
         });
     }
 });
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">Manage Searches</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="align-left">
     <h3>Backlog Search:</h3>
     <h5>Note: Limited by backlog days setting: last {{ backlogDays }} days</h5>
@@ -189,7 +188,7 @@ window.app = new Vue({
     <ul class="simpleList">
         <li>Backlog: <i>{{ searchQueueLength.backlog }} pending items</i>
         <li>Daily: <i>{{ searchQueueLength.daily }} pending items</i>
-        <li>Forced: <i>{{ forcedSearchQueueLength.forced_search }} pending items</i>
+        <li>Forced: <i>{{ forcedSearchQueueLength.backlog_search }} pending items</i>
         <li>Manual: <i>{{ forcedSearchQueueLength.manual_search }} pending items</i>
         <li>Failed: <i>{{ forcedSearchQueueLength.failed }} pending items</i>
     </ul>

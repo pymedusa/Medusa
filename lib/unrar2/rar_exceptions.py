@@ -23,8 +23,22 @@
 # Low level interface - see UnRARDLL\UNRARDLL.TXT
 
 
-class ArchiveHeaderBroken(Exception): pass
-class InvalidRARArchive(Exception): pass
-class FileOpenError(Exception): pass
-class IncorrectRARPassword(Exception): pass
-class InvalidRARArchiveUsage(Exception): pass
+class ArchiveHeaderBroken(Exception):
+    pass
+
+
+class InvalidRARArchive(Exception):
+    pass
+
+
+class FileOpenError(Exception):
+    pass
+
+
+class IncorrectRARPassword(Exception):
+    pass
+
+
+class InvalidRARArchiveUsage(Exception):
+    pass
+

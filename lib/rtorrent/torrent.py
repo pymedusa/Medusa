@@ -18,8 +18,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# from rtorrent.rpc import Method
-import rtorrent.compat
 import rtorrent.file
 import rtorrent.peer
 import rtorrent.rpc
@@ -32,14 +30,14 @@ File = rtorrent.file.File
 Method = rtorrent.rpc.Method
 
 
-class Torrent:
+class Torrent(object):
     """Represents an individual torrent within a L{RTorrent} instance."""
 
     def __init__(self, _rt_obj, info_hash, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent
         self.rpc_id = self.info_hash  # : unique id to pass to rTorrent
-        for k in kwargs.keys():
+        for k in kwargs:
             setattr(self, k, kwargs.get(k, None))
 
         self.peers = []

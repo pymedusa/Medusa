@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AppLink.test.js renders "false-link" anchor 1`] = `
+<a
+  class=""
+  false-link="true"
+  name="season-3"
+/>
+`;
+
+exports[`AppLink.test.js renders anonymised external link 1`] = `
+<a
+  class=""
+  href="https://anon-redirect.tld/?url=https://google.com"
+  rel="noreferrer"
+  target="_blank"
+/>
+`;
+
+exports[`AppLink.test.js renders external link 1`] = `
+<a
+  class=""
+  href="https://google.com"
+  rel="noreferrer"
+  target="_blank"
+/>
+`;
+
+exports[`AppLink.test.js renders internal link 1`] = `
+<a
+  class=""
+  href="http://localhost:8081/config"
+  target="_self"
+/>
+`;
+
+exports[`AppLink.test.js renders internal link with placeholder 1`] = `
+<a
+  class=""
+  href="http://localhost:8081/home/displayShow?indexername=tvdb&seriesid=12345"
+  target="_self"
+/>
+`;
+
+exports[`AppLink.test.js renders router-link from to (object) 1`] = `
+<a
+  class="router-link"
+  href="/config"
+/>
+`;
+
+exports[`AppLink.test.js renders router-link from to (string) 1`] = `
+<a
+  class="router-link"
+  href="/config"
+/>
+`;
+
+exports[`AppLink.test.js renders simple anchor 1`] = `
+<a
+  class="my-class"
+/>
+`;

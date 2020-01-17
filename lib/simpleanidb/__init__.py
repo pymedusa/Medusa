@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import os
+from os import makedirs, path
 import xml.etree.cElementTree as etree
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -81,6 +82,9 @@ class Anidb(object):
             if not os.path.isdir(self._cache_dir):
                 os.makedirs(self._cache_dir)
         else:
+            if not path.exists(cache_dir):
+                makedirs(cache_dir)
+
             self._cache_dir = cache_dir
         if not os.path.isdir(self._cache_dir):
             raise ValueError('{0} does not exist'.format(self._cache_dir))

@@ -7,26 +7,31 @@
     <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 % endif
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
     data() {
         return {
             rootDirs: []
         };
-    }
+    },
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState([
+        'config' // Used by `inc_addShowOptions.mako`
+    ]), {
+
+    })
 });
 </script>
 </%block>
 <%block name="content">
 <div class="row">
     <div class="col-md-12">
-    % if not header is UNDEFINED:
         <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
     </div>
 </div>
 
@@ -51,7 +56,7 @@ window.app = new Vue({
                             <li><app-link id="trakt-tab-2" href="addShows/${realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</app-link></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
-                            <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                            <root-dirs @update="rootDirs = $event"></root-dirs>
                             <br/>
                         </div>
                         <div id="tabs-2" class="existingtabs">

@@ -1,34 +1,31 @@
-import test from 'ava';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { PlotInfo } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-// Needs to be required otherwise nyc won't see it
-const PlotInfo = require('../../static/js/templates/plot-info.vue');
+describe('PlotInfo.test.js', () => {
+    let localVue;
+    let store;
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
-
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(PlotInfo, {
-        localVue,
-        store,
-        propsData: {
-            seriesSlug: '',
-            season: '',
-            episode: ''
-        }
+        const { state } = fixtures;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        const wrapper = mount(PlotInfo, {
+            localVue,
+            store,
+            propsData: {
+                description: 'This is an example for an episodes plot info'
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

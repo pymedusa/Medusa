@@ -1,25 +1,29 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from medusa import logger
-    from medusa import classes
+    from medusa import classes, logger
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Logs & Errors'
-        },
-        data() {
-            return {
-                header: 'Logs & Errors'
-            };
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    // @TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState({
+        loggingLevels: state => state.config.logs.loggingLevels
+    }), {
+        header() {
+            const { loggingLevels, $route } = this;
+            if (Number($route.query.level) === loggingLevels.warning) {
+                return 'Warning Logs';
+            }
+            return 'Error Logs';
         }
-    });
-};
+    })
+});
 </script>
 </%block>
 <%block name="css">
@@ -37,21 +41,19 @@ pre {
     from mako.filters import html_escape
     if logLevel == logger.WARNING:
         errors = classes.WarningViewer.errors
-        title = 'WARNING logs'
     else:
         errors = classes.ErrorViewer.errors
-        title = 'ERROR logs'
 %>
 
 <div class="row">
     <div class="col-md-12 wide">
-        <h1 class="header">{{header}}</h1>
+        <h1 class="header">{{ header }}</h1>
     </div>
 </div>
 
 <div class="row">
 <div class="col-md-12">
-<pre>
+<pre v-pre>
 % if errors:
 ${'\n'.join([html_escape(logline) for logline in errors[:500]])}
 % else:

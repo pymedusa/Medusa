@@ -1,29 +1,28 @@
-import test from 'ava';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { Login } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-// Needs to be required otherwise nyc won't see it
-const Login = require('../../static/js/templates/login.vue');
+describe('Login.test.js', () => {
+    let localVue;
+    let store;
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
-
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(Login, {
-        localVue,
-        store
+        const { state } = fixtures;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
+    test('renders', () => {
+        const wrapper = mount(Login, {
+            localVue,
+            store
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

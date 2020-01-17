@@ -1,37 +1,39 @@
-import test from 'ava';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
-import fixtures from '../__fixtures__/app-header';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { AppHeader } from '../../src/components';
+import fixtures from '../__fixtures__/common';
 
-// Needs to be required otherwise nyc won't see it
-const AppLink = require('../../static/js/templates/app-link.vue');
-const AppHeader = require('../../static/js/templates/app-header.vue');
+describe('AppHeader.test.js', () => {
+    let localVue;
+    let store;
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
-    t.context.localVue.component('app-link', AppLink);
+    beforeEach(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
-
-test('renders', t => {
-    const { localVue, store, state } = t.context;
-    const wrapper = mount(AppHeader, {
-        localVue,
-        store,
-        computed: {
-            config() {
-                return Object.assign(state.config, {
-                });
-            }
-        }
+        const { state } = fixtures;
+        store = new Store({ state });
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        const { state } = fixtures;
+        const wrapper = shallowMount(AppHeader, {
+            localVue,
+            store,
+            computed: {
+                config() {
+                    return {
+                        ...state.config
+                    };
+                },
+                topMenu() {
+                    return 'home';
+                }
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

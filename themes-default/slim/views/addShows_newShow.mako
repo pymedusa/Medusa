@@ -9,8 +9,6 @@
     from six import iteritems, text_type
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
-<script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 <%
     valid_indexers = {
         '0': {
@@ -32,10 +30,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'New Show'
-    },
     data() {
         return {
             // @TODO: Fix Python conversions
@@ -70,7 +66,23 @@ window.app = new Vue({
             },
 
             selectedRootDir: '',
-            selectedShowSlug: ''
+            selectedShowSlug: '',
+            selectedShowOptions: {
+                subtitles: null,
+                status: null,
+                statusAfter: null,
+                seasonFolders: null,
+                anime: null,
+                scene: null,
+                release: {
+                    blacklist: [],
+                    whitelist: []
+                },
+                quality: {
+                    allowed: [],
+                    preferred: []
+                }
+            }
         };
     },
     mounted() {
@@ -82,8 +94,6 @@ window.app = new Vue({
             });
 
             setTimeout(() => {
-                this.updateBlackWhiteList();
-
                 const { providedInfo } = this;
                 const { use, showId, showDir } = providedInfo;
                 if (use && showId !== 0 && showDir) {
@@ -111,17 +121,9 @@ window.app = new Vue({
             revealfx: ['slide', 300],
             oninit: init
         });
-
-        $(document.body).on('change', 'select[name="quality_preset"]', () => {
-            this.$nextTick(() => this.formwizard.loadsection(2));
-        });
-
-        $(document.body).on('change', '#anime', () => {
-            this.updateBlackWhiteList();
-            this.$nextTick(() => this.formwizard.loadsection(2));
-        });
     },
     computed: {
+        // @TODO: Replace with mapState
         config() {
             return this.$store.state.config;
         },
@@ -187,16 +189,35 @@ window.app = new Vue({
             if (currentSearch.cancel !== null) return 'searching';
             if (!firstSearch || searchStatus !== '') return 'status';
             return 'results';
+        },
+        enableAnimeOptions() {
+            const { selectedShow } = this;
+            if (selectedShow && selectedShow.indexerId === 1) {
+                return true;
+            }
         }
     },
     methods: {
         async submitForm(skipShow) {
-            const { currentSearch, addButtonDisabled } = this;
+            const formData = new FormData();
 
-            let formData;
+            /**
+             * Append an array to a FormData object
+             * @param {FormData} appendTo - object to append to
+             * @param {string} fieldName - name of the field to append the values under
+             * @param {(string[]|number[])} array - the array to append
+             */
+            const appendArrayToFormData = (appendTo, fieldName, array) => {
+                for (item of array) {
+                    appendTo.append(fieldName, item);
+                }
+            };
+
+            appendArrayToFormData(formData, 'other_shows', this.otherShows);
 
             if (skipShow && skipShow === true) {
-                formData = new FormData();
+                const { currentSearch } = this;
+
                 formData.append('skipShow', 'true');
 
                 if (currentSearch.cancel) {
@@ -205,19 +226,67 @@ window.app = new Vue({
                     currentSearch.cancel = null;
                 }
             } else {
+                const { addButtonDisabled } = this;
+
                 // If they haven't picked a show or a root dir don't let them submit
                 if (addButtonDisabled) {
                     this.$snotify.warning('You must choose a show and a parent folder to continue.');
                     return;
                 }
 
-                // Converts select boxes to command separated values [js/blackwhite.js]
-                generateBlackWhiteList(); // eslint-disable-line no-undef
+                // Collect all the needed form data.
 
-                formData = new FormData(this.$refs.addShowForm);
+                const {
+                    indexerId,
+                    indexerLanguage,
+                    providedInfo,
+                    selectedRootDir,
+                    selectedShow,
+                    selectedShowOptions
+                } = this;
+
+                if (providedInfo.use) {
+                    formData.append('indexer_lang', providedInfo.indexerLanguage);
+                    formData.append('providedIndexer', providedInfo.indexerId);
+                    formData.append('whichSeries', providedInfo.showId);
+                } else {
+                    formData.append('indexer_lang', indexerLanguage);
+                    formData.append('providedIndexer', indexerId);
+                    // @TODO: Remove the need for the `selectedShow.whichSeries` value
+                    formData.append('whichSeries', selectedShow.whichSeries);
+                }
+
+                if (providedInfo.showDir) {
+                    formData.append('fullShowPath', providedInfo.showDir);
+                } else {
+                    formData.append('rootDir', selectedRootDir);
+                }
+
+                const {
+                    anime,
+                    quality,
+                    release,
+                    scene,
+                    seasonFolders,
+                    status,
+                    statusAfter,
+                    subtitles
+                } = selectedShowOptions;
+
+                // Show options
+                formData.append('defaultStatus', status);
+                formData.append('defaultStatusAfter', statusAfter);
+                formData.append('subtitles', Boolean(subtitles));
+                formData.append('anime', Boolean(anime));
+                formData.append('scene', Boolean(scene));
+                formData.append('season_folders', Boolean(seasonFolders));
+
+                appendArrayToFormData(formData, 'allowed_qualities', quality.allowed);
+                appendArrayToFormData(formData, 'preferred_qualities', quality.preferred);
+
+                appendArrayToFormData(formData, 'whitelist', release.whitelist);
+                appendArrayToFormData(formData, 'blacklist', release.blacklist);
             }
-
-            this.otherShows.forEach(nextShow => formData.append('other_shows', nextShow));
 
             const response = await apiRoute.post('addShows/addNewShow', formData);
             const { data } = response;
@@ -401,10 +470,27 @@ window.app = new Vue({
                 this.formwizard.loadsection(0); // eslint-disable-line no-use-before-define
             });
         },
-        updateBlackWhiteList() {
-            // Currently requires jQuery
-            if ($ === undefined) return;
-            $.updateBlackWhiteList(this.showName);
+        /**
+         * The formwizard sets a fixed height when the step has been loaded. We need to refresh this on the option
+         * page, when showing/hiding the release groups.
+         */
+        refreshOptionStep() {
+            if (this.formwizard.currentsection === 2) {
+                this.$nextTick(() => this.formwizard.loadsection(2));
+            }
+        },
+        updateOptions(options) {
+            // Update seleted options from add-show-options.vue @change event.
+            this.selectedShowOptions.subtitles = options.subtitles;
+            this.selectedShowOptions.status = options.status;
+            this.selectedShowOptions.statusAfter = options.statusAfter;
+            this.selectedShowOptions.seasonFolders = options.seasonFolders;
+            this.selectedShowOptions.anime = options.anime;
+            this.selectedShowOptions.scene = options.scene;
+            this.selectedShowOptions.release.blacklist = options.release.blacklist;
+            this.selectedShowOptions.release.whitelist = options.release.whitelist;
+            this.selectedShowOptions.quality.allowed = options.quality.allowed;
+            this.selectedShowOptions.quality.preferred = options.quality.preferred;
         }
     }
 });
@@ -412,14 +498,14 @@ window.app = new Vue({
 </%block>
 <%block name="content">
 <vue-snotify></vue-snotify>
-<h1 class="header">New Show</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="newShowPortal">
     <div id="config-components">
         <ul><li><app-link href="#core-component-group1">Add New Show</app-link></li></ul>
         <div id="core-component-group1" class="tab-pane active component-group">
             <div id="displayText">Adding show <b v-html="showName"></b> {{showPathPreposition}} <b v-html="showPath"></b></div>
             <br>
-            <form id="addShowForm" ref="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
+            <form id="addShowForm" @submit.prevent="">
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div v-if="providedInfo.use" class="stepDiv">
@@ -436,71 +522,83 @@ window.app = new Vue({
                         <span v-else>
                             <b>{{ providedInfo.showName }}</b>
                         </span>
-                        <input type="hidden" name="indexer_lang" :value="providedInfo.indexerLanguage" />
-                        <input type="hidden" name="whichSeries" :value="providedInfo.showId" />
-                        <input type="hidden" name="providedIndexer" :value="providedInfo.indexerId" />
                     </div>
                     <div v-else class="stepDiv">
-                        <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350"/>
-                        &nbsp;&nbsp;
-                        <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" name="indexer_lang" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
-                        <b>*</b>
-                        &nbsp;
-                        <select name="providedIndexer" v-model.number="indexerId" class="form-control form-control-inline input-sm">
-                            <option v-for="(indexer, indexerId) in indexers" :value="indexerId">{{indexer.name}}</option>
-                        </select>
-                        &nbsp;
-                        <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers" />
+                        <div class="row">
+                            <div class="col-lg-12 show-add-options">
+                                <div class="show-add-option">
+                                    <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350"/>
+                                </div>
 
-                        <p style="padding: 20px 0;">
-                            <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
-                            This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
-                        </p>
+                                <div class="show-add-option">
+                                    <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
+                                    <b>*</b>
+                                </div>
 
-                        <div v-show="displayStatus === 'searching'">
-                            <img :src="spinnerSrc" height="32" width="32" />
-                            Searching <b>{{ currentSearch.query }}</b>
-                            on {{ currentSearch.indexerName }}
-                            in {{ currentSearch.languageName }}...
-                        </div>
-                        <div v-show="displayStatus === 'status'" v-html="searchStatus"></div>
-                        <div v-if="displayStatus === 'results'" class="search-results">
-                            <legend class="legendStep">Search Results:</legend>
-                            <table v-if="searchResults.length !== 0" class="search-results">
-                                <thead>
-                                    <tr>
-                                        ## @TODO: Remove the need for the whichSeries value
-                                        <th><input v-if="selectedShow !== null" type="hidden" name="whichSeries" :value="selectedShow.whichSeries" /></th>
-                                        <th>Show Name</th>
-                                        <th class="premiere">Premiere</th>
-                                        <th class="network">Network</th>
-                                        <th class="indexer">Indexer</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="result in searchResults" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
-                                        <td class="search-result">
-                                            <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug" />
-                                            <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
-                                                <img height="16" width="16" src="images/ico/favicon-16.png" />
-                                            </app-link>
-                                        </td>
-                                        <td>
-                                            <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
-                                                <b>{{ result.showName }}</b>
-                                            </app-link>
-                                        </td>
-                                        <td class="premiere">{{ result.premiereDate }}</td>
-                                        <td class="network">{{ result.network }}</td>
-                                        <td class="indexer">
-                                            {{ result.indexerName }}
-                                            <img height="16" width="16" :src="result.indexerIcon" />
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div v-else class="no-results">
-                                <b>No results found, try a different search.</b>
+                                <div class="show-add-option">
+                                    <select v-model.number="indexerId" class="form-control form-control-inline input-sm">
+                                        <option v-for="(indexer, indexerId) in indexers" :value="indexerId">{{indexer.name}}</option>
+                                    </select>
+                                </div>
+
+                                <div class="show-add-option">
+                                    <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers" />
+                                </div>
+
+                                <div style="display: inline-block">
+                                    <p style="padding: 20px 0;">
+                                        <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
+                                        This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <div v-show="displayStatus === 'searching'">
+                                        <img :src="spinnerSrc" height="32" width="32" />
+                                        Searching <b>{{ currentSearch.query }}</b>
+                                        on {{ currentSearch.indexerName }}
+                                        in {{ currentSearch.languageName }}...
+                                    </div>
+                                    <div v-show="displayStatus === 'status'" v-html="searchStatus"></div>
+                                    <div v-if="displayStatus === 'results'" class="search-results">
+                                        <legend class="legendStep">Search Results:</legend>
+                                        <table v-if="searchResults.length !== 0" class="search-results">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Show Name</th>
+                                                    <th class="premiere">Premiere</th>
+                                                    <th class="network">Network</th>
+                                                    <th class="indexer">Indexer</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="result in searchResults" @click="selectResult(result)" :class="{ selected: selectedShowSlug === result.slug }">
+                                                    <td class="search-result">
+                                                        <input v-if="!result.alreadyAdded" v-model="selectedShowSlug" type="radio" :value="result.slug" />
+                                                        <app-link v-else :href="result.alreadyAdded" title="Show already added - jump to show page">
+                                                            <img height="16" width="16" src="images/ico/favicon-16.png" />
+                                                        </app-link>
+                                                    </td>
+                                                    <td>
+                                                        <app-link :href="result.indexerShowUrl" title="Go to the show's page on the indexer site">
+                                                            <b>{{ result.showName }}</b>
+                                                        </app-link>
+                                                    </td>
+                                                    <td class="premiere">{{ result.premiereDate }}</td>
+                                                    <td class="network">{{ result.network }}</td>
+                                                    <td class="indexer">
+                                                        {{ result.indexerName }}
+                                                        <img height="16" width="16" :src="result.indexerIcon" />
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div v-else class="no-results">
+                                            <b>No results found, try a different search.</b>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -509,16 +607,15 @@ window.app = new Vue({
                     <legend class="legendStep">Pick the parent folder</legend>
                     <div v-if="providedInfo.showDir" class="stepDiv">
                         Pre-chosen Destination Folder: <b>{{ providedInfo.showDir }}</b><br>
-                        <input type="hidden" name="fullShowPath" :value="providedInfo.showDir" /><br>
                     </div>
                     <div v-else class="stepDiv">
-                        <root-dirs @update:root-dirs="rootDirsUpdated"></root-dirs>
+                        <root-dirs @update="rootDirsUpdated"></root-dirs>
                     </div>
                 </fieldset>
                 <fieldset class="sectionwrap">
                     <legend class="legendStep">Customize options</legend>
                     <div class="stepDiv">
-                        <%include file="/inc_addShowOptions.mako"/>
+                        <add-show-options v-bind="{showName, enableAnimeOptions}" @change="updateOptions" @refresh="refreshOptionStep"></add-show-options>
                     </div>
                 </fieldset>
             </form>

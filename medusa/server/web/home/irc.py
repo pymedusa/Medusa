@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Base handler for the IRC page."""
 
 from __future__ import unicode_literals
 
@@ -10,10 +11,16 @@ from tornroutes import route
 
 @route('/IRC(/?.*)')
 class HomeIRC(Home):
+    """Base handler for the IRC page."""
+
     def __init__(self, *args, **kwargs):
         super(HomeIRC, self).__init__(*args, **kwargs)
 
     def index(self):
+        """
+        Render the IRC page.
 
-        t = PageTemplate(rh=self, filename='IRC.mako')
-        return t.render(header='IRC', title='IRC', controller='IRC', action='index')
+        [Converted to VueRouter]
+        """
+        t = PageTemplate(rh=self, filename='index.mako')
+        return t.render()

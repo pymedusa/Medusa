@@ -16,7 +16,7 @@ from medusa import (
     tv,
 )
 from medusa.common import cpu_presets
-from medusa.helper.common import episode_num
+from medusa.helper.common import convert_size, episode_num
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -30,6 +30,29 @@ log.logger.addHandler(logging.NullHandler())
 # API docs:
 # https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
 # https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+
+def normalize_protocol_error(error):
+    """
+    Convert ProtocolError exception to a comparable code and message tuple.
+
+    :param error: Exception instance
+    :return: Tuple containing (code, message)
+    """
+    try:
+        # error.args = ('api.broadcasthe.net', 524, 'Timeout', )
+        code = error.args[1]
+        message = error.args[2]
+    except IndexError:
+        # error.args = ((-32001, 'Invalid API Key', ), )
+        try:
+            code, message = error.args[0]
+        except ValueError:
+            # error.args = ('reason', )
+            code = None
+            message = error.args[0]
+
+    return code, message
+
 
 class BTNProvider(TorrentProvider):
     """BTN Torrent provider."""
@@ -53,12 +76,8 @@ class BTNProvider(TorrentProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -118,17 +137,18 @@ class BTNProvider(TorrentProvider):
             if not all([title, download_url]):
                 continue
 
-            seeders = row.get('Seeders', 1)
-            leechers = row.get('Leechers', 0)
+            seeders = int(row.get('Seeders', 1))
+            leechers = int(row.get('Leechers', 0))
 
             # Filter unseeded torrent
-            if seeders < min(self.minseed, 1):
-                log.debug("Discarding torrent because it doesn't meet the"
-                          ' minimum seeders: {0}. Seeders: {1}',
-                          title, seeders)
+            if seeders < self.minseed:
+                if mode != 'RSS':
+                    log.debug("Discarding torrent because it doesn't meet the"
+                              ' minimum seeders: {0}. Seeders: {1}',
+                              title, seeders)
                 continue
 
-            size = row.get('Size') or -1
+            size = convert_size(row.get('Size'), default=-1)
 
             pubdate_raw = row.get('Time')
             pubdate = self.parse_pubdate(pubdate_raw, fromtimestamp=True)
@@ -252,17 +272,17 @@ class BTNProvider(TorrentProvider):
             )
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            message = error.args[0]
-            if message == (-32001, 'Invalid API Key'):
+            code, message = normalize_protocol_error(error)
+            if (code, message) == (-32001, 'Invalid API Key'):
                 log.warning('Incorrect authentication credentials.')
-            elif message == (-32002, 'Call Limit Exceeded'):
+            elif (code, message) == (-32002, 'Call Limit Exceeded'):
                 log.warning('You have exceeded the limit of 150 calls per hour.')
-            elif isinstance(message, tuple) and message[1] in (500, 524, ):
+            elif code in (500, 502, 521, 524):
                 log.warning('Provider is currently unavailable. Error: {code} {text}',
-                            {'code': message[1], 'text': message[2]})
+                            {'code': code, 'text': message})
             else:
                 log.error('JSON-RPC protocol error while accessing provider. Error: {msg!r}',
-                          {'msg': message})
+                          {'msg': error.args})
 
         except (socket.error, ValueError) as error:
             log.warning('Error while accessing provider. Error: {msg!r}', {'msg': error})

@@ -45,12 +45,8 @@ class HDSpaceProvider(TorrentProvider):
 
         # Miscellaneous Options
 
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
-
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # only poll HDSpace every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
@@ -145,7 +141,7 @@ class HDSpaceProvider(TorrentProvider):
                     leechers = try_int(row.find('span', class_='leechy').find('a').get_text())
 
                     # Filter unseeded torrent
-                    if seeders < min(self.minseed, 1):
+                    if seeders < self.minseed:
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
                                       ' minimum seeders: {0}. Seeders: {1}',
@@ -155,7 +151,14 @@ class HDSpaceProvider(TorrentProvider):
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row.find_all('td', class_='lista', attrs={'align': 'center'})[3].get_text()
+                    pubdate_td = row.find_all('td', class_='lista', attrs={'align': 'center'})[3]
+                    pubdate_human_offset = pubdate_td.find('b')
+                    if pubdate_human_offset:
+                        time_search = re.search('([0-9:]+)', pubdate_td.get_text())
+                        pubdate_raw = pubdate_human_offset.get_text() + ' at ' + time_search.group(1)
+                    else:
+                        pubdate_raw = pubdate_td.get_text()
+
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {

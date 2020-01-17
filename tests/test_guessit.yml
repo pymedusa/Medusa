@@ -3,9 +3,9 @@
 : title: Show Name
   season: 1
   episode: [2, 3]
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -23,9 +23,9 @@
 : title: Show Name
   season: 1
   episode: [2, 3]
-  format: BluRay
+  source: Blu-ray
   screen_size: 1080p
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
   release_group: SuperGroup
   type: episode
@@ -43,9 +43,9 @@
 : title: Show Name
   season: 1
   episode: 2
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -71,9 +71,9 @@
 : title: Show Name
   season: 1
   episode: [2, 3]
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -98,9 +98,9 @@
 : title: Show Name
   season: 1
   episode: 2
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -118,9 +118,9 @@
 : title: Show Name
   season: 1
   episode: [2, 3, 4]
-  format: DVD
+  source: DVD
   screen_size: 480p
-  video_codec: XviD
+  video_codec: Xvid
   release_group: SomeGroup
   type: episode
 
@@ -137,8 +137,8 @@
 : title: Show Name
   season: 4
   episode: [8, 9]
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -150,7 +150,7 @@
 : title: Show Name
   season: 4
   episode: 8
-  format: HDTV
+  source: HDTV
   language: ca
   type: episode
 
@@ -159,8 +159,8 @@
 : title: Show Name
   season: 4
   episode: 9
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -170,9 +170,9 @@
 ? Show.Name.2010.11.23.HDTV.720p.x264-Group
 : title: Show Name
   date: 2010-11-23
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -192,9 +192,9 @@
   episode: 0 # ?
   episode_title: Event
   date: 2010-11-23
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -203,9 +203,9 @@
 ? Show.Name.2011.12.24.HDTV.720p.x264-Group
 : title: Show Name
   date: 2011-12-24
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -224,9 +224,9 @@
 : title: Show Name Abbreviated
   season: 1
   episode: 2
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
-  format: BluRay
+  source: Blu-ray
   screen_size: 1080p
   release_group: TPZ
   container: mkv
@@ -245,9 +245,9 @@
 ? Show.Name.S01.HDTV.720p.x264-Group
 : title: Show Name
   season: 1
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -256,9 +256,9 @@
 ? Show.Name.E02-03.HDTV.720p.X264-Group
 : title: Show Name
   episode: [2, 3]
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -267,6 +267,16 @@
 ? Show.Name.E02.2010
 : title: Show Name
   episode: 2
+  season: 2010
+  year: 2010
+  type: episode
+
+? Show.Name.E02.2010
+: options: {show_type: anime}
+  title: Show Name
+  episode: 2
+  absolute_episode: 2
+  season: 2010
   year: 2010
   type: episode
 
@@ -281,9 +291,9 @@
 ? Show.Name.Part.3.HDTV.720p.x264-Group
 : title: Show Name
   episode: 3
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -293,9 +303,9 @@
 : title: Show Name
   episode: [1, 2]
   episode_title: and # guessit issue, but it's not a big problem
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -305,8 +315,8 @@
 : title: Show Name
   episode: 4
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   container: mkv
@@ -319,8 +329,8 @@
   season: 1
   episode: 4
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   container: mkv
@@ -332,9 +342,9 @@
 : title: Show Name
   season: 1
   episode: 2
-  format: HDTV
+  source: HDTV
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -373,6 +383,7 @@
   episode: 727
   release_group: SomeGroup
   screen_size: 720p
+  aspect_ratio: '1.778'
   subtitle_language: fr
   other: HD
   type: episode
@@ -398,7 +409,7 @@
   crc32: 2F7B3FA2
   release_group: GROUP
   version: 1
-  video_profile: 8bit
+  color_depth: 8-bit
   type: episode
 
 # anime_french_fansub
@@ -409,6 +420,7 @@
   absolute_episode: 445
   episode: 445
   screen_size: 720p
+  aspect_ratio: '1.778'
   subtitle_language: fr
 # TODO: Fix
 #  release_group: Resistance
@@ -425,10 +437,11 @@
   episode: 15
   subtitle_language: fr
   screen_size: 720p
+  aspect_ratio: '1.778'
 # TODO: Fix
 #  release_group: Resistance
   release_group: version
-  other: HQ
+  other: High Quality
   type: episode
 
 # anime_french_fansub
@@ -462,7 +475,7 @@
   subtitle_language: fr
   release_group: Y-F
   other: HD
-  video_profile: 8bit
+  color_depth: 8-bit
   type: episode
 
 # anime_french_fansub (FixTitlesContainsNumber)
@@ -473,7 +486,7 @@
   absolute_episode: 4
   episode: 4
   subtitle_language: fr
-  other: FullHD
+  other: Full HD
   type: episode
 
 # anime_french_fansub
@@ -555,8 +568,9 @@
   absolute_episode: 12
   episode: 12
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   audio_codec: AAC
+  aspect_ratio: '1.778'
   crc32: 379759DB
   release_group: Group
   type: episode
@@ -567,8 +581,9 @@
   absolute_episode: [2, 3]
   episode: [2, 3]
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  aspect_ratio: '1.778'
   audio_codec: AAC
   release_group: SomeGroup
   type: episode
@@ -591,7 +606,7 @@
   absolute_episode: 7
   episode: 7
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   crc32: EB7838FC
   release_group: SomeOne
   type: episode
@@ -603,7 +618,7 @@
   absolute_episode: 7
   episode: 7
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   crc32: EB7838FC
   version: 2
   release_group: SomeOne
@@ -616,7 +631,7 @@
   absolute_episode: 7
   episode: 7
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   crc32: EB7838FC
   version: 2
   release_group: SomeOne
@@ -627,7 +642,7 @@
 : title: A Very Long Show Name Here
   absolute_episode: 10
   episode: 10
-  video_codec: h264
+  video_codec: H.264
   screen_size: 720p
   crc32: 8853B21C
   release_group: Group-Shikkaku
@@ -723,13 +738,6 @@
   episode: [3, 4, 5]
   type: episode
 
-# FixInvalidAlternativeTitle - title case (negative scenario)
-? Show Name 315-313 s16e03-05
-: title: Show Name
-  season: 16
-  episode: [3, 4, 5]
-  type: episode
-
 # anime_and_normal_front
 # This one doesn't work with both parsers (current nor guessit)
 #? 165.Show Name.s08e014
@@ -788,7 +796,8 @@
   absolute_episode: 6
   episode: 6
   screen_size: 720p
-  video_profile: 10bit
+  color_depth: 10-bit
+  video_profile: High 10
   crc32: 1F5578AC
   release_group: SuperGroup
   type: episode
@@ -799,7 +808,8 @@
   absolute_episode: 6
   episode: 6
   screen_size: 1080p
-  video_profile: 10bit
+  color_depth: 10-bit
+  video_profile: High 10
   crc32: 1F5578AC
   release_group: SuperGroup
   type: episode
@@ -812,10 +822,10 @@
   proper_count: 1
   proper_tag: REPACK
   screen_size: 720p
-  format: BluRay
+  source: Blu-ray
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: 4EVERHD
   type: episode
@@ -845,7 +855,7 @@
 : title: 11.22.63
   season: 1
   episode: 6
-  format: HDTV
+  source: HDTV
   release_group: abc
   type: episode
 
@@ -902,7 +912,7 @@
 # expected_group
 ? Show.Name.x264-byEMP
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: byEMP
   type: episode
@@ -910,7 +920,7 @@
 # expected_group
 ? Show.Name.x264-ELITETORRENT
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: ELITETORRENT
   type: episode
@@ -918,7 +928,7 @@
 # expected_group
 ? Show.Name.x264-F4ST3R
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: F4ST3R
   type: episode
@@ -926,7 +936,7 @@
 # expected_group
 ? Show.Name.x264-F4ST
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: F4ST
   type: episode
@@ -934,7 +944,7 @@
 # expected_group
 ? Show.Name.x264-TGNF4ST
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: TGNF4ST
   type: episode
@@ -942,7 +952,7 @@
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDD
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: CDD
   type: episode
@@ -950,7 +960,7 @@
 # https://github.com/guessit-io/guessit/issues/316
 ? Show.Name.x264-CDP
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: CDP
   type: episode
@@ -958,7 +968,7 @@
 # https://github.com/guessit-io/guessit/issues/317
 ? Show.Name.x264-HDD
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: HDD
   type: episode
@@ -966,7 +976,7 @@
 # expected_group
 ? Show.Name.x264-NovaRip
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: NovaRip
   type: episode
@@ -974,7 +984,7 @@
 # expected_group
 ? Show.Name.x264-PARTiCLE
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: PARTiCLE
   type: episode
@@ -982,7 +992,7 @@
 # expected_group
 ? Show.Name.x264-POURMOi
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: POURMOi
   type: episode
@@ -990,7 +1000,7 @@
 # expected_group
 ? Show.Name.x264-RipPourBox
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: RipPourBox
   type: episode
@@ -998,7 +1008,7 @@
 # expected_group
 ? Show.Name.x264-RiPRG
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: RiPRG
   type: episode
@@ -1006,7 +1016,7 @@
 # expected_group
 ? Show.Name.x264-TV2LAX9
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: TV2LAX9
   type: episode
@@ -1014,7 +1024,7 @@
 # expected_group
 ? Show.Name.x264-AF
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: AF
   type: episode
@@ -1022,23 +1032,15 @@
 # expected_group
 ? Show.Name.x264-AR
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: AR
   type: episode
 
 # expected_group
-? Show.Name.x264-CS
-: title: Show Name
-  video_codec: h264
-  video_encoder: x264
-  release_group: CS
-  type: episode
-
-# expected_group
 ? Show.Name.x264-DR
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: DR
   type: episode
@@ -1046,7 +1048,7 @@
 # expected_group
 ? Show.Name.x264-MC
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: MC
   type: episode
@@ -1054,7 +1056,7 @@
 # expected_group
 ? Show.Name.x264-NA
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: NA
   type: episode
@@ -1062,7 +1064,7 @@
 # expected_group
 ? Show.Name.x264-TL
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: TL
   type: episode
@@ -1070,7 +1072,7 @@
 # expected_group
 ? Show.Name.x264-YT
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: YT
   type: episode
@@ -1078,7 +1080,7 @@
 # expected_group
 ? Show.Name.x264-ZT
 : title: Show Name
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: ZT
   type: episode
@@ -1093,8 +1095,8 @@
   country: US
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1106,8 +1108,8 @@
   country: US
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1119,8 +1121,8 @@
   country: US
   episode: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1132,8 +1134,8 @@
   country: US
   date: 2012-12-12
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1146,8 +1148,8 @@
   season: 5
   episode: 1
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: ABC
   type: episode
@@ -1159,8 +1161,8 @@
   year: 2002
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1172,8 +1174,8 @@
   year: 2002
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1184,8 +1186,8 @@
   country: US
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1196,8 +1198,8 @@
   country: US
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1208,8 +1210,8 @@
   year: 2005
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1220,8 +1222,8 @@
   year: 2005
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: SuperGroup
   type: episode
@@ -1234,10 +1236,10 @@
   episode: 1
   episode_title: Episode Name
   screen_size: 1080i
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   release_group: GroupName
   type: episode
 
@@ -1284,8 +1286,7 @@
 ? "[Group].Show.Name.-.102.[720p]"
 : options: {show_type: normal}
   title: Show Name
-  season: 1
-  episode: 2
+  episode: 102
   screen_size: 720p
   release_group: Group
   type: episode
@@ -1312,7 +1313,7 @@
   episode: 1
   episode_count: 8
   episode_title: Title
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   audio_codec: AAC
   release_group: Group
@@ -1323,8 +1324,8 @@
 : title: Some Show
   episode: 7
   screen_size: 1080p
-  format: HDTV
-  video_codec: h265
+  source: HDTV
+  video_codec: H.265
   video_encoder: x265
   release_group: GROUP
   type: episode
@@ -1342,8 +1343,8 @@
 : title: Show Name
   episode: 3
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1355,8 +1356,8 @@
   episode_title: Some Name
   part: 2
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1368,8 +1369,8 @@
   episode_title: Some Name
   part: 2
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1381,8 +1382,8 @@
   episode_title: Some Name
   part: 2
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1395,8 +1396,8 @@
   episode_title: Some Name
   part: 2
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1408,10 +1409,10 @@
 : title: Some Show
   season: 2
   episode: 14
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   screen_size: 1080p
-  format: HDTV
+  source: HDTV
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/295 (h265)
@@ -1419,10 +1420,10 @@
 : title: Some Show
   season: 2
   episode: 14
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
   screen_size: 1080p
-  format: HDTV
+  source: HDTV
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/295 (negative scenario: xvid)
@@ -1430,18 +1431,17 @@
 : title: Some Show
   season: 2
   episode: 14
-  video_codec: XviD
-  format: HDTV
+  video_codec: Xvid
+  source: HDTV
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/306
 ? - Show.Name.-.Season.3.-.720p.BluRay.-.x264.-.Group
-  - Show.Name.-.Series.3.-.720p.BluRay.-.x264.-.Group
 : title: Show Name
   season: 3
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1453,8 +1453,8 @@
   season: 3
   episode: 2
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1464,8 +1464,8 @@
 : title: Show Name
   season: 1
   screen_size: 720p
-  format: HDTV
-  video_codec: h265
+  source: HDTV
+  video_codec: H.265
   video_encoder: x265
   release_group: Group
   type: episode
@@ -1478,10 +1478,10 @@
   season: 6
   episode: 4
   screen_size: 1080i
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: BS666
   type: episode
 
@@ -1491,10 +1491,10 @@
   season: 6
   episode: 4
   screen_size: 1080i
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: ccs3
   type: episode
 
@@ -1504,10 +1504,10 @@
   season: 6
   episode: 4
   screen_size: 1080i
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: qqss44
   type: episode
 
@@ -1516,9 +1516,10 @@
 : title: Show Name
   season: 6
   episode: 14
-  format: WEBRip
+  source: Web
   release_group: qqss44
   container: avi
+  other: Rip
   mimetype: video/x-msvideo
   type: episode
 
@@ -1577,7 +1578,8 @@
 ? Show.season_1-10.(DVDrip)
 : title: Show
   season: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-  format: DVDRip
+  source: DVDRip
+  other: Rip
   type: episode
 
 # ReleaseGroupPostProcessor
@@ -1586,8 +1588,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1598,8 +1600,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1610,8 +1612,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1622,8 +1624,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   size: 123MB
   release_group: GROUP
@@ -1635,8 +1637,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   size: 4.2GB
   release_group: GROUP
@@ -1651,10 +1653,10 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
-  other: ReEncoded
+  other: Reencoded
   release_group: GROUP
   type: episode
 
@@ -1668,8 +1670,8 @@
   other: Proper
   proper_count: 1
   proper_tag: PROPER
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   type: episode
 
@@ -1683,8 +1685,8 @@
   other: Proper
   proper_count: 1
   proper_tag: PROPER
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   type: episode
 
@@ -1696,8 +1698,8 @@
   other: Proper
   proper_count: 1
   proper_tag: PROPER
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   type: episode
 
@@ -1707,8 +1709,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   mimetype: application/rar
@@ -1720,8 +1722,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1732,8 +1734,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   subtitle_language: nl
   release_group: Group
@@ -1746,9 +1748,10 @@
   episode: 3
   subtitle_language: pl
   screen_size: 480p
-  format: WEBRip
-  video_codec: h264
+  source: Web
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   type: episode
 
 # subtitle language (ukranian)
@@ -1757,9 +1760,11 @@
   season: 10
   episode: 15
   screen_size: 480p
-  format: BDRip
-  video_codec: h264
+  source: BDRip
+  video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   language: uk
+  other: Rip
   release_group: hurtom
   type: episode
 
@@ -1769,8 +1774,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1781,8 +1786,8 @@
   season: 2
   episode: 14
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -1793,10 +1798,10 @@
   season: 3
   episode: 16
   screen_size: 1080p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: GOLF68
   type: episode
 
@@ -1805,9 +1810,10 @@
 : title: Show Name
   season: 2
   episode: 4
-  format: WEBRip
-  video_codec: h264
+  source: Web
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: NF69
   type: episode
 
@@ -1819,8 +1825,8 @@
   other: Formula One
   episode_details: Special
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: C4TV
   type: episode
@@ -1840,8 +1846,8 @@
   season: 11
   episode: 11
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1851,8 +1857,8 @@
 ? Show.Name.Season.1.2.HDTV.XviD-GoodGroup[SomeTrash]
 : title: Show Name
   season: [1, 2]
-  format: HDTV
-  video_codec: XviD
+  source: HDTV
+  video_codec: Xvid
   release_group: GoodGroup
   type: episode
 
@@ -1861,8 +1867,8 @@
 : title: The Show Name
   date: 2016-05-18
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -1936,9 +1942,9 @@
   season: 3
   episode: 19
   subtitle_language: fr
-  other: Fastsub
-  format: HDTV
-  video_codec: XviD
+  other: Fast Subtitled
+  source: HDTV
+  video_codec: Xvid
   release_group: F4ST
   type: episode
 
@@ -1956,9 +1962,9 @@
   episode: 25
   episode_title: Episode Name
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
-  format: HDTV
+  source: HDTV
   release_group: BCDE
   type: episode
 
@@ -1969,9 +1975,9 @@
   episode: 0
   episode_title: Episode Name
   screen_size: 720p
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
-  format: HDTV
+  source: HDTV
   release_group: BCDE
   type: episode
 
@@ -1981,7 +1987,7 @@
   season: 1
   episode: 12
   year: 2014
-  video_codec: XviD
+  video_codec: Xvid
   audio_codec: AC3
   audio_channels: '5.1'
   subtitle_language: nl
@@ -2006,12 +2012,12 @@
 
 # Corner Case: Episode 2 with a number after it
 ? "[GroupName].Show.Name.-.02.5.(Special).[BD.1080p]"
-: title: Show Name
-  absolute_episode: 2
-  episode: 2
+: title: Show Name 2
+  absolute_episode: 5
+  episode: 5
   episode_details: Special
   screen_size: 1080p
-  format: BDRip
+  source: BDRip
   release_group: GroupName
   type: episode
 
@@ -2022,7 +2028,7 @@
   absolute_episode: 462
   episode: 462
   screen_size: 720p
-  video_profile: 10bit
+  color_depth: 10-bit
   release_group: AnimeRG
   type: episode
 
@@ -2033,7 +2039,7 @@
   absolute_episode: 462
   episode: 462
   screen_size: 720p
-  video_profile: 10bit
+  color_depth: 10-bit
   release_group: AnimeRG
   type: episode
 
@@ -2044,7 +2050,7 @@
   absolute_episode: 462
   episode: 462
   screen_size: 720p
-  video_profile: 10bit
+  color_depth: 10-bit
   release_group: AnimeRG
   type: episode
 
@@ -2054,8 +2060,8 @@
 : title: Fear The Show Name
   season: 2
   episode: 2
-  format: HDTV
-  video_codec: XviD
+  source: HDTV
+  video_codec: Xvid
   release_group: FUM
   type: episode
 
@@ -2065,8 +2071,8 @@
 : title: The Show Name
   season: 2
   episode: 2
-  format: HDTV
-  video_codec: h265
+  source: HDTV
+  video_codec: H.265
   release_group: ABC
   type: episode
 
@@ -2076,8 +2082,8 @@
 : title: The Show Name
   season: 5
   episode: 1
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   release_group: GOOD
   type: episode
 
@@ -2096,9 +2102,9 @@
   season: 3
   episode: [21, 22]
   subtitle_language: fr
-  format: HDTV
-  video_codec: XviD
-  other: Fastsub
+  source: HDTV
+  video_codec: Xvid
+  other: Fast Subtitled
   release_group: GROUP
   type: episode
 
@@ -2109,8 +2115,8 @@
   episode: 5
   other: Formula One
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: C4TV
   language: en
@@ -2122,7 +2128,7 @@
 : title: 11.22.63
   season: 1
   episode: 5
-  format: HDTV
+  source: HDTV
   release_group: abc
   type: episode
 
@@ -2134,8 +2140,8 @@
   season: 1
   episode: 2
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2144,7 +2150,7 @@
 # SpanishNewpctReleaseName
 ? Show.Name.-.Temporada1.[HDTV][Cap.105][Español.Castellano]
 : title: Show Name
-  format: HDTV
+  source: HDTV
   season: 1
   episode: 5
   language: ca
@@ -2153,7 +2159,7 @@
 # SpanishNewpctReleaseName
 ? Show.Name.-.Temporada1.[HDTV][Cap.105][Español]
 : title: Show Name
-  format: HDTV
+  source: HDTV
   season: 1
   episode: 5
   language: es
@@ -2165,8 +2171,8 @@
   season: 1
   episode: [2, 3, 4]
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2178,8 +2184,8 @@
   season: 15
   episode: 3
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2191,8 +2197,8 @@
   season: 15
   episode: [3, 4, 5, 6]
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2204,8 +2210,8 @@
   season: 1
   episode: 2
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2217,8 +2223,8 @@
   season: 1
   episode: 2
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   language: es
   release_group: NEWPCT
@@ -2230,12 +2236,12 @@
   season: 1
   episode: [12, 13, 14]
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
+  episode_details: Final
   language: es
   release_group: NEWPCT
-  other: FINAL
   type: episode
 
 # corner case
@@ -2244,7 +2250,7 @@
 : title: Show Name
   season: 6
   episode: 5
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
   audio_codec: AC3
   audio_channels: '2.0'
@@ -2257,9 +2263,10 @@
 : title: Show Name
   season: 1
   episode: 5
-  format: WEBRip
-  video_codec: h264
+  source: Web
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: GROUP
   type: episode
 
@@ -2269,8 +2276,8 @@
   date: 2016-06-14
   episode_title: Some Title
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -2280,10 +2287,10 @@
 : title: Show Name
   season: 2
   episode: 19
-  video_codec: h264
+  video_codec: H.264
   language: it
   audio_codec: AAC
-  format: WEB-DL
+  source: Web
   other: Mux
   release_group: UBi
   type: episode
@@ -2293,10 +2300,11 @@
 : title: Show Name
   season: 1
   episode: 4
-  video_codec: h264
+  video_codec: H.264
   language: it
   audio_codec: AC3
-  format: HDTV
+  source: HDTV
+  other: Rip
   release_group: DEUS TEAM
   type: episode
 
@@ -2306,9 +2314,9 @@
   season: 1
   episode: 10
   screen_size: 1080p
-  video_codec: h264
+  video_codec: H.264
   language: [it, en]
-  format: WEB-DL
+  source: Web
   other: Mux
   audio_codec: AC3
   subtitle_language: [it, en]
@@ -2320,10 +2328,10 @@
 : title: Show Name
   season: 4
   episode: [7, 8]
-  video_codec: h264
+  video_codec: H.264
   language: it
   audio_codec: AAC
-  format: HDTV
+  source: HDTV
   other: Mux
   release_group: NovaRip
   type: episode
@@ -2335,9 +2343,9 @@
   episode: 18
   episode_title: Un Tuffo Nel Passato
   language: it
-  format: HDTV
+  source: HDTV
   other: Mux
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: NovaRip
   type: episode
@@ -2349,11 +2357,11 @@
   year: 2014
   season: 2
   episode: 23
-  video_codec: XviD
+  video_codec: Xvid
   language: [it, en]
   audio_codec: MP3
   subtitle_language: [it, en]
-  format: WEB-DL
+  source: Web
   other: Mux
   release_group: Pir8
   type: episode
@@ -2364,11 +2372,11 @@
   alternative_title: Game Of Thrones
   season: 6
   episode: 7
-  video_codec: h264
+  video_codec: H.264
   language: [it, en]
   audio_codec: AAC
   subtitle_language: [it, en]
-  format: WEB-DL
+  source: Web
   other: Mux
   release_group: sp_54321
   type: episode
@@ -2378,8 +2386,8 @@
 : title: Mellan Bleke Och Storm
   language: sv
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -2388,8 +2396,8 @@
 : title: Show Name
   year: 1999
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: HDv_0day_Team
   container: mkv
@@ -2397,19 +2405,19 @@
   type: episode
 
 # Important: the suffix .hdtv.x264 is an existing workaround in the application for a certain provider. It should be removed when there's a video_codec conflict
-? 500.Bus.Stops.Series.1.XviD.hdtv.x264
+? 500.Bus.Stops.Season.1.XviD.hdtv.x264
 : title: 500 Bus Stops
   season: 1
-  video_codec: XviD
-  format: HDTV
+  video_codec: Xvid
+  source: HDTV
   type: episode
 
 # https://github.com/guessit-io/guessit/issues/310
 ? Show.Name.COMPLETE.SERIES.DVDRip.XviD-AR
 : title: Show Name
-  other: Complete
-  format: DVDRip
-  video_codec: XviD
+  other: [Complete, Rip]
+  source: DVDRip
+  video_codec: Xvid
   release_group: AR
   type: episode
 
@@ -2419,9 +2427,10 @@
   other: Complete
   season: [1, 2, 3, 4, 5]
   screen_size: 720p
-  format: BluRay
-  video_codec: h265
+  source: Blu-ray
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: SUJAIDR
   type: episode
 
@@ -2432,8 +2441,10 @@
   absolute_episode: 2
   episode: 2
   screen_size: 720p
-  video_codec: h265
+  video_codec: H.265
+  video_profile: High Efficiency Video Coding
   audio_codec: AAC
+  aspect_ratio: '1.778'
   type: episode
 
 ? Show.Name.S02E01.MULTi.FRENCH.VOSTFR-EN.1080p.WEB-DL.HEVC.x265-GOLF68
@@ -2443,9 +2454,10 @@
   language: [mul, fr, en]
   subtitle_language: fr
   screen_size: 1080p
-  format: WEB-DL
-  video_codec: h265
+  source: Web
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GOLF68
   type: episode
 
@@ -2453,22 +2465,21 @@
 : title: Show Name
   season: 3
   episode: [21, 22]
-  other: Fastsub
+  other: Fast Subtitled
   subtitle_language: fr
-  format: HDTV
-  video_codec: XviD
+  source: HDTV
+  video_codec: Xvid
   release_group: F4ST
   container: avi
   mimetype: video/x-msvideo
   type: episode
 
-? Show.Name.Season.1.(x265.10bit.Joy)
+? Show.Name.Season.1.(x265.10bit)
 : title: Show Name
   season: 1
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
-  video_profile: 10bit
-  release_group: Joy
+  color_depth: 10-bit
   type: episode
 
 ? - Show.Name.S01E01.DVDRip.XviD-W4F
@@ -2476,8 +2487,9 @@
 : title: Show Name
   season: 1
   episode: 1
-  format: DVDRip
-  video_codec: XviD
+  source: DVDRip
+  video_codec: Xvid
+  other: Rip
   release_group: W4F
   type: episode
 
@@ -2486,9 +2498,9 @@
 : title: Show Name
   season: 1
   episode: 1
-  format: DVDRip
-  video_codec: XviD
-  other: Proper
+  source: DVDRip
+  video_codec: Xvid
+  other: [Rip, Proper]
   proper_count: 1
   proper_tag: REPACK
   release_group: OMiCRON
@@ -2500,8 +2512,9 @@
   season: 1
   episode: 1
   year: 2008
-  format: BluRay
+  source: Blu-ray
   screen_size: 1080p
+  video_codec: VC-1
   audio_channels: '5.1'
   container: wmv
   release_group: NOVO
@@ -2512,8 +2525,8 @@
 : title: Show Name
   season: 1
   episode: 2
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   other: Proper
   proper_count: 1
@@ -2531,8 +2544,8 @@
   episode: 1
   episode_title: Pilot
   episode_details: Pilot
-  format: DVD
-  video_codec: h264
+  source: DVD
+  video_codec: H.264
   video_encoder: x264
   other: [Screener, Preair]
   release_group: NoGRP
@@ -2543,8 +2556,8 @@
 : title: Show Name
   season: 2
   episode: 1
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   audio_codec: AAC
   container: mp4
@@ -2556,11 +2569,12 @@
 ? Show.Name.S03.1080p.BluRay.DTS-HD.MA.5.1.AVC.REMUX-FraMeSToR
 : title: Show Name
   season: 3
-  format: BluRay
-  audio_codec: DTS
-  audio_profile: HDMA
+  source: Blu-ray
+  audio_codec: DTS-HD
+  audio_profile: Master Audio
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
+  video_profile: Advanced Video Codec High Definition
   other: Remux
   screen_size: 1080p
   release_group: FraMeSToR
@@ -2572,8 +2586,8 @@
   season: [1, 2, 3]
   other: Complete
   screen_size: 720p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: PtM
   type: episode
@@ -2585,8 +2599,8 @@
   episode: 23
   episode_title: Parley
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: DIMENSION
   type: episode
@@ -2596,8 +2610,8 @@
 : title: Show Name
   season: 1
   episode: 3
-  format: WEB-DL
-  video_codec: h264
+  source: Web
+  video_codec: H.264
   video_encoder: x264
   language: hu
   release_group: nIk
@@ -2608,8 +2622,8 @@
 : title: Show Name
   season: 1
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   subtitle_language: en
   release_group: Hype
@@ -2619,7 +2633,7 @@
 ? Show.Name.S01.DVD2.NLsubs-QoQ
 : title: Show Name
   season: 1
-  format: DVD
+  source: DVD
   subtitle_language: nl
   release_group: QoQ
   type: episode
@@ -2642,9 +2656,9 @@
   season: 5
   episode: 9
   episode_title: Some Episode Title
-  other: WideScreen
-  format: SATRip
-  video_codec: h264
+  other: Widescreen
+  source: Satellite
+  video_codec: H.264
   video_encoder: x264
   release_group: NY2
   type: episode
@@ -2655,8 +2669,8 @@
   season: 2
   episode: 11
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   subtitle_language: ro
   release_group: Grp
@@ -2668,8 +2682,8 @@
   season: 6
   episode: 16
   other: Hardcoded Subtitles
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   subtitle_language: sv
   type: episode
@@ -2695,11 +2709,9 @@
 : title: Show Name
   season: 12
   episode: 17
-  other: Proper
-  proper_count: 1
-  proper_tag: DIRFIX
-  format: HDTV
-  video_codec: h264
+  other: Fix
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   type: episode
@@ -2710,8 +2722,8 @@
   season: 6
   episode: 4
   other: Internal
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -2724,7 +2736,8 @@
   season: 6
   episode: 5
   screen_size: 1080p
-  format: WEBRip
+  source: Web
+  other: Rip
   subtitle_language: pt-BR
   type: episode
 
@@ -2734,7 +2747,8 @@
   season: 6
   episode: 5
   screen_size: 1080p
-  format: WEBRip
+  source: Web
+  other: Rip
   subtitle_language: pt
   type: episode
 
@@ -2744,11 +2758,11 @@
   season: 2
   episode: 3
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: Belex
-  other: DualAudio
+  other: Dual Audio
   language: und
   type: episode
 
@@ -2757,11 +2771,11 @@
 : title: Show Name
   season: 5
   screen_size: 1080p
-  format: BluRay
-  video_codec: h264
+  source: Blu-ray
+  video_codec: H.264
   video_encoder: x264
   release_group: Belex
-  other: DualAudio
+  other: Dual Audio
   subtitle_language: und
   type: episode
 
@@ -2772,7 +2786,7 @@
 : title: Show Name
   season: 1
   episode: 3
-  format: HDTV
+  source: HDTV
   subtitle_language: es
   release_group: SC
   type: episode
@@ -2784,7 +2798,7 @@
   season: 2
   episode: 8
   screen_size: 720p
-  format: WEB-DL
+  source: Web
   subtitle_language: und
   type: episode
 
@@ -2803,7 +2817,7 @@
   episode: 3
   language: en
   screen_size: 720p
-  format: WEB-DL
+  source: Web
   release_group: AnimeRG
   type: episode
 
@@ -2822,8 +2836,8 @@
 : title: Show Name
   season: 5
   episode: 5
-  format: HDTV
-  video_codec: XviD
+  source: HDTV
+  video_codec: Xvid
   release_group: AFG
   subtitle_language: he
   type: episode
@@ -2834,7 +2848,7 @@
   season: 1
   episode: 6
   streaming_service: Netflix
-  other: UltraHD
+  other: Ultra HD
   type: episode
 
 # Corner case for size
@@ -2843,8 +2857,8 @@
   season: 1
   episode: 10
   screen_size: 480p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   size: 160MB
   release_group: Micromkv
@@ -2855,8 +2869,8 @@
 : title: Show Name
   season: 1
   episode: 1
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   size: 133MB
   release_group: POOLSTAR
@@ -2868,12 +2882,13 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
+  episode_title: eps2 0 unm4sk
   part: 1
   screen_size: 1080p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
@@ -2884,13 +2899,13 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: unm4sk
+  episode_title: eps2 0 unm4sk
   part: 1
   screen_size: 1080p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
@@ -2902,7 +2917,7 @@
   season: 6
   episode: 9
   screen_size: 720p
-  format: HDTV
+  source: HDTV
   size: 450MB
   release_group: iExTV
   type: episode
@@ -2914,8 +2929,8 @@
   episode: 2
   episode_title: Episode Title
   screen_size: 1080p
-  format: WEB-DL
-  video_codec: h264
+  source: Web
+  video_codec: H.264
   video_encoder: x264
   audio_channels: '5.1'
   release_group: Group
@@ -2929,8 +2944,8 @@
   other: Proper
   proper_count: 2
   proper_tag: [REPACK, PROPER]
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -2944,6 +2959,54 @@
   release_group: GROUP
   container: mkv
   mimetype: video/x-matroska
+  type: episode
+
+? "[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "High Score Girl 2/[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "High Score Girl/[Mad le Zisell] High Score Girl 2 - 01 [720p]"
+: title: High Score Girl 2
+  absolute_episode: 1
+  episode: 1
+  screen_size: 720p
+  release_group: Mad le Zisell
+  type: episode
+
+? "Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
+  type: episode
+
+? "Kemono.Michi.Rise.Up/Kemono.Michi.Rise.Up.E03.1080p.WEB.x264.1-URANiME-Obfuscated"
+: title: Kemono Michi Rise Up
+  absolute_episode: 3
+  episode: 3
+  screen_size: 1080p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: URANiME
+  other: Obfuscated
   type: episode
 
 # Anime show containing number in its title and show with :
@@ -2981,7 +3044,8 @@
 : title: 11.22.63
   season: 1
   year: 2016
-  format: HDTV
+  source: HDTV
+  other: Rip
   release_group: Group
   type: episode
 
@@ -3012,10 +3076,11 @@
   episode: 20
   episode_title: Episode Title
   screen_size: 720p
-  format: HDTV
+  source: HDTV
   audio_channels: '2.0'
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   release_group: GROUP
   container: mkv
   type: episode
@@ -3027,9 +3092,11 @@
   episode: 8
   episode_title: Episode Title
   screen_size: 720p
-  format: WEBRip
-  video_codec: h265
+  source: Web
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
+  other: Rip
   release_group: GROUP
   container: mkv
   type: episode
@@ -3041,9 +3108,10 @@
   episode: 8
   episode_title: Episode Title
   screen_size: 720p
-  format: HDTV
-  video_codec: h265
+  source: HDTV
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Blacklisted pattern: blacklist-03
@@ -3053,10 +3121,11 @@
   episode: 14
   episode_title: Episode Title
   screen_size: 720p
-  format: HDTV
-  video_codec: h265
+  source: HDTV
+  video_codec: H.265
   video_encoder: x265
   release_group: GROUP
+  video_profile: High Efficiency Video Coding
   container: mkv
   type: episode
 
@@ -3066,8 +3135,8 @@
   episode: 3
   episode_count: 3
   episode_title: Episode Title
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   audio_codec: AC3
   screen_size: 1080p
@@ -3079,10 +3148,10 @@
   season: 1
   episode: 5
   screen_size: 720p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   release_group: Group
   type: episode
   disabled: true # work in progress
@@ -3091,11 +3160,11 @@
 ? Show.Name.S02E59.WEB-DLx264-GROUP
 : episode: 59
   season: 2
-  format: WEB-DL
+  source: Web
   release_group: GROUP
   title: Show Name
   type: episode
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
 
 # https://github.com/guessit-io/guessit/issues/323
@@ -3103,11 +3172,11 @@
 : episode: 31
   episode_title: Episode Title
   season: 12
-  format: PDTV
+  source: PDTV
   release_group: Group
   title: Show Name
   type: episode
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
 
 # https://github.com/guessit-io/guessit/issues/323
@@ -3115,11 +3184,11 @@
 : episode: 9
   episode_title: Episode Title
   season: 9
-  format: HDTV
+  source: HDTV
   release_group: Group
   title: Show Name
   type: episode
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
 
 # https://github.com/guessit-io/guessit/issues/319
@@ -3138,13 +3207,13 @@
 : title: Show Name
   season: 2
   episode: 1
-  episode_title: title
+  episode_title: eps2 0 title
   part: 1 # not a big issue
   screen_size: 1080p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   container: mkv
   mimetype: video/x-matroska
   type: episode
@@ -3173,8 +3242,8 @@
   season: 6
   episode: 5
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   type: episode
@@ -3205,12 +3274,13 @@
   episode: 6
   episode_title: eps2 4 m4ster-s1ave aes
   screen_size: 1080p
-  format: WEBRip
+  source: Web
   streaming_service: Amazon Prime
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: GROUP
   type: episode
 
@@ -3231,8 +3301,8 @@
   season: 10
   episode: 1
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   container: mkv
@@ -3248,8 +3318,8 @@
   season: 3
   episode: 1
   screen_size: 1080p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: GROUP
   container: mkv
@@ -3264,8 +3334,8 @@
   edition: Uncensored
   release_group: 'pseudo'
   screen_size: 1080p
-  format: BDRip
-  video_codec: h265
+  source: BDRip
+  video_codec: H.265
   video_encoder: x265
   type: episode
 
@@ -3290,8 +3360,8 @@
   season: 13
   episode: 22
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   release_group: NBY
   container: mkv
@@ -3307,8 +3377,9 @@
   season: 3
   episode: 2
   screen_size: 1080p
-  video_codec: h265
+  video_codec: H.265
   video_encoder: x265
+  video_profile: High Efficiency Video Coding
   type: episode
 
 # Regression test
@@ -3319,10 +3390,10 @@
   episode: 1
   episode_title: Super Title
   screen_size: 720p
-  format: WEB-DL
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   container: nzb
   release_group: AG
   type: episode
@@ -3334,7 +3405,7 @@
   season: 1
   episode: 7
   episode_title: Super, Title
-  format: WEB-DL
+  source: Web
   screen_size: 720p
   subtitle_language: pt-BR
   container: srt
@@ -3347,10 +3418,11 @@
 : title: Show Name
   season: 1
   episode: 10
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
-  format: WEB-DL
-  release_group: HI.C
+  source: Web
+  release_group: C
+  language: hi
   type: episode
 
 # Regression Test:
@@ -3359,7 +3431,7 @@
 : title: Show Name
   season: 3
   episode: 3
-  format: TV
+  source: TV
   release_group: gRoUp
   container: mp4
   mimetype: video/mp4
@@ -3384,9 +3456,10 @@
 : title: Show Name
   season: 1
   episode: 6
-  format: DVDRip
-  video_codec: h264
+  source: DVDRip
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: S4L
   type: episode
 
@@ -3397,7 +3470,7 @@
   episode: 31
   episode_title: Episode 55
   screen_size: 720p
-  format: HDTV
+  source: HDTV
   type: episode
 
 # Regression: HBO is not a release group
@@ -3408,10 +3481,11 @@
   episode_title: Chestbun
   screen_size: 720p
   streaming_service: HBO Go
-  format: WEBRip
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   type: episode
 
 # Regression: date is not detected when followed by a screen_size
@@ -3420,17 +3494,18 @@
 : title: Show Name
   date: 2016-10-21
   screen_size: 1080p
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: group
   container: mkv
   mimetype: video/x-matroska
   type: episode
 
 # Regression test: Season repack shouldn't be detected as release_group: season
-? Show.Name.Series.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
+? Show.Name.Season.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
 : title: Show Name
   season: 1
   other: ['HD', 'Proper']
@@ -3438,8 +3513,8 @@
   container: mp4
   proper_count: 1
   proper_tag: REPACK
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   type: episode
 
@@ -3450,8 +3525,8 @@
   year: 2016
   episode: 15
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   # not a big issue
   # episode_title: Mammoth Back from the Dead
@@ -3467,8 +3542,8 @@
   year: 2016
   episode: 17
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
   # not a big issue
   # episode_title: 9 11 The Longest War
@@ -3482,10 +3557,10 @@
   season: 1
   episode: 6
   screen_size: 720p
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: GrOuP
   container: mkv
@@ -3504,26 +3579,40 @@
   season: 4
   episode: 6
   language: fr
-  format: AHDTV
-  video_codec: XviD
+  source: Analog HDTV
+  video_codec: Xvid
   type: episode
 
-# BDRip
-? - Show.Name.BD.720p
-  - Show.Name.BDRip.720p
-  - Show.Name.BD.Rip.720p
-  - Show.Name.BD-Rip.720p
+# BD
+? Show.Name.BD.720p
 : title: Show Name
-  format: BDRip
+  source: BDRip
   screen_size: 720p
   type: episode
 
 # BDRip
-? - Show.Name.BDMux.720p
-  - Show.Name.BDRipMux.720p
+? - Show.Name.BDRip.720p
+  - Show.Name.BD.Rip.720p
+  - Show.Name.BD-Rip.720p
 : title: Show Name
-  format: BDRip
+  source: BDRip
+  other: Rip
+  screen_size: 720p
+  type: episode
+
+# BDMux
+? Show.Name.BDMux.720p
+: title: Show Name
+  source: BDRip
   other: Mux
+  screen_size: 720p
+  type: episode
+
+# BDRipMux
+? Show.Name.BDRipMux.720p
+: title: Show Name
+  source: BDRip
+  other: [Rip, Mux]
   screen_size: 720p
   type: episode
 
@@ -3533,7 +3622,7 @@
   - Show.Name.BD25.720p
   - Show.Name.BD50.720p
 : title: Show Name
-  format: BluRay
+  source: Blu-ray
   screen_size: 720p
   type: episode
 
@@ -3542,26 +3631,42 @@
   - Show.Name.BR.Rip.720p
   - Show.Name.BR-Rip.720p
 : title: Show Name
-  format: BRRip
+  source: BRRip
+  screen_size: 720p
+  other: [Reencoded, Rip]
+  type: episode
+
+# BRMux
+? Show.Name.BRMux.720p
+: title: Show Name
+  source: BRRip
+  other: ['Reencoded', 'Mux']
   screen_size: 720p
   type: episode
 
-# BRRip
-? - Show.Name.BRMux.720p
-  - Show.Name.BRRipMux.720p
+# BRRipMux
+? Show.Name.BRRipMux.720p
 : title: Show Name
-  format: BRRip
-  other: Mux
+  other: ['Reencoded', 'Rip', 'Mux']
+  source: BRRip
   screen_size: 720p
   type: episode
 
-# DVB should be PDTV
-? - Show Name S02E11 DVB
-  - Show Name S02E11 DVBRip
+# Digital TV should be PDTV
+? Show Name S02E11 DVB
 : title: Show Name
-  format: PDTV
+  source: PDTV
   season: 2
   episode: 11
+  type: episode
+
+# Digital TV should be PDTV
+? Show Name S02E11 DVBRip
+: title: Show Name
+  source: PDTV
+  season: 2
+  episode: 11
+  other: Rip
   type: episode
 
 # 2160p
@@ -3582,8 +3687,8 @@
   season: 12
   episode: 1
   date: 2016-11-16
-  format: PDTV
-  video_codec: h264
+  source: PDTV
+  video_codec: H.264
   video_encoder: x264
   container: mp4
   type: episode
@@ -3597,11 +3702,12 @@
   episode: 1
   screen_size: 2160p
   streaming_service: Amazon Prime
-  format: WEBRip
-  audio_codec: EAC3
+  source: Web
+  audio_codec: Dolby Digital Plus
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: Group
   type: episode
 
@@ -3613,11 +3719,12 @@
   episode_title: Service
   screen_size: 1080p
   streaming_service: Amazon Prime
-  format: WEBRip
-  audio_codec: EAC3
+  source: Web
+  audio_codec: Dolby Digital Plus
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   type: episode
 
 # Streaming service: Comedy Central
@@ -3628,11 +3735,12 @@
   edition: Extended
   screen_size: 1080p
   streaming_service: Comedy Central
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3646,11 +3754,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: The CW
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3661,11 +3770,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: ABC
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3674,10 +3784,11 @@
 : title: Show Name
   screen_size: 720p
   streaming_service: History
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3688,10 +3799,11 @@
   episode_title: Nice Title
   screen_size: 1080p
   streaming_service: PBS
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3702,11 +3814,12 @@
   episode_title: Nice Title
   screen_size: 1080p
   streaming_service: SeeSo
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3718,11 +3831,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: Discovery
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: NTb
   type: episode
 
@@ -3733,10 +3847,11 @@
   episode_title: Nice Title
   streaming_service: BBC iPlayer
   screen_size: 720p
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3748,10 +3863,11 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: A&E
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3763,10 +3879,11 @@
   episode_title: Nice Title
   screen_size: 1080p
   streaming_service: Adult Swim
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3779,11 +3896,12 @@
   episode: 3
   screen_size: 1080p
   streaming_service: Netflix
-  format: WEBRip
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: NTb
   container: mkv
   mimetype: video/x-matroska
@@ -3796,11 +3914,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: CBS
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3811,10 +3930,11 @@
   episode_title: Team A vs Team B
   screen_size: 720p
   streaming_service: NBA TV
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3827,10 +3947,11 @@
   part: 4
   screen_size: 720p
   streaming_service: ePix
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3842,11 +3963,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: NBC
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3858,11 +3980,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: Syfy
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3874,11 +3997,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: Spike TV
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3890,11 +4014,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: IFC
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3906,11 +4031,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: National Geographic
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3922,11 +4048,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: NFL
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3938,11 +4065,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: UFC
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3954,11 +4082,12 @@
   episode_title: Nice Title
   screen_size: 720p
   streaming_service: TV Land
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: group
   type: episode
 
@@ -3968,11 +4097,12 @@
   season: 1
   screen_size: 1080p
   streaming_service: Crunchy Roll
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3982,11 +4112,12 @@
   season: 1
   screen_size: 1080p
   streaming_service: Disney
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -3996,11 +4127,12 @@
   season: 1
   screen_size: 1080p
   streaming_service: Nickelodeon
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -4010,11 +4142,12 @@
   season: 1
   screen_size: 1080p
   streaming_service: TFou
-  format: WEBRip
+  source: Web
   audio_codec: AAC
   audio_channels: '2.0'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: monkee
   type: episode
 
@@ -4024,8 +4157,8 @@
   season: 10
   episode: 6
   date: 2016-11-18
-  format: PDTV
-  video_codec: XviD
+  source: PDTV
+  video_codec: Xvid
   type: episode
 
 # Regression: guessit issue #359
@@ -4033,10 +4166,10 @@
 : title: Show Name
   season: 1
   screen_size: 720p
-  format: HDTV
+  source: HDTV
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
   release_group: Group
   episode: 5
@@ -4048,22 +4181,24 @@
 : title: Show Name
   absolute_episode: [476, 477, 478, 479]
   episode: [476, 477, 478, 479]
+  season: 2007
   year: 2007
   release_group: HorribleSubs
-  format: WEBRip
-  other: HD
+  source: Web
+  other: [Rip, HD]
   screen_size: 720p
   type: episode
 
 ? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
 : title: Show Name
-  absolute_episode: 7
   episode: 7
+  absolute_episode: 7
+  season: 2016
   year: 2016
   release_group: RH
   language: en
-  format: WEBRip
-  other: HD
+  source: Web
+  other: [Rip, HD]
   screen_size: 1080p
   type: episode
 
@@ -4071,10 +4206,11 @@
 : title: Show! Name 2
   absolute_episode: 10
   episode: 10
+  season: 2016
   year: 2016
   release_group: HorribleSubs
-  format: WEBRip
-  other: HD
+  source: Web
+  other: [Rip, HD]
   screen_size: 720p
   type: episode
 
@@ -4082,11 +4218,12 @@
 : title: Show Name
   season: 1
   screen_size: 720p
-  format: WEBRip
+  source: Web
   audio_codec: AC3
   audio_channels: '5.1'
-  video_codec: h264
+  video_codec: H.264
   video_encoder: x264
+  other: Rip
   release_group: MiNiGRiP
   type: episode
 
@@ -4096,7 +4233,7 @@
   year: 2016
   season: 1
   episode: 2
-  format: HDTV
+  source: HDTV
   subtitle_language: es
   release_group: SC
   type: episode
@@ -4105,8 +4242,8 @@
 : title: Show Name
   season: 1
   episode: 2
-  format: HDTV
-  video_codec: XviD
+  source: HDTV
+  video_codec: Xvid
   release_group: 2HD
   screen_size: 720p
   type: episode
@@ -4118,18 +4255,20 @@
   episode: 722
   other: HD
   screen_size: 720p
+  aspect_ratio: '1.778'
   container: mp4
   mimetype: video/mp4
   type: episode
 
-# TODO: Fix anime release group
 ? "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
 : title: Show Name
   absolute_episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
-  episode: [500, 501, 502, 503, 504, 505, 506, 507]
+  episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
   screen_size: 720p
-  release_group: VFR
-  video_codec: h264
+  release_group: Zero-Raws
+  aspect_ratio: '1.778'
+  other: Variable Frame Rate
+  video_codec: H.264
   video_encoder: x264
   audio_codec: AAC
   type: episode
@@ -4140,9 +4279,10 @@
   episode: 5
   absolute_episode: 5
   screen_size: 720p
-  video_profile: 10bit
-  other: DualAudio
-  format: TV
+  color_depth: 10-bit
+  other: Dual Audio
+  source: TV
+  video_profile: High 10
   language: und
   crc32: EDA6E7F1
   type: episode
@@ -4152,9 +4292,10 @@
   season: 7
   episode: 13
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
+  other: Obfuscated
   release_group: AVS
   uuid: 1e5e2f3464df439b92afea14932a87a4
   type: episode
@@ -4164,27 +4305,27 @@
   season: 7
   episode: 13
   screen_size: 720p
-  format: HDTV
-  video_codec: h264
+  source: HDTV
+  video_codec: H.264
   video_encoder: x264
+  other: Obfuscated
   release_group: AVS
   uuid: 1e5e2f3464df439b92afea14932a87a4
   type: episode
 
-# TODO: Guessit 3 to handle HDR, BT2020 and more
 ? Doctor.Estraño.HDR.VISIONPLUS.1000.[4K.UHD.2160p.HEVC.X265][BT2020][DTS-5.1.Castellano.DTS-HD.7.1-Ingles+Subs][ES-EN].x264-NEWPCT
-: title: Doctor Estraño HDR VISIONPLUS
+: title: Doctor Estraño
   absolute_episode: 1000
   episode: 1000
   screen_size: 2160p
-  other: [UltraHD, HD]
-  video_codec: [h265, h264]
+  other: [HDR10, Ultra HD, BT.2020]
+  video_codec: [H.265, H.264]
   video_encoder: [x265, x264]
-  audio_codec: DTS
+  video_profile: High Efficiency Video Coding
+  audio_codec: [DTS, DTS-HD]
   audio_channels: ['5.1', '7.1']
   language: ca
-  audio_profile: HD
-  subtitle_language: [es, en]
+  subtitle_language: [und, es, en]
   release_group: NEWPCT
   type: episode
 
@@ -4194,7 +4335,7 @@
   episode: 76
   absolute_episode: 76
   screen_size: 1080p
-  format: BluRay
+  source: Blu-ray
   release_group: Yomi
   container: mkv
   type: episode
@@ -4204,7 +4345,91 @@
 : title: Show Name
   season: 6
   screen_size: 480p
-  video_codec: h264
+  video_codec: H.264
   release_group: 20-40
-  format: WEB-DL
+  source: Web
+  type: episode
+
+? /Comedy 23/Funny.Show.S4E19.mkv
+: title: Funny Show
+  season: 4
+  episode: 19
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Rugrats Season 1/Rugrats - 01x01 - Tommy's First Birthday[JM].avi
+: title: Rugrats
+  season: 1
+  episode: 1
+  episode_title: Tommy's First Birthday
+  release_group: JM
+  container: avi
+  mimetype: video/avi
+  type: episode
+
+? shes.gotta.have.it.s01e08.720p.web.x264-strife.mkv
+: title: shes gotta have it
+  season: 1
+  episode: 8
+  screen_size: 720p
+  source: Web
+  video_codec: H.264
+  video_encoder: x264
+  release_group: strife
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Cuerpo de Elite  - Temporada 1 [HDTV 720p][Cap.113][AC3 5.1 Esp Castellano]\CuerpoDeElite720p_113_desca202.mkv
+: title: Cuerpo de Elite
+  season: 1
+  episode: 13
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  episode_title: desca202
+  language: [es, ca]
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Por Trece Razones - Temporada 2 [HDTV 720p][Cap.201][AC3 5.1 Castellano]\Por Trece Razones 2x01 [desca202].mkv
+: title: Por Trece Razones
+  season: 2
+  episode: 1
+  screen_size: 720p
+  source: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  language: ca
+  release_group: desca202
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? JoJo's Bizarre Adventure (2012)\Season 02\[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv
+: title: JoJo's Bizarre Adventure
+  year: 2012
+  season: 2
+  episode: 12
+  release_group: HorribleSubs
+  alias: JoJo's Bizarre Adventure - Stardust Crusaders
+  alternative_title: Stardust Crusaders
+  screen_size: 1080p
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? VA_-_Redux_presents_The_Uplifting_Selection_Vol_1-2019-(RDXSEL026)-WEB-2019-ZzZz
+: title: VA
+  year: 2019
+  season: 2019
+  episode: 1
+  episode_title: '2019'
+  release_group: RDXSEL026
+  alias: VA - Redux presents The Uplifting Selection Vol
+  alternative_title: Redux presents The Uplifting Selection Vol
+  source: Web
   type: episode

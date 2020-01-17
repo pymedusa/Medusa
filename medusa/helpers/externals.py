@@ -35,9 +35,8 @@ def get_trakt_externals(externals):
                 app.TRAKT_ACCESS_TOKEN = api.access_token
                 app.TRAKT_REFRESH_TOKEN = api.refresh_token
                 app.instance.save_config()
-        except (AuthException, TraktException, TokenExpiredException) as e:
-            log.info(u'Could not use Trakt to enrich with externals: {0}',
-                     e.message or e)
+        except (AuthException, TraktException, TokenExpiredException) as error:
+            log.info(u'Could not use Trakt to enrich with externals: {0!r}', error)
             return []
         else:
             return trakt_result
@@ -112,8 +111,8 @@ def get_externals(show=None, indexer=None, indexed_show=None):
             except (IndexerException, RequestException) as error:
                 log.warning(
                     u'Error getting external ids for other'
-                    u' indexer {name}: {reason}',
-                    {'name': indexerApi(other_indexer).name, 'reason': error.message})
+                    u' indexer {name}: {reason!r}',
+                    {'name': indexerApi(other_indexer).name, 'reason': error})
 
     # Try to update with the Trakt externals.
     if app.USE_TRAKT:
@@ -185,20 +184,20 @@ def load_externals_from_db(indexer=None, indexer_id=None):
     externals = {}
 
     main_db_con = db.DBConnection()
-    sql = (b'SELECT indexer, indexer_id, mindexer, mindexer_id '
-           b'FROM indexer_mapping '
-           b'WHERE (indexer = ? AND indexer_id = ?) '
-           b'OR (mindexer = ? AND mindexer_id = ?)')
+    sql = ('SELECT indexer, indexer_id, mindexer, mindexer_id '
+           'FROM indexer_mapping '
+           'WHERE (indexer = ? AND indexer_id = ?) '
+           'OR (mindexer = ? AND mindexer_id = ?)')
 
     results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
 
     for result in results:
         try:
-            if result[b'indexer'] == indexer:
-                externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+            if result['indexer'] == indexer:
+                externals[mappings[result['mindexer']]] = result['mindexer_id']
             else:
-                externals[mappings[result[b'indexer']]] = result[b'indexer_id']
-        except KeyError as e:
-            log.error(u'Indexer not supported in current mappings: {id}', {'id': e.message})
+                externals[mappings[result['indexer']]] = result['indexer_id']
+        except KeyError as error:
+            log.error(u'Indexer not supported in current mappings: {id!r}', {'id': error})
 
     return externals

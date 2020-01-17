@@ -1,5 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
+    import json
+
     from medusa import app
     from medusa import sbdatetime
     from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
@@ -7,164 +9,161 @@
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Backlog Overview'
-        },
-        data() {
-            return {
-            };
-        },
-        computed: Object.assign(Vuex.mapState([]), {
-            period: {
-                get() {
-                    return this.config.backlogOverview.period;
-                },
-                set(value) {
-                    const { $store } = this;
-                    return $store.dispatch('setConfig', {
-                        section: 'main',
-                        config: { backlogOverview: { period: value } }
-                    })
-                    .then(setTimeout(() => location.reload(), 500));
-                }
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+        };
+    },
+    // TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['config']), {
+        period: {
+            get() {
+                return this.config.backlogOverview.period;
             },
-            status: {
-                get() {
-                    return this.config.backlogOverview.status;
-                },
-                set(value) {
-                    const { $store } = this;
-                    return $store.dispatch('setConfig', {
-                        section: 'main',
-                        config: { backlogOverview: { status: value } }
-                    })
-                    .then(setTimeout(() => location.reload(), 500));
-                }
+            set(value) {
+                const { $store } = this;
+                return $store.dispatch('setConfig', {
+                    section: 'main',
+                    config: { backlogOverview: { period: value } }
+                })
+                .then(setTimeout(() => location.reload(), 500));
             }
-        }),
-        methods: {
         },
-        mounted() {
-            checkForcedSearch();
-
-            function checkForcedSearch() {
-                let pollInterval = 5000;
-                const searchStatusUrl = 'home/getManualSearchStatus';
-                const indexerName = $('#indexer-name').val();
-                const seriesId = $('#series-id').val();
-                const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
-                $.ajax({
-                    url,
-                    error() {
-                        pollInterval = 30000;
-                    },
-                    type: 'GET',
-                    dataType: 'JSON',
-                    complete() {
-                        setTimeout(checkForcedSearch, pollInterval);
-                    },
-                    timeout: 15000 // Timeout every 15 secs
-                }).done(data => {
-                    if (data.episodes) {
-                        pollInterval = 5000;
-                    } else {
-                        pollInterval = 15000;
-                    }
-                    updateForcedSearch(data);
-                });
+        status: {
+            get() {
+                return this.config.backlogOverview.status;
+            },
+            set(value) {
+                const { $store } = this;
+                return $store.dispatch('setConfig', {
+                    section: 'main',
+                    config: { backlogOverview: { status: value } }
+                })
+                .then(setTimeout(() => location.reload(), 500));
             }
+        }
+    }),
+    methods: {
+    },
+    mounted() {
+        checkForcedSearch();
 
-            function updateForcedSearch(data) {
-                $.each(data.episodes, (name, ep) => {
-                    const el = $('a[id=' + ep.indexer_id + 'x' + ep.series_id + 'x' + ep.season + 'x' + ep.episode + ']');
-                    const img = el.children('img[data-ep-search]');
-                    const episodeStatus = ep.status.toLowerCase();
-                    const episodeSearchStatus = ep.searchstatus.toLowerCase();
-                    if (el) {
-                        if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
-                            // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
-                            img.prop('src', 'images/loading16.gif');
-                        } else if (episodeSearchStatus === 'finished') {
-                            // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
-                            if (episodeStatus.indexOf('snatched') >= 0) {
-                                img.prop('src', 'images/yes16.png');
-                                setTimeout(() => {
-                                    img.parent().parent().parent().remove();
-                                }, 3000);
-                            } else {
-                                img.prop('src', 'images/search16.png');
-                            }
-                        }
-                    }
-                });
-            }
-
-            $('#pickShow').on('change', function() {
-                const id = $(this).val();
-                if (id) {
-                    $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
+        function checkForcedSearch() {
+            let pollInterval = 5000;
+            const searchStatusUrl = 'home/getManualSearchStatus';
+            const indexerName = $('#indexer-name').val();
+            const seriesId = $('#series-id').val();
+            const url = seriesId === undefined ? searchStatusUrl : searchStatusUrl + '?indexername=' + indexerName + '&seriesid=' + seriesId;
+            $.ajax({
+                url,
+                error() {
+                    pollInterval = 30000;
+                },
+                type: 'GET',
+                dataType: 'JSON',
+                complete() {
+                    setTimeout(checkForcedSearch, pollInterval);
+                },
+                timeout: 15000 // Timeout every 15 secs
+            }).done(data => {
+                if (data.episodes) {
+                    pollInterval = 5000;
+                } else {
+                    pollInterval = 15000;
                 }
-            });
-
-            $('.forceBacklog').on('click', function() {
-                $.get($(this).attr('href'));
-                $(this).text('Searching...');
-                return false;
-            });
-
-            $('.epArchive').on('click', function(event) {
-                event.preventDefault();
-                const img = $(this).children('img[data-ep-archive]');
-                img.prop('title', 'Archiving');
-                img.prop('alt', 'Archiving');
-                img.prop('src', 'images/loading16.gif');
-                const url = $(this).prop('href');
-                $.getJSON(url, data => {
-                    // If they failed then just put the red X
-                    if (data.result.toLowerCase() === 'success') {
-                        img.prop('src', 'images/yes16.png');
-                        setTimeout(() => {
-                            img.parent().parent().parent().remove();
-                        }, 3000);
-                    } else {
-                        img.prop('src', 'images/no16.png');
-                    }
-                    return false;
-                });
-            });
-
-            $('.epSearch').on('click', function(event) {
-                event.preventDefault();
-                const img = $(this).children('img[data-ep-search]');
-                img.prop('title', 'Searching');
-                img.prop('alt', 'Searching');
-                img.prop('src', 'images/loading16.gif');
-                const url = $(this).prop('href');
-                $.getJSON(url, data => {
-                    // If they failed then just put the red X
-                    if (data.result.toLowerCase() === 'failed') {
-                        img.prop('src', 'images/no16.png');
-                    }
-                    return false;
-                });
+                updateForcedSearch(data);
             });
         }
-    });
-};
+
+        function updateForcedSearch(data) {
+            $.each(data.episodes, (name, ep) => {
+                const el = $('a[id=' + ep.show.indexer + 'x' + ep.show.series_id + 'x' + ep.episode.season + 'x' + ep.episode.episode + ']');
+                const img = el.children('img[data-ep-search]');
+                const episodeStatus = ep.episode.status.toLowerCase();
+                const episodeSearchStatus = ep.search.status.toLowerCase();
+                if (el) {
+                    if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
+                        // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                        img.prop('src', 'images/loading16.gif');
+                    } else if (episodeSearchStatus === 'finished') {
+                        // El=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                        if (episodeStatus.indexOf('snatched') >= 0) {
+                            img.prop('src', 'images/yes16.png');
+                            setTimeout(() => {
+                                img.parent().parent().parent().remove();
+                            }, 3000);
+                        } else {
+                            img.prop('src', 'images/search16.png');
+                        }
+                    }
+                }
+            });
+        }
+
+        $('#pickShow').on('change', function() {
+            const id = $(this).val();
+            if (id) {
+                $('html,body').animate({ scrollTop: $('#show-' + id).offset().top - 25 }, 'slow');
+            }
+        });
+
+        $('.forceBacklog').on('click', function() {
+            $.get($(this).attr('href'));
+            $(this).text('Searching...');
+            return false;
+        });
+
+        $('.epArchive').on('click', function(event) {
+            event.preventDefault();
+            const img = $(this).children('img[data-ep-archive]');
+            img.prop('title', 'Archiving');
+            img.prop('alt', 'Archiving');
+            img.prop('src', 'images/loading16.gif');
+            const url = $(this).prop('href');
+            $.getJSON(url, data => {
+                // If they failed then just put the red X
+                if (data.result.toLowerCase() === 'success') {
+                    img.prop('src', 'images/yes16.png');
+                    setTimeout(() => {
+                        img.parent().parent().parent().remove();
+                    }, 3000);
+                } else {
+                    img.prop('src', 'images/no16.png');
+                }
+                return false;
+            });
+        });
+
+        $('.epSearch').on('click', function(event) {
+            event.preventDefault();
+            const img = $(this).children('img[data-ep-search]');
+            img.prop('title', 'Searching');
+            img.prop('alt', 'Searching');
+            img.prop('src', 'images/loading16.gif');
+            const url = $(this).prop('href');
+            $.getJSON(url, data => {
+                // If they failed then just put the red X
+                if (data.result.toLowerCase() === 'failed') {
+                    img.prop('src', 'images/no16.png');
+                }
+                return false;
+            });
+        });
+    }
+});
 </script>
 </%block>
 <%block name="content">
-<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <div class="row">
 <div id="content-col" class="col-md-12">
     <div class="col-md-12">
-        <h1 class="header">Backlog Overview</h1>
+        <h1 class="header">{{ $route.meta.header }}</h1>
     </div>
 </div>
 
@@ -233,7 +232,7 @@ const startVue = () => {
                             <div class="col-md-6 left-30">
                                 <h3 style="display: inline;"><app-link href="home/displayShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}">${cur_show.name}</app-link></h3>
                                  % if cur_show.quality in qualityPresets:
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;<quality-pill :quality="${cur_show.quality}"></quality-pill>
                                  % endif
                             </div>
                             <div class="col-md-6 pull-right right-30">
@@ -245,7 +244,7 @@ const startVue = () => {
                                     <span class="listing-key qual">Quality: <b>${showCounts[(cur_show.indexer, cur_show.series_id)][Overview.QUAL]}</b></span>
                                     % endif
                                     <app-link class="btn-medusa btn-inline forceBacklog" href="manage/backlogShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Force Backlog</app-link>
-                                    <app-link class="btn-medusa btn-inline editShow" href="manage/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
+                                    <app-link class="btn-medusa btn-inline editShow" href="home/editShow?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}"><i class="icon-play-circle icon-white"></i> Edit Show</app-link>
                                 </div>
                             </div>
                         </div>
@@ -258,12 +257,21 @@ const startVue = () => {
                         <div class="col-md-12 left-30">
                         % if allowed_qualities:
                             <div class="col-md-12 align-left">
-                               <i>Allowed:</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                                <% allowed_as_json = json.dumps(sorted(allowed_qualities)) %>
+                                <i>Allowed:</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <template v-for="curQuality in ${allowed_as_json}">
+                                    &nbsp;<quality-pill :quality="curQuality" :key="'${cur_show.indexer_name}${cur_show.series_id}-allowed-' + curQuality"></quality-pill>
+                                </template>
+                                ${'<br>' if preferred_qualities else ''}
                             </div>
                         % endif
                         % if preferred_qualities:
                             <div class="col-md-12 align-left">
-                               <i>Preferred:</i>&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                                <% preferred_as_json = json.dumps(sorted(preferred_qualities)) %>
+                                <i>Preferred:</i>&nbsp;&nbsp;
+                                <template v-for="curQuality in ${preferred_as_json}">
+                                    &nbsp;<quality-pill :quality="curQuality" :key="'${cur_show.indexer_name}${cur_show.series_id}-preferred-' + curQuality"></quality-pill>
+                                </template>
                            </div>
                         % endif
                         </div>
@@ -286,7 +294,7 @@ const startVue = () => {
                         <td class="tableleft" align="center">${cur_result['episode_string']}</td>
                         <td class="col-status">
                             % if old_quality != Quality.NA:
-                                ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                                ${statusStrings[old_status]} <quality-pill :quality="${old_quality}"></quality-pill>
                             % else:
                                 ${statusStrings[old_status]}
                             % endif
@@ -306,7 +314,7 @@ const startVue = () => {
                             <app-link class="epSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></app-link>
                             <app-link class="epManualSearch" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?indexername=${cur_show.indexer_name}&amp;seriesid=${cur_show.series_id}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></app-link>
                             % if old_status == DOWNLOADED:
-                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=${cur_result['season']}x${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
+                                <app-link class="epArchive" id="${str(cur_show.indexer)}x${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.series_id)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?indexername=${cur_show.indexer_name}&seriesid=${cur_show.series_id}&eps=s${cur_result['season']}e${cur_result['episode']}&status=${ARCHIVED}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></app-link>
                             % endif
                         </td>
                     </tr>

@@ -8,14 +8,37 @@
   "ignorePaths": [
     ".build/**",
     "themes/**",
-    "ext/**",
-    "lib/**"
+    "{lib,ext}*/**"
   ],
-  "ignoreDeps": [
-    "guessit"
-  ],
-  "packageRules": [{
-    "packageNames": ["tornado"],
-    "allowedVersions": "<6"
-  }]
+  "js": {
+    "commitMessageAction": "Update JS",
+    "managerBranchPrefix": "js/",
+    "labels": ["Update dep (JS)"],
+    "packageRules": [
+      {
+        "packageNames": ["bootstrap"],
+        "allowedVersions": "<4"
+      },
+      {
+        "packageNames": [
+          "vue",
+          "vue-template-compiler",
+          "@vue/test-utils",
+          "vue-jest"
+        ],
+        "groupName": "vue-base"
+      }
+    ]
+  },
+  "python": {
+    "commitMessageAction": "Update Python",
+    "managerBranchPrefix": "py/",
+    "labels": ["Update dep (Py)"],
+    "packageRules": [
+      {
+        "packageNames": ["tornado"],
+        "allowedVersions": "<6"
+      }
+    ]
+  }
 }

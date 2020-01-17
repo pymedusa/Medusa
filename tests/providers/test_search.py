@@ -6,7 +6,7 @@ import datetime
 import functools
 import os
 
-from tests.providers.conftest import providers
+from tests.providers.conftest import get_provider_data
 
 import vcr
 
@@ -14,7 +14,7 @@ import vcr
 record_cassettes = False
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-record_mode = 'all' if record_cassettes else 'none'
+record_mode = 'once' if record_cassettes else 'none'
 
 
 def search(search_type, provider):
@@ -30,6 +30,10 @@ def search(search_type, provider):
                                  cassette_filename)
     with vcr.use_cassette(cassette_path, record_mode=record_mode):
         actual = provider.klass.search(test_case['search_strings'])
+
+    # Check if we got any results
+    if record_cassettes:
+        assert actual != []
 
     for i, result in enumerate(actual):
         # Only compare up to the info hash if we have magnets
@@ -48,7 +52,7 @@ def search(search_type, provider):
 
 
 def generate_test_cases():
-    for provider in providers():
+    for provider in get_provider_data():
         for search_type in ('daily', 'backlog'):
             test_name = 'test_{0}_{1}_search'.format(provider.name, search_type)
             generated_test = functools.partial(search, search_type, provider)

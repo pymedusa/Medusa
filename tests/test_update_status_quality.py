@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/tv/episode.py:update_status_quality"""
+from __future__ import unicode_literals
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST,
                            SNATCHED_PROPER, UNAIRED, UNSET, WANTED, statusStrings)
 

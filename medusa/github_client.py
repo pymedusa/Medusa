@@ -102,3 +102,21 @@ def get_github_repo(organization, repo, gh=None):
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
+
+
+def get_latest_release(organization, repo, gh=None):
+    """Return the latest release of a repository.
+
+    :param repo:
+    :type repo: string
+    :param gh:
+    :type gh: Github
+    :return:
+    :rtype github.GitRelease.GitRelease
+    """
+    try:
+        gh = gh or github.MainClass.Github(**OPTIONS)
+        return gh.get_organization(organization).get_repo(repo).get_latest_release()
+    except github.GithubException as e:
+        logger.debug('Unable to contact Github: {ex!r}', ex=e)
+        raise

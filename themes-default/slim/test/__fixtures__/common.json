@@ -1,135 +1,1361 @@
 {
-  "state": {
-    "auth": {
-      "isAuthenticated": true,
-      "user": {
-        "username": "admin"
-      }
-    },
-    "config": {
-      "pid": 1234,
-      "postProcessing": {
-        "processMethod": "copy",
-        "postponeIfNoSubs": true
-      },
-      "news": {
-        "unread": 1,
-        "lastRead": "2018-07-03",
-        "latest": "2018-07-03"
-      },
-      "logs": {
-        "numWarnings": 0,
-        "numErrors": 0,
-        "loggingLevels": {
-          "info": 20,
-          "debug": 10,
-          "warning": 30,
-          "db": 5,
-          "error": 40
-        }
-      },
-      "torrents": {
-        "enabled": true,
-        "method": "qbittorrent"
-      },
-      "donationsUrl": "https:\/\/github.com\/pymedusa\/Medusa\/wiki\/Donations",
-      "recentShows": [
-        {
-          "showId": 253463,
-          "indexerName": "tvdb",
-          "name": "Black Mirror"
-        },
-        {
-          "showId": 80379,
-          "indexerName": "tvdb",
-          "name": "The Big Bang Theory"
-        }
-      ],
-      "selectedRootIndex": -1,
-      "rootDirs": [
-        "1",
-        "E:\\TV",
-        "W:\\TV"
-      ],
-      "fanartBackgroundOpacity": 0.4,
-      "appArgs": [
-        "--nolaunch",
-        "--datadir=C:\\Medusa\\Data"
-      ],
-      "emby": {
-        "enabled": true,
-        "host": null
-      },
-      "plex": {
-        "server": {
-          "enabled": true,
-          "host": []
-        }
-      },
-      "subtitles": {
-        "enabled": true
-      },
-      "failedDownloads": {
-        "enabled": true
-      },
-      "kodi": {
-        "enabled": true,
-        "host": []
-      },
-      "indexers": {
-        "config": {
-          "indexers": {
-            "tvdb": {
-              "xemOrigin": "tvdb",
-              "apiParams": {
-                "useZip": true,
-                "language": "en"
-              },
-              "showUrl": "https://www.thetvdb.com/dereferrer/series/",
-              "id": 1,
-              "icon": "thetvdb16.png",
-              "name": "TVDBv2",
-              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json",
-              "enabled": true,
-              "baseUrl": "https://api.thetvdb.com/",
-              "mappedTo": "tvdb_id",
-              "identifier": "tvdb"
-            },
-            "tmdb": {
-              "xemOrigin": null,
-              "apiParams": {
-                "useZip": true,
-                "language": "en"
-              },
-              "showUrl": "https://www.themoviedb.org/tv/",
-              "id": 4,
-              "icon": "tmdb16.png",
-              "name": "TMDB",
-              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json",
-              "enabled": true,
-              "baseUrl": "https://www.themoviedb.org/",
-              "mappedTo": "tmdb_id",
-              "identifier": "tmdb"
-            },
-            "tvmaze": {
-              "xemOrigin": null,
-              "apiParams": {
-                "useZip": true,
-                "language": "en"
-              },
-              "showUrl": "http://www.tvmaze.com/shows/",
-              "id": 3,
-              "icon": "tvmaze16.png",
-              "name": "TVmaze",
-              "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json",
-              "enabled": true,
-              "baseUrl": "http://api.tvmaze.com/",
-              "mappedTo": "tvmaze_id",
-              "identifier": "tvmaze"
+    "state": {
+        "auth": {
+            "isAuthenticated": true,
+            "user": {
+                "username": "admin"
             }
-          }
+        },
+        "config": {
+            "themeName": "light",
+            "anonRedirect": "http://dereferer.org/?",
+            "dateStyle": "%x",
+            "rootDirs": [
+                "1",
+                "E:\\TV",
+                "W:\\TV"
+            ],
+            "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
+            "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
+            "sourceUrl": "https://github.com/pymedusa/Medusa",
+            "downloadUrl": "",
+            "subtitlesMulti": true,
+            "namingForceFolders": false,
+            "subtitles": {
+                "enabled": true
+            },
+            "recentShows": [
+                {
+                    "showId": 253463,
+                    "indexerName": "tvdb",
+                    "name": "Black Mirror"
+                },
+                {
+                    "showId": 80379,
+                    "indexerName": "tvdb",
+                    "name": "The Big Bang Theory"
+                }
+            ],
+            "randomShowSlug": "tvdb294002",
+            "showDefaults": {
+                "status": 5,
+                "statusAfter": 3,
+                "quality": 328,
+                "subtitles": false,
+                "seasonFolders": false,
+                "anime": false,
+                "scene": false
+            },
+            "logs": {
+                "debug": true,
+                "dbDebug": false,
+                "loggingLevels": {
+                    "error": 40,
+                    "warning": 30,
+                    "info": 20,
+                    "debug": 10,
+                    "db": 5
+                },
+                "numErrors": 0,
+                "numWarnings": 0,
+                "actualLogDir": "Logs",
+                "nr": 5,
+                "size": 11,
+                "subliminalLog": false,
+                "privacyLevel": "normal"
+            },
+            "selectedRootIndex": -1,
+            "launchBrowser": true,
+            "defaultPage": "home",
+            "trashRemoveShow": false,
+            "trashRotateLogs": false,
+            "indexerDefaultLanguage": "en",
+            "showUpdateHour": 2,
+            "indexerTimeout": 20,
+            "indexerDefault": 0,
+            "plexFallBack": {
+                "enable": true,
+                "notifications": true,
+                "timeout": 3
+            },
+            "versionNotify": true,
+            "autoUpdate": false,
+            "updateFrequency": 1,
+            "notifyOnUpdate": true,
+            "availableThemes": [
+                {
+                    "name": "dark",
+                    "version": "0.1.0",
+                    "author": "p0psicles"
+                },
+                {
+                    "name": "light",
+                    "version": "0.1.0",
+                    "author": "p0psicles"
+                }
+            ],
+            "timePresets": [
+                "%I:%M:%S %p",
+                "%H:%M:%S"
+            ],
+            "datePresets": [
+                "%Y-%m-%d",
+                "%a, %Y-%m-%d",
+                "%A, %Y-%m-%d",
+                "%y-%m-%d",
+                "%a, %y-%m-%d",
+                "%A, %y-%m-%d",
+                "%m/%d/%Y",
+                "%a, %m/%d/%Y",
+                "%A, %m/%d/%Y",
+                "%m/%d/%y",
+                "%a, %m/%d/%y",
+                "%A, %m/%d/%y",
+                "%m-%d-%Y",
+                "%a, %m-%d-%Y",
+                "%A, %m-%d-%Y",
+                "%m-%d-%y",
+                "%a, %m-%d-%y",
+                "%A, %m-%d-%y",
+                "%m.%d.%Y",
+                "%a, %m.%d.%Y",
+                "%A, %m.%d.%Y",
+                "%m.%d.%y",
+                "%a, %m.%d.%y",
+                "%A, %m.%d.%y",
+                "%d-%m-%Y",
+                "%a, %d-%m-%Y",
+                "%A, %d-%m-%Y",
+                "%d-%m-%y",
+                "%a, %d-%m-%y",
+                "%A, %d-%m-%y",
+                "%d/%m/%Y",
+                "%a, %d/%m/%Y",
+                "%A, %d/%m/%Y",
+                "%d/%m/%y",
+                "%a, %d/%m/%y",
+                "%A, %d/%m/%y",
+                "%d.%m.%Y",
+                "%a, %d.%m.%Y",
+                "%A, %d.%m.%Y",
+                "%d.%m.%y",
+                "%a, %d.%m.%y",
+                "%A, %d.%m.%y",
+                "%d. %b %Y",
+                "%a, %d. %b %Y",
+                "%A, %d. %b %Y",
+                "%d. %b %y",
+                "%a, %d. %b %y",
+                "%A, %d. %b %y",
+                "%d. %B %Y",
+                "%a, %d. %B %Y",
+                "%A, %d. %B %Y",
+                "%d. %B %y",
+                "%a, %d. %B %y",
+                "%A, %d. %B %y",
+                "%b %d, %Y",
+                "%a, %b %d, %Y",
+                "%A, %b %d, %Y",
+                "%B %d, %Y",
+                "%a, %B %d, %Y",
+                "%A, %B %d, %Y"
+            ],
+            "timezoneDisplay": true,
+            "webInterface": {
+                "apiKey": "34b11fbcc280af25381a32ac773a291e",
+                "log": false,
+                "username": "User",
+                "password": "",
+                "port": 8081,
+                "notifyOnLogin": false,
+                "ipv6": true,
+                "httpsEnable": false,
+                "httpsCert": "server.crt",
+                "httpsKey": "server.key",
+                "handleReverseProxy": false
+            },
+            "cpuPreset": "NORMAL",
+            "sslVerify": true,
+            "sslCaBundle": "",
+            "noRestart": false,
+            "encryptionVersion": false,
+            "calendarUnprotected": false,
+            "calendarIcons": false,
+            "proxySetting": "",
+            "proxyIndexers": false,
+            "skipRemovedFiles": false,
+            "epDefaultDeletedStatus": 6,
+            "developer": true,
+            "git": {
+                "username": "",
+                "password": "",
+                "token": "",
+                "authType": 0,
+                "remote": "origin",
+                "path": "",
+                "org": "pymedusa",
+                "reset": true,
+                "resetBranches": [],
+                "url": "https://github.com/pymedusa/medusa.github.io"
+            },
+            "backlogOverview": {
+                "status": "all",
+                "period": "all"
+            }
+        },
+        "clients": {
+            "torrents": {
+                "authType": "basic",
+                "dir": "D:\\Series\\Drop",
+                "enabled": true,
+                "highBandwidth": false,
+                "host": "http://omv/rutorrent/plugins/httprpc/action.php",
+                "label": "series",
+                "labelAnime": "anime",
+                "method": "blackhole",
+                "path": "/media/bigdisk/Complete",
+                "paused": false,
+                "rpcUrl": "transmission",
+                "seedLocation": "",
+                "seedTime": 0,
+                "username": "Rogier",
+                "password": "Tequila99",
+                "verifySSL": false
+            },
+            "nzb": {
+                "enabled": true,
+                "dir": "D:\\Series\\Drop",
+                "method": "blackhole",
+                "nzbget": {
+                    "category": "tv",
+                    "categoryAnime": "anime",
+                    "categoryAnimeBacklog": "anime",
+                    "categoryBacklog": "tv",
+                    "host": "",
+                    "priority": 100,
+                    "useHttps": false,
+                    "username": "nzbget",
+                    "password": "tegbzn6789"
+                },
+                "sabnzbd": {
+                    "category": "tv",
+                    "categoryAnime": "anime",
+                    "categoryAnimeBacklog": "anime",
+                    "categoryBacklog": "tv",
+                    "forced": false,
+                    "host": "",
+                    "username": "Rogier",
+                    "password": "C0llin2013",
+                    "apiKey": ""
+                }
+            }
+        },
+        "layout": {
+            "schedule": "banner",
+            "history": "detailed",
+            "historyLimit": "100",
+            "home": "poster",
+            "show": {
+                "specials": true,
+                "showListOrder": [
+                    "Anime",
+                    "Series"
+                ],
+                "pagination": {
+                    "enable": true
+                }
+            },
+            "wide": false,
+            "posterSortdir": 1,
+            "themeName": "light",
+            "animeSplitHomeInTabs": true,
+            "animeSplitHome": true,
+            "fanartBackground": true,
+            "fanartBackgroundOpacity": 0.3,
+            "timezoneDisplay": "local",
+            "dateStyle": "%A, %m/%d/%y",
+            "timeStyle": "%H:%M:%S",
+            "trimZero": false,
+            "sortArticle": false,
+            "fuzzyDating": false,
+            "posterSortby": "date",
+            "comingEps": {
+                "displayPaused": false,
+                "sort": "network",
+                "missedRange": 7,
+                "layout": "banner"
+            },
+            "backlogOverview": {
+                "status": "all",
+                "period": "all"
+            }
+        },
+        "consts": {
+            "qualities": {
+                "values": [
+                    {
+                        "value": 0,
+                        "key": "na",
+                        "name": "N/A"
+                    },
+                    {
+                        "value": 1,
+                        "key": "unknown",
+                        "name": "Unknown"
+                    },
+                    {
+                        "value": 2,
+                        "key": "sdtv",
+                        "name": "SDTV"
+                    },
+                    {
+                        "value": 4,
+                        "key": "sddvd",
+                        "name": "SD DVD"
+                    },
+                    {
+                        "value": 8,
+                        "key": "hdtv",
+                        "name": "720p HDTV"
+                    },
+                    {
+                        "value": 16,
+                        "key": "rawhdtv",
+                        "name": "RawHD"
+                    },
+                    {
+                        "value": 32,
+                        "key": "fullhdtv",
+                        "name": "1080p HDTV"
+                    },
+                    {
+                        "value": 64,
+                        "key": "hdwebdl",
+                        "name": "720p WEB-DL"
+                    },
+                    {
+                        "value": 128,
+                        "key": "fullhdwebdl",
+                        "name": "1080p WEB-DL"
+                    },
+                    {
+                        "value": 256,
+                        "key": "hdbluray",
+                        "name": "720p BluRay"
+                    },
+                    {
+                        "value": 512,
+                        "key": "fullhdbluray",
+                        "name": "1080p BluRay"
+                    },
+                    {
+                        "value": 1024,
+                        "key": "uhd4ktv",
+                        "name": "4K UHD TV"
+                    },
+                    {
+                        "value": 2048,
+                        "key": "uhd4kwebdl",
+                        "name": "4K UHD WEB-DL"
+                    },
+                    {
+                        "value": 4096,
+                        "key": "uhd4kbluray",
+                        "name": "4K UHD BluRay"
+                    },
+                    {
+                        "value": 8192,
+                        "key": "uhd8ktv",
+                        "name": "8K UHD TV"
+                    },
+                    {
+                        "value": 16384,
+                        "key": "uhd8kwebdl",
+                        "name": "8K UHD WEB-DL"
+                    },
+                    {
+                        "value": 32768,
+                        "key": "uhd8kbluray",
+                        "name": "8K UHD BluRay"
+                    }
+                ],
+                "anySets": [
+                    {
+                        "value": 40,
+                        "key": "anyhdtv",
+                        "name": "HDTV"
+                    },
+                    {
+                        "value": 192,
+                        "key": "anywebdl",
+                        "name": "WEB-DL"
+                    },
+                    {
+                        "value": 768,
+                        "key": "anybluray",
+                        "name": "BluRay"
+                    }
+                ],
+                "presets": [
+                    {
+                        "value": 65518,
+                        "key": "any",
+                        "name": "Any"
+                    },
+                    {
+                        "value": 6,
+                        "key": "sd",
+                        "name": "SD"
+                    },
+                    {
+                        "value": 1000,
+                        "key": "hd",
+                        "name": "HD"
+                    },
+                    {
+                        "value": 328,
+                        "key": "hd720p",
+                        "name": "HD720p"
+                    },
+                    {
+                        "value": 672,
+                        "key": "hd1080p",
+                        "name": "HD1080p"
+                    },
+                    {
+                        "value": 64512,
+                        "key": "uhd",
+                        "name": "UHD"
+                    },
+                    {
+                        "value": 7168,
+                        "key": "uhd4k",
+                        "name": "UHD-4K"
+                    },
+                    {
+                        "value": 57344,
+                        "key": "uhd8k",
+                        "name": "UHD-8K"
+                    }
+                ]
+            },
+            "statuses": [
+                {
+                    "value": -1,
+                    "key": "unset",
+                    "name": "Unset"
+                },
+                {
+                    "value": 1,
+                    "key": "unaired",
+                    "name": "Unaired"
+                },
+                {
+                    "value": 2,
+                    "key": "snatched",
+                    "name": "Snatched"
+                },
+                {
+                    "value": 3,
+                    "key": "wanted",
+                    "name": "Wanted"
+                },
+                {
+                    "value": 4,
+                    "key": "downloaded",
+                    "name": "Downloaded"
+                },
+                {
+                    "value": 5,
+                    "key": "skipped",
+                    "name": "Skipped"
+                },
+                {
+                    "value": 6,
+                    "key": "archived",
+                    "name": "Archived"
+                },
+                {
+                    "value": 7,
+                    "key": "ignored",
+                    "name": "Ignored"
+                },
+                {
+                    "value": 9,
+                    "key": "snatchedProper",
+                    "name": "Snatched (Proper)"
+                },
+                {
+                    "value": 10,
+                    "key": "subtitled",
+                    "name": "Subtitled"
+                },
+                {
+                    "value": 11,
+                    "key": "failed",
+                    "name": "Failed"
+                },
+                {
+                    "value": 12,
+                    "key": "snatchedBest",
+                    "name": "Snatched (Best)"
+                }
+            ]
+        },
+        "indexers": {
+            "indexers": {
+                "tvdb": {
+                    "enabled": true,
+                    "id": 1,
+                    "name": "TVDBv2",
+                    "apiParams": {
+                        "language": "en",
+                        "useZip": true
+                    },
+                    "xemOrigin": "tvdb",
+                    "icon": "thetvdb16.png",
+                    "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json",
+                    "baseUrl": "https://api.thetvdb.com/",
+                    "showUrl": "https://www.thetvdb.com/dereferrer/series/",
+                    "mappedTo": "tvdb_id",
+                    "identifier": "tvdb"
+                },
+                "tvmaze": {
+                    "enabled": true,
+                    "id": 3,
+                    "name": "TVmaze",
+                    "apiParams": {
+                        "language": "en",
+                        "useZip": true
+                    },
+                    "xemOrigin": null,
+                    "icon": "tvmaze16.png",
+                    "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json",
+                    "baseUrl": "http://api.tvmaze.com/",
+                    "showUrl": "http://www.tvmaze.com/shows/",
+                    "mappedTo": "tvmaze_id",
+                    "identifier": "tvmaze"
+                },
+                "tmdb": {
+                    "enabled": true,
+                    "id": 4,
+                    "name": "TMDB",
+                    "apiParams": {
+                        "language": "en",
+                        "useZip": true
+                    },
+                    "xemOrigin": null,
+                    "icon": "tmdb16.png",
+                    "scene_loc": "https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json",
+                    "baseUrl": "https://www.themoviedb.org/",
+                    "showUrl": "https://www.themoviedb.org/tv/",
+                    "mappedTo": "tmdb_id",
+                    "identifier": "tmdb"
+                }
+            },
+            "main": {
+                "validLanguages": [
+                    "da",
+                    "fi",
+                    "nl",
+                    "de",
+                    "it",
+                    "es",
+                    "fr",
+                    "pl",
+                    "hu",
+                    "el",
+                    "tr",
+                    "ru",
+                    "he",
+                    "ja",
+                    "pt",
+                    "zh",
+                    "cs",
+                    "sl",
+                    "hr",
+                    "ko",
+                    "en",
+                    "sv",
+                    "no"
+                ],
+                "langabbvToId": {
+                    "el": 20,
+                    "en": 7,
+                    "zh": 27,
+                    "it": 15,
+                    "cs": 28,
+                    "es": 16,
+                    "ru": 22,
+                    "nl": 13,
+                    "pt": 26,
+                    "no": 9,
+                    "tr": 21,
+                    "pl": 18,
+                    "fr": 17,
+                    "hr": 31,
+                    "de": 14,
+                    "da": 10,
+                    "fi": 11,
+                    "hu": 19,
+                    "ja": 25,
+                    "he": 24,
+                    "ko": 32,
+                    "sv": 8,
+                    "sl": 30
+                },
+                "externalMappings": {
+                    "2": "tvrage_id",
+                    "10": "imdb_id",
+                    "11": "anidb_id",
+                    "12": "trakt_id"
+                },
+                "traktIndexers": {
+                    "tvdb": 1,
+                    "tmdb": 4,
+                    "imdb": 10,
+                    "trakt": 12
+                },
+                "statusMap": {
+                    "Continuing": [
+                        "returning series",
+                        "tbd/on the bubble",
+                        "in development",
+                        "new series",
+                        "final season",
+                        "on hiatus",
+                        "pilot ordered",
+                        "to be determined",
+                        "running",
+                        "planned",
+                        "in production",
+                        "pilot",
+                        "continuing",
+                        "upcoming"
+                    ],
+                    "Ended": [
+                        "canceled/ended",
+                        "never aired",
+                        "pilot rejected",
+                        "canceled",
+                        "ended",
+                        "cancelled"
+                    ]
+                }
+            }
+        },
+        "system": {
+            "memoryUsage": "56.85 MB",
+            "schedulers": [
+                {
+                    "key": "dailySearch",
+                    "name": "Daily Search",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 2400000,
+                    "nextRun": 2386016,
+                    "lastRun": "2019-06-10T21:00:53.477616",
+                    "isSilent": true
+                },
+                {
+                    "key": "backlog",
+                    "name": "Backlog",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 43200000,
+                    "nextRun": 43186017,
+                    "lastRun": "2019-06-10T21:00:53.478603",
+                    "isSilent": true
+                },
+                {
+                    "key": "showUpdate",
+                    "name": "Show Update",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": "03:52:00",
+                    "cycleTime": 3600000,
+                    "nextRun": 24652538,
+                    "lastRun": "2019-06-10T21:00:00",
+                    "isSilent": true
+                },
+                {
+                    "key": "versionCheck",
+                    "name": "Version Check",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3600000,
+                    "nextRun": 3586035,
+                    "lastRun": "2019-06-10T21:00:53.496593",
+                    "isSilent": false
+                },
+                {
+                    "key": "showQueue",
+                    "name": "Show Queue",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3000,
+                    "nextRun": 1110,
+                    "lastRun": "2019-06-10T21:01:05.571404",
+                    "isSilent": true
+                },
+                {
+                    "key": "searchQueue",
+                    "name": "Search Queue",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3000,
+                    "nextRun": 1110,
+                    "lastRun": "2019-06-10T21:01:05.571404",
+                    "isSilent": true
+                },
+                {
+                    "key": "properFinder",
+                    "name": "Proper Finder",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 14400000,
+                    "nextRun": 14386017,
+                    "lastRun": "2019-06-10T21:00:53.478603",
+                    "isSilent": false
+                },
+                {
+                    "key": "postProcess",
+                    "name": "Post Process",
+                    "isAlive": true,
+                    "isEnabled": false,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 600000,
+                    "nextRun": null,
+                    "lastRun": "2019-06-10T21:00:53.478603",
+                    "isSilent": true
+                },
+                {
+                    "key": "subtitlesFinder",
+                    "name": "Subtitles Finder",
+                    "isAlive": true,
+                    "isEnabled": true,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3600000,
+                    "nextRun": 3586017,
+                    "lastRun": "2019-06-10T21:00:53.478603",
+                    "isSilent": false
+                },
+                {
+                    "key": "traktChecker",
+                    "name": "Trakt Checker",
+                    "isAlive": true,
+                    "isEnabled": false,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3600000,
+                    "nextRun": null,
+                    "lastRun": "2019-06-10T20:05:53.478603",
+                    "isSilent": true
+                },
+                {
+                    "key": "torrentChecker",
+                    "name": "Torrent Checker",
+                    "isAlive": true,
+                    "isEnabled": false,
+                    "isActive": false,
+                    "startTime": null,
+                    "cycleTime": 3600000,
+                    "nextRun": null,
+                    "lastRun": "2019-06-10T21:00:53.478603",
+                    "isSilent": false
+                }
+            ],
+            "showQueue": [],
+            "branch": "master",
+            "commitHash": "f5973b28465246e67465d7d86bdc8aa74d13e659",
+            "release": "0.3.7",
+            "sslVersion": "OpenSSL 1.1.1c  28 May 2019",
+            "pythonVersion": "2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)]",
+            "os": "Windows-10-10.0.17763-SP0",
+            "databaseVersion": {
+                "major": 44,
+                "minor": 15
+            },
+            "pid": 1234,
+            "locale": "en_US.UTF8",
+            "localUser": "User",
+            "programDir": "C:\\Medusa",
+            "dataDir": "C:\\Medusa\\Data",
+            "configFile": "C:\\Medusa\\Data\\config.ini",
+            "dbPath": "C:\\Medusa\\Data\\main.db",
+            "cacheDir": "C:\\Medusa\\Data\\cache",
+            "logDir": "C:\\Medusa\\Data\\Logs",
+            "appArgs": ["--nolaunch", "--datadir", "C:\\Medusa\\Data"],
+            "webRoot": "",
+            "runsInDocker": false,
+            "gitRemoteBranches": [
+                "develop",
+                "master"
+            ],
+            "cpuPresets": {
+                "HIGH": 5,
+                "NORMAL": 2,
+                "LOW": 1,
+                "DISABLED": 0
+            },
+            "news": {
+                "lastRead": "2018-04-21",
+                "latest": "2019-11-11",
+                "unread": 1
+            }
+        },
+        "stats": {
+            "overall": {
+                "episodes": {
+                    "downloaded": 100,
+                    "snatched": 5,
+                    "total": 150
+                },
+                "shows": {
+                    "active": 2,
+                    "total": 2
+                }
+            }
+        },
+        "metadata": {
+            "metadataProviders": {
+                "kodi_12plus": {
+                    "seasonAllBanner": true,
+                    "name": "KODI 12+",
+                    "showMetadata": true,
+                    "poster": true,
+                    "episodeMetadata": true,
+                    "example": {
+                        "seasonBanners": "season##-banner.jpg",
+                        "fanart": "fanart.jpg",
+                        "seasonAllBanner": "season-all-banner.jpg",
+                        "episodeMetadata": "Season##\\<i>filename</i>.nfo",
+                        "showMetadata": "tvshow.nfo",
+                        "seasonAllPoster": "season-all-poster.jpg",
+                        "poster": "poster.jpg",
+                        "episodeThumbnails": "Season##\\<i>filename</i>-thumb.jpg",
+                        "seasonPosters": "season##-poster.jpg",
+                        "banner": "banner.jpg"
+                    },
+                    "fanart": true,
+                    "seasonAllPoster": true,
+                    "seasonBanners": true,
+                    "episodeThumbnails": true,
+                    "seasonPosters": true,
+                    "banner": true,
+                    "id": "kodi_12plus"
+                },
+                "kodi": {
+                    "seasonAllBanner": false,
+                    "name": "KODI",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "season##-banner.jpg",
+                        "fanart": "fanart.jpg",
+                        "seasonAllBanner": "season-all-banner.jpg",
+                        "episodeMetadata": "Season##\\<i>filename</i>.nfo",
+                        "showMetadata": "tvshow.nfo",
+                        "seasonAllPoster": "season-all.tbn",
+                        "poster": "folder.jpg",
+                        "episodeThumbnails": "Season##\\<i>filename</i>.tbn",
+                        "seasonPosters": "season##.tbn",
+                        "banner": "folder.jpg"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "kodi"
+                },
+                "mediabrowser": {
+                    "seasonAllBanner": false,
+                    "name": "MediaBrowser",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "Season##\\banner.jpg",
+                        "fanart": "backdrop.jpg",
+                        "seasonAllBanner": "<i>not supported</i>",
+                        "episodeMetadata": "Season##\\metadata\\<i>filename</i>.xml",
+                        "showMetadata": "series.xml",
+                        "seasonAllPoster": "<i>not supported</i>",
+                        "poster": "folder.jpg",
+                        "episodeThumbnails": "Season##\\metadata\\<i>filename</i>.jpg",
+                        "seasonPosters": "Season##\\folder.jpg",
+                        "banner": "banner.jpg"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "mediabrowser"
+                },
+                "wdtv": {
+                    "seasonAllBanner": false,
+                    "name": "WDTV",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "<i>not supported</i>",
+                        "fanart": "<i>not supported</i>",
+                        "seasonAllBanner": "<i>not supported</i>",
+                        "episodeMetadata": "Season##\\<i>filename</i>.xml",
+                        "showMetadata": "<i>not supported</i>",
+                        "seasonAllPoster": "<i>not supported</i>",
+                        "poster": "folder.jpg",
+                        "episodeThumbnails": "Season##\\<i>filename</i>.metathumb",
+                        "seasonPosters": "Season##\\folder.jpg",
+                        "banner": "<i>not supported</i>"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "wdtv"
+                },
+                "tivo": {
+                    "seasonAllBanner": false,
+                    "name": "TIVO",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "<i>not supported</i>",
+                        "fanart": "<i>not supported</i>",
+                        "seasonAllBanner": "<i>not supported</i>",
+                        "episodeMetadata": "Season##\\.meta\\<i>filename</i>.ext.txt",
+                        "showMetadata": "<i>not supported</i>",
+                        "seasonAllPoster": "<i>not supported</i>",
+                        "poster": "<i>not supported</i>",
+                        "episodeThumbnails": "<i>not supported</i>",
+                        "seasonPosters": "<i>not supported</i>",
+                        "banner": "<i>not supported</i>"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "tivo"
+                },
+                "mede8er": {
+                    "seasonAllBanner": false,
+                    "name": "Mede8er",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "Season##\\banner.jpg",
+                        "fanart": "fanart.jpg",
+                        "seasonAllBanner": "<i>not supported</i>",
+                        "episodeMetadata": "Season##\\<i>filename</i>.xml",
+                        "showMetadata": "series.xml",
+                        "seasonAllPoster": "<i>not supported</i>",
+                        "poster": "folder.jpg",
+                        "episodeThumbnails": "Season##\\<i>filename</i>.jpg",
+                        "seasonPosters": "Season##\\folder.jpg",
+                        "banner": "banner.jpg"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "mede8er"
+                },
+                "sony_ps3": {
+                    "seasonAllBanner": false,
+                    "name": "Sony PS3",
+                    "showMetadata": false,
+                    "poster": false,
+                    "episodeMetadata": false,
+                    "example": {
+                        "seasonBanners": "<i>not supported</i>",
+                        "fanart": "<i>not supported</i>",
+                        "seasonAllBanner": "<i>not supported</i>",
+                        "episodeMetadata": "<i>not supported</i>",
+                        "showMetadata": "<i>not supported</i>",
+                        "seasonAllPoster": "<i>not supported</i>",
+                        "poster": "cover.jpg",
+                        "episodeThumbnails": "Season##\\<i>filename</i>.ext.cover.jpg",
+                        "seasonPosters": "<i>not supported</i>",
+                        "banner": "<i>not supported</i>"
+                    },
+                    "fanart": false,
+                    "seasonAllPoster": false,
+                    "seasonBanners": false,
+                    "episodeThumbnails": false,
+                    "seasonPosters": false,
+                    "banner": false,
+                    "id": "sony_ps3"
+                }
+            }
+        },
+        "notifiers": {
+            "kodi": {
+                "enabled": true,
+                "alwaysOn": true,
+                "notifyOnSnatch": true,
+                "notifyOnDownload": true,
+                "notifyOnSubtitleDownload": true,
+                "update": {
+                    "library": true,
+                    "full": true,
+                    "onlyFirst": false
+                },
+                "host": [
+                    "192.168.0.1:8080"
+                ],
+                "username": "",
+                "password": "",
+                "libraryCleanPending": false,
+                "cleanLibrary": false
+            },
+            "plex": {
+                "server": {
+                    "enabled": false,
+                    "updateLibrary": false,
+                    "host": [],
+                    "https": false,
+                    "username": "",
+                    "password": "",
+                    "token": ""
+                },
+                "client": {
+                    "enabled": false,
+                    "username": "",
+                    "host": [],
+                    "notifyOnSnatch": false,
+                    "notifyOnDownload": false,
+                    "notifyOnSubtitleDownload": false
+                }
+            },
+            "emby": {
+                "enabled": false,
+                "host": "",
+                "apiKey": ""
+            },
+            "nmj": {
+                "enabled": false,
+                "host": "",
+                "database": "",
+                "mount": ""
+            },
+            "nmjv2": {
+                "enabled": false,
+                "host": "",
+                "dbloc": "",
+                "database": ""
+            },
+            "synologyIndex": {
+                "enabled": false
+            },
+            "synology": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false
+            },
+            "pyTivo": {
+                "enabled": false,
+                "host": "",
+                "name": "",
+                "shareName": ""
+            },
+            "growl": {
+                "enabled": false,
+                "host": "",
+                "password": "",
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false
+            },
+            "prowl": {
+                "enabled": true,
+                "api": [],
+                "messageTitle": "Medusa",
+                "priority": 1,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false
+            },
+            "libnotify": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false
+            },
+            "pushover": {
+                "enabled": false,
+                "apiKey": "",
+                "userKey": "",
+                "device": [],
+                "sound": "pushover",
+                "priority": 0,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false
+            },
+            "boxcar2": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "accessToken": ""
+            },
+            "pushalot": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "authToken": ""
+            },
+            "pushbullet": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "api": "",
+                "device": ""
+            },
+            "join": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "api": "",
+                "device": ""
+            },
+            "freemobile": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "api": "",
+                "id": ""
+            },
+            "telegram": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "api": "",
+                "id": ""
+            },
+            "discord": {
+                "enabled": true,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "webhook": "",
+                "tts": true
+            },
+            "twitter": {
+                "enabled": true,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "dmto": "",
+                "prefix": "Medusa",
+                "directMessage": true
+            },
+            "trakt": {
+                "enabled": false,
+                "pinUrl": "https://trakt.tv/pin/4562",
+                "username": "",
+                "accessToken": "",
+                "timeout": 30,
+                "defaultIndexer": 1,
+                "sync": false,
+                "syncRemove": false,
+                "syncWatchlist": false,
+                "methodAdd": 0,
+                "removeWatchlist": false,
+                "removeSerieslist": false,
+                "removeShowFromApplication": false,
+                "startPaused": false,
+                "blacklistName": ""
+            },
+            "email": {
+                "enabled": true,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "host": "",
+                "port": 25,
+                "from": "",
+                "tls": false,
+                "username": "",
+                "password": "",
+                "addressList": [],
+                "subject": ""
+            },
+            "slack": {
+                "enabled": false,
+                "notifyOnSnatch": false,
+                "notifyOnDownload": false,
+                "notifyOnSubtitleDownload": false,
+                "webhook": ""
+            }
+        },
+        "postprocessing": {
+            "naming": {
+                "pattern": "Season %S/%S.N.S%0SE%0E.%RT.%SQ.N-%RG",
+                "multiEp": 16,
+                "patternAirByDate": "%SN - %A.D - %EN",
+                "patternSports": "%SN - %A-D - %EN",
+                "patternAnime": "%SN - S%0SE%0E - [%QN] [%RG]",
+                "enableCustomNamingAirByDate": false,
+                "enableCustomNamingSports": false,
+                "enableCustomNamingAnime": false,
+                "animeMultiEp": 1,
+                "animeNamingType": 3,
+                "stripYear": false
+            },
+            "showDownloadDir": "C:\\Downloads\\TV",
+            "processAutomatically": true,
+            "postponeIfSyncFiles": true,
+            "postponeIfNoSubs": false,
+            "renameEpisodes": true,
+            "createMissingShowDirs": false,
+            "addShowsWithoutDir": false,
+            "moveAssociatedFiles": false,
+            "nfoRename": true,
+            "airdateEpisodes": false,
+            "unpack": false,
+            "deleteRarContent": false,
+            "noDelete": false,
+            "processMethod": "copy",
+            "reflinkAvailable": false,
+            "autoPostprocessorFrequency": 10,
+            "syncFiles": [
+                "!sync",
+                "lftp-pget-status",
+                "part",
+                "bts",
+                "!qb",
+                "!qB"
+            ],
+            "fileTimestampTimezone": "network",
+            "allowedExtensions": [
+                "nfo",
+                "idx",
+                "sub",
+                "srt"
+            ],
+            "extraScripts": [],
+            "extraScriptsUrl": "https://github.com/pymedusa/Medusa/wiki/Post-Processing#extra-scripts",
+            "multiEpStrings": {
+                "1": "Repeat",
+                "2": "Extend",
+                "4": "Duplicate",
+                "8": "Extend (Limited)",
+                "16": "Repeat (Separated)",
+                "32": "Extend (Limited, E-prefixed)",
+                "64": "Extend (Limited, e-prefixed)"
+            }
+        },
+        "search": {
+            "general": {
+                "randomizeProviders": false,
+                "downloadPropers": true,
+                "checkPropersInterval": "4h",
+                "propersSearchDays": 2,
+                "backlogDays": 7,
+                "backlogFrequency": 720,
+                "minBacklogFrequency": 720,
+                "dailySearchFrequency": 10,
+                "minDailySearchFrequency": 10,
+                "removeFromClient": false,
+                "torrentCheckerFrequency": 60,
+                "minTorrentCheckerFrequency": 30,
+                "usenetRetention": 500,
+                "trackersList": [
+                    "udp://tracker.coppersurfer.tk:6969/announce",
+                    "udp://tracker.leechers-paradise.org:6969/announce",
+                    "udp://tracker.zer0day.to:1337/announce",
+                    "udp://tracker.opentrackr.org:1337/announce",
+                    "http://tracker.opentrackr.org:1337/announce",
+                    "udp://p4p.arenabg.com:1337/announce",
+                    "http://p4p.arenabg.com:1337/announce",
+                    "udp://explodie.org:6969/announce",
+                    "udp://9.rarbg.com:2710/announce",
+                    "http://explodie.org:6969/announce",
+                    "http://tracker.dler.org:6969/announce",
+                    "udp://public.popcorn-tracker.org:6969/announce",
+                    "udp://tracker.internetwarriors.net:1337/announce",
+                    "udp://ipv4.tracker.harry.lu:80/announce",
+                    "http://ipv4.tracker.harry.lu:80/announce",
+                    "udp://mgtracker.org:2710/announce",
+                    "http://mgtracker.org:6969/announce",
+                    "udp://tracker.mg64.net:6969/announce",
+                    "http://tracker.mg64.net:6881/announce",
+                    "http://torrentsmd.com:8080/announce"
+                ],
+                "allowHighPriority": true,
+                "cacheTrimming": false,
+                "maxCacheAge": 30,
+                "failedDownloads": {
+                    "enabled": true,
+                    "deleteFailed": false
+                }
+            },
+            "filters": {
+                "ignored": [
+                    "german",
+                    "french",
+                    "core2hd",
+                    "dutch",
+                    "swedish",
+                    "reenc",
+                    "MrLss",
+                    "dubbed"
+                ],
+                "undesired": [
+                    "internal",
+                    "xvid"
+                ],
+                "preferred": [],
+                "required": [],
+                "ignoredSubsList": [
+                    "dk",
+                    "fin",
+                    "heb",
+                    "kor",
+                    "nor",
+                    "nordic",
+                    "pl",
+                    "swe"
+                ],
+                "ignoreUnknownSubs": false
+            }
         }
-      }
     }
-  }
 }

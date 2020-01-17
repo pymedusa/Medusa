@@ -25,6 +25,9 @@ expected_groups = [
 
     # The.Good.Wife.Season.6.480p.HDTV.H264-20-40.WEB-DL
     '20-40',
+
+    # Scene release group confused with episode.
+    'E7',
 ]
 
 allowed_languages = [

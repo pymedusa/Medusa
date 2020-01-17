@@ -41,28 +41,28 @@ class Notifier(object):
         except ValueError:
             return {}
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, title, message):
         if app.PUSHBULLET_NOTIFY_ONSNATCH:
             self._sendPushbullet(
                 pushbullet_api=None,
-                event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]] + ' : ' + ep_name,
-                message=ep_name
+                event=title,
+                message=message
             )
 
-    def notify_download(self, ep_name):
+    def notify_download(self, ep_obj):
         if app.PUSHBULLET_NOTIFY_ONDOWNLOAD:
             self._sendPushbullet(
                 pushbullet_api=None,
-                event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ' : ' + ep_name,
-                message=ep_name
+                event=common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + ep_obj.pretty_name_with_quality(),
+                message=ep_obj.pretty_name_with_quality()
             )
 
-    def notify_subtitle_download(self, ep_name, lang):
+    def notify_subtitle_download(self, ep_obj, lang):
         if app.PUSHBULLET_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendPushbullet(
                 pushbullet_api=None,
-                event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' : ' + ep_name + ' : ' + lang,
-                message=ep_name + ': ' + lang
+                event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ': ' + ep_obj.pretty_name() + ': ' + lang,
+                message=ep_obj.pretty_name() + ': ' + lang
             )
 
     def notify_git_update(self, new_version='??'):

@@ -1,11 +1,10 @@
-import test from 'ava';
 import { mount } from '@vue/test-utils';
+import { NotFound } from '../../../src/components';
 
-// Needs to be required otherwise nyc won't see it
-const NotFound = require('../../../static/js/templates/http/404.vue');
+describe('NotFound.test.js', () => {
+    it('renders not-found page', () => {
+        const wrapper = mount(NotFound);
 
-test('renders not-found page', t => {
-    const wrapper = mount(NotFound);
-
-    t.snapshot(wrapper.html());
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

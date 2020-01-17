@@ -8,14 +8,19 @@ import datetime
 import mimetypes
 import os
 import shutil
+import site
 import sys
+
+from medusa import app
 
 
 def initialize():
     """Initialize all fixes and workarounds."""
     _check_python_version()
     _configure_syspath()
-    _monkey_patch_fs_functions()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _monkey_patch_fs_functions()
     _monkey_patch_logging_functions()
     _early_basic_logging()
     _register_utf8_codec()
@@ -23,31 +28,62 @@ def initialize():
     _configure_mimetypes()
     _handle_old_tornado()
     _unload_system_dogpile()
-    _use_shutil_custom()
+    # Not working in python3, maybe it's not necessary anymore
+    if sys.version_info[0] == 2:
+        _use_shutil_custom()
     _urllib3_disable_warnings()
     _strptime_workaround()
+    _monkey_patch_bdecode()
+    _monkey_patch_cfscrape()
     _configure_guessit()
     _configure_subliminal()
     _configure_knowit()
 
 
 def _check_python_version():
-    if sys.version_info < (2, 7):
-        print('Sorry, requires Python 2.7.x')
+    if sys.version_info < (2, 7) or (3,) < sys.version_info < (3, 5):
+        print('Sorry, requires Python 2.7.x or Python 3.5 and above')
         sys.exit(1)
 
 
-def _lib_location():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
-
-
-def _ext_lib_location():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'ext'))
+def _get_lib_location(relative_path):
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', relative_path))
 
 
 def _configure_syspath():
-    sys.path.insert(1, _lib_location())
-    sys.path.insert(1, _ext_lib_location())
+    """Add the vendored libraries into `sys.path`."""
+    # Note: These paths will be inserted into `sys.path` in reverse order (LIFO)
+    # So the last path on this list will be inserted as the first path on `sys.path`
+    # right after the current working dir.
+    # For example: [ cwd, pathN, ..., path1, path0, <rest_of_sys.path> ]
+
+    paths_to_insert = [
+        _get_lib_location(app.LIB_FOLDER),
+        _get_lib_location(app.EXT_FOLDER)
+    ]
+
+    if sys.version_info[0] == 2:
+        # Add Python 2-only vendored libraries
+        paths_to_insert.extend([
+            _get_lib_location(app.LIB2_FOLDER),
+            _get_lib_location(app.EXT2_FOLDER)
+        ])
+    elif sys.version_info[0] == 3:
+        # Add Python 3-only vendored libraries
+        paths_to_insert.extend([
+            _get_lib_location(app.LIB3_FOLDER),
+            _get_lib_location(app.EXT3_FOLDER)
+        ])
+
+    # Insert paths into `sys.path` and handle `.pth` files
+    # Inspired by: https://bugs.python.org/issue7744
+    for dirpath in paths_to_insert:
+        # Clear `sys.path`
+        sys.path, remainder = sys.path[:1], sys.path[1:]
+        # Add directory as a site-packages directory and handle `.pth` files
+        site.addsitedir(dirpath)
+        # Restore rest of `sys.path`
+        sys.path.extend(remainder)
 
 
 def _register_utf8_codec():
@@ -121,6 +157,34 @@ def _strptime_workaround():
     datetime.datetime.strptime('20110101', '%Y%m%d')
 
 
+def _monkey_patch_bdecode():
+    """
+    Monkeypatch `bencode.bdecode` to add an option to allow extra data.
+
+    This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
+    """
+    import bencode
+
+    def _patched_bdecode(value, allow_extra_data=False):
+        try:
+            result, length = bencode.decode_func[value[0:1]](value, 0)
+        except (IndexError, KeyError, TypeError, ValueError):
+            raise bencode.BencodeDecodeError('not a valid bencoded string')
+
+        if length != len(value) and not allow_extra_data:
+            raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+
+        return result
+
+    bencode.bdecode = _patched_bdecode
+
+
+def _monkey_patch_cfscrape():
+    """Monkeypatch `cfscrape.CloudflareScraper.solve_challenge` to solve the challenge without requiring Node.js."""
+    from medusa.init.cfscrape import patch_cfscrape
+    patch_cfscrape()
+
+
 def _configure_guessit():
     """Replace guessit with a pre-configured one, so guessit.guessit() could be called directly in any place."""
     import guessit
@@ -157,7 +221,7 @@ def _configure_knowit():
     from knowit.utils import detect_os
 
     os_family = detect_os()
-    suggested_path = os.path.join(_lib_location(), 'native', os_family)
+    suggested_path = os.path.join(_get_lib_location(app.LIB_FOLDER), 'native', os_family)
     if os_family == 'windows':
         subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
         suggested_path = os.path.join(suggested_path, subfolder)

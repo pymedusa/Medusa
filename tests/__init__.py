@@ -1,9 +1,8 @@
 # coding=utf-8
-import os
+from __future__ import unicode_literals
 import sys
 
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../lib')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ext')))
-sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import medusa
+
 
 sys._called_from_test = True

@@ -2,7 +2,7 @@
 """Provider test code for Generic Provider."""
 from __future__ import unicode_literals
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from dateutil import tz
 
@@ -127,6 +127,16 @@ sut = GenericProvider('FakeProvider')
         'timezone': 'US/Eastern',
         'fromtimestamp': True
     },
+    {  # p22: hd-space test human date like 'yesterday at 12:00:00'
+        'pubdate': 'yesterday at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=1, minutes=10, seconds=25),
+        'human_time': False
+    },
+    {  # p23: hd-space test human date like 'today at 12:00:00'
+        'pubdate': 'today at {0}'.format((datetime.now() - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
+        'expected': datetime.now().replace(microsecond=0, tzinfo=tz.gettz('UTC')) - timedelta(days=0, minutes=10, seconds=25),
+        'human_time': False
+    },
 ])
 def test_parse_pubdate(p):
     # Given
@@ -217,7 +227,7 @@ def test_create_search_string_air_by_date(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []
@@ -257,7 +267,7 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
-    episode.airdate = date(2018, 01, 10)
+    episode.airdate = date(2018, 1, 10)
 
     search_string = {
         'Episode': []
@@ -272,24 +282,75 @@ def test_create_search_string_sports(p, create_tvshow, create_tvepisode):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Standard series search string
+    {  # p0: Standard series search string, with series config scene disabled
         'series_name': 'My Series',
+        'series_scene': False,
         'separator': '+',
-        'series_alias': ['My Series S1', 'My Series Season Scene title', 'My Series S2'],
+        # All series aliases included the season scene exceptions.
+        'series_alias': [
+            'My Series S1',
+            'My Series alternative title',
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        ],
         'add_string': 'add_string',
         'season': 2,
         'scene_season': 2,
         'episode': 6,
         'scene_episode': 6,
-        'scene_episode_absolute': 12,
-        'season_scene_name_exceptions': {'My Series S1', 'My Series Season Scene title', 'My Series S2'},
+        'absolute_number': 12,
+        'scene_absolute_number': 12,
+        # These season_scene_name_exceptions should be returned when querying for the season exceptions for season 2.
+        'season_scene_name_exceptions': {
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        },
         'expected': [
             u'My Series+12+add_string',
-            u'My Series S1+06+add_string',
+            u'My Series S1+12+add_string',
+            u'My Series alternative title+12+add_string',
+            u'My Series Season2+06+add_string',
             u'My Series Season Scene title+06+add_string',
             u'My Series S2+06+add_string'
         ]
     },
+    {  # p1: Standard series search string, with series config scene enabled
+        'series_name': 'My Series',
+        'series_scene': True,
+        'separator': '+',
+        # All series aliases included the season scene exceptions.
+        'series_alias': [
+            'My Series S1',
+            'My Series alternative title',
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        ],
+        'add_string': 'add_string',
+        'season': 2,
+        'scene_season': 2,
+        'episode': 6,
+        'scene_episode': 6,
+        'absolute_number': 12,
+        'scene_absolute_number': 13,
+        # These season_scene_name_exceptions should be returned when querying for the season exceptions for season 2.
+        'season_scene_name_exceptions': {
+            'My Series Season2',
+            'My Series Season Scene title',
+            'My Series S2'
+        },
+        'expected': [
+            u'My Series+13+add_string',
+            u'My Series S1+13+add_string',
+            u'My Series alternative title+13+add_string',
+            u'My Series Season2+06+add_string',
+            u'My Series Season Scene title+06+add_string',
+            u'My Series S2+06+add_string'
+        ]
+    },
+
 ])
 def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypatch_function_return):
 
@@ -300,19 +361,21 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     expected = p['expected']
 
     monkeypatch_function_return([(
-        b'medusa.scene_exceptions.get_season_scene_exceptions',
+        'medusa.scene_exceptions.get_season_scene_exceptions',
         p['season_scene_name_exceptions']
     )])
 
     mock_series = create_tvshow(indexer=1, name=series_name)
+    mock_series.scene = p['series_scene']
     provider = GenericProvider('mock_provider')
     provider.series = mock_series
     provider.search_separator = separator
 
     episode = create_tvepisode(mock_series, 1, 12)
     episode.scene_episode = p['scene_episode']
-    episode.scene_absolute_number = p['scene_episode_absolute']
     episode.scene_season = p['scene_season']
+    episode.absolute_number = p['absolute_number']
+    episode.scene_absolute_number = p['scene_absolute_number']
 
     search_string = {
         'Episode': []

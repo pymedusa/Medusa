@@ -16,25 +16,45 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - General'
-    },
-    created() {
-        // @FIXME: This is a workaround to make sure `rootDirs` is available for the component.
-        MEDUSA.config.rootDirs = ${json.dumps(app.ROOT_DIRS)};
-    },
-    data() {
-        return {
-            header: 'General Configuration',
-            rootDirs: []
-        };
+    mounted() {
+        if ($('input[name="proxy_setting"]').val().length === 0) {
+            $('input[id="proxy_indexers"]').prop('checked', false);
+            $('label[for="proxy_indexers"]').hide();
+        }
+
+        $('#theme_name').on('change', function() {
+            api.patch('config/main', {
+                theme: {
+                    name: $(this).val()
+                }
+            }).then(response => {
+                console.info(response);
+                window.location.reload();
+            }).catch(error => {
+                console.error(error);
+            });
+        });
+
+        $('input[name="proxy_setting"]').on('input', function() {
+            if ($(this).val().length === 0) {
+                $('input[id="proxy_indexers"]').prop('checked', false);
+                $('label[for="proxy_indexers"]').hide();
+            } else {
+                $('label[for="proxy_indexers"]').show();
+            }
+        });
+
+        $('#log_dir').fileBrowser({
+            title: 'Select log file folder location'
+        });
     }
 });
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <% indexer = 0 %>
 % if app.INDEXER_DEFAULT:
     <% indexer = app.INDEXER_DEFAULT %>
@@ -49,7 +69,7 @@ window.app = new Vue({
                     <li><app-link href="#advanced-settings">Advanced Settings</app-link></li>
                 </ul>
                 <div id="misc">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Misc</h3>
                         <p>Startup options. Indexer options. Log and show file locations.</p>
                         <p><b>Some options may require a manual restart to take effect.</b></p>
@@ -124,15 +144,16 @@ window.app = new Vue({
                                 <label>
                                     <span class="component-title">Show root directories</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <root-dirs @update:root-dirs="rootDirs = $event"></root-dirs>
+                                        <p>where the files of shows are located<br>
+                                        <b>These changes are automatically saved!</b></p>
+                                        <root-dirs></root-dirs>
                                     </span>
                                 </label>
                             </div>
                             <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                         </fieldset>
                     </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Indexer</h3>
                         <p>Options for controlling the show indexers.</p>
                     </div>
@@ -211,7 +232,7 @@ window.app = new Vue({
                         </fieldset>
                     </div>
 
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Updates</h3>
                         <p>Options for software updates.</p>
                     </div>
@@ -260,7 +281,7 @@ window.app = new Vue({
                     </div>
                 </div><!-- /component-group1 //-->
                 <div id="interface">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>User Interface</h3>
                         <p>Options for visual appearance.</p>
                     </div>
@@ -307,16 +328,6 @@ window.app = new Vue({
                                 </label>
                             </div>
                         </div>
-
-                        <div class="field-pair">
-                            <label for="display_all_seasons">
-                                <span class="component-title">Show all seasons</span>
-                                <span class="component-desc">
-                                    <input type="checkbox" name="display_all_seasons" id="display_all_seasons" ${'checked="checked"' if app.DISPLAY_ALL_SEASONS else ''}>
-                                    <p>on the show summary page</p>
-                                </span>
-                            </label>
-                        </div>
                         <div class="field-pair">
                             <label for="sort_article">
                                 <span class="component-title">Sort with "The", "A", "An"</span>
@@ -360,7 +371,7 @@ window.app = new Vue({
                                     <select class="form-control input-sm ${'' if not app.FUZZY_DATING else ' metadataDiv'}" id="date_presets${'' if not app.FUZZY_DATING else ' metadataDiv'}" name="date_preset${'' if not app.FUZZY_DATING else '_na'}">
                                         <option value="%x" ${'selected="selected"' if app.DATE_PRESET == '%x' else ''}>Use System Default</option>
                                         % for cur_preset in date_presets:
-                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${datetime.datetime(datetime.datetime.now().year, 12, 31, 14, 30, 47).strftime(cur_preset)}</option>
+                                            <option value="${cur_preset}" ${'selected="selected"' if app.DATE_PRESET == cur_preset else ''}>${sbdatetime.now().sbfdate(d_preset=cur_preset)}</option>
                                         % endfor
                                     </select>
                                 </span>
@@ -409,7 +420,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /User interface component-group -->
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Web Interface</h3>
                         <p>It is recommended that you enable a username and password to secure Medusa from being tampered with remotely.</p>
                         <p><b>These options require a manual restart to take effect.</b></p>
@@ -539,7 +550,7 @@ window.app = new Vue({
                 </div><!-- /component-group2 //-->
                 </div>
                 <div id="advanced-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Advanced Settings</h3>
                     </div>
                 <div class="component-group">
@@ -686,7 +697,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Logging</h3>
                     </div>
                 <div class="component-group">
@@ -740,7 +751,7 @@ window.app = new Vue({
                         <input type="submit" class="btn-medusa config_submitter" value="Save Changes" />
                     </fieldset>
                 </div>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>GitHub</h3>
                         <p>Options for github related features.</p>
                     </div>

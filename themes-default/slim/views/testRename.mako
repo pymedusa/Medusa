@@ -12,63 +12,54 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Preview Rename'
-        },
-        data() {
-            return {
-                header: 'Preview Rename'
-            };
-        },
-        mounted() {
-            $('.seriesCheck').on('click', function() {
-                const serCheck = this;
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    mounted() {
+        $('.seriesCheck').on('click', function() {
+            const serCheck = this;
 
-                $('.seasonCheck:visible').each(function() {
-                    this.checked = serCheck.checked;
-                });
-
-                $('.epCheck:visible').each(function() {
-                    this.checked = serCheck.checked;
-                });
+            $('.seasonCheck:visible').each(function() {
+                this.checked = serCheck.checked;
             });
 
-            $('.seasonCheck').on('click', function() {
-                const seasCheck = this;
-                const seasNo = $(seasCheck).attr('id');
-
-                const seasonIdentifier = 's' + seasNo;
-                $('.epCheck:visible').each(function() {
-                    const epParts = $(this).attr('id').split('e');
-                    if (epParts[0] === seasonIdentifier) {
-                        this.checked = seasCheck.checked;
-                    }
-                });
+            $('.epCheck:visible').each(function() {
+                this.checked = serCheck.checked;
             });
+        });
 
-            $('input[type=submit]').on('click', () => {
-                const epArr = [];
+        $('.seasonCheck').on('click', function() {
+            const seasCheck = this;
+            const seasNo = $(seasCheck).attr('id');
 
-                $('.epCheck').each(function() {
-                    if (this.checked === true) {
-                        epArr.push($(this).attr('id'));
-                    }
-                });
-
-                if (epArr.length === 0) {
-                    return false;
+            const seasonIdentifier = 's' + seasNo;
+            $('.epCheck:visible').each(function() {
+                const epParts = $(this).attr('id').split('e');
+                if (epParts[0] === seasonIdentifier) {
+                    this.checked = seasCheck.checked;
                 }
-
-                window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
             });
-        }
-    });
-};
+        });
+
+        $('input[type=submit]').on('click', () => {
+            const epArr = [];
+
+            $('.epCheck').each(function() {
+                if (this.checked === true) {
+                    epArr.push($(this).attr('id'));
+                }
+            });
+
+            if (epArr.length === 0) {
+                return false;
+            }
+
+            window.location.href = $('base').attr('href') + 'home/doRename?indexername=' + $('#indexer-name').attr('value') +
+                '&seriesid=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|');
+        });
+    }
+});
 </script>
 </%block>
 <%block name="content">
@@ -81,8 +72,10 @@ const startVue = () => {
     % endif
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="indexer-name" value="${show.indexer_name}" />
-<input type="hidden" id="series-slug" value="${show.slug}" />
-<h1 class="header">{{header}}</h1>
+
+<backstretch slug="${show.slug}"></backstretch>
+
+<h1 class="header">{{ $route.meta.header }}</h1>
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:

@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.common.py."""
+from __future__ import unicode_literals
 
 from medusa.common import Quality
 
@@ -7,94 +8,94 @@ import pytest
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: No screen_size, no format
+    {  # p0: No screen_size, no source
         'expected': Quality.UNKNOWN
     },
-    {  # p1: screen_size but no format
+    {  # p1: screen_size but no source
         'screen_size': '720p',
         'expected': Quality.UNKNOWN
     },
-    {  # p2: format but no screen_size
-        'format': 'HDTV',
+    {  # p2: source but no screen_size
+        'source': 'HDTV',
         'expected': Quality.UNKNOWN
     },
     {  # p3
         'screen_size': '720p',
-        'format': 'HDTV',
+        'source': 'HDTV',
         'expected': Quality.HDTV
     },
     {  # p4
         'screen_size': '720p',
-        'format': 'WEB-DL',
+        'source': 'Web',
         'expected': Quality.HDWEBDL
     },
     {  # p5
         'screen_size': '720p',
-        'format': 'WEBRip',
-        'expected': Quality.HDWEBDL
-    },
-    {  # p6
-        'screen_size': '720p',
-        'format': 'BluRay',
+        'source': 'Blu-ray',
         'expected': Quality.HDBLURAY
     },
-    {  # p7
+    {  # p6
         'screen_size': '1080i',
         'expected': Quality.RAWHDTV
     },
+    {  # p7
+        'screen_size': '1080p',
+        'source': 'HDTV',
+        'expected': Quality.FULLHDTV
+    },
     {  # p8
         'screen_size': '1080p',
-        'format': 'HDTV',
-        'expected': Quality.FULLHDTV
+        'source': 'Web',
+        'expected': Quality.FULLHDWEBDL
     },
     {  # p9
         'screen_size': '1080p',
-        'format': 'WEB-DL',
-        'expected': Quality.FULLHDWEBDL
-    },
-    {  # p10
-        'screen_size': '1080p',
-        'format': 'WEBRip',
-        'expected': Quality.FULLHDWEBDL
-    },
-    {  # p11
-        'screen_size': '1080p',
-        'format': 'BluRay',
+        'source': 'Blu-ray',
         'expected': Quality.FULLHDBLURAY
     },
-    {  # p12
-        'screen_size': '4K',
-        'format': 'HDTV',
+    {  # p10
+        'screen_size': '2160p',
+        'source': 'HDTV',
         'expected': Quality.UHD_4K_TV
     },
-    {  # p13
-        'screen_size': '4K',
-        'format': 'WEB-DL',
+    {  # p11
+        'screen_size': '2160p',
+        'source': 'Web',
         'expected': Quality.UHD_4K_WEBDL
     },
-    {  # p14
-        'screen_size': '4K',
-        'format': 'WEBRip',
-        'expected': Quality.UHD_4K_WEBDL
-    },
-    {  # p15
-        'screen_size': '4K',
-        'format': 'BluRay',
+    {  # p12
+        'screen_size': '2160p',
+        'source': 'Blu-ray',
         'expected': Quality.UHD_4K_BLURAY
     },
+    {  # p13
+        'screen_size': '4320p',
+        'source': 'HDTV',
+        'expected': Quality.UHD_8K_TV
+    },
+    {  # p14
+        'screen_size': '4320p',
+        'source': 'Web',
+        'expected': Quality.UHD_8K_WEBDL
+    },
+    {  # p15
+        'screen_size': '4320p',
+        'source': 'Blu-ray',
+        'expected': Quality.UHD_8K_BLURAY
+    },
     {  # p16: multiple screen sizes
-        'screen_size': ['4K', '720p'],
-        'format': 'BluRay',
+        'screen_size': ['2160p', '720p'],
+        'source': 'Blu-ray',
         'expected': Quality.UNKNOWN
     },
-    {  # p17: multiple formats
+    {  # p17: multiple sources
         'screen_size': '720p',
-        'format': ['HDTV', 'BluRay'],
+        'source': ['HDTV', 'Blu-ray'],
         'expected': Quality.UNKNOWN
     },
-    {  # p18: format not mapped (at least not yet)
+    {  # p18: source not mapped (at least not yet)
         'screen_size': '480p',
-        'format': 'HDTV',
+        'source': 'HDTV',
         'expected': Quality.UNKNOWN
     },
 ])
@@ -102,7 +103,7 @@ def test_from_guessit(p):
     # Given
     guess = {
         'screen_size': p.get('screen_size'),
-        'format': p.get('format'),
+        'source': p.get('source'),
     }
     expected = p['expected']
 
@@ -130,21 +131,21 @@ def test_from_guessit(p):
         'quality': Quality.HDTV,
         'expected': {
             'screen_size': '720p',
-            'format': 'HDTV'
+            'source': 'HDTV'
         }
     },
     {  # p4
         'quality': Quality.HDWEBDL,
         'expected': {
             'screen_size': '720p',
-            'format': 'WEB-DL',
+            'source': 'Web',
         }
     },
     {  # p5
         'quality': Quality.HDBLURAY,
         'expected': {
             'screen_size': '720p',
-            'format': 'BluRay',
+            'source': 'Blu-ray',
         }
     },
     {  # p6
@@ -157,47 +158,64 @@ def test_from_guessit(p):
         'quality': Quality.FULLHDTV,
         'expected': {
             'screen_size': '1080p',
-            'format': 'HDTV',
+            'source': 'HDTV',
         }
     },
     {  # p8
         'quality': Quality.FULLHDWEBDL,
         'expected': {
             'screen_size': '1080p',
-            'format': 'WEB-DL',
+            'source': 'Web',
         }
     },
     {  # p9
         'quality': Quality.FULLHDBLURAY,
         'expected': {
             'screen_size': '1080p',
-            'format': 'BluRay',
+            'source': 'Blu-ray',
         }
     },
     {  # p10
         'quality': Quality.UHD_4K_TV,
         'expected': {
-            'screen_size': '4K',
-            'format': 'HDTV',
+            'screen_size': '2160p',
+            'source': 'HDTV',
         }
     },
     {  # p11
         'quality': Quality.UHD_4K_WEBDL,
         'expected': {
-            'screen_size': '4K',
-            'format': 'WEB-DL',
+            'screen_size': '2160p',
+            'source': 'Web',
         }
     },
     {  # p12
         'quality': Quality.UHD_4K_BLURAY,
         'expected': {
-            'screen_size': '4K',
-            'format': 'BluRay',
+            'screen_size': '2160p',
+            'source': 'Blu-ray',
         }
     },
-    {  # p13: guessit unsupported quality
+    {  # p13
+        'quality': Quality.UHD_8K_TV,
+        'expected': {
+            'screen_size': '4320p',
+            'source': 'HDTV',
+        }
+    },
+    {  # p14
+        'quality': Quality.UHD_8K_WEBDL,
+        'expected': {
+            'screen_size': '4320p',
+            'source': 'Web',
+        }
+    },
+    {  # p15
         'quality': Quality.UHD_8K_BLURAY,
-        'expected': dict()
+        'expected': {
+            'screen_size': '4320p',
+            'source': 'Blu-ray',
+        }
     }
 ])
 def test_to_guessit(p):
@@ -444,3 +462,33 @@ def test_wanted_quality():
 
     # Then
     assert actual is True
+
+
+@pytest.mark.parametrize('p', [
+    {  # p0 - Invalid combined quality
+        'quality': -4,
+        'expected': False
+    },
+    {  # p1 - Valid 'allowed' quality
+        'quality': Quality.HDTV,
+        'expected': True
+    },
+    {  # p2 - Valid 'allowed' quality + valid 'preferred' quality
+        'quality': Quality.combine_qualities([Quality.HDTV], [Quality.HDWEBDL]),
+        'expected': True
+    },
+    {  # p3 - Valid 'allowed' quality + **invalid** 'preferred' quality
+        'quality': Quality.combine_qualities([Quality.HDTV], [-4]),
+        'expected': False
+    },
+])
+def test_is_valid_combined_quality(p):
+    # Given
+    quality = p['quality']
+    expected = p['expected']
+
+    # When
+    actual = Quality.is_valid_combined_quality(quality)
+
+    # Then
+    assert expected == actual

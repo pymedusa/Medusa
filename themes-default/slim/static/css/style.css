@@ -522,6 +522,12 @@ div.xem {
     line-height: 40px;
 }
 
+.show-add-options > div {
+    float: left;
+    padding-right: 10px;
+    line-height: 40px;
+}
+
 .show-grid {
     display: none;
     margin-bottom: 60px !important;
@@ -595,11 +601,6 @@ div.xem {
     max-width: 100%;
     overflow: hidden;
     border: 1px solid rgb(136, 136, 136);
-}
-
-/* Used by the displayShow and snatchSelection show header posters */
-#col-show-summary img.show-image {
-    max-width: 180px;
 }
 
 .background-image img {
@@ -884,6 +885,14 @@ home_newShow.mako
     font-size: 13px;
 }
 
+#addShowForm > div {
+    width: 100% !important;
+}
+
+#addShowForm > div:nth-child(2) > div {
+    position: relative !important;
+}
+
 .newShowPortal {
     max-width: 960px;
     padding: 10px 0;
@@ -1129,29 +1138,6 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#col-show-summary {
-    display: table;
-}
-
-.show-poster-container {
-    margin-right: 10px;
-    display: table-cell;
-    width: 180px;
-}
-
-.ver-spacer {
-    width: 15px;
-}
-
-#show-specials-and-seasons {
-    margin-bottom: 15px;
-}
-
-.show-info-container {
-    overflow: hidden;
-    display: table-cell;
-}
-
 .container-navShow {
     margin-top: -2px;
     margin-left: 305px;
@@ -1205,62 +1191,14 @@ div#col-show-summary {
         float: none;
     }
 
-    .show-poster-container {
-        display: inline-block;
-        width: 100%;
-        margin: 0 auto;
-        border-style: none;
-    }
-
-    .show-poster-container img {
-        display: block;
-        margin: 0 auto;
-        max-width: 280px !important;
-    }
-
     .col-md-12 > .horizontal-scroll {
         margin: 0 -13px;
-    }
-
-    .show-info-container {
-        display: block;
-        padding-top: 5px;
-        width: 100%;
     }
 }
 
 @media (min-width: 768px) {
-    .display-specials,
-    .display-seasons {
-        top: -60px;
-    }
-
-    #show-specials-and-seasons {
-        bottom: 5px;
-        right: 15px;
-        position: absolute;
-    }
-
     .tvshowImg {
         max-height: 245px;
-    }
-}
-
-@media (max-width: 991px) and (min-width: 768px) {
-    .show-poster-container {
-        float: left;
-        display: inline-block;
-        width: 100%;
-        border-style: none;
-    }
-
-    .show-info-container {
-        display: block;
-        width: 100%;
-    }
-
-    #col-show-summary img.show-image {
-        max-width: 280px;
     }
 }
 
@@ -1414,10 +1352,6 @@ ul.tags li a {
     z-index: -2;
 }
 
-.summaryTable {
-    overflow: hidden;
-}
-
 #checkboxControls {
     padding-top: 2px;
 }
@@ -1446,6 +1380,10 @@ ul.tags li a {
 }
 
 .good {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
     background-color: rgb(195, 227, 200);
 }
 
@@ -1706,12 +1644,6 @@ td.col-provider {
 td.col-group {
     min-width: 90px;
     text-align: center;
-}
-
-.showLegend {
-    padding-right: 6px;
-    padding-bottom: 1px;
-    width: 150px;
 }
 
 .input-scene {
@@ -1976,14 +1908,19 @@ config*.mako
 }
 
 .component-item {
+    padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(102, 102, 102);
-    min-height: 200px;
+    min-height: 100px;
+}
+
+.component-group-desc-legacy {
+    margin-top: 5px;
+    float: left;
+    width: 250px;
 }
 
 .component-group-desc {
     margin-top: 5px;
-    float: left;
-    width: 250px;
 }
 
 .component-group-desc h3 {
@@ -2010,7 +1947,6 @@ config*.mako
 }
 
 #config .nocheck,
-#config div #customQuality,
 .metadataDiv {
     padding-left: 20px;
 }
@@ -2033,10 +1969,6 @@ config*.mako
 
 #config label.space-right {
     margin-right: 10px;
-}
-
-#config .metadataDiv {
-    display: none;
 }
 
 .component-group-save {
@@ -2197,6 +2129,10 @@ select .selected {
     background-position: -299px 0;
 }
 
+.icon16-config-docker {
+    background-position: -318px 0;
+}
+
 [class^="add-client-icon-"],
 [class*=" add-client-icon-"] {
     background: url("../images/32x_sprite_colored_clients.png");
@@ -2236,7 +2172,7 @@ select .selected {
     background-position: -172px 0;
 }
 
-.add-client-icon-download-station {
+.add-client-icon-downloadstation {
     background-position: -205px 0;
 }
 
@@ -2479,6 +2415,14 @@ div.metadataDiv .disabled {
     background-position: -704px 0;
 }
 
+.icon-notifiers-join {
+    background-position: -736px 0;
+}
+
+.icon-notifiers-discord {
+    background-position: -768px 0;
+}
+
 div#config-components h3 > a {
     padding-left: 5px;
 }
@@ -2549,10 +2493,6 @@ a.whitelink {
 Global
 ========================================================================== */
 
-.logging-filter-controll {
-    padding-top: 24px;
-}
-
 span.path {
     padding: 3px 6px;
     color: rgb(139, 0, 0);
@@ -2566,97 +2506,6 @@ span.path {
 .h2footer {
     line-height: 18px;
     clear: both;
-}
-
-span.quality {
-    font: 12px/13px "Open Sans", verdana, sans-serif;
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
-    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
-    text-shadow: 0 1px rgba(0, 0, 0, 0.8);
-    color: rgb(255, 255, 255);
-    display: inline-block;
-    padding: 2px 4px;
-    text-align: center;
-    vertical-align: baseline;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-
-span.any-hd {
-    background-color: rgb(38, 114, 182);
-    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
-    background:
-        repeating-linear-gradient(
-        -45deg,
-        rgb(38, 114, 182),
-        rgb(38, 114, 182) 10px,
-        rgb(91, 153, 13) 10px,
-        rgb(91, 153, 13) 20px
-    );
-    /* stylelint-enable */
-}
-
-span.Custom {
-    background-color: rgb(98, 25, 147);
-}
-
-span.HD {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HDTV {
-    background-color: rgb(38, 114, 182);
-}
-
-span.HD720p {
-    background-color: rgb(91, 153, 13);
-}
-
-span.HD1080p {
-    background-color: rgb(38, 114, 182);
-}
-
-span.UHD-4K {
-    background-color: rgb(117, 0, 255);
-}
-
-span.UHD-8K {
-    background-color: rgb(65, 0, 119);
-}
-
-span.RawHD {
-    background-color: rgb(205, 115, 0);
-}
-
-span.RawHDTV {
-    background-color: rgb(205, 115, 0);
-}
-
-span.SD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDTV {
-    background-color: rgb(190, 38, 37);
-}
-
-span.SDDVD {
-    background-color: rgb(190, 38, 37);
-}
-
-span.Any {
-    background-color: rgb(102, 102, 102);
-}
-
-span.Unknown {
-    background-color: rgb(153, 153, 153);
-}
-
-span.Proper {
-    background-color: rgb(63, 127, 0);
 }
 
 /* red */
@@ -2674,22 +2523,6 @@ span.true {
     word-wrap: break-word;
 }
 
-span.required {
-    color: green;
-}
-
-span.preferred {
-    color: blue;
-}
-
-span.undesired {
-    color: orange;
-}
-
-span.ignored {
-    color: red;
-}
-
 a.wiki {
     color: red;
 }
@@ -2703,6 +2536,12 @@ option.flag {
     background-repeat: no-repeat;
     background-position: 10px 50%;
 }
+
+/*
+ * This is currently used by addShow_addExistingShows.mako and addShows_recommended.mako.
+ * Which in turn calls inc_addShowOptions.mako
+ * After these routes have been vueified, these templates can be removed as the below css.
+*/
 
 /* Anime section for editShow */
 .bwlWrapper {
@@ -2951,6 +2790,26 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
+/* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+
+.vgt-dropdown-menu {
+    background-color: rgb(245, 241, 228);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+.vgt-dropdown-menu > li > a:hover,
+.vgt-dropdown-menu > li > a:focus {
+    color: rgb(38, 38, 38);
+    text-decoration: none;
+    background-color: rgb(245, 245, 245);
+}
+
+.vgt-dropdown-menu > li > span {
+    padding: 4px 36px 4px 20px;
+    color: #333;
+}
+
 .form-control {
     color: rgb(0, 0, 0);
 }
@@ -2959,6 +2818,11 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .form-control-inline {
     display: inline;
     width: auto;
+}
+
+.form-control-inline-max {
+    display: inline;
+    width: 100%;
 }
 
 .input-sm-smallfont {
@@ -3384,6 +3248,42 @@ input sizing (for config pages)
     margin-top: -4px;
 }
 
+/* Added max-width, as setting width is really not optimal on smaller viewports */
+.max-input75 {
+    max-width: 75px;
+    margin-top: -4px;
+}
+
+.max-input100 {
+    max-width: 100px;
+    margin-top: -4px;
+}
+
+.max-input150 {
+    max-width: 150px;
+    margin-top: -4px;
+}
+
+.max-input200 {
+    max-width: 200px;
+    margin-top: -4px;
+}
+
+.max-input250 {
+    max-width: 250px;
+    margin-top: -4px;
+}
+
+.max-input300 {
+    max-width: 300px;
+    margin-top: -4px;
+}
+
+.max-input350 {
+    max-width: 350px;
+    margin-top: -4px;
+}
+
 select.input-sm {
     font-size: 0.9em;
 }
@@ -3392,11 +3292,15 @@ select.input-sm {
 formWizard.css
 ========================================================================== */
 
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
 fieldset.sectionwrap {
-    width: 800px;
     padding: 5px;
     text-align: left;
     border-width: 0;
+    width: 100%;
 }
 
 legend.legendStep {
@@ -3409,25 +3313,23 @@ div.stepsguide {
     overflow: hidden;
     text-align: left;
     cursor: pointer;
+    display: table;
 }
 
 div.stepsguide .step {
-    float: left;
+    display: table-cell;
     width: 33%;
     font: bold 24px Arial, sans-serif;
-}
-
-div.stepsguide .step p {
-    margin: 12px 0;
     border-bottom: 4px solid rgb(87, 68, 43);
 }
 
 div.stepsguide .disabledstep {
     color: rgb(196, 196, 196);
+    border-bottom: 4px solid rgb(138, 119, 94);
 }
 
 div.stepsguide .disabledstep p {
-    border-bottom: 4px solid rgb(138, 119, 94);
+    border-bottom: none;
 }
 
 div.stepsguide .step .smalltext {
@@ -3484,27 +3386,6 @@ div.formpaginate .next {
 div.field-pair input {
     margin-right: 6px;
     float: left;
-}
-
-/* step 3 related */
-#customQuality {
-    display: block;
-    padding: 10px 0;
-    overflow: hidden;
-    clear: both;
-}
-
-#customQualityWrapper div.component-group-desc {
-    float: left;
-    width: 172px;
-    margin-right: 10px;
-}
-
-#customQualityWrapper div.component-group-desc p {
-    width: 85%;
-    margin: 0.8em 0;
-    font-size: 1.13em;
-    color: rgb(102, 102, 102);
 }
 
 /* =======================================================================
@@ -4144,10 +4025,6 @@ div#searchNotification {
     text-align: center;
 }
 
-.summaryTable tr td {
-    word-break: break-all;
-}
-
 .release-name-ellipses {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4175,27 +4052,7 @@ div#searchNotification {
     box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
 
-/* =======================================================================
-viewLog.mako
-========================================================================== */
-div .notepad {
-    position: absolute;
-    right: 15px;
-    opacity: 0.1;
-    zoom: 1;
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-    -webkit-transition: opacity 0.5s; /* Safari */
-    transition: opacity 0.5s;
-}
-
-div .notepad:hover {
-    opacity: 0.4;
-}
-
-div.notepad img {
-    width: 50px;
-}
+/* ========================================================================== */
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
@@ -4216,11 +4073,6 @@ div.notepad img {
     .checkbox-inline.pull-xs-left {
         margin-right: 10px;
     }
-}
-
-/* Because the H1 has a margin of 20px withing the column col-sm-2 of 20px we need to configure the same for the columns which are used for the filter inputs. */
-.log-filter {
-    margin-top: 20px;
 }
 
 /* ========================================================================
@@ -4333,3 +4185,8 @@ CSS helper classes
     display: block;
 }
 */
+
+/* These classes should be natively available in bootstrap 4 */
+.d-block {
+    display: block;
+}

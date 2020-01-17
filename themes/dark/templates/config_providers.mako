@@ -10,15 +10,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Providers'
-    },
-    data() {
-        return {
-            header: 'Search Providers'
-        };
-    },
     beforeMount() {
         $('#config-components').tabs();
     },
@@ -854,7 +847,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/providers/saveProviders" method="post">
@@ -871,7 +864,7 @@ window.app = new Vue({
                   % endif
                 </ul>
                 <div id="provider-priorities" class="component-group" style='min-height: 550px;'>
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Priorities</h3>
                         <p>Check off and drag the providers into the order you want them to be used.</p>
                         <p>At least one provider is required but two are recommended.</p>
@@ -919,7 +912,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="provider-options" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Options</h3>
                         <p>Configure individual provider settings here.</p>
                         <p>Check with provider's website on how to obtain an API key if needed.</p>
@@ -963,10 +956,10 @@ window.app = new Vue({
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label for="${cur_newznab_provider.get_id()}_hash">
+                            <label for="${cur_newznab_provider.get_id()}_api_key">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="password" id="${cur_newznab_provider.get_id()}_hash" value="${cur_newznab_provider.api_key}" newznab_name="${cur_newznab_provider.get_id()}_hash" class="newznab_api_key form-control input-sm input350"/>
+                                    <input type="password" id="${cur_newznab_provider.get_id()}_api_key" name="${cur_newznab_provider.get_id()}_api_key" value="${cur_newznab_provider.api_key}" newznab_name="${cur_newznab_provider.get_id()}" class="newznab_api_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -1527,7 +1520,7 @@ window.app = new Vue({
                 </div><!-- /component-group2 //-->
                 % if app.USE_NZBS:
                 <div id="custom-newznab" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Custom Newznab Providers</h3>
                         <p>Add and setup or remove custom Newznab providers.</p>
                     </div>
@@ -1597,7 +1590,7 @@ window.app = new Vue({
                 % endif
                 % if app.USE_TORRENTS:
                 <div id="custom-torrent" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Custom Torrent Providers</h3>
                         <p>Add and setup or remove custom RSS providers.</p>
                     </div>
@@ -1656,7 +1649,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group4 //-->
                 <div id="custom-torznab" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Configure Jackett Providers</h3>
                         <p>Add and setup or remove Jackett providers.</p>
                     </div>

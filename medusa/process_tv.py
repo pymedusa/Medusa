@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import os
 import shutil
 import stat
@@ -14,6 +15,7 @@ from medusa.clients import torrent
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
@@ -24,6 +26,47 @@ from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, Incorrect
                                    InvalidRARArchiveUsage)
 
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+
+class PostProcessorRunner(object):
+    """Post Processor Scheduler Action."""
+
+    def __init__(self):
+        """Init method."""
+        self.amActive = False
+
+    def run(self, force=False, **kwargs):
+        """Run the postprocessor."""
+        path = kwargs.pop('path', app.TV_DOWNLOAD_DIR)
+        process_method = kwargs.pop('process_method', app.PROCESS_METHOD)
+
+        if not os.path.isdir(path):
+            result = ("Post-processing attempted but directory doesn't exist: "
+                      '{folder}').format(folder=path)
+            log.warning(result)
+            return result
+
+        if not os.path.isabs(path):
+            result = ('Post-processing attempted but directory is relative '
+                      '(and probably not what you really want to process): '
+                      '{folder}').format(folder=path)
+            log.warning(result)
+            return result
+
+        if app.post_processor_scheduler.action.amActive:
+            result = 'Post-processor is already running.'
+            log.info(result)
+            return result
+
+        try:
+            self.amActive = True
+            return ProcessResult(path, process_method).process(force=force, **kwargs)
+        finally:
+            self.amActive = False
+
+
 class ProcessResult(object):
 
     IGNORED_FOLDERS = ('@eaDir', '#recycle', '.@__thumb',)
@@ -32,7 +75,7 @@ class ProcessResult(object):
 
         self._output = []
         self.directory = path
-        self.process_method = process_method
+        self.process_method = process_method or app.PROCESS_METHOD
         self.resource_name = None
         self.result = True
         self.succeeded = True
@@ -151,7 +194,7 @@ class ProcessResult(object):
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
-            self.log('Successfully processed.')
+            self.log('Post-processing completed.')
 
             # Clean Kodi library
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
@@ -166,7 +209,8 @@ class ProcessResult(object):
             for missedfile in self.missedfiles:
                 self.log('{0}'.format(missedfile), logger.WARNING)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink') and app.TORRENT_SEED_LOCATION:
+        if all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
+                self.process_method in ('hardlink', 'symlink', 'reflink')]):
             for info_hash, release_names in list(iteritems(app.RECENTLY_POSTPROCESSED)):
                 if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash, None)
@@ -241,7 +285,8 @@ class ProcessResult(object):
             self.missedfiles.append('{0}: Failed download'.format(path))
             return False
 
-        if folder.startswith('_unpack'):
+        # SABnzbd: _UNPACK_, NZBGet: _unpack
+        if folder.startswith(('_UNPACK_', '_unpack')):
             self.log('The directory name indicates that this release is in the process of being unpacked.',
                      logger.DEBUG)
             self.missedfiles.append('{0}: Being unpacked'.format(path))
@@ -512,14 +557,14 @@ class ProcessResult(object):
                 'AND season = ? '
                 'AND episode = ? '
                 'AND status IN (?, ?, ?) ',
-                [history_result[0][b'indexer_id'],
-                 history_result[0][b'showid'],
-                 history_result[0][b'season'],
-                 history_result[0][b'episode']
+                [history_result[0]['indexer_id'],
+                 history_result[0]['showid'],
+                 history_result[0]['season'],
+                 history_result[0]['episode']
                  ] + snatched_statuses
             )
 
-            if not tv_episodes_result or tv_episodes_result[0][b'manually_searched'] == 0:
+            if not tv_episodes_result or tv_episodes_result[0]['manually_searched'] == 0:
                 self.log("You're trying to post-process an automatically searched file that has"
                          ' already been processed, skipping: {0}'.format(video_file), logger.DEBUG)
                 return True
@@ -642,7 +687,7 @@ class ProcessResult(object):
                     main_db_con = db.DBConnection()
                     sql_results = main_db_con.select('SELECT subtitles FROM tv_shows WHERE indexer = ? AND indexer_id = ? LIMIT 1',
                                                      [parse_result.series.indexer, parse_result.series.indexerid])
-                    return bool(sql_results[0][b'subtitles']) if sql_results else False
+                    return bool(sql_results[0]['subtitles']) if sql_results else False
 
                 logger.log('Empty indexer ID for: {name}'.format(name=name), logger.WARNING)
             except (InvalidNameException, InvalidShowException):

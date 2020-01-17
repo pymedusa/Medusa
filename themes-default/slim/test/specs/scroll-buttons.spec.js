@@ -1,24 +1,24 @@
-import test from 'ava';
 import { createLocalVue, mount } from '@vue/test-utils';
+import { ScrollButtons } from '../../src/components';
 
-// Needs to be required otherwise nyc won't see it
-const ScrollButtons = require('../../static/js/templates/scroll-buttons.vue');
+describe('ScrollButtons.test.js', () => {
+    let localVue;
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-});
-
-test('renders', t => {
-    const { localVue } = t.context;
-    const wrapper = mount(ScrollButtons, {
-        localVue,
-        data() {
-            return {
-                showToTop: true,
-                showLeftRight: true
-            };
-        }
+    beforeEach(() => {
+        localVue = createLocalVue();
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        const wrapper = mount(ScrollButtons, {
+            localVue,
+            data() {
+                return {
+                    showToTop: true,
+                    showLeftRight: true
+                };
+            }
+        });
+
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

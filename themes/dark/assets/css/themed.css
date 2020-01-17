@@ -464,13 +464,16 @@ config*.mako
 .component-group {
     padding: 15px 15px 25px;
     border-bottom: 1px dotted rgb(85, 85, 85);
-    min-height: 200px;
 }
 
 .component-group-desc p {
     width: 90%;
     margin: 10px 0;
     color: rgb(221, 221, 221);
+}
+
+.component-item {
+    border-bottom: 1px dotted rgb(85, 85, 85);
 }
 
 #provider_order_list li,
@@ -660,6 +663,25 @@ body {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
+/* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+.vgt-dropdown-menu {
+    background-color: rgb(41, 41, 41);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
+.vgt-dropdown-menu > li > span:hover,
+.vgt-dropdown-menu > li > span:focus {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    background-color: rgb(119, 119, 119);
+}
+
+.vgt-dropdown-menu > li > span {
+    padding: 4px 36px 4px 20px;
+    color: rgb(255, 255, 255);
+}
+
 /* submenu styling */
 #sub-menu-container {
     background-color: rgb(41, 41, 41);
@@ -784,12 +806,16 @@ legend.legendStep {
     margin-bottom: 0;
 }
 
-div.stepsguide .step p {
+div.stepsguide .step {
     margin: 12px 0;
     border-bottom: 4px solid rgb(35, 175, 220);
 }
 
-div.stepsguide .disabledstep p {
+div.stepsguide .step p {
+    margin: 12px 0;
+}
+
+div.stepsguide .disabledstep {
     border-bottom: 4px solid rgb(17, 120, 179);
 }
 

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from builtins import str
 
-from medusa.app import BASE_PYMEDUSA_URL
+from medusa.app import app
 from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
 from medusa.indexers.tvmaze.tvmaze_api import TVmaze
@@ -14,7 +14,7 @@ from medusa.session.core import MedusaSession
 from six import iteritems
 
 
-initConfig = {
+init_config = {
     'valid_languages': [
         'da', 'fi', 'nl', 'de', 'it', 'es', 'fr', 'pl', 'hu', 'el', 'tr',
         'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
@@ -42,25 +42,30 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
 STATUS_MAP = {
-    'returning series': 'Continuing',
-    'canceled/ended': 'Ended',
-    'tbd/on the bubble': 'Continuing',
-    'in development': 'Continuing',
-    'new series': 'Continuing',
-    'never aired': 'Ended',
-    'final season': 'Continuing',
-    'on hiatus': 'Continuing',
-    'pilot ordered': 'Continuing',
-    'pilot rejected': 'Ended',
-    'canceled': 'Ended',
-    'ended': 'Ended',
-    'to be determined': 'Continuing',
-    'running': 'Continuing',
-    'planned': 'Continuing',
-    'in production': 'Continuing',
-    'pilot': 'Continuing',
-    'cancelled': 'Ended',
-    'continuing': 'Continuing'
+    'Continuing': [
+        'returning series',
+        'tbd/on the bubble',
+        'in development',
+        'new series',
+        'final season',
+        'on hiatus',
+        'pilot ordered',
+        'to be determined',
+        'running',
+        'planned',
+        'in production',
+        'pilot',
+        'continuing',
+        'upcoming'
+    ],
+    'Ended': [
+        'canceled/ended',
+        'never aired',
+        'pilot rejected',
+        'canceled',
+        'ended',
+        'cancelled'
+    ]
 }
 
 indexerConfig = {
@@ -76,7 +81,7 @@ indexerConfig = {
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com/',
         'show_url': 'https://www.thetvdb.com/dereferrer/series/',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
@@ -94,7 +99,7 @@ indexerConfig = {
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
@@ -111,7 +116,7 @@ indexerConfig = {
             'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
-        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=app.BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org/',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to
@@ -146,8 +151,8 @@ def get_indexer_config():
     }
 
     main = {
-        'validLanguages': initConfig['valid_languages'],
-        'langabbvToId': initConfig['langabbv_to_id'],
+        'validLanguages': init_config['valid_languages'],
+        'langabbvToId': init_config['langabbv_to_id'],
         'externalMappings': {str(k): v for k, v in iteritems(EXTERNAL_MAPPINGS)},
         'traktIndexers': TRAKT_INDEXERS,
         'statusMap': STATUS_MAP

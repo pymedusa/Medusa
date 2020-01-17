@@ -5,85 +5,99 @@
 %>
 <%block name="scripts">
 <script>
+const { mapGetters } = window.Vuex;
+
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Episode Overview'
-        },
-        data() {
-            return {
-            };
-        },
-        mounted() {
-            $('.allCheck').on('click', function() {
-                const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
-                $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
-            });
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+        };
+    },
+    computed: mapGetters(['indexerIdToName']),
+    mounted() {
+        $.makeEpisodeRow = function(indexerId, seriesId, season, episode, name, checked) { // eslint-disable-line max-params
+            let row = '';
+            const series = indexerId + '-' + seriesId;
 
-            $('.get_more_eps').on('click', function() {
-                const indexerId = $(this).attr('data-indexer-id');
-                const indexerName = MEDUSA.config.indexers.indexerIdToName(indexerId);
-                const seriesId = $(this).attr('data-series-id');
-                const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
-                const lastRow = $('tr#' + indexerId + '-' + seriesId);
-                const clicked = $(this).data('clicked');
-                const action = $(this).attr('value');
+            row += ' <tr class="' + $('#row_class').val() + ' show-' + series + '">';
+            row += '  <td class="tableleft" align="center"><input type="checkbox" class="' + series + '-epcheck" name="' + series + '-s' + season + 'e' + episode + '"' + (checked ? ' checked' : '') + '></td>';
+            row += '  <td>' + season + 'x' + episode + '</td>';
+            row += '  <td class="tableright" style="width: 100%">' + name + '</td>';
+            row += ' </tr>';
 
-                if (clicked) {
-                    if (action.toLowerCase() === 'collapse') {
-                        $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
-                        $(this).prop('value', 'Expand');
-                    } else if (action.toLowerCase() === 'expand') {
-                        $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
-                        $(this).prop('value', 'Collapse');
-                    }
-                } else {
-                    $.getJSON('manage/showEpisodeStatuses', {
-                        indexername: indexerName,
-                        seriesid: seriesId, // eslint-disable-line camelcase
-                        whichStatus: $('#oldStatus').val()
-                    }, data => {
-                        $.each(data, (season, eps) => {
-                            $.each(eps, (episode, name) => {
-                                lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
-                            });
-                        });
-                    });
-                    $(this).data('clicked', 1);
+            return row;
+        };
+
+        const { indexerIdToName } = this;
+
+        $('.allCheck').on('click', function() {
+            const seriesId = $(this).attr('data-indexer-id') + '-' + $(this).attr('data-series-id');
+            $('.' + seriesId + '-epcheck').prop('checked', $(this).prop('checked'));
+        });
+
+        $('.get_more_eps').on('click', function() {
+            const indexerId = $(this).attr('data-indexer-id');
+            const indexerName = indexerIdToName(indexerId);
+            const seriesId = $(this).attr('data-series-id');
+            const checked = $('#allCheck-' + indexerId + '-' + seriesId).prop('checked');
+            const lastRow = $('tr#' + indexerId + '-' + seriesId);
+            const clicked = $(this).data('clicked');
+            const action = $(this).attr('value');
+
+            if (clicked) {
+                if (action.toLowerCase() === 'collapse') {
+                    $('table tr').filter('.show-' + indexerId + '-' + seriesId).hide();
+                    $(this).prop('value', 'Expand');
+                } else if (action.toLowerCase() === 'expand') {
+                    $('table tr').filter('.show-' + indexerId + '-' + seriesId).show();
                     $(this).prop('value', 'Collapse');
                 }
-            });
+            } else {
+                $.getJSON('manage/showEpisodeStatuses', {
+                    indexername: indexerName,
+                    seriesid: seriesId, // eslint-disable-line camelcase
+                    whichStatus: $('#oldStatus').val()
+                }, data => {
+                    $.each(data, (season, eps) => {
+                        $.each(eps, (episode, name) => {
+                            lastRow.after($.makeEpisodeRow(indexerId, seriesId, season, episode, name, checked));
+                        });
+                    });
+                });
+                $(this).data('clicked', 1);
+                $(this).prop('value', 'Collapse');
+            }
+        });
 
-            // Selects all visible episode checkboxes.
-            $('.selectAllShows').on('click', () => {
-                $('.allCheck').each(function() {
-                    this.checked = true;
-                });
-                $('input[class*="-epcheck"]').each(function() {
-                    this.checked = true;
-                });
+        // Selects all visible episode checkboxes.
+        $('.selectAllShows').on('click', () => {
+            $('.allCheck').each(function() {
+                this.checked = true;
             });
+            $('input[class*="-epcheck"]').each(function() {
+                this.checked = true;
+            });
+        });
 
-            // Clears all visible episode checkboxes and the season selectors
-            $('.unselectAllShows').on('click', () => {
-                $('.allCheck').each(function() {
-                    this.checked = false;
-                });
-                $('input[class*="-epcheck"]').each(function() {
-                    this.checked = false;
-                });
+        // Clears all visible episode checkboxes and the season selectors
+        $('.unselectAllShows').on('click', () => {
+            $('.allCheck').each(function() {
+                this.checked = false;
             });
-        }
-    });
-};
+            $('input[class*="-epcheck"]').each(function() {
+                this.checked = false;
+            });
+        });
+    }
+});
 </script>
 </%block>
 <%block name="content">
 <div id="content960">
-<h1 class="header">Episode Overview</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 % if not whichStatus or (whichStatus and not ep_counts):
     % if whichStatus:
         <h2>None of your episodes have status ${statusStrings[int(whichStatus)]}</h2>

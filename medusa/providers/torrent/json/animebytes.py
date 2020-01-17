@@ -8,6 +8,7 @@ import logging
 import re
 
 from medusa import tv
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -47,10 +48,6 @@ class AnimeBytes(TorrentProvider):
         # Miscellaneous Options
         self.freeleech = False
         self.anime_only = True
-
-        # Torrent Stats
-        self.minseed = None
-        self.minleech = None
 
         # Cache
         self.cache = tv.Cache(self, min_time=30)
@@ -141,7 +138,8 @@ class AnimeBytes(TorrentProvider):
                 # Hack for the h264 10bit stuff
                 properties_string = properties_string.replace('h26410-bit', 'h264|hi10p')
                 properties = properties_string.split('|')
-                if not all(properties):
+                download_url = row.get('Link')
+                if not (download_url or all(properties)):
                     continue
 
                 # Get rid of freeleech from properties
@@ -166,22 +164,27 @@ class AnimeBytes(TorrentProvider):
                 release_type = OTHER
                 season = None
                 episode = None
+                multi_ep_start = None
+                multi_ep_end = None
                 title = None
 
-                # Attempt and get an season or episode number
+                # Attempt and get a season or episode number
                 title_info = row.get('EditionData').get('EditionTitle')
                 if title_info != '':
                     if title_info.startswith('Episodes'):
-                        episode = re.match('Episodes 1-(\d+)', title_info).group(1)
+                        multi_ep_match = re.match(r'Episodes (\d+)-(\d+)', title_info)
+                        if multi_ep_match:
+                            multi_ep_start = multi_ep_match.group(1)
+                            multi_ep_end = multi_ep_match.group(2)
                         release_type = MULTI_EP
                     elif title_info.startswith('Episode'):
                         episode = re.match('^Episode.([0-9]+)', title_info).group(1)
                         release_type = SINGLE_EP
                     elif title_info.startswith('Season'):
-                        if re.match('Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
+                        if re.match(r'Season.[0-9]+-[0-9]+.\([0-9-]+\)', title_info):
                             # We can read the season AND the episodes, but we can only process multiep.
                             # So i've chosen to use it like 12-23 or 1-12.
-                            match = re.match('Season.([0-9]+)-([0-9]+).\(([0-9-]+)\)', title_info)
+                            match = re.match(r'Season.([0-9]+)-([0-9]+).\(([0-9-]+)\)', title_info)
                             episode = match.group(3).upper()
                             season = '{0}-{1}'.format(match.group(1), match.group(2))
                             release_type = MULTI_SEASON
@@ -210,10 +213,11 @@ class AnimeBytes(TorrentProvider):
                 if release_type == MULTI_EP:
                     # Create the multi-episode release_name
                     # Multiple.Episode.TV.Show.SXXEXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
-                    title = '{title}.{season}{multi_episode}.{tags}' \
+                    title = '{title}.{season}{multi_episode_start}-{multi_episode_end}.{tags}' \
                             '{release_group}'.format(title=group.get('SeriesName'),
                                                      season='S{0}'.format(season) if season else 'S01',
-                                                     multi_episode='E01-E{0}'.format(episode),
+                                                     multi_episode_start='E{0}'.format(multi_ep_start),
+                                                     multi_episode_end='E{0}'.format(multi_ep_end),
                                                      tags=tags,
                                                      release_group=release_group)
                 if release_type == SEASON_PACK:
@@ -238,17 +242,19 @@ class AnimeBytes(TorrentProvider):
                 pubdate = self.parse_pubdate(row.get('UploadTime'))
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
                                   ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
+                size = convert_size(row.get('Size'), default=-1)
+
                 item = {
                     'title': title,
-                    'link': row.get('Link'),
-                    'size': row.get('Size'),
+                    'link': download_url,
+                    'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,

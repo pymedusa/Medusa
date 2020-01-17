@@ -13,25 +13,74 @@
 <%block name="scripts">
 <script>
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        metaInfo: {
-            title: 'Failed Downloads'
-        },
-        data() {
-            return {
-                header: 'Failed Downloads',
-                limit: '${limit}'
-            };
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+            limit: '${limit}'
+        };
+    },
+    mounted() {
+        $('#failedTable:has(tbody tr)').tablesorter({
+            widgets: ['zebra'],
+            sortList: [],
+            headers: { 3: { sorter: false } }
+        });
+        $('#limit').on('change', function() {
+            window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(this).val();
+        });
+
+        $('#submitMassRemove').on('click', () => {
+            const removeArr = [];
+
+            $('.removeCheck').each(function() {
+                if (this.checked === true) {
+                    removeArr.push($(this).attr('id').split('-')[1]);
+                }
+            });
+
+            if (removeArr.length === 0) {
+                return false;
+            }
+
+            window.location.href = $('base').attr('href') + 'manage/failedDownloads?toRemove=' + removeArr.join('|');
+        });
+
+        if ($('.removeCheck').length !== 0) {
+            $('.removeCheck').each(name => {
+                let lastCheck = null;
+                $(name).click(function(event) {
+                    if (!lastCheck || !event.shiftKey) {
+                        lastCheck = this;
+                        return;
+                    }
+
+                    const check = this;
+                    let found = 0;
+
+                    $(name + ':visible').each(function() {
+                        if (found === 1) {
+                            this.checked = lastCheck.checked;
+                        }
+                        if (found === 2) {
+                            return false;
+                        }
+
+                        if (this === check || this === lastCheck) {
+                            found++;
+                        }
+                    });
+                });
+            });
         }
-    });
-};
+    }
+});
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div class="h2footer pull-right"><b>Limit:</b>
     <select v-model="limit" name="limit" id="limit" class="form-control form-control-inline input-sm">
         <option value="100">100</option>

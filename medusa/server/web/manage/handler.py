@@ -6,7 +6,6 @@ import datetime
 import json
 import os
 import re
-from builtins import str
 
 from medusa import (
     app,
@@ -64,23 +63,23 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
-            b'SELECT season, episode, name '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? AND showid = ? '
-            b'AND season != 0 AND status IN ({statuses})'.format(
+            'SELECT season, episode, name '
+            'FROM tv_episodes '
+            'WHERE indexer = ? AND showid = ? '
+            'AND season != 0 AND status IN ({statuses})'.format(
                 statuses=','.join(['?'] * len(status_list))),
             [int(indexer_name_to_id(indexername)), int(seriesid)] + status_list
         )
 
         result = {}
         for cur_result in cur_show_results:
-            cur_season = int(cur_result[b'season'])
-            cur_episode = int(cur_result[b'episode'])
+            cur_season = int(cur_result['season'])
+            cur_episode = int(cur_result['episode'])
 
             if cur_season not in result:
                 result[cur_season] = {}
 
-            result[cur_season][cur_episode] = cur_result[b'name']
+            result[cur_season][cur_episode] = cur_result['name']
 
         return json.dumps(result)
 
@@ -103,13 +102,13 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
-            b'FROM tv_episodes, tv_shows '
-            b'WHERE season != 0 '
-            b'AND tv_episodes.showid = tv_shows.indexer_id '
-            b'AND tv_episodes.indexer = tv_shows.indexer '
-            b'AND tv_episodes.status IN ({statuses}) '
-            b'ORDER BY show_name'.format(statuses=','.join(['?'] * len(status_list))),
+            'SELECT show_name, tv_shows.indexer, tv_shows.show_id, tv_shows.indexer_id AS indexer_id '
+            'FROM tv_episodes, tv_shows '
+            'WHERE season != 0 '
+            'AND tv_episodes.showid = tv_shows.indexer_id '
+            'AND tv_episodes.indexer = tv_shows.indexer '
+            'AND tv_episodes.status IN ({statuses}) '
+            'ORDER BY show_name'.format(statuses=','.join(['?'] * len(status_list))),
             status_list
         )
 
@@ -118,14 +117,14 @@ class Manage(Home, WebRoot):
         sorted_show_ids = []
 
         for cur_status_result in status_results:
-            cur_indexer = int(cur_status_result[b'indexer'])
-            cur_series_id = int(cur_status_result[b'indexer_id'])
+            cur_indexer = int(cur_status_result['indexer'])
+            cur_series_id = int(cur_status_result['indexer_id'])
             if (cur_indexer, cur_series_id) not in ep_counts:
                 ep_counts[(cur_indexer, cur_series_id)] = 1
             else:
                 ep_counts[(cur_indexer, cur_series_id)] += 1
 
-            show_names[(cur_indexer, cur_series_id)] = cur_status_result[b'show_name']
+            show_names[(cur_indexer, cur_series_id)] = cur_status_result['show_name']
             if (cur_indexer, cur_series_id) not in sorted_show_ids:
                 sorted_show_ids.append((cur_indexer, cur_series_id))
 
@@ -161,16 +160,16 @@ class Manage(Home, WebRoot):
             # get a list of all the eps we want to change if they just said 'all'
             if 'all' in to_change[(cur_indexer_id, cur_series_id)]:
                 all_eps_results = main_db_con.select(
-                    b'SELECT season, episode '
-                    b'FROM tv_episodes '
-                    b'WHERE status IN ({statuses}) '
-                    b'AND season != 0 '
-                    b'AND indexer = ? '
-                    b'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
+                    'SELECT season, episode '
+                    'FROM tv_episodes '
+                    'WHERE status IN ({statuses}) '
+                    'AND season != 0 '
+                    'AND indexer = ? '
+                    'AND showid = ?'.format(statuses=','.join(['?'] * len(status_list))),
                     status_list + [cur_indexer_id, cur_series_id]
                 )
 
-                all_eps = ['s{season}e{episode}'.format(season=x[b'season'], episode=x[b'episode']) for x in all_eps_results]
+                all_eps = ['s{season}e{episode}'.format(season=x['season'], episode=x['episode']) for x in all_eps_results]
                 to_change[cur_indexer_id, cur_series_id] = all_eps
 
             self.setStatus(
@@ -187,26 +186,26 @@ class Manage(Home, WebRoot):
     def showSubtitleMissed(indexer, seriesid, whichSubs):
         main_db_con = db.DBConnection()
         cur_show_results = main_db_con.select(
-            b'SELECT season, episode, name, subtitles '
-            b'FROM tv_episodes '
-            b'WHERE indexer = ? '
-            b'AND showid = ? '
-            b'AND season != 0 '
-            b'AND status = ? '
-            b"AND location != ''",
+            'SELECT season, episode, name, subtitles '
+            'FROM tv_episodes '
+            'WHERE indexer = ? '
+            'AND showid = ? '
+            'AND season != 0 '
+            'AND status = ? '
+            "AND location != ''",
             [int(indexer), int(seriesid), DOWNLOADED]
         )
 
         result = {}
         for cur_result in cur_show_results:
             if whichSubs == 'all':
-                if not frozenset(subtitles.wanted_languages()).difference(cur_result[b'subtitles'].split(',')):
+                if not frozenset(subtitles.wanted_languages()).difference(cur_result['subtitles'].split(',')):
                     continue
-            elif whichSubs in cur_result[b'subtitles']:
+            elif whichSubs in cur_result['subtitles']:
                 continue
 
-            cur_season = int(cur_result[b'season'])
-            cur_episode = int(cur_result[b'episode'])
+            cur_season = int(cur_result['season'])
+            cur_episode = int(cur_result['episode'])
 
             if cur_season not in result:
                 result[cur_season] = {}
@@ -214,8 +213,8 @@ class Manage(Home, WebRoot):
             if cur_episode not in result[cur_season]:
                 result[cur_season][cur_episode] = {}
 
-            result[cur_season][cur_episode]['name'] = cur_result[b'name']
-            result[cur_season][cur_episode]['subtitles'] = cur_result[b'subtitles']
+            result[cur_season][cur_episode]['name'] = cur_result['name']
+            result[cur_season][cur_episode]['subtitles'] = cur_result['subtitles']
 
         return json.dumps(result)
 
@@ -229,16 +228,16 @@ class Manage(Home, WebRoot):
 
         main_db_con = db.DBConnection()
         status_results = main_db_con.select(
-            b'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
-            b'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
-            b'FROM tv_episodes, tv_shows '
-            b'WHERE tv_shows.subtitles = 1 '
-            b'AND tv_episodes.status = ? '
-            b'AND tv_episodes.season != 0 '
-            b"AND tv_episodes.location != '' "
-            b'AND tv_episodes.showid = tv_shows.indexer_id '
-            b'AND tv_episodes.indexer = tv_shows.indexer '
-            b'ORDER BY show_name',
+            'SELECT show_name, tv_shows.show_id, tv_shows.indexer, '
+            'tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
+            'FROM tv_episodes, tv_shows '
+            'WHERE tv_shows.subtitles = 1 '
+            'AND tv_episodes.status = ? '
+            'AND tv_episodes.season != 0 '
+            "AND tv_episodes.location != '' "
+            'AND tv_episodes.showid = tv_shows.indexer_id '
+            'AND tv_episodes.indexer = tv_shows.indexer '
+            'ORDER BY show_name',
             [DOWNLOADED]
         )
 
@@ -247,22 +246,22 @@ class Manage(Home, WebRoot):
         sorted_show_ids = []
         for cur_status_result in status_results:
             if whichSubs == 'all':
-                if not frozenset(subtitles.wanted_languages()).difference(cur_status_result[b'subtitles'].split(',')):
+                if not frozenset(subtitles.wanted_languages()).difference(cur_status_result['subtitles'].split(',')):
                     continue
-            elif whichSubs in cur_status_result[b'subtitles']:
+            elif whichSubs in cur_status_result['subtitles']:
                 continue
 
             # FIXME: This will cause multi-indexer results where series_id overlaps for different indexers.
             # Fix by using tv_shows.show_id in stead.
 
-            cur_indexer_id = int(cur_status_result[b'indexer'])
-            cur_series_id = int(cur_status_result[b'indexer_id'])
+            cur_indexer_id = int(cur_status_result['indexer'])
+            cur_series_id = int(cur_status_result['indexer_id'])
             if (cur_indexer_id, cur_series_id) not in ep_counts:
                 ep_counts[(cur_indexer_id, cur_series_id)] = 1
             else:
                 ep_counts[(cur_indexer_id, cur_series_id)] += 1
 
-            show_names[(cur_indexer_id, cur_series_id)] = cur_status_result[b'show_name']
+            show_names[(cur_indexer_id, cur_series_id)] = cur_status_result['show_name']
             if (cur_indexer_id, cur_series_id) not in sorted_show_ids:
                 sorted_show_ids.append((cur_indexer_id, cur_series_id))
 
@@ -291,20 +290,22 @@ class Manage(Home, WebRoot):
             if 'all' in to_download[(cur_indexer_id, cur_series_id)]:
                 main_db_con = db.DBConnection()
                 all_eps_results = main_db_con.select(
-                    b'SELECT season, episode '
-                    b'FROM tv_episodes '
-                    b'WHERE status = ? '
-                    b'AND season != 0 '
-                    b'AND indexer = ? '
-                    b'AND showid = ? '
-                    b"AND location != ''",
+                    'SELECT season, episode '
+                    'FROM tv_episodes '
+                    'WHERE status = ? '
+                    'AND season != 0 '
+                    'AND indexer = ? '
+                    'AND showid = ? '
+                    "AND location != ''",
                     [DOWNLOADED, cur_indexer_id, cur_series_id]
                 )
-                to_download[(cur_indexer_id, cur_series_id)] = ['s' + str(x[b'season']) + 'e' + str(x[b'episode'])
-                                                                for x in all_eps_results]
+                to_download[(cur_indexer_id, cur_series_id)] = [
+                    's{0}e{1}'.format(x['season'], x['episode'])
+                    for x in all_eps_results
+                ]
 
-            for epResult in to_download[(cur_indexer_id, cur_series_id)]:
-                season, episode = epResult.lstrip('s').split('e')
+            for ep_result in to_download[(cur_indexer_id, cur_series_id)]:
+                season, episode = ep_result.lstrip('s').split('e')
 
                 series_obj = Show.find_by_id(app.showList, cur_indexer_id, cur_series_id)
                 series_obj.get_episode(season, episode).download_subtitles()
@@ -335,7 +336,7 @@ class Manage(Home, WebRoot):
                 ep_status = tv_episode.status
                 if ep_status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     status = 'snatched'
-                elif ep_status in DOWNLOADED:
+                elif ep_status == DOWNLOADED:
                     status = 'downloaded'
                 else:
                     continue
@@ -413,7 +414,7 @@ class Manage(Home, WebRoot):
             ep_cats = {}
 
             sql_results = main_db_con.select(
-                b"""
+                """
                 SELECT e.status, e.quality, e.season,
                 e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
@@ -424,31 +425,30 @@ class Manage(Home, WebRoot):
                 [cur_show.indexer, cur_show.series_id]
             )
             filtered_episodes = []
-            backlogged_episodes = [dict(row) for row in sql_results]
-            for cur_result in backlogged_episodes:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], cur_result[b'quality'], backlog_mode=True,
-                                                   manually_searched=cur_result[b'manually_searched'])
+            for cur_result in sql_results:
+                cur_ep_cat = cur_show.get_overview(cur_result['status'], cur_result['quality'], backlog_mode=True,
+                                                   manually_searched=cur_result['manually_searched'])
                 if cur_ep_cat:
-                    if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
-                        air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
+                    if cur_ep_cat in selected_backlog_status and cur_result['airdate'] != 1:
+                        air_date = datetime.datetime.fromordinal(cur_result['airdate'])
                         if air_date.year >= 1970 or cur_show.network:
                             air_date = sbdatetime.sbdatetime.convert_to_setting(
-                                network_timezones.parse_date_time(cur_result[b'airdate'],
+                                network_timezones.parse_date_time(cur_result['airdate'],
                                                                   cur_show.airs,
                                                                   cur_show.network))
                             if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
                                 continue
                         else:
                             air_date = None
-                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result[b'season'],
-                                                                        cur_result[b'episode']) or
-                                                            episode_num(cur_result[b'season'],
-                                                                        cur_result[b'episode'],
+                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result['season'],
+                                                                        cur_result['episode']) or
+                                                            episode_num(cur_result['season'],
+                                                                        cur_result['episode'],
                                                                         numbering='absolute')))
                         ep_cats[episode_string] = cur_ep_cat
                         ep_counts[cur_ep_cat] += 1
-                        cur_result[b'airdate'] = air_date
-                        cur_result[b'episode_string'] = episode_string
+                        cur_result['airdate'] = air_date
+                        cur_result['episode_string'] = episode_string
                         filtered_episodes.append(cur_result)
 
             show_counts[(cur_show.indexer, cur_show.series_id)] = ep_counts
@@ -684,19 +684,17 @@ class Manage(Home, WebRoot):
 
             if quality_preset == 'keep':
                 allowed_qualities, preferred_qualities = series_obj.current_qualities
+            # If user set quality_preset remove all preferred_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 
-            exceptions_list = []
-
-            errors += self.editShow(identifier.indexer.slug, identifier.id, new_show_dir, allowed_qualities,
-                                    preferred_qualities, exceptions_list,
-                                    defaultEpStatus=new_default_ep_status,
-                                    season_folders=new_season_folders,
-                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
-                                    subtitles=new_subtitles, anime=new_anime,
-                                    scene=new_scene, air_by_date=new_air_by_date,
-                                    directCall=True)
+            errors += self.massEditShow(
+                indexername=identifier.indexer.slug, seriesid=identifier.id, location=new_show_dir,
+                allowed_qualities=allowed_qualities, preferred_qualities=preferred_qualities,
+                season_folders=new_season_folders, paused=new_paused, air_by_date=new_air_by_date, sports=new_sports,
+                dvd_order=new_dvd_order, subtitles=new_subtitles, anime=new_anime, scene=new_scene,
+                defaultEpStatus=new_default_ep_status,
+            )
 
         if errors:
             ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
@@ -792,7 +790,7 @@ class Manage(Home, WebRoot):
 
         if app.TORRENT_METHOD == 'utorrent':
             webui_url = '/'.join(s.strip('/') for s in (webui_url, 'gui/'))
-        if app.TORRENT_METHOD == 'download_station':
+        if app.TORRENT_METHOD == 'downloadstation':
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
@@ -805,23 +803,23 @@ class Manage(Home, WebRoot):
 
         if int(limit):
             sql_results = failed_db_con.select(
-                b'SELECT * '
-                b'FROM failed '
-                b'LIMIT ?',
+                'SELECT * '
+                'FROM failed '
+                'LIMIT ?',
                 [limit]
             )
         else:
             sql_results = failed_db_con.select(
-                b'SELECT * '
-                b'FROM failed'
+                'SELECT * '
+                'FROM failed'
             )
         sql_results = sql_results[::-1]
 
         to_remove = toRemove.split('|') if toRemove is not None else []
         for release in to_remove:
             failed_db_con.action(
-                b'DELETE FROM failed '
-                b'WHERE failed.release = ?',
+                'DELETE FROM failed '
+                'WHERE failed.release = ?',
                 [release]
             )
 

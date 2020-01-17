@@ -56,8 +56,8 @@ class Notifier(object):
             )
             resp.raise_for_status()
 
-            if resp.content:
-                log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+            if resp.text:
+                log.debug('EMBY: HTTP response: {0}', resp.text.replace('\n', ''))
 
             log.info('EMBY: Successfully sent a test notification.')
             return True
@@ -66,7 +66,6 @@ class Notifier(object):
             log.warning('EMBY: Warning: Unable to contact Emby at {url}: {error}',
                         {'url': url, 'error': ex(error)})
             return False
-
 
 ##############################################################################
 # Public functions
@@ -128,8 +127,8 @@ class Notifier(object):
                 )
                 resp.raise_for_status()
 
-                if resp.content:
-                    log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+                if resp.text:
+                    log.debug('EMBY: HTTP response: {0}', resp.text.replace('\n', ''))
 
                 log.info('EMBY: Successfully sent a "Series Library Updated" command.')
                 return True

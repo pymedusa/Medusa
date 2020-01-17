@@ -1,0 +1,363 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QualityChooser.test.js renders: Base snapshot 1`] = `
+<div>
+  <select
+    class="form-control form-control-inline input-sm"
+    name="quality_preset"
+  >
+    <option
+      value="keep"
+    >
+      &lt; Keep &gt;
+    </option>
+     
+    <option
+      value="0"
+    >
+      Custom
+    </option>
+     
+    <option
+      value="65518"
+    >
+      
+            Any
+        
+    </option>
+    <option
+      value="6"
+    >
+      
+            SD
+        
+    </option>
+    <option
+      value="1000"
+    >
+      
+            HD
+        
+    </option>
+    <option
+      value="328"
+    >
+      
+            HD720p
+        
+    </option>
+    <option
+      value="672"
+    >
+      
+            HD1080p
+        
+    </option>
+    <option
+      value="64512"
+    >
+      
+            UHD
+        
+    </option>
+    <option
+      value="7168"
+    >
+      
+            UHD-4K
+        
+    </option>
+    <option
+      value="57344"
+    >
+      
+            UHD-8K
+        
+    </option>
+  </select>
+   
+  <div
+    id="customQualityWrapper"
+    style="display: none;"
+  >
+    <p>
+      <b>
+        <strong>
+          Preferred
+        </strong>
+      </b>
+       qualities will replace those in 
+      <b>
+        <strong>
+          allowed
+        </strong>
+      </b>
+      , even if they are lower.
+        
+    </p>
+     
+    <div>
+      <h5>
+        Allowed
+      </h5>
+       
+      <select
+        class="form-control form-control-inline input-sm"
+        multiple="multiple"
+        name="allowed_qualities"
+        size="16"
+      >
+        <option
+          value="1"
+        >
+          
+                    Unknown
+                
+        </option>
+        <option
+          value="2"
+        >
+          
+                    SDTV
+                
+        </option>
+        <option
+          value="4"
+        >
+          
+                    SD DVD
+                
+        </option>
+        <option
+          value="8"
+        >
+          
+                    720p HDTV
+                
+        </option>
+        <option
+          value="16"
+        >
+          
+                    RawHD
+                
+        </option>
+        <option
+          value="32"
+        >
+          
+                    1080p HDTV
+                
+        </option>
+        <option
+          value="64"
+        >
+          
+                    720p WEB-DL
+                
+        </option>
+        <option
+          value="128"
+        >
+          
+                    1080p WEB-DL
+                
+        </option>
+        <option
+          value="256"
+        >
+          
+                    720p BluRay
+                
+        </option>
+        <option
+          value="512"
+        >
+          
+                    1080p BluRay
+                
+        </option>
+        <option
+          value="1024"
+        >
+          
+                    4K UHD TV
+                
+        </option>
+        <option
+          value="2048"
+        >
+          
+                    4K UHD WEB-DL
+                
+        </option>
+        <option
+          value="4096"
+        >
+          
+                    4K UHD BluRay
+                
+        </option>
+        <option
+          value="8192"
+        >
+          
+                    8K UHD TV
+                
+        </option>
+        <option
+          value="16384"
+        >
+          
+                    8K UHD WEB-DL
+                
+        </option>
+        <option
+          value="32768"
+        >
+          
+                    8K UHD BluRay
+                
+        </option>
+      </select>
+    </div>
+     
+    <div>
+      <h5>
+        Preferred
+      </h5>
+       
+      <select
+        class="form-control form-control-inline input-sm"
+        disabled="disabled"
+        multiple="multiple"
+        name="preferred_qualities"
+        size="16"
+      >
+        <option
+          value="1"
+        >
+          
+                    Unknown
+                
+        </option>
+        <option
+          value="2"
+        >
+          
+                    SDTV
+                
+        </option>
+        <option
+          value="4"
+        >
+          
+                    SD DVD
+                
+        </option>
+        <option
+          value="8"
+        >
+          
+                    720p HDTV
+                
+        </option>
+        <option
+          value="16"
+        >
+          
+                    RawHD
+                
+        </option>
+        <option
+          value="32"
+        >
+          
+                    1080p HDTV
+                
+        </option>
+        <option
+          value="64"
+        >
+          
+                    720p WEB-DL
+                
+        </option>
+        <option
+          value="128"
+        >
+          
+                    1080p WEB-DL
+                
+        </option>
+        <option
+          value="256"
+        >
+          
+                    720p BluRay
+                
+        </option>
+        <option
+          value="512"
+        >
+          
+                    1080p BluRay
+                
+        </option>
+        <option
+          value="1024"
+        >
+          
+                    4K UHD TV
+                
+        </option>
+        <option
+          value="2048"
+        >
+          
+                    4K UHD WEB-DL
+                
+        </option>
+        <option
+          value="4096"
+        >
+          
+                    4K UHD BluRay
+                
+        </option>
+        <option
+          value="8192"
+        >
+          
+                    8K UHD TV
+                
+        </option>
+        <option
+          value="16384"
+        >
+          
+                    8K UHD WEB-DL
+                
+        </option>
+        <option
+          value="32768"
+        >
+          
+                    8K UHD BluRay
+                
+        </option>
+      </select>
+    </div>
+  </div>
+   
+  <div>
+    <div>
+      Please select at least one allowed quality.
+    </div>
+  </div>
+   
+  <!---->
+   
+  <!---->
+</div>
+`;

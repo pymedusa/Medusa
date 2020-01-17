@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa/imdb.py."""
+from __future__ import unicode_literals
 
 import os.path
 

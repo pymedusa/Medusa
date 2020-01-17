@@ -1,31 +1,28 @@
-import test from 'ava';
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { AppLink, AddRecommended } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 
-// Needs to be required otherwise nyc won't see it
-const AppLink = require('../../static/js/templates/app-link.vue');
-const AddRecommended = require('../../static/js/templates/add-recommended.vue');
+describe('AddRecommended.test.js', () => {
+    let wrapper;
 
-test.beforeEach(t => {
-    t.context.localVue = createLocalVue();
-    t.context.localVue.use(Vuex);
-    t.context.localVue.use(VueRouter);
-    t.context.localVue.component('app-link', AppLink);
+    beforeEach(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+        localVue.use(VueRouter);
+        localVue.component('app-link', AppLink);
 
-    const { state } = fixtures;
-    const { Store } = Vuex;
-    t.context.state = state;
-    t.context.store = new Store({ state });
-});
+        const { state } = fixtures;
+        const store = new Store({ state });
 
-test('renders', t => {
-    const { localVue, store } = t.context;
-    const wrapper = mount(AddRecommended, {
-        localVue,
-        store
+        wrapper = shallowMount(AddRecommended, {
+            localVue,
+            store
+        });
     });
 
-    t.snapshot(wrapper.html());
+    it('renders', () => {
+        expect(wrapper.element).toMatchSnapshot();
+    });
 });

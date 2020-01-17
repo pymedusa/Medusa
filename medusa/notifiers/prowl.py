@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 import ast
 import logging
 import socket
-import time
 from builtins import object
 
 from medusa import app, common, db
-from medusa.helper.encoding import ss
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
@@ -32,20 +30,20 @@ class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
         return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
-    def notify_snatch(self, ep_name, is_proper):
-        ep_name = ss(ep_name)
+    def notify_snatch(self, title, message):
         if app.PROWL_NOTIFY_ONSNATCH:
-            show = self._parse_episode(ep_name)
+            show = self._parse_episode(message)
             recipients = self._generate_recipients(show)
             if not recipients:
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=title,
+                                     message=message)
 
-    def notify_download(self, ep_name):
-        ep_name = ss(ep_name)
+    def notify_download(self, ep_obj):
+        ep_name = ep_obj.pretty_name_with_quality()
         if app.PROWL_NOTIFY_ONDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
@@ -53,11 +51,12 @@ class Notifier(object):
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
+                                     message=ep_name)
 
-    def notify_subtitle_download(self, ep_name, lang):
-        ep_name = ss(ep_name)
+    def notify_subtitle_download(self, ep_obj, lang):
+        ep_name = ep_obj.pretty_name()
         if app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD:
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
@@ -65,8 +64,9 @@ class Notifier(object):
                 log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
-                    self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + ' [' + lang + '] :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
+                    self._send_prowl(prowl_api=api, prowl_priority=None,
+                                     event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
+                                     message=ep_name + ' [' + lang + ']')
 
     def notify_git_update(self, new_version='??'):
         if app.USE_PROWL:
@@ -97,9 +97,9 @@ class Notifier(object):
         if show is not None:
             for value in show:
                 for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
-                    if subs[b'notify_list']:
-                        if subs[b'notify_list'][0] == '{':               # legacy format handling
-                            entries = dict(ast.literal_eval(subs[b'notify_list']))
+                    if subs['notify_list']:
+                        if subs['notify_list'][0] == '{':               # legacy format handling
+                            entries = dict(ast.literal_eval(subs['notify_list']))
                             for api in entries['prowlAPIs'].split(','):
                                 if api.strip():
                                     apis.append(api)
@@ -157,10 +157,9 @@ class Notifier(object):
 
     @staticmethod
     def _parse_episode(ep_name):
-        ep_name = ss(ep_name)
-
         sep = ' - '
         titles = ep_name.split(sep)
         titles.sort(key=len, reverse=True)
         log.debug('TITLES: {0}', titles)
+
         return titles

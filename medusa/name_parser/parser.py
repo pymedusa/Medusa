@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import logging
 import time
-from builtins import object
 from collections import OrderedDict
 
 import guessit
@@ -62,7 +61,7 @@ class NameParser(object):
         airdate = result.air_date.toordinal()
         main_db_con = db.DBConnection()
         sql_result = main_db_con.select(
-            b'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
+            'SELECT season, episode FROM tv_episodes WHERE indexer = ? AND showid = ? AND airdate = ?',
             [result.series.indexer, result.series.series_id, airdate])
 
         return sql_result
@@ -88,14 +87,14 @@ class NameParser(object):
         episode_numbers = []
 
         if episode_by_air_date:
-            season_number = int(episode_by_air_date[0][0])
-            episode_numbers = [int(episode_by_air_date[0][1])]
+            season_number = int(episode_by_air_date[0]['season'])
+            episode_numbers = [int(episode_by_air_date[0]['episode'])]
 
             # Use the next query item if we have multiple results
             # and the current one is a special episode (season 0)
             if season_number == 0 and len(episode_by_air_date) > 1:
-                season_number = int(episode_by_air_date[1][0])
-                episode_numbers = [int(episode_by_air_date[1][1])]
+                season_number = int(episode_by_air_date[1]['season'])
+                episode_numbers = [int(episode_by_air_date[1]['episode'])]
 
             log.debug(
                 'Database info for series {name}: Season: {season} Episode(s): {episodes}', {
@@ -133,14 +132,14 @@ class NameParser(object):
                 episode_numbers = []
             except IndexerError as error:
                 log.warning(
-                    'Unable to contact {indexer_api.name}: {error}',
-                    {'indexer_api': indexer_api, 'error': error.message}
+                    'Unable to contact {indexer_api.name}: {error!r}',
+                    {'indexer_api': indexer_api, 'error': error}
                 )
                 episode_numbers = []
             except IndexerException as error:
                 log.warning(
-                    'Indexer exception: {indexer_api.name}: {error}',
-                    {'indexer_api': indexer_api, 'error': error.message}
+                    'Indexer exception: {indexer_api.name}: {error!r}',
+                    {'indexer_api': indexer_api, 'error': error}
                 )
                 episode_numbers = []
 
@@ -174,8 +173,7 @@ class NameParser(object):
         :param result: Guessit parse result object.
         :return: tuple of found indexer episode numbers and indexer season numbers
         """
-        log.debug('Scene numbering enabled series {name} is anime',
-                  {'name': result.series.name})
+        log.debug('Series {name} is anime', {'name': result.series.name})
 
         new_episode_numbers = []
         new_season_numbers = []
@@ -200,32 +198,40 @@ class NameParser(object):
                 #
                 # Don't assume that scene_exceptions season is the same as indexer season.
                 # E.g.: [HorribleSubs] Cardcaptor Sakura Clear Card - 08 [720p].mkv thetvdb s04, thexem s02
-                if result.series.is_scene or (result.season_number is None and scene_season > 0):
+                if result.series.is_scene or (result.season_number is None
+                                              and scene_season is not None and scene_season > 0):
                     a = scene_numbering.get_indexer_absolute_numbering(
                         result.series, absolute_episode, True, scene_season
                     )
 
-                # Translate the absolute episode number, back to the indexers season and episode.
-                (season, episode) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
-
-                if result.season_number is None and scene_season > 0:
-                    log.debug(
-                        'Detected a season scene exception [{series_name} -> {scene_season}] without a '
-                        'season number in the title, '
-                        'translating the episode absolute # [{scene_absolute}] to season #[{absolute_season}] and '
-                        'episode #[{absolute_episode}].',
-                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a,
-                         'absolute_season': season, 'absolute_episode': episode}
-                    )
-                else:
-                    log.debug(
-                        'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
-                    )
-
                 new_absolute_numbers.append(a)
-                new_episode_numbers.extend(episode)
-                new_season_numbers.append(season)
+
+                # Translate the absolute episode number, back to the indexers season and episode.
+                (season, episodes) = helpers.get_all_episodes_from_absolute_number(result.series, [a])
+                if season and episodes:
+                    if result.season_number is None and scene_season is not None and scene_season > 0:
+                        log.debug(
+                            'Detected a season scene exception [{series_name} -> {scene_season}] without a '
+                            'season number in the title, '
+                            'translating the episode #{abs} to indexer #{indexer_absolute}: {ep}',
+                            {'series_name': result.series_name, 'scene_season': scene_season, 'abs': absolute_episode,
+                             'indexer_absolute': a, 'ep': episode_num(season, episodes[0])}
+                        )
+                    elif result.series.is_scene:
+                        log.debug(
+                            'Scene numbering enabled anime series {name} using indexer numbering #{absolute}: {ep}',
+                            {'name': result.series.name, 'season': season, 'absolute': a,
+                             'ep': episode_num(season, episodes[0])}
+                        )
+                    else:
+                        log.debug(
+                            'Anime series {name} using indexer numbering #{absolute}: {ep}',
+                            {'name': result.series.name, 'season': season, 'absolute': a,
+                             'ep': episode_num(season, episodes[0])}
+                        )
+
+                    new_episode_numbers.extend(episodes)
+                    new_season_numbers.append(season)
 
         # It's possible that we map a parsed result to an anime series,
         # but the result is not detected/parsed as an anime. In that case, we're using the result.episode_numbers.
@@ -233,12 +239,24 @@ class NameParser(object):
             for episode_number in result.episode_numbers:
                 season = result.season_number
                 episode = episode_number
+
+                if result.series.is_scene:
+                    (season, episode) = scene_numbering.get_indexer_numbering(
+                        result.series,
+                        result.season_number,
+                        episode_number
+                    )
+                    log.debug(
+                        'Scene numbering enabled anime {name} using indexer numbering: {ep}',
+                        {'name': result.series.name, 'ep': episode_num(season, episode)}
+                    )
+
                 a = helpers.get_absolute_number_from_season_and_episode(result.series, season, episode)
                 if a:
                     new_absolute_numbers.append(a)
                     log.debug(
-                        'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
-                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Anime series {name} using using indexer numbering #{absolute}: {ep}',
+                        {'name': result.series.name, 'absolute': a, 'ep': episode_num(season, episode)}
                     )
 
                 new_episode_numbers.append(episode)
@@ -301,10 +319,12 @@ class NameParser(object):
         elif result.season_number and result.episode_numbers:
             new_episode_numbers, new_season_numbers, new_absolute_numbers = self._parse_series(result)
 
+        # Remove None from the list of seasons, as we can't sort on that
+        new_season_numbers = sorted({season for season in new_season_numbers if season is not None})
+
         # need to do a quick sanity check here ex. It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
         # for the application, so we'd need to flag it.
-        new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
         if len(new_season_numbers) > 1:
             raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
                                        'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
@@ -319,8 +339,10 @@ class NameParser(object):
         if new_absolute_numbers:
             result.ab_episode_numbers = new_absolute_numbers
 
-        if new_season_numbers and new_episode_numbers:
+        if new_episode_numbers:
             result.episode_numbers = new_episode_numbers
+
+        if new_season_numbers:
             result.season_number = new_season_numbers[0]
 
         # For anime that we still couldn't get a season, let's assume we should use 1.
@@ -414,9 +436,18 @@ class NameParser(object):
         :return:
         :rtype: ParseResult
         """
-        season_numbers = helpers.ensure_list(guess.get('season'))
-        if len(season_numbers) > 1 and not self.allow_multi_season:
-            raise InvalidNameException("Discarding result. Multi-season detected for '{name}': {guess}".format(name=name, guess=guess))
+        if not self.allow_multi_season:
+            season_numbers = helpers.ensure_list(guess.get('season'))
+            if len(season_numbers) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-season detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
+
+            versions = helpers.ensure_list(guess.get('version'))
+            if len(versions) > 1:
+                raise InvalidNameException(
+                    "Discarding result. Multi-version detected for '{name}': {guess}"
+                    .format(name=name, guess=guess))
 
         return ParseResult(guess, original_name=name, series_name=guess.get('alias') or guess.get('title'),
                            season_number=helpers.single_or_list(season_numbers, self.allow_multi_season),
@@ -504,6 +535,9 @@ class ParseResult(object):
                                              total_time=self.total_time))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
 
+    # Python 2 compatibility
+    __unicode__ = __str__
+
     def get_quality(self, guess, extend=False):
         """Return video quality from guess or name.
 
@@ -588,10 +622,14 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
-                     cached_parsed_result.series.indexer == indexer and cached_parsed_result.series.indexerid == indexer_id)
+        to_remove = [
+            cached_name
+            for cached_name, cached_parsed_result in iteritems(self.cache)
+            if cached_parsed_result.series.indexer == indexer
+            and cached_parsed_result.series.indexerid == indexer_id
+        ]
         for item in to_remove:
-            self.cache.popitem(item)
+            del self.cache[item]
             log.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 

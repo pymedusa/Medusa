@@ -69,7 +69,7 @@ from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
-from six import text_type, viewitems
+from six import viewitems
 
 # Most common language tags from IETF
 # https://datahub.io/core/language-codes#resource-ietf-language-tags
@@ -110,7 +110,7 @@ class PostProcessor(object):
         # relative path to the file that is being processed
         self.rel_path = self._get_rel_path()
         self.nzb_name = nzb_name
-        self.process_method = process_method if process_method else app.PROCESS_METHOD
+        self.process_method = process_method or app.PROCESS_METHOD
         self.in_history = False
         self.release_group = None
         self.release_name = None
@@ -304,7 +304,7 @@ class PostProcessor(object):
             pattern = new_pattern + pattern
 
         files = []
-        for root, __, filenames in os.walk(directory):
+        for root, _, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
                 files.append(os.path.join(root, filename))
             if not subfolders:
@@ -550,7 +550,7 @@ class PostProcessor(object):
 
             self.log(u'Adding the file to the anidb mylist', logger.DEBUG)
             try:
-                self.anidbEpisode.add_to_mylist(status=1)  # status = 1 sets the status of the file to "internal HDD"
+                self.anidbEpisode.add_to_mylist(state=1)  # state = 1 sets the state of the file to "internal HDD"
             except Exception as e:
                 self.log(u'Exception message: {0!r}'.format(e))
 
@@ -621,8 +621,8 @@ class PostProcessor(object):
                 [series_obj.series_id, series_obj.indexer, airdate])
 
             if sql_result:
-                season = int(sql_result[0][b'season'])
-                episodes = [int(sql_result[0][b'episode'])]
+                season = int(sql_result[0]['season'])
+                episodes = [int(sql_result[0]['episode'])]
             else:
                 # Found no result, trying with season 0
                 sql_result = main_db_con.select(
@@ -634,8 +634,8 @@ class PostProcessor(object):
                     [series_obj.series_id, series_obj.indexer, airdate])
 
                 if sql_result:
-                    season = int(sql_result[0][b'season'])
-                    episodes = [int(sql_result[0][b'episode'])]
+                    season = int(sql_result[0]['season'])
+                    episodes = [int(sql_result[0]['episode'])]
                 else:
                     self.log(u'Unable to find episode with date {0} for show {1}, skipping'.format
                              (episodes[0], series_obj.indexerid), logger.DEBUG)
@@ -647,14 +647,14 @@ class PostProcessor(object):
         elif season is None and series_obj:
             main_db_con = db.DBConnection()
             numseasons_result = main_db_con.select(
-                'SELECT COUNT(DISTINCT season) '
+                'SELECT COUNT(DISTINCT season) as count '
                 'FROM tv_episodes '
                 'WHERE showid = ? '
                 'AND indexer = ? '
                 'AND season != 0',
                 [series_obj.series_id, series_obj.indexer])
 
-            if int(numseasons_result[0][0]) == 1:
+            if int(numseasons_result[0]['count']) == 1:
                 self.log(u"Episode doesn't have a season number, but this show appears "
                          u'to have only 1 season, setting season number to 1...', logger.DEBUG)
                 season = 1
@@ -822,9 +822,9 @@ class PostProcessor(object):
                  season, episode] + snatched_statuses
             )
 
-            if tv_episodes_result and tv_episodes_result[0][b'quality'] == quality:
+            if tv_episodes_result and tv_episodes_result[0]['quality'] == quality:
                 # Check if the snatch is a manual snatch
-                if tv_episodes_result[0][b'manually_searched'] == 1:
+                if tv_episodes_result[0]['manually_searched'] == 1:
                     self.manually_searched = True
 
                 # Second: get the quality of the last snatched epsiode
@@ -842,12 +842,12 @@ class PostProcessor(object):
                      season, episode] + snatched_statuses
                 )
 
-                if history_result and history_result[0][b'quality'] == quality:
+                if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
 
                     # Get info hash so we can move torrent if setting is enabled
-                    self.info_hash = history_result[0][b'info_hash'] or None
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -864,7 +864,7 @@ class PostProcessor(object):
                     )
 
                     if download_result:
-                        download_name = os.path.basename(download_result[0][b'resource'])
+                        download_name = os.path.basename(download_result[0]['resource'])
                         # If the file name we are processing differs from the file
                         # that was previously processed, we want this file
                         if self.file_name != download_name:
@@ -928,7 +928,7 @@ class PostProcessor(object):
             if current_quality in preferred:
                 return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
+                return True, "New quality is Allowed and we don't have a current Preferred. Accepting quality"
             elif new_quality > current_quality:
                 return True, 'New quality is higher than current Allowed. Accepting quality'
             elif new_quality < current_quality:
@@ -947,34 +947,20 @@ class PostProcessor(object):
         if not app.EXTRA_SCRIPTS:
             return
 
-        def _attempt_to_encode(item, _encoding):
-            if isinstance(item, text_type):
-                try:
-                    item = item.encode(_encoding)
-                except UnicodeEncodeError:
-                    pass  # ignore it
-                finally:
-                    return item
-
-        encoding = app.SYS_ENCODING
-
-        file_path = _attempt_to_encode(self.file_path, encoding)
-        ep_location = _attempt_to_encode(ep_obj.location, encoding)
+        ep_location = ep_obj.location
+        file_path = self.file_path
         indexer_id = str(ep_obj.series.indexerid)
         season = str(ep_obj.season)
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
 
         for cur_script_name in app.EXTRA_SCRIPTS:
-            cur_script_name = _attempt_to_encode(cur_script_name, encoding)
 
             # generate a safe command line string to execute the script and provide all the parameters
-            script_cmd = [piece for piece in re.split(r'(\'.*?\'|".*?"| )', cur_script_name) if piece.strip()]
-            script_cmd[0] = os.path.abspath(script_cmd[0])
-            self.log(u'Absolute path to script: {0}'.format(script_cmd[0]), logger.DEBUG)
+            script_cmd = [piece for piece in cur_script_name.split(' ') if piece.strip()]
+            self.log(u'Running extra script: {0}'.format(cur_script_name), logger.INFO)
 
             script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
-
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
             try:
@@ -990,7 +976,7 @@ class PostProcessor(object):
                 self.log(u'Script result: {0}'.format(out), logger.DEBUG)
 
             except Exception as error:
-                self.log(u'Unable to run extra_script: {0!r}'.format(error))
+                self.log(u'Unable to run extra script: {0!r}'.format(error))
 
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""
@@ -1098,15 +1084,15 @@ class PostProcessor(object):
             if int(ep_obj.season) > 0:
                 main_db_con = db.DBConnection()
                 max_season = main_db_con.select(
-                    'SELECT MAX(season) FROM tv_episodes WHERE showid = ? and indexer = ?',
+                    'SELECT MAX(season) as max FROM tv_episodes WHERE showid = ? and indexer = ?',
                     [series_obj.series_id, series_obj.indexer])
 
                 # If the file season (ep_obj.season) is bigger than
-                # the indexer season (max_season[0][0]), skip the file
-                if int(ep_obj.season) > int(max_season[0][0]):
+                # the indexer season (max_season[0]['max']), skip the file
+                if int(ep_obj.season) > int(max_season[0]['max']):
                     self.log(u'File has season {0}, while the indexer is on season {1}. '
                              u'The file may be incorrectly labeled or fake, aborting.'.format
-                             (ep_obj.season, max_season[0][0]))
+                             (ep_obj.season, max_season[0]['max']))
                     return False
 
         # if the file is priority then we're going to replace it even if it exists
@@ -1203,11 +1189,11 @@ class PostProcessor(object):
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = os.path.join(ep_obj.series.location, proper_path)
+            proper_absolute_path = os.path.join(ep_obj.series.validate_location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.series.location))
 
         self.log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
@@ -1286,7 +1272,7 @@ class PostProcessor(object):
             history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # send notifications
-        notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        notifiers.notify_download(ep_obj)
         # do the library update for KODI
         notifiers.kodi_notifier.update_library(ep_obj.series.name)
         # do the library update for Plex
@@ -1304,9 +1290,8 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if not self.nzb_name and all([app.USE_TORRENTS,
-                                     app.PROCESS_METHOD in ('hardlink', 'symlink', 'reflink'),
-                                     app.TORRENT_SEED_LOCATION]):
+        if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
+                                      self.process_method in ('hardlink', 'symlink', 'reflink')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

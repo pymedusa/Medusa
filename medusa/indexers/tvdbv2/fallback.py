@@ -8,7 +8,7 @@ from builtins import object
 
 from medusa import app, ui
 from medusa.indexers.indexer_exceptions import (
-    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound,
+    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )
 
@@ -111,15 +111,14 @@ class PlexFallback(object):
             # Run api request
             return self.func(*args, **kwargs)
         # Valid exception, which we don't want to fall back on.
-        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete,
-                IndexerShowNotFound, IndexerShowNotFoundInLanguage):
+        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound, IndexerShowNotFoundInLanguage):
             raise
-        except ApiException as e:
-            logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
-        except IndexerUnavailable as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
-        except Exception as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
+        except ApiException as error:
+            logger.warning("could not connect to TheTvdb.com, reason '%s'", error.reason)
+        except IndexerUnavailable as error:
+            logger.warning("could not connect to TheTvdb.com, with reason '%r'", error)
+        except Exception as error:
+            logger.warning("could not connect to TheTvdb.com, with reason '%r'", error)
 
         # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
         session.api_client.host = fallback_config['api_base_url'] = app.FALLBACK_PLEX_API_URL

@@ -62,28 +62,28 @@ class CalendarHandler(BaseHandler):
         # Get all the shows that are not paused and are currently on air (from kjoconnor Fork)
         main_db_con = db.DBConnection()
         calendar_shows = main_db_con.select(
-            b'SELECT show_name, indexer_id, network, airs, runtime '
-            b'FROM tv_shows '
-            b'WHERE ( status = ? OR status = ? ) AND paused != 1',
+            'SELECT show_name, indexer_id, network, airs, runtime '
+            'FROM tv_shows '
+            'WHERE ( status = ? OR status = ? ) AND paused != 1',
             ('Continuing', 'Returning Series')
         )
         for show in calendar_shows:
             # Get all episodes of this show airing between today and next month
             episode_list = main_db_con.select(
-                b'SELECT indexerid, name, season, episode, description, airdate '
-                b'FROM tv_episodes '
-                b'WHERE airdate >= ? AND airdate < ? AND showid = ?',
-                (past_date, future_date, int(show[b'indexer_id']))
+                'SELECT indexerid, name, season, episode, description, airdate '
+                'FROM tv_episodes '
+                'WHERE airdate >= ? AND airdate < ? AND showid = ?',
+                (past_date, future_date, int(show['indexer_id']))
             )
 
             utc = tz.gettz('GMT')
 
             for episode in episode_list:
 
-                air_date_time = network_timezones.parse_date_time(episode[b'airdate'], show[b'airs'],
-                                                                  show[b'network']).astimezone(utc)
+                air_date_time = network_timezones.parse_date_time(episode['airdate'], show['airs'],
+                                                                  show['network']).astimezone(utc)
                 air_date_time_end = air_date_time + datetime.timedelta(
-                    minutes=try_int(show[b'runtime'], 60))
+                    minutes=try_int(show['runtime'], 60))
 
                 # Create event for episode
                 ical += 'BEGIN:VEVENT\r\n'
@@ -94,23 +94,23 @@ class CalendarHandler(BaseHandler):
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:{icon_url}\r\n'.format(icon_url=icon_url)
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'
                 ical += 'SUMMARY: {show} - {season}x{episode} - {title}\r\n'.format(
-                    show=show[b'show_name'],
-                    season=episode[b'season'],
-                    episode=episode[b'episode'],
-                    title=episode[b'name'],
+                    show=show['show_name'],
+                    season=episode['season'],
+                    episode=episode['episode'],
+                    title=episode['name'],
                 )
                 ical += 'UID:Medusa-{date}-{show}-E{episode}S{season}\r\n'.format(
                     date=datetime.date.today().isoformat(),
-                    show=show[b'show_name'].replace(' ', '-'),
-                    episode=episode[b'episode'],
-                    season=episode[b'season'],
+                    show=show['show_name'].replace(' ', '-'),
+                    episode=episode['episode'],
+                    season=episode['season'],
                 )
                 ical += 'DESCRIPTION: {date} on {network}'.format(
-                    date=show[b'airs'] or '(Unknown airs)',
-                    network=show[b'network'] or 'Unknown network',
+                    date=show['airs'] or '(Unknown airs)',
+                    network=show['network'] or 'Unknown network',
                 )
-                if episode[b'description']:
-                    ical += ' \\n\\n {description}\r\n'.format(description=episode[b'description'].splitlines()[0])
+                if episode['description']:
+                    ical += ' \\n\\n {description}\r\n'.format(description=episode['description'].splitlines()[0])
                 else:
                     ical += '\r\n'
                 ical += 'END:VEVENT\r\n'

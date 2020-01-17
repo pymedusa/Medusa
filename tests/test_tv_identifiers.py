@@ -1,5 +1,6 @@
 # coding=utf-8
 """Tests for medusa.tv identifiers."""
+from __future__ import unicode_literals
 
 from datetime import datetime
 
@@ -130,7 +131,7 @@ def test_series_identifier(p):
     },
     {  # p11: e1234
         'slug': 'e1234',
-        'expected': None,
+        'expected': AbsoluteNumber(1234),
     },
     {  # p12: E15
         'slug': 'E15',
@@ -144,27 +145,31 @@ def test_series_identifier(p):
         'slug': 's2017e02',
         'expected': RelativeNumber(2017, 2),
     },
-    {  # p15: 2017-07-16
+    {  # p15: s01e9999
+        'slug': 's01e9999',
+        'expected': RelativeNumber(1, 9999),
+    },
+    {  # p16: 2017-07-16
         'slug': '2017-07-16',
         'expected': AirByDateNumber(datetime(year=2017, month=7, day=16)),
     },
-    {  # p16: 2017-17-16 (invalid date)
+    {  # p17: 2017-17-16 (invalid date)
         'slug': '2017-17-16',
         'expected': None,
     },
-    {  # p17: Invalid
+    {  # p18: Invalid
         'slug': 's01e022017-07-16',
         'expected': None,
     },
-    {  # p18: Invalid
+    {  # p19: Invalid
         'slug': '22017-07-16',
         'expected': None,
     },
-    {  # p19: Invalid
+    {  # p20: Invalid
         'slug': 'ss01',
         'expected': None,
     },
-    {  # p20: Invalid
+    {  # p21: Invalid
         'slug': 'ee01',
         'expected': None,
     },

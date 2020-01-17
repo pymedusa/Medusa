@@ -9,7 +9,7 @@ import guessit
 import medusa.name_parser.guessit_parser as sut
 from medusa import app
 import pytest
-from six import binary_type, text_type
+from six import binary_type, text_type, iteritems
 import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -58,11 +58,11 @@ def _parameters(single_test=None):
     parameters = []
     input_file = os.path.join(__location__, __name__.split('.')[-1] + '.yml')
     with open(input_file, 'r') as stream:
-        data = yaml.load(stream)
+        data = yaml.load(stream, Loader=yaml.Loader)
 
-    for release_names, expected in data.items():
-        expected = {k: v for k, v in expected.items()}
-        for k, v in expected.items():
+    for release_names, expected in iteritems(data):
+        expected = {k: v for k, v in iteritems(expected)}
+        for k, v in iteritems(expected):
             if isinstance(v, binary_type):
                 expected[k] = text_type(v)
 
@@ -91,7 +91,7 @@ def test_guess(monkeypatch, show_list, release_name, expected):
     actual = guessit.guessit(release_name, options=options)
 
     # Then
-    actual = {k: _format_param(v) for k, v in actual.items()}
+    actual = {k: _format_param(v) for k, v in iteritems(actual)}
     expected['release_name'] = release_name
     actual['release_name'] = release_name
 

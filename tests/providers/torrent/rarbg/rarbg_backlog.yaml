@@ -5,39 +5,41 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: [!!python/unicode 'gzip,deflate']
       Connection: [keep-alive]
-      Cookie: [__cfduid=d0ef242b77da9a14958ee9374ebe44de01510935073]
-      User-Agent: [!!python/unicode Medusa/0.0.1 (Windows; 10; ee483911-cbb1-11e7-90fd-1c1b0d9d2a41)]
+      Cookie: [__cfduid=d864a98965fd17d1a3a7521c48cb377471550426712]
+      User-Agent: [!!python/unicode Medusa/0.2.14 (Windows; 10; 92c2cfc0-32de-11e9-a385-1c1b0d9d2a41)]
     method: GET
-    uri: http://torrentapi.org/pubapi_v2.php?ranked=0&sort=seeders&search_string=Lethal+Weapon+S02E05&format=json_extended&app_id=medusa&mode=search&min_leechers=0&limit=100&token=l2esh1av76&min_seeders=0&category=tv
+    uri: http://torrentapi.org/pubapi_v2.php?min_leechers=0&sort=seeders&ranked=0&token=5632edhvcu&min_seeders=0&app_id=medusa&format=json_extended&mode=search&category=tv&limit=100&search_string=Lethal+Weapon+S02E05
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAA+2Xa0/jRhSG/wqyBF/KmjNn7pbQCgTtVqWrikW7UpeVNTcTi8SOnAlLi/jvnYRL
-        QhdzUekHUCzHI8/12POc128usth2XWhi2YXJdBgnWfH1Iot1HIasyA5CHJhh/iWYcdvknwD3gecf
-        9o4+5+co2Lvffj042D/89LUzXTz7lm1mzsRw0nZ/paFHn9f2x/Wk9WGSGnz7vRm2xqeGkTlpQize
-        n8ftadcUNtaDAipGmNfGGsUqFxQE4zxY7QwFaRzVQTLlLN3wzfbTYlrnu/Oo1vneRuy2BzGO1+nO
-        Ov6cztgZdxq6/Lqs6vPctaPUrCC1mqZpp40Ls2FTvxil8zShPclHIVWhJNDXIbY9HdpxaHIfRm1T
-        19crEkrl0prpTU1C8KFL24AENrNhCG4wvyUitdV/p12hhIDkhJLNbDy1Pr3y9FYRiHxHyDtQa4AF
-        qILLtZ8gHWnKcLUPZd1UbVZcZPXI2zQkRk4EI1qkLvGsMydpnmY6HM7u5h3SQlLPJoiDFPRZHea1
-        QhIyG2Lq7t9ry/lizXSUKvn8Wcykba7ucTbPAqu1Oq4d1j5kl5tZZ5rTkNBIDzQLsRzPQ8lmezYp
-        jreOt64RNeM6b7uT460u+LoLLpaxnT9UPh6M38f2NDTbQwyTATFnUmyMt0nJSihVKdOVl+WCsrTq
-        I5BLhPHTSf+w9wzYpVNQSbQaAqWAnnMmhFdeU+OVBBOEQ5TM9MJ+f2yvn3jC6P3EE2TIJEdCH0Be
-        pAEr5JeRp2W5YO1x5AmoxNWX/d0rrI52XwZ3ZXlFpPLSWKSWSGmQqcpZqJAFRAaEh0qC6sX9x7je
-        AOqIy6gvSBeIAoQC3kc6KTgrcCXut6SLUqdrucDscdKfwvgzzIvQRAUvCEdVeWs89UC1kELTShkk
-        FrXFtLG9gL8xtIHcizYVAohG0WtbEtlQIFuRvUz2zLbc8vVE2/LiEk5kYMxqDiSVjloRdLCEsSoJ
-        Oa+MslZwpW142LG8Lcx1j4CnrxVRQjL9AOakQLXCfBlzUZYLyJ4k4If1+Iqmw53D3V/+g3xLSLLk
-        lNSGMVA+HcyjCswohxyNIdYLjVW/Hf8hmFdKtNR33De/FW7N2Cy/+8w3EUm1C1gJ9zXRusRUkmS+
-        b8l6nOhUmdcxn4V4bXh3fv/z4w1be3t/JB98hdjHI/sioq6DNEZX4EAa4qoqBGoIw3SCYg6N06EK
-        4EQv988K+fULvrjz51TdZAcKqbWSXLP+9ABesJXgL6UHTWW5APB56TE3E/93dlSEW6BKWUVBEMuN
-        APCaO2CKmIpSA8Y6XvVbnudE/PqTA8Wdb8etG+IUkFFE6EkOxAIw+f5VctwkB53/ygV/2eW3y38A
-        tjF9M6YXAAA=
+        H4sIAAAAAAAAA+2Y7U/bRhjA/xVkCb4MzHPvd5ZQBSMbUymb0qiVVirr3kwsgh05F8aG+N93NpRk
+        LQaitR9AsRyf7v2x7/e85ToJddP4KuSNn80nYZZkn66TUIaJT7Lk2IexnqQfvZ7WVfoe8ABYenQ4
+        +pBeYU533v52fDwYvv/U6CZcfk62E6uDP6ubv+PU0YeNwbSc1c7PYoer/6omtXax40KfVT5kb67C
+        3rypMhPKcQYFRdQpbbSkhfUSvLYOjLKagNCWKC+otIZsuWrveTJtsoNOqk12uBWavXEI002yv4l/
+        iXdotD33TXpXFuVVauuL2C0h9uqqqueV9e20uVvMUmlc0JylFz42YYGgb0CoewbUU1+lzl/UVVne
+        7YgIEUt7xi818975Jh4D4tvJxHs77moQe8p/4pkQhEAwRNB2Mp0bFz94/KYYkNhBaAfkBuAMZMbE
+        xk8Qr7igvz2FvKyKOsmuk/LCmTglBIY4RYrHIeGy0WdxnWo+mbS1bkDcSKh2gTCOIl+WvmvlAqF2
+        ii6br/cW3WbV/CI2su5N9Kyubuu4XWcB1UYZNoal88nNdtLo6txHMOILtSLm006UpD2xWXa6e7p7
+        B6ielmndnJ3uNt6VjbchD3X3Uul0PH0T6nNf7TFOsHfjSzvfmu6hnOaQy1zEJ8vzBWNx1ycQRyBh
+        mn4cHNwyNTroZfzocAXMpWEFEtIJbTAxSAiNqSysgQJTjzEFxHwhQPZi/q1cL59z8SDmiGPMgUtg
+        fZyjjNEMrzm/55znKj7zBWRPc/4cwlew4lwh6R1HDMvCGe2IA6K44IoUUmNksDI4Hmwv3q8LbPqw
+        /eYckMK8135HriHDdM31Mtet/b6n61lcD8vpLUvD/eHBr/+DagHxvKwUSlMK0sWLOiw91dJihrVG
+        xnGFC/0Y1f8V5oXyTJZ5Rvc8K0o5k4r08Ix4hDmDNc93PKscxxLl+YKrp3kW+EeEI0h4So1igGJp
+        ieFeeYMoLWJQwgotjWkP1vhesr8R6+Ubbfwg5DHmlkhyQdUjVhtlWK4pX7baPM8XjD2T8mdnlyuh
+        LqyEQmCjwBMC2DFGOXfSKaKdFKA9txgL2m/EH5btlfG+iL4xxVQwjPqseptl8hikr3lfzjJJtOr3
+        oD3Ne2xMy5C2It5ldvvv/jz5Ei8cHv4RE75b3E5G5ruogfJCa1WABaGRLQrviUYUxxsktVhb5QsP
+        lveqwUoivzLtuPcGmAulpGCK9sc8wDK69gZLMQ+JZb7gbzXt6Kzvj1aOAjEDREojCXBkmOYATjEL
+        VCJdEKJBG8uK/nBoFYlfmW4sPAeL7pUSjKFHN3D0HDimuGvd+KIbpPvlC/ye1o3yZDQYnuwfL/0h
+        eNSC9W4w+vn3k++iDcaDVBxZq6kh2iPDKRATQyZLhZeYWqeZM7w/YnpcxpfPPzycKTBFEGfAv/YN
+        cgfoDsJdPkzWvqHjn3W5MI3RU/QNC+CSm883/wKhL3JymBoAAA==
     headers:
-      cf-ray: [3bf3f738b7601a93-DUS]
+      cf-ray: [4aaa2edbca88c4a6-DUS]
       connection: [keep-alive]
       content-encoding: [gzip]
       content-type: [application/json]
-      date: ['Fri, 17 Nov 2017 16:11:25 GMT']
-      server: [cloudflare-nginx]
+      date: ['Sun, 17 Feb 2019 18:05:35 GMT']
+      server: [cloudflare]
+      transfer-encoding: [chunked]
       vary: [Accept-Encoding]
     status: {code: 200, message: OK}
 version: 1

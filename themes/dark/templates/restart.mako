@@ -1,19 +1,62 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-from medusa import app
+    from medusa import app
 %>
 <%block name="scripts">
 <script>
+const { mapState } = window.Vuex;
+
 window.app = {};
-const startVue = () => {
-    window.app = new Vue({
-        store,
-        el: '#vue-wrap',
-        data() {
-            return {};
+window.app = new Vue({
+    store,
+    router,
+    el: '#vue-wrap',
+    data() {
+        return {
+            status: '',
+            defaultPage: '${sbDefaultPage}',
+            currentPid: '${sbPID}'
+        };
+    },
+    // @TODO: Replace with Object spread (`...mapState`)
+    computed: Object.assign(mapState(['layout']), {
+        restartState() {
+            const { status } = this;
+            if (status !== 'restarted') {
+                return 'loading';
+            }
+            if (status === 'restarted') {
+                return 'yes';
+            }
+            if (status === 'failed') {
+                return 'no';
+            }
         }
-    });
-};
+    }),
+    mounted() {
+        const { defaultPage, currentPid } = this;
+        const { apiRoute } = window;
+        const checkIsAlive = setInterval(() => {
+            // @TODO: Move to API
+            apiRoute.get('home/is_alive/').then(({ data }) => {
+                const { pid } = data;
+                if (!pid) {
+                    // If it's still initializing then just wait and try again
+                    this.status = 'initializing';
+                } else if (!currentPid || currentPid === pid) {
+                    this.status = 'shutting_down';
+                    this.currentPid = pid;
+                } else {
+                    clearInterval(checkIsAlive);
+                    this.status = 'restarted';
+                    setTimeout(() => {
+                        window.location = defaultPage + '/';
+                    }, 5000);
+                }
+            });
+        }, 1000);
+    }
+});
 </script>
 </%block>
 <%block name="css">
@@ -24,30 +67,20 @@ const startVue = () => {
 </style>
 </%block>
 <%block name="content">
-<%
-try:
-    themeSpinner = sbThemeName
-except NameError:
-    themeSpinner = app.THEME_NAME
-%>
-<h2>Performing Restart</h2>
-<div default-page="${sbDefaultPage}" current-pid="${sbPID}" class="messages">
+<h2>{{ $route.meta.header }}</h2>
+<div>
     <div id="shut_down_message">
         Waiting for Medusa to shut down:
-        <img src="images/loading16-${themeSpinner}.gif" height="16" width="16" id="shut_down_loading" />
-        <img src="images/yes16.png" height="16" width="16" id="shut_down_success" style="display: none;" />
+        <state-switch :theme="layout.themeName" :state="status === 'shutting_down' ? 'loading' : 'yes'"></state-switch>
     </div>
-    <div id="restart_message" style="display: none;">
+    <div id="restart_message" v-if="status === 'initializing' || status === 'restarted'">
         Waiting for Medusa to start again:
-        <img src="images/loading16-${themeSpinner}.gif" height="16" width="16" id="restart_loading" />
-        <img src="images/yes16.png" height="16" width="16" id="restart_success" style="display: none;" />
-        <img src="images/no16.png" height="16" width="16" id="restart_failure" style="display: none;" />
+        <state-switch v-if="restartState" :theme="layout.themeName" :state="restartState"></state-switch>
     </div>
-    <div id="refresh_message" style="display: none;">
-        Loading the default page:
-        <img src="images/loading16-${themeSpinner}.gif" height="16" width="16" id="refresh_loading" />
+    <div id="refresh_message" v-if="status === 'restarted'">
+        Loading the default page: <state-switch :theme="layout.themeName" state="loading"></state-switch>
     </div>
-    <div id="restart_fail_message" style="display: none;">
+    <div id="restart_fail_message" v-if="status === 'failed'">
         Error: The restart has timed out, perhaps something prevented Medusa from starting again?
     </div>
 </div>

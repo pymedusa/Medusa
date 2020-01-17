@@ -10,10 +10,8 @@
 window.app = {};
 window.app = new Vue({
     store,
+    router,
     el: '#vue-wrap',
-    metaInfo: {
-        title: 'Config - Subtitles'
-    },
     data() {
         <%
             subtitle_code_filter = [{'id': code, 'name': subtitles.name_from_code(code)}
@@ -22,7 +20,6 @@ window.app = new Vue({
                                 for code in subtitles.wanted_languages()]
         %>
         return {
-            header: 'Subtitles',
             services: ${json.dumps(subtitles.sorted_service_list())},
             subtitleCodeFilter: ${json.dumps(subtitle_code_filter)},
             wantedLanguages: ${json.dumps(wanted_languages)},
@@ -66,7 +63,7 @@ window.app = new Vue({
 </script>
 </%block>
 <%block name="content">
-<h1 class="header">{{header}}</h1>
+<h1 class="header">{{ $route.meta.header }}</h1>
 <div id="config">
     <div id="config-content">
         <form id="configForm" action="config/subtitles/saveSubtitles" method="post">
@@ -77,7 +74,7 @@ window.app = new Vue({
                     <li><app-link href="#plugin-settings">Plugin Settings</app-link></li>
                 </ul>
                 <div id="subtitles-search" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitles Search</h3>
                         <p>Settings that dictate how Medusa handles subtitles search results.</p>
                     </div>
@@ -142,7 +139,7 @@ window.app = new Vue({
                                     <span class="component-title">Perfect matches</span>
                                     <span class="component-desc">
                                         <input type="checkbox" class="enabler" ${' checked="checked"' if app.SUBTITLES_PERFECT_MATCH else ''} id="subtitles_perfect_match" name="subtitles_perfect_match">
-                                        <p>Only download subtitles that match: release group, video codec, audio codec and resolution</p>
+                                        <p>Only download subtitles that match release group</p>
                                         <p>If disabled you may get out of sync subtitles</p>
                                     </span>
                                 </label>
@@ -242,7 +239,7 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group1 //-->
                 <div id="subtitles-plugin" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Subtitle Providers</h3>
                         <p>Check off and drag the plugins into the order you want them to be used.</p>
                         <p class="note">At least one plugin is required.</p>
@@ -263,10 +260,10 @@ window.app = new Vue({
                     </fieldset>
                 </div><!-- /component-group2 //-->
                 <div id="plugin-settings" class="component-group">
-                    <div class="component-group-desc">
+                    <div class="component-group-desc-legacy">
                         <h3>Provider Settings</h3>
                         <p>Set user and password for each provider.</p>
-                    </div><!-- /component-group-desc //-->
+                    </div><!-- /component-group-desc-legacy //-->
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%
                             providerLoginDict = {
