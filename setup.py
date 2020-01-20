@@ -93,6 +93,8 @@ setup(
     },
     cmdclass={'test': PyTest},
     tests_require=tests_runtime_require + [
+        # zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
+        'zipp < 2.0.0 ; python_version == "2.*"',
         'flake8>=3.7.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
