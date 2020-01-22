@@ -5,6 +5,8 @@
 #### Improvements
 
 #### Fixes
+- Fix deluged move_torrent() when seed location is specified in the configuration ([#7586](https://github.com/pymedusa/Medusa/pull/7586))
+- Fix rare parser exception when anime episode doesn't exist ([#7613](https://github.com/pymedusa/Medusa/pull/7613))
 
 -----
 
