@@ -152,9 +152,10 @@ def get_indexer_absolute_numbering(series_obj, scene_episode, fallback_to_xem=Tr
     """
     if scene_season is not None:
         # Get the real absolute number
-        scene_episode = get_absolute_number_from_season_and_episode(
+        real_episode = get_absolute_number_from_season_and_episode(
             series_obj, scene_season, scene_episode
         )
+        scene_episode = real_episode or scene_episode
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
