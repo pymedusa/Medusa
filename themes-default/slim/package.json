@@ -3,7 +3,7 @@
   "name": "slim",
   "author": "p0psicles",
   "scripts": {
-    "lint": "eslint **/*.{js,vue}",
+    "lint": "eslint '**/*.{js,vue}'",
     "lint-css": "stylelint \"./static/css/*.css\" \"./src/components/**/*.vue\"",
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
