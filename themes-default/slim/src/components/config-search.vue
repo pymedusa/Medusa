@@ -63,7 +63,7 @@
                                     <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" />
 
                                     <config-toggle-slider v-model="search.general.failedDownloads.enabled" label="Use Failed Downloads" id="use_failed_downloads">
-                                        <p>Use Failed Download Handling?'</p>
+                                        <p>Use Failed Download Handling?</p>
                                         <p>Will only work with snatched/downloaded episodes after enabling this</p>
                                     </config-toggle-slider>
 
