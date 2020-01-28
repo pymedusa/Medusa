@@ -63,7 +63,7 @@
                                     <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" />
 
                                     <config-toggle-slider v-model="search.general.failedDownloads.enabled" label="Use Failed Downloads" id="use_failed_downloads">
-                                        <p>Use Failed Download Handling?'</p>
+                                        <p>Use Failed Download Handling?</p>
                                         <p>Will only work with snatched/downloaded episodes after enabling this</p>
                                     </config-toggle-slider>
 
@@ -172,7 +172,7 @@
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
 
-                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTP" id="nzbget_use_https">
+                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTPS" id="nzbget_use_https">
                                                 <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                             </config-toggle-slider>
 
