@@ -1007,7 +1007,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 <div
                   class="metadataDiv"
                   id="provider.id"
-                  style=""
+                  style="display: none;"
                 >
                   <div
                     class="metadata_options_wrapper"

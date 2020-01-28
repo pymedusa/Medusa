@@ -268,37 +268,6 @@ exports[`Logs.test.js renders 1`] = `
         />
       </app-link-stub>
     </div>
-    <div>
-      2019-05-28 19:18:16 WARNING	CHECKVERSION :: [0a31350] git symbolic-ref -q HEAD returned no data
-    </div>
-    <div>
-      2019-05-28 19:01:54 ERROR	TORNADO :: [fab3029] Uncaught exception in APIv2: RuntimeError("generator didn't yield")
-Request: POST /api/v2/log (127.0.0.1)
-With body:
-{
-    "thread": "",
-    "message": "TEST",
-    "level": "INFO"
-}
-Traceback (most recent call last):
-  File "C:\\Dev\\Medusa\\ext\\tornado\\web.py", line 1592, in _execute
-    result = yield result
-  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1133, in run
-    value = future.result()
-  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1141, in run
-    yielded = self.gen.throw(*exc_info)
-  File "C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\base.py", line 64, in async_call
-    content = yield IOLoop.current().run_in_executor(executor, prepared)
-  File "C:\\Dev\\Medusa\\ext\\tornado\\gen.py", line 1133, in run
-    value = future.result()
-  File "C:\\Python\\Python37\\lib\\concurrent\\futures\\thread.py", line 57, in run
-    result = self.fn(*self.args, **self.kwargs)
-  File "C:\\Dev\\Medusa\\medusa\\server\\api\\v2\\log.py", line 159, in post
-    with rename_thread(new_name=thread):
-  File "C:\\Python\\Python37\\lib\\contextlib.py", line 114, in __enter__
-    raise RuntimeError("generator didn't yield") from None
-RuntimeError: generator didn't yield
-    </div>
   </pre>
    
   <backstretch-stub
