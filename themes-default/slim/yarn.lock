@@ -11365,10 +11365,10 @@ vue-js-modal@1.3.31:
   resolved "https://registry.yarnpkg.com/vue-js-modal/-/vue-js-modal-1.3.31.tgz#fdece823d4f2816c8b1075c1fd8f667df11f5a42"
   integrity sha512-gwt2904sWbMUuUcHwKQ510IEs4G7S3bqVWLYeTOc2eEyWMmmnT9UmojDsXIexFnPVM7cZTua37z3Jm/h0i0y8Q==
 
-vue-js-toggle-button@1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.3.2.tgz#d2e538465c321967144d035824cb71eedd82984e"
-  integrity sha512-LS+pvX5lXEhX+Gei5MOAEw7bx99/A+9idFhMtBgz72ApsEHlW69Y7bk+ZKC1rLRUxchL5WlQ+MhJXqXewhkfjg==
+vue-js-toggle-button@1.3.3:
+  version "1.3.3"
+  resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.3.3.tgz#d603089039e41d45e607355ad2e0478c6a52aceb"
+  integrity sha512-0b920oztgK+1SqlYF26MPiT28hAieL5aAQE7u21XEym5ryfzD4EMer4hLkgDC/1sWsCHb22GvV+t1Kb4AI6QFw==
 
 vue-loader@15.8.3:
   version "15.8.3"
