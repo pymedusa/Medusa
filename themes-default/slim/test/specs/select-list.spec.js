@@ -29,7 +29,7 @@ describe('SelectList.test.js', () => {
         expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders with values', () => {
+    it('renders with values', async () => {
         const expectedItems = [
             'abc',
             'bcd',
@@ -48,6 +48,8 @@ describe('SelectList.test.js', () => {
             wrapper.setData({ newItem: item });
             wrapper.vm.addNewItem();
         });
+
+        await wrapper.vm.$nextTick();
 
         expect(wrapper.element).toMatchSnapshot();
         const inputWrapperArray = wrapper.findAll('li input[type="text"]');
