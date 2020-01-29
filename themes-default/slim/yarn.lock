@@ -881,10 +881,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@mapbox/stylelint-processor-arbitrary-tags@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@mapbox/stylelint-processor-arbitrary-tags/-/stylelint-processor-arbitrary-tags-0.2.0.tgz#4c2b50711bd9033a6c4f7f19e418b5f43f1a1e51"
-  integrity sha512-58l3WteJg2nvs1l8s0zoFffDZyDjeo+sM48IK6ZaG/luxM7xmThz+di3+KrwN61gnWDeb/cUmK2DT+Y99kTN0w==
+"@mapbox/stylelint-processor-arbitrary-tags@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@mapbox/stylelint-processor-arbitrary-tags/-/stylelint-processor-arbitrary-tags-0.3.0.tgz#1d098ef1378fb1da38b156c3cb1e4d778e144825"
+  integrity sha512-DweuA3J3yzIOPNuldidk7qsKGdI1VjIw0yf3S7lNq+1nim8XvJ6LPvtk31CqHLnKs+hEx0j74TWVJBo6D6/5FA==
   dependencies:
     execall "^1.0.0"
     split-lines "^1.1.0"
