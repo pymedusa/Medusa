@@ -11318,10 +11318,10 @@ vue-async-computed@3.8.2:
   resolved "https://registry.yarnpkg.com/vue-async-computed/-/vue-async-computed-3.8.2.tgz#d5dff221b62f95ad2f98ce9e7bbea5a067ec8b9a"
   integrity sha512-If5roOhp/x0WWd0TWRD77YsuFoiIw3MbkcRlIB/FE3TqQCPje52eQp5CV5NN/7B0VAyPuGX5JQa+rc9AOcGAYw==
 
-vue-cookies@1.5.13:
-  version "1.5.13"
-  resolved "https://registry.yarnpkg.com/vue-cookies/-/vue-cookies-1.5.13.tgz#b1ca79a2663bf9a4f36982557011cab5ee2196c0"
-  integrity sha512-8pjpXnvbNWx1Lft0t3MJnW+ylv0Wa2Tb6Ch617u/pQah3+SfXUZZdkh3EL3bSpe/Sw2Wdw3+DhycgQsKANSxXg==
+vue-cookies@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/vue-cookies/-/vue-cookies-1.6.1.tgz#ab036382d37a3f4c83140e0175d9dc60ce67fe01"
+  integrity sha512-qyzhuq0x9xLEwniSXFoEsFErHgQ24jviB527IDul+8KrlxU9jdqrvVunRRBk4lPpxPgL0ywv8NxcD6MDWcTMug==
 
 vue-eslint-parser@^7.0.0:
   version "7.0.0"
