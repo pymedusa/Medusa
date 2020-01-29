@@ -21,7 +21,7 @@ describe('Logs.test.js', () => {
         routerBase = '/'; // This might be '/webroot'
     });
 
-    it('renders', () => {
+    it('renders', async () => {
         const router = new VueRouter({
             base: routerBase,
             mode: 'history'
@@ -43,6 +43,7 @@ describe('Logs.test.js', () => {
             logLines: exampleLogs
         });
 
+        await wrapper.vm.$nextTick();
         expect(wrapper.element).toMatchSnapshot();
     });
 });
