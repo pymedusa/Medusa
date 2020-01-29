@@ -115,7 +115,7 @@ export const registerPlugins = () => {
     Vue.use(VTooltip);
 
     // Set default cookie expire time
-    VueCookies.config('10y');
+    Vue.$cookies.config('10y');
 };
 
 /**
