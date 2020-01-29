@@ -50,7 +50,6 @@ describe('SelectList.test.js', () => {
         });
 
         await wrapper.vm.$nextTick();
-
         expect(wrapper.element).toMatchSnapshot();
         const inputWrapperArray = wrapper.findAll('li input[type="text"]');
         expect(inputWrapperArray.length).toEqual(expectedItems.length);
