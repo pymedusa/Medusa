@@ -39,7 +39,7 @@
     "jquery": "3.4.1",
     "lodash": "4.17.15",
     "tablesorter": "2.31.2",
-    "v-tooltip": "2.0.2",
+    "v-tooltip": "2.0.3",
     "vue": "2.6.11",
     "vue-async-computed": "3.7.0",
     "vue-cookies": "1.5.13",
