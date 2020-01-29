@@ -15,7 +15,7 @@ describe('SubtitleSearch', () => {
         localVue.use(VueRouter);
     });
 
-    it('renders subtitle component with question', () => {
+    it('renders subtitle component with question', async () => {
         const wrapper = shallowMount(SubtitleSearch, {
             localVue,
             store,
@@ -30,10 +30,11 @@ describe('SubtitleSearch', () => {
             displayQuestion: true
         });
 
+        await wrapper.vm.$nextTick();
         expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders subtitle component with manual subtitle results', () => {
+    it('renders subtitle component with manual subtitle results', async () => {
         const wrapper = mount(SubtitleSearch, {
             localVue,
             store,
@@ -49,10 +50,11 @@ describe('SubtitleSearch', () => {
             displayQuestion: false
         });
 
+        await wrapper.vm.$nextTick();
         expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders empty subtitle component', () => {
+    it('renders empty subtitle component', async () => {
         const wrapper = shallowMount(SubtitleSearch, {
             localVue,
             store,
@@ -67,6 +69,7 @@ describe('SubtitleSearch', () => {
             displayQuestion: false
         });
 
+        await wrapper.vm.$nextTick();
         expect(wrapper.element).toMatchSnapshot();
     });
 });
