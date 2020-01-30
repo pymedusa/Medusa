@@ -7,7 +7,7 @@ certifi==2019.11.28
 cfscrape @ https://codeload.github.com/Anorov/cloudflare-scrape/tar.gz/713e3b4017442d87ad0d638f7991cc330abeee5e#egg=cfscrape
 chardet==3.0.4
 configobj==5.0.6
-contextlib2==0.5.5
+contextlib2==0.6.0.post1
 deluge-client==1.7.1
 dirtyjson==1.0.7
 dogpile.cache==0.9.0
