@@ -69,7 +69,7 @@ ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.
 ext | `tvdbapiv2` | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
 ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `CacheControl`, `requests` | -
-ext | `validators` | [0.13.0](https://pypi.org/project/validators/0.13.0/) | **`medusa`** | -
+ext | `validators` | [0.14.2](https://pypi.org/project/validators/0.14.2/) | **`medusa`** | -
 ext | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
 
