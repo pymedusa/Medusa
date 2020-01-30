@@ -199,6 +199,7 @@ class MedusaApp(object):
         self.DEFAULT_PAGE = 'home'
         self.SEEDERS_LEECHERS_IN_NOTIFY = True
         self.SHOW_LIST_ORDER = ['Anime', 'Series']
+        self.SHOW_USE_PAGINATION = True
 
         self.USE_LISTVIEW = False
         self.METADATA_KODI = []
@@ -581,9 +582,6 @@ class MedusaApp(object):
 
         self.ADDIC7ED_USER = None
         self.ADDIC7ED_PASS = None
-
-        self.ITASA_USER = None
-        self.ITASA_PASS = None
 
         self.LEGENDASTV_USER = None
         self.LEGENDASTV_PASS = None

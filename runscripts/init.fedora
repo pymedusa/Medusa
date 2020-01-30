@@ -28,7 +28,7 @@ homedir=${APP_HOME-/opt/medusa}
 datadir=${APP_DATA-/opt/medusa}
 pidfile=${APP_PIDFILE-/var/run/PyMedusa/Medusa.pid}
 nice=${APP_NICE-}
-python_bin=${PYTHON_BIN-/usr/bin/python2.7}
+python_bin=${PYTHON_BIN-/usr/bin/python3}
 ##
 
 pidpath=`dirname ${pidfile}`

@@ -68,7 +68,7 @@ def packages():
 
 # These requirements probably won't be needed
 # when `install_requires` is populated with `requirements.txt`
-tests_runtime_require = ['tornado==5.1.1', 'six', 'profilehooks', 'contextlib2', ]
+tests_runtime_require = ['tornado==5.1.1', 'six>=1.13.0', 'profilehooks', 'contextlib2', ]
 
 setup(
     name='pymedusa',
@@ -93,6 +93,8 @@ setup(
     },
     cmdclass={'test': PyTest},
     tests_require=tests_runtime_require + [
+        # zipp v2.0.0 dropped support for Python 2 (flake8 -> importlib-metadata -> zipp)
+        'zipp < 2.0.0 ; python_version == "2.*"',
         'flake8>=3.7.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
@@ -105,8 +107,10 @@ setup(
         'pytest-flake8>=1.0.2',
         'pytest-tornado5>=2.0.0',
         'PyYAML>=5.1',
-        'vcrpy>=2.0.1',
-        'mock>=2.0.0',
+        'vcrpy<4.0.0 ; python_version < "3.5"',
+        'vcrpy>=4.0.0 ; python_version >= "3.5"',
+        'mock<=3.0.5 ; python_version <= "3.5"',
+        'mock>=3.0.5 ; python_version > "3.5"',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

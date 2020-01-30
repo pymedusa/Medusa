@@ -326,7 +326,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <select-list-stub
                       csvenabled="true"
                       id="sync_files"
-                      listitems="!ut,!sync,lftp-pget-status,part,bts,!qb,!qB"
+                      listitems="!sync,lftp-pget-status,part,bts,!qb,!qB"
                       name="sync_files"
                       unique="true"
                     />
@@ -359,7 +359,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       name="postpone_if_no_subs"
                       speed="300"
                       sync="true"
-                      value="true"
                       width="45"
                     />
                      
@@ -441,7 +440,6 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       name="create_missing_show_dirs"
                       speed="300"
                       sync="true"
-                      value="true"
                       width="45"
                     />
                      
@@ -530,7 +528,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     <select-list-stub
                       csvenabled="true"
                       id="allowed_extensions"
-                      listitems="nfo,srt,sub,idx"
+                      listitems="nfo,idx,sub,srt"
                       name="allowed_extensions"
                       unique="true"
                     />
@@ -1009,6 +1007,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 <div
                   class="metadataDiv"
                   id="provider.id"
+                  style="display: none;"
                 >
                   <div
                     class="metadata_options_wrapper"
@@ -3174,7 +3173,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
             <span
               class="path"
             >
-              
+              C:\\Medusa\\Data
             </span>
           </b>
         </h6>

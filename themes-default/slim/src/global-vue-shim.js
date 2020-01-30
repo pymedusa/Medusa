@@ -20,6 +20,7 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
+    History,
     Home,
     LanguageSelect,
     ManualPostProcess,
@@ -27,6 +28,7 @@ import {
     QualityChooser,
     QualityPill,
     RootDirs,
+    Schedule,
     ScrollButtons,
     SelectList,
     ShowSelector,
@@ -84,8 +86,10 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
+        History,
         Home,
         ManualPostProcess,
+        Schedule,
         SnatchSelection,
         Status
     ]);
@@ -109,6 +113,9 @@ export const registerPlugins = () => {
     Vue.use(VueCookies);
     Vue.use(VModal);
     Vue.use(VTooltip);
+
+    // Set default cookie expire time
+    Vue.$cookies.config('10y');
 };
 
 /**
@@ -140,7 +147,7 @@ export default () => {
                     store.dispatch('getConfig'),
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
-                    this.$emit('loaded');
+                    this.$root.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
                     const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
                     window.dispatchEvent(event);
@@ -150,7 +157,7 @@ export default () => {
                 });
             }
 
-            this.$once('loaded', () => {
+            this.$root.$once('loaded', () => {
                 this.$root.globalLoading = false;
             });
         },

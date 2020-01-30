@@ -1,7 +1,7 @@
 <template>
     <tr class="subtitle-search-wrapper">
         <td colspan="9999">
-            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
+            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="layout.themeName" state="loading" /></span>
             <div v-if="displayQuestion" class="search-question">
                 <div class="question">
                     <p v-if="!lang">Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -133,7 +133,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config
+            layout: state => state.layout
         }),
         subtitleParams() {
             const { episode, show, season } = this;

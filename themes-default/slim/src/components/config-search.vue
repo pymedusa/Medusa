@@ -62,12 +62,12 @@
 
                                     <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" />
 
-                                    <config-toggle-slider v-model="search.general.useFailedDownloads" label="Use Failed Downloads" id="use_failed_downloads">
-                                        <p>Use Failed Download Handling?'</p>
+                                    <config-toggle-slider v-model="search.general.failedDownloads.enabled" label="Use Failed Downloads" id="use_failed_downloads">
+                                        <p>Use Failed Download Handling?</p>
                                         <p>Will only work with snatched/downloaded episodes after enabling this</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-show="search.general.useFailedDownloads" v-model="search.general.deleteFailed" label="Delete Failed" id="delete_failed">
+                                    <config-toggle-slider v-show="search.general.failedDownloads.enabled" v-model="search.general.failedDownloads.deleteFailed" label="Delete Failed" id="delete_failed">
                                         Delete files left over from a failed download?<br>
                                         <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
                                     </config-toggle-slider>
@@ -172,7 +172,7 @@
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
 
-                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTP" id="nzbget_use_https">
+                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTPS" id="nzbget_use_https">
                                                 <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                             </config-toggle-slider>
 
@@ -247,7 +247,7 @@
                                                 </select>
                                             </config-template>
 
-                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifyCertOption" v-model="clients.torrents.verifyCert" label="Verify certificate" id="torrent_verify_cert">
+                                            <config-toggle-slider v-show="clientsConfig.torrent[clients.torrents.method].verifySSLOption" v-model="clients.torrents.verifySSL" label="Verify certificate" id="torrent_verify_cert">
                                                 <p>Verify SSL certificates for HTTPS requests</p>
                                                 <p v-show="clients.torrents.method === 'deluge'">disable if you get "Deluge: Authentication Error" in your log</p>
                                             </config-toggle-slider>
@@ -326,7 +326,7 @@
                         </div>
                     </div><!-- /#torrent-search //-->
                     <br>
-                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{config.dataDir}}</span></b> </h6>
+                    <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">{{system.dataDir}}</span></b> </h6>
                     <input type="submit" class="btn-medusa pull-left config_submitter button" value="Save Changes">
                 </div><!-- /config-components //-->
             </form>
@@ -413,7 +413,7 @@ export default {
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     deluged: {
@@ -426,7 +426,7 @@ export default {
                         labelAnimeOption: true,
                         seedLocationOption: true,
                         pausedOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     downloadstation: {
@@ -441,7 +441,7 @@ export default {
                         pathOption: true,
                         labelOption: true,
                         labelAnimeOption: true,
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     qbittorrent: {
@@ -450,12 +450,13 @@ export default {
                         labelOption: true,
                         labelAnimeOption: true,
                         pausedOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     },
                     mlnet: {
                         title: 'MLDonkey',
                         description: 'URL to your MLDonkey (e.g. http://localhost:4080)',
-                        verifyCertOption: true,
+                        verifySSLOption: true,
                         testStatus: 'Click below to test'
                     }
                 },
@@ -485,8 +486,8 @@ export default {
     computed: {
         ...mapState([
             'clients',
-            'config',
-            'search'
+            'search',
+            'system'
         ]),
         torrentUsernameIsDisabled() {
             const { clients } = this;
@@ -589,7 +590,11 @@ export default {
             this.saving = true;
 
             // Clone the config into a new object
-            const config = Object.assign({}, { search }, { clients });
+            const config = Object.assign(
+                {},
+                { search },
+                { clients }
+            );
             const section = 'main';
             try {
                 await setConfig({ section, config });

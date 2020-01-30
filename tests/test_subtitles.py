@@ -19,8 +19,8 @@ from six import text_type
 
 def test_sorted_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'itasa', 'thesubdb', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'thesubdb', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
 
     # When
     actual = sut.sorted_service_list()
@@ -28,13 +28,15 @@ def test_sorted_service_list(monkeypatch):
     # Then
     expected = [
         {'name': 'legendastv', 'enabled': True},
-        {'name': 'itasa', 'enabled': False},
         {'name': 'thesubdb', 'enabled': True},
         {'name': 'shooter', 'enabled': False},
         {'name': 'addic7ed', 'enabled': False},
+        {'name': 'argenteam', 'enabled': False},
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
+        {'name': 'opensubtitlesvip', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
+        {'name': 'subtitulamos', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
         {'name': 'wizdom', 'enabled': False},
     ]
@@ -43,8 +45,8 @@ def test_sorted_service_list(monkeypatch):
 
 def test_enabled_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'itasa', 'tvsubtitles', 'shooter'])
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'tvsubtitles', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 1, 0])
 
     # When
     actual = sut.enabled_service_list()
@@ -381,7 +383,7 @@ def test_get_min_score__with_perfect_match_enabled(monkeypatch):
     actual = sut.get_min_score()
 
     # Then
-    assert 345 == actual
+    assert 645 == actual
 
 
 def test_get_min_score__with_perfect_match_disabled(monkeypatch):
@@ -392,7 +394,7 @@ def test_get_min_score__with_perfect_match_disabled(monkeypatch):
     actual = sut.get_min_score()
 
     # Then
-    assert 330 == actual
+    assert 630 == actual
 
 
 def test_get_subtitles_dir__no_subtitles_dir(monkeypatch):

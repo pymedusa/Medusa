@@ -268,7 +268,6 @@ window.app = new Vue({
                         <%
                             providerLoginDict = {
                                 'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
-                                'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>

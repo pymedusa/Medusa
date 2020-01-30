@@ -188,7 +188,7 @@ window.app = new Vue({
     <ul class="simpleList">
         <li>Backlog: <i>{{ searchQueueLength.backlog }} pending items</i>
         <li>Daily: <i>{{ searchQueueLength.daily }} pending items</i>
-        <li>Forced: <i>{{ forcedSearchQueueLength.forced_search }} pending items</i>
+        <li>Forced: <i>{{ forcedSearchQueueLength.backlog_search }} pending items</i>
         <li>Manual: <i>{{ forcedSearchQueueLength.manual_search }} pending items</i>
         <li>Failed: <i>{{ forcedSearchQueueLength.failed }} pending items</i>
     </ul>

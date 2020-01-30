@@ -30,7 +30,7 @@ aliases:
       - pip install --upgrade pip
       - pip install dredd_hooks
       - pip install 'PyYAML>=5.1'
-      - pip install six
+      - pip install 'six>=1.13.0'
       - *nvm_install
       - *install_yarn_bin
       - yarn install --ignore-scripts

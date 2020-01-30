@@ -42,7 +42,6 @@ from medusa.helper.common import dateTimeFormat, episode_num, remove_extension, 
 from medusa.helper.exceptions import ex
 from medusa.helpers import is_media_file, is_rar_file
 from medusa.show.show import Show
-from medusa.subtitle_providers.utils import hash_itasa
 
 from six import binary_type, iteritems, string_types, text_type
 
@@ -63,12 +62,14 @@ episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
-    'itasa': 'http://www.italiansubs.net',
+    'argenteam': 'https://argenteam.net',
     'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
+    'opensubtitlesvip': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
+    'subtitulamos': 'https://www.subtitulamos.tv',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net',
     'wizdom': 'http://wizdom.xyz'
@@ -518,12 +519,12 @@ def get_provider_pool():
     logger.debug(u'Creating a new ProviderPool instance')
     provider_configs = {'addic7ed': {'username': app.ADDIC7ED_USER,
                                      'password': app.ADDIC7ED_PASS},
-                        'itasa': {'username': app.ITASA_USER,
-                                  'password': app.ITASA_PASS},
                         'legendastv': {'username': app.LEGENDASTV_USER,
                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
-                                          'password': app.OPENSUBTITLES_PASS}}
+                                          'password': app.OPENSUBTITLES_PASS},
+                        'opensubtitlesvip': {'username': app.OPENSUBTITLES_USER,
+                                             'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)
 
 
@@ -730,12 +731,6 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.warning(u'Unable to scan video: %s. Error: %r', video_path, error)
     else:
 
-        # Add hash of our custom provider Itasa
-        video.size = os.path.getsize(video_path)
-        if video.size > 10485760:
-            video.hashes['itasa'] = hash_itasa(video_path)
-
-        # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
 

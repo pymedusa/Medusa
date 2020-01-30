@@ -8,6 +8,8 @@ import logging
 from medusa.common import HD1080p, Quality
 from medusa.search.core import filter_results, pick_result
 
+from mock.mock import Mock
+
 import pytest
 
 from six import iteritems
@@ -91,7 +93,7 @@ from six import iteritems
         ]
     },
 ])
-def test_filter_results(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
+def test_filter_results(p, app_config, create_search_result, search_provider, create_tvshow, create_tvepisode, caplog):
 
     caplog.set_level(logging.DEBUG, logger='medusa')
 
@@ -102,6 +104,8 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
 
     series_attrs = p.get('series', {})
     series = create_tvshow(**series_attrs)
+    series.want_episode = Mock(return_value=True)
+    episode = create_tvepisode(series, 3, 4)
 
     provider_attrs = p.get('provider', {})
 
@@ -114,7 +118,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
         result = create_search_result(
             provider=search_provider(**provider_attrs),
             series=series,
-            episodes=[tvepisode],
+            episode=episode,
             **item
         )
 
@@ -417,7 +421,7 @@ def test_filter_results(p, app_config, create_search_result, search_provider, cr
         ]
     }
 ])
-def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, tvepisode, caplog):
+def test_pick_result(p, app_config, create_search_result, search_provider, create_tvshow, create_tvepisode, caplog):
 
     caplog.set_level(logging.DEBUG, logger='medusa')
 
@@ -428,6 +432,7 @@ def test_pick_result(p, app_config, create_search_result, search_provider, creat
 
     series_attrs = p.get('series', {})
     series = create_tvshow(**series_attrs)
+    episode = create_tvepisode(series, 3, 4)
 
     provider_attrs = p.get('provider', {})
 
@@ -435,7 +440,7 @@ def test_pick_result(p, app_config, create_search_result, search_provider, creat
         create_search_result,
         provider=search_provider(**provider_attrs),
         series=series,
-        episodes=[tvepisode]
+        episode=episode
     )
 
     results = [make_result(**item) for item in p['results']]

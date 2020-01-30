@@ -103,6 +103,7 @@ from medusa.scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     numbering_tuple_to_dict,
 )
+from medusa.search import FORCED_SEARCH
 from medusa.show.show import Show
 from medusa.subtitles import (
     code_from_code,
@@ -2113,6 +2114,7 @@ class Series(TV):
         data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
+        data['lastUpdate'] = datetime.date.fromordinal(self.last_update_indexer).isoformat()
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = {}
@@ -2260,7 +2262,7 @@ class Series(TV):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
-    def want_episode(self, season, episode, quality, forced_search=False,
+    def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):
         """Whether or not the episode with the specified quality is wanted.
 
@@ -2279,6 +2281,8 @@ class Series(TV):
         :return:
         :rtype: bool
         """
+        forced_search = True if search_type == FORCED_SEARCH else False
+
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = self.current_qualities
         log.debug(
@@ -2356,6 +2360,49 @@ class Series(TV):
             }
         )
         return should_replace
+
+    def want_episodes(self, season, episodes, quality,
+                      download_current_quality=False, search_type=None):
+        """Whether one or more episodes are wanted based on their quality and status.
+
+        Args:
+            season (int): Season number of the episode(s)
+            episodes (int): Episode number(s)
+            quality (int): Quality of the episode(s)
+            download_current_quality (bool, optional): Accept the same quality. Defaults to False.
+            search_type (SearchType, optional): The type used to search. Defaults to None.
+
+        Returns:
+            bool: Whether the episode(s) are wanted.
+
+        """
+        wanted_episodes = [
+            self.want_episode(season, episode, quality,
+                              download_current_quality=download_current_quality,
+                              search_type=search_type)
+            for episode in episodes
+        ]
+
+        if all(wanted_episodes):
+            log.info('Episodes {eps} of season {sea} are needed with this quality for {show}',
+                     {'eps': episodes, 'sea': season, 'show': self.name})
+            return True
+
+        elif not any(wanted_episodes):
+            log.debug('No episodes {eps} of season {sea} are needed with this quality for {show}',
+                      {'eps': episodes, 'sea': season, 'show': self.name})
+            return False
+        else:
+            # If there are 2 candidates and only one is wanted it
+            # is likely a single episode released as multi episode
+            if len(wanted_episodes) == 2:
+                log.info('Only 1 of episodes {eps} of season {sea} are needed with this quality for {show}',
+                         {'eps': episodes, 'sea': season, 'show': self.name})
+                return True
+            else:
+                log.debug(u'Only some episodes {eps} of season {sea} are needed with this quality for {show}',
+                          {'eps': episodes, 'sea': season, 'show': self.name})
+                return False
 
     def get_overview(self, ep_status, ep_quality, backlog_mode=False, manually_searched=False):
         """Get the Overview status from the Episode status.
@@ -2456,6 +2503,51 @@ class Series(TV):
             log.debug(u'No DOWNLOADED episodes for show ID: {show}',
                       {'show': self.name})
             return False
+
+    def get_wanted_segments(self, from_date=None):
+        """Get episodes that should be backlog searched."""
+        wanted = {}
+        if self.paused:
+            log.debug(u'Skipping backlog for {0} because the show is paused', self.name)
+            return wanted
+
+        log.debug(u'Seeing if we need anything from {0}', self.name)
+
+        from_date = from_date or datetime.date.fromordinal(1)
+
+        con = db.DBConnection()
+        sql_results = con.select(
+            'SELECT status, quality, season, episode, manually_searched '
+            'FROM tv_episodes '
+            'WHERE airdate > ?'
+            ' AND indexer = ? '
+            ' AND showid = ?',
+            [from_date.toordinal(), self.indexer, self.series_id]
+        )
+
+        # check through the list of statuses to see if we want any
+        for episode in sql_results:
+            cur_status, cur_quality = int(episode['status'] or UNSET), int(episode['quality'] or Quality.NA)
+            should_search, should_search_reason = Quality.should_search(
+                cur_status, cur_quality, self, episode['manually_searched']
+            )
+            if not should_search:
+                continue
+            log.debug(
+                u'Found needed backlog episodes for: {show} {ep}. Reason: {reason}', {
+                    'show': self.name,
+                    'ep': episode_num(episode['season'], episode['episode']),
+                    'reason': should_search_reason,
+                }
+            )
+            ep_obj = self.get_episode(episode['season'], episode['episode'])
+
+            if ep_obj.season not in wanted:
+                wanted[ep_obj.season] = [ep_obj]
+            else:
+                wanted[ep_obj.season].append(ep_obj)
+
+        return wanted
 
     def pause(self):
         """Pause the series."""

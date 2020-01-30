@@ -19,14 +19,16 @@ from medusa import (
     logger,
     ws,
 )
-from medusa.common import IGNORED, Quality, SKIPPED, WANTED
-from medusa.helpers.utils import to_camel_case
-from medusa.indexers.indexer_config import get_indexer_config
+from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
+from medusa.helpers.utils import int_default, to_camel_case
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.sbdatetime import date_presets, time_presets
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
     EnumField,
+    FloatField,
     IntegerField,
     ListField,
     MetadataStructureField,
@@ -77,8 +79,98 @@ class ConfigHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'PATCH', )
     #: patch mapping
     patches = {
+        # Main
+        'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
+        'rootDirs': ListField(app, 'ROOT_DIRS'),
+
+        'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
+        'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
+        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES,
+                                               converter=bool),
+        'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator,
+                                                   converter=bool),
+        'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
+        'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
         'anonRedirect': StringField(app, 'ANON_REDIRECT'),
         'emby.enabled': BooleanField(app, 'USE_EMBY'),
+
+        'launchBrowser': BooleanField(app, 'LAUNCH_BROWSER'),
+        'defaultPage': StringField(app, 'DEFAULT_PAGE'),
+        'trashRemoveShow': BooleanField(app, 'TRASH_REMOVE_SHOW'),
+        'trashRotateLogs': BooleanField(app, 'TRASH_ROTATE_LOGS'),
+
+        'indexerDefaultLanguage': StringField(app, 'INDEXER_DEFAULT_LANGUAGE'),
+        'showUpdateHour': IntegerField(app, 'SHOWUPDATE_HOUR'),
+        'indexerTimeout': IntegerField(app, 'INDEXER_TIMEOUT'),
+        'indexerDefault': IntegerField(app, 'INDEXER_DEFAULT'),
+        'plexFallBack.enable': BooleanField(app, 'FALLBACK_PLEX_ENABLE'),
+        'plexFallBack.notifications': BooleanField(app, 'FALLBACK_PLEX_NOTIFICATIONS'),
+        'plexFallBack.timeout': IntegerField(app, 'FALLBACK_PLEX_TIMEOUT'),
+        'versionNotify': BooleanField(app, 'VERSION_NOTIFY'),
+        'autoUpdate': BooleanField(app, 'AUTO_UPDATE'),
+        'updateFrequency': IntegerField(app, 'UPDATE_FREQUENCY'),
+        'notifyOnUpdate': BooleanField(app, 'NOTIFY_ON_UPDATE'),
+        # 'availableThemes': IgnoreField(app, 'AVAILABLE_THEMES'),
+        # 'timePresets': IgnoreField(app, 'time_presets'),
+        # 'datePresets': IgnoreField(app, 'date_presets'),
+
+        'webInterface.apiKey': StringField(app, 'API_KEY'),
+        'webInterface.log': BooleanField(app, 'WEB_LOG'),
+        'webInterface.username': StringField(app, 'WEB_USERNAME'),
+        'webInterface.password': StringField(app, 'WEB_PASSWORD'),
+        'webInterface.port': IntegerField(app, 'WEB_PORT'),
+        'webInterface.notifyOnLogin': BooleanField(app, 'NOTIFY_ON_LOGIN'),
+        'webInterface.ipv6': BooleanField(app, 'WEB_IPV6'),
+        'webInterface.httpsEnable': BooleanField(app, 'ENABLE_HTTPS'),
+        'webInterface.httpsCert': StringField(app, 'HTTPS_CERT'),
+        'webInterface.httpsKey': StringField(app, 'HTTPS_KEY'),
+        'webInterface.handleReverseProxy': BooleanField(app, 'HANDLE_REVERSE_PROXY'),
+
+        'cpuPreset': StringField(app, 'CPU_PRESET'),
+        'sslVerify': BooleanField(app, 'SSL_VERIFY'),
+        'sslCaBundle': StringField(app, 'SSL_CA_BUNDLE'),
+        'noRestart': BooleanField(app, 'NO_RESTART'),
+        'encryptionVersion': BooleanField(app, 'ENCRYPTION_VERSION'),
+        'calendarUnprotected': BooleanField(app, 'CALENDAR_UNPROTECTED'),
+        'calendarIcons': BooleanField(app, 'CALENDAR_ICONS'),
+        'proxySetting': StringField(app, 'PROXY_SETTING'),
+        'proxyIndexers': BooleanField(app, 'PROXY_INDEXERS'),
+
+        'skipRemovedFiles': BooleanField(app, 'SKIP_REMOVED_FILES'),
+        'epDefaultDeletedStatus': IntegerField(app, 'EP_DEFAULT_DELETED_STATUS'),
+
+        'logs.debug': BooleanField(app, 'DEBUG'),
+        'logs.dbDebug': BooleanField(app, 'DBDEBUG'),
+        'logs.actualLogDir': StringField(app, 'ACTUAL_LOG_DIR'),
+        'logs.nr': IntegerField(app, 'LOG_NR'),
+        'logs.size': FloatField(app, 'LOG_SIZE'),
+        'logs.subliminalLog': BooleanField(app, 'SUBLIMINAL_LOG'),
+        'logs.privacyLevel': StringField(app, 'PRIVACY_LEVEL'),
+
+        'developer': BooleanField(app, 'DEVELOPER'),
+
+        'git.username': StringField(app, 'GIT_USERNAME'),
+        'git.password': StringField(app, 'GIT_PASSWORD'),
+        'git.token': StringField(app, 'GIT_TOKEN'),
+        'git.authType': IntegerField(app, 'GIT_AUTH_TYPE'),
+        'git.remote': StringField(app, 'GIT_REMOTE'),
+        'git.path': StringField(app, 'GIT_PATH'),
+        'git.org': StringField(app, 'GIT_ORG'),
+        'git.reset': BooleanField(app, 'GIT_RESET'),
+        'git.resetBranches': ListField(app, 'GIT_RESET_BRANCHES'),
+        'git.url': StringField(app, 'GITHUB_IO_URL'),
+
+        'wikiUrl': StringField(app, 'WIKI_URL'),
+        'donationsUrl': StringField(app, 'DONATIONS_URL'),
+        'sourceUrl': StringField(app, 'APPLICATION_URL'),
+        'downloadUrl': StringField(app, 'DOWNLOAD_URL'),
+        'subtitlesMulti': BooleanField(app, 'SUBTITLES_MULTI'),
+        'namingForceFolders': BooleanField(app, 'NAMING_FORCE_FOLDERS'),
+        'subtitles.enabled': BooleanField(app, 'USE_SUBTITLES'),
+        'recentShows': ListField(app, 'SHOWS_RECENT'),
+
+        # Sections
         'clients.torrents.authType': StringField(app, 'TORRENT_AUTH_TYPE'),
         'clients.torrents.dir': StringField(app, 'TORRENT_DIR'),
         'clients.torrents.enabled': BooleanField(app, 'USE_TORRENTS'),
@@ -116,26 +208,7 @@ class ConfigHandler(BaseRequestHandler):
         'clients.nzb.sabnzbd.host': StringField(app, 'SAB_HOST'),
         'clients.nzb.sabnzbd.password': StringField(app, 'SAB_PASSWORD'),
         'clients.nzb.sabnzbd.username': StringField(app, 'SAB_USERNAME'),
-        'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
-        'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
-                                     default_value='banner', post_processor=layout_schedule_post_processor),
-        'layout.history': EnumField(app, 'HISTORY_LAYOUT', ('compact', 'detailed'), default_value='detailed'),
-        'layout.home': EnumField(app, 'HOME_LAYOUT', ('poster', 'small', 'banner', 'simple', 'coverflow'),
-                                 default_value='poster'),
-        'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
-        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
-        'theme.name': StringField(app, 'THEME_NAME', setter=theme_name_setter),
-        'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
-        'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
-        'rootDirs': ListField(app, 'ROOT_DIRS'),
 
-        'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
-        'showDefaults.statusAfter': EnumField(app, 'STATUS_DEFAULT_AFTER', (SKIPPED, WANTED, IGNORED), int),
-        'showDefaults.quality': IntegerField(app, 'QUALITY_DEFAULT', validator=Quality.is_valid_combined_quality),
-        'showDefaults.subtitles': BooleanField(app, 'SUBTITLES_DEFAULT', validator=lambda v: app.USE_SUBTITLES, converter=bool),
-        'showDefaults.seasonFolders': BooleanField(app, 'SEASON_FOLDERS_DEFAULT', validator=season_folders_validator, converter=bool),
-        'showDefaults.anime': BooleanField(app, 'ANIME_DEFAULT', converter=bool),
-        'showDefaults.scene': BooleanField(app, 'SCENE_DEFAULT', converter=bool),
 
         'postProcessing.showDownloadDir': StringField(app, 'TV_DOWNLOAD_DIR'),
         'postProcessing.processAutomatically': BooleanField(app, 'PROCESS_AUTOMATICALLY'),
@@ -157,7 +230,6 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
         'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
         'postProcessing.extraScripts': ListField(app, 'EXTRA_SCRIPTS'),
-        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS_URL'),
         'postProcessing.naming.pattern': StringField(app, 'NAMING_PATTERN'),
         'postProcessing.naming.enableCustomNamingAnime': BooleanField(app, 'NAMING_CUSTOM_ANIME'),
         'postProcessing.naming.enableCustomNamingSports': BooleanField(app, 'NAMING_CUSTOM_SPORTS'),
@@ -186,10 +258,10 @@ class ConfigHandler(BaseRequestHandler):
         'search.general.usenetRetention': IntegerField(app, 'USENET_RETENTION'),
         'search.general.trackersList': ListField(app, 'TRACKERS_LIST'),
         'search.general.allowHighPriority': BooleanField(app, 'ALLOW_HIGH_PRIORITY'),
-        'search.general.useFailedDownloads': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
-        'search.general.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
         'search.general.cacheTrimming': BooleanField(app, 'CACHE_TRIMMING'),
         'search.general.maxCacheAge': IntegerField(app, 'MAX_CACHE_AGE'),
+        'search.general.failedDownloads.enabled': BooleanField(app, 'USE_FAILED_DOWNLOADS'),
+        'search.general.failedDownloads.deleteFailed': BooleanField(app, 'DELETE_FAILED'),
 
         'search.filters.ignored': ListField(app, 'IGNORE_WORDS'),
         'search.filters.undesired': ListField(app, 'UNDESIRED_WORDS'),
@@ -372,6 +444,35 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.slack.notifyOnDownload': BooleanField(app, 'SLACK_NOTIFY_DOWNLOAD'),
         'notifiers.slack.notifyOnSubtitleDownload': BooleanField(app, 'SLACK_NOTIFY_SUBTITLEDOWNLOAD'),
 
+        'layout.comingEps.missedRange': IntegerField(app, 'COMING_EPS_MISSED_RANGE'),
+        'layout.comingEps.layout': StringField(app, 'COMING_EPS_LAYOUT'),
+        'layout.comingEps.sort': StringField(app, 'COMING_EPS_SORT'),
+        'layout.comingEps.displayPaused': BooleanField(app, 'COMING_EPS_DISPLAY_PAUSED'),
+        'layout.schedule': EnumField(app, 'COMING_EPS_LAYOUT', ('poster', 'banner', 'list', 'calendar'),
+                                     default_value='banner', post_processor=layout_schedule_post_processor),
+        'layout.history': EnumField(app, 'HISTORY_LAYOUT', ('compact', 'detailed'), default_value='detailed'),
+        'layout.home': EnumField(app, 'HOME_LAYOUT', ('poster', 'small', 'banner', 'simple', 'coverflow'),
+                                 default_value='poster'),
+        'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
+        'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
+        'layout.show.pagination.enable': BooleanField(app, 'SHOW_USE_PAGINATION'),
+        'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
+        'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
+        'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
+        'layout.animeSplitHomeInTabs': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.animeSplitHome': BooleanField(app, 'ANIME_SPLIT_HOME'),
+        'layout.timezoneDisplay': StringField(app, 'TIMEZONE_DISPLAY'),
+        'layout.trimZero': BooleanField(app, 'TRIM_ZERO'),
+        'layout.sortArticle': BooleanField(app, 'SORT_ARTICLE'),
+        'layout.fuzzyDating': BooleanField(app, 'FUZZY_DATING'),
+        'layout.posterSortby': StringField(app, 'POSTER_SORTBY'),
+        'layout.historyLimit': StringField(app, 'HISTORY_LIMIT'),
+        'layout.fanartBackground': BooleanField(app, 'FANART_BACKGROUND'),
+        'layout.fanartBackgroundOpacity': FloatField(app, 'FANART_BACKGROUND_OPACITY'),
+        'layout.backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
+        'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+        'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
+        'layout.dateStyle': StringField(app, 'DATE_PRESET'),
     }
 
     def get(self, identifier, path_param=None):
@@ -474,45 +575,10 @@ class DataGenerator(object):
         """Main."""
         section_data = {}
 
-        section_data['anonRedirect'] = app.ANON_REDIRECT
-        section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
-        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
-        section_data['comingEpsSort'] = app.COMING_EPS_SORT
-        section_data['comingEpsDisplayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
-        section_data['datePreset'] = app.DATE_PRESET
-        section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
+        # Can't get rid of this because of the usage of themeName in MEDUSA.config.themeName.
         section_data['themeName'] = app.THEME_NAME
-        section_data['posterSortby'] = app.POSTER_SORTBY
-        section_data['posterSortdir'] = app.POSTER_SORTDIR
+        section_data['anonRedirect'] = app.ANON_REDIRECT
         section_data['rootDirs'] = app.ROOT_DIRS
-        section_data['sortArticle'] = bool(app.SORT_ARTICLE)
-        section_data['timePreset'] = app.TIME_PRESET
-        section_data['trimZero'] = bool(app.TRIM_ZERO)
-        section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
-        section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
-        section_data['gitUsername'] = app.GIT_USERNAME
-        section_data['branch'] = app.BRANCH
-        section_data['commitHash'] = app.CUR_COMMIT_HASH
-        section_data['release'] = app.APP_VERSION
-        section_data['sslVersion'] = app.OPENSSL_VERSION
-        section_data['pythonVersion'] = sys.version
-        section_data['databaseVersion'] = {}
-        section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
-        section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
-        section_data['os'] = platform.platform()
-        section_data['pid'] = app.PID
-        section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
-        section_data['localUser'] = app.OS_USER or 'Unknown'
-        section_data['programDir'] = app.PROG_DIR
-        section_data['dataDir'] = app.DATA_DIR
-        section_data['configFile'] = app.CONFIG_FILE
-        section_data['dbPath'] = db.DBConnection().path
-        section_data['cacheDir'] = app.CACHE_DIR
-        section_data['logDir'] = app.LOG_DIR
-        section_data['appArgs'] = app.MY_ARGS
-        section_data['webRoot'] = app.WEB_ROOT
-        section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
-        section_data['githubUrl'] = app.GITHUB_IO_URL
         section_data['wikiUrl'] = app.WIKI_URL
         section_data['donationsUrl'] = app.DONATIONS_URL
         section_data['sourceUrl'] = app.APPLICATION_URL
@@ -536,75 +602,91 @@ class DataGenerator(object):
         section_data['showDefaults']['anime'] = bool(app.ANIME_DEFAULT)
         section_data['showDefaults']['scene'] = bool(app.SCENE_DEFAULT)
 
-        section_data['news'] = {}
-        section_data['news']['lastRead'] = app.NEWS_LAST_READ
-        section_data['news']['latest'] = app.NEWS_LATEST
-        section_data['news']['unread'] = app.NEWS_UNREAD
-
         section_data['logs'] = {}
         section_data['logs']['debug'] = bool(app.DEBUG)
         section_data['logs']['dbDebug'] = bool(app.DBDEBUG)
         section_data['logs']['loggingLevels'] = {k.lower(): v for k, v in iteritems(logger.LOGGING_LEVELS)}
         section_data['logs']['numErrors'] = len(classes.ErrorViewer.errors)
         section_data['logs']['numWarnings'] = len(classes.WarningViewer.errors)
+        section_data['logs']['actualLogDir'] = app.ACTUAL_LOG_DIR
+        section_data['logs']['nr'] = int(app.LOG_NR)
+        section_data['logs']['size'] = float(app.LOG_SIZE)
+        section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
+        section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
 
-        section_data['failedDownloads'] = {}
-        section_data['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
-        section_data['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
+        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
-        section_data['layout'] = {}
-        section_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
-        section_data['layout']['history'] = app.HISTORY_LAYOUT
-        section_data['layout']['home'] = app.HOME_LAYOUT
-        section_data['layout']['show'] = {}
+        # Added for config - main, needs refactoring in the structure.
+        section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
+        section_data['defaultPage'] = app.DEFAULT_PAGE
+        section_data['trashRemoveShow'] = bool(app.TRASH_REMOVE_SHOW)
+        section_data['trashRotateLogs'] = bool(app.TRASH_ROTATE_LOGS)
 
-        section_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
-        section_data['layout']['show']['showListOrder'] = app.SHOW_LIST_ORDER
+        section_data['indexerDefaultLanguage'] = app.INDEXER_DEFAULT_LANGUAGE
+        section_data['showUpdateHour'] = int_default(app.SHOWUPDATE_HOUR, app.DEFAULT_SHOWUPDATE_HOUR)
+        section_data['indexerTimeout'] = int_default(app.INDEXER_TIMEOUT, 20)
+        section_data['indexerDefault'] = app.INDEXER_DEFAULT
 
-        section_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT is not None else -1  # All paths
+        section_data['plexFallBack'] = {}
+        section_data['plexFallBack']['enable'] = bool(app.FALLBACK_PLEX_ENABLE)
+        section_data['plexFallBack']['notifications'] = bool(app.FALLBACK_PLEX_NOTIFICATIONS)
+        section_data['plexFallBack']['timeout'] = int(app.FALLBACK_PLEX_TIMEOUT)
 
+        section_data['versionNotify'] = bool(app.VERSION_NOTIFY)
+        section_data['autoUpdate'] = bool(app.AUTO_UPDATE)
+        section_data['updateFrequency'] = int_default(app.UPDATE_FREQUENCY, app.DEFAULT_UPDATE_FREQUENCY)
+        section_data['notifyOnUpdate'] = bool(app.NOTIFY_ON_UPDATE)
+        section_data['availableThemes'] = [{'name': theme.name,
+                                            'version': theme.version,
+                                            'author': theme.author}
+                                           for theme in app.AVAILABLE_THEMES]
+
+        section_data['timePresets'] = list(time_presets)
+        section_data['datePresets'] = list(date_presets)
+
+        section_data['webInterface'] = {}
+        section_data['webInterface']['apiKey'] = app.API_KEY
+        section_data['webInterface']['log'] = bool(app.WEB_LOG)
+        section_data['webInterface']['username'] = app.WEB_USERNAME
+        section_data['webInterface']['password'] = app.WEB_PASSWORD
+        section_data['webInterface']['port'] = int_default(app.WEB_PORT, 8081)
+        section_data['webInterface']['notifyOnLogin'] = bool(app.NOTIFY_ON_LOGIN)
+        section_data['webInterface']['ipv6'] = bool(app.WEB_IPV6)
+        section_data['webInterface']['httpsEnable'] = bool(app.ENABLE_HTTPS)
+        section_data['webInterface']['httpsCert'] = app.HTTPS_CERT
+        section_data['webInterface']['httpsKey'] = app.HTTPS_KEY
+        section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
+
+        section_data['cpuPreset'] = app.CPU_PRESET
+        section_data['sslVerify'] = bool(app.SSL_VERIFY)
+        section_data['sslCaBundle'] = app.SSL_CA_BUNDLE
+        section_data['noRestart'] = bool(app.NO_RESTART)
+        section_data['encryptionVersion'] = bool(app.ENCRYPTION_VERSION)
+        section_data['calendarUnprotected'] = bool(app.CALENDAR_UNPROTECTED)
+        section_data['calendarIcons'] = bool(app.CALENDAR_ICONS)
+        section_data['proxySetting'] = app.PROXY_SETTING
+        section_data['proxyIndexers'] = bool(app.PROXY_INDEXERS)
+        section_data['skipRemovedFiles'] = bool(app.SKIP_REMOVED_FILES)
+        section_data['epDefaultDeletedStatus'] = app.EP_DEFAULT_DELETED_STATUS
+        section_data['developer'] = bool(app.DEVELOPER)
+
+        section_data['git'] = {}
+        section_data['git']['username'] = app.GIT_USERNAME
+        section_data['git']['password'] = app.GIT_PASSWORD
+        section_data['git']['token'] = app.GIT_TOKEN
+        section_data['git']['authType'] = int(app.GIT_AUTH_TYPE)
+        section_data['git']['remote'] = app.GIT_REMOTE
+        section_data['git']['path'] = app.GIT_PATH
+        section_data['git']['org'] = app.GIT_ORG
+        section_data['git']['reset'] = bool(app.GIT_RESET)
+        section_data['git']['resetBranches'] = app.GIT_RESET_BRANCHES
+        section_data['git']['url'] = app.GITHUB_IO_URL
+
+        # backlogOverview has been moved to layout. It's still located here, because manage_backlogOvervew uses it
+        # and still needs to be vieuified. After vueifying it, remove this.
         section_data['backlogOverview'] = {}
-        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
-
-        section_data['indexers'] = {}
-        section_data['indexers']['config'] = get_indexer_config()
-
-        section_data['postProcessing'] = {}
-        section_data['postProcessing']['naming'] = {}
-        section_data['postProcessing']['naming']['pattern'] = app.NAMING_PATTERN
-        section_data['postProcessing']['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
-        section_data['postProcessing']['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
-        section_data['postProcessing']['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
-        section_data['postProcessing']['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
-        section_data['postProcessing']['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
-        section_data['postProcessing']['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
-        section_data['postProcessing']['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
-        section_data['postProcessing']['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
-        section_data['postProcessing']['naming']['animeNamingType'] = int(app.NAMING_ANIME)
-        section_data['postProcessing']['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
-        section_data['postProcessing']['showDownloadDir'] = app.TV_DOWNLOAD_DIR
-        section_data['postProcessing']['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
-        section_data['postProcessing']['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
-        section_data['postProcessing']['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
-        section_data['postProcessing']['renameEpisodes'] = bool(app.RENAME_EPISODES)
-        section_data['postProcessing']['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
-        section_data['postProcessing']['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
-        section_data['postProcessing']['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
-        section_data['postProcessing']['nfoRename'] = bool(app.NFO_RENAME)
-        section_data['postProcessing']['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
-        section_data['postProcessing']['unpack'] = bool(app.UNPACK)
-        section_data['postProcessing']['deleteRarContent'] = bool(app.DELRARCONTENTS)
-        section_data['postProcessing']['noDelete'] = bool(app.NO_DELETE)
-        section_data['postProcessing']['processMethod'] = app.PROCESS_METHOD
-        section_data['postProcessing']['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
-        section_data['postProcessing']['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
-        section_data['postProcessing']['syncFiles'] = app.SYNC_FILES
-        section_data['postProcessing']['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
-        section_data['postProcessing']['allowedExtensions'] = app.ALLOWED_EXTENSIONS
-        section_data['postProcessing']['extraScripts'] = app.EXTRA_SCRIPTS
-        section_data['postProcessing']['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
-        section_data['postProcessing']['multiEpStrings'] = common.MULTI_EP_STRINGS
+        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
 
         return section_data
 
@@ -697,20 +779,22 @@ class DataGenerator(object):
         # section_data['general']['propersIntervalLabels'] = app.PROPERS_INTERVAL_LABELS
         section_data['general']['propersSearchDays'] = int(app.PROPERS_SEARCH_DAYS)
         section_data['general']['backlogDays'] = int(app.BACKLOG_DAYS)
-        section_data['general']['backlogFrequency'] = int(app.BACKLOG_FREQUENCY)
+        section_data['general']['backlogFrequency'] = int_default(app.BACKLOG_FREQUENCY, app.DEFAULT_BACKLOG_FREQUENCY)
         section_data['general']['minBacklogFrequency'] = int(app.MIN_BACKLOG_FREQUENCY)
-        section_data['general']['dailySearchFrequency'] = int(app.DAILYSEARCH_FREQUENCY)
+        section_data['general']['dailySearchFrequency'] = int_default(app.DAILYSEARCH_FREQUENCY, app.DEFAULT_DAILYSEARCH_FREQUENCY)
         section_data['general']['minDailySearchFrequency'] = int(app.MIN_DAILYSEARCH_FREQUENCY)
         section_data['general']['removeFromClient'] = bool(app.REMOVE_FROM_CLIENT)
-        section_data['general']['torrentCheckerFrequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
+        section_data['general']['torrentCheckerFrequency'] = int_default(app.TORRENT_CHECKER_FREQUENCY, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
         section_data['general']['minTorrentCheckerFrequency'] = int(app.MIN_TORRENT_CHECKER_FREQUENCY)
-        section_data['general']['usenetRetention'] = int(app.USENET_RETENTION)
+        section_data['general']['usenetRetention'] = int_default(app.USENET_RETENTION, 500)
         section_data['general']['trackersList'] = app.TRACKERS_LIST
         section_data['general']['allowHighPriority'] = bool(app.ALLOW_HIGH_PRIORITY)
-        section_data['general']['useFailedDownloads'] = bool(app.USE_FAILED_DOWNLOADS)
-        section_data['general']['deleteFailed'] = bool(app.DELETE_FAILED)
         section_data['general']['cacheTrimming'] = bool(app.CACHE_TRIMMING)
-        section_data['general']['maxCacheAge'] = int(app.MAX_CACHE_AGE)
+        section_data['general']['maxCacheAge'] = int_default(app.MAX_CACHE_AGE, 30)
+
+        section_data['general']['failedDownloads'] = {}
+        section_data['general']['failedDownloads']['enabled'] = bool(app.USE_FAILED_DOWNLOADS)
+        section_data['general']['failedDownloads']['deleteFailed'] = bool(app.DELETE_FAILED)
 
         section_data['filters'] = {}
         section_data['filters']['ignored'] = app.IGNORE_WORDS
@@ -894,12 +978,12 @@ class DataGenerator(object):
         section_data['trakt']['pinUrl'] = app.TRAKT_PIN_URL
         section_data['trakt']['username'] = app.TRAKT_USERNAME
         section_data['trakt']['accessToken'] = app.TRAKT_ACCESS_TOKEN
-        section_data['trakt']['timeout'] = int(app.TRAKT_TIMEOUT)
-        section_data['trakt']['defaultIndexer'] = int(app.TRAKT_DEFAULT_INDEXER)
+        section_data['trakt']['timeout'] = int_default(app.TRAKT_TIMEOUT, 20)
+        section_data['trakt']['defaultIndexer'] = int_default(app.TRAKT_DEFAULT_INDEXER, INDEXER_TVDBV2)
         section_data['trakt']['sync'] = bool(app.TRAKT_SYNC)
         section_data['trakt']['syncRemove'] = bool(app.TRAKT_SYNC_REMOVE)
         section_data['trakt']['syncWatchlist'] = bool(app.TRAKT_SYNC_WATCHLIST)
-        section_data['trakt']['methodAdd'] = int(app.TRAKT_METHOD_ADD)
+        section_data['trakt']['methodAdd'] = int_default(app.TRAKT_METHOD_ADD)
         section_data['trakt']['removeWatchlist'] = bool(app.TRAKT_REMOVE_WATCHLIST)
         section_data['trakt']['removeSerieslist'] = bool(app.TRAKT_REMOVE_SERIESLIST)
         section_data['trakt']['removeShowFromApplication'] = bool(app.TRAKT_REMOVE_SHOW_FROM_APPLICATION)
@@ -937,6 +1021,37 @@ class DataGenerator(object):
         section_data['memoryUsage'] = helpers.memory_usage(pretty=True)
         section_data['schedulers'] = generate_schedulers()
         section_data['showQueue'] = generate_show_queue()
+
+        section_data['branch'] = app.BRANCH
+        section_data['commitHash'] = app.CUR_COMMIT_HASH
+        section_data['release'] = app.APP_VERSION
+        section_data['sslVersion'] = app.OPENSSL_VERSION
+        section_data['pythonVersion'] = sys.version
+
+        section_data['databaseVersion'] = {}
+        section_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
+        section_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
+
+        section_data['os'] = platform.platform()
+        section_data['pid'] = app.PID
+        section_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
+        section_data['localUser'] = app.OS_USER or 'Unknown'
+        section_data['programDir'] = app.PROG_DIR
+        section_data['dataDir'] = app.DATA_DIR
+        section_data['configFile'] = app.CONFIG_FILE
+        section_data['dbPath'] = db.DBConnection().path
+        section_data['cacheDir'] = app.CACHE_DIR
+        section_data['logDir'] = app.LOG_DIR
+        section_data['appArgs'] = app.MY_ARGS
+        section_data['webRoot'] = app.WEB_ROOT
+        section_data['runsInDocker'] = bool(app.RUNS_IN_DOCKER)
+        section_data['gitRemoteBranches'] = app.GIT_REMOTE_BRANCHES
+        section_data['cpuPresets'] = cpu_presets
+
+        section_data['news'] = {}
+        section_data['news']['lastRead'] = app.NEWS_LAST_READ
+        section_data['news']['latest'] = app.NEWS_LATEST
+        section_data['news']['unread'] = app.NEWS_UNREAD
 
         return section_data
 
@@ -988,5 +1103,98 @@ class DataGenerator(object):
         section_data['nzb']['sabnzbd']['username'] = app.SAB_USERNAME
         section_data['nzb']['sabnzbd']['password'] = app.SAB_PASSWORD
         section_data['nzb']['sabnzbd']['apiKey'] = app.SAB_APIKEY
+
+        return section_data
+
+    @staticmethod
+    def data_postprocessing():
+        """Postprocessing information."""
+        section_data = {}
+
+        section_data['naming'] = {}
+        section_data['naming']['pattern'] = app.NAMING_PATTERN
+        section_data['naming']['multiEp'] = int(app.NAMING_MULTI_EP)
+        section_data['naming']['patternAirByDate'] = app.NAMING_ABD_PATTERN
+        section_data['naming']['patternSports'] = app.NAMING_SPORTS_PATTERN
+        section_data['naming']['patternAnime'] = app.NAMING_ANIME_PATTERN
+        section_data['naming']['enableCustomNamingAirByDate'] = bool(app.NAMING_CUSTOM_ABD)
+        section_data['naming']['enableCustomNamingSports'] = bool(app.NAMING_CUSTOM_SPORTS)
+        section_data['naming']['enableCustomNamingAnime'] = bool(app.NAMING_CUSTOM_ANIME)
+        section_data['naming']['animeMultiEp'] = int(app.NAMING_ANIME_MULTI_EP)
+        section_data['naming']['animeNamingType'] = int_default(app.NAMING_ANIME, 3)
+        section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
+        section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
+        section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+        section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
+        section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
+        section_data['renameEpisodes'] = bool(app.RENAME_EPISODES)
+        section_data['createMissingShowDirs'] = bool(app.CREATE_MISSING_SHOW_DIRS)
+        section_data['addShowsWithoutDir'] = bool(app.ADD_SHOWS_WO_DIR)
+        section_data['moveAssociatedFiles'] = bool(app.MOVE_ASSOCIATED_FILES)
+        section_data['nfoRename'] = bool(app.NFO_RENAME)
+        section_data['airdateEpisodes'] = bool(app.AIRDATE_EPISODES)
+        section_data['unpack'] = bool(app.UNPACK)
+        section_data['deleteRarContent'] = bool(app.DELRARCONTENTS)
+        section_data['noDelete'] = bool(app.NO_DELETE)
+        section_data['processMethod'] = app.PROCESS_METHOD
+        section_data['reflinkAvailable'] = bool(pkgutil.find_loader('reflink'))
+        section_data['autoPostprocessorFrequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
+        section_data['syncFiles'] = app.SYNC_FILES
+        section_data['fileTimestampTimezone'] = app.FILE_TIMESTAMP_TIMEZONE
+        section_data['allowedExtensions'] = app.ALLOWED_EXTENSIONS
+        section_data['extraScripts'] = app.EXTRA_SCRIPTS
+        section_data['extraScriptsUrl'] = app.EXTRA_SCRIPTS_URL
+        section_data['multiEpStrings'] = common.MULTI_EP_STRINGS
+
+        return section_data
+
+    @staticmethod
+    def data_indexers():
+        """Indexers config information."""
+        return get_indexer_config()
+
+    @staticmethod
+    def data_layout():
+        """Layout configuration."""
+        section_data = {}
+
+        section_data['schedule'] = app.COMING_EPS_LAYOUT
+        section_data['history'] = app.HISTORY_LAYOUT
+        section_data['historyLimit'] = app.HISTORY_LIMIT
+
+        section_data['home'] = app.HOME_LAYOUT
+
+        section_data['show'] = {}
+        section_data['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
+        section_data['show']['showListOrder'] = app.SHOW_LIST_ORDER
+        section_data['show']['pagination'] = {}
+        section_data['show']['pagination']['enable'] = bool(app.SHOW_USE_PAGINATION)
+
+        section_data['wide'] = bool(app.LAYOUT_WIDE)
+
+        section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
+        section_data['themeName'] = app.THEME_NAME
+        section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
+        section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
+        section_data['fanartBackground'] = bool(app.FANART_BACKGROUND)
+        section_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+        section_data['timezoneDisplay'] = app.TIMEZONE_DISPLAY
+        section_data['dateStyle'] = app.DATE_PRESET
+        section_data['timeStyle'] = app.TIME_PRESET_W_SECONDS
+
+        section_data['trimZero'] = bool(app.TRIM_ZERO)
+        section_data['sortArticle'] = bool(app.SORT_ARTICLE)
+        section_data['fuzzyDating'] = bool(app.FUZZY_DATING)
+        section_data['posterSortby'] = app.POSTER_SORTBY
+
+        section_data['comingEps'] = {}
+        section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
+        section_data['comingEps']['sort'] = app.COMING_EPS_SORT
+        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
+
+        section_data['backlogOverview'] = {}
+        section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+        section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
 
         return section_data
