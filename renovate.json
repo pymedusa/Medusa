@@ -42,6 +42,10 @@
       {
         "packageNames": ["PyGithub"],
         "allowedVersions": "<=1.45"
+      },
+      {
+        "packageNames": ["rarfile"],
+        "allowedVersions": "<=3.1"
       }
     ]
   }
