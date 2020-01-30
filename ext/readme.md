@@ -10,7 +10,7 @@ ext | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd
 **ext2 ext3** | `beautifulsoup4` | [4.8.1](https://pypi.org/project/beautifulsoup4/4.8.1/) | **`medusa`**, `subliminal` | Module: `bs4`
 ext | `bencode.py` | [2.1.0](https://pypi.org/project/bencode.py/2.1.0/) | **`medusa`** | Module: `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
-ext | `CacheControl` | [0.12.5](https://pypi.org/project/CacheControl/0.12.5/) | **`medusa`** | Module: `cachecontrol`
+ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.11.28](https://pypi.org/project/certifi/2019.11.28/) | **`medusa`**, `requests`, `traktor` | -
 ext | `cfscrape` | [713e3b4](https://github.com/Anorov/cloudflare-scrape/tree/713e3b4017442d87ad0d638f7991cc330abeee5e) | **`medusa`** | Monkey-patched, see `medusa/init/cfscrape.py`
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `beautifulsoup4`, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
@@ -37,7 +37,7 @@ ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`*
 ext | `Js2Py` | [0.67](https://pypi.org/project/Js2Py/0.67/) | **`medusa`** | Module: `js2py`
 ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
 ext | `knowit` | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
-ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) | `CacheControl` | -
+ext | `lockfile` | [0.12.2](https://pypi.org/project/lockfile/0.12.2/) |  | -
 ext | `Mako` | [1.1.0](https://pypi.org/project/Mako/1.1.0/) | **`medusa`** | Module: `mako`
 ext | <code><b>markdown2</b>.py</code> | [2.3.8](https://pypi.org/project/markdown2/2.3.8/) | **`medusa`** | -
 ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako` | Module: `markupsafe`
@@ -68,7 +68,7 @@ ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`me
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
 ext | `tvdbapiv2` | pymedusa/[bf1272c](https://github.com/pymedusa/tvdbv2/tree/bf1272c9264c280c3048e89a1920e2bf5f386284) | **`medusa`** | -
 ext | `tzlocal` | [1.5.1](https://pypi.org/project/tzlocal/1.5.1/) | `Js2Py` | -
-ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `CacheControl`, `requests` | -
+ext | `urllib3` | [1.24.1](https://pypi.org/project/urllib3/1.24.1/) | `requests` | -
 ext | `validators` | [0.14.2](https://pypi.org/project/validators/0.14.2/) | **`medusa`** | -
 ext | `webencodings` | [0.5.1](https://pypi.org/project/webencodings/0.5.1/) | `html5lib` | -
 ext | `wrapt` | [1.10.11](https://pypi.org/project/wrapt/1.10.11/) | `deprecated` | -
