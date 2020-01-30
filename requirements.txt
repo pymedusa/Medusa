@@ -26,7 +26,7 @@ knowit @ https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf8
 Mako==1.1.0
 markdown2==2.3.8
 profilehooks==1.11.0
-PyGithub==1.43.7
+PyGithub==1.45
 PyJWT==1.7.1
 python-dateutil==2.8.0
 python-twitter==3.5
