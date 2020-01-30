@@ -109,7 +109,8 @@ setup(
         'PyYAML>=5.1',
         'vcrpy<4.0.0 ; python_version < "3.5"',
         'vcrpy>=4.0.0 ; python_version >= "3.5"',
-        'mock>=2.0.0',
+        'mock<=3.0.5 ; python_version <= "3.5"',
+        'mock>=3.0.5 ; python_version > "3.5"',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
