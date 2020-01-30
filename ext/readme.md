@@ -18,7 +18,7 @@ ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
 ext | <code><b>contextlib2</b>.py</code> | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | -
 ext | <code><b>decorator</b>.py</code> | [4.4.0](https://pypi.org/project/decorator/4.4.0/) | `dogpile.cache`, `validators` | -
-ext | `deluge-client` | [1.7.1](https://pypi.org/project/deluge-client/1.7.1/) | **`medusa`** | Module: `deluge_client`
+ext | `deluge-client` | [1.8.0](https://pypi.org/project/deluge-client/1.8.0/) | **`medusa`** | Module: `deluge_client`
 ext | `deprecated` | [1.2.3](https://pypi.org/project/deprecated/1.2.3/) | `PyGithub` | -
 ext | `dirtyjson` | [1.0.7](https://pypi.org/project/dirtyjson/1.0.7/) | **`medusa`** | -
 ext | `diskcache` | [2.9.0](https://pypi.org/project/diskcache/2.9.0/) | `imdbpie` | -
