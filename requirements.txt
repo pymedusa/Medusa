@@ -8,7 +8,7 @@ cfscrape @ https://codeload.github.com/Anorov/cloudflare-scrape/tar.gz/713e3b401
 chardet==3.0.4
 configobj==5.0.6
 contextlib2==0.6.0.post1
-deluge-client==1.7.1
+deluge-client==1.8.0
 dirtyjson==1.0.7
 dogpile.cache==0.9.0
 enum34==1.1.6 ; python_version == '2.*'
