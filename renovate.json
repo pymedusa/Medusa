@@ -38,6 +38,10 @@
       {
         "packageNames": ["tornado"],
         "allowedVersions": "<6"
+      },
+      {
+        "packageNames": ["PyGithub"],
+        "allowedVersions": "<=1.45"
       }
     ]
   }
