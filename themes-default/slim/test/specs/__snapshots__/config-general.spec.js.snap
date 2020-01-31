@@ -1482,7 +1482,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                            
                           <p>
                             <a
-                              href="http://dereferer.org/?https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo"
+                              href="http://dereferer.org/?https://github.com/settings/tokens/new?description=Medusa&scopes=gist,public_repo"
                               target="_blank"
                             >
                               <input

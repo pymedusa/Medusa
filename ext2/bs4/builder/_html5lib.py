@@ -316,9 +316,7 @@ class Element(treebuilder_base.Node):
         return AttrList(self.element)
 
     def setAttributes(self, attributes):
-
         if attributes is not None and len(attributes) > 0:
-
             converted_attributes = []
             for name, value in list(attributes.items()):
                 if isinstance(name, tuple):

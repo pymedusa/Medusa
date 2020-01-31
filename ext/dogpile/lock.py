@@ -1,5 +1,5 @@
-import time
 import logging
+import time
 
 log = logging.getLogger(__name__)
 
@@ -10,6 +10,7 @@ class NeedRegenerationException(Exception):
     regeneration of the value.
 
     """
+
 
 NOT_REGENERATED = object()
 
@@ -70,8 +71,8 @@ class Lock(object):
         value is available."""
 
         return not self._has_value(createdtime) or (
-            self.expiretime is not None and
-            time.time() - createdtime > self.expiretime
+            self.expiretime is not None
+            and time.time() - createdtime > self.expiretime
         )
 
     def _has_value(self, createdtime):
@@ -109,7 +110,8 @@ class Lock(object):
                 raise Exception(
                     "Generation function should "
                     "have just been called by a concurrent "
-                    "thread.")
+                    "thread."
+                )
         else:
             return value
 
@@ -123,8 +125,8 @@ class Lock(object):
             has_value = True
             if not self.mutex.acquire(False):
                 log.debug(
-                    "creation function in progress "
-                    "elsewhere, returning")
+                    "creation function in progress elsewhere, returning"
+                )
                 return NOT_REGENERATED
         else:
             has_value = False
@@ -173,8 +175,7 @@ class Lock(object):
             # there's no value at all, and we have to create it synchronously
             log.debug(
                 "Calling creation function for %s value",
-                "not-yet-present" if not has_value else
-                "previously expired"
+                "not-yet-present" if not has_value else "previously expired",
             )
             return self.creator()
         finally:
@@ -185,5 +186,5 @@ class Lock(object):
     def __enter__(self):
         return self._enter()
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type_, value, traceback):
         pass
