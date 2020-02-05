@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed guessit parser not using scene exceptions ([#7699](https://github.com/pymedusa/Medusa/pull/7699))
 
 -----
 
