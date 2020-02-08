@@ -185,6 +185,7 @@ class NameParser(object):
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         found_exceptions = list(scene_exceptions.get_scene_exceptions_by_name(result.series_name))
+        scene_season = None
         if found_exceptions:
             scene_season = found_exceptions[0].season
 
