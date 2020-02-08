@@ -145,6 +145,8 @@ class SeriesHandler(BaseRequestHandler):
             'config.qualities.preferred': ListField(series, 'qualities_preferred'),
             'config.qualities.combined': IntegerField(series, 'quality'),
             'config.airdateOffset': IntegerField(series, 'airdate_offset'),
+            'config.templates': BooleanField(series, 'templates'),
+            'config.searchTemplates': ListField(series, 'search_templates'),
         }
 
         for key, value in iter_nested_items(data):
