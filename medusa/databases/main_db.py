@@ -941,11 +941,16 @@ class AddSearchTemplates(MoveSceneExceptions):
             '''CREATE TABLE "search_templates" (
             `search_template_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
             `template`	TEXT,
+            `title`     TEXT,
             `indexer`	INTEGER,
             `series_id`	INTEGER,
             `season`	INTEGER,
-            `episode`	INTEGER,
-            `enabled`	INTEGER DEFAULT 1);'''
+            `enabled`	INTEGER DEFAULT 1,
+            `default`	INTEGER DEFAULT 1);'''
         )
+
+        log.info(u'Adding new templates field in the tv_shows table')
+        if not self.hasColumn('tv_shows', 'templates'):
+            self.addColumn('tv_shows', 'templates', 'NUMERIC', 0)
 
         self.inc_minor_version()
