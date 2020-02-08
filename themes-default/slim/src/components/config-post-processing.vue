@@ -37,7 +37,7 @@
                                             <div class="col-sm-10 content">
                                                 <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
                                                 <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
-                                                <div class="clear-left"><p><b>NOTE:</b> Please use seperate downloading and completed folders in your download client if possible.</p></div>
+                                                <div class="clear-left"><p><b>NOTE:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
                                             </div>
                                         </div>
 
@@ -92,7 +92,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
-                                            <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
+                                            <span>Comma separated list of extensions or filename globs Medusa ignores when post processing</span>
                                         </div>
                                     </div>
 
@@ -155,7 +155,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
-                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
+                                            <span>Comma separated list of associated file extensions Medusa should keep while post processing.</span><br>
                                             <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
                                     </div>
