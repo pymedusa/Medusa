@@ -194,9 +194,9 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                 >
                   <p>
                     number of log files saved when rotating logs (default: 5) 
-                      <b>
-                        (REQUIRES RESTART)
-                      </b>
+                    <b>
+                      (REQUIRES RESTART)
+                    </b>
                   </p>
                 </config-textbox-number-stub>
                  
@@ -212,9 +212,9 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                 >
                   <p>
                     maximum size in MB of the log file (default: 1MB) 
-                      <b>
-                        (REQUIRES RESTART)
-                      </b>
+                    <b>
+                      (REQUIRES RESTART)
+                    </b>
                   </p>
                 </config-textbox-number-stub>
                  
