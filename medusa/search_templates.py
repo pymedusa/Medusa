@@ -22,6 +22,7 @@ class SearchTemplates(object):
         self.show_obj = show_obj
         self.templates = []
         self.search_separator = ' '
+        self.main_db_con = db.DBConnection()
 
     def generate(self):
         """
@@ -32,10 +33,9 @@ class SearchTemplates(object):
         """
 
         assert self.show_obj, 'You need to configure a show object before generating exceptions.'
-        main_db_con = db.DBConnection()
 
         # Create the default templates. Don't add them when their already in the list
-        scene_exceptions = main_db_con.select(
+        scene_exceptions = self.main_db_con.select(
             'SELECT season, show_name '
             'FROM scene_exceptions '
             'WHERE indexer=? AND series_id=? AND show_name IS NOT ?',
@@ -64,14 +64,36 @@ class SearchTemplates(object):
             }
 
             # use a custom update/insert method to get the data into the DB
-            main_db_con.upsert('search_templates', new_values, control_values)
+            self.main_db_con.upsert('search_templates', new_values, control_values)
 
         self.read_from_db()
 
+    def save(self, template):
+        """Validate template and save to db."""
+
+        new_values = {
+            'template': template['template'],
+            'title': template['title'],
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'season': template['season'],
+            '`default`': template['default'],
+            'enabled': template['enabled']
+        }
+        control_values = {
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'title': template['title'],
+            '`default`': template['default']
+        }
+
+        # use a custom update/insert method to get the data into the DB
+        self.main_db_con.upsert('search_templates', new_values, control_values)
+
+
     def read_from_db(self):
         self.templates = []
-        main_db_con = db.DBConnection()
-        templates = main_db_con.select(
+        templates = self.main_db_con.select(
             'SELECT * '
             'FROM search_templates '
             'WHERE indexer=? AND series_id=?',
@@ -141,6 +163,17 @@ class SearchTemplates(object):
             return self._create_anime_search_string(title, season)
         else:
             return self._create_default_search_string(title)
+
+    def update(self, templates):
+        """
+        Update the search templates.
+
+        Enable/Disable default templates.
+        Add/Remote/Update custom templates.
+        """
+        for template in templates:
+            # TODO: add validation
+            self.save(template)
 
     def to_json(self):
         """Return in json format."""
