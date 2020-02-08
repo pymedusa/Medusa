@@ -20,7 +20,7 @@ class MockTvShow(object):
     def __init__(self, name):
         self.is_anime = name.startswith('a:')
         self.name = name[2:] if self.is_anime else name
-        self.exceptions = []
+        self.aliases = []
 
 
 def main(argv):
