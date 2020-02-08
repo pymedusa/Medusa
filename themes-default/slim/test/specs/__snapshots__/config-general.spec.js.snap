@@ -176,7 +176,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   explanations=""
                   id="log_id"
                   inputclass="form-control input-sm max-input350"
-                  label="Log file folder location"
+                  label="Location for Log files"
                   placeholder=""
                   type="text"
                   value="Logs"
@@ -193,7 +193,10 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   value="5"
                 >
                   <p>
-                    number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)
+                    number of log files saved when rotating logs (default: 5) 
+                      <b>
+                        (REQUIRES RESTART)
+                      </b>
                   </p>
                 </config-textbox-number-stub>
                  
@@ -208,7 +211,10 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   value="11"
                 >
                   <p>
-                    maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)
+                    maximum size in MB of the log file (default: 1MB) 
+                      <b>
+                        (REQUIRES RESTART)
+                      </b>
                   </p>
                 </config-textbox-number-stub>
                  
@@ -288,7 +294,10 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   </p>
                    
                   <p>
-                    Note: minutes are randomized each time Medusa is started
+                    <b>
+                      Note:
+                    </b>
+                     minutes are randomized each time Medusa is started
                   </p>
                 </config-textbox-number-stub>
                  
@@ -677,7 +686,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                    
                   <span>
                     <b>
-                      note:
+                      Note:
                     </b>
                      seconds are only shown on the History page
                   </span>
@@ -1051,11 +1060,11 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                   value=""
                 >
                   <p>
-                    Path to a SSL CA Bundle. Will replace default bundle(certifi) with the one specified.
+                    Path to an SSL CA Bundle. Will replace default bundle(certifi) with the one specified.
                   </p>
                    
                   <b>
-                    NOTE:
+                    Note:
                   </b>
                    This only apply to call made using Medusa's Requests implementation.
                                 
@@ -1145,7 +1154,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     </p>
                      
                     <b>
-                      NOTE:
+                      Note:
                     </b>
                      This may mean Medusa misses renames as well
                                     
@@ -1191,7 +1200,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                    
                   <p>
                     <b>
-                      NOTE:
+                      Note:
                     </b>
                      Archived option will keep previous downloaded quality
                   </p>
@@ -1591,7 +1600,7 @@ exports[`ConfigGeneral.test.js renders 1`] = `
                     class="component-desc"
                   >
                     <b>
-                      NOTE:
+                      Note:
                     </b>
                      Empty selection means that any branch could be reset.
                   </span>

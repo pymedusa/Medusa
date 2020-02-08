@@ -124,7 +124,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Leave empty if you want store subtitle in episode path.</span>
+                                    <span class="component-desc"><b>Note:</b> Leave empty if you want store subtitle in episode path.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -163,7 +163,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> This option is required if you use multiple subtitle languages.</span>
+                                    <span class="component-desc"><b>Note:</b> This option is required if you use multiple subtitle languages.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
