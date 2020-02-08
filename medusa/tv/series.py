@@ -229,6 +229,7 @@ class Series(TV):
         self.sports = 0
         self.anime = 0
         self.scene = 0
+        self._templates = False
         self.rls_ignore_words = ''
         self.rls_require_words = ''
         self.rls_ignore_exclude = 0
@@ -242,7 +243,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
-        self.search_templates = None
+        self._search_templates = None
 
         other_show = Show.find_by_id(app.showList, self.indexer, self.series_id)
         if other_show is not None:
@@ -338,6 +339,11 @@ class Series(TV):
     def is_anime(self):
         """Check if the show is Anime."""
         return bool(self.anime)
+
+    @property
+    def use_templates(self):
+        """Check if the show uses advanced templates."""
+        return bool(self.templates)
 
     def is_location_valid(self, location=None):
         """
@@ -1495,6 +1501,7 @@ class Series(TV):
             self.anime = int(sql_results[0]['anime'] or 0)
             self.sports = int(sql_results[0]['sports'] or 0)
             self.scene = int(sql_results[0]['scene'] or 0)
+            self.templates = int(sql_results[0]['templates'] or 0)
             self.subtitles = int(sql_results[0]['subtitles'] or 0)
             self.notify_list = dict(ast.literal_eval(sql_results[0]['notify_list'] or '{}'))
             self.dvd_order = int(sql_results[0]['dvdorder'] or 0)
@@ -1527,8 +1534,8 @@ class Series(TV):
             self.externals = load_externals_from_db(self.indexer, self.series_id)
 
             # Load search templates
-            self.search_templates = SearchTemplates(self)
-            self.search_templates.generate()
+            self._search_templates = SearchTemplates(self)
+            self._search_templates.generate()
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
@@ -2008,6 +2015,7 @@ class Series(TV):
                           'anime': self.anime,
                           'scene': self.scene,
                           'sports': self.sports,
+                          'templates': self.templates,
                           'subtitles': self.subtitles,
                           'dvdorder': self.dvd_order,
                           'startyear': self.start_year,
@@ -2063,6 +2071,7 @@ class Series(TV):
         to_return += 'scene: ' + str(self.is_scene) + '\n'
         to_return += 'sports: ' + str(self.is_sports) + '\n'
         to_return += 'anime: ' + str(self.is_anime) + '\n'
+        to_return += 'templates: ' + str(self.use_templates) + '\n'
         return to_return
 
     def __unicode__(self):
@@ -2092,6 +2101,7 @@ class Series(TV):
         to_return += u'scene: {0}\n'.format(self.is_scene)
         to_return += u'sports: {0}\n'.format(self.is_sports)
         to_return += u'anime: {0}\n'.format(self.is_anime)
+        to_return += u'templates: {0}\n'.format(self.use_templates)
         return to_return
 
     def to_json(self, detailed=False, episodes=False):
@@ -2148,9 +2158,9 @@ class Series(TV):
         data['config']['dvdOrder'] = bool(self.dvd_order)
         data['config']['seasonFolders'] = bool(self.season_folders)
         data['config']['anime'] = self.is_anime
-        data['config']['anime'] = self.is_anime
         data['config']['scene'] = self.is_scene
         data['config']['sports'] = self.is_sports
+        data['config']['templates'] = self.use_templates
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = [_._asdict() for _ in self.aliases]
@@ -2269,6 +2279,25 @@ class Series(TV):
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
+
+    @property
+    def templates(self):
+        """Enable / disable search templates."""
+        return self._templates
+
+    @templates.setter
+    def templates(self, value):
+        """Set show config option templates to true / false."""
+        self._templates = bool(value)
+
+    @property
+    def search_templates(self):
+        """Return the search templates for this show."""
+        return self._search_templates
+
+    @search_templates.setter
+    def search_templates(self, templates):
+        self._search_templates.update(templates)
 
     def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):
