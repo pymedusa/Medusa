@@ -31,7 +31,9 @@ const state = {
             seasonFolders: null,
             sports: null,
             subtitlesEnabled: null,
-            airdateOffset: null
+            airdateOffset: null,
+            templates: null,
+            searchTemplates: []
         },
         countries: null,
         genres: [],

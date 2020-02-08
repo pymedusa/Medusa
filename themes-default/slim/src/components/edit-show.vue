@@ -85,12 +85,12 @@
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
 
-                                <config-toggle-slider v-model="show.config.airByDate" label="Air by date" id="air_by_date">
+                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat" label="Air by date" id="airByDate">
                                     <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider v-model="show.config.anime" label="Anime" id="anime">
+                                <config-toggle-slider :value="show.config.anime" @input="changeFormat" label="Anime" id="anime">
                                     <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                                 </config-toggle-slider>
 
@@ -105,10 +105,16 @@
                                     />
                                 </config-template>
 
-                                <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
+                                <config-toggle-slider :value="show.config.sports" @input="changeFormat" label="Sports" id="sports">
                                     <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
+
+                                <config-toggle-slider v-model="show.config.templates" label="Search templates" id="templates">
+                                    <span>enable advanced search templates<span v-if="selectedFormat"> in addition to the selected chosen format <strong>{{selectedFormat}}</strong></span></span>
+                                </config-toggle-slider>
+
+                                <search-template-container v-if="show.config.templates" :format="selectedFormat" :templates="show.config.searchTemplates" />
 
                                 <config-toggle-slider v-model="show.config.seasonFolders" label="Season" id="season_folders">
                                     <span>group episodes by season folder (disable to store in a single folder)</span>
@@ -221,6 +227,7 @@ import {
     FileBrowser,
     LanguageSelect,
     QualityChooser,
+    SearchTemplateContainer,
     SelectList
 } from './helpers';
 
@@ -236,6 +243,7 @@ export default {
         FileBrowser,
         LanguageSelect,
         QualityChooser,
+        SearchTemplateContainer,
         SelectList
     },
     metaInfo() {
@@ -336,6 +344,11 @@ export default {
             }
 
             return arrayUnique(globalRequired.concat(showRequired));
+        },
+        selectedFormat() {
+            const { show } = this;
+            const { config } = show;
+            return ['anime', 'sports', 'airByDate'].find(item => config[item]);
         }
     },
     created() {
@@ -406,7 +419,9 @@ export default {
                         preferred: showConfig.qualities.preferred,
                         allowed: showConfig.qualities.allowed
                     },
-                    airdateOffset: showConfig.airdateOffset
+                    airdateOffset: showConfig.airdateOffset,
+                    templates: showConfig.templates,
+                    searchTemplates: showConfig.searchTemplates
                 },
                 language: show.language
             };
@@ -449,6 +464,14 @@ export default {
         },
         updateLanguage(value) {
             this.show.language = value;
+        },
+        changeFormat(value, el) {
+            this.show.config[el.id] = value;
+            if (value) {
+                ['anime', 'sports', 'airByDate'].filter(item => item !== el.id).forEach(value => {
+                    this.show.config[value] = false;
+                });
+            }
         }
     }
 };
