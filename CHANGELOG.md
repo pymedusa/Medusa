@@ -5,6 +5,12 @@
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.3.12 (2020-02-08)
+
+#### Fixes
 - Fixed guessit parser not using scene exceptions ([#7699](https://github.com/pymedusa/Medusa/pull/7699))
 - Updated YggTorrent provider domain ([#7703](https://github.com/pymedusa/Medusa/pull/7703))
 
