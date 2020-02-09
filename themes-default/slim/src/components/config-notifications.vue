@@ -136,7 +136,7 @@
                                                 <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
                                                 <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" @click="testPHT">
                                                 <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
-                                                <div class="clear-left"><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
+                                                <div class="clear-left"><p><b>Note:</b> some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                             </div>
 
                                         </div>
