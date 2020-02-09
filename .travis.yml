@@ -11,7 +11,7 @@ before_install:
 install: false
 script: false
 
-# Please read about YAML Anchors & Aliases: https://blog.daemonl.com/2016/02/yaml.html
+# Use of YAML aliases inspired by https://link.medium.com/vUG5hZ9oW3
 # There's no support for concatenation so we must do this
 _node_version: &_node_version '10.16.0'
 _nvm_install: &_nvm_install nvm install v10.16.0
