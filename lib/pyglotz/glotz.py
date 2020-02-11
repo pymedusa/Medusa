@@ -271,7 +271,8 @@ class Glotz(object):
         q = self._endpoint_get(url)
         if q:
             shows = []
-            for result in q.get('Data').get('Series'):
+            for result in q.get('Data').get('Series') if isinstance(q.get('Data').get('Series'),
+                                                                    list) else [q.get('Data').get('Series')]:
                 show = Show({'Series': result})
                 shows.append(show)
             return shows
