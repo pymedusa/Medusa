@@ -675,6 +675,8 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
         self.TVDB_API_KEY = '0629B785CE550C8D'
 
+        self.GLOTZ_API_KEY = '9DAF49C96CBF8DAC'
+
 
 app = MedusaApp()
 for app_key, app_value in app.__dict__.items():

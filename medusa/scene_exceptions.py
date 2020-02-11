@@ -286,7 +286,11 @@ def _get_custom_exceptions(force):
                 # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
                 return custom_exceptions
 
-            indexer_ids = jdata[indexerApi(indexer).config['identifier']]
+            # let Glotz use the TVDB exceptions
+            if indexerApi(indexer).config['name'] == 'Glotz':
+                indexer_ids = jdata['tvdb']
+            else:
+                indexer_ids = jdata[indexerApi(indexer).config['identifier']]
             for indexer_id in indexer_ids:
                 indexer_exceptions = indexer_ids[indexer_id]
                 alias_list = [{exception: int(season)}
