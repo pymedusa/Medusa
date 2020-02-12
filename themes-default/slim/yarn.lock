@@ -11683,10 +11683,10 @@ vue-js-toggle-button@1.3.3:
   resolved "https://registry.yarnpkg.com/vue-js-toggle-button/-/vue-js-toggle-button-1.3.3.tgz#d603089039e41d45e607355ad2e0478c6a52aceb"
   integrity sha512-0b920oztgK+1SqlYF26MPiT28hAieL5aAQE7u21XEym5ryfzD4EMer4hLkgDC/1sWsCHb22GvV+t1Kb4AI6QFw==
 
-vue-loader@15.8.3:
-  version "15.8.3"
-  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.8.3.tgz#857cb9e30eb5fc25e66db48dce7e4f768602a23c"
-  integrity sha512-yFksTFbhp+lxlm92DrKdpVIWMpranXnTEuGSc0oW+Gk43M9LWaAmBTnfj5+FCdve715mTHvo78IdaXf5TbiTJg==
+vue-loader@15.9.0:
+  version "15.9.0"
+  resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.9.0.tgz#5d4b0378a4606188fc83e587ed23c94bc3a10998"
+  integrity sha512-FeDHvTSpwyLeF7LIV1PYkvqUQgTJ8UmOxhSlCyRSxaXCKk+M6NF4tDQsLsPPNeDPyR7TfRQ8MLg6v+8PsDV9xQ==
   dependencies:
     "@vue/component-compiler-utils" "^3.1.0"
     hash-sum "^1.0.2"
