@@ -151,7 +151,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             indexer_id.text = text_type(my_show['id'])
 
             uniqueid = etree.SubElement(tv_node, 'uniqueid')
-            uniqueid.set('type', series_obj.indexer_name)
+            if series_obj.indexer_name == 'glotz':
+                uniqueid.set('type', 'tvdb')
+            else:
+                uniqueid.set('type', series_obj.indexer_name)
             uniqueid.set('default', 'true')
             uniqueid.text = text_type(my_show['id'])
 
@@ -276,7 +279,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             episodenum.text = text_type(ep_to_write.episode)
 
             uniqueid = etree.SubElement(episode, 'uniqueid')
-            uniqueid.set('type', ep_obj.indexer_name)
+            if uniqueid.set('type', ep_obj.indexer_name) == 'glotz':
+                uniqueid.set('type', 'tvdb')
+            else:
+                uniqueid.set('type', ep_obj.indexer_name)
             uniqueid.set('default', 'true')
             uniqueid.text = text_type(ep_to_write.indexerid)
 
