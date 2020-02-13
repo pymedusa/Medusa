@@ -5,17 +5,18 @@ from __future__ import unicode_literals
 
 import logging
 from collections import OrderedDict
+from time import time
 
 from medusa import app
 from medusa.app import GLOTZ_API_KEY
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerError, IndexerShowNotFound, IndexerUnavailable, IndexerException)
+from medusa.indexers.indexer_exceptions import (IndexerError, IndexerShowNotFound, IndexerException)
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 
 from pyglotz import Glotz
-from pyglotz.exceptions import BaseError, ActorNotFound, IDNotFound, ShowNotFound
+from pyglotz.exceptions import BaseError, ActorNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -411,7 +412,6 @@ class GLOTZ(BaseIndexer):
 
                     base_path[k] = v
 
-                # Glotz doesn't always have ratings for images
                 if 'rating' not in base_path:
                     base_path['rating'] = 1
                 else:
@@ -435,11 +435,12 @@ class GLOTZ(BaseIndexer):
 
         try:
             _actors = self.glotz_api.get_actors_list(sid)
-        except ActorNotFound:
-            log.debug('Getting actors failed')
+        except IndexerError as error:
+            log.info('Could not get actors for show ID: {0} with reason: {1}', sid, error)
             return
-        except BaseError as e:
-            log.warning('Getting actors failed. Cause: {0}', e)
+
+        if not _actors:
+            log.debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
@@ -453,6 +454,24 @@ class GLOTZ(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
+    def _get_updates(self, start_date=int(time())-604800):
+        """Retrieve all shows that have been updated from Glotz."""
+        results = []
+        try:
+            updates = self.glotz_api.get_show_updates(start_date)
+        except (ShowIndexError, UpdateNotFound):
+            return results
+        except BaseError as e:
+            log.warning('Getting show updates failed. Cause: {0}', e)
+            return results
+
+        if updates:
+            for item in updates:
+                if start_date < int(item.get('last_update')) < (int(time())):
+                    results.append(int(item.get('tvdb_id')))
+
+        return results
+
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
@@ -461,27 +480,12 @@ class GLOTZ(BaseIndexer):
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         :returns: A list of show_id's.
         """
-        total_updates = []
-        updates = True
-
-        count = 0
-        try:
-            while updates and count < weeks:
-                updates = self.glotz_api.get_show_updates(from_time)
-                if updates:
-                    last_update_ts = max(x.last_updated for x in updates)
-                    from_time = last_update_ts
-                    total_updates += [int(_.id) for _ in updates]
-                count += 1
-        except IndexerException as error:
-            log.debug('Could not fetch list of updated shows')
-            raise IndexerUnavailable('Error connecting to Glotz API. Reason: {0}'.format(error))
-
-        if total_updates and filter_show_list:
+        updates = self._get_updates(from_time)
+        if updates and filter_show_list:
             new_list = []
             for show in filter_show_list:
-                if show.indexerid in total_updates:
+                if show.indexerid in updates:
                     new_list.append(show.indexerid)
-            total_updates = new_list
+            updates = new_list
 
-        return total_updates
+        return updates
