@@ -97,9 +97,9 @@
     "stylelint-config-standard": "19.0.0",
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.5",
-    "vue-loader": "15.8.3",
-    "webpack": "4.41.5",
-    "webpack-cli": "3.3.10"
+    "vue-loader": "15.9.0",
+    "webpack": "4.41.6",
+    "webpack-cli": "3.3.11"
   },
   "stylelint": {
     "extends": "stylelint-config-standard",
