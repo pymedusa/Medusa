@@ -112,7 +112,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         <b>
                           Note:
                         </b>
-                         Do not use if you use an external Postprocessing script
+                         Do not use if you use an external postprocessing script
                       </p>
                     </div>
                   </div>
@@ -332,7 +332,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Comma separated list of extensions or filename globs Medusa ignores when post processing
+                      Comma separated list of extensions or filename globs Medusa ignores when postprocessing
                     </span>
                   </div>
                 </div>
@@ -534,7 +534,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Comma separated list of associated file extensions Medusa should keep while post processing.
+                      Comma separated list of associated file extensions Medusa should keep while postprocessing.
                     </span>
                     <br />
                      
