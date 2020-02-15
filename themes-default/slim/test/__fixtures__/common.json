@@ -733,7 +733,7 @@
                 },
                 {
                     "key": "postProcess",
-                    "name": "Post Process",
+                    "name": "Postprocess",
                     "isAlive": true,
                     "isEnabled": false,
                     "isActive": false,

@@ -21,7 +21,7 @@
                             <li><app-link href="home/"><i class="menu-icon-home" />&nbsp;Show List</app-link></li>
                             <li><app-link href="addShows/"><i class="menu-icon-addshow" />&nbsp;Add Shows</app-link></li>
                             <li><app-link href="addRecommended/"><i class="menu-icon-addshow" />&nbsp;Add Recommended Shows</app-link></li>
-                            <li><app-link href="home/postprocess/"><i class="menu-icon-postprocess" />&nbsp;Manual Post-Processing</app-link></li>
+                            <li><app-link href="home/postprocess/"><i class="menu-icon-postprocess" />&nbsp;Manual Postprocessing</app-link></li>
                             <li v-if="recentShows.length > 0" role="separator" class="divider" />
                             <li v-for="recentShow in recentShows" :key="recentShow.link">
                                 <app-link :href="recentShow.link">
@@ -53,7 +53,7 @@
                             <li v-if="linkVisible.manageTorrents"><app-link href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent" />&nbsp;Manage Torrents</app-link></li>
                             <li v-if="linkVisible.failedDownloads"><app-link href="manage/failedDownloads/"><i class="menu-icon-failed-download" />&nbsp;Failed Downloads</app-link></li>
                             <li v-if="linkVisible.subtitleMissed"><app-link href="manage/subtitleMissed/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle Management</app-link></li>
-                            <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle in Post-Process folder</app-link></li>
+                            <li v-if="linkVisible.subtitleMissedPP"><app-link href="manage/subtitleMissedPP/"><i class="menu-icon-backlog" />&nbsp;Missed Subtitle in Postprocess folder</app-link></li>
                         </ul>
                         <div style="clear:both;" />
                     </li>
@@ -68,7 +68,7 @@
                             <li><app-link href="config/search/"><i class="menu-icon-manage-searches" />&nbsp;Search Settings</app-link></li>
                             <li><app-link href="config/providers/"><i class="menu-icon-provider" />&nbsp;Search Providers</app-link></li>
                             <li><app-link href="config/subtitles/"><i class="menu-icon-backlog" />&nbsp;Subtitles Settings</app-link></li>
-                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Post Processing</app-link></li>
+                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Postprocessing</app-link></li>
                             <li><app-link href="config/notifications/"><i class="menu-icon-notification" />&nbsp;Notifications</app-link></li>
                             <li><app-link href="config/anime/"><i class="menu-icon-anime" />&nbsp;Anime</app-link></li>
                         </ul>

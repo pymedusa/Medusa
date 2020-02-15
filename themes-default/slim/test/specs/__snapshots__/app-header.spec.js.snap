@@ -132,7 +132,7 @@ exports[`AppHeader.test.js renders 1`] = `
                 <i
                   class="menu-icon-postprocess"
                 />
-                 Manual Post-Processing
+                 Manual Postprocessing
               </app-link-stub>
             </li>
              
@@ -428,7 +428,7 @@ exports[`AppHeader.test.js renders 1`] = `
                 <i
                   class="menu-icon-postprocess"
                 />
-                 Post Processing
+                 Postprocessing
               </app-link-stub>
             </li>
              
