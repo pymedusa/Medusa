@@ -20,7 +20,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               href="#post-processing"
               placeholder="indexer-to-name"
             >
-              Post Processing
+              Postprocessing
             </app-link-stub>
           </li>
            
@@ -53,7 +53,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               class="component-group-desc col-xs-12 col-md-2"
             >
               <h3>
-                Scheduled Post-Processing
+                Scheduled Postprocessing
               </h3>
                
               <p>
@@ -98,9 +98,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <p>
-                      Enable the scheduled post processor to scan and process any files in your 
+                      Enable the scheduled postprocessor to scan and process any files in your 
                       <i>
-                        Post Processing Dir
+                        Postprocessing Dir
                       </i>
                       ?
                     </p>
@@ -112,7 +112,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         <b>
                           Note:
                         </b>
-                         Do not use if you use an external Post Processing script
+                         Do not use if you use an external Postprocessing script
                       </p>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       for="tv_download_dir"
                     >
                       <span>
-                        Post Processing Dir
+                        Postprocessing Dir
                       </span>
                     </label>
                      
@@ -229,7 +229,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       for="autopostprocessor_frequency"
                     >
                       <span>
-                        Auto Post-Processing Frequency
+                        Auto Postprocessing Frequency
                       </span>
                     </label>
                      
@@ -246,7 +246,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       />
                        
                       <span>
-                        Time in minutes to check for new files to auto post-process (min 10)
+                        Time in minutes to check for new files to auto postprocess (min 10)
                       </span>
                     </div>
                   </div>
@@ -262,7 +262,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               class="component-group-desc col-xs-12 col-md-2"
             >
               <h3>
-                General Post-Processing
+                General Postprocessing
               </h3>
                
               <p>
@@ -284,7 +284,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     for="postpone_if_sync_files"
                   >
                     <span>
-                      Postpone post processing
+                      Postpone postprocessing
                     </span>
                   </label>
                    
@@ -376,12 +376,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       <b>
                         Note:
                       </b>
-                       Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.
+                       Automatic postprocessor should be disabled to avoid files with pending subtitles being processed over and over.
                     </span>
                     <br />
                      
                     <span>
-                      If you have any active show with subtitle search disabled, you must enable Automatic post processor.
+                      If you have any active show with subtitle search disabled, you must enable Automatic postprocessor.
                     </span>
                   </div>
                 </div>
@@ -506,7 +506,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Delete srt/srr/sfv/etc files while post processing?
+                      Delete srt/srr/sfv/etc files while postprocessing?
                     </span>
                   </div>
                 </div>
@@ -745,7 +745,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Leave empty folders when Post Processing?
+                      Leave empty folders when postprocessing?
                     </span>
                     <br />
                      
@@ -753,7 +753,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       <b>
                         Note:
                       </b>
-                       Can be overridden using manual Post Processing
+                       Can be overridden using manual postprocessing
                     </span>
                   </div>
                 </div>

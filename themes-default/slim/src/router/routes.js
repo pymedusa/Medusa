@@ -56,7 +56,7 @@ const homeRoutes = [
         name: 'postprocess',
         meta: {
             title: 'Manual Post-Processing',
-            header: 'Manual Post-Processing',
+            header: 'Manual Postprocessing',
             topMenu: 'home'
         }
     },
@@ -156,8 +156,8 @@ const configRoutes = [
         path: '/config/postProcessing',
         name: 'configPostProcessing',
         meta: {
-            title: 'Config - Post Processing',
-            header: 'Post Processing',
+            title: 'Config - Postprocessing',
+            header: 'Postprocessing',
             topMenu: 'config',
             subMenu: configSubMenu,
             converted: true
@@ -370,8 +370,8 @@ const manageRoutes = [
         path: '/manage/subtitleMissedPP',
         name: 'manageSubtitleMissedPP',
         meta: {
-            title: 'Missing Subtitles in Post-Process folder',
-            header: 'Missing Subtitles in Post-Process folder',
+            title: 'Missing Subtitles in Postprocess folder',
+            header: 'Missing Subtitles in Postprocess folder',
             topMenu: 'manage'
         }
     }

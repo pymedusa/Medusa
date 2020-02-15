@@ -46,11 +46,11 @@
                 </tr>
                 <tr>
                     <td>
-                        <b>Force already Post Processed Dir/Files:</b>
+                        <b>Force already Postprocessed Dir/Files:</b>
                     </td>
                     <td>
                         <input id="force" name="force" type="checkbox">
-                        <span class="smallhelp"><i>&nbsp;(Check this to post-process files that were already post-processed)</i></span>
+                        <span class="smallhelp"><i>&nbsp;(Check this to postprocess files that were already postprocessed)</i></span>
                     </td>
                 </tr>
                 <tr>
@@ -89,7 +89,7 @@
                     </td>
                     <td>
                         <input id="ignore_subs" name="ignore_subs" type="checkbox">
-                        <span class="smallhelp"><i>&nbsp;(Check this to post-process when no subtitles available)</i></span>
+                        <span class="smallhelp"><i>&nbsp;(Check this to postprocess when no subtitles available)</i></span>
                     </td>
                 </tr>
                 <tr>
