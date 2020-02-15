@@ -10,13 +10,13 @@ from time import time
 from medusa import app
 from medusa.app import GLOTZ_API_KEY
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerError, IndexerShowNotFound, IndexerException)
+from medusa.indexers.indexer_exceptions import (IndexerError, IndexerException, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
 
-from requests.compat import urljoin
-
 from pyglotz import Glotz
-from pyglotz.exceptions import BaseError, ActorNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
+from pyglotz.exceptions import (ActorNotFound, BaseError, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound)
+
+from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -291,8 +291,7 @@ class GLOTZ(BaseIndexer):
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
 
     def _get_show_data(self, sid, language):
-        """ Fetches available information about a show.
-        """
+        """Fetches available information about a show."""
         if self.config['language'] is None:
             log.debug('Config language is none, using show language')
             if language is None:
@@ -340,11 +339,7 @@ class GLOTZ(BaseIndexer):
         return True
 
     def _parse_images(self, sid):
-        """
-        key_mapping = {'file_name': 'BannerPath', 'language_id': 'Language', 'key_type': 'BannerType',
-                       'resolution': 'BannerType2', 'ratings_info': {'count': 'ratingcount', 'average': 'rating'},
-                       'thumbnail': 'ThumbnailPath', 'sub_key': 'sub_key', 'id': 'id'}
-        """
+        """Get image information from Glotz and parse them"""
         key_mapping = {'id': 'id', 'banner_path': 'bannerpath', 'banner_type': 'bannertype',
                        'banner_type2': 'bannertype2', 'colors': 'colors', 'series_name': 'seriesname',
                        'thumbnail_path': 'thumbnailpath', 'vignette_path': 'vignettepath', 'language': 'language',
@@ -438,12 +433,11 @@ class GLOTZ(BaseIndexer):
 
         try:
             _actors = self.glotz_api.get_actors_list(sid)
+        except ActorNotFound:
+            log.debug('Actors result returned zero')
+            return
         except IndexerError as error:
             log.info('Could not get actors for show ID: {0} with reason: {1}', sid, error)
-            return
-
-        if not _actors:
-            log.debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
@@ -457,7 +451,7 @@ class GLOTZ(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_updates(self, start_date=int(time())-604800):
+    def _get_updates(self, start_date=int(time()) - 604800):
         """Retrieve all shows that have been updated from Glotz."""
         results = []
         try:
