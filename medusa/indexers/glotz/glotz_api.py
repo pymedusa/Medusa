@@ -178,8 +178,7 @@ class GLOTZ(BaseIndexer):
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, tvdb_id, request_language='de'):  # pylint: disable=unused-argument
-        """
-        Retrieve Glotz show information by tvdb id
+        """Retrieve Glotz show information by tvdb id.
 
         :param tvdb_id: The shows tvdb id
         :return: An ordered dict with the show searched for.
@@ -339,7 +338,7 @@ class GLOTZ(BaseIndexer):
         return True
 
     def _parse_images(self, sid):
-        """Get image information from Glotz and parse them"""
+        """Get image information from Glotz and parse them."""
         key_mapping = {'id': 'id', 'banner_path': 'bannerpath', 'banner_type': 'bannertype',
                        'banner_type2': 'bannertype2', 'colors': 'colors', 'series_name': 'seriesname',
                        'thumbnail_path': 'thumbnailpath', 'vignette_path': 'vignettepath', 'language': 'language',
