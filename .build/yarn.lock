@@ -141,15 +141,10 @@ bower-json@^0.8.1:
     graceful-fs "^4.1.3"
     intersect "^1.0.1"
 
-bower@1.8.8, bower@^1.7.9:
+bower@1.8.8, "bower@>= 1.8.8", bower@^1.7.9, bower@~1.7.7:
   version "1.8.8"
   resolved "https://registry.yarnpkg.com/bower/-/bower-1.8.8.tgz#82544be34a33aeae7efb8bdf9905247b2cffa985"
   integrity sha512-1SrJnXnkP9soITHptSO+ahx3QKp3cVzn8poI6ujqc5SeOkg5iqM1pK9H+DSc2OQ8SnO0jC/NG4Ur/UIwy7574A==
-
-bower@~1.7.7:
-  version "1.7.10"
-  resolved "https://registry.yarnpkg.com/bower/-/bower-1.7.10.tgz#e51b48ea2c07a4494481d04c081232844bac8ef2"
-  integrity sha1-5RtI6iwHpElEgdBMCBIyhEusjvI=
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -327,10 +322,10 @@ decode-uri-component@^0.2.0:
   resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
   integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
 
-deep-extend@^0.4.0:
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.4.2.tgz#48b699c27e334bf89f10892be432f6e4c7d34a7f"
-  integrity sha1-SLaZwn4zS/ifEIkr5DL25MfTSn8=
+"deep-extend@>= 0.5.1", deep-extend@^0.4.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/deep-extend/-/deep-extend-0.6.0.tgz#c4fa7c95404a17a9c3e8ca7e1537312b736330ac"
+  integrity sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==
 
 define-property@^0.2.5:
   version "0.2.5"
@@ -1154,20 +1149,10 @@ locate-path@^3.0.0:
     p-locate "^3.0.0"
     path-exists "^3.0.0"
 
-lodash@^4.17.14, lodash@~4.17.10, lodash@~4.17.5:
+"lodash@>= 4.17.12", lodash@^4.17.14, lodash@~0.10.0, lodash@~4.17.10, lodash@~4.17.5, lodash@~4.3.0:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
-
-lodash@~0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-0.10.0.tgz#5254bbc2c46c827f535a27d631fd4f2bff374ce7"
-  integrity sha1-UlS7wsRsgn9TWifWMf1PK/83TOc=
-
-lodash@~4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.3.0.tgz#efd9c4a6ec53f3b05412429915c3e4824e4d25a4"
-  integrity sha1-79nEpuxT87BUEkKZFcPkgk5NJaQ=
 
 loud-rejection@^1.0.0:
   version "1.6.0"
