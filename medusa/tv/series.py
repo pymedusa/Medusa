@@ -610,6 +610,16 @@ class Series(TV):
         build_name_cache(self)
 
     @property
+    def aliases_to_json(self):
+        """Return aliases as a dict."""
+        return [{
+            'indexer': alias.indexer,
+            'season': alias.season,
+            'seriesId': alias.series_id,
+            'seriesName': alias.series_name
+            } for alias in self.aliases]
+
+    @property
     def xem_numbering(self):
         """Return series episode xem numbering."""
         return get_xem_numbering_for_show(self)
@@ -2163,7 +2173,7 @@ class Series(TV):
         data['config']['templates'] = self.use_templates
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = [_._asdict() for _ in self.aliases]
+        data['config']['aliases'] = self.aliases_to_json
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
