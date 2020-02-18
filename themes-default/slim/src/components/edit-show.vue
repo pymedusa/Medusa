@@ -175,7 +175,7 @@
 
                                 <config-template label-for="SceneName" label="Scene Exception">
                                     <select-list
-                                        :list-items="show.config.aliases"
+                                        :list-items="show.config.aliases.map(alias => alias.seriesName)"
                                         @change="onChangeAliases"
                                     />
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
@@ -456,7 +456,9 @@ export default {
             this.show.config.release.requiredWords = items.map(item => item.value);
         },
         onChangeAliases(items) {
-            this.show.config.aliases = items.map(item => item.value);
+            this.show.config.aliases = items.map(item => {
+                return { seriesName: item.value }
+            });
         },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;
