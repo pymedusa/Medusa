@@ -179,7 +179,7 @@ class TorznabProvider(TorrentProvider):
                     peers_attr = item.find('torznab:attr', attrs={'name': 'peers'})
                     seeders = int(seeders_attr.get('value', 0)) if seeders_attr else 1
                     peers = int(peers_attr.get('value', 0)) if peers_attr else 0
-                    leechers = peers - seeders if peers - seeders>0 else 0
+                    leechers = peers - seeders if peers - seeders > 0 else 0
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:
