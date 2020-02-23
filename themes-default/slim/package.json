@@ -78,7 +78,7 @@
     "eslint-import-resolver-webpack": "0.12.1",
     "eslint-plugin-eslint-comments": "3.1.2",
     "eslint-plugin-import": "2.20.1",
-    "eslint-plugin-jest": "23.7.0",
+    "eslint-plugin-jest": "23.8.0",
     "eslint-plugin-unicorn": "10.0.0",
     "eslint-plugin-vue": "6.2.1",
     "file-loader": "5.1.0",
