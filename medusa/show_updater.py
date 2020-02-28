@@ -71,13 +71,11 @@ class ShowUpdater(object):
                 else:
                     last_updates[indexer_name] = last_indexer_update
 
-            last_update = last_updates[indexer_name]
-
             # Get a list of updated shows from the indexer, since last update.
             if show.indexer not in indexer_updated_shows:
                 try:
                     indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
-                        last_update, update_max_weeks
+                        last_updates[indexer_name], update_max_weeks
                     )
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
