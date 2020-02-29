@@ -614,7 +614,7 @@ class TVDBv2(BaseIndexer):
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
-        :param from_time: epoch timestamp, with the start date/time
+        :param from_time: epoch timestamp, with the start date/time as int
         :param weeks: number of weeks to get updates for.
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         :returns: A list of show_id's.
@@ -628,6 +628,9 @@ class TVDBv2(BaseIndexer):
                 updates = self.config['session'].updates_api.updated_query_get(from_time).data
                 if updates:
                     last_update_ts = max(x.last_updated for x in updates)
+                    if last_update_ts == from_time:
+                        break
+
                     from_time = last_update_ts
                     total_updates += [int(_.id) for _ in updates]
                 count += 1

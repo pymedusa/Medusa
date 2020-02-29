@@ -1165,7 +1165,6 @@ class Application(object):
                                                            threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
@@ -1187,54 +1186,44 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
+                                                             threadName='DAILYSEARCHER')
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
+                                                                  threadName='BACKLOG')
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
                 update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
-                run_at = None
             else:
-                update_interval = datetime.timedelta(hours=1)
-                run_at = datetime.time(hour=1)  # 1 AM
+                update_interval = datetime.timedelta(hours=4)
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName='FINDPROPERS',
-                                                              start_time=run_at,
-                                                              run_delay=update_interval)
+                                                              threadName='FINDPROPERS')
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
                                                                cycleTime=update_interval,
                                                                threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY,
-                                                               run_delay=update_interval)
-            update_interval = datetime.timedelta(minutes=5)
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
-                                                              run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
                                                                  threadName='FINDSUBTITLES',
-                                                                 run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER',
-                                                                run_delay=update_interval)
+                                                                threadName='TORRENTCHECKER')
 
             app.__INITIALIZED__ = True
             return True
