@@ -11767,10 +11767,10 @@ vue-loader@15.9.0:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-meta@2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-2.3.2.tgz#d87a456582da040ff7bc9304701cca47ac36ee1e"
-  integrity sha512-6xKy+K1J4yCs16x4UhvYI2joKADPnxxPcCUkzckaUt6xqMonBCYwK0JSh8BicooDpKcrre6JGZcQRIVIDttOVg==
+vue-meta@2.3.3:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/vue-meta/-/vue-meta-2.3.3.tgz#2a097f62817204b0da78be4d62aee0cb566eaee0"
+  integrity sha512-FmeekLkd5+BI7NFBnU4bEnTpVZqmu3q8ztW4R4U3GBQljgDM7QAuwMXs8/aJP0U1tjtxobX8T6HcyZXimGj1DQ==
   dependencies:
     deepmerge "^4.2.2"
 
