@@ -329,7 +329,10 @@ class GLOTZ(BaseIndexer):
 
         # Parse banners
         if self.config['banners_enabled']:
-            self._parse_images(sid)
+            if series_info.get('series').get('poster'):
+                self._parse_images(sid, poster=series_info.get('series').get('poster'))
+            else:
+                self._parse_images(sid)
 
         # Parse actors
         if self.config['actors_enabled']:
@@ -337,7 +340,7 @@ class GLOTZ(BaseIndexer):
 
         return True
 
-    def _parse_images(self, sid):
+    def _parse_images(self, sid, poster=None):
         """Get image information from Glotz and parse them."""
         key_mapping = {'id': 'id', 'banner_path': 'bannerpath', 'banner_type': 'bannertype',
                        'banner_type2': 'bannertype2', 'colors': 'colors', 'series_name': 'seriesname',
@@ -410,7 +413,11 @@ class GLOTZ(BaseIndexer):
                     base_path[k] = v
 
                 if 'rating' not in base_path:
-                    base_path['rating'] = 1
+                    # rank posters from "Series" data higher than from banner query
+                    if poster is not None and _img_type == 'poster' and img.get('bannerpath') == poster:
+                        base_path['rating'] = 3
+                    else:
+                        base_path['rating'] = 1
                 else:
                     base_path['rating'] = float(base_path['rating'])
 
