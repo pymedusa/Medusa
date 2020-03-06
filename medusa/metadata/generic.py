@@ -14,7 +14,7 @@ from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.helper.metadata import get_image
-from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.indexer_config import INDEXER_GLOTZ, INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
                                                 IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
@@ -786,7 +786,7 @@ class GenericMetadata(object):
 
         elif image_type == u'poster_thumb':
             if getattr(indexer_show_obj, u'poster', None):
-                if show_obj.indexer == INDEXER_TVDBV2:
+                if show_obj.indexer == INDEXER_TVDBV2 or INDEXER_GLOTZ:
                     image_url = indexer_show_obj[u'poster'].replace('.jpg', '_t.jpg')
                 else:
                     image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
@@ -797,7 +797,7 @@ class GenericMetadata(object):
 
         elif image_type == u'banner_thumb':
             if getattr(indexer_show_obj, u'banner', None):
-                if show_obj.indexer == INDEXER_TVDBV2:
+                if show_obj.indexer == INDEXER_TVDBV2 or INDEXER_GLOTZ:
                     image_url = indexer_show_obj[u'banner'].replace('.jpg', '_t.jpg')
                 else:
                     image_url = re.sub(u'graphical', u'_cache/graphical', indexer_show_obj[u'banner'])
