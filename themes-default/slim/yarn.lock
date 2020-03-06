@@ -10905,10 +10905,10 @@ table@^5.2.3, table@^5.4.6:
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
 
-tablesorter@2.31.2:
-  version "2.31.2"
-  resolved "https://registry.yarnpkg.com/tablesorter/-/tablesorter-2.31.2.tgz#3a37759c2b269688138b46f88454d61d1895b275"
-  integrity sha512-e4ubgJpHNXHWm8tR+eGt2BPAqoOCY+uOQ6PVDCgtklCtJO6VHmORmjZdtm9aYqSqWsUih72wB0nS95JiXZ2l2g==
+tablesorter@2.31.3:
+  version "2.31.3"
+  resolved "https://registry.yarnpkg.com/tablesorter/-/tablesorter-2.31.3.tgz#94c33234ba0e5d9efc5ba4e48651010a396c8b64"
+  integrity sha512-ueEzeKiMajDcCWnUoT1dOeNEaS1OmPh9+8J0O2Sjp3TTijMygH74EA9QNJiNkLJqULyNU0RhbKY26UMUq9iurA==
   dependencies:
     jquery ">=1.2.6"
 
