@@ -432,7 +432,7 @@ class Series(TV):
                 app.show_queue_scheduler.action.refreshShow(self)
             except CantRefreshShowException as error:
                 log.warning("Unable to refresh show '{show}'. Error: {error}",
-                            {'show': self.name, 'error': error.message})
+                            {'show': self.name, 'error': error})
 
     @property
     def indexer_name(self):
