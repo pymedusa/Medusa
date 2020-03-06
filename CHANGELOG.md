@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Replaced deprecated error.message syntax ([#7819](https://github.com/pymedusa/Medusa/pull/7819))
 
 -----
 
