@@ -384,7 +384,7 @@ class GLOTZ(BaseIndexer):
                 _img_id = img.pop('id')
 
                 if _img_type in ['season', 'seasonwide']:
-                    if isinstance(int(img.get('season')), int):
+                    if img.get('season').isdigit():
                         _sub_key = int(img.get('season'))
                     else:
                         _sub_key = 1
