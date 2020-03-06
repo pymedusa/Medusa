@@ -25,7 +25,7 @@ jsonrpclib-pelix==0.4.0
 knowit @ https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e#egg=knowit
 Mako==1.1.2
 markdown2==2.3.8
-profilehooks==1.11.1
+profilehooks==1.11.2
 PyGithub==1.45
 PyJWT==1.7.1
 python-dateutil==2.8.1
