@@ -43,7 +43,7 @@ ext | `MarkupSafe` | [1.1.1](https://pypi.org/project/MarkupSafe/1.1.1/) | `Mako
 ext | `msgpack` | [0.5.6](https://pypi.org/project/msgpack/0.5.6/) | `CacheControl` | -
 ext | `oauthlib` | [3.0.0](https://pypi.org/project/oauthlib/3.0.0/) | `requests-oauthlib` | -
 ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `pint`
-ext | <code><b>profilehooks</b>.py</code> | [1.11.1](https://pypi.org/project/profilehooks/1.11.1/) | **`medusa`** | -
+ext | <code><b>profilehooks</b>.py</code> | [1.11.2](https://pypi.org/project/profilehooks/1.11.2/) | **`medusa`** | -
 ext | `PyGithub` | [1.45](https://pypi.org/project/PyGithub/1.45/) | **`medusa`** | Module: `github`
 ext | `pyjsparser` | [2.7.1](https://pypi.org/project/pyjsparser/2.7.1/) | `Js2Py` | -
 ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub` | Module: `jwt`
