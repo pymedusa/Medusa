@@ -323,7 +323,8 @@ class Glotz(object):
         q = self._endpoint_get(url)
         if q and q.get('Actors') != '':
             actors = []
-            for result in q.get('Actors').get('Actor'):
+            for result in q.get('Actors').get('Actor') if isinstance(q.get('Actors').get('Actor'),
+                                                                     list) else [q.get('Actors').get('Actor')]:
                 actor = Actor(result)
                 actors.append(actor)
             return actors
