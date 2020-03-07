@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from base64 import b64encode
 
 import cfscrape
 
@@ -22,17 +23,22 @@ def patch_cfscrape():
 
 def _patched_solve_challenge(self, body, domain):
     try:
-        js, ms = re.search(
-            r'setTimeout\(function\(\){\s*(var '
-            r's,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value\s*=.+?)\r?\n'
-            r'(?:[^{<>]*},\s*(\d{4,}))?',
-            body,
+        javascript = re.search(r'\<script type\=\"text\/javascript\"\>\n(.*?)\<\/script\>',body, flags=re.S).group(1) # find javascript
+
+        challenge, ms = re.search(
+            r"setTimeout\(function\(\){\s*(var "
+            r"s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value\s*=.+?)\r?\n"
+            r"(?:[^{<>]*},\s*(\d{4,}))?",
+            javascript, flags=re.S
         ).groups()
 
         # The challenge requires `document.getElementById` to get this content.
         # Future proofing would require escaping newlines and double quotes
-        inner_html = re.search(r'<div(?: [^<>]*)? id="cf-dn.*?">([^<>]*)', body)
-        inner_html = inner_html.group(1) if inner_html else ''
+        innerHTML = ''
+        for i in javascript.split(';'):
+            if i.strip().split('=')[0].strip() == 'k':      # from what i found out from pld example K var in
+                k = i.strip().split('=')[1].strip(' \'')    #  javafunction is for innerHTML this code to find it
+                innerHTML = re.search(r'\<div.*?id\=\"'+k+r'\".*?\>(.*?)\<\/div\>',body).group(1) #find innerHTML
 
         # Prefix the challenge with a fake document object.
         # Interpolate the domain, div contents, and JS challenge.
@@ -40,16 +46,20 @@ def _patched_solve_challenge(self, body, domain):
         challenge = """
             var document = {
                 createElement: function () {
-                    return { firstChild: { href: "http://%s/" } };
+                    return { firstChild: { href: "http://%s/" } }
                 },
                 getElementById: function () {
                     return {"innerHTML": "%s"};
                 }
-            };
-
+                };
             %s; a.value
-        """ % (domain, inner_html, js)
-
+        """ % (
+            domain,
+            innerHTML,
+            challenge,
+        )
+        # Encode the challenge for security while preserving quotes and spacing.
+        challenge = b64encode(challenge.encode("utf-8")).decode("ascii")
         # Use the provided delay, parsed delay, or default to 8 secs
         delay = self.delay or (float(ms) / float(1000) if ms else 8)
     except Exception:

@@ -12,7 +12,7 @@ ext | `bencode.py` | [2.1.0](https://pypi.org/project/bencode.py/2.1.0/) | **`me
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.11.28](https://pypi.org/project/certifi/2019.11.28/) | **`medusa`**, `requests`, `traktor` | -
-ext | `cfscrape` | [713e3b4](https://github.com/Anorov/cloudflare-scrape/tree/713e3b4017442d87ad0d638f7991cc330abeee5e) | **`medusa`** | Monkey-patched, see `medusa/init/cfscrape.py`
+ext | `cfscrape` | [2.1.1](https://pypi.org/project/cfscrape/2.1.1/) | **`medusa`** | Monkey-patched, see `medusa/init/cfscrape.py`
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
