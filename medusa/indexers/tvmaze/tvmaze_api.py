@@ -11,6 +11,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
+    IndexerUnavailable
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -170,14 +171,10 @@ class TVmaze(BaseIndexer):
                 'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
         except BaseError as error:
-            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
+            raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
-        if results:
-            return results
-        else:
-            return None
+        return results
 
-    # Tvdb implementation
     def search(self, series):
         """Search tvmaze.com for the series name.
 
@@ -187,7 +184,6 @@ class TVmaze(BaseIndexer):
         log.debug('Searching for show {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
-
         if not results:
             return
 
@@ -205,13 +201,21 @@ class TVmaze(BaseIndexer):
         results = None
         if tvmaze_id:
             log.debug('Getting all show data for {0}', tvmaze_id)
-            results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
+
+            try:
+                results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
+            except ShowNotFound as error:
+                # Use error.value because TVMaze API exceptions may be utf-8 encoded when using __str__
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {0}'.format(error.value)
+                )
+            except BaseError as error:
+                raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if not results:
             return
 
         mapped_results = self._map_results(results, self.series_map)
-
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvmaze_id, specials=False, aired_season=None):  # pylint: disable=unused-argument

@@ -13,7 +13,10 @@ from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, IndexerUnavailable
+from medusa.indexers.indexer_exceptions import (
+    IndexerError, IndexerException,
+    IndexerShowNotFound, IndexerUnavailable
+)
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
@@ -166,12 +169,11 @@ class Tmdb(BaseIndexer):
         except RequestException as error:
             raise IndexerUnavailable('Show search failed using indexer TMDB. Cause: {cause}'.format(cause=error))
 
-        if results:
-            return results
-        else:
-            return OrderedDict({'data': None})
+        if not results:
+            raise IndexerShowNotFound('Show search failed in getting a result with reason: Not found')
 
-    # Tvdb implementation
+        return results
+
     def search(self, series):
         """Search TMDB (themoviedb.org) for the series name.
 
@@ -218,15 +220,15 @@ class Tmdb(BaseIndexer):
                 language='{0},null'.format(request_language),
                 append_to_response=extra_info
             )
-            if not results:
-                return
         except RequestException as error:
             raise IndexerUnavailable('Show info retrieval failed using indexer TMDB. Cause: {cause!r}'.format(
                 cause=error
             ))
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        if not results:
+            return
 
+        mapped_results = self._map_results(results, self.series_map, '|')
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
