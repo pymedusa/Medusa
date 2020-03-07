@@ -4,8 +4,8 @@ beautifulsoup4==4.8.2
 bencode.py==2.1.0
 CacheControl==0.12.6
 certifi==2019.11.28
-cfscrape @ https://codeload.github.com/Anorov/cloudflare-scrape/tar.gz/713e3b4017442d87ad0d638f7991cc330abeee5e#egg=cfscrape
 chardet==3.0.4
+cloudscraper==1.2.26
 configobj==5.0.6
 contextlib2==0.6.0.post1
 deluge-client==1.8.0
@@ -20,7 +20,6 @@ gntp==1.0.3
 guessit==3.1.0
 html5lib==1.0.1
 imdbpie==5.6.4
-Js2Py==0.67
 jsonrpclib-pelix==0.4.0
 knowit @ https://codeload.github.com/ratoaq2/knowit/tar.gz/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e#egg=knowit
 Mako==1.1.2
