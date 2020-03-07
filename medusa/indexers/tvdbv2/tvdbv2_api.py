@@ -10,9 +10,10 @@ from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerShowNotFound,
-                                                IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.indexer_exceptions import (
+    IndexerAuthFailed, IndexerError, IndexerShowNotFound,
+    IndexerShowNotFoundInLanguage, IndexerUnavailable
+)
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
@@ -135,20 +136,18 @@ class TVDBv2(BaseIndexer):
         except ApiException as error:
             if error.status == 401:
                 raise IndexerAuthFailed(
-                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'.format(
-                        reason=error.reason, status=error.status
-                    )
+                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
                 )
-            raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: {0}'.format(error.reason)
-            )
+            if error.status == 404:
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
+                )
+            raise IndexerUnavailable(error.reason)
 
-        if results:
-            return results
-        else:
-            return OrderedDict({'data': None})
+        return results
 
-    # Tvdb implementation
     @PlexFallback
     def search(self, series):
         """Search tvdbv2.com for the series name.
@@ -159,7 +158,6 @@ class TVDBv2(BaseIndexer):
         log.debug('Searching for show: {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
-
         if not results:
             return
 
@@ -190,11 +188,12 @@ class TVDBv2(BaseIndexer):
                         'Authentication failed, possible bad API key. Reason: {reason} ({status})'
                         .format(reason=error.reason, status=error.status)
                     )
-                raise IndexerShowNotFound(
-                    'Show search failed in getting a result with reason: {reason} ({status})'.format(
-                        reason=error.reason, status=error.status
+                if error.status == 404:
+                    raise IndexerShowNotFound(
+                        'Show search failed in getting a result with reason: {reason} ({status})'
+                        .format(reason=error.reason, status=error.status)
                     )
-                )
+                raise IndexerUnavailable(error.reason)
 
         if not results:
             return
@@ -204,7 +203,6 @@ class TVDBv2(BaseIndexer):
                                                 .format(request_language), request_language)
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
-
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvdb_id, specials=False, aired_season=None):
@@ -373,38 +371,6 @@ class TVDBv2(BaseIndexer):
                     v = urljoin(self.config['artwork_prefix'], v)
 
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
-
-    def _get_series(self, series):
-        """Search thetvdb.com for the series name.
-
-        If a custom_ui UI is configured, it uses this to select the correct
-        series. If not, and interactive == True, ConsoleUI is used, if not
-        BaseUI is used to select the first result.
-
-        :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
-        """
-        all_series = self.search(series)
-        if not all_series:
-            log.debug('Series result returned zero')
-            IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
-
-        if not isinstance(all_series, list):
-            all_series = [all_series]
-
-        if self.config['custom_ui'] is not None:
-            log.debug('Using custom UI: {0!r}', self.config['custom_ui'])
-            custom_ui = self.config['custom_ui']
-            ui = custom_ui(config=self.config)
-        else:
-            if not self.config['interactive']:
-                log.debug('Auto-selecting first search result using BaseUI')
-                ui = BaseUI(config=self.config)
-            else:
-                log.debug('Interactively selecting show using ConsoleUI')
-                ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
-
-        return ui.select_series(all_series)
 
     @PlexFallback
     def _parse_images(self, sid):
