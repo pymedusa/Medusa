@@ -289,9 +289,12 @@ class TVDBv2(BaseIndexer):
                     .format(reason=error.reason, status=error.status)
                 )
 
-            if error.status == 404 and not self.shows[tvdb_id]['firstaired']:
-                log.info('Show {name} does not have any episodes yet, adding it anyway',
-                         {'name': self.shows[tvdb_id]['seriesname']})
+            if error.status == 404:
+                show_data = self.shows.get(tvdb_id)
+                if show_data and not show_data['firstaired']:
+                    log.info('Show {name} does not have any episodes yet.',
+                             {'name': self.shows[tvdb_id]['seriesname']})
+
             else:
                 raise IndexerUnavailable(
                     'Error connecting to TVDB API. Reason: {reason}'.format(
