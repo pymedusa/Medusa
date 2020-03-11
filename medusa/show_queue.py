@@ -696,6 +696,12 @@ class QueueItemRefresh(ShowQueueItem):
 
             # Load XEM data to DB for show
             scene_numbering.xem_refresh(self.show)
+        except IndexerException as error:
+            log.warning(
+                '{id}: Unable to contact {indexer}. Aborting: {error_msg}',
+                {'id': self.show.series_id, 'indexer': indexerApi(self.show.indexer).name,
+                 'error_msg': error}
+            )
         except Exception as error:
             log.error(
                 '{id}: Error while refreshing show {show}. Error: {error_msg}',
