@@ -43,7 +43,7 @@ class TorznabProvider(TorrentProvider):
 
         self.url = url or ''
         self.api_key = api_key or ''
-        self.cat_ids = cat_ids or ['5010', '5030', '5040']
+        self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
 
         # For now apply the additional season search string for all torznab providers.
