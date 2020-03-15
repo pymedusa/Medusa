@@ -266,17 +266,19 @@ class TVDBv2(BaseIndexer):
                         paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                             tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
                         )
-                        results += paged_episodes.data
-                        last = paged_episodes.links.last
-                        page += 1
+                        if paged_episodes.data:
+                            results += paged_episodes.data
+                            last = paged_episodes.links.last
+                            page += 1
             else:
                 while page <= last:
                     paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                         tvdb_id, page=page, accept_language=self.config['language']
                     )
-                    results += paged_episodes.data
-                    last = paged_episodes.links.last
-                    page += 1
+                    if paged_episodes.data:
+                        results += paged_episodes.data
+                        last = paged_episodes.links.last
+                        page += 1
 
             if results and full_info:
                 results = self._get_episodes_info(tvdb_id, results, season=aired_season)
