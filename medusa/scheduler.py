@@ -74,10 +74,10 @@ class Scheduler(threading.Thread):
                         should_run = True
 
                     if should_run:
-                        self.lastRun = datetime.datetime.now()
                         if not self.silent:
                             log.debug('Starting new thread: {name}', {'name': self.name})
                         self.action.run(self.force)
+                        self.lastRun = datetime.datetime.now()
 
                     if self.force:
                         self.force = False
