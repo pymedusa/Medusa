@@ -5,6 +5,8 @@
 #### Improvements
 
 #### Fixes
+- Fixed indexer specific exceptions raising errors in show refresh ([#7837](https://github.com/pymedusa/Medusa/pull/7837))
+- Replaced deprecated error.message syntax ([#7819](https://github.com/pymedusa/Medusa/pull/7819))
 
 -----
 

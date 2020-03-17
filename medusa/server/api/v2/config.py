@@ -127,6 +127,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.httpsKey': StringField(app, 'HTTPS_KEY'),
         'webInterface.handleReverseProxy': BooleanField(app, 'HANDLE_REVERSE_PROXY'),
 
+        'webRoot': StringField(app, 'WEB_ROOT'),
         'cpuPreset': StringField(app, 'CPU_PRESET'),
         'sslVerify': BooleanField(app, 'SSL_VERIFY'),
         'sslCaBundle': StringField(app, 'SSL_CA_BUNDLE'),
@@ -657,6 +658,7 @@ class DataGenerator(object):
         section_data['webInterface']['httpsKey'] = app.HTTPS_KEY
         section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
 
+        section_data['webRoot'] = app.WEB_ROOT
         section_data['cpuPreset'] = app.CPU_PRESET
         section_data['sslVerify'] = bool(app.SSL_VERIFY)
         section_data['sslCaBundle'] = app.SSL_CA_BUNDLE
