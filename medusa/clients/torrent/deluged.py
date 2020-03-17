@@ -109,6 +109,11 @@ class DelugeDAPI(GenericClient):
         """
         if not app.TORRENT_SEED_LOCATION or not info_hash:
             return
+
+        if not self.connect():
+            log.warning('Error while moving torrent. Could not connect to daemon.')
+            return
+
         return self.drpc.move_storage(info_hash, app.TORRENT_SEED_LOCATION)
 
     def _set_torrent_label(self, result):
@@ -237,7 +242,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
-            self.client.core.move_storage(torrent_id, location)
+            self.client.core.move_storage([torrent_id], location)
         except Exception:
             return False
         else:

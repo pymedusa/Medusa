@@ -3,19 +3,50 @@
 #### New Features
 
 #### Improvements
-- Add `uniqueid` to Kodi 12+ show metadata ([#7483](https://github.com/pymedusa/Medusa/pull/7483))
-- Update AppLink to enable native mouse navigation ([#7498](https://github.com/pymedusa/Medusa/pull/7498))
 
 #### Fixes
-- Fix Emby notifier error on Python 3 ([#7497](https://github.com/pymedusa/Medusa/pull/7497))
-- Fix more qBittorrent authentication bugs ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
-- Fix `torrents.verifyCert` config patch ignored warning ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
-- Fix dragging and saving Anime / Series list handles in Home - Poster layout ([#7502](https://github.com/pymedusa/Medusa/pull/7502))
-- Fix adding Anime with white/black listed release groups ([#7507](https://github.com/pymedusa/Medusa/pull/7507))
-- Fix Schedule page and Forced Search on Schedule page ([#7512](https://github.com/pymedusa/Medusa/pull/7512))
-- Fix manual search page release name bug ([#7517](https://github.com/pymedusa/Medusa/pull/7517))
-- Fix being unable to save post-processing config ([#7526](https://github.com/pymedusa/Medusa/pull/7526))
-- Fix qBittorrent error when torrent queueing is disabled ([#7541](https://github.com/pymedusa/Medusa/pull/7541))
+
+-----
+
+## 0.3.12 (2020-02-08)
+
+#### Fixes
+- Fixed guessit parser not using scene exceptions ([#7699](https://github.com/pymedusa/Medusa/pull/7699))
+- Updated YggTorrent provider domain ([#7703](https://github.com/pymedusa/Medusa/pull/7703))
+
+-----
+
+## 0.3.11 (2020-01-31)
+
+#### Improvements
+- Updated Python and JavaScript dependencies
+- Added a few new network icons
+
+#### Fixes
+- Fixed deluged move_torrent() when seed location is specified in the configuration ([#7586](https://github.com/pymedusa/Medusa/pull/7586))
+- Fixed rare parser exception when anime episode doesn't exist ([#7613](https://github.com/pymedusa/Medusa/pull/7613))
+
+-----
+
+## 0.3.10 (2020-01-13)
+
+#### New Features
+- Added Opensubtitles VIP, aRGENTeaM and Subtitulamos subtitle providers ([#7555](https://github.com/pymedusa/Medusa/pull/7555), [#7518](https://github.com/pymedusa/Medusa/pull/7518))
+
+#### Improvements
+- Added `uniqueid` to Kodi 12+ show metadata ([#7483](https://github.com/pymedusa/Medusa/pull/7483))
+- Updated AppLink to enable native mouse navigation ([#7498](https://github.com/pymedusa/Medusa/pull/7498))
+
+#### Fixes
+- Fixed Emby notifier error on Python 3 ([#7497](https://github.com/pymedusa/Medusa/pull/7497))
+- Fixed more qBittorrent authentication bugs ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
+- Fixed `torrents.verifyCert` config patch ignored warning ([#7501](https://github.com/pymedusa/Medusa/pull/7501))
+- Fixed dragging and saving Anime / Series list handles in Home - Poster layout ([#7502](https://github.com/pymedusa/Medusa/pull/7502))
+- Fixed adding Anime with white/black listed release groups ([#7507](https://github.com/pymedusa/Medusa/pull/7507))
+- Fixed Schedule page and Forced Search on Schedule page ([#7512](https://github.com/pymedusa/Medusa/pull/7512))
+- Fixed manual search page release name bug ([#7517](https://github.com/pymedusa/Medusa/pull/7517))
+- Fixed being unable to save post-processing config ([#7526](https://github.com/pymedusa/Medusa/pull/7526))
+- Fixed qBittorrent error when torrent queueing is disabled ([#7541](https://github.com/pymedusa/Medusa/pull/7541))
 
 -----
 

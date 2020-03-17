@@ -208,7 +208,7 @@ def _configure_subliminal():
 
     # Register
     for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
-                 'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
+                 'subtitulamos = {basename}.subtitle_providers.subtitulamos:SubtitulamosProvider'.format(basename=basename),
                  'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
         provider_manager.register(name)
 

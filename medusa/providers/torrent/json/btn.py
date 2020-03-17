@@ -70,9 +70,6 @@ class BTNProvider(TorrentProvider):
             'base_url': 'https://api.broadcasthe.net',
         }
 
-        # Proper Strings
-        self.proper_strings = []
-
         # Miscellaneous Options
         self.supports_absolute_numbering = True
 

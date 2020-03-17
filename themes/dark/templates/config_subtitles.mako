@@ -124,7 +124,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Leave empty if you want store subtitle in episode path.</span>
+                                    <span class="component-desc"><b>Note:</b> Leave empty if you want store subtitle in episode path.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -163,7 +163,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> This option is required if you use multiple subtitle languages.</span>
+                                    <span class="component-desc"><b>Note:</b> This option is required if you use multiple subtitle languages.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -268,7 +268,6 @@ window.app = new Vue({
                         <%
                             providerLoginDict = {
                                 'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
-                                'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>

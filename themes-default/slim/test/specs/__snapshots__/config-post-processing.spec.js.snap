@@ -110,7 +110,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     >
                       <p>
                         <b>
-                          NOTE:
+                          Note:
                         </b>
                          Do not use if you use an external Post Processing script
                       </p>
@@ -156,9 +156,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       >
                         <p>
                           <b>
-                            NOTE:
+                            Note:
                           </b>
-                           Please use seperate downloading and completed folders in your download client if possible.
+                           Please use separate downloading and completed folders in your download client if possible.
                         </p>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                        
                       <p>
                         <b>
-                          NOTE:
+                          Note:
                         </b>
                          If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.
                       </p>
@@ -332,7 +332,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      comma seperated list of extensions or filename globs Medusa ignores when Post Processing
+                      Comma separated list of extensions or filename globs Medusa ignores when post processing
                     </span>
                   </div>
                 </div>
@@ -374,7 +374,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                      
                     <span>
                       <b>
-                        NOTE:
+                        Note:
                       </b>
                        Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.
                     </span>
@@ -534,7 +534,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Comma seperated list of associated file extensions Medusa should keep while post processing.
+                      Comma separated list of associated file extensions Medusa should keep while post processing.
                     </span>
                     <br />
                      
@@ -681,7 +681,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                      
                     <span>
                       <b>
-                        NOTE:
+                        Note:
                       </b>
                        Only working with RAR archive
                     </span>
@@ -751,7 +751,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                      
                     <span>
                       <b>
-                        NOTE:
+                        Note:
                       </b>
                        Can be overridden using manual Post Processing
                     </span>
@@ -1007,7 +1007,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                 <div
                   class="metadataDiv"
                   id="provider.id"
-                  style=""
+                  style="display: none;"
                 >
                   <div
                     class="metadata_options_wrapper"

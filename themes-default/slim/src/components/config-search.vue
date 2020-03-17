@@ -63,13 +63,13 @@
                                     <config-toggle-slider v-model="search.general.allowHighPriority" label="Allow high priority" id="allow_high_priority" :explanations="['set downloads of recently aired episodes to high priority']" />
 
                                     <config-toggle-slider v-model="search.general.failedDownloads.enabled" label="Use Failed Downloads" id="use_failed_downloads">
-                                        <p>Use Failed Download Handling?'</p>
+                                        <p>Use Failed Download Handling?</p>
                                         <p>Will only work with snatched/downloaded episodes after enabling this</p>
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-show="search.general.failedDownloads.enabled" v-model="search.general.failedDownloads.deleteFailed" label="Delete Failed" id="delete_failed">
                                         Delete files left over from a failed download?<br>
-                                        <b>NOTE:</b> This only works if Use Failed Downloads is enabled.
+                                        <b>Note:</b> This only works if Use Failed Downloads is enabled.
                                     </config-toggle-slider>
 
                                     <config-toggle-slider v-model="search.general.cacheTrimming" label="Cache Trimming" id="cache_trimming" :explanations="['Enable trimming of provider cache']" />
@@ -172,8 +172,8 @@
 
                                         <div v-if="clients.nzb.method" v-show="clients.nzb.method === 'nzbget'" id="nzbget_settings">
 
-                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTP" id="nzbget_use_https">
-                                                <p><b>note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
+                                            <config-toggle-slider v-model="clients.nzb.nzbget.useHttps" label="Connect using HTTPS" id="nzbget_use_https">
+                                                <p><b>Note:</b> enable Secure control in NZBGet and set the correct Secure Port here</p>
                                             </config-toggle-slider>
 
                                             <config-textbox v-model="clients.nzb.nzbget.host" label="NZBget host:port" id="nzbget_host">
@@ -262,10 +262,10 @@
                                                 <config-textbox v-model="clients.torrents.label" label="Add label to torrent" id="torrent_label">
                                                     <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
                                                         <p>(blank spaces are not allowed)</p>
-                                                        <p>note: label plugin must be enabled in Deluge clients</p>
+                                                        <p><b>Note:</b> label plugin must be enabled in Deluge clients</p>
                                                     </span>
                                                     <span v-show="clients.torrents.method === 'qbittorrent'"><p>(blank spaces are not allowed)</p>
-                                                        <p>note: for qBitTorrent 3.3.1 and up</p>
+                                                        <p><b>Note:</b> for qBitTorrent 3.3.1 and up</p>
                                                     </span>
                                                     <span v-show="clients.torrents.method === 'utorrent'">
                                                         <p>Global label for torrents.<br>
@@ -278,11 +278,11 @@
                                                 <config-textbox v-model="clients.torrents.labelAnime" label="Add label to torrent for anime" id="torrent_label_anime">
                                                     <span v-show="['deluge', 'deluged'].includes(clients.torrents.method)">
                                                         <p>(blank spaces are not allowed)</p>
-                                                        <p>note: label plugin must be enabled in Deluge clients</p>
+                                                        <p><b>Note:</b> label plugin must be enabled in Deluge clients</p>
                                                     </span>
                                                     <span v-show="clients.torrents.method === 'qbittorrent'">
                                                         <p>(blank spaces are not allowed)</p>
-                                                        <p>note: for qBitTorrent 3.3.1 and up</p>
+                                                        <p><b>Note:</b> for qBitTorrent 3.3.1 and up</p>
                                                     </span>
                                                     <span v-show="clients.torrents.method === 'utorrent'">
                                                         <p>Global label for torrents.<br>
@@ -294,7 +294,7 @@
                                             <config-template v-show="clientsConfig.torrent[clients.torrents.method].pathOption" label-for="torrent_client" label="Downloaded files location">
                                                 <file-browser name="torrent_path" title="Select downloaded files location" :initial-dir="clients.torrents.path" @update="clients.torrents.path = $event" />
                                                 <p>where <span id="torrent_client" v-if="clientsConfig.torrent[clients.torrents.method]">{{clientsConfig.torrent[clients.torrents.method].shortTitle || clientsConfig.torrent[clients.torrents.method].title}}</span> will save downloaded files (blank for client default)
-                                                    <span v-show="clients.torrents.method === 'downloadstation'"> <b>note:</b> the destination has to be a shared folder for Synology DS</span>
+                                                    <span v-show="clients.torrents.method === 'downloadstation'"> <b>Note:</b> the destination has to be a shared folder for Synology DS</span>
                                                 </p>
                                             </config-template>
 
