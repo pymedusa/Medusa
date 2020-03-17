@@ -457,7 +457,7 @@ export default {
         },
         onChangeAliases(items) {
             this.show.config.aliases = items.map(item => {
-                return { seriesName: item.value }
+                return { seriesName: item.value };
             });
         },
         onChangeReleaseGroupsAnime(groupNames) {
