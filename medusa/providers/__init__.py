@@ -27,8 +27,6 @@ for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
     if getattr(module, 'provider', None):
         provider_names.append(module.provider.name.lower())
 
-__all__ = provider_names
-
 
 def sorted_provider_list(randomize=False):
     initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList + app.torznab_providers_list
@@ -58,7 +56,7 @@ def sorted_provider_list(randomize=False):
 
 
 def make_provider_list():
-    return [x.provider for x in (get_provider_module(y) for y in __all__) if x]
+    return [x.provider for x in (get_provider_module(y) for y in provider_names) if x]
 
 
 def get_provider_module(name):
@@ -67,7 +65,7 @@ def get_provider_module(name):
         path=__path__, prefix=__name__ + '.', onerror=lambda x: None) if ispkg]
 
     for prefix in prefixes:
-        if name in __all__ and prefix + name in sys.modules:
+        if name in provider_names and prefix + name in sys.modules:
             return sys.modules[prefix + name]
 
     raise Exception("Can't find {prefix}{name} in Providers".format(prefix=prefix, name=name))
