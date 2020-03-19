@@ -25,7 +25,7 @@ for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
         base = os.path.basename(os.path.dirname(module_loader.path)) + '.' + base
     module = importlib.import_module('.' + name, __package__ + '.' + base)
     if getattr(module, 'provider', None):
-        provider_names.append(module.provider.name.lower())
+        provider_names.append(name)
 
 
 def sorted_provider_list(randomize=False):
