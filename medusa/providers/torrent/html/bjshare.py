@@ -24,7 +24,7 @@ class BJShareProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(BJShareProvider, self).__init__('BJ-Share')
+        super(BJShareProvider, self).__init__('BJShare')
 
         # URLs
         self.url = 'https://bj-share.info'

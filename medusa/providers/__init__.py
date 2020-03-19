@@ -3,6 +3,8 @@
 """All providers type init."""
 from __future__ import unicode_literals
 
+import importlib
+import os
 import pkgutil
 from builtins import next
 from builtins import zip
@@ -10,71 +12,22 @@ from os import sys
 from random import shuffle
 
 from medusa import app
-from medusa.providers.nzb import (
-    anizb, binsearch,
-)
-from medusa.providers.torrent import (
-    abnormal,
-    alpharatio,
-    anidex,
-    animebytes,
-    animetorrents,
-    archetorrent,
-    avistaz,
-    beyondhd,
-    bitcannon,
-    bithdtv,
-    bjshare,
-    btdb,
-    btn,
-    cinemaz,
-    danishbits,
-    elitetracker,
-    gimmepeers,
-    hdbits,
-    hdspace,
-    hdtorrents,
-    hebits,
-    iptorrents,
-    limetorrents,
-    morethantv,
-    ncore,
-    nebulance,
-    norbits,
-    nordicbits,
-    nyaa,
-    pretome,
-    privatehd,
-    rarbg,
-    scenetime,
-    sdbits,
-    shanaproject,
-    shazbat,
-    speedcd,
-    thepiratebay,
-    tokyotoshokan,
-    torrentbytes,
-    torrentday,
-    torrenting,
-    torrentleech,
-    torrentz2,
-    tvchaosuk,
-    xthor,
-    yggtorrent,
-    zooqle
-)
 
-__all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'hdtorrents', 'torrentday',
-    'hdbits', 'speedcd', 'nyaa', 'torrentbytes', 'morethantv', 'tokyotoshokan',
-    'iptorrents', 'hebits', 'alpharatio', 'sdbits', 'shazbat', 'rarbg',
-    'binsearch', 'xthor', 'abnormal', 'scenetime', 'nebulance', 'tvchaosuk',
-    'bitcannon', 'torrentz2', 'pretome', 'anizb', 'hdspace', 'nordicbits',
-    'danishbits', 'limetorrents', 'norbits', 'bithdtv', 'ncore', 'zooqle',
-    'animebytes', 'animetorrents', 'anidex', 'shanaproject', 'torrenting',
-    'yggtorrent', 'elitetracker', 'archetorrent', 'privatehd', 'cinemaz',
-    'avistaz', 'bjshare', 'gimmepeers', 'btdb', 'beyondhd'
-]
+
+torrent_kinds = ['html', 'json', 'rss', 'torznab', 'xml']
+dirname = os.path.dirname(__file__)
+modules = [os.path.join(dirname, 'torrent', kind) for kind in torrent_kinds] + [os.path.join(dirname, 'nzb')]
+
+provider_names = []
+for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
+    base = os.path.basename(module_loader.path)
+    if base != 'nzb':
+        base = os.path.basename(os.path.dirname(module_loader.path)) + '.' + base
+    module = importlib.import_module('.' + name, __package__ + '.' + base)
+    if getattr(module, 'provider', None):
+        provider_names.append(module.provider.name.lower())
+
+__all__ = provider_names
 
 
 def sorted_provider_list(randomize=False):

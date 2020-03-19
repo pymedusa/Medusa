@@ -23,7 +23,7 @@ class BeyondHDProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(BeyondHDProvider, self).__init__('Beyond-HD')
+        super(BeyondHDProvider, self).__init__('BeyondHD')
 
         self.enable_cookies = True
         self.cookies = ''
