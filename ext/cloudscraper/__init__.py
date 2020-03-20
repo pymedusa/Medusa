@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 import sys
 import ssl
@@ -25,6 +24,14 @@ from collections import OrderedDict
 from requests.sessions import Session
 from requests.adapters import HTTPAdapter
 
+from .exceptions import (
+    CloudflareLoopProtection,
+    CloudflareCode1020,
+    CloudflareIUAMError,
+    CloudflareReCaptchaError,
+    CloudflareReCaptchaProvider
+)
+
 from .interpreters import JavaScriptInterpreter
 from .reCaptcha import reCaptcha
 from .user_agent import User_Agent
@@ -44,13 +51,10 @@ try:
 except ImportError:
     from urllib.parse import urlparse, urljoin
 
-# Add exceptions path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'exceptions'))
-import cloudflare_exceptions  # noqa: E402
 
 # ------------------------------------------------------------------------------- #
 
-__version__ = '1.2.28'
+__version__ = '1.2.30'
 
 # ------------------------------------------------------------------------------- #
 
@@ -214,10 +218,10 @@ class CloudScraper(Session):
             # ------------------------------------------------------------------------------- #
 
             if self._solveDepthCnt >= self.solveDepth:
-                sys.tracebacklimit = 0
                 _ = self._solveDepthCnt
                 self._solveDepthCnt = 0
-                raise cloudflare_exceptions.Cloudflare_Loop_Protection(
+                sys.tracebacklimit = 0
+                raise CloudflareLoopProtection(
                     "!!Loop Protection!! We have tried to solve {} time(s) in a row.".format(_)
                 )
 
@@ -300,7 +304,7 @@ class CloudScraper(Session):
     def is_Challenge_Request(self, resp):
         if self.is_Firewall_Blocked(resp):
             sys.tracebacklimit = 0
-            raise cloudflare_exceptions.Cloudflare_Block('Cloudflare has blocked this request (Code 1020 Detected).')
+            raise CloudflareCode1020('Cloudflare has blocked this request (Code 1020 Detected).')
 
         if self.is_reCaptcha_Challenge(resp) or self.is_IUAM_Challenge(resp):
             return True
@@ -322,7 +326,7 @@ class CloudScraper(Session):
 
         except AttributeError:
             sys.tracebacklimit = 0
-            raise cloudflare_exceptions.Cloudflare_Error_IUAM(
+            raise CloudflareIUAMError(
                 "Cloudflare IUAM detected, unfortunately we can't extract the parameters correctly."
             )
 
@@ -333,7 +337,8 @@ class CloudScraper(Session):
                 interpreter
             ).solveChallenge(body, hostParsed.netloc)
         except Exception as e:
-            raise cloudflare_exceptions.Cloudflare_Error_IUAM(
+            sys.tracebacklimit = 0
+            raise CloudflareIUAMError(
                 'Unable to parse Cloudflare anti-bots page: {}'.format(
                     getattr(e, 'message', e)
                 )
@@ -361,7 +366,7 @@ class CloudScraper(Session):
             ).groupdict()
         except (AttributeError):
             sys.tracebacklimit = 0
-            raise cloudflare_exceptions.Cloudflare_Error_reCaptcha(
+            raise CloudflareReCaptchaError(
                 "Cloudflare reCaptcha detected, unfortunately we can't extract the parameters correctly."
             )
 
@@ -408,7 +413,7 @@ class CloudScraper(Session):
 
             if not self.recaptcha or not isinstance(self.recaptcha, dict) or not self.recaptcha.get('provider'):
                 sys.tracebacklimit = 0
-                raise cloudflare_exceptions.Cloudflare_reCaptcha_Provider(
+                raise CloudflareReCaptchaProvider(
                     "Cloudflare reCaptcha detected, unfortunately you haven't loaded an anti reCaptcha provider "
                     "correctly via the 'recaptcha' parameter."
                 )
@@ -444,7 +449,7 @@ class CloudScraper(Session):
                         self.delay = delay
                 except (AttributeError, ValueError):
                     sys.tracebacklimit = 0
-                    raise cloudflare_exceptions.Cloudflare_Error_IUAM("Cloudflare IUAM possibility malformed, issue extracing delay value.")
+                    raise CloudflareIUAMError("Cloudflare IUAM possibility malformed, issue extracing delay value.")
 
             sleep(self.delay)
 
@@ -583,7 +588,7 @@ class CloudScraper(Session):
                 break
         else:
             sys.tracebacklimit = 0
-            raise cloudflare_exceptions.Cloudflare_Error_IUAM(
+            raise CloudflareIUAMError(
                 "Unable to find Cloudflare cookies. Does the site actually "
                 "have Cloudflare IUAM (I'm Under Attack Mode) enabled?"
             )
