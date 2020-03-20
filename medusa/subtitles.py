@@ -25,6 +25,7 @@ import logging
 import operator
 import os
 import subprocess
+import sys
 import time
 from builtins import object
 from builtins import str
@@ -1108,11 +1109,18 @@ def run_subs_scripts(video_path, scripts, *args):
     :param args: the arguments to be passed to the script
     :type args: list of str
     """
-    for script_name in scripts:
-        script_cmd = [piece for piece in script_name.split(' ') if piece.strip()]
-        script_cmd.extend(str(arg) for arg in args)
+    for script_path in scripts:
 
-        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_name)
+        if not os.path.isfile(script_path):
+            logger.warning(u'Subtitle script {0} is not a file.'.format(script_path))
+            continue
+
+        if not script_path.endswith('.py'):
+            logger.warning(u'Subtitle script {0} is not a Python file.'.format(script_path))
+            continue
+
+        logger.info(u'Running subtitle %s-script: %s', 'extra' if len(args) > 1 else 'pre', script_path)
+        script_cmd = [sys.executable, script_path] + [str(arg) for arg in args]
 
         # use subprocess to run the command and capture output
         logger.info(u'Executing command: %s', script_cmd)
