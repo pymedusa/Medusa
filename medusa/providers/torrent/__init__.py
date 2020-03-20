@@ -3,75 +3,17 @@
 """Initialize all torrent providers."""
 from __future__ import unicode_literals
 
-from medusa.providers.torrent.html import (
-    abnormal,
-    alpharatio,
-    anidex,
-    animetorrents,
-    archetorrent,
-    avistaz,
-    beyondhd,
-    bithdtv,
-    bjshare,
-    btdb,
-    cinemaz,
-    elitetracker,
-    gimmepeers,
-    hdspace,
-    hdtorrents,
-    hebits,
-    iptorrents,
-    limetorrents,
-    morethantv,
-    nebulance,
-    nordicbits,
-    pretome,
-    privatehd,
-    scenetime,
-    sdbits,
-    shanaproject,
-    speedcd,
-    thepiratebay,
-    tokyotoshokan,
-    torrentbytes,
-    torrenting,
-    tvchaosuk,
-    yggtorrent,
-    zooqle,
-)
-from medusa.providers.torrent.json import (
-    animebytes,
-    bitcannon,
-    btn,
-    danishbits,
-    hdbits,
-    ncore,
-    norbits,
-    rarbg,
-    torrentday,
-    torrentleech,
-    xthor,
-)
-from medusa.providers.torrent.rss import (
-    nyaa,
-    rsstorrent,
-    shazbat,
-)
-from medusa.providers.torrent.torznab import (
-    torznab,
-)
-from medusa.providers.torrent.xml import (
-    torrentz2,
-)
+import importlib
+import os
+import pkgutil
+import sys
 
-__all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv',
-    'danishbits', 'hdspace', 'hdtorrents', 'iptorrents', 'limetorrents',
-    'morethantv', 'torznab', 'nordicbits', 'pretome', 'sdbits', 'scenetime',
-    'speedcd', 'thepiratebay', 'tokyotoshokan', 'torrentbytes', 'torrentleech',
-    'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hdbits',
-    'norbits', 'rarbg', 'torrentday', 'nyaa', 'rsstorrent', 'shazbat',
-    'hebits', 'torrentz2', 'animetorrents', 'anidex', 'shanaproject',
-    'torrenting', 'yggtorrent', 'elitetracker', 'privatehd', 'cinemaz',
-    'avistaz', 'bjshare', 'ncore', 'gimmepeers', 'btdb', 'beyondhd'
-]
+
+torrent_kinds = ['html', 'json', 'rss', 'torznab', 'xml']
+dirname = os.path.dirname(__file__)
+modules = [os.path.join(dirname, kind) for kind in torrent_kinds]
+
+for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
+    base = os.path.basename(module_loader.path)
+    module = importlib.import_module('.' + name, __package__ + '.' + base)
+    setattr(sys.modules[__name__], name, module)
