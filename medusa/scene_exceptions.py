@@ -186,35 +186,51 @@ def get_scene_exceptions_by_name(show_name):
     return matches
 
 
-def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
-    """Update database with all show scene exceptions by indexer_id."""
+def update_scene_exceptions(series_obj, scene_exceptions):
+    """
+    Update database with all show scene exceptions by indexer_id.
+
+    :param series_obj: series object.
+    :param scene_exceptions: list of dicts, originating from the /config/ apiv2 route. Where scene exceptions are set from the UI.
+
+    :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
+    """
+
     logger.info('Updating scene exceptions...')
 
     main_db_con = db.DBConnection()
-    main_db_con.action(
-        'DELETE FROM scene_exceptions '
-        'WHERE series_id=? AND '
-        '    season=? AND '
-        '    indexer=?',
-        [series_obj.series_id, season, series_obj.indexer]
-    )
-
-    # A change has been made to the scene exception list.
-    # Let's clear the cache, to make this visible
 
     exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
 
     for exception in scene_exceptions:
-        if exception not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]:
+        # A change has been made to the scene exception list.
+        # Let's clear the cache, to make this visible
+        main_db_con.action(
+            'DELETE FROM scene_exceptions '
+            'WHERE series_id=? AND '
+            '    season=? AND '
+            '    indexer=?',
+            [series_obj.series_id, exception['season'] , series_obj.indexer]
+        )
+
+        if exception['seriesName'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
+
             # Add to cache
-            exceptions_cache[(series_obj.indexer, series_obj.series_id)][season].add(exception)
+            series_exception = TitleException(
+                series_name=exception['seriesName'],
+                season=exception['season'],
+                indexer=series_obj.indexer,
+                series_id=series_obj.series_id
+            )
+
+            exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']].add(series_exception)
 
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
                 '    (indexer, series_id, show_name, season)'
                 'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception, season]
+                [series_obj.indexer, series_obj.series_id, exception['seriesName'], exception['season']]
             )
 
 

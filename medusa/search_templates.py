@@ -173,7 +173,26 @@ class SearchTemplates(object):
         """
         for template in templates:
             # TODO: add validation
+
+            # Save to db
             self.save(template)
+
+            # Update the template in self.templates
+            new_template = SearchTemplate(
+                # search_template_id=search_template_id,
+                template=template['template'],
+                title=template['title'],
+                series=self.show_obj,
+                season=template['season'],
+                enabled=template['enabled'],
+                default=template['default']
+            )
+
+            self.templates = [
+                new_template if old_template.template == new_template.template
+                else old_template
+                for old_template in self.templates
+            ]
 
     def to_json(self):
         """Return in json format."""

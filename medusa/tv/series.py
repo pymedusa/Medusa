@@ -612,8 +612,8 @@ class Series(TV):
     @aliases.setter
     def aliases(self, exceptions):
         """Set the series aliases."""
-        self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
+        self.exceptions = get_scene_exceptions(self)
         build_name_cache(self)
 
     @property
