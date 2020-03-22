@@ -1037,7 +1037,6 @@ export default {
                     await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
                 }
             };
-
             _getEpisodes(id, indexer);
         }
     },
