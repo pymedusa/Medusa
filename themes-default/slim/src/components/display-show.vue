@@ -52,7 +52,8 @@
                                 }"
                                 ref="table-seasons"
                                 @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
-                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)">
+                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+                                @on-page-change="onPageChange">
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
@@ -990,6 +991,54 @@ export default {
             const { setCookie } = this;
             this.paginationPerPage = rows;
             setCookie('displayShow-pagination-perPage', rows);
+        },
+        onPageChange(params) {
+            this.loadEpisodes(params.currentPage);
+        },
+        neededSeasons(page) {
+            const { paginationPerPage, show } = this;
+            const seasons = show.seasonCount.length - 1;
+
+            let pagesCount = 1;
+            let episodeCount = 0;
+            const pages = {};
+            for (let i = seasons; i >= 0; i--) {
+                episodeCount += show.seasonCount[i].episodeCount;
+                const { season } = show.seasonCount[i];
+
+                if (pagesCount in pages) {
+                    pages[pagesCount].push(season);
+                } else {
+                    pages[pagesCount] = [season];
+                }
+
+                if (episodeCount / paginationPerPage === pagesCount) {
+                    pagesCount++;
+                } else if (episodeCount / paginationPerPage > pagesCount) {
+                    pagesCount++;
+                    pages[pagesCount] = [season];
+                }
+
+                if (pagesCount > page) {
+                    break;
+                }
+            }
+            return pages[page] || [];
+        },
+        loadEpisodes(page) {
+            const { id, indexer, getEpisodes } = this;
+            // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
+            // before going on to the next one.
+            const _getEpisodes = async (id, indexer) => {
+                for (const season of this.neededSeasons(page)) {
+                    // We're waiting for the results by design, to give vue the chance to update the dom.
+                    // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
+                    // and chance is high a number of requests will timeout.
+                    await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
+                }
+            };
+
+            _getEpisodes(id, indexer);
         }
     },
     watch: {
@@ -997,20 +1046,10 @@ export default {
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
-                const { id, indexer, getEpisodes, show } = this;
+                const { show } = this;
                 if (!show.seasons) {
-                    // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
-                    // before going on to the next one.
-                    const _getEpisodes = async (id, indexer) => {
-                        for (const season of show.seasonCount.map(s => s.season).reverse()) {
-                            // We're waiting for the results by design, to give vue the chance to update the dom.
-                            // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
-                            // and chance is high a number of requests will timeout.
-                            await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
-                        }
-                    };
-
-                    _getEpisodes(id, indexer);
+                    // Load episodes for the first page
+                    this.loadEpisodes(1);
                 }
             }
         },
