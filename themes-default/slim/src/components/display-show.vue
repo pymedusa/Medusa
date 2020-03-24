@@ -176,7 +176,7 @@
                                     enabled: true,
                                     trigger: 'enter',
                                     skipDiacritics: false,
-                                    placeholder: 'Search episodes',
+                                    placeholder: 'Search specials',
                                 }"
                                 :sort-options="{
                                     enabled: true,
@@ -1152,9 +1152,12 @@ export default {
             let pagesCount = 1;
             let episodeCount = 0;
             const pages = {};
-            for (let i = seasons; i >= 1; i--) {
-                episodeCount += show.seasonCount[i].episodeCount;
+            for (let i = seasons; i >= 0; i--) {
                 const { season } = show.seasonCount[i];
+                // Exclude specials
+                if (season === 0) {
+                    break;
+                }
 
                 if (pagesCount in pages) {
                     pages[pagesCount].push(season);
@@ -1162,9 +1165,8 @@ export default {
                     pages[pagesCount] = [season];
                 }
 
-                if (episodeCount / paginationPerPage === pagesCount) {
-                    pagesCount++;
-                } else if (episodeCount / paginationPerPage > pagesCount) {
+                episodeCount += show.seasonCount[i].episodeCount;
+                if (episodeCount / paginationPerPage > pagesCount) {
                     pagesCount++;
                     pages[pagesCount] = [season];
                 }
@@ -1192,16 +1194,18 @@ export default {
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { getEpisodes, id, indexer, layout, show } = this;
+            const { getEpisodes, id, indexer } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
                 const { show } = this;
                 if (!show.seasons) {
-                    // Load episodes for the first page
+                    // Load episodes for the first page.
                     this.loadEpisodes(1);
-                    // Always get special episodes.
-                    getEpisodes({ id, indexer, season: 0 });
+                    // Always get special episodes if available.
+                    if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
+                        getEpisodes({ id, indexer, season: 0 });
+                    }
                 }
             }
         },
