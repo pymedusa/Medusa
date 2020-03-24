@@ -98,7 +98,7 @@
     "timekeeper": "2.2.0",
     "vue-jest": "3.0.5",
     "vue-loader": "15.9.1",
-    "webpack": "4.42.0",
+    "webpack": "4.42.1",
     "webpack-cli": "3.3.11"
   },
   "stylelint": {
