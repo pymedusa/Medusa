@@ -13,8 +13,9 @@
                      @update="statusQualityUpdate"
                      @update-overview-status="filterByOverviewStatus = $event" />
 
-        <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: layout.fanartBackground }">
+        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+            <div class="col-md-12 top-15 displayShow horizontal-scroll">
+                <!-- Display non-special episodes, paginate if enabled -->
                 <vue-good-table v-if="show.seasons"
                                 :columns="columns"
                                 :rows="orderSeasons"
@@ -52,7 +53,149 @@
                                 }"
                                 ref="table-seasons"
                                 @on-selected-rows-change="selectedEpisodes=$event.selectedRows"
-                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)">
+                                @on-per-page-change="updatePaginationPerPage($event.currentPerPage)"
+                                @on-page-change="onPageChange">
+
+                    <template slot="table-header-row" slot-scope="props">
+                        <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
+                            {{ props.row.season > 0 ? 'Season ' + props.row.season : 'Specials' }}
+                            <!-- Only show the search manual season search, when any of the episodes in it is not unaired -->
+                            <app-link v-if="anyEpisodeNotUnaired(props.row)" class="epManualSearch" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&amp;season=${props.row.season}&amp;episode=1&amp;manual_search_type=season`">
+                                <img v-if="config" data-ep-manual-search src="images/manualsearch-white.png" width="16" height="16" alt="search" title="Manual Search">
+                            </app-link>
+                            <div class="season-scene-exception" :data-season="props.row.season > 0 ? props.row.season : 'Specials'" />
+                            <img v-bind="getSeasonExceptions(props.row.season)">
+                        </h3>
+                    </template>
+
+                    <template slot="table-footer-row" slot-scope="{headerRow}">
+                        <tr colspan="9999" :id="`season-${headerRow.season}-footer`" class="seasoncols border-bottom shadow">
+                            <th class="col-footer" colspan="15" align="left">Season contains {{headerRow.episodes.length}} episodes with total filesize: {{addFileSize(headerRow)}}</th>
+                        </tr>
+                        <tr class="spacer" />
+                    </template>
+
+                    <template slot="table-row" slot-scope="props">
+                        <span v-if="props.column.field == 'content.hasNfo'">
+                            <img :src="'images/' + (props.row.content.hasNfo ? 'nfo.gif' : 'nfo-no.gif')" :alt="(props.row.content.hasNfo ? 'Y' : 'N')" width="23" height="11">
+                        </span>
+                        <span v-else-if="props.column.field == 'content.hasTbn'">
+                            <img :src="'images/' + (props.row.content.hasTbn ? 'tbn.gif' : 'tbn-no.gif')" :alt="(props.row.content.hasTbn ? 'Y' : 'N')" width="23" height="11">
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Episode'">
+                            <span :title="props.row.file.location !== '' ? props.row.file.location : ''" :class="{addQTip: props.row.file.location !== ''}">{{props.row.episode}}</span>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Scene'" class="align-center">
+                            <input type="text" :placeholder="`${props.formattedRow[props.column.field].season}x${props.formattedRow[props.column.field].episode}`" size="6" maxlength="8"
+                                   class="sceneSeasonXEpisode form-control input-scene addQTip" :data-for-season="props.row.season" :data-for-episode="props.row.episode"
+                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}_${props.row.season}_${props.row.episode}`"
+                                   title="Change this value if scene numbering differs from the indexer episode numbering. Generally used for non-anime shows."
+                                   :value="props.formattedRow[props.column.field].season + 'x' + props.formattedRow[props.column.field].episode"
+                                   style="padding: 0; text-align: center; max-width: 60px;">
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Scene Abs. #'" class="align-center">
+                            <input type="text" :placeholder="props.formattedRow[props.column.field]" size="6" maxlength="8"
+                                   class="sceneAbsolute form-control input-scene addQTip" :data-for-absolute="props.formattedRow[props.column.field] || 0"
+                                   :id="`sceneSeasonXEpisode_${show.id[show.indexer]}${props.formattedRow[props.column.field]}`"
+                                   title="Change this value if scene absolute numbering differs from the indexer absolute numbering. Generally used for anime shows."
+                                   :value="props.formattedRow[props.column.field] ? props.formattedRow[props.column.field] : ''"
+                                   style="padding: 0; text-align: center; max-width: 60px;">
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Title'">
+                            <plot-info v-if="props.row.description !== ''" :description="props.row.description" :show-slug="show.id.slug" :season="props.row.season" :episode="props.row.episode" />
+                            {{props.row.title}}
+                        </span>
+
+                        <span v-else-if="props.column.label == 'File'">
+                            <span :title="props.row.file.location" class="addQTip">{{props.row.file.name}}</span>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Download'">
+                            <app-link v-if="config.downloadUrl && props.row.file.location && ['Downloaded', 'Archived'].includes(props.row.status)" :href="config.downloadUrl + props.row.file.location">Download</app-link>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Subtitles'" class="align-center">
+                            <div class="subtitles" v-if="['Archived', 'Downloaded', 'Ignored', 'Skipped'].includes(props.row.status)">
+                                <div v-for="flag in props.row.subtitles" :key="flag">
+                                    <img v-if="flag !== 'und'" :src="`images/subtitles/flags/${flag}.png`" width="16" height="11" alt="{flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" @click="searchSubtitle($event, props.row, flag)">
+                                    <img v-else :src="`images/subtitles/flags/${flag}.png`" class="subtitle-flag" width="16" height="11" alt="flag" onError="this.onerror=null;this.src='images/flags/unknown.png';">
+                                </div>
+                            </div>
+                        </span>
+
+                        <span v-else-if="props.column.label == 'Status'">
+                            <div>
+                                {{props.row.status}}
+                                <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                                <img :title="props.row.watched ? 'This episode has been flagged as watched' : ''" class="addQTip" v-if="props.row.status !== 'Unaired'" :src="`images/${props.row.watched ? '' : 'not'}watched.png`" width="16" @click="updateEpisodeWatched(props.row, !props.row.watched);">
+                            </div>
+                        </span>
+
+                        <span v-else-if="props.column.field == 'search'">
+                            <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
+                            <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
+                            <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
+                        </span>
+
+                        <span v-else>
+                            {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
+
+                    <template slot="table-column" slot-scope="props">
+                        <span v-if="props.column.label =='Abs. #'">
+                            <span title="Absolute episode number" class="addQTip">{{props.column.label}}</span>
+                        </span>
+                        <span v-else-if="props.column.label =='Scene Abs. #'">
+                            <span title="Scene Absolute episode number" class="addQTip">{{props.column.label}}</span>
+                        </span>
+                        <span v-else>
+                            {{props.column.label}}
+                        </span>
+                    </template>
+
+                </vue-good-table>
+
+                <!-- Display special episodes -->
+                <vue-good-table v-if="layout.show.specials && specials && specials.length > 0"
+                                :columns="columns"
+                                :rows="specials"
+                                :groupOptions="{
+                                    enabled: true,
+                                    mode: 'span',
+                                    customChildObject: 'episodes'
+                                }"
+                                :pagination-options="{
+                                    enabled: false
+                                }"
+                                :search-options="{
+                                    enabled: true,
+                                    trigger: 'enter',
+                                    skipDiacritics: false,
+                                    placeholder: 'Search specials',
+                                }"
+                                :sort-options="{
+                                    enabled: true,
+                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                }"
+                                :selectOptions="{
+                                    enabled: true,
+                                    selectOnCheckboxOnly: true, // only select when checkbox is clicked instead of the row
+                                    selectionInfoClass: 'select-info',
+                                    selectionText: 'episodes selected',
+                                    clearSelectionText: 'clear',
+                                    selectAllByGroup: true
+                                }"
+                                :row-style-class="rowStyleClassFn"
+                                :column-filter-options="{
+                                    enabled: false
+                                }"
+                                ref="table-specials"
+                                @on-selected-rows-change="selectedEpisodes=$event.selectedRows">
 
                     <template slot="table-header-row" slot-scope="props">
                         <h3 class="season-header toggle collapse"><app-link :name="'season-'+ props.row.season" />
@@ -406,13 +549,13 @@ export default {
             return themeName || 'light';
         },
         orderSeasons() {
-            const { filterByOverviewStatus, invertTable, layout, show } = this;
+            const { filterByOverviewStatus, invertTable, show } = this;
 
             if (!show.seasons) {
                 return [];
             }
 
-            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0 || layout.show.specials);
+            let sortedSeasons = show.seasons.sort((a, b) => a.season - b.season).filter(season => season.season !== 0);
 
             // Use the filterOverviewStatus to filter the data based on what's checked in the show-header.
             if (filterByOverviewStatus && filterByOverviewStatus.filter(status => status.checked).length < filterByOverviewStatus.length) {
@@ -436,6 +579,13 @@ export default {
             }
 
             return sortedSeasons;
+        },
+        specials() {
+            const { show } = this;
+            if (!show.seasons) {
+                return [];
+            }
+            return show.seasons.filter(season => season.season === 0);
         }
     },
     created() {
@@ -648,7 +798,8 @@ export default {
             });
 
             const node = document.createElement('div');
-            this.$refs['table-seasons'].$refs[`row-${episode.originalIndex}`][0].after(node);
+            const subtitleRef = episode.season === 0 ? 'table-specials' : 'table-seasons';
+            this.$refs[subtitleRef].$refs[`row-${episode.originalIndex}`][0].after(node);
             instance.$mount(node);
             subtitleSearchComponents.push(instance);
         },
@@ -990,27 +1141,71 @@ export default {
             const { setCookie } = this;
             this.paginationPerPage = rows;
             setCookie('displayShow-pagination-perPage', rows);
+        },
+        onPageChange(params) {
+            this.loadEpisodes(params.currentPage);
+        },
+        neededSeasons(page) {
+            const { paginationPerPage, show } = this;
+            const seasons = show.seasonCount.length - 1;
+
+            let pagesCount = 1;
+            let episodeCount = 0;
+            const pages = {};
+            for (let i = seasons; i >= 0; i--) {
+                const { season } = show.seasonCount[i];
+                // Exclude specials
+                if (season === 0) {
+                    break;
+                }
+
+                if (pagesCount in pages) {
+                    pages[pagesCount].push(season);
+                } else {
+                    pages[pagesCount] = [season];
+                }
+
+                episodeCount += show.seasonCount[i].episodeCount;
+                if (episodeCount / paginationPerPage > pagesCount) {
+                    pagesCount++;
+                    pages[pagesCount] = [season];
+                }
+
+                if (pagesCount > page) {
+                    break;
+                }
+            }
+            return pages[page] || [];
+        },
+        loadEpisodes(page) {
+            const { id, indexer, getEpisodes } = this;
+            // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
+            // before going on to the next one.
+            const _getEpisodes = async (id, indexer) => {
+                for (const season of this.neededSeasons(page)) {
+                    // We're waiting for the results by design, to give vue the chance to update the dom.
+                    // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
+                    // and chance is high a number of requests will timeout.
+                    await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
+                }
+            };
+            _getEpisodes(id, indexer);
         }
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
+            const { getEpisodes, id, indexer } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
-                const { id, indexer, getEpisodes, show } = this;
+                const { show } = this;
                 if (!show.seasons) {
-                    // Wrap getEpisodes into an async/await function, so we can wait for the season to have been committed
-                    // before going on to the next one.
-                    const _getEpisodes = async (id, indexer) => {
-                        for (const season of show.seasonCount.map(s => s.season).reverse()) {
-                            // We're waiting for the results by design, to give vue the chance to update the dom.
-                            // If we fire all the promises at once for, for example 25 seasons. We'll overload medusa's app
-                            // and chance is high a number of requests will timeout.
-                            await getEpisodes({ id, indexer, season }); // eslint-disable-line no-await-in-loop
-                        }
-                    };
-
-                    _getEpisodes(id, indexer);
+                    // Load episodes for the first page.
+                    this.loadEpisodes(1);
+                    // Always get special episodes if available.
+                    if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
+                        getEpisodes({ id, indexer, season: 0 });
+                    }
                 }
             }
         },
