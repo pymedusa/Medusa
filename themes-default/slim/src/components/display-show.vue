@@ -161,7 +161,7 @@
                 </vue-good-table>
 
                 <!-- Display special episodes -->
-                <vue-good-table v-if="layout.show.specials && specials"
+                <vue-good-table v-if="layout.show.specials && specials.length > 0"
                                 :columns="columns"
                                 :rows="specials"
                                 :groupOptions="{
