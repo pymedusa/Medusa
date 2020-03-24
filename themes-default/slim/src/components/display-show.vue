@@ -161,7 +161,7 @@
                 </vue-good-table>
 
                 <!-- Display special episodes -->
-                <vue-good-table v-if="layout.show.specials && specials.length > 0"
+                <vue-good-table v-if="layout.show.specials && specials && specials.length > 0"
                                 :columns="columns"
                                 :rows="specials"
                                 :groupOptions="{
@@ -1200,12 +1200,9 @@ export default {
                 if (!show.seasons) {
                     // Load episodes for the first page
                     this.loadEpisodes(1);
+                    // Always get special episodes.
+                    getEpisodes({ id, indexer, season: 0 });
                 }
-            }
-
-            if (layout.show.specials) {
-                // Load speical episodes if layout.specials is enabled.
-                getEpisodes({ id, indexer, season: 0 });
             }
         },
         columns: {
