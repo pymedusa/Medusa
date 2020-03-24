@@ -161,7 +161,7 @@
                 </vue-good-table>
 
                 <!-- Display special episodes -->
-                <vue-good-table v-if="layout.show.specials && show.seasons"
+                <vue-good-table v-if="layout.show.specials && specials"
                                 :columns="columns"
                                 :rows="specials"
                                 :groupOptions="{
@@ -1152,7 +1152,7 @@ export default {
             let pagesCount = 1;
             let episodeCount = 0;
             const pages = {};
-            for (let i = seasons; i >= 0; i--) {
+            for (let i = seasons; i >= 1; i--) {
                 episodeCount += show.seasonCount[i].episodeCount;
                 const { season } = show.seasonCount[i];
 
@@ -1192,6 +1192,7 @@ export default {
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
+            const { getEpisodes, id, indexer, layout, show } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
                 updateSearchIcons(slug, this);
@@ -1200,6 +1201,11 @@ export default {
                     // Load episodes for the first page
                     this.loadEpisodes(1);
                 }
+            }
+
+            if (layout.show.specials) {
+                // Load speical episodes if layout.specials is enabled.
+                getEpisodes({ id, indexer, season: 0 });
             }
         },
         columns: {
