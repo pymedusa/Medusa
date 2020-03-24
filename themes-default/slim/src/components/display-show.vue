@@ -192,7 +192,7 @@
                                 }"
                                 :row-style-class="rowStyleClassFn"
                                 :column-filter-options="{
-                                    enabled: true
+                                    enabled: false
                                 }"
                                 ref="table-specials"
                                 @on-selected-rows-change="selectedEpisodes=$event.selectedRows">
