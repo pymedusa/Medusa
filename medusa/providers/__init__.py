@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 
 import importlib
 import pkgutil
+import sys
 from builtins import next
 from builtins import zip
-from os import sys
 from random import shuffle
 
 from medusa import app
