@@ -4,16 +4,26 @@
 from __future__ import unicode_literals
 
 import importlib
-import os
 import pkgutil
 import sys
 
 
-torrent_kinds = ['html', 'json', 'rss', 'torznab', 'xml']
-dirname = os.path.dirname(__file__)
-modules = [os.path.join(dirname, kind) for kind in torrent_kinds]
+def import_submodules(package_name):
+    package = sys.modules[package_name]
 
-for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
-    base = os.path.basename(module_loader.path)
-    module = importlib.import_module('.' + name, __package__ + '.' + base)
-    setattr(sys.modules[__name__], name, module)
+    results = {}
+    for loader, name, is_pkg in pkgutil.iter_modules(package.__path__):
+        full_name = package_name + '.' + name
+        module = importlib.import_module(full_name)
+        setattr(sys.modules[__name__], name, module)
+
+        results[full_name] = module
+        if is_pkg:
+            valid_pkg = import_submodules(full_name)
+            if valid_pkg:
+                results.update(valid_pkg)
+
+    return results
+
+
+import_submodules(__name__)

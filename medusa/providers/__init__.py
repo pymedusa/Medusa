@@ -4,28 +4,41 @@
 from __future__ import unicode_literals
 
 import importlib
-import os
 import pkgutil
+import sys
 from builtins import next
 from builtins import zip
-from os import sys
 from random import shuffle
 
 from medusa import app
 
 
-torrent_kinds = ['html', 'json', 'rss', 'torznab', 'xml']
-dirname = os.path.dirname(__file__)
-modules = [os.path.join(dirname, 'torrent', kind) for kind in torrent_kinds] + [os.path.join(dirname, 'nzb')]
+def import_providers(package_name):
+    provider_names = []
 
-provider_names = []
-for (module_loader, name, ispkg) in pkgutil.iter_modules(modules):
-    base = os.path.basename(module_loader.path)
-    if base != 'nzb':
-        base = os.path.basename(os.path.dirname(module_loader.path)) + '.' + base
-    module = importlib.import_module('.' + name, __package__ + '.' + base)
-    if getattr(module, 'provider', None):
-        provider_names.append(name)
+    def import_submodules(subpackage_name):
+        package = sys.modules[subpackage_name]
+
+        results = {}
+        for loader, name, is_pkg in pkgutil.iter_modules(package.__path__):
+            full_name = subpackage_name + '.' + name
+            module = importlib.import_module(full_name)
+            if getattr(module, 'provider', None):
+                provider_names.append(name)
+
+            results[full_name] = module
+            if is_pkg:
+                valid_pkg = import_submodules(full_name)
+                if valid_pkg:
+                    results.update(valid_pkg)
+
+        return results
+
+    import_submodules(package_name)
+    return provider_names
+
+
+provider_names = import_providers(__name__)
 
 
 def sorted_provider_list(randomize=False):
