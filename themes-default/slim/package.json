@@ -27,13 +27,13 @@
   },
   "resolutions": {
     "**/jquery": "3.4.1",
-    "**/date-fns": "2.11.0"
+    "**/date-fns": "2.11.1"
   },
   "dependencies": {
     "axios": "0.19.2",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.11.0",
+    "date-fns": "2.11.1",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.0.7",
     "jquery": "3.4.1",
