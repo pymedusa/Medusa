@@ -18,7 +18,7 @@ from builtins import str
 from collections import (
     OrderedDict, namedtuple
 )
-from itertools import groupby
+from itertools import chain, groupby
 
 from medusa import (
     app,
@@ -607,22 +607,25 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self)
+        if self.exceptions:
+            return self.exceptions
+
+        return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
     @aliases.setter
     def aliases(self, exceptions):
         """Set the series aliases."""
         update_scene_exceptions(self, exceptions)
-        self.exceptions = get_scene_exceptions(self)
+        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
+        # Adding new scene exceptions, means we also need to to add new search templates.
+        self._search_templates.generate()
 
     @property
     def aliases_to_json(self):
         """Return aliases as a dict."""
         return [{
-            'indexer': alias.indexer,
             'season': alias.season,
-            'seriesId': alias.series_id,
             'seriesName': alias.series_name
             } for alias in self.aliases]
 
@@ -2243,7 +2246,7 @@ class Series(TV):
 
     @search_templates.setter
     def search_templates(self, templates):
-        self._search_templates.update(templates)
+        self._search_templates.templates = self._search_templates.update(templates)
 
     def want_episode(self, season, episode, quality,
                      download_current_quality=False, search_type=None):

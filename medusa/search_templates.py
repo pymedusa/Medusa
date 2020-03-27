@@ -14,7 +14,7 @@ from medusa.scene_exceptions import get_season_scene_exceptions
 logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
 
-SearchTemplate = namedtuple('Template', 'template, title, series, season, enabled, default')
+SearchTemplate = namedtuple('Template', 'template, title, series, season, enabled, default, season_search')
 
 class SearchTemplates(object):
     def __init__(self, show_obj=None):
@@ -35,38 +35,85 @@ class SearchTemplates(object):
         assert self.show_obj, 'You need to configure a show object before generating exceptions.'
 
         # Create the default templates. Don't add them when their already in the list
-        scene_exceptions = self.main_db_con.select(
+
+        if not self.show_obj.aliases:
+            scene_exceptions = self.main_db_con.select(
             'SELECT season, show_name '
             'FROM scene_exceptions '
-            'WHERE indexer=? AND series_id=? AND show_name IS NOT ?',
+            'WHERE indexer = ? AND series_id = ? AND show_name IS NOT ?',
             [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.name]
-        ) or []
+            ) or []
+        else:
+            scene_exceptions = [{'season': exception.season, 'show_name': exception.series_name} for exception in self.show_obj.aliases]
 
         show_name = {'season': -1, 'show_name': self.show_obj.name}
 
         for exception in [show_name] + scene_exceptions:
-            # Add the default search template to db
-            template = self._get_episode_search_strings(exception['show_name'], exception['season'])
+            self._generate_episode_search_pattern(exception)
+            self._generate_season_search_pattern(exception)
 
-            new_values = {
-                'template': template,
-                'title': exception['show_name'],
-                'indexer': self.show_obj.indexer,
-                'series_id': self.show_obj.series_id,
-                'season': exception['season'],
-                '`default`': 1
-            }
-            control_values = {
-                'indexer': self.show_obj.indexer,
-                'series_id': self.show_obj.series_id,
-                'title': exception['show_name'],
-                '`default`': 1
-            }
-
-            # use a custom update/insert method to get the data into the DB
-            self.main_db_con.upsert('search_templates', new_values, control_values)
-
+        self._clean()
         self.read_from_db()
+
+    def _clean(self):
+        """Clean up templates when there is no scene exception for it anymore."""
+        self.main_db_con.action("""
+            DELETE from search_templates
+             WHERE indexer = ?
+             AND series_id = ? 
+             AND title not in (select show_name from scene_exceptions where indexer = ? and series_id = ?)
+        """, [self.show_obj.indexer, self.show_obj.series_id, self.show_obj.indexer, self.show_obj.series_id])
+
+
+    def _generate_episode_search_pattern(self, exception):
+        # Add the default search template to db
+        template = self._get_episode_search_strings(exception['show_name'], exception['season'])
+
+        new_values = {
+            'template': template,
+            'title': exception['show_name'],
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'season': exception['season'],
+            '`default`': 1,
+            'season_search': 0
+        }
+        control_values = {
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'title': exception['show_name'],
+            'season': exception['season'],
+            '`default`': 1,
+            '`season_search`': 0
+        }
+
+        # use a custom update/insert method to get the data into the DB
+        self.main_db_con.upsert('search_templates', new_values, control_values)
+
+    def _generate_season_search_pattern(self, exception):
+        # Add the default search template to db
+        template = self._get_season_search_strings(exception['show_name'])
+
+        new_values = {
+            'template': template,
+            'title': exception['show_name'],
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'season': exception['season'],
+            '`default`': 1,
+            'season_search': 1
+        }
+        control_values = {
+            'indexer': self.show_obj.indexer,
+            'series_id': self.show_obj.series_id,
+            'title': exception['show_name'],
+            'season': exception['season'],
+            '`default`': 1,
+            '`season_search`': 1
+        }
+
+        # use a custom update/insert method to get the data into the DB
+        self.main_db_con.upsert('search_templates', new_values, control_values)
 
     def save(self, template):
         """Validate template and save to db."""
@@ -78,13 +125,14 @@ class SearchTemplates(object):
             'series_id': self.show_obj.series_id,
             'season': template['season'],
             '`default`': template['default'],
-            'enabled': template['enabled']
+            'enabled': template['enabled'],
+            'season_search': template['seasonSearch']
         }
         control_values = {
             'indexer': self.show_obj.indexer,
             'series_id': self.show_obj.series_id,
-            'title': template['title'],
-            '`default`': template['default']
+            'template': template['template'],
+            'season': template['season']
         }
 
         # use a custom update/insert method to get the data into the DB
@@ -107,6 +155,7 @@ class SearchTemplates(object):
             season = template['season']
             enabled = bool(template['enabled'])
             default = bool(template['default'])
+            season_search = bool(template['season_search'])
 
             self.templates.append(SearchTemplate(
                 # search_template_id=search_template_id,
@@ -115,7 +164,8 @@ class SearchTemplates(object):
                 series=self.show_obj,
                 season=season,
                 enabled=enabled,
-                default=default
+                default=default,
+                season_search=season_search
             ))
 
     def _create_air_by_date_search_string(self, title):
@@ -164,6 +214,20 @@ class SearchTemplates(object):
         else:
             return self._create_default_search_string(title)
 
+    def _get_season_search_strings(self, title):
+        """Get season search template string."""
+
+        episode_string = title + self.search_separator
+
+        if self.show_obj.air_by_date or self.show_obj.sports:
+            season_search_string = title + self.search_separator + '%A-D'
+        elif self.show_obj.anime:
+            season_search_string = episode_string + 'Season'
+        else:
+            season_search_string = episode_string + '%0S'
+
+        return season_search_string
+
     def update(self, templates):
         """
         Update the search templates.
@@ -185,7 +249,8 @@ class SearchTemplates(object):
                 series=self.show_obj,
                 season=template['season'],
                 enabled=template['enabled'],
-                default=template['default']
+                default=template['default'],
+                season_search=template['seasonSearch']
             )
 
             self.templates = [
@@ -194,6 +259,8 @@ class SearchTemplates(object):
                 for old_template in self.templates
             ]
 
+        return self.templates
+
     def to_json(self):
         """Return in json format."""
         return [
@@ -201,5 +268,6 @@ class SearchTemplates(object):
              'template': search_template.template,
              'season': search_template.season,
              'enabled': search_template.enabled,
-             'default': search_template.default} for search_template in self.templates
+             'default': search_template.default,
+             'seasonSearch': search_template.season_search} for search_template in self.templates
         ]
