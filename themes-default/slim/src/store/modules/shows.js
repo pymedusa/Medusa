@@ -1,7 +1,12 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW, ADD_SHOW_EPISODE } from '../mutation-types';
+import { ADD_SHOW,
+    ADD_SHOW_EPISODE,
+    ADD_SHOW_CONFIG_TEMPLATE,
+    ADD_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_SCENE_EXCEPTION
+} from '../mutation-types';
 
 /**
  * @typedef {object} ShowIdentifier
@@ -81,6 +86,39 @@ const mutations = {
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
+    },
+    [ADD_SHOW_CONFIG_TEMPLATE](state, { show, template }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (currentShow.config.searchTemplates.find(t => t.template === template.pattern)) {
+            console.warn(`Can't add template (${template.pattern} to show ${currentShow.title} as it already exists.`);
+            return;
+        }
+
+        currentShow.config.searchTemplates.push(template);
+    },
+    [ADD_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
+            console.warn(`Can't add exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
+            return;
+        }
+
+        currentShow.config.aliases.push(exception);
+    },
+    [REMOVE_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (!currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
+            console.warn(`Can't remove exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
+            return;
+        }
+
+        currentShow.config.aliases.splice(currentShow.config.aliases.indexOf(exception), 1);
     }
 
 };
@@ -244,7 +282,27 @@ const actions = {
         // Update local store
         const { commit } = context;
         return commit(ADD_SHOW, show);
+    },
+    addSearchTemplate(context, { show, template }) {
+        const { commit } = context;
+
+        commit(ADD_SHOW_CONFIG_TEMPLATE, { show, template });
+        const data = {
+            config: {
+                searchTemplates: context.getters.getCurrentShow.config.searchTemplates
+            }
+        };
+        return api.patch(`series/${show.indexer}${show.id[show.indexer]}`, data);
+    },
+    addSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(ADD_SHOW_SCENE_EXCEPTION, { show, exception });
+    },
+    removeSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(REMOVE_SHOW_SCENE_EXCEPTION, { show, exception });
     }
+
 };
 
 export default {
