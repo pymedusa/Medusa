@@ -1,55 +1,120 @@
 <template>
     <div id="search-template-container">
-        <search-template-pattern
-            v-for="template in templates"
-            v-bind="{ template, format, animeType }"
-            :key="template.template"
+        <vue-snotify />
+        <!-- Display the default episode search templates -->
+        <div class="row">
+            <div class="form-group">
+                <label for="default_templates" class="col-sm-2 control-label">
+                    <span>Default Episode Templates</span>
+                </label>
+                <div class="col-sm-10 content template-container">
+                    <search-template-pattern
+                        v-for="template in defaultEpisodeTemplates"
+                        v-bind="{ template, format: showFormat, animeType }"
+                        :key="template.template"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Display the default season search templates -->
+        <div class="row">
+            <div class="form-group">
+                <label for="default_templates" class="col-sm-2 control-label">
+                    <span>Default Season Templates</span>
+                </label>
+                <div class="col-sm-10 content template-container">
+                    <search-template-pattern
+                        v-for="template in defaultSeasonTemplates"
+                        v-bind="{ template, format: showFormat, animeType }"
+                        :key="template.template"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Display the custom templates -->
+        <div class="row">
+            <div class="form-group">
+                <label for="default_templates" class="col-sm-2 control-label">
+                    <span>Custom Templates</span>
+                </label>
+                <div class="col-sm-10 content template-container">
+                    <search-template-pattern
+                        v-for="template in customTemplates"
+                        v-bind="{ template, format: showFormat, animeType }"
+                        :key="template.template"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <search-template-custom
+            v-bind="{ show, animeType, format: showFormat }"
+            @input="add"
         />
 
         <!-- Anime only -->
         <template v-show="format === 'anime'">
-            <div v-if="animeType > 0" class="form-group">
-                <label for="naming_anime" class="col-sm-2 control-label">
-                    <span>Add Absolute Number</span>
-                </label>
-                <div class="col-sm-10 content">
-                    <input type="radio" name="naming_anime" id="naming_anime" :value="1" v-model="animeType">
-                    <span>Add the absolute number to the season/episode format?</span>
-                    <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
+            <div class="row">
+                <div v-if="animeType > 0" class="form-group">
+                    <label for="naming_anime" class="col-sm-2 control-label">
+                        <span>Add Absolute Number</span>
+                    </label>
+                    <div class="col-sm-10 content">
+                        <input
+                            type="radio"
+                            name="naming_anime"
+                            id="naming_anime"
+                            :value="1"
+                            v-model="animeType"
+                        />
+                        <span
+                            >Add the absolute number to the season/episode format?
+                        </span>
+                        <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
+                    </div>
                 </div>
             </div>
 
-            <div v-if="animeType > 0" class="form-group">
-                <label for="naming_anime_only" class="col-sm-2 control-label">
-                    <span>Only Absolute Number</span>
-                </label>
-                <div class="col-sm-10 content">
-                    <input
-                        type="radio"
-                        name="naming_anime"
-                        id="naming_anime_only"
-                        :value="2"
-                        v-model="animeType"
-                    >
-                    <span>Replace season/episode format with absolute number</span>
-                    <p>Only applies to animes.</p>
+            <div class="row">
+                <div v-if="animeType > 0" class="form-group">
+                    <label for="naming_anime_only" class="col-sm-2 control-label">
+                        <span>Only Absolute Number</span>
+                    </label>
+                    <div class="col-sm-10 content">
+                        <input
+                            type="radio"
+                            name="naming_anime"
+                            id="naming_anime_only"
+                            :value="2"
+                            v-model="animeType"
+                        />
+                        <span
+                            >Replace season/episode format with absolute
+                            number</span
+                        >
+                        <p>Only applies to animes.</p>
+                    </div>
                 </div>
             </div>
 
-            <div v-if="animeType > 0" class="form-group">
-                <label for="naming_anime_none" class="col-sm-2 control-label">
-                    <span>No Absolute Number</span>
-                </label>
-                <div class="col-sm-10 content">
-                    <input
-                        type="radio"
-                        name="naming_anime"
-                        id="naming_anime_none"
-                        :value="3"
-                        v-model="animeType"
-                    >
-                    <span>Don't include the absolute number</span>
-                    <p>Only applies to animes.</p>
+            <div class="row">
+                <div v-if="animeType > 0" class="form-group">
+                    <label for="naming_anime_none" class="col-sm-2 control-label">
+                        <span>No Absolute Number</span>
+                    </label>
+                    <div class="col-sm-10 content">
+                        <input
+                            type="radio"
+                            name="naming_anime"
+                            id="naming_anime_none"
+                            :value="3"
+                            v-model="animeType"
+                        />
+                        <span>Don't include the absolute number</span>
+                        <p>Only applies to animes.</p>
+                    </div>
                 </div>
             </div>
         </template>
@@ -65,7 +130,10 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <th colspan="3">Use lower case if you want lower case names (eg. %sn, %e.n, %q_n etc)</th>
+                        <th colspan="3">
+                            Use lower case if you want lower case names (eg.
+                            %sn, %e.n, %q_n etc)
+                        </th>
                     </tr>
                 </tfoot>
                 <tbody>
@@ -175,12 +243,12 @@
                     <tr class="even">
                         <td>&nbsp;</td>
                         <td>%D</td>
-                        <td>{{ getDateFormat('d')}}</td>
+                        <td>{{ getDateFormat('d') }}</td>
                     </tr>
                     <tr>
                         <td>&nbsp;</td>
                         <td>%Y</td>
-                        <td>{{ getDateFormat('yyyy')}}</td>
+                        <td>{{ getDateFormat('yyyy') }}</td>
                     </tr>
                     <tr>
                         <td class="align-right">
@@ -192,12 +260,12 @@
                     <tr class="even">
                         <td>&nbsp;</td>
                         <td>%CD</td>
-                        <td>{{ getDateFormat('d')}}</td>
+                        <td>{{ getDateFormat('d') }}</td>
                     </tr>
                     <tr>
                         <td>&nbsp;</td>
                         <td>%CY</td>
-                        <td>{{ getDateFormat('yyyy')}}</td>
+                        <td>{{ getDateFormat('yyyy') }}</td>
                     </tr>
                     <tr>
                         <td class="align-right">
@@ -235,7 +303,10 @@
                     </tr>
                     <tr class="even">
                         <td class="align-right">
-                            <i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored" />
+                            <i
+                                class="glyphicon glyphicon-info-sign"
+                                title="Multi-EP style is ignored"
+                            />
                             <b>Release Name:</b>
                         </td>
                         <td>%RN</td>
@@ -271,22 +342,20 @@
 
 <script>
 import formatDate from 'date-fns/format';
+import SearchTemplateCustom from './search-template-custom';
 import SearchTemplatePattern from './search-template-pattern';
+import { mapActions } from 'vuex';
 
 export default {
     name: 'search-template-container',
     components: {
+        SearchTemplateCustom,
         SearchTemplatePattern
     },
     props: {
-    /**
-     * Provide the custom naming type. -Like sports, anime, air by date- description.
-     * If none provided we asume this is the default episode naming component.
-     * And that means there will be no checkbox available to enable/disable it.
-     */
-        format: {
-            type: String,
-            default: ''
+        show: {
+            type: Object,
+            default: null
         },
         templates: {
             type: Array,
@@ -296,11 +365,47 @@ export default {
     data() {
         return {
             searchTemplates: [],
-            showFormat: '',
-            animeType: 3
+            animeType: 3,
+            newTemplate: '',
+            newTemplateShowExample: false,
+            newTemplateEnabled: true
         };
     },
+    computed: {
+        defaultEpisodeTemplates() {
+            const { searchTemplates } = this;
+            return searchTemplates.filter(
+                template => template.default && !template.seasonSearch
+            );
+        },
+        defaultSeasonTemplates() {
+            const { searchTemplates } = this;
+            return searchTemplates.filter(
+                template => template.default && template.seasonSearch
+            );
+        },
+
+        customTemplates() {
+            const { searchTemplates } = this;
+            return searchTemplates.filter(template => !template.default);
+        },
+        /**
+         * Provide the custom naming type. -Like sports, anime, air by date- description.
+         * If none provided we asume this is the default episode naming component.
+         * And that means there will be no checkbox available to enable/disable it.
+         *
+         * @returns {String} - The selected show format as one of the options: anime, sports or airByDate.
+         */
+        showFormat() {
+            const { show } = this;
+            const { config } = show;
+            return ['anime', 'sports', 'airByDate'].find(item => config[item]);
+        }
+    },
     methods: {
+        ...mapActions([
+            'addSearchTemplate'
+        ]),
         getDateFormat(format) {
             return formatDate(new Date(), format);
         },
@@ -312,25 +417,58 @@ export default {
                     format
                 });
             });
+        },
+        add(template) {
+            /**
+             * Add new template to the array of searchTemplates.
+             */
+            const { show, addSearchTemplate } = this;
+            if (this.searchTemplates.find(t => t.template === template.pattern)) {
+                this.$snotify.error(
+                    'Error while trying to add the template',
+                    "Can't add a pattern that already exists!"
+                );
+                return;
+            }
+
+            // Use vuex action to commit the new template.
+            addSearchTemplate({ show, template: {
+                title: template.title.seriesName,
+                template: template.pattern,
+                season: template.title.season,
+                enabled: template.enabled,
+                default: false,
+                seasonSearch: template.seasonSearch
+            } });
+
+            this.update();
         }
     },
     mounted() {
         const { format, templates } = this;
         this.searchTemplates = templates;
-        this.showFormat = format;
     },
     watch: {
         templates(newTemplates, oldtemplates) {
             this.searchTemplates = newTemplates;
-        },
-        format(newFormat) {
-            this.showFormat = newFormat;
         }
     }
 };
 </script>
 <style>
 #naming-key {
-  margin: 20px 0 20px 0;
+    margin: 20px 0 20px 0;
+}
+
+.template-container {
+    padding-left: 40px;
+}
+
+.show-template {
+    left: -8px;
+    top: 4px;
+    position: absolute;
+    z-index: 10;
+    opacity: 0.6;
 }
 </style>

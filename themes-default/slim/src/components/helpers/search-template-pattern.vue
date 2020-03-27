@@ -1,13 +1,13 @@
 <template>
     <div id="search-template-pattern">
         <div class="row">
-            <label class="col-sm-2 control-label">
-                <span>&nbsp;</span>
-            </label>
-            <div class="col-sm-10 content">
-                <div class="tooltip-wrapper" v-tooltip.right="{content: tooltipContent}">
+            <div class="col-sm-12 content">
+                <div
+                    class="tooltip-wrapper"
+                    v-tooltip.right="{ content: tooltipContent }"
+                >
                     <input
-                        :class="{invalid: !validated}"
+                        :class="{ invalid: !validated }"
                         type="text"
                         name="search_pattern"
                         :disabled="searchTemplate.default"
@@ -15,21 +15,24 @@
                         @change="updateExample"
                         @input="update()"
                         class="form-control-inline-max input-sm max-input350 search-pattern"
-                    >
+                    />
                 </div>
-                <input type="checkbox" v-model="searchTemplate.enabled">
+
+                <input type="checkbox" v-model="searchTemplate.enabled" />
                 <i
                     class="show-template glyphicon"
                     :class="`glyphicon-eye-${showExample ? 'close' : 'open'}`"
                     @click="showExample = !showExample"
                     title="Show template example"
                 />
+
                 <span
-                    :class="{invalid: !validated}"
+                    :class="{ invalid: !validated }"
                     class="template-example"
                     v-if="showExample"
                     name="search_pattern"
-                >Example: {{searchTemplateExample}}</span>
+                    >Example: {{ searchTemplateExample }}</span
+                >
             </div>
         </div>
     </div>
@@ -39,6 +42,7 @@
 import formatDate from 'date-fns/format';
 import { apiRoute } from '../../api';
 import { VTooltip } from 'v-tooltip';
+import debounce from 'lodash/debounce';
 
 export default {
     name: 'search-template-pattern',
@@ -46,15 +50,25 @@ export default {
         tooltip: VTooltip
     },
     props: {
-    /**
-     * Provide the custom naming type. -Like sports, anime, air by date- description.
-     * If none provided we asume this is the default episode naming component.
-     * And that means there will be no checkbox available to enable/disable it.
-     */
+        /**
+         * Provide the custom naming type. -Like sports, anime, air by date- description.
+         * If none provided we asume this is the default episode naming component.
+         * And that means there will be no checkbox available to enable/disable it.
+         */
         format: {
             type: String,
             default: ''
         },
+        /**
+         * Template object with properties for:
+         * - title: title.
+         * - template: Pattern consisting out of title + added characters and pattern substitutions.
+         * - season: "-1" for show title/pattern or the season number for season title/exceptions.
+         * - default: Is this a default pattern? yes or no.
+         * - enabled: enable/disable the template.
+         * - indexer: indexer nr.
+         * - seriesId: indexers series id.
+         */
         template: {
             type: Object
         },
@@ -80,23 +94,23 @@ export default {
     computed: {
         tooltipContent() {
             const { searchTemplate } = this;
-            return searchTemplate.default ?
-                "This template has been generated based on a scene exception / title. It's a default template and cannot be modified. It can only be enabled/disabled." :
-                'You can modify this template. On changing the template, it will be tested against the template rules. And shown red if not valid.';
+            return searchTemplate.default
+                ? "This template has been generated based on a scene exception / title. It's a default template and cannot be modified. It can only be enabled/disabled."
+                : 'You can modify this template. On changing the template, it will be tested against the template rules. And shown red if not valid.';
         }
     },
     methods: {
         getDateFormat(format) {
             return formatDate(new Date(), format);
         },
-        async checkNaming(template) {
-            const { animeType, showFormat } = this;
-            if (!template) {
+        async isValid() {
+            const { animeType, searchTemplate, showFormat } = this;
+            if (!searchTemplate.template) {
                 return;
             }
 
             let params = {
-                pattern: template.template
+                pattern: searchTemplate.template
             };
             const formatMap = new Map([
                 ['anime', { anime_type: animeType }],
@@ -121,12 +135,12 @@ export default {
                 console.warn(error);
             }
         },
-        async testNaming(template) {
-            const { animeType, showFormat } = this;
-            console.debug(`Test pattern ${template.template}`);
+        async testNaming() {
+            const { animeType, searchTemplate, showFormat } = this;
+            console.debug(`Test pattern ${searchTemplate.template}`);
 
             let params = {
-                pattern: template.template
+                pattern: searchTemplate.template
             };
 
             const formatMap = new Map([
@@ -142,10 +156,13 @@ export default {
             let response = '';
 
             try {
-                response = await apiRoute.get('config/postProcessing/testNaming', {
-                    params,
-                    timeout: 20000
-                });
+                response = await apiRoute.get(
+                    'config/postProcessing/testNaming',
+                    {
+                        params,
+                        timeout: 20000
+                    }
+                );
                 this.searchTemplateExample = response.data;
             } catch (error) {
                 console.warn(error);
@@ -153,13 +170,13 @@ export default {
             return response;
         },
         updateExample() {
-            const { searchTemplate, showFormat, testNaming } = this;
+            const { debouncedIsValid, debouncedTestNaming } = this;
 
             // Test naming
-            this.checkNaming(searchTemplate, false, showFormat);
+            debouncedIsValid();
 
             // Update single
-            testNaming(searchTemplate, false, this.showFormat);
+            debouncedTestNaming();
         },
         update() {
             this.$nextTick(() => {
@@ -175,12 +192,12 @@ export default {
         //         this.customName = this.pattern;
         //     }
 
-    //     // If the custom name is empty, let's use the last selected pattern.
-    //     // We'd prefer to cache the last configured custom pattern.
-    //     if (!this.customName) {
-    //         this.customName = this.lastSelectedPattern;
-    //     }
-    // }
+        //     // If the custom name is empty, let's use the last selected pattern.
+        //     // We'd prefer to cache the last configured custom pattern.
+        //     if (!this.customName) {
+        //         this.customName = this.lastSelectedPattern;
+        //     }
+        // }
     },
     mounted() {
         const { format, season, template } = this;
@@ -190,6 +207,10 @@ export default {
 
         // Update the pattern example
         this.updateExample();
+    },
+    created() {
+        this.debouncedIsValid = debounce(this.isValid, 500);
+        this.debouncedTestNaming = debounce(this.testNaming, 500);
     },
     watch: {
         template(newTemplate, oldTemplate) {
@@ -204,137 +225,137 @@ export default {
 </script>
 <style>
 .show-template {
-  left: -8px;
-  top: 4px;
-  position: absolute;
-  z-index: 10;
-  opacity: 0.6;
+    left: -8px;
+    top: 4px;
+    position: absolute;
+    z-index: 10;
+    opacity: 0.6;
 }
 
 .template-example {
-  display: block;
-  line-height: 20px;
-  margin-bottom: 15px;
-  padding: 2px 5px 2px 2px;
-  clear: left;
-  max-width: 338px;
+    display: block;
+    line-height: 20px;
+    margin-bottom: 15px;
+    padding: 2px 5px 2px 2px;
+    clear: left;
+    max-width: 338px;
 }
 
 .tooltip-wrapper {
-  float: left;
-  min-width: 340px;
+    float: left;
+    min-width: 340px;
 }
 
 .invalid {
-  background-color: #ff5b5b;
+    background-color: #ff5b5b;
 }
 
 .tooltip {
-  display: block !important;
-  z-index: 10000;
+    display: block !important;
+    z-index: 10000;
 }
 
 .tooltip .tooltip-inner {
-  background: #ffef93;
-  color: #555;
-  border-radius: 16px;
-  padding: 5px 10px 4px;
-  border: 1px solid #f1d031;
-  -webkit-box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
-  box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    background: #ffef93;
+    color: #555;
+    border-radius: 16px;
+    padding: 5px 10px 4px;
+    border: 1px solid #f1d031;
+    -webkit-box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.15);
 }
 
 .tooltip .tooltip-arrow {
-  width: 0;
-  height: 0;
-  position: absolute;
-  margin: 5px;
-  border: 1px solid #ffef93;
-  z-index: 1;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 5px;
+    border: 1px solid #ffef93;
+    z-index: 1;
 }
 
-.tooltip[x-placement^="top"] {
-  margin-bottom: 5px;
+.tooltip[x-placement^='top'] {
+    margin-bottom: 5px;
 }
 
-.tooltip[x-placement^="top"] .tooltip-arrow {
-  border-width: 5px 5px 0 5px;
-  border-left-color: transparent !important;
-  border-right-color: transparent !important;
-  border-bottom-color: transparent !important;
-  bottom: -5px;
-  left: calc(50% - 4px);
-  margin-top: 0;
-  margin-bottom: 0;
+.tooltip[x-placement^='top'] .tooltip-arrow {
+    border-width: 5px 5px 0 5px;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    bottom: -5px;
+    left: calc(50% - 4px);
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
-.tooltip[x-placement^="bottom"] {
-  margin-top: 5px;
+.tooltip[x-placement^='bottom'] {
+    margin-top: 5px;
 }
 
-.tooltip[x-placement^="bottom"] .tooltip-arrow {
-  border-width: 0 5px 5px 5px;
-  border-left-color: transparent !important;
-  border-right-color: transparent !important;
-  border-top-color: transparent !important;
-  top: -5px;
-  left: calc(50% - 4px);
-  margin-top: 0;
-  margin-bottom: 0;
+.tooltip[x-placement^='bottom'] .tooltip-arrow {
+    border-width: 0 5px 5px 5px;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    border-top-color: transparent !important;
+    top: -5px;
+    left: calc(50% - 4px);
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
-.tooltip[x-placement^="right"] {
-  margin-left: 5px;
+.tooltip[x-placement^='right'] {
+    margin-left: 5px;
 }
 
-.tooltip[x-placement^="right"] .tooltip-arrow {
-  border-width: 5px 5px 5px 0;
-  border-left-color: transparent !important;
-  border-top-color: transparent !important;
-  border-bottom-color: transparent !important;
-  left: -4px;
-  top: calc(50% - 5px);
-  margin-left: 0;
-  margin-right: 0;
+.tooltip[x-placement^='right'] .tooltip-arrow {
+    border-width: 5px 5px 5px 0;
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
+    border-bottom-color: transparent !important;
+    left: -4px;
+    top: calc(50% - 5px);
+    margin-left: 0;
+    margin-right: 0;
 }
 
-.tooltip[x-placement^="left"] {
-  margin-right: 5px;
+.tooltip[x-placement^='left'] {
+    margin-right: 5px;
 }
 
-.tooltip[x-placement^="left"] .tooltip-arrow {
-  border-width: 5px 0 5px 5px;
-  border-top-color: transparent !important;
-  border-right-color: transparent !important;
-  border-bottom-color: transparent !important;
-  right: -4px;
-  top: calc(50% - 5px);
-  margin-left: 0;
-  margin-right: 0;
+.tooltip[x-placement^='left'] .tooltip-arrow {
+    border-width: 5px 0 5px 5px;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    right: -4px;
+    top: calc(50% - 5px);
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .tooltip.popover .popover-inner {
-  background: #ffef93;
-  color: #555;
-  padding: 24px;
-  border-radius: 5px;
-  box-shadow: 0 5px 30px rgba(black, 0.1);
+    background: #ffef93;
+    color: #555;
+    padding: 24px;
+    border-radius: 5px;
+    box-shadow: 0 5px 30px rgba(black, 0.1);
 }
 
 .tooltip.popover .popover-arrow {
-  border-color: #ffef93;
+    border-color: #ffef93;
 }
 
-.tooltip[aria-hidden="true"] {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.15s, visibility 0.15s;
+.tooltip[aria-hidden='true'] {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.15s, visibility 0.15s;
 }
 
-.tooltip[aria-hidden="false"] {
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 0.15s;
+.tooltip[aria-hidden='false'] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.15s;
 }
 </style>

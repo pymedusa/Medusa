@@ -19,6 +19,7 @@
                         <li><app-link href="#core-component-group1">Main</app-link></li>
                         <li><app-link href="#core-component-group2">Format</app-link></li>
                         <li><app-link href="#core-component-group3">Advanced</app-link></li>
+                        <li v-show="show.config.templates"><app-link href="#core-component-group4">Search Templates</app-link></li>
                     </ul>
 
                     <div id="core-component-group1">
@@ -114,8 +115,6 @@
                                     <span>enable advanced search templates<span v-if="selectedFormat"> in addition to the selected chosen format <strong>{{selectedFormat}}</strong></span></span>
                                 </config-toggle-slider>
 
-                                <search-template-container v-if="show.config.templates" :format="selectedFormat" :templates="show.config.searchTemplates" />
-
                                 <config-toggle-slider v-model="show.config.seasonFolders" label="Season" id="season_folders">
                                     <span>group episodes by season folder (disable to store in a single folder)</span>
                                 </config-toggle-slider>
@@ -173,12 +172,16 @@
                                     <p>Currently the effective list is: {{ effectiveRequired }}</p>
                                 </config-toggle-slider>
 
-                                <config-template label-for="SceneName" label="Scene Exception">
+                                <!-- <config-template label-for="SceneName" label="Scene Exception">
                                     <select-list
                                         :list-items="show.config.aliases.map(alias => alias.seriesName)"
                                         @change="onChangeAliases"
                                     />
                                     <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
+                                </config-template> -->
+
+                                <config-template label-for="SceneName" label="Scene Exception">
+                                    <config-scene-exceptions v-bind="{ show, exceptions: show.config.aliases }" />
                                 </config-template>
 
                                 <config-textbox-number
@@ -197,6 +200,20 @@
                             </fieldset>
                         </div>
                     </div>
+
+                    <div id="core-component-group4">
+                        <div class="component-group">
+                            <h3>Search Templates</h3>
+                            <p>If you would like to have more control over the searches thrown at your torrent and usenet indexers, you can enable/disable and even add search templates.</p>
+                            <fieldset class="component-group-list">
+                                <search-template-container
+                                    v-if="show.config.templates"
+                                    v-bind="{show, format: selectedFormat, templates: show.config.searchTemplates}"
+                                />
+                            </fieldset>
+                        </div>
+                    </div>
+
                 </div>
 
                 <br>
@@ -221,6 +238,7 @@ import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
     AppLink,
+    ConfigSceneExceptions,
     ConfigTemplate,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -237,6 +255,7 @@ export default {
         AnidbReleaseGroupUi,
         AppLink,
         Backstretch,
+        ConfigSceneExceptions,
         ConfigTemplate,
         ConfigTextboxNumber,
         ConfigToggleSlider,
@@ -455,11 +474,17 @@ export default {
         onChangeRequiredWords(items) {
             this.show.config.release.requiredWords = items.map(item => item.value);
         },
-        onChangeAliases(items) {
-            this.show.config.aliases = items.map(item => {
-                return { seriesName: item.value };
-            });
-        },
+        // onChangeAliases(items) {
+        //     const { indexers, show } = this;
+        //     this.show.config.aliases = items.map(item => {
+        //         return {
+        //             seriesName: item.value,
+        //             indexer: indexers.indexers[show.indexer].id,
+        //             season: -1,
+        //             seriesId: show.id[show.indexer]
+        //         };
+        //     });
+        // },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;
             this.show.config.release.blacklist = groupNames.blacklist;
