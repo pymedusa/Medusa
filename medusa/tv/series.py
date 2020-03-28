@@ -610,15 +610,13 @@ class Series(TV):
         update_scene_exceptions(self, exceptions)
         self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
-        # Adding new scene exceptions, means we also need to to add new search templates.
-        self._search_templates.generate()
 
     @property
     def aliases_to_json(self):
         """Return aliases as a dict."""
         return [{
             'season': alias.season,
-            'title': alias.series_name
+            'title': alias.title
             } for alias in self.aliases]
 
     @property

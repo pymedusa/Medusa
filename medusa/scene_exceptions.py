@@ -192,8 +192,6 @@ def update_scene_exceptions(series_obj, scene_exceptions):
 
     :param series_obj: series object.
     :param scene_exceptions: list of dicts, originating from the /config/ apiv2 route. Where scene exceptions are set from the UI.
-
-    :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
 
     logger.info('Updating scene exceptions...')
@@ -208,12 +206,11 @@ def update_scene_exceptions(series_obj, scene_exceptions):
         main_db_con.action(
             'DELETE FROM scene_exceptions '
             'WHERE series_id=? AND '
-            '    season=? AND '
             '    indexer=?',
-            [series_obj.series_id, exception['season'] , series_obj.indexer]
+            [series_obj.series_id, series_obj.indexer]
         )
 
-        if exception['seriesName'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
+        if exception['title'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
 
             # Add to cache
             series_exception = TitleException(
@@ -230,7 +227,7 @@ def update_scene_exceptions(series_obj, scene_exceptions):
                 'INSERT INTO scene_exceptions '
                 '    (indexer, series_id, title, season)'
                 'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception['seriesName'], exception['season']]
+                [series_obj.indexer, series_obj.series_id, exception['title'], exception['season']]
             )
 
 
