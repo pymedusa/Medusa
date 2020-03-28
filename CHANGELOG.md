@@ -1,12 +1,18 @@
-## Unreleased
-
-#### New Features
+## 0.3.13 (2020-03-28)
 
 #### Improvements
+- Improved show loading speed with lazy seasons loading
+- Show specials are now always displayed at the bottom if enabled
+- Added dynamic loading of providers
+- Set scheduler last run after it has run
+- Restricted scripts execution to Python scripts for security reasons (see [External scripts](https://github.com/pymedusa/Medusa/wiki/External-scripts))
+- Added missing status handling in show header
 
 #### Fixes
 - Fixed indexer specific exceptions raising errors in show refresh ([#7837](https://github.com/pymedusa/Medusa/pull/7837))
 - Replaced deprecated error.message syntax ([#7819](https://github.com/pymedusa/Medusa/pull/7819))
+- Fixed saving of web root ([#7841](https://github.com/pymedusa/Medusa/pull/7841))
+- Fixed authentication token returned as bytes ([#7842](https://github.com/pymedusa/Medusa/pull/7842))
 
 -----
 
