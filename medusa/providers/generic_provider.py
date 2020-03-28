@@ -624,8 +624,6 @@ class GenericProvider(object):
         if not episode:
             return []
 
-        from medusa.scene_exceptions import get_scene_exceptions_by_name
-
         search_string = {
             'Episode': []
         }
