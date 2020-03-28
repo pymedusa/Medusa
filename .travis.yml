@@ -1,5 +1,5 @@
+os: linux
 language: python
-sudo: false
 cache:
   yarn: true
   directories:
@@ -11,33 +11,32 @@ before_install:
 install: false
 script: false
 
-# Please read about YAML Anchors & Aliases: https://blog.daemonl.com/2016/02/yaml.html
-aliases:
-  # There's no support for concatenation so we must do this
-  - &node_version '10.16.0'
-  - &nvm_install nvm install v10.16.0
-  - &install_yarn_bin >-
-      curl -o- -L https://yarnpkg.com/install.sh | bash &&
-      export PATH="$HOME/.yarn/bin:$PATH"
-  - &backend_tests
-    install:
-      - pip install --upgrade pip
-      - pip install --upgrade tox
-    script:
-      - tox -v --recreate
-  - &dredd_tests
-    install:
-      - pip install --upgrade pip
-      - pip install dredd_hooks
-      - pip install 'PyYAML>=5.1'
-      - pip install 'six>=1.13.0'
-      - *nvm_install
-      - *install_yarn_bin
-      - yarn install --ignore-scripts
-    script:
-      - yarn test-api
-    after_failure:
-      - cat ./dredd/hook.log
+# Use of YAML aliases inspired by https://link.medium.com/vUG5hZ9oW3
+# There's no support for concatenation so we must do this
+_node_version: &_node_version '10.16.0'
+_nvm_install: &_nvm_install nvm install v10.16.0
+_install_yarn_bin: &_install_yarn_bin >-
+  curl -o- -L https://yarnpkg.com/install.sh | bash &&
+  export PATH="$HOME/.yarn/bin:$PATH"
+_backend_tests: &_backend_tests
+  install:
+    - pip install --upgrade pip
+    - pip install --upgrade tox
+  script:
+    - tox -v --recreate
+_dredd_tests: &_dredd_tests
+  install:
+    - pip install --upgrade pip
+    - pip install dredd_hooks
+    - pip install 'PyYAML>=5.1'
+    - pip install 'six>=1.13.0'
+    - *_nvm_install
+    - *_install_yarn_bin
+    - yarn install --ignore-scripts
+  script:
+    - yarn test-api
+  after_failure:
+    - cat ./dredd/hook.log
 
 jobs:
   # fast_finish: true
@@ -46,9 +45,9 @@ jobs:
     - stage: test
       name: 'Frontend tests'
       language: node_js
-      node_js: *node_version
+      node_js: *_node_version
       install:
-        - *install_yarn_bin
+        - *_install_yarn_bin
         - cd $TRAVIS_BUILD_DIR/themes-default/slim
         - yarn install --ignore-scripts
       script:
@@ -62,21 +61,21 @@ jobs:
       python: '2.7'
       env:
         - TOXENV=py27
-      <<: *backend_tests
+      <<: *_backend_tests
     # backend tests (py3.6) start here
     - name: 'Backend tests (py3.6)'
       python: '3.6'
       env:
         - TOXENV=py36,lint
-      <<: *backend_tests
+      <<: *_backend_tests
     # dredd tests (py2.7) start here
     - name: 'Dredd tests (py2.7)'
       python: '2.7'
-      <<: *dredd_tests
+      <<: *_dredd_tests
     # dredd tests (py3.6) start here
     - name: 'Dredd tests (py3.6)'
       python: '3.6'
-      <<: *dredd_tests
+      <<: *_dredd_tests
 
 notifications:
   slack:

@@ -224,7 +224,7 @@ class Series(TV):
         self.notify_list = {}
         self.dvd_order = 0
         self.lang = lang
-        self.last_update_indexer = 1
+        self._last_update_indexer = 1
         self.sports = 0
         self.anime = 0
         self.scene = 0
@@ -432,7 +432,7 @@ class Series(TV):
                 app.show_queue_scheduler.action.refreshShow(self)
             except CantRefreshShowException as error:
                 log.warning("Unable to refresh show '{show}'. Error: {error}",
-                            {'show': self.name, 'error': error.message})
+                            {'show': self.name, 'error': error})
 
     @property
     def indexer_name(self):
@@ -547,6 +547,13 @@ class Series(TV):
     def imdb_certificates(self):
         """Return series certificates."""
         return self.imdb_info.get('certificates')
+
+    @property
+    def last_update_indexer(self):
+        """Return last indexer update as epoch."""
+        update_date = datetime.date.fromordinal(self._last_update_indexer)
+        epoch_date = update_date - datetime.date.fromtimestamp(0)
+        return int(epoch_date.total_seconds())
 
     @property
     def next_airdate(self):
@@ -874,77 +881,6 @@ class Series(TV):
             self.episodes[season][episode] = ep
 
         return ep
-
-    def should_update(self, update_date=datetime.date.today()):
-        """Whether the show information should be updated.
-
-        :param update_date:
-        :type update_date: datetime.date
-        :return:
-        :rtype: bool
-        """
-        # if show is 'paused' do not update_date
-        if self.paused:
-            log.info(u'{id}: Show {show} is paused. Update skipped',
-                     {'id': self.series_id, 'show': self.name})
-            return False
-
-        # if show is not 'Ended' always update (status 'Continuing')
-        if self.status == 'Continuing':
-            return True
-
-        # run logic against the current show latest aired and next unaired data to
-        # see if we should bypass 'Ended' status
-
-        graceperiod = datetime.timedelta(days=30)
-
-        last_airdate = datetime.date.fromordinal(1)
-
-        # get latest aired episode to compare against today - graceperiod and today + graceperiod
-        main_db_con = db.DBConnection()
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MAX(airdate), 0) as last_aired '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status > 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['last_aired'] != 0:
-            last_airdate = datetime.date.fromordinal(sql_result[0]['last_aired'])
-            if (update_date - graceperiod) <= last_airdate <= (update_date + graceperiod):
-                return True
-
-        # get next upcoming UNAIRED episode to compare against today + graceperiod
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MIN(airdate), 0) as airing_next '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status = 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['airing_next'] != 0:
-            next_airdate = datetime.date.fromordinal(sql_result[0]['airing_next'])
-            if next_airdate <= (update_date + graceperiod):
-                return True
-
-        last_update_indexer = datetime.date.fromordinal(self.last_update_indexer)
-
-        # in the first year after ended (last airdate), update every 30 days
-        if (update_date - last_airdate) < datetime.timedelta(days=450) and (
-                (update_date - last_update_indexer) > datetime.timedelta(days=30)):
-            return True
-
-        return False
 
     def show_words(self):
         """Return all related words to show: preferred, undesired, ignore, require."""
@@ -1320,7 +1256,7 @@ class Series(TV):
             main_db_con.mass_action(sql_l)
 
         # Done updating save last update date
-        self.last_update_indexer = datetime.date.today().toordinal()
+        self._last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
@@ -1504,7 +1440,7 @@ class Series(TV):
             if not self.lang:
                 self.lang = sql_results[0]['lang']
 
-            self.last_update_indexer = sql_results[0]['last_update_indexer']
+            self._last_update_indexer = sql_results[0]['last_update_indexer']
 
             self.rls_ignore_words = sql_results[0]['rls_ignore_words']
             self.rls_require_words = sql_results[0]['rls_require_words']
@@ -2007,7 +1943,7 @@ class Series(TV):
                           'startyear': self.start_year,
                           'lang': self.lang,
                           'imdb_id': self.imdb_id,
-                          'last_update_indexer': self.last_update_indexer,
+                          'last_update_indexer': self._last_update_indexer,
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
                           'rls_ignore_exclude': self.rls_ignore_exclude,
@@ -2114,7 +2050,7 @@ class Series(TV):
         data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
-        data['lastUpdate'] = datetime.date.fromordinal(self.last_update_indexer).isoformat()
+        data['lastUpdate'] = datetime.date.fromordinal(self._last_update_indexer).isoformat()
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = {}

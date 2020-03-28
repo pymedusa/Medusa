@@ -485,16 +485,12 @@ export default {
             const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
-                Downloaded: 0,
+                Unaired: 0,
                 Skipped: 0,
                 Wanted: 0,
-                Allowed: 0,
-                Preferred: 0,
-                Unaired: 0,
                 Snatched: 0,
-                'Snatched (Proper)': 0,
-                'Snatched (Best)': 0,
-                Unset: 0
+                Preferred: 0,
+                Allowed: 0
             };
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {

@@ -41,14 +41,14 @@
                                         <p>selected actions use trash (recycle bin) instead of the default permanent delete</p>
                                     </config-template>
 
-                                    <config-textbox v-model="config.logs.actualLogDir" label="Log file folder location" id="log_id" @change="save()" />
+                                    <config-textbox v-model="config.logs.actualLogDir" label="Location for Log files" id="log_id" @change="save()" />
 
                                     <config-textbox-number v-model="config.logs.nr" label="Number of Log files saved" id="log_nr" :min="1" :step="1">
-                                        <p>number of log files saved when rotating logs (default: 5) (REQUIRES RESTART)</p>
+                                        <p>number of log files saved when rotating logs (default: 5) <b>(REQUIRES RESTART)</b></p>
                                     </config-textbox-number>
 
                                     <config-textbox-number v-model="config.logs.size" label="Size of Log files saved" id="log_size" :min="0.5" :step="0.1">
-                                        <p>maximum size in MB of the log file (default: 1MB) (REQUIRES RESTART)</p>
+                                        <p>maximum size in MB of the log file (default: 1MB) <b>(REQUIRES RESTART)</b></p>
                                     </config-textbox-number>
 
                                     <config-template label-for="show_root_dir" label="Show root directories">
@@ -79,7 +79,7 @@
 
                                     <config-textbox-number v-model="config.showUpdateHour" label="Choose hour to update shows" id="showupdate_hour" :min="0" :max="23" :step="1">
                                         <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
-                                        <p>Note: minutes are randomized each time Medusa is started</p>
+                                        <p><b>Note:</b> minutes are randomized each time Medusa is started</p>
                                     </config-textbox-number>
 
                                     <config-textbox-number v-model="config.indexerTimeout" label="Timeout show indexer at" id="indexer_timeout" :min="10" :step="1">
@@ -197,7 +197,7 @@
                                         <select id="time_preset" name="time_preset" v-model="layout.timeStyle" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in timePresetOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
-                                        <span><b>note:</b> seconds are only shown on the History page</span>
+                                        <span><b>Note:</b> seconds are only shown on the History page</span>
                                     </config-template>
 
                                     <config-template label-for="timezone_display" label="Timezone">
@@ -210,7 +210,7 @@
                                             <label for="one">network</label>
                                         </div>
                                         <p>display dates and times in either your timezone or the shows network timezone</p>
-                                        <p> <b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
+                                        <p><b>Note:</b> Use local timezone to start searching for episodes minutes after show ends (depends on your dailysearch frequency)</p>
                                     </config-template>
 
                                     <config-textbox v-model="config.downloadUrl" label="Download url" id="download_url">
@@ -283,7 +283,7 @@
                                         <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox v-model="system.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
+                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
                                         <p>Set a base URL, for use in reverse proxies.</p>
                                         <p>blank = disabled</p>
                                         <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
@@ -319,8 +319,8 @@
                                     </config-toggle-slider>
 
                                     <config-textbox v-model="config.sslCaBundle" label="SSL CA Bundle" id="ssl_ca_bundle">
-                                        <p>Path to a SSL CA Bundle. Will replace default bundle(certifi) with the one specified.</p>
-                                        <b>NOTE:</b> This only apply to call made using Medusa's Requests implementation.
+                                        <p>Path to an SSL CA Bundle. Will replace default bundle(certifi) with the one specified.</p>
+                                        <b>Note:</b> This only apply to call made using Medusa's Requests implementation.
                                     </config-textbox>
 
                                     <config-toggle-slider v-model="config.noRestart" label="No Restart" id="no_restart">
@@ -353,7 +353,7 @@
                                     <config-toggle-slider v-model="config.skipRemovedFiles" label="Skip Remove Detection" id="skip_removed_files">
                                         <span>
                                             <p>Skip detection of removed files. If disabled the episode will be set to the default deleted status</p>
-                                            <b>NOTE:</b> This may mean Medusa misses renames as well
+                                            <b>Note:</b> This may mean Medusa misses renames as well
                                         </span>
                                     </config-toggle-slider>
 
@@ -363,7 +363,7 @@
                                             <option :value="option.value" v-for="option in defaultDeletedEpOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>Define the status to be set for media file that has been deleted.</span>
-                                        <p> <b>NOTE:</b> Archived option will keep previous downloaded quality</p>
+                                        <p><b>Note:</b> Archived option will keep previous downloaded quality</p>
                                         <p>Example: Downloaded (1080p WEB-DL) ==> Archived (1080p WEB-DL)</p>
                                     </config-template>
 
@@ -499,7 +499,7 @@
                                             :options="githubBranches"
                                         />
                                         <input class="btn-medusa btn-inline" style="margin-left: 6px;" type="button" id="branch_force_update" value="Update Branches" @click="githubBranchForceUpdate">
-                                        <span class="component-desc"><b>NOTE:</b> Empty selection means that any branch could be reset.</span>
+                                        <span class="component-desc"><b>Note:</b> Empty selection means that any branch could be reset.</span>
                                     </config-template>
                                     <input type="submit" class="btn-medusa config_submitter" value="Save Changes">
                                 </fieldset>

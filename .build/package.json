@@ -15,5 +15,10 @@
     "grunt-contrib-cssmin": "3.0.0",
     "grunt-contrib-uglify": "4.0.1",
     "load-grunt-tasks": "5.1.0"
+  },
+  "resolutions": {
+    "bower": ">= 1.8.8",
+    "deep-extend": ">= 0.5.1",
+    "lodash": ">= 4.17.12"
   }
 }
