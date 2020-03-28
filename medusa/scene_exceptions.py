@@ -5,14 +5,16 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import time
+import threading
 from collections import defaultdict
 from os.path import join
 
 import adba
+from collections import namedtuple
 
 from medusa import app, db
+from medusa.helpers import sanitize_scene_name
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -24,8 +26,12 @@ logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
+exceptionLock = threading.Lock()
+
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
+
+TitleException = namedtuple('TitleException', 'title, season, indexer, series_id')
 
 
 def refresh_exceptions_cache():
@@ -35,25 +41,33 @@ def refresh_exceptions_cache():
     # Empty the module level variables
     exceptions_cache.clear()
 
-    cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select(
-        'SELECT indexer, indexer_id, show_name, season '
+    main_db_con = db.DBConnection()
+    exceptions = main_db_con.select(
+        'SELECT indexer, series_id, title, season '
         'FROM scene_exceptions'
     ) or []
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
-        indexer_id = int(exception['indexer'])
-        series_id = int(exception['indexer_id'])
+        indexer = int(exception['indexer'])
+        series_id = int(exception['series_id'])
         season = int(exception['season'])
-        show = exception['show_name']
+        title = exception['title']
+
 
         # To support multiple indexers with same series_id, we have to combine the min a tuple.
-        series = (indexer_id, series_id)
+        series = (indexer, series_id)
+        series_exception = TitleException(
+            title=title,
+            season=season,
+            indexer=indexer,
+            series_id=series_id
+        )
 
-        # exceptions_cache[(1, 12345)][season] = ['showname 1', 'showname 2']
-        if show not in exceptions_cache[series][season]:
-            exceptions_cache[series][season].add(show)
+        # exceptions_cache[(1, 12345)][season] =
+        # TitleExeption('title', 'season', indexer, series_id)
+        if series_exception not in exceptions_cache[series][season]:
+            exceptions_cache[series][season].add(series_exception)
 
     logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
@@ -129,73 +143,94 @@ def get_all_scene_exceptions(series_obj):
     """
     Get all scene exceptions for a show ID.
 
-    :param indexer_id: Indexer.
-    :param series_id: Series id.
+    :param series_obj: series object.
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
     return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
 
 
 def get_scene_exceptions_by_name(show_name):
-    """Look for a series_id, season and indexer for a given series scene exception."""
-    # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
-    if show_name is None:
-        logger.debug('Scene exception lookup failed because no show name was provided')
-        return [(None, None, None)]
+    """Get the series_id, season and indexer of the scene exception."""
 
-    normed_name = re.sub(r'\W+', '%', show_name, flags=re.UNICODE).strip('%')
-    # Try the obvious case first
-    cache_db_con = db.DBConnection('cache.db')
-    scene_exceptions = cache_db_con.select(
-        'SELECT indexer, indexer_id, season '
-        'FROM scene_exceptions '
-        'WHERE show_name LIKE ? ORDER BY season ASC',
-        [normed_name])
+    # Flatten the exceptions_cache.
+    scene_exceptions = set()
+    for exception_set in exceptions_cache.values():
+        for title_exception in exception_set.values():
+            scene_exceptions.update(title_exception)
 
-    if scene_exceptions:
-        # FIXME: Need to add additional layer indexer.
-        return [(int(exception['indexer_id']), int(exception['season']), int(exception['indexer']))
-                for exception in scene_exceptions]
+    matches = set()
+    # First attempt exact match.
+    for title_exception in scene_exceptions:
+        if show_name == title_exception.title:
+            matches.add(title_exception)
 
-    return [(None, None, None)]
+    if matches:
+        return matches
+
+    # Let's try out some sanitized names.
+    for title_exception in scene_exceptions:
+        sanitized_name = sanitize_scene_name(title_exception.title)
+        titles = (
+            title_exception.title.lower(),
+            sanitized_name.lower().replace('.', ' '),
+        )
+
+        if show_name.lower() in titles:
+            logger.debug(
+                'Scene exception lookup got series id {title_exception.series_id} '
+                'from indexer {title_exception.indexer},'
+                ' using that', title_exception=title_exception
+            )
+            matches.add(title_exception)
+
+    return matches
 
 
-def update_scene_exceptions(series_obj, scene_exceptions, season=-1):
-    """Update database with all show scene exceptions by indexer_id."""
-    logger.info('Updating scene exceptions for series {series_name} and '
-                'indexer {series_indexer} with id {series_id}',
-                {'series_name': series_obj.name,
-                 'series_indexer': series_obj.indexer,
-                 'series_id': series_obj.series_id})
+def update_scene_exceptions(series_obj, scene_exceptions):
+    """
+    Update database with all show scene exceptions by indexer_id.
 
-    if not all([series_obj.indexer, series_obj.series_id]):
-        return
+    :param series_obj: series object.
+    :param scene_exceptions: list of dicts, originating from the /config/ apiv2 route. Where scene exceptions are set from the UI.
 
-    cache_db_con = db.DBConnection('cache.db')
-    cache_db_con.action(
-        'DELETE FROM scene_exceptions '
-        'WHERE indexer_id=? AND '
-        '    season=? AND '
-        '    indexer=?',
-        [series_obj.series_id, season, series_obj.indexer]
-    )
+    :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
+    """
 
-    # A change has been made to the scene exception list.
-    # Let's clear the cache, to make this visible
+    logger.info('Updating scene exceptions...')
+
+    main_db_con = db.DBConnection()
 
     exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
 
     for exception in scene_exceptions:
-        if exception not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][season]:
+        # A change has been made to the scene exception list.
+        # Let's clear the cache, to make this visible
+        main_db_con.action(
+            'DELETE FROM scene_exceptions '
+            'WHERE series_id=? AND '
+            '    season=? AND '
+            '    indexer=?',
+            [series_obj.series_id, exception['season'] , series_obj.indexer]
+        )
+
+        if exception['seriesName'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
+
             # Add to cache
-            exceptions_cache[(series_obj.indexer, series_obj.series_id)][season].add(exception)
+            series_exception = TitleException(
+                title=exception['title'],
+                season=exception['season'],
+                indexer=series_obj.indexer,
+                series_id=series_obj.series_id
+            )
+
+            exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']].add(series_exception)
 
             # Add to db
-            cache_db_con.action(
+            main_db_con.action(
                 'INSERT INTO scene_exceptions '
-                '    (indexer, indexer_id, show_name, season)'
+                '    (indexer, series_id, title, season)'
                 'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception, season]
+                [series_obj.indexer, series_obj.series_id, exception['seriesName'], exception['season']]
             )
 
 
@@ -224,31 +259,31 @@ def retrieve_exceptions(force=False, exception_type=None):
     )
 
     queries = []
-    cache_db_con = db.DBConnection('cache.db')
+    main_db_con = db.DBConnection()
 
     # TODO: See if this can be optimized
     for indexer in combined_exceptions:
-        for indexer_id in combined_exceptions[indexer]:
-            sql_ex = cache_db_con.select(
-                'SELECT show_name, indexer '
+        for series_id in combined_exceptions[indexer]:
+            sql_ex = main_db_con.select(
+                'SELECT title, indexer '
                 'FROM scene_exceptions '
                 'WHERE indexer = ? AND '
-                '    indexer_id = ?',
-                [indexer, indexer_id]
+                'series_id = ?',
+                [indexer, series_id]
             )
-            existing_exceptions = [x['show_name'] for x in sql_ex]
+            existing_exceptions = [x['title'] for x in sql_ex]
 
-            for exception_dict in combined_exceptions[indexer][indexer_id]:
+            for exception_dict in combined_exceptions[indexer][series_id]:
                 for scene_exception, season in iteritems(exception_dict):
                     if scene_exception not in existing_exceptions:
                         queries.append([
                             'INSERT OR IGNORE INTO scene_exceptions'
-                            '(indexer, indexer_id, show_name, season)'
+                            '(indexer, series_id, title, season)'
                             'VALUES (?,?,?,?)',
-                            [indexer, indexer_id, scene_exception, season]
+                            [indexer, series_id, scene_exception, season]
                         ])
     if queries:
-        cache_db_con.mass_action(queries)
+        main_db_con.mass_action(queries)
         logger.info('Updated scene exceptions.')
 
 
@@ -272,7 +307,7 @@ def _get_custom_exceptions(force):
             location = indexerApi(indexer).config['scene_loc']
             logger.info(
                 'Checking for scene exception updates from {location}',
-                {'location': location}
+                location=location
             )
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
@@ -280,8 +315,9 @@ def _get_custom_exceptions(force):
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed. Unable to '
-                    'update from {location}. Error: {error}',
-                    {'location': location, 'error': error}
+                    'update from {location}. Error: {error}'.format(
+                        location=location, error=error
+                    )
                 )
                 # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
                 return custom_exceptions

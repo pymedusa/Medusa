@@ -1,7 +1,11 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW } from '../mutation-types';
+import { ADD_SHOW,
+    ADD_SHOW_EPISODE,
+    ADD_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_SCENE_EXCEPTION
+} from '../mutation-types';
 
 /**
  * @typedef {object} ShowIdentifier
@@ -43,6 +47,44 @@ const mutations = {
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
         state.currentShow.id = id;
+    },
+    [ADD_SHOW_EPISODE](state, { show, episodes }) {
+        // Creating a new show object (from the state one) as we want to trigger a store update
+        const newShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (!newShow.seasons) {
+            newShow.seasons = [];
+        }
+
+        // Recreate an Array with season objects, with each season having an episodes array.
+        // This format is used by vue-good-table (displayShow).
+        episodes.forEach(episode => {
+            const existingSeason = newShow.seasons.find(season => season.season === episode.season);
+
+            if (existingSeason) {
+                const foundIndex = existingSeason.episodes.findIndex(element => element.slug === episode.slug);
+                if (foundIndex === -1) {
+                    existingSeason.episodes.push(episode);
+                } else {
+                    existingSeason.episodes.splice(foundIndex, 1, episode);
+                }
+            } else {
+                const newSeason = {
+                    season: episode.season,
+                    episodes: [],
+                    html: false,
+                    mode: 'span',
+                    label: 1
+                };
+                newShow.seasons.push(newSeason);
+                newSeason.episodes.push(episode);
+            }
+        });
+
+        // Update state
+        const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
+        console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
     }
 };
 
@@ -171,6 +213,14 @@ const actions = {
         // Update local store
         const { commit } = context;
         return commit(ADD_SHOW, show);
+    },
+    addSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(ADD_SHOW_SCENE_EXCEPTION, { show, exception });
+    },
+    removeSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(REMOVE_SHOW_SCENE_EXCEPTION, { show, exception });
     }
 };
 

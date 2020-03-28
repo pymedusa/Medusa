@@ -12,7 +12,7 @@
 
         <h3 v-if="loadError">Error loading show: {{ loadError }}</h3>
 
-        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: config.fanartBackground }">
+        <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
                 <div id="config-components">
                     <ul>
@@ -85,12 +85,12 @@
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
 
-                                <config-toggle-slider v-model="show.config.airByDate" label="Air by date" id="air_by_date">
+                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat" label="Air by date" id="airByDate">
                                     <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider v-model="show.config.anime" label="Anime" id="anime">
+                                <config-toggle-slider :value="show.config.anime" @input="changeFormat" label="Anime" id="anime">
                                     <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                                 </config-toggle-slider>
 
@@ -105,7 +105,7 @@
                                     />
                                 </config-template>
 
-                                <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
+                                <config-toggle-slider :value="show.config.sports" @input="changeFormat" label="Sports" id="sports">
                                     <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
@@ -167,12 +167,8 @@
                                     <p>Currently the effective list is: {{ effectiveRequired }}</p>
                                 </config-toggle-slider>
 
-                                <config-template label-for="SceneName" label="Scene Exception">
-                                    <select-list
-                                        :list-items="show.config.aliases"
-                                        @change="onChangeAliases"
-                                    />
-                                    <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
+                                <config-template label-for="scene_exceptions" label="Scene Exception">
+                                    <config-scene-exceptions v-bind="{ show, exceptions: show.config.aliases }" />
                                 </config-template>
 
                                 <config-textbox-number
@@ -215,6 +211,7 @@ import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
     AppLink,
+    ConfigSceneExceptions,
     ConfigTemplate,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -230,6 +227,7 @@ export default {
         AnidbReleaseGroupUi,
         AppLink,
         Backstretch,
+        ConfigSceneExceptions,
         ConfigTemplate,
         ConfigTextboxNumber,
         ConfigToggleSlider,
@@ -273,7 +271,8 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            indexers: state => state.indexers,
+            layout: state => state.layout,
             episodeStatuses: state => state.consts.statuses
         }),
         ...mapGetters({
@@ -297,8 +296,8 @@ export default {
             return ['wanted', 'skipped', 'ignored'].map(key => this.getStatus({ key }));
         },
         availableLanguages() {
-            if (this.config.indexers.config.main.validLanguages) {
-                return this.config.indexers.config.main.validLanguages.join(',');
+            if (this.indexers.main.validLanguages) {
+                return this.indexers.main.validLanguages.join(',');
             }
 
             return '';
@@ -438,9 +437,6 @@ export default {
         },
         onChangeRequiredWords(items) {
             this.show.config.release.requiredWords = items.map(item => item.value);
-        },
-        onChangeAliases(items) {
-            this.show.config.aliases = items.map(item => item.value);
         },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;

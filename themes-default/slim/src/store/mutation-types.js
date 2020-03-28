@@ -14,7 +14,10 @@ const NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';
 const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
+const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
+const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
+const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
 
 export {
     LOGIN_PENDING,
@@ -33,5 +36,8 @@ export {
     NOTIFICATIONS_DISABLED,
     ADD_CONFIG,
     ADD_SHOW,
-    ADD_STATS
+    ADD_SHOW_EPISODE,
+    ADD_STATS,
+    ADD_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_SCENE_EXCEPTION
 };

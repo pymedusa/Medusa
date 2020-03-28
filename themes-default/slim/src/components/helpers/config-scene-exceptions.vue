@@ -1,0 +1,182 @@
+<template>
+    <div class="select-list max-width">
+        <ul>
+            <li v-for="exception of items" :key="`${exception.seriesName}-${exception.season}`">
+                <div class="input-group form-inline">
+                    <input class="form-control input-sm" type="text" :value="exception.seriesName" @input="removeEmpty(exception)">
+
+                    <select
+                        name="scene-exception-season"
+                        class="select-season"
+                        v-model="exception.season"
+                    >
+                        <option v-for="season in availableSeasons" :value="season.value" :key="season.value">
+                            {{ season.description }}
+                        </option>
+                    </select>
+
+                    <div class="input-group-btn" @click="removeException(exception)">
+                        <div style="font-size: 14px" class="btn btn-default input-sm">
+                            <i class="glyphicon glyphicon-remove" title="Remove" />
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <div class="new-item">
+                <div class="input-group form-inline">
+                    <input class="form-control input-sm" type="text" ref="newItemInput" v-model="newItem" placeholder="add new values per line">
+                    <select
+                        name="add-exception-season"
+                        class="select-season"
+                        v-model="selectedSeason"
+                    >
+                        <option v-for="season in availableSeasons" :value="season.value" :key="season.value">
+                            {{ season.description }}
+                        </option>
+                    </select>
+
+                    <div :disabled="!unique" class="input-group-btn" @click="addException()">
+                        <div style="font-size: 14px" class="btn btn-default input-sm">
+                            <i class="glyphicon glyphicon-plus" title="Add" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div v-if="!unique">
+                <p><b>This exception has already been added for this show.<br>Can't add the same exception twice!</b></p>
+            </div>
+            <div v-if="newItem.length > 0 && unique" class="new-item-help">
+                Click <i class="glyphicon glyphicon-plus" /> to add your <b>{{selectedSeason === -1 ? 'Show Exception' : 'Season Exception' }}</b>.
+            </div>
+        </ul>
+    </div>
+
+</template>
+<script>
+
+import { mapActions } from 'vuex';
+
+export default {
+    name: 'config-scene-exceptions',
+    props: {
+        exceptions: {
+            type: Array,
+            default: () => []
+        },
+        show: {
+            type: Object,
+            default: null
+        }
+    },
+    data() {
+        return {
+            items: [],
+            newItem: '',
+            selectedSeason: -1,
+            warning: ''
+        };
+    },
+    computed: {
+        availableSeasons() {
+            const { show } = this;
+
+            return [
+                ...[{ value: -1, description: 'Show Exception' }],
+                ...show.seasonCount.filter(season => season.season !== 0).map(season => {
+                    return ({ value: season.season, description: `Season ${season.season}` });
+                })
+            ];
+        },
+        unique() {
+            const { items, newItem, selectedSeason } = this;
+            return !items.find(exception => exception.seriesName === newItem && exception.season === selectedSeason);
+        }
+    },
+    mounted() {
+        const { exceptions } = this;
+        this.items = exceptions;
+    },
+    methods: {
+        ...mapActions({
+            addSceneException: 'addSceneException',
+            removeSceneException: 'removeSceneException'
+        }),
+        addException() {
+            const { addSceneException, clear, selectedSeason, show, newItem, unique } = this;
+            if (!unique || newItem === '') {
+                return;
+            }
+
+            const exception = {
+                seriesName: newItem,
+                season: selectedSeason
+            };
+            addSceneException({ show, exception });
+            clear();
+        },
+        removeException(exception) {
+            const { clear, removeSceneException, show } = this;
+            removeSceneException({ show, exception });
+            clear();
+        },
+        clear() {
+            this.newItem = '';
+            this.selectedSeason = -1;
+        }
+    },
+    watch: {
+        exceptions(newExceptions, oldExceptions) {
+            this.items = newExceptions;
+        }
+    }
+};
+</script>
+<style scoped>
+div.select-list ul {
+    padding-left: 0;
+}
+
+div.select-list li {
+    list-style-type: none;
+    display: flex;
+}
+
+div.select-list .new-item {
+    display: flex;
+}
+
+div.select-list .new-item-help {
+    font-weight: bold;
+    padding-top: 5px;
+}
+
+div.select-list input,
+div.select-list img {
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+div.select-list.max-width {
+    max-width: 450px;
+}
+
+div.select-list .switch-input {
+    left: -8px;
+    top: 4px;
+    position: absolute;
+    z-index: 10;
+    opacity: 0.6;
+}
+
+.form-inline {
+    display: contents;
+}
+
+.select-season {
+    height: 30px;
+    padding: 0px 3px 0 2px;
+}
+</style>

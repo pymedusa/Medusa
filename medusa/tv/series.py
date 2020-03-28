@@ -18,7 +18,7 @@ from builtins import str
 from collections import (
     OrderedDict, namedtuple
 )
-from itertools import groupby
+from itertools import chain, groupby
 
 from medusa import (
     app,
@@ -591,14 +591,27 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self)
+        if self.exceptions:
+            return self.exceptions
+
+        return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
     @aliases.setter
     def aliases(self, exceptions):
         """Set the series aliases."""
-        self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
+        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
+        # Adding new scene exceptions, means we also need to to add new search templates.
+        self._search_templates.generate()
+
+    @property
+    def aliases_to_json(self):
+        """Return aliases as a dict."""
+        return [{
+            'season': alias.season,
+            'seriesName': alias.series_name
+            } for alias in self.aliases]
 
     @property
     def xem_numbering(self):
@@ -2141,7 +2154,7 @@ class Series(TV):
         data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = list(self.aliases)
+        data['config']['aliases'] = self.aliases_to_json
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
@@ -2222,7 +2235,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self, season)
+        show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()
