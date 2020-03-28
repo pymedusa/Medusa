@@ -69,14 +69,14 @@ from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFo
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowNotFound
 from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
 from medusa.media.network_logo import ShowNetworkLogo
 from medusa.media.poster import ShowPoster
-from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.search.queue import BacklogQueueItem
 from medusa.show.coming_episodes import ComingEpisodes
 from medusa.show.history import History
 from medusa.show.show import Show
@@ -818,7 +818,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg='Episode not found')
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = BacklogQueueItem(show_obj, [ep_obj])
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -1693,7 +1693,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     api_data = indexer_api[self.name]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
+                except (IndexerShowNotFound, IndexerError):
                     log.warning(u'API :: Unable to find show with name {0}', self.name)
                     continue
 
@@ -1718,7 +1718,7 @@ class CMD_SearchIndexers(ApiCall):
 
                 try:
                     my_show = indexer_api[int(self.indexerid)]
-                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
+                except (IndexerShowNotFound, IndexerError):
                     log.warning(u'API :: Unable to find show with id {0}', self.indexerid)
                     return _responds(RESULT_SUCCESS, {'results': [], 'langid': lang_id})
 

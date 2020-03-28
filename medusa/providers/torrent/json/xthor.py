@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+from time import sleep
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -26,9 +27,9 @@ class XthorProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://xthor.to'
+        self.url = 'https://xthor.tk'
         self.urls = {
-            'search': 'https://api.xthor.to',
+            'search': 'https://api.xthor.tk',
         }
 
         # Proper Strings
@@ -73,6 +74,7 @@ class XthorProvider(TorrentProvider):
                     search_params.pop('search', '')
 
                 data = self.session.get(self.urls['search'], params=search_params)
+                sleep(2)  # Limit to 1 request every 2 seconds.
                 if not data:
                     log.debug('No data returned from provider')
                     continue
@@ -126,8 +128,8 @@ class XthorProvider(TorrentProvider):
                 if not all([title, download_url]):
                     continue
 
-                seeders = row.get('seeders')
-                leechers = row.get('leechers')
+                seeders = int(row.get('seeders'))
+                leechers = int(row.get('leechers'))
 
                 # Filter unseeded torrent
                 if seeders < self.minseed:

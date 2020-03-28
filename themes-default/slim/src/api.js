@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+// This should be more dynamic. As now when we change the apiKey in config/general. This won't work anymore.
+// Because of this, a page reload is required.
 export const webRoot = document.body.getAttribute('web-root');
 export const apiKey = document.body.getAttribute('api-key');
 
@@ -8,7 +10,7 @@ export const apiKey = document.body.getAttribute('api-key');
  */
 export const apiRoute = axios.create({
     baseURL: webRoot + '/',
-    timeout: 30000,
+    timeout: 60000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'

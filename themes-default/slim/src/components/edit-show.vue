@@ -444,6 +444,14 @@ export default {
         },
         updateLanguage(value) {
             this.show.language = value;
+        },
+        changeFormat(value, el) {
+            this.show.config[el.id] = value;
+            if (value) {
+                ['anime', 'sports', 'airByDate'].filter(item => item !== el.id).forEach(value => {
+                    this.show.config[value] = false;
+                });
+            }
         }
     }
 };

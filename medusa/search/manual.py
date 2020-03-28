@@ -21,7 +21,7 @@ from medusa.common import (
 from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.network_timezones import app_timezone
-from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.search.queue import ManualSearchQueueItem, SEARCH_HISTORY
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
 
@@ -86,23 +86,31 @@ def get_episodes(search_thread, searchstatus):
     for ep_obj in search_thread.segment:
         ep = series_obj.get_episode(ep_obj.season, ep_obj.episode)
         results.append({
-            'indexer_id': series_obj.indexer,
-            'series_id': series_obj.series_id,
-            'episode': ep.episode,
-            'episodeindexerid': ep.indexerid,
-            'season': ep.season,
-            'searchstatus': searchstatus,
-            'status': statusStrings[ep.status],
-            # TODO: `quality_name` and `quality_style` should both be removed
-            # when converting forced/manual episode search to Vue (use QualityPill component directly)
-            'quality_name': Quality.qualityStrings[ep.quality],
-            'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
-            'overview': Overview.overviewStrings[series_obj.get_overview(
-                ep.status, ep.quality,
-                manually_searched=ep.manually_searched
-            )],
-            'queuetime': search_thread.queue_time.isoformat(),
-            'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None,
+            'show': {
+                'indexer': series_obj.indexer,
+                'series_id': series_obj.series_id,
+                'slug': series_obj.slug
+            },
+            'episode': {
+                'episode': ep.episode,
+                'season': ep.season,
+                'slug': ep.slug,
+                'indexerid': ep.indexerid,
+                'status': statusStrings[ep.status],
+                # TODO: `quality_name` and `quality_style` should both be removed
+                # when converting forced/manual episode search to Vue (use QualityPill component directly)
+                'quality_name': Quality.qualityStrings[ep.quality],
+                'quality_style': Quality.quality_keys.get(ep.quality) or Quality.quality_keys[Quality.UNKNOWN],
+                'overview': Overview.overviewStrings[series_obj.get_overview(
+                    ep.status, ep.quality,
+                    manually_searched=ep.manually_searched
+                )]
+            },
+            'search': {
+                'status': searchstatus,
+                'queuetime': search_thread.queue_time.isoformat(),
+                'starttime': search_thread.start_time.isoformat() if search_thread.start_time else None
+            }
         })
 
     return results
@@ -116,11 +124,11 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
+        if isinstance(search_thread, ManualSearchQueueItem):
             if not isinstance(search_thread.segment, list):
                 search_thread.segment = [search_thread.segment]
 
@@ -158,16 +166,16 @@ def collect_episodes_from_search_thread(series_obj):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in FORCED_SEARCH_HISTORY:
+    for search_thread in SEARCH_HISTORY:
         if series_obj and not search_thread.show.identifier == series_obj.identifier:
             continue
 
-        if isinstance(search_thread, ForcedSearchQueueItem):
-            if not [x for x in episodes if x['episodeindexerid'] in [search.indexerid for search in search_thread.segment]]:
+        if isinstance(search_thread, ManualSearchQueueItem):
+            if not [x for x in episodes if x['episode']['indexerid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += get_episodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
-            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexerid']]:
+            if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episode']['indexerid']]:
                 episodes += get_episodes(search_thread, searchstatus)
 
     return episodes
@@ -176,7 +184,6 @@ def collect_episodes_from_search_thread(series_obj):
 def get_provider_cache_results(series_obj, show_all_results=None, perform_search=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    down_cur_quality = 0
     preferred_words = series_obj.show_words().preferred_words
     undesired_words = series_obj.show_words().undesired_words
     ignored_words = series_obj.show_words().ignored_words
@@ -281,7 +288,7 @@ def get_provider_cache_results(series_obj, show_all_results=None, perform_search
             and episode: {1}x{2}'.format(series_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ManualSearchQueueItem(ep_obj.series, [ep_obj], manual_search_type)  # pylint: disable=maybe-no-member
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 

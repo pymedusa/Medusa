@@ -31,7 +31,8 @@ const homeRoutes = [
         meta: {
             topMenu: 'home',
             subMenu: showSubMenu
-        }
+        },
+        component: () => import('../components/display-show.vue')
     },
     {
         path: '/home/snatchSelection',
@@ -134,8 +135,10 @@ const configRoutes = [
             title: 'Config - General',
             header: 'General Configuration',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-general.vue')
     },
     {
         path: '/config/notifications',
@@ -144,8 +147,10 @@ const configRoutes = [
             title: 'Config - Notifications',
             header: 'Notifications',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-notifications.vue')
     },
     {
         path: '/config/postProcessing',
@@ -176,8 +181,10 @@ const configRoutes = [
             title: 'Config - Episode Search',
             header: 'Search Settings',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-search.vue')
     },
     {
         path: '/config/subtitles',

@@ -36,7 +36,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www2.yggtorrent.ch'
+        self.url = 'https://www.yggtorrent.to'
         self.urls = {
             'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'user/login'),
@@ -177,7 +177,7 @@ class YggtorrentProvider(TorrentProvider):
                 log.warning('Unable to connect to provider')
                 return False
 
-            if not login_resp.ok:
+            if not login_resp.ok and login_resp.status_code == 401:
                 log.warning('Invalid username or password. Check your settings')
                 return False
 

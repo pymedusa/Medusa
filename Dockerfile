@@ -17,6 +17,7 @@ RUN \
 	# Runtime packages
 	apk add --no-cache \
 		mediainfo \
+		tzdata \
 		unrar \
 	&& \
 	# Cleanup

@@ -318,14 +318,14 @@ class Application(object):
 
         app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
-        # Initialize the config and our threads
-        self.initialize(console_logging=self.console_logging)
-
         if self.run_as_daemon:
             self.daemonize()
 
         # Get PID
         app.PID = os.getpid()
+
+        # Initialize the config and our threads
+        self.initialize(console_logging=self.console_logging)
 
         # Build from the DB to start with
         self.load_shows_from_db()
@@ -745,6 +745,15 @@ class Application(object):
             app.TELEGRAM_ID = check_setting_str(app.CFG, 'Telegram', 'telegram_id', '', censor_log='normal')
             app.TELEGRAM_APIKEY = check_setting_str(app.CFG, 'Telegram', 'telegram_apikey', '', censor_log='low')
 
+            app.USE_DISCORD = bool(check_setting_int(app.CFG, 'Discord', 'use_discord', 0))
+            app.DISCORD_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Discord', 'discord_notify_onsnatch', 0))
+            app.DISCORD_NOTIFY_ONDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_ondownload', 0))
+            app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = bool(
+                check_setting_int(app.CFG, 'Discord', 'discord_notify_onsubtitledownload', 0))
+            app.DISCORD_WEBHOOK = check_setting_str(app.CFG, 'Discord', 'discord_webhook', '', censor_log='normal')
+            app.DISCORD_TTS = check_setting_bool(app.CFG, 'Discord', 'discord_tts', 0)
+
             app.USE_PROWL = bool(check_setting_int(app.CFG, 'Prowl', 'use_prowl', 0))
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
@@ -898,9 +907,6 @@ class Application(object):
             app.ADDIC7ED_USER = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_username', '', censor_log='normal')
             app.ADDIC7ED_PASS = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_password', '', censor_log='low')
 
-            app.ITASA_USER = check_setting_str(app.CFG, 'Subtitles', 'itasa_username', '', censor_log='normal')
-            app.ITASA_PASS = check_setting_str(app.CFG, 'Subtitles', 'itasa_password', '', censor_log='low')
-
             app.LEGENDASTV_USER = check_setting_str(app.CFG, 'Subtitles', 'legendastv_username', '', censor_log='normal')
             app.LEGENDASTV_PASS = check_setting_str(app.CFG, 'Subtitles', 'legendastv_password', '', censor_log='low')
 
@@ -961,7 +967,6 @@ class Application(object):
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
-            app.DISPLAY_ALL_SEASONS = bool(check_setting_int(app.CFG, 'General', 'display_all_seasons', 1))
             app.RECENTLY_DELETED = set()
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
@@ -971,6 +976,7 @@ class Application(object):
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
+            app.SHOW_USE_PAGINATION = check_setting_bool(app.CFG, 'GUI', 'show_use_pagination', app.SHOW_USE_PAGINATION)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -1159,7 +1165,6 @@ class Application(object):
                                                            threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
@@ -1181,54 +1186,44 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
+                                                             threadName='DAILYSEARCHER')
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
+                                                                  threadName='BACKLOG')
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
                 update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
-                run_at = None
             else:
-                update_interval = datetime.timedelta(hours=1)
-                run_at = datetime.time(hour=1)  # 1 AM
+                update_interval = datetime.timedelta(hours=4)
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName='FINDPROPERS',
-                                                              start_time=run_at,
-                                                              run_delay=update_interval)
+                                                              threadName='FINDPROPERS')
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
                                                                cycleTime=update_interval,
                                                                threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY,
-                                                               run_delay=update_interval)
-            update_interval = datetime.timedelta(minutes=5)
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
-                                                              run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
                                                                  threadName='FINDSUBTITLES',
-                                                                 run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER',
-                                                                run_delay=update_interval)
+                                                                threadName='TORRENTCHECKER')
 
             app.__INITIALIZED__ = True
             return True
@@ -1593,7 +1588,6 @@ class Application(object):
         new_config['General']['no_restart'] = int(app.NO_RESTART)
         new_config['General']['developer'] = int(app.DEVELOPER)
         new_config['General']['python_version'] = app.PYTHON_VERSION
-        new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
@@ -1754,6 +1748,14 @@ class Application(object):
         new_config['Telegram']['telegram_notify_onsubtitledownload'] = int(app.TELEGRAM_NOTIFY_ONSUBTITLEDOWNLOAD)
         new_config['Telegram']['telegram_id'] = app.TELEGRAM_ID
         new_config['Telegram']['telegram_apikey'] = app.TELEGRAM_APIKEY
+
+        new_config['Discord'] = {}
+        new_config['Discord']['use_discord'] = int(app.USE_DISCORD)
+        new_config['Discord']['discord_notify_onsnatch'] = int(app.DISCORD_NOTIFY_ONSNATCH)
+        new_config['Discord']['discord_notify_ondownload'] = int(app.DISCORD_NOTIFY_ONDOWNLOAD)
+        new_config['Discord']['discord_notify_onsubtitledownload'] = int(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
+        new_config['Discord']['discord_webhook'] = app.DISCORD_WEBHOOK
+        new_config['Discord']['discord_tts'] = int(app.DISCORD_TTS)
 
         new_config['Prowl'] = {}
         new_config['Prowl']['use_prowl'] = int(app.USE_PROWL)
@@ -1923,6 +1925,7 @@ class Application(object):
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
         new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
+        new_config['GUI']['show_use_pagination'] = app.SHOW_USE_PAGINATION
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
@@ -1945,9 +1948,6 @@ class Application(object):
         new_config['Subtitles']['subtitles_keep_only_wanted'] = int(app.SUBTITLES_KEEP_ONLY_WANTED)
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)
-
-        new_config['Subtitles']['itasa_username'] = app.ITASA_USER
-        new_config['Subtitles']['itasa_password'] = helpers.encrypt(app.ITASA_PASS, app.ENCRYPTION_VERSION)
 
         new_config['Subtitles']['legendastv_username'] = app.LEGENDASTV_USER
         new_config['Subtitles']['legendastv_password'] = helpers.encrypt(app.LEGENDASTV_PASS, app.ENCRYPTION_VERSION)

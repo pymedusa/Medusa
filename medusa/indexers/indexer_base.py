@@ -146,25 +146,25 @@ class BaseIndexer(object):
         return None
 
     def _get_series(self, series):
-        """Search themoviedb.org for the series name.
+        """Search for the series name.
 
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
+        :return: A list of series mapped to a UI (for example: a BaseUI or custom_ui).
         """
         all_series = self.search(series)
         if not all_series:
             log.debug('Series result returned zero')
-            IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
+            raise IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
 
         if not isinstance(all_series, list):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
-            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
+            log.debug('Using custom UI: {0!r}', self.config['custom_ui'])
             custom_ui = self.config['custom_ui']
             ui = custom_ui(config=self.config)
         else:
@@ -494,6 +494,12 @@ class Show(dict):
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
             raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
+
+    def __bool__(self):
+        """Magic method for returning self.data as a boolean."""
+        return bool(self.data)
+
+    __nonzero__ = __bool__
 
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""

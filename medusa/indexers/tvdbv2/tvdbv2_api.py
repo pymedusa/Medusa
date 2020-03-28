@@ -10,16 +10,15 @@ from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
-                                                IndexerShowIncomplete, IndexerShowNotFound,
-                                                IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.indexer_exceptions import (
+    IndexerAuthFailed, IndexerError, IndexerShowNotFound,
+    IndexerShowNotFoundInLanguage, IndexerUnavailable
+)
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
 from requests.compat import urljoin
-from requests.exceptions import RequestException
 
 from six import string_types, text_type, viewitems
 
@@ -137,22 +136,18 @@ class TVDBv2(BaseIndexer):
         except ApiException as error:
             if error.status == 401:
                 raise IndexerAuthFailed(
-                    'Authentication failed, possible bad api key. reason: {reason} ({status})'.format(
-                        reason=error.reason, status=error.status
-                    )
+                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
                 )
-            raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: {0}'.format(error.reason)
-            )
-        except RequestException as error:
-            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
+            if error.status == 404:
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
+                )
+            raise IndexerUnavailable(error.reason)
 
-        if results:
-            return results
-        else:
-            return OrderedDict({'data': None})
+        return results
 
-    # Tvdb implementation
     @PlexFallback
     def search(self, series):
         """Search tvdbv2.com for the series name.
@@ -163,7 +158,6 @@ class TVDBv2(BaseIndexer):
         log.debug('Searching for show: {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
-
         if not results:
             return
 
@@ -191,16 +185,15 @@ class TVDBv2(BaseIndexer):
             except ApiException as error:
                 if error.status == 401:
                     raise IndexerAuthFailed(
-                        'Authentication failed, possible bad api key. reason: {reason} ({status})'
+                        'Authentication failed, possible bad API key. Reason: {reason} ({status})'
                         .format(reason=error.reason, status=error.status)
                     )
-                raise IndexerShowNotFound(
-                    'Show search failed in getting a result with reason: {reason} ({status})'.format(
-                        reason=error.reason, status=error.status
+                if error.status == 404:
+                    raise IndexerShowNotFound(
+                        'Show search failed in getting a result with reason: {reason} ({status})'
+                        .format(reason=error.reason, status=error.status)
                     )
-                )
-            except RequestException as error:
-                raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
+                raise IndexerUnavailable(error.reason)
 
         if not results:
             return
@@ -210,7 +203,6 @@ class TVDBv2(BaseIndexer):
                                                 .format(request_language), request_language)
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
-
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvdb_id, specials=False, aired_season=None):
@@ -274,43 +266,43 @@ class TVDBv2(BaseIndexer):
                         paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                             tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
                         )
-                        results += paged_episodes.data
-                        last = paged_episodes.links.last
-                        page += 1
+                        if paged_episodes.data:
+                            results += paged_episodes.data
+                            last = paged_episodes.links.last
+                            page += 1
             else:
                 while page <= last:
                     paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                         tvdb_id, page=page, accept_language=self.config['language']
                     )
-                    results += paged_episodes.data
-                    last = paged_episodes.links.last
-                    page += 1
+                    if paged_episodes.data:
+                        results += paged_episodes.data
+                        last = paged_episodes.links.last
+                        page += 1
 
             if results and full_info:
                 results = self._get_episodes_info(tvdb_id, results, season=aired_season)
 
-        except ApiException as e:
+        except ApiException as error:
             log.debug('Error trying to index the episodes')
-            if e.status == 401:
+            if error.status == 401:
                 raise IndexerAuthFailed(
-                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
-                    .format(reason=e.reason, status=e.status)
+                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
                 )
-            raise IndexerShowIncomplete(
-                'Show episode search exception, '
-                'could not get any episodes. Did a {search_type} search. Exception: {e}'.format
-                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.reason)
-            )
-        except RequestException as error:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {error!r}'.format(error=error))
 
-        if not results:
-            log.debug('Series results incomplete')
-            raise IndexerShowIncomplete(
-                'Show episode search returned incomplete results, '
-                'could not get any episodes. Did a {search_type} search.'.format
-                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season))
-            )
+            if error.status == 404:
+                show_data = self.shows.get(tvdb_id)
+                if show_data and not show_data['firstaired']:
+                    log.info('Show {name} does not have any episodes yet.',
+                             {'name': self.shows[tvdb_id]['seriesname']})
+
+            else:
+                raise IndexerUnavailable(
+                    'Error connecting to TVDB API. Reason: {reason}'.format(
+                        reason=error.reason
+                    )
+                )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
         return OrderedDict({'episode': mapped_episodes if isinstance(mapped_episodes, list) else [mapped_episodes]})
@@ -348,7 +340,7 @@ class TVDBv2(BaseIndexer):
             if self.config['dvdorder'] and not flag_dvd_numbering:
                 log.warning(
                     'No DVD order available for episode (season: {0}, episode: {1}). Skipping this episode. '
-                    'If you want to have this episode visible, please change it on the TheTvdb site, '
+                    'If you want to have this episode visible, please change it on the TheTVDB site, '
                     'or consider disabling DVD order for the show: {2}({3})',
                     dvd_seas_no or seas_no, dvd_ep_no or ep_no,
                     self.shows[tvdb_id]['seriesname'], tvdb_id
@@ -384,38 +376,6 @@ class TVDBv2(BaseIndexer):
                     v = urljoin(self.config['artwork_prefix'], v)
 
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
-
-    def _get_series(self, series):
-        """Search thetvdb.com for the series name.
-
-        If a custom_ui UI is configured, it uses this to select the correct
-        series. If not, and interactive == True, ConsoleUI is used, if not
-        BaseUI is used to select the first result.
-
-        :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
-        """
-        all_series = self.search(series)
-        if not all_series:
-            log.debug('Series result returned zero')
-            IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
-
-        if not isinstance(all_series, list):
-            all_series = [all_series]
-
-        if self.config['custom_ui'] is not None:
-            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
-            custom_ui = self.config['custom_ui']
-            ui = custom_ui(config=self.config)
-        else:
-            if not self.config['interactive']:
-                log.debug('Auto-selecting first search result using BaseUI')
-                ui = BaseUI(config=self.config)
-            else:
-                log.debug('Interactively selecting show using ConsoleUI')
-                ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
-
-        return ui.select_series(all_series)
 
     @PlexFallback
     def _parse_images(self, sid):
@@ -454,62 +414,67 @@ class TVDBv2(BaseIndexer):
             series_images_count = self.config['session'].series_api.series_id_images_get(
                 sid, accept_language=self.config['language']
             )
-        except (ApiException, RequestException) as error:
-            log.info('Could not get image count for show id: {0} with reason: {1!r}', sid, error)
+        except ApiException as error:
+            log.info('Could not get image count for show ID: {0} with reason: {1}', sid, error.reason)
             return
 
         for image_type, image_count in viewitems(self._object_to_dict(series_images_count)):
-            try:
-                if search_for_image_type and search_for_image_type != image_type:
-                    # We want to use the 'poster' image also for the 'poster_thumb' type
-                    if image_type != 'poster' or image_type == 'poster' and search_for_image_type != 'poster_thumb':
-                        continue
+            if not image_count:
+                continue
 
-                if not image_count:
+            if search_for_image_type and search_for_image_type != image_type:
+                # We want to use the 'poster' image also for the 'poster_thumb' type
+                if image_type != 'poster' or image_type == 'poster' and search_for_image_type != 'poster_thumb':
                     continue
 
-                if image_type not in _images:
-                    _images[image_type] = {}
-
+            try:
                 images = self.config['session'].series_api.series_id_images_query_get(
                     sid, key_type=image_type, accept_language=self.config['language']
                 )
-                for image in images.data:
-                    # Store the images for each resolution available
-                    # Always provide a resolution or 'original'.
-                    resolution = image.resolution or 'original'
-                    if resolution not in _images[image_type]:
-                        _images[image_type][resolution] = {}
+            except ApiException as error:
+                log.debug(
+                    'Could not parse {image} for show ID: {sid}, with exception: {reason}',
+                    {'image': image_type, 'sid': sid, 'reason': error.reason}
+                )
+                continue
 
-                    # _images[image_type][resolution][image.id] = image_dict
-                    image_attributes = self._object_to_dict(image, key_mapping)
+            if image_type not in _images:
+                _images[image_type] = {}
 
-                    bid = image_attributes.pop('id')
+            for image in images.data:
+                # Store the images for each resolution available
+                # Always provide a resolution or 'original'.
+                resolution = image.resolution or 'original'
+                if resolution not in _images[image_type]:
+                    _images[image_type][resolution] = {}
 
-                    if image_type in ['season', 'seasonwide']:
-                        if int(image.sub_key) not in _images[image_type][resolution]:
-                            _images[image_type][resolution][int(image.sub_key)] = {}
-                        if bid not in _images[image_type][resolution][int(image.sub_key)]:
-                            _images[image_type][resolution][int(image.sub_key)][bid] = {}
-                        base_path = _images[image_type][resolution][int(image.sub_key)][bid]
-                    else:
-                        if bid not in _images[image_type][resolution]:
-                            _images[image_type][resolution][bid] = {}
-                        base_path = _images[image_type][resolution][bid]
+                # _images[image_type][resolution][image.id] = image_dict
+                image_attributes = self._object_to_dict(image, key_mapping)
 
-                    for k, v in viewitems(image_attributes):
-                        if k is None or v is None:
-                            continue
+                bid = image_attributes.pop('id')
 
-                        if k.endswith('path'):
-                            k = '_{0}'.format(k)
-                            log.debug('Adding base url for image: {0}', v)
-                            v = self.config['artwork_prefix'].format(image=v)
+                if image_type in ['season', 'seasonwide']:
+                    sub_key = int(image.sub_key)
+                    if sub_key not in _images[image_type][resolution]:
+                        _images[image_type][resolution][sub_key] = {}
+                    if bid not in _images[image_type][resolution][sub_key]:
+                        _images[image_type][resolution][sub_key][bid] = {}
+                    base_path = _images[image_type][resolution][sub_key][bid]
+                else:
+                    if bid not in _images[image_type][resolution]:
+                        _images[image_type][resolution][bid] = {}
+                    base_path = _images[image_type][resolution][bid]
 
-                        base_path[k] = v
-            except (ApiException, RequestException) as error:
-                log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', sid, error)
-                return
+                for k, v in viewitems(image_attributes):
+                    if k is None or v is None:
+                        continue
+
+                    if k.endswith('path'):
+                        k = '_{0}'.format(k)
+                        log.debug('Adding base url for image: {0}', v)
+                        v = self.config['artwork_prefix'].format(image=v)
+
+                    base_path[k] = v
 
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
@@ -544,7 +509,7 @@ class TVDBv2(BaseIndexer):
         try:
             actors = self.config['session'].series_api.series_id_actors_get(sid)
         except ApiException as error:
-            log.info('Could not get actors for show id: {0} with reason: {1!r}', sid, error)
+            log.info('Could not get actors for show ID: {0} with reason: {1}', sid, error.reason)
             return
 
         if not actors or not actors.data:
@@ -620,7 +585,7 @@ class TVDBv2(BaseIndexer):
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
-        :param from_time: epoch timestamp, with the start date/time
+        :param from_time: epoch timestamp, with the start date/time as int
         :param weeks: number of weeks to get updates for.
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         :returns: A list of show_id's.
@@ -634,18 +599,19 @@ class TVDBv2(BaseIndexer):
                 updates = self.config['session'].updates_api.updated_query_get(from_time).data
                 if updates:
                     last_update_ts = max(x.last_updated for x in updates)
+                    if last_update_ts == from_time:
+                        break
+
                     from_time = last_update_ts
                     total_updates += [int(_.id) for _ in updates]
                 count += 1
-        except ApiException as e:
-            if e.status == 401:
+        except ApiException as error:
+            if error.status == 401:
                 raise IndexerAuthFailed(
-                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
-                    .format(reason=e.reason, status=e.status)
+                    'Authentication failed, possible bad API key. Reason: {reason} ({status})'
+                    .format(reason=error.reason, status=error.status)
                 )
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.reason))
-        except RequestException as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.reason))
+            raise IndexerUnavailable('Error connecting to TVDB API. Reason: {0}'.format(error.reason))
 
         if total_updates and filter_show_list:
             new_list = []

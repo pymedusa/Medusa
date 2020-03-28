@@ -100,4 +100,8 @@ export default {
     width: 450px;
     margin-top: -4px;
 }
+
+input {
+    margin-bottom: 5px;
+}
 </style>

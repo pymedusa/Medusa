@@ -156,8 +156,9 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired['episode_id']])
 
     def fix_indexer_show_statues(self):
-        for old_status, new_status in iteritems(STATUS_MAP):
-            self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
+        for new_status, mappings in iteritems(STATUS_MAP):
+            for old_status in mappings:
+                self.connection.action('UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?', [new_status, old_status])
 
     def fix_episode_statuses(self):
         sql_results = self.connection.select('SELECT episode_id, showid FROM tv_episodes WHERE status IS NULL')

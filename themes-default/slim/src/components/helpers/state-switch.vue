@@ -1,5 +1,5 @@
 <template>
-    <img v-bind="{ src, alt }" height="16" width="16">
+    <img v-bind="{ src, alt }" height="16" width="16" @click="$emit('click')">
 </template>
 <script>
 export default {

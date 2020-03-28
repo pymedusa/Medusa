@@ -8,7 +8,7 @@
                     <!-- @TODO: Remove data attributes -->
                     <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214077142 -->
                     <h1 class="title" :data-indexer-name="show.indexer" :data-series-id="show.id[show.indexer]" :id="'scene_exception_' + show.id[show.indexer]">
-                        <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]" class="snatchTitle">{{ show.title }}</app-link>
+                        <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`" class="snatchTitle">{{ show.title }}</app-link>
                     </h1>
                 </div>
 
@@ -16,14 +16,14 @@
                     <span class="h2footer display-specials">
                         Manual search for:<br>
                         <app-link
-                            :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]"
+                            :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`"
                             class="snatchTitle"
                         >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
                 </div>
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
-                        Display Specials: <a @click="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
+                        Display Specials: <a @click.prevent="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
                     </span>
 
                     <div class="h2footer display-seasons clear">
@@ -76,9 +76,9 @@
                             <span
                                 v-if="show.rating.imdb && show.rating.imdb.rating"
                                 class="imdbstars"
-                                :qtip-content="show.rating.imdb.rating + ' / 10 Stars<br> ' + show.rating.imdb.votes + ' Votes'"
+                                :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
                             >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 12) + '%' }" />
+                                <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
                             </span>
                             <template v-if="!show.id.imdb">
                                 <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
@@ -91,39 +91,39 @@
                                 <span>
                                     {{ show.imdbInfo.runtimes || show.runtime }} minutes
                                 </span>
-                                <app-link :href="'https://www.imdb.com/title/' + show.id.imdb" :title="'https://www.imdb.com/title/' + show.id.imdb">
+                                <app-link :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
                                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
                                 </app-link>
                             </template>
-                            <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
+                            <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
                                 <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                             </app-link>
                             <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[show.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
+                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="'http://thexem.de/search?q=' + show.title" :title="'http://thexem.de/search?q=' + show.title">
+                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
                                 <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
                             </app-link>
 
-                            <app-link v-if="show.id.tvdb" :href="'https://fanart.tv/series/' + show.id.tvdb" :title="'https://fanart.tv/series/' + show.id[show.indexer]">
+                            <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
                                 <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
                             </app-link>
                         </div>
                         <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                             <ul class="tags" v-if="show.genres">
-                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="'https://trakt.tv/shows/popular/?genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on trakt.tv'"><li>{{ genre }}</li></app-link>
+                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="`https://trakt.tv/shows/popular/?genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on trakt.tv`"><li>{{ genre }}</li></app-link>
                             </ul>
                             <ul class="tags" v-else>
-                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="'https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=' + genre.toLowerCase().replace(' ', '-')" :title="'View other popular ' + genre + ' shows on IMDB'"><li>{{ genre }}</li></app-link>
+                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="`https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on IMDB`"><li>{{ genre }}</li></app-link>
                             </ul>
                         </div>
                     </div>
 
                     <div class="row">
                         <!-- Show Summary -->
-                        <div id="summary" class="col-md-12">
-                            <div id="show-summary" :class="[{ summaryFanArt: config.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
+                        <div v-if="configLoaded" id="summary" class="col-md-12">
+                            <div id="show-summary" :class="[{ summaryFanArt: layout.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
                                         <td colspan="2" style="padding-bottom: 15px;">
@@ -169,35 +169,77 @@
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.join(',')}}</td>
+                                        <td>{{show.config.aliases.join(', ')}}</td>
                                     </tr>
 
-                                    <tr v-if="show.config.release.requiredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Required Words: </td>
-                                        <td><span class="break-word" :class="{required: type === 'snatch-selection'}">{{show.config.release.requiredWords.join(',')}}</span></td>
+                                    <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
+                                        </td>
+                                        <td>
+                                            <span v-if="show.config.release.requiredWords.length" class="break-word">
+                                                {{show.config.release.requiredWords.join(', ')}}
+                                            </span>
+                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <template v-if="show.config.release.requiredWords.length > 0">
+                                                        <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
+                                                    {{search.filters.required.join(', ')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
-                                    <tr v-if="show.config.release.ignoredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Ignored Words: </td>
-                                        <td><span class="break-word" :class="{ignored: type === 'snatch-selection'}">{{show.config.release.ignoredWords.join(',')}}</span></td>
+                                    <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{ignored: type === 'snatch-selection'}">Ignored Words: </span>
+                                        </td>
+                                        <td>
+                                            <span v-if="show.config.release.ignoredWords.length" class="break-word">
+                                                {{show.config.release.ignoredWords.join(', ')}}
+                                            </span>
+                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
+                                                <app-link href="config/search/#searchfilters">
+                                                    <template v-if="show.config.release.ignoredWords.length > 0">
+                                                        <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
+                                                        <span v-else>+ </span>
+                                                    </template>
+                                                    {{search.filters.ignored.join(', ')}}
+                                                </app-link>
+                                            </span>
+                                        </td>
                                     </tr>
 
-                                    <tr v-if="preferredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Preferred Words: </td>
-                                        <td><span class="break-word" :class="{preferred: type === 'snatch-selection'}">{{preferredWords.join(',')}}</span></td>
+                                    <tr v-if="search.filters.preferred.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{preferred: type === 'snatch-selection'}">Preferred Words: </span>
+                                        </td>
+                                        <td>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word">{{search.filters.preferred.join(', ')}}</span>
+                                            </app-link>
+                                        </td>
                                     </tr>
-                                    <tr v-if="undesiredWords.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Undesired Words: </td>
-                                        <td><span class="break-word" :class="{undesired: type === 'snatch-selection'}">{{undesiredWords.join(',')}}</span></td>
+                                    <tr v-if="search.filters.undesired.length > 0">
+                                        <td class="showLegend" style="vertical-align: top;">
+                                            <span :class="{undesired: type === 'snatch-selection'}">Undesired Words: </span>
+                                        </td>
+                                        <td>
+                                            <app-link href="config/search/#searchfilters">
+                                                <span class="break-word">{{search.filters.undesired.join(', ')}}</span>
+                                            </app-link>
+                                        </td>
                                     </tr>
 
                                     <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
                                         <td class="showLegend">Wanted Groups:</td>
-                                        <td>{{show.config.release.whitelist.join(',')}}</td>
+                                        <td>{{show.config.release.whitelist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
                                         <td class="showLegend">Unwanted Groups:</td>
-                                        <td>{{show.config.release.blacklist.join(',')}}</td>
+                                        <td>{{show.config.release.blacklist.join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.airdateOffset !== 0">
@@ -215,14 +257,14 @@
                             <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                                 <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                                     <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="config.themeName" :state="show.config.subtitlesEnabled" /></td></tr>
-                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="config.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="config.themeName" :state="show.config.paused" /></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="config.themeName" :state="show.config.airByDate" /></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="config.themeName" :state="show.config.sports" /></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="config.themeName" :state="show.config.anime" /></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="config.themeName" :state="show.config.dvdOrder" /></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="config.themeName" :state="show.config.scene" /></td></tr>
+                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="layout.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="layout.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="layout.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
                                 </table>
                             </div> <!-- end of show-status -->
                         </div> <!-- end of summary -->
@@ -235,28 +277,25 @@
             <div id="col-show-episodes-controls" class="col-md-12">
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
                     <div class="col-lg-12" id="checkboxControls">
-                        <div id="key-padding" class="pull-left top-5">
-                            <template v-if="show.seasons">
-                                <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" @input="showHideRows('wanted')"> Wanted: <b>{{episodeSummary.Wanted}}</b></span></label>
-                                <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" @input="showHideRows('qual')"> Allowed: <b>{{episodeSummary.Allowed}}</b></span></label>
-                                <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" @input="showHideRows('good')"> Preferred: <b>{{episodeSummary.Preferred}}</b></span></label>
-                                <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" @input="showHideRows('skipped')"> Skipped: <b>{{episodeSummary.Skipped}}</b></span></label>
-                                <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" @input="showHideRows('snatched')"> Snatched: <b>{{episodeSummary.Snatched + episodeSummary['Snatched (Proper)'] + episodeSummary['Snatched (Best)']}}</b></span></label>
-                            </template>
-                            <button class="btn-medusa seriesCheck" @click="selectEpisodesClicked">Select Episodes</button>
-                            <button class="btn-medusa clearAll" @click="clearEpisodeSelectionClicked">Clear</button>
+                        <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
+                            <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
+                                <span :class="status.id">
+                                    <input type="checkbox" :id="status.id" v-model="status.checked" @change="$emit('update-overview-status', overviewStatus)">
+                                    {{status.name}}: <b>{{episodeSummary[status.name]}}</b>
+                                </span>
+                            </label>
                         </div>
                         <div class="pull-lg-right top-5">
 
-                            <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change status to:</option>
+                            <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                <option :value="'Change status to:'">Change status to:</option>
                                 <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
                                     {{ status.name }}
                                 </option>
                             </select>
 
-                            <select id="qualitySelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="null">Change quality to:</option>
+                            <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                <option :value="'Change quality to:'">Change quality to:</option>
                                 <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
                                     {{ quality.name }}
                                 </option>
@@ -277,11 +316,11 @@
 <script>
 import Truncate from 'vue-truncate-collapsed';
 import { getLanguage } from 'country-language';
-import { isVisible } from 'is-visible';
 import { scrollTo } from 'vue-scrollto';
-import { mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import { api } from '../api';
 import { combineQualities, humanFileSize } from '../utils/core';
+import { attachImdbTooltip } from '../utils/jquery';
 import { AppLink, Asset, QualityPill, StateSwitch } from './helpers';
 
 /**
@@ -349,22 +388,53 @@ export default {
     },
     data() {
         return {
-            jumpToSeason: 'jump'
+            jumpToSeason: 'jump',
+            selectedStatus: 'Change status to:',
+            selectedQuality: 'Change quality to:',
+            overviewStatus: [
+                {
+                    id: 'wanted',
+                    checked: true,
+                    name: 'Wanted'
+                },
+                {
+                    id: 'allowed',
+                    checked: true,
+                    name: 'Allowed'
+                },
+                {
+                    id: 'preferred',
+                    checked: true,
+                    name: 'Preferred'
+                },
+                {
+                    id: 'skipped',
+                    checked: true,
+                    name: 'Skipped'
+                },
+                {
+                    id: 'snatched',
+                    checked: true,
+                    name: 'Snatched'
+                }
+            ]
         };
     },
     computed: {
         ...mapState({
             config: state => state.config,
+            layout: state => state.layout,
             shows: state => state.shows.shows,
-            indexerConfig: state => state.config.indexers.config.indexers,
-            failedDownloads: state => state.config.failedDownloads,
-            displaySpecials: state => state.config.layout.show.specials,
+            indexerConfig: state => state.indexers.indexers,
+            displaySpecials: state => state.layout.show.specials,
             qualities: state => state.consts.qualities.values,
             statuses: state => state.consts.statuses,
-            search: state => state.search
+            search: state => state.search,
+            configLoaded: state => state.layout.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',
+            getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
         }),
@@ -385,6 +455,7 @@ export default {
             if (!show.indexer) {
                 return;
             }
+
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
 
@@ -395,6 +466,7 @@ export default {
             if (!showQueueStatus) {
                 return [];
             }
+
             return showQueueStatus.filter(status => status.active === true);
         },
         showGenres() {
@@ -406,48 +478,30 @@ export default {
             if (genres) {
                 result = dedupeGenres(genres.split('|'));
             }
+
             return result;
         },
-        preferredWords() {
-            const { preferred } = this.search.filters;
-            if (preferred.length > 0) {
-                return preferred;
-            }
-            return [];
-        },
-        undesiredWords() {
-            const { undesired } = this.search.filters;
-            if (undesired.length > 0) {
-                return undesired;
-            }
-            return [];
-        },
         episodeSummary() {
-            const { show } = this;
+            const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
+                Unaired: 0,
                 Skipped: 0,
                 Wanted: 0,
-                Allowed: 0,
-                Preferred: 0,
-                Unaired: 0,
                 Snatched: 0,
-                'Snatched (Proper)': 0,
-                'Snatched (Best)': 0,
-                Unset: 0,
-                Archived: 0
+                Preferred: 0,
+                Allowed: 0
             };
-
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
-                    // FIXME: with the overview status.
-                    summary[episode.status] += 1;
+                    summary[getOverviewStatus(episode.status, episode.quality, show.config.qualities)] += 1;
                 });
             });
             return summary;
         },
         changeStatusOptions() {
-            const { failedDownloads, getStatus, statuses } = this;
+            const { search, getStatus, statuses } = this;
+            const { general } = search;
 
             if (statuses.length === 0) {
                 return [];
@@ -457,7 +511,7 @@ export default {
             const defaultOptions = ['wanted', 'skipped', 'ignored', 'downloaded', 'archived']
                 .map(key => getStatus({ key }));
 
-            if (failedDownloads.enabled) {
+            if (general.failedDownloads.enabled) {
                 defaultOptions.push(getStatus({ key: 'failed' }));
             }
 
@@ -473,104 +527,38 @@ export default {
             return show.seasonCount.map(season => season.season);
         }
     },
+    mounted() {
+        ['load', 'resize'].map(event => {
+            return window.addEventListener(event, () => {
+                this.reflowLayout();
+            });
+        });
+        this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
+            // Show has changed. Meaning we should reflow the layout.
+            if (slug) {
+                const { reflowLayout } = this;
+                this.$nextTick(() => reflowLayout());
+            }
+        }, { deep: true });
+    },
     methods: {
+        ...mapActions([
+            'setSpecials'
+        ]),
         combineQualities,
         humanFileSize,
-        setQuality(quality, showSlug, episodes) {
-            const patchData = {};
-            episodes.forEach(episode => {
-                patchData[episode] = { quality: parseInt(quality, 10) };
-            });
-
-            api.patch('series/' + showSlug + '/episodes', patchData).then(response => {
-                console.info(response.data);
-                window.location.reload();
-            }).catch(error => {
-                console.error(error.data);
-            });
-        },
         changeStatusClicked() {
-            const { setQuality } = this;
-
-            const epArr = [];
-            const status = $('#statusSelect').val();
-            const quality = $('#qualitySelect').val();
-            const showSlug = $('#series-slug').val();
-
-            $('.epCheck').each((index, element) => {
-                if (element.checked === true) {
-                    epArr.push($(element).attr('id'));
-                }
-            });
-
-            if (epArr.length === 0) {
-                return false;
-            }
-
-            if (quality) {
-                setQuality(quality, showSlug, epArr);
-            }
-
-            if (status) {
-                window.location.href = $('base').attr('href') + 'home/setStatus?' +
-                    'indexername=' + $('#indexer-name').attr('value') +
-                    '&seriesid=' + $('#series-id').attr('value') +
-                    '&eps=' + epArr.join('|') +
-                    '&status=' + status;
-            }
-        },
-        showHideRows(whichClass) {
-            const status = $('#checkboxControls > input, #' + whichClass).prop('checked');
-            $('tr.' + whichClass).each((index, element) => {
-                if (status) {
-                    $(element).show();
-                } else {
-                    $(element).hide();
-                }
-            });
-
-            // Hide season headers with no episodes under them
-            $('tr.seasonheader').each((index, element) => {
-                let numRows = 0;
-                const seasonNo = $(element).attr('id');
-                $('tr.' + seasonNo + ' :visible').each(() => {
-                    numRows++;
-                });
-                if (numRows === 0) {
-                    $(element).hide();
-                    $('#' + seasonNo + '-cols').hide();
-                } else {
-                    $(element).show();
-                    $('#' + seasonNo + '-cols').show();
-                }
-            });
-        },
-        selectEpisodesClicked() {
-            // Selects all visible episode checkboxes
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = true;
-            });
-        },
-        clearEpisodeSelectionClicked() {
-            // Clears all visible episode checkboxes and the season selectors
-            [...document.querySelectorAll('.epCheck, .seasonCheck')].filter(isVisible).forEach(element => {
-                element.checked = false;
+            const { changeStatusOptions, changeQualityOptions, selectedStatus, selectedQuality } = this;
+            this.$emit('update', {
+                newStatus: selectedStatus,
+                newQuality: selectedQuality,
+                statusOptions: changeStatusOptions,
+                qualityOptions: changeQualityOptions
             });
         },
         toggleSpecials() {
-            const config = {
-                section: 'main',
-                config: {
-                    layout: {
-                        show: {
-                            specials: !this.displaySpecials
-                        }
-                    }
-                }
-            };
-            this.$store.dispatch('setConfig', config).then(() => {
-                window.location.reload();
-            });
+            const { setSpecials } = this;
+            setSpecials(!this.displaySpecials);
         },
         reverse(array) {
             return array ? array.slice().reverse() : [];
@@ -580,6 +568,49 @@ export default {
         },
         getCountryISO2ToISO3(country) {
             return getLanguage(country).iso639_2en;
+        },
+        toggleConfigOption(option) {
+            const { show } = this;
+            const { config } = show;
+            this.show.config[option] = !this.show.config[option];
+            const data = {
+                config: { [option]: config[option] }
+            };
+            api.patch('series/' + show.id.slug, data).then(_ => {
+                this.$snotify.success(
+                    `${data.config[option] ? 'enabled' : 'disabled'} show option ${option}`,
+                    'Saved',
+                    { timeout: 5000 }
+                );
+            }).catch(error => {
+                this.$snotify.error(
+                    'Error while trying to save "' + show.title + '": ' + error.message || 'Unknown',
+                    'Error'
+                );
+            });
+        },
+        reflowLayout() {
+            this.$nextTick(() => {
+                this.moveSummaryBackground();
+            });
+
+            attachImdbTooltip(); // eslint-disable-line no-undef
+        },
+        /**
+         * Adjust the summary background position and size on page load and resize
+         */
+        moveSummaryBackground() {
+            const summary = $('#summary');
+            // A hack for now, to bail if the page hasn't fully been rendered yet.
+            if (Object.keys(summary).length === 0) {
+                return;
+            }
+
+            const height = summary.height() + 10;
+            const top = summary.offset().top + 5;
+            $('#summaryBackground').height(height);
+            $('#summaryBackground').offset({ top, left: 0 });
+            $('#summaryBackground').show();
         }
     },
     watch: {
@@ -637,7 +668,7 @@ span.required {
 }
 
 span.preferred {
-    color: blue;
+    color: rgb(41, 87, 48);
 }
 
 span.undesired {
@@ -727,5 +758,79 @@ div#col-show-summary {
     #col-show-summary img.show-image {
         max-width: 280px;
     }
+}
+
+.unaired {
+    background-color: rgb(245, 241, 228);
+}
+
+.skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.preferred {
+    background-color: rgb(195, 227, 200);
+}
+
+.archived {
+    background-color: rgb(195, 227, 200);
+}
+
+.allowed {
+    background-color: rgb(255, 218, 138);
+}
+
+.wanted {
+    background-color: rgb(255, 176, 176);
+}
+
+.snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.downloaded {
+    background-color: rgb(195, 227, 200);
+}
+
+.failed {
+    background-color: rgb(255, 153, 153);
+}
+
+span.unaired {
+    color: rgb(88, 75, 32);
+}
+
+span.skipped {
+    color: rgb(29, 80, 104);
+}
+
+span.preffered {
+    color: rgb(41, 87, 48);
+}
+
+span.allowed {
+    color: rgb(118, 81, 0);
+}
+
+span.wanted {
+    color: rgb(137, 0, 0);
+}
+
+span.snatched {
+    color: rgb(101, 33, 100);
+}
+
+span.unaired b,
+span.skipped b,
+span.preferred b,
+span.allowed b,
+span.wanted b,
+span.snatched b {
+    color: rgb(0, 0, 0);
+    font-weight: 800;
+}
+
+span.global-filter {
+    font-style: italic;
 }
 </style>

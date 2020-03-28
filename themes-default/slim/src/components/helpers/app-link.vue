@@ -124,7 +124,9 @@ export default {
                 if (window.loadMainApp) {
                     return {
                         is: 'router-link',
-                        to: matchingVueRoute.fullPath
+                        to: matchingVueRoute.fullPath,
+                        // Add a `href` attribute to enable native mouse navigation (middle click, ctrl+click, etc.)
+                        href: new URL(matchingVueRoute.fullPath, base).href
                     };
                 }
             }

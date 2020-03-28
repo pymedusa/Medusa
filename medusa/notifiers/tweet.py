@@ -12,7 +12,7 @@ from requests.exceptions import RequestException
 
 from requests_oauthlib import OAuth1Session
 
-from six import text_type
+from six import PY2, text_type
 
 import twitter
 
@@ -186,7 +186,9 @@ class Notifier(object):
             'message': message
         })
         try:
-            api.PostDirectMessage(message.encode('utf-8'), screen_name=dmdest)
+            if PY2:
+                message = message.encode('utf-8')
+            api.PostDirectMessage(message, screen_name=dmdest)
         except Exception as error:
             log.error('Error Sending Tweet (DM): {0!r}', error)
             return False
@@ -199,7 +201,8 @@ class Notifier(object):
         if not app.USE_TWITTER and not force:
             return False
 
+        message = '{prefix}: {message}'.format(prefix=prefix, message=message)
         if app.TWITTER_USEDM and app.TWITTER_DMTO:
-            return self._send_dm(prefix + ': ' + message)
+            return self._send_dm(message)
         else:
-            return self._send_tweet(prefix + ': ' + message)
+            return self._send_tweet(message)

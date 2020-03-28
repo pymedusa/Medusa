@@ -4,12 +4,12 @@
 
 from __future__ import unicode_literals
 
-import collections
 import functools
 import logging
 import traceback
 
 from six import text_type, viewitems
+from six.moves import collections_abc
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -33,7 +33,7 @@ class BraceMessage(object):
         args = self.args
         kwargs = self.kwargs
         if args and len(args) == 1:
-            if args[0] and isinstance(args[0], collections.Mapping):
+            if args[0] and isinstance(args[0], collections_abc.Mapping):
                 args = []
                 kwargs = self.args[0]
 

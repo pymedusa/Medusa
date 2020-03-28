@@ -7,8 +7,9 @@ from collections import defaultdict
 from medusa import app
 from medusa.search.manual import collect_episodes_from_search_thread
 from medusa.search.queue import (
+    BacklogQueueItem,
     FailedQueueItem,
-    ForcedSearchQueueItem,
+    ManualSearchQueueItem
 )
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -127,9 +128,7 @@ class SearchHandler(BaseRequestHandler):
                                    .format(show=series.name))
 
         for segment in itervalues(episode_segments):
-            # Adding the ForcedSearchQueueItem to the forced_search_queue_scheduler. This is all going to change
-            # when we've refactored out the ForcedSearchQueueItem.
-            cur_backlog_queue_item = ForcedSearchQueueItem(series, segment)
+            cur_backlog_queue_item = BacklogQueueItem(series, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         return self._accepted('Backlog search for {0} started'.format(data['showSlug']))
@@ -216,12 +215,7 @@ class SearchHandler(BaseRequestHandler):
         for segments in ({'segment': episode_segments, 'manual_search_type': 'episode'},
                          {'segment': season_segments, 'manual_search_type': 'season'}):
             for segment in itervalues(segments['segment']):
-                # Adding the ForcedSearchQueueItem to the forced_search_queue_scheduler. This is all going to change
-                # when we've refactored out the ForcedSearchQueueItem.
-                cur_manual_search_queue_item = ForcedSearchQueueItem(series, segment,
-                                                                     down_cur_quality=False,
-                                                                     manual_search=True,
-                                                                     manual_search_type=segments['manual_search_type'])
+                cur_manual_search_queue_item = ManualSearchQueueItem(series, segment, manual_search_type=segments['manual_search_type'])
                 app.forced_search_queue_scheduler.action.add_item(cur_manual_search_queue_item)
 
         if not episode_segments and not season_segments:

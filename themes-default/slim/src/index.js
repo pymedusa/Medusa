@@ -39,7 +39,8 @@ if (window) {
         common: {},
         config: {},
         home: {},
-        addShows: {}
+        addShows: {},
+        layout: {}
     };
     window.webRoot = webRoot;
     window.apiKey = apiKey;

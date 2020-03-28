@@ -1792,8 +1792,13 @@ definitions:
                 type: array
               allowHighPriority:
                 type: boolean
-              useFailedDownloads:
-                type: boolean
+              failedDownloads:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  deleteFailed:
+                    type: boolean
               deleteFailed:
                 type: boolean
               cacheTrimming:
@@ -2825,6 +2830,10 @@ parameters:
       - notifiers
       - search
       - system
+      - postprocessing
+      - client
+      - layout
+      - indexers
   log-level:
     name: level
     in: query

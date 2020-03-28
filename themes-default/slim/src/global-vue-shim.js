@@ -3,6 +3,9 @@ import Vue from 'vue';
 import AsyncComputed from 'vue-async-computed';
 import VueMeta from 'vue-meta';
 import Snotify from 'vue-snotify';
+import VueCookies from 'vue-cookies';
+import VModal from 'vue-js-modal';
+import { VTooltip } from 'v-tooltip';
 
 import {
     AddShowOptions,
@@ -17,6 +20,7 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
+    History,
     Home,
     LanguageSelect,
     ManualPostProcess,
@@ -24,9 +28,9 @@ import {
     QualityChooser,
     QualityPill,
     RootDirs,
+    Schedule,
     ScrollButtons,
     SelectList,
-    Show,
     ShowSelector,
     SnatchSelection,
     StateSwitch,
@@ -82,9 +86,10 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
+        History,
         Home,
         ManualPostProcess,
-        Show,
+        Schedule,
         SnatchSelection,
         Status
     ]);
@@ -105,6 +110,12 @@ export const registerPlugins = () => {
     Vue.use(AsyncComputed);
     Vue.use(VueMeta);
     Vue.use(Snotify);
+    Vue.use(VueCookies);
+    Vue.use(VModal);
+    Vue.use(VTooltip);
+
+    // Set default cookie expire time
+    Vue.$cookies.config('10y');
 };
 
 /**
@@ -136,7 +147,7 @@ export default () => {
                     store.dispatch('getConfig'),
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
-                    this.$emit('loaded');
+                    this.$root.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
                     const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
                     window.dispatchEvent(event);
@@ -146,7 +157,7 @@ export default () => {
                 });
             }
 
-            this.$once('loaded', () => {
+            this.$root.$once('loaded', () => {
                 this.$root.globalLoading = false;
             });
         },

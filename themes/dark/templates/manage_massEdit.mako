@@ -80,7 +80,7 @@ window.app = new Vue({
                         <div id="core-component-group1">
                             <div class="component-group">
                                 <h3>Main Settings</h3>
-                                <em class="note">NOTE: Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em><br>
+                                <em class="note"><b>Note:</b> Changing any settings marked with (<span class="separator">*</span>) will force a refresh of the selected shows.</em><br>
                                 <br>
                                 <fieldset class="component-group-list">
                                 <div class="field-pair">

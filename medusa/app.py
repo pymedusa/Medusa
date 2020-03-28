@@ -196,10 +196,10 @@ class MedusaApp(object):
         self.SORT_ARTICLE = False
         self.DEBUG = False
         self.DBDEBUG = False
-        self.DISPLAY_ALL_SEASONS = True
         self.DEFAULT_PAGE = 'home'
         self.SEEDERS_LEECHERS_IN_NOTIFY = True
         self.SHOW_LIST_ORDER = ['Anime', 'Series']
+        self.SHOW_USE_PAGINATION = True
 
         self.USE_LISTVIEW = False
         self.METADATA_KODI = []
@@ -392,6 +392,15 @@ class MedusaApp(object):
         self.TELEGRAM_ID = ''
         self.TELEGRAM_APIKEY = ''
 
+        self.USE_DISCORD = False
+        self.DISCORD_NOTIFY_ONSNATCH = False
+        self.DISCORD_NOTIFY_ONDOWNLOAD = False
+        self.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD = False
+        self.DISCORD_WEBHOOK = None
+        self.DISCORD_NAME = 'pymedusa'
+        self.DISCORD_AVATAR_URL = '{base_url}/images/ico/favicon-144.png'.format(base_url=self.BASE_PYMEDUSA_URL)
+        self.DISCORD_TTS = False
+
         self.USE_PROWL = False
         self.PROWL_NOTIFY_ONSNATCH = False
         self.PROWL_NOTIFY_ONDOWNLOAD = False
@@ -574,9 +583,6 @@ class MedusaApp(object):
         self.ADDIC7ED_USER = None
         self.ADDIC7ED_PASS = None
 
-        self.ITASA_USER = None
-        self.ITASA_PASS = None
-
         self.LEGENDASTV_USER = None
         self.LEGENDASTV_PASS = None
 
@@ -667,7 +673,7 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_NOTIFICATIONS = True
         self.FALLBACK_PLEX_TIMEOUT = 3
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
-        self.TVDB_API_KEY = '0629B785CE550C8D'
+        self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
 
 app = MedusaApp()

@@ -63,19 +63,19 @@ class SoupTest(unittest.TestCase):
 
     @property
     def default_builder(self):
-        return default_builder()
+        return default_builder
 
     def soup(self, markup, **kwargs):
         """Build a Beautiful Soup object from markup."""
         builder = kwargs.pop('builder', self.default_builder)
         return BeautifulSoup(markup, builder=builder, **kwargs)
 
-    def document_for(self, markup):
+    def document_for(self, markup, **kwargs):
         """Turn an HTML fragment into a document.
 
         The details depend on the builder.
         """
-        return self.default_builder.test_fragment_to_document(markup)
+        return self.default_builder(**kwargs).test_fragment_to_document(markup)
 
     def assertSoupEquals(self, to_parse, compare_parsed_to=None):
         builder = self.default_builder
@@ -232,7 +232,7 @@ class HTMLTreeBuilderSmokeTest(object):
             soup = self.soup("")
             new_tag = soup.new_tag(name)
             self.assertEqual(True, new_tag.is_empty_element)
-    
+
     def test_pickle_and_unpickle_identity(self):
         # Pickling a tree, then unpickling it, yields a tree identical
         # to the original.
@@ -250,18 +250,21 @@ class HTMLTreeBuilderSmokeTest(object):
         doctype = soup.contents[0]
         self.assertEqual(doctype.__class__, Doctype)
         self.assertEqual(doctype, doctype_fragment)
-        self.assertEqual(str(soup)[:len(doctype_str)], doctype_str)
+        self.assertEqual(
+            soup.encode("utf8")[:len(doctype_str)],
+            doctype_str
+        )
 
         # Make sure that the doctype was correctly associated with the
         # parse tree and that the rest of the document parsed.
         self.assertEqual(soup.p.contents[0], 'foo')
 
-    def _document_with_doctype(self, doctype_fragment):
+    def _document_with_doctype(self, doctype_fragment, doctype_string="DOCTYPE"):
         """Generate and parse a document with the given doctype."""
-        doctype = '<!DOCTYPE %s>' % doctype_fragment
+        doctype = '<!%s %s>' % (doctype_string, doctype_fragment)
         markup = doctype + '\n<p>foo</p>'
         soup = self.soup(markup)
-        return doctype, soup
+        return doctype.encode("utf8"), soup
 
     def test_normal_doctypes(self):
         """Make sure normal, everyday HTML doctypes are handled correctly."""
@@ -274,6 +277,27 @@ class HTMLTreeBuilderSmokeTest(object):
         doctype = soup.contents[0]
         self.assertEqual("", doctype.strip())
 
+    def test_mixed_case_doctype(self):
+        # A lowercase or mixed-case doctype becomes a Doctype.
+        for doctype_fragment in ("doctype", "DocType"):
+            doctype_str, soup = self._document_with_doctype(
+                "html", doctype_fragment
+            )
+
+            # Make sure a Doctype object was created and that the DOCTYPE
+            # is uppercase.
+            doctype = soup.contents[0]
+            self.assertEqual(doctype.__class__, Doctype)
+            self.assertEqual(doctype, "html")
+            self.assertEqual(
+                soup.encode("utf8")[:len(doctype_str)],
+                b"<!DOCTYPE html>"
+            )
+
+            # Make sure that the doctype was correctly associated with the
+            # parse tree and that the rest of the document parsed.
+            self.assertEqual(soup.p.contents[0], 'foo')
+        
     def test_public_doctype_with_url(self):
         doctype = 'html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"'
         self.assertDoctypeHandled(doctype)
@@ -491,6 +515,12 @@ Hello, world!
             "<p>\u2022 AT&amp;T is in the s&amp;p 500</p>"
         )
 
+    def test_apos_entity(self):
+        self.assertSoupEquals(
+            "<p>Bob&apos;s Bar</p>",
+            "<p>Bob's Bar</p>",
+        )
+        
     def test_entities_in_foreign_document_encoding(self):
         # &#147; and &#148; are invalid numeric entities referencing
         # Windows-1252 characters. &#45; references a character common
@@ -822,7 +852,7 @@ class XMLTreeBuilderSmokeTest(object):
         soup = self.soup(markup)
         self.assertEqual(
             soup.encode("utf-8"), markup)
-
+       
     def test_nested_namespaces(self):
         doc = b"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">

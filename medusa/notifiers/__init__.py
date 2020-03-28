@@ -14,6 +14,7 @@ from medusa.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.notifiers import (
     boxcar2,
+    discord,
     emailnotify,
     emby,
     freemobile,
@@ -63,6 +64,7 @@ pushbullet_notifier = pushbullet.Notifier()
 join_notifier = join.Notifier()
 freemobile_notifier = freemobile.Notifier()
 telegram_notifier = telegram.Notifier()
+discord_notifier = discord.Notifier()
 # social
 twitter_notifier = tweet.Notifier()
 trakt_notifier = trakt.Notifier()
@@ -81,6 +83,7 @@ notifiers = [
     growl_notifier,
     freemobile_notifier,
     telegram_notifier,
+    discord_notifier,
     prowl_notifier,
     pushover_notifier,
     boxcar2_notifier,

@@ -85,7 +85,30 @@ const mutations = {
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
+    },
+    [ADD_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
+            console.warn(`Can't add exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
+            return;
+        }
+
+        currentShow.config.aliases.push(exception);
+    },
+    [REMOVE_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (!currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
+            console.warn(`Can't remove exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
+            return;
+        }
+
+        currentShow.config.aliases.splice(currentShow.config.aliases.indexOf(exception), 1);
     }
+
 };
 
 const getters = {
@@ -138,6 +161,7 @@ const actions = {
             if (detailed !== undefined) {
                 params.detailed = detailed;
                 timeout = 60000;
+                timeout = 60000;
             }
 
             if (episodes !== undefined) {
@@ -151,6 +175,39 @@ const actions = {
                     resolve(res.data);
                 })
                 .catch(error => {
+                    reject(error);
+                });
+        });
+    },
+    /**
+     * Get episdoes for a specified show from API and commit it to the store.
+     *
+     * @param {*} context - The store context.
+     * @param {ShowParameteres} parameters - Request parameters.
+     * @returns {Promise} The API response.
+     */
+    getEpisodes({ commit, getters }, { indexer, id, season }) {
+        return new Promise((resolve, reject) => {
+            const { getShowById } = getters;
+            const show = getShowById({ id, indexer });
+
+            const limit = 1000;
+            const params = {
+                limit
+            };
+
+            if (season !== undefined) {
+                params.season = season;
+            }
+
+            // Get episodes
+            api.get(`/series/${indexer}${id}/episodes`, { params })
+                .then(response => {
+                    commit(ADD_SHOW_EPISODE, { show, episodes: response.data });
+                    resolve();
+                })
+                .catch(error => {
+                    console.log(`Could not retrieve a episodes for show ${indexer}${id}, error: ${error}`);
                     reject(error);
                 });
         });

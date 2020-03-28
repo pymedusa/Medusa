@@ -29,10 +29,6 @@ class IndexerShowNotFoundInLanguage(IndexerException):
         self.language = language
 
 
-class IndexerShowIncomplete(IndexerException):
-    """Show found but incomplete in the indexer (incomplete show)."""
-
-
 class IndexerSeasonNotFound(IndexerException):
     """Season cannot be found in the indexer."""
 

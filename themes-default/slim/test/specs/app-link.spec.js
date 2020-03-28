@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
 import configModule from '../../src/store/modules/config';
+import indexersModule from '../../src/store/modules/indexers';
 import fixtures from '../__fixtures__/app-link';
 
 describe('AppLink.test.js', () => {
@@ -18,7 +19,8 @@ describe('AppLink.test.js', () => {
         const { state } = fixtures;
         store = new Store({
             modules: {
-                config: configModule
+                config: configModule,
+                indexers: indexersModule
             }
         });
         store.replaceState(state);
