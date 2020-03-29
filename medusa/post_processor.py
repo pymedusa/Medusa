@@ -206,7 +206,7 @@ class PostProcessor(object):
         :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(file_path, subfolders=subfolders)
+        files = self._search_files(file_path, subfolders=subfolders, basename_only=True)
 
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
@@ -221,12 +221,12 @@ class PostProcessor(object):
             if found_file == file_path:
                 continue
 
-            # Exclude .rar files
-            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
-                continue
-
             # Exclude non-subtitle files with the 'only subtitles' option
             if subtitles_only and not is_subtitle(found_file):
+                continue
+
+            # Exclude .rar files
+            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
                 continue
 
             file_name = os.path.basename(found_file).lower()
@@ -435,12 +435,16 @@ class PostProcessor(object):
             self.log(u'Must provide an action for the combined file operation', logger.ERROR)
             return
 
-        file_list = [file_path]
+        other_files = []
         if associated_files:
-            file_list += self.list_associated_files(file_path, refine=True)
-        elif subtitles:
-            file_list += self.list_associated_files(file_path, subtitles_only=True, refine=True)
+            other_files += self.list_associated_files(file_path, refine=True)
+        if subtitles:
+            other_files += self.list_associated_files(file_path, subfolders=True, subtitles_only=True, refine=True)
+            # Remove possible duplicates
+            if associated_files:
+                other_files = list(set(other_files))
 
+        file_list = [file_path] + other_files
         if not file_list:
             self.log(u'There were no files associated with {0}, not moving anything'.format
                      (file_path), logger.DEBUG)
@@ -521,8 +525,8 @@ class PostProcessor(object):
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink|reflink as downloaded subtitle is not part of torrent
         subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move, 'reflink': move}.get(self.process_method)
-        self._combined_file_operation(file_path, new_path, new_basename, associated_files,
-                                      action=action, subtitle_action=subtitle_action, subtitles=subtitles)
+        self._combined_file_operation(file_path, new_path, new_basename, associated_files=associated_files,
+                                      action=action, subtitles=subtitles, subtitle_action=subtitle_action)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -1230,8 +1234,8 @@ class PostProcessor(object):
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
 
-                self.post_process_action(self.file_path, dest_path, new_base_name,
-                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.series.subtitles)
+                self.post_process_action(self.file_path, dest_path, new_base_name, bool(app.MOVE_ASSOCIATED_FILES),
+                                         app.USE_SUBTITLES and bool(ep_obj.series.subtitles))
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
