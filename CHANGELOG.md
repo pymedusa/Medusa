@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Search sub-folders for subtitles during post-processing
 
 #### Fixes
 

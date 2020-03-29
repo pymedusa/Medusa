@@ -206,7 +206,7 @@ class PostProcessor(object):
         :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(file_path, subfolders=subfolders, basename_only=True)
+        files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
