@@ -3,7 +3,7 @@
         <ul>
             <li v-for="exception of items" :key="`${exception.title}-${exception.season}`">
                 <div class="input-group form-inline">
-                    <input class="form-control input-sm" type="text" :value="exception.title" @input="removeEmpty(exception)">
+                    <input class="form-control input-sm" type="text" :value="exception.title">
 
                     <select
                         name="scene-exception-season"
