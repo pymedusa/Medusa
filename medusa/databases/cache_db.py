@@ -217,6 +217,8 @@ class AddProviderTablesIdentifier(ClearProviderTables):
 
         self.drop_provider_tables()
         self.inc_major_version()
+
+
 class AddProviderTablesIdentifier(ClearProviderTables):
     """Add new pk field `identifier`."""
 
