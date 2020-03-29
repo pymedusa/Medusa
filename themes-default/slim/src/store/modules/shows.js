@@ -90,8 +90,8 @@ const mutations = {
         // Get current show object
         const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
 
-        if (currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
-            console.warn(`Can't add exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
+        if (currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
+            console.warn(`Can't add exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
             return;
         }
 
@@ -101,8 +101,8 @@ const mutations = {
         // Get current show object
         const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
 
-        if (!currentShow.config.aliases.find(e => e.seriesName === exception.seriesName && e.season === exception.season)) {
-            console.warn(`Can't remove exception ${exception.seriesName} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
+        if (!currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
+            console.warn(`Can't remove exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
             return;
         }
 

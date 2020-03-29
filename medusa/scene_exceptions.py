@@ -34,18 +34,28 @@ safe_session = MedusaSafeSession()
 TitleException = namedtuple('TitleException', 'title, season, indexer, series_id')
 
 
-def refresh_exceptions_cache():
-    """Query the db for show exceptions and update the exceptions_cache."""
+def refresh_exceptions_cache(series_obj=None):
+    """
+    Query the db for show exceptions and update the exceptions_cache.
+    :param series_obj: Series Object. If passed only exceptions for this show are refreshed.
+    """
     logger.info('Updating exception_cache and exception_season_cache')
 
     # Empty the module level variables
     exceptions_cache.clear()
 
     main_db_con = db.DBConnection()
-    exceptions = main_db_con.select(
-        'SELECT indexer, series_id, title, season '
-        'FROM scene_exceptions'
-    ) or []
+    query = """
+        SELECT indexer, series_id, title, season
+        FROM scene_exceptions
+    """
+    where = []
+
+    if series_obj:
+        query += ' WHERE indexer = ? AND series_id = ?'
+        where += [series_obj.indexer, series_obj.series_id]
+
+    exceptions = main_db_con.select(query, where) or []
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
@@ -53,7 +63,6 @@ def refresh_exceptions_cache():
         series_id = int(exception['series_id'])
         season = int(exception['season'])
         title = exception['title']
-
 
         # To support multiple indexers with same series_id, we have to combine the min a tuple.
         series = (indexer, series_id)
@@ -199,29 +208,19 @@ def update_scene_exceptions(series_obj, scene_exceptions):
     main_db_con = db.DBConnection()
 
     exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
+    # Remove exceptions for this show, so removed exceptions also become visible.
+    main_db_con.action(
+        'DELETE FROM scene_exceptions '
+        'WHERE series_id=? AND '
+        '    indexer=?',
+        [series_obj.series_id, series_obj.indexer]
+    )
 
     for exception in scene_exceptions:
         # A change has been made to the scene exception list.
-        # Let's clear the cache, to make this visible
-        main_db_con.action(
-            'DELETE FROM scene_exceptions '
-            'WHERE series_id=? AND '
-            '    indexer=?',
-            [series_obj.series_id, series_obj.indexer]
-        )
 
+        # Prevent adding duplicate scene exceptions.
         if exception['title'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
-
-            # Add to cache
-            series_exception = TitleException(
-                title=exception['title'],
-                season=exception['season'],
-                indexer=series_obj.indexer,
-                series_id=series_obj.series_id
-            )
-
-            exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']].add(series_exception)
-
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
