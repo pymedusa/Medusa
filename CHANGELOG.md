@@ -1,3 +1,13 @@
+## 0.3.14 (2020-03-30)
+
+#### Improvements
+- Search sub-folders for subtitles during post-processing
+
+#### Fixes
+- Fixed a bug that prevented the scheduler to run correctly
+
+-----
+
 ## 0.3.13 (2020-03-28)
 
 #### Improvements
