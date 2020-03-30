@@ -54,7 +54,9 @@ class Scheduler(Thread):
             self.lastRun = datetime.datetime.now()
         while force or not self.stopped.wait(self.cycleTime.total_seconds()):
             self.action.run(force)
-            if not force:
+            if force:
+                force = False
+            else:
                 self.lastRun = datetime.datetime.now()
 
     def stop(self):
