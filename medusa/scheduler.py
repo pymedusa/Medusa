@@ -20,6 +20,7 @@ class Scheduler(threading.Thread):
                  threadName='ScheduledThread', silent=True):
         super(Scheduler, self).__init__()
 
+        self._lock = threading.Lock()
         self.action = action
         self.cycleTime = cycleTime if start_time is None else datetime.timedelta(days=1)
         self.start_time = start_time
@@ -74,15 +75,18 @@ class Scheduler(threading.Thread):
                         should_run = True
 
                     if should_run:
-                        if not self.silent:
-                            log.debug('Starting new thread: {name}', {'name': self.name})
-                        self.action.run(self.force)
-                        self.lastRun = datetime.datetime.now()
+                        with self._lock:
+                            if not self.silent:
+                                log.debug('Starting new thread: {name}', {'name': self.name})
 
-                    if self.force:
-                        self.force = False
+                            self.action.run(self.force)
+                            self.lastRun = datetime.datetime.now()
+
+                            if self.force:
+                                self.force = False
 
                 time.sleep(1)
+
             # exiting thread
             self.stop.clear()
         except Exception as e:
