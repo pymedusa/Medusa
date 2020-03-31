@@ -169,7 +169,7 @@
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.join(', ')}}</td>
+                                        <td>{{show.config.aliases.filter(alias => alias.season === -1).map(alias => alias.title).join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">

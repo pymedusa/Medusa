@@ -187,7 +187,7 @@ class NameParser(object):
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         season_exception = None
         if result.season_number is None:
-            season_exception = list(scene_exceptions.get_scene_exceptions_by_name(result.title))
+            season_exception = list(scene_exceptions.get_scene_exceptions_by_name(result.series_name))
             if season_exception:
                 season_exception = season_exception[0].season
 
