@@ -1221,8 +1221,15 @@ definitions:
             type: array
             description: Local aliases for the series
             items:
-              type: string
-            example: [MySeries, MS]
+              type: Object
+              properties:
+              season:
+                type: integer
+                format: int32
+                description: Season number
+              title:
+                type: string
+                description: The alias title
           release:
             type: object
             description: Release configuration
