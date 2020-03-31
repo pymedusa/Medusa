@@ -1303,22 +1303,6 @@ definitions:
               type: integer
               format: int32
               description: Scene absolute episode number.
-      allSceneExceptions:
-        type: array
-        description: Array of objects with xem indexer to scene mappings. Available through the detailed query param.
-        items:
-          type: object
-          properties:
-            season:
-              type: integer
-              format: int32
-              description: Absolute episode number.
-            exceptions:
-              type: array
-              description: Show name exceptions (season = -1) or season exceptions (season > 0)
-              items:
-                type: string
-                description: Scene name for a show or season
       xemAbsoluteNumbering:
         type: array
         description:
