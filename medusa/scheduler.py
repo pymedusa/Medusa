@@ -70,7 +70,7 @@ class Scheduler(threading.Thread):
                         should_run = True
 
                     # check if interval has passed
-                    elif time_left.seconds <= 0:
+                    elif time_left.total_seconds() <= 0:
                         should_run = True
 
                     if should_run:
