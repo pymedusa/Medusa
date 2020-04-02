@@ -176,6 +176,6 @@ div.select-list .switch-input {
 
 .select-season {
     height: 30px;
-    padding: 0px 3px 0 2px;
+    padding: 0 3px 0 2px;
 }
 </style>
