@@ -916,7 +916,7 @@ class MoveSceneExceptions(AddReleaseIgnoreRequireExludeOptions):
 
         self.connection.action(
             'CREATE TABLE scene_exceptions '
-            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, show_name TEXT, '
+            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, title TEXT, '
             'season NUMERIC DEFAULT -1, custom NUMERIC DEFAULT 0);'
         )
 

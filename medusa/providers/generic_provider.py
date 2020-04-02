@@ -775,18 +775,18 @@ class GenericProvider(object):
                            for req_cookie in self.required_cookies):
                     return {
                         'result': False,
-                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                                'message': "You haven't configured the required cookies. Please login at {provider_url}, "
                                    'and make sure you have copied the following cookies: {required_cookies!r}'
                                    .format(provider_url=self.name, required_cookies=self.required_cookies)
                     }
 
-            elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
-                return {
-                    'result': False,
-                    'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                               'and make sure you have copied the following cookies: {required_cookies!r}'
-                               .format(provider_url=self.name, required_cookies=self.required_cookies)
-                }
+                elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
+                    return {
+                        'result': False,
+                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                                   'and make sure you have copied the following cookies: {required_cookies!r}'
+                                   .format(provider_url=self.name, required_cookies=self.required_cookies)
+                    }
 
         # cookie_validator got at least one cookie key/value pair, let's return success
         add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))

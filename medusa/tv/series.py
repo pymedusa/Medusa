@@ -618,15 +618,13 @@ class Series(TV):
         update_scene_exceptions(self, exceptions)
         self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
-        # Adding new scene exceptions, means we also need to to add new search templates.
-        self._search_templates.generate()
 
     @property
     def aliases_to_json(self):
         """Return aliases as a dict."""
         return [{
             'season': alias.season,
-            'seriesName': alias.series_name
+            'title': alias.title
             } for alias in self.aliases]
 
     @property
@@ -643,11 +641,6 @@ class Series(TV):
     def scene_absolute_numbering(self):
         """Return series scene absolute numbering."""
         return get_scene_absolute_numbering_for_show(self)
-
-    @property
-    def all_scene_exceptions(self):
-        """Return series season scene exceptions."""
-        return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
 
     @property
     def scene_numbering(self):
@@ -2132,7 +2125,6 @@ class Series(TV):
             data['showQueueStatus'] = self.show_queue_status
             data['xemNumbering'] = numbering_tuple_to_dict(self.xem_numbering)
             data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
-            data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
@@ -2194,7 +2186,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = {exception.series_name for exception in get_scene_exceptions(self, season)}
+        show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()

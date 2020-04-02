@@ -84,7 +84,6 @@ const state = {
         showQueueStatus: [],
         xemNumbering: [],
         sceneAbsoluteNumbering: [],
-        allSceneExceptions: [],
         xemAbsoluteNumbering: [],
         sceneNumbering: [],
 

@@ -1221,8 +1221,15 @@ definitions:
             type: array
             description: Local aliases for the series
             items:
-              type: string
-            example: [MySeries, MS]
+              type: Object
+              properties:
+              season:
+                type: integer
+                format: int32
+                description: Season number
+              title:
+                type: string
+                description: The alias title
           release:
             type: object
             description: Release configuration
@@ -1303,22 +1310,6 @@ definitions:
               type: integer
               format: int32
               description: Scene absolute episode number.
-      allSceneExceptions:
-        type: array
-        description: Array of objects with xem indexer to scene mappings. Available through the detailed query param.
-        items:
-          type: object
-          properties:
-            season:
-              type: integer
-              format: int32
-              description: Absolute episode number.
-            exceptions:
-              type: array
-              description: Show name exceptions (season = -1) or season exceptions (season > 0)
-              items:
-                type: string
-                description: Scene name for a show or season
       xemAbsoluteNumbering:
         type: array
         description:
@@ -1792,8 +1783,13 @@ definitions:
                 type: array
               allowHighPriority:
                 type: boolean
-              useFailedDownloads:
-                type: boolean
+              failedDownloads:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  deleteFailed:
+                    type: boolean
               deleteFailed:
                 type: boolean
               cacheTrimming:

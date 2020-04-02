@@ -23,6 +23,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 from builtins import object
 from builtins import str
 from collections import OrderedDict
@@ -954,13 +955,19 @@ class PostProcessor(object):
         episode = str(ep_obj.episode)
         airdate = str(ep_obj.airdate)
 
-        for cur_script_name in app.EXTRA_SCRIPTS:
+        for script_path in app.EXTRA_SCRIPTS:
 
-            # generate a safe command line string to execute the script and provide all the parameters
-            script_cmd = [piece for piece in cur_script_name.split(' ') if piece.strip()]
-            self.log(u'Running extra script: {0}'.format(cur_script_name), logger.INFO)
+            if not os.path.isfile(script_path):
+                self.log(u'Extra script {0} is not a file.'.format(script_path), logger.WARNING)
+                continue
 
-            script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
+            if not script_path.endswith('.py'):
+                self.log(u'Extra script {0} is not a Python file.'.format(script_path), logger.WARNING)
+                continue
+
+            self.log(u'Running extra script: {0}'.format(script_path), logger.INFO)
+            script_cmd = [sys.executable, script_path, ep_location, file_path, indexer_id, season, episode, airdate]
+
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
             try:

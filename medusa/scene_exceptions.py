@@ -31,41 +31,50 @@ exceptionLock = threading.Lock()
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
-TitleException = namedtuple('TitleException', 'series_name, season, indexer, series_id')
+TitleException = namedtuple('TitleException', 'title, season, indexer, series_id')
 
 
-def refresh_exceptions_cache():
-    """Query the db for show exceptions and update the exceptions_cache."""
+def refresh_exceptions_cache(series_obj=None):
+    """
+    Query the db for show exceptions and update the exceptions_cache.
+    :param series_obj: Series Object. If passed only exceptions for this show are refreshed.
+    """
     logger.info('Updating exception_cache and exception_season_cache')
 
     # Empty the module level variables
     exceptions_cache.clear()
 
     main_db_con = db.DBConnection()
-    exceptions = main_db_con.select(
-        'SELECT indexer, series_id, show_name, season '
-        'FROM scene_exceptions'
-    ) or []
+    query = """
+        SELECT indexer, series_id, title, season
+        FROM scene_exceptions
+    """
+    where = []
+
+    if series_obj:
+        query += ' WHERE indexer = ? AND series_id = ?'
+        where += [series_obj.indexer, series_obj.series_id]
+
+    exceptions = main_db_con.select(query, where) or []
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
         indexer = int(exception['indexer'])
         series_id = int(exception['series_id'])
         season = int(exception['season'])
-        series_name = exception['show_name']
-
+        title = exception['title']
 
         # To support multiple indexers with same series_id, we have to combine the min a tuple.
         series = (indexer, series_id)
         series_exception = TitleException(
-            series_name=series_name,
+            title=title,
             season=season,
             indexer=indexer,
             series_id=series_id
         )
 
         # exceptions_cache[(1, 12345)][season] =
-        # TitleExeption('series_name', 'season', indexer, series_id)
+        # TitleExeption('title', 'season', indexer, series_id)
         if series_exception not in exceptions_cache[series][season]:
             exceptions_cache[series][season].add(series_exception)
 
@@ -161,7 +170,7 @@ def get_scene_exceptions_by_name(show_name):
     matches = set()
     # First attempt exact match.
     for title_exception in scene_exceptions:
-        if show_name == title_exception.series_name:
+        if show_name == title_exception.title:
             matches.add(title_exception)
 
     if matches:
@@ -169,13 +178,13 @@ def get_scene_exceptions_by_name(show_name):
 
     # Let's try out some sanitized names.
     for title_exception in scene_exceptions:
-        sanitized_name = sanitize_scene_name(title_exception.series_name)
-        series_names = (
-            title_exception.series_name.lower(),
+        sanitized_name = sanitize_scene_name(title_exception.title)
+        titles = (
+            title_exception.title.lower(),
             sanitized_name.lower().replace('.', ' '),
         )
 
-        if show_name.lower() in series_names:
+        if show_name.lower() in titles:
             logger.debug(
                 'Scene exception lookup got series id {title_exception.series_id} '
                 'from indexer {title_exception.indexer},'
@@ -192,8 +201,6 @@ def update_scene_exceptions(series_obj, scene_exceptions):
 
     :param series_obj: series object.
     :param scene_exceptions: list of dicts, originating from the /config/ apiv2 route. Where scene exceptions are set from the UI.
-
-    :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
 
     logger.info('Updating scene exceptions...')
@@ -201,36 +208,25 @@ def update_scene_exceptions(series_obj, scene_exceptions):
     main_db_con = db.DBConnection()
 
     exceptions_cache[(series_obj.indexer, series_obj.series_id)].clear()
+    # Remove exceptions for this show, so removed exceptions also become visible.
+    main_db_con.action(
+        'DELETE FROM scene_exceptions '
+        'WHERE series_id=? AND '
+        '    indexer=?',
+        [series_obj.series_id, series_obj.indexer]
+    )
 
     for exception in scene_exceptions:
         # A change has been made to the scene exception list.
-        # Let's clear the cache, to make this visible
-        main_db_con.action(
-            'DELETE FROM scene_exceptions '
-            'WHERE series_id=? AND '
-            '    season=? AND '
-            '    indexer=?',
-            [series_obj.series_id, exception['season'] , series_obj.indexer]
-        )
 
-        if exception['seriesName'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
-
-            # Add to cache
-            series_exception = TitleException(
-                series_name=exception['seriesName'],
-                season=exception['season'],
-                indexer=series_obj.indexer,
-                series_id=series_obj.series_id
-            )
-
-            exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']].add(series_exception)
-
+        # Prevent adding duplicate scene exceptions.
+        if exception['title'] not in exceptions_cache[(series_obj.indexer, series_obj.series_id)][exception['season']]:
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
-                '    (indexer, series_id, show_name, season)'
+                '    (indexer, series_id, title, season)'
                 'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception['seriesName'], exception['season']]
+                [series_obj.indexer, series_obj.series_id, exception['title'], exception['season']]
             )
 
 
@@ -265,20 +261,20 @@ def retrieve_exceptions(force=False, exception_type=None):
     for indexer in combined_exceptions:
         for series_id in combined_exceptions[indexer]:
             sql_ex = main_db_con.select(
-                'SELECT show_name, indexer '
+                'SELECT title, indexer '
                 'FROM scene_exceptions '
                 'WHERE indexer = ? AND '
                 'series_id = ?',
                 [indexer, series_id]
             )
-            existing_exceptions = [x['show_name'] for x in sql_ex]
+            existing_exceptions = [x['title'] for x in sql_ex]
 
             for exception_dict in combined_exceptions[indexer][series_id]:
                 for scene_exception, season in iteritems(exception_dict):
                     if scene_exception not in existing_exceptions:
                         queries.append([
                             'INSERT OR IGNORE INTO scene_exceptions'
-                            '(indexer, series_id, show_name, season)'
+                            '(indexer, series_id, title, season)'
                             'VALUES (?,?,?,?)',
                             [indexer, series_id, scene_exception, season]
                         ])

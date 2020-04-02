@@ -95,19 +95,19 @@ def get_expected_titles(show_list):
     """
     expected_titles = []
     for show in show_list:
-        names = {show.name}.union({exception.series_name for exception in show.aliases})
-        for name in names:
-            if name.isdigit():
+        exceptions = {show.name}.union({alias.title for alias in show.aliases})
+        for exception in exceptions:
+            if exception.isdigit():
                 # do not add numbers to expected titles.
                 continue
 
-            match = series_re.match(name)
+            match = series_re.match(exception)
             if not match:
                 continue
 
             series, year, _ = match.groups()
             if year and not valid_year(int(year)):
-                series = name
+                series = exception
 
             if not any([char.isdigit() for char in series]):
                 continue

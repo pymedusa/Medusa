@@ -1,9 +1,9 @@
 <template>
     <div class="select-list max-width">
         <ul>
-            <li v-for="exception of items" :key="`${exception.seriesName}-${exception.season}`">
+            <li v-for="exception of items" :key="`${exception.title}-${exception.season}`">
                 <div class="input-group form-inline">
-                    <input class="form-control input-sm" type="text" :value="exception.seriesName" @input="removeEmpty(exception)">
+                    <input class="form-control input-sm" type="text" :value="exception.title">
 
                     <select
                         name="scene-exception-season"
@@ -92,7 +92,7 @@ export default {
         },
         unique() {
             const { items, newItem, selectedSeason } = this;
-            return !items.find(exception => exception.seriesName === newItem && exception.season === selectedSeason);
+            return !items.find(exception => exception.title === newItem && exception.season === selectedSeason);
         }
     },
     mounted() {
@@ -111,7 +111,7 @@ export default {
             }
 
             const exception = {
-                seriesName: newItem,
+                title: newItem,
                 season: selectedSeason
             };
             addSceneException({ show, exception });
@@ -128,7 +128,7 @@ export default {
         }
     },
     watch: {
-        exceptions(newExceptions, oldExceptions) {
+        exceptions(newExceptions) {
             this.items = newExceptions;
         }
     }

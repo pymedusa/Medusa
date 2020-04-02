@@ -13,7 +13,7 @@ ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.11.28](https://pypi.org/project/certifi/2019.11.28/) | **`medusa`**, `requests`, `traktor` | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
-ext | `cloudscraper` | [1.2.28](https://pypi.org/project/cloudscraper/1.2.28/) | **`medusa`** | -
+ext | `cloudscraper` | [1.2.30](https://pypi.org/project/cloudscraper/1.2.30/) | **`medusa`** | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
 ext | <code><b>contextlib2</b>.py</code> | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | -
@@ -49,7 +49,7 @@ ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | 
 ext | `python-dateutil` | [2.8.1](https://pypi.org/project/python-dateutil/2.8.1/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
-**ext2 ext3** | `PyYAML` | [5.1](https://pypi.org/project/PyYAML/5.1/) | `knowit` | Module: `yaml`
+**ext2 ext3** | **`PyYAML`**<br>`yaml` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `_yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | -
 ext | `rebulk` | [2.0.0](https://pypi.org/project/rebulk/2.0.0/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.23.0](https://pypi.org/project/requests/2.23.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -

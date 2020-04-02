@@ -172,15 +172,7 @@
                                     <p>Currently the effective list is: {{ effectiveRequired }}</p>
                                 </config-toggle-slider>
 
-                                <!-- <config-template label-for="SceneName" label="Scene Exception">
-                                    <select-list
-                                        :list-items="show.config.aliases.map(alias => alias.seriesName)"
-                                        @change="onChangeAliases"
-                                    />
-                                    <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
-                                </config-template> -->
-
-                                <config-template label-for="SceneName" label="Scene Exception">
+                                <config-template label-for="scene_exceptions" label="Scene Exception">
                                     <config-scene-exceptions v-bind="{ show, exceptions: show.config.aliases }" />
                                 </config-template>
 
@@ -474,17 +466,6 @@ export default {
         onChangeRequiredWords(items) {
             this.show.config.release.requiredWords = items.map(item => item.value);
         },
-        // onChangeAliases(items) {
-        //     const { indexers, show } = this;
-        //     this.show.config.aliases = items.map(item => {
-        //         return {
-        //             seriesName: item.value,
-        //             indexer: indexers.indexers[show.indexer].id,
-        //             season: -1,
-        //             seriesId: show.id[show.indexer]
-        //         };
-        //     });
-        // },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;
             this.show.config.release.blacklist = groupNames.blacklist;

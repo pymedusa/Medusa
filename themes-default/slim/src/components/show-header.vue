@@ -169,7 +169,7 @@
 
                                     <tr v-if="show.config.aliases.length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.join(', ')}}</td>
+                                        <td>{{show.config.aliases.filter(alias => alias.season === -1).map(alias => alias.title).join(', ')}}</td>
                                     </tr>
 
                                     <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
@@ -485,16 +485,12 @@ export default {
             const { getOverviewStatus, show } = this;
             const { seasons } = show;
             const summary = {
-                Downloaded: 0,
+                Unaired: 0,
                 Skipped: 0,
                 Wanted: 0,
-                Allowed: 0,
-                Preferred: 0,
-                Unaired: 0,
                 Snatched: 0,
-                'Snatched (Proper)': 0,
-                'Snatched (Best)': 0,
-                Unset: 0
+                Preferred: 0,
+                Allowed: 0
             };
             seasons.forEach(season => {
                 season.episodes.forEach(episode => {
@@ -505,6 +501,7 @@ export default {
         },
         changeStatusOptions() {
             const { search, getStatus, statuses } = this;
+            const { general } = search;
 
             if (statuses.length === 0) {
                 return [];
@@ -514,7 +511,7 @@ export default {
             const defaultOptions = ['wanted', 'skipped', 'ignored', 'downloaded', 'archived']
                 .map(key => getStatus({ key }));
 
-            if (search.useFailedDownloads) {
+            if (general.failedDownloads.enabled) {
                 defaultOptions.push(getStatus({ key: 'failed' }));
             }
 
