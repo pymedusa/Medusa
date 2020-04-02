@@ -44,7 +44,6 @@
                 </div>
             </div>
 
-
             <div v-if="!unique">
                 <p><b>This exception has already been added for this show.<br>Can't add the same exception twice!</b></p>
             </div>
