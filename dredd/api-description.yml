@@ -1223,13 +1223,13 @@ definitions:
             items:
               type: Object
               properties:
-              season:
-                type: integer
-                format: int32
-                description: Season number
-              title:
-                type: string
-                description: The alias title
+                season:
+                  type: integer
+                  format: int32
+                  description: Season number
+                title:
+                  type: string
+                  description: The alias title
           release:
             type: object
             description: Release configuration
