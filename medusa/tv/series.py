@@ -616,7 +616,8 @@ class Series(TV):
         """Return aliases as a dict."""
         return [{
             'season': alias.season,
-            'title': alias.title
+            'title': alias.title,
+            'custom': alias.custom
         } for alias in self.aliases]
 
     @property

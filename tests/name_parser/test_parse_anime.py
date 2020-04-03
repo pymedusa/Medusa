@@ -23,7 +23,8 @@ import pytest
                           title='NA',
                           season=2,
                           indexer=1,
-                          series_id=70668
+                          series_id=70668,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
@@ -48,7 +49,8 @@ import pytest
                           title='NA',
                           season=2,
                           indexer=1,
-                          series_id=70668
+                          series_id=70668,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 78),
@@ -105,7 +107,8 @@ import pytest
                           title='NA',
                           season=3,
                           indexer=1,
-                          series_id=262954
+                          series_id=262954,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 52),
@@ -127,7 +130,8 @@ import pytest
                           title='NA',
                           season=4,
                           indexer=1,
-                          series_id=262954
+                          series_id=262954,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 100),
@@ -197,7 +201,8 @@ import pytest
                           title='NA',
                           season=2,
                           indexer=1,
-                          series_id=262954
+                          series_id=262954,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
@@ -220,7 +225,8 @@ import pytest
                           title='NA',
                           season=2,
                           indexer=1,
-                          series_id=262954
+                          series_id=262954,
+                          custom=False
                       )
             }),
             ('medusa.scene_numbering.get_indexer_numbering', (2, 12)),

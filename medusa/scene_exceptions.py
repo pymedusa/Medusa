@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import threading
 import time
 from collections import defaultdict, namedtuple
 from os.path import join
@@ -28,7 +27,7 @@ exceptions_cache = defaultdict(lambda: defaultdict(set))
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
-TitleException = namedtuple('TitleException', 'title, season, indexer, series_id')
+TitleException = namedtuple('TitleException', 'title, season, indexer, series_id, custom')
 
 
 def refresh_exceptions_cache(series_obj=None):
@@ -44,7 +43,7 @@ def refresh_exceptions_cache(series_obj=None):
 
     main_db_con = db.DBConnection()
     query = """
-        SELECT indexer, series_id, title, season
+        SELECT indexer, series_id, title, season, custom
         FROM scene_exceptions
     """
     where = []
@@ -61,6 +60,7 @@ def refresh_exceptions_cache(series_obj=None):
         series_id = int(exception['series_id'])
         season = int(exception['season'])
         title = exception['title']
+        custom = bool(exception['custom'])
 
         # To support multiple indexers with same series_id, we have to combine the min a tuple.
         series = (indexer, series_id)
@@ -68,7 +68,8 @@ def refresh_exceptions_cache(series_obj=None):
             title=title,
             season=season,
             indexer=indexer,
-            series_id=series_id
+            series_id=series_id,
+            custom=custom
         )
 
         # exceptions_cache[(1, 12345)][season] =
@@ -220,9 +221,9 @@ def update_scene_exceptions(series_obj, scene_exceptions):
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
-                '    (indexer, series_id, title, season)'
-                'VALUES (?,?,?,?)',
-                [series_obj.indexer, series_obj.series_id, exception['title'], exception['season']]
+                '    (indexer, series_id, title, season, custom)'
+                'VALUES (?,?,?,?,?)',
+                [series_obj.indexer, series_obj.series_id, exception['title'], exception['season'], exception['custom']]
             )
 
 
@@ -270,9 +271,9 @@ def retrieve_exceptions(force=False, exception_type=None):
                     if scene_exception not in existing_exceptions:
                         queries.append([
                             'INSERT OR IGNORE INTO scene_exceptions'
-                            '(indexer, series_id, title, season)'
-                            'VALUES (?,?,?,?)',
-                            [indexer, series_id, scene_exception, season]
+                            '(indexer, series_id, title, season, custom)'
+                            'VALUES (?,?,?,?,?)',
+                            [indexer, series_id, scene_exception, season, 0]
                         ])
     if queries:
         main_db_con.mass_action(queries)
@@ -292,6 +293,7 @@ def combine_exceptions(*scene_exceptions):
 
 
 def _get_custom_exceptions(force):
+    """Exceptions maintained by the medusa.github.io repo."""
     custom_exceptions = defaultdict(dict)
 
     if force or should_refresh('custom_exceptions'):

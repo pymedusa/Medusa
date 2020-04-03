@@ -2,13 +2,14 @@
     <div class="select-list max-width">
         <ul>
             <li v-for="exception of items" :key="`${exception.title}-${exception.season}`">
-                <div class="input-group form-inline">
-                    <input class="form-control input-sm" type="text" :value="exception.title">
+                <div class="input-group form-inline" :disabled="!exception.custom">
+                    <input class="form-control input-sm" type="text" :value="exception.title" :disabled="!exception.custom">
 
                     <select
                         name="scene-exception-season"
                         class="select-season"
                         v-model="exception.season"
+                        :disabled="!exception.custom"
                     >
                         <option v-for="season in availableSeasons" :value="season.value" :key="season.value">
                             {{ season.description }}
@@ -111,13 +112,17 @@ export default {
 
             const exception = {
                 title: newItem,
-                season: selectedSeason
+                season: selectedSeason,
+                custom: true
             };
             addSceneException({ show, exception });
             clear();
         },
         removeException(exception) {
             const { clear, removeSceneException, show } = this;
+            if (!exception.custom) {
+                return;
+            }
             removeSceneException({ show, exception });
             clear();
         },

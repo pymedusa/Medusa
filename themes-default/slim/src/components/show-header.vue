@@ -167,7 +167,7 @@
                                     <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
                                     <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
 
-                                    <tr v-if="show.config.aliases.length > 0">
+                                    <tr v-if="show.config.aliases.filter(alias => alias.season === -1).length > 0">
                                         <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
                                         <td>{{show.config.aliases.filter(alias => alias.season === -1).map(alias => alias.title).join(', ')}}</td>
                                     </tr>
