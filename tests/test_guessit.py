@@ -32,7 +32,8 @@ def show_list(create_tvshow):
                           title='Mobile Suit Gundam Unicorn RE 0096',
                           season=-1,
                           indexer=1,
-                          series_id=8
+                          series_id=8,
+                          custom=False
                       )
                       ], anime=1),
         create_tvshow(indexerid=9, name='R-15'),
