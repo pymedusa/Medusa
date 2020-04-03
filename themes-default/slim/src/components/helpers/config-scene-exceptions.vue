@@ -183,4 +183,9 @@ div.select-list .switch-input {
     height: 30px;
     padding: 0 3px 0 2px;
 }
+
+.select-season[disabled=disabled] {
+    background-color: #eee;
+}
+
 </style>
