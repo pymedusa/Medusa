@@ -7,6 +7,7 @@ import os
 
 import guessit
 import medusa.name_parser.guessit_parser as sut
+from medusa.scene_exceptions import TitleException
 from medusa import app
 import pytest
 from six import binary_type, text_type, iteritems
@@ -27,7 +28,13 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=6, name='60 Minutes'),
         create_tvshow(indexerid=7, name='Incredible Show 2007'),
         create_tvshow(indexerid=8, name='Mobile Suit Gundam UC RE:0096',
-                      exceptions=['Mobile Suit Gundam Unicorn RE 0096'], anime=1),
+                      exceptions=[TitleException(
+                          title='Mobile Suit Gundam Unicorn RE 0096',
+                          season=-1,
+                          indexer=1,
+                          series_id=8
+                      )
+                      ], anime=1),
         create_tvshow(indexerid=9, name='R-15'),
         create_tvshow(indexerid=10, name='Super Show (1999)'),
         create_tvshow(indexerid=11, name='The 10 Anime Show', anime=1),
