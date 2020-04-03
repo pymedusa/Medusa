@@ -5,13 +5,12 @@
 from __future__ import unicode_literals
 
 import logging
-import time
 import threading
-from collections import defaultdict
+import time
+from collections import defaultdict, namedtuple
 from os.path import join
 
 import adba
-from collections import namedtuple
 
 from medusa import app, db
 from medusa.helpers import sanitize_scene_name
@@ -26,8 +25,6 @@ logger = BraceAdapter(logging.getLogger(__name__))
 logger.logger.addHandler(logging.NullHandler())
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
-exceptionLock = threading.Lock()
-
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
@@ -37,6 +34,7 @@ TitleException = namedtuple('TitleException', 'title, season, indexer, series_id
 def refresh_exceptions_cache(series_obj=None):
     """
     Query the db for show exceptions and update the exceptions_cache.
+
     :param series_obj: Series Object. If passed only exceptions for this show are refreshed.
     """
     logger.info('Updating exception_cache and exception_season_cache')
@@ -160,7 +158,6 @@ def get_all_scene_exceptions(series_obj):
 
 def get_scene_exceptions_by_name(show_name):
     """Get the series_id, season and indexer of the scene exception."""
-
     # Flatten the exceptions_cache.
     scene_exceptions = set()
     for exception_set in exceptions_cache.values():
@@ -202,7 +199,6 @@ def update_scene_exceptions(series_obj, scene_exceptions):
     :param series_obj: series object.
     :param scene_exceptions: list of dicts, originating from the /config/ apiv2 route. Where scene exceptions are set from the UI.
     """
-
     logger.info('Updating scene exceptions...')
 
     main_db_con = db.DBConnection()

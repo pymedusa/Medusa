@@ -776,8 +776,8 @@ class GenericProvider(object):
                     return {
                         'result': False,
                                 'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                                   'and make sure you have copied the following cookies: {required_cookies!r}'
-                                   .format(provider_url=self.name, required_cookies=self.required_cookies)
+                                'and make sure you have copied the following cookies: {required_cookies!r}'
+                                .format(provider_url=self.name, required_cookies=self.required_cookies)
                     }
 
                 elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):

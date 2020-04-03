@@ -617,7 +617,7 @@ class Series(TV):
         return [{
             'season': alias.season,
             'title': alias.title
-            } for alias in self.aliases]
+        } for alias in self.aliases]
 
     @property
     def xem_numbering(self):

@@ -219,26 +219,11 @@ class AddProviderTablesIdentifier(ClearProviderTables):
         self.inc_major_version()
 
 
-class AddProviderTablesIdentifier(ClearProviderTables):
-    """Add new pk field `identifier`."""
-
-    def test(self):
-        """Test if the version is at least 3."""
-        return self.connection.version >= (3, None)
-
-    def execute(self):
-        utils.backup_database(self.connection.path, self.connection.version)
-
-        self.drop_provider_tables()
-        self.inc_major_version()
-        return self.connection.version
-
-
 class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
-    """The scene_exceptions table has been moved to main.db"""
+    """The scene_exceptions table has been moved to main.db."""
     def test(self):
         """Test if the table history already has the indexer_id."""
-        return not self.hasTable("db_version")
+        return not self.hasTable('db_version')
 
     def execute(self):
         self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')

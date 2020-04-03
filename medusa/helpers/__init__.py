@@ -1025,7 +1025,6 @@ def get_show(name, try_indexers=False):
                 # Only use the first exception.
                 series = Show.find_by_id(app.showList, found_exceptions[0].indexer, found_exceptions[0].series_id)
 
-
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
                                series_name.lower() == s.name.lower().replace(' ({year})'.format(year=s.imdb_year), ''))
