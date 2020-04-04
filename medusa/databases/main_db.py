@@ -913,7 +913,7 @@ class MoveSceneExceptions(AddReleaseIgnoreRequireExludeOptions):
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
 
-        log.info(u"Creating a new table scene_exceptions in the main.db database.")
+        log.info('Creating a new table scene_exceptions in the main.db database.')
 
         self.connection.action(
             'CREATE TABLE scene_exceptions '

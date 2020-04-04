@@ -221,6 +221,7 @@ class AddProviderTablesIdentifier(ClearProviderTables):
 
 class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
     """The scene_exceptions table has been moved to main.db."""
+
     def test(self):
         """Test if the table history already has the indexer_id."""
         return not self.hasTable('db_version')
