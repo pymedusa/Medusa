@@ -16,7 +16,6 @@
                         </option>
                     </select>
 
-
                     <div
                         v-if="!exception.custom"
                         class="external-scene-exception"
@@ -216,10 +215,10 @@ div.select-list .switch-input {
     width: 40px;
     height: 30px;
     border: 1px solid #ccc;
-    border-top-left-radius:0px;
-    border-top-right-radius:4px;
-    border-bottom-left-radius:0px;
-    border-bottom-right-radius:4px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 4px;
     z-index: 2;
     margin-left: -1px;
 }
@@ -230,7 +229,7 @@ div.select-list .switch-input {
     margin-right: auto;
 }
 
-.external-scene-exception:last-child>.div {
+.external-scene-exception:last-child > .div {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
