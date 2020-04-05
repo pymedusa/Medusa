@@ -5,6 +5,7 @@
 #### Improvements
 
 #### Fixes
+- Fixed root dirs not allways shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
 
 -----
 
