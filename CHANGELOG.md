@@ -3,6 +3,7 @@
 #### New Features
 
 #### Improvements
+- Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
 
 #### Fixes
 
