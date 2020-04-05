@@ -86,7 +86,7 @@ def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
     It iterates over user's show list and only returns a regex for titles that contains numbers
-    (since they can confuse guessit).
+    or dashes (since they can confuse guessit).
 
     :param show_list:
     :type show_list: list of medusa.tv.Series
