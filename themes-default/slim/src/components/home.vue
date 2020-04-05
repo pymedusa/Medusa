@@ -116,7 +116,7 @@ export default {
         });
     },
     mounted() {
-        const { $snotify, config, stateLayout, setConfig } = this;
+        const { $snotify, stateLayout, setConfig } = this;
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
             $('table').trigger('filterReset');
