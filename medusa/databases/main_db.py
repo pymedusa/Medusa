@@ -8,11 +8,13 @@ import sys
 import warnings
 
 from medusa import common, db, subtitles
+from medusa import app
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
+from medusa.quality_profile import QualityProfile
 
 from six import iteritems
 
@@ -897,5 +899,81 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
             self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
         if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
             self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+class AddQualityProfiles(AddReleaseIgnoreRequireExludeOptions):
+    """Add quality profiles tables."""
+
+    def test(self):
+        """Test if the version is at least 44.15"""
+        return self.connection.version >= (44, 15)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        if not self.hasTable('quality_profiles'):
+            log.info(u'Adding quality_profiles table')
+            self.connection.action('''
+                CREATE TABLE "quality_profiles" (
+               `quality_profile_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+               `description`	TEXT,
+               `enabled`	INTEGER NOT NULL DEFAULT 0,
+               `defaultprofile`	INTEGER NOT NULL DEFAULT 0);
+            ''')
+
+        if not self.hasTable('quality_profile_options'):
+            log.info(u'Adding quality_profiles table')
+            self.connection.action('''
+                CREATE TABLE "quality_profile_options" (
+                `option_id`	INTEGER PRIMARY KEY AUTOINCREMENT,
+                `quality_profile_id`	INTEGER NOT NULL,
+                `allowed`	INTEGER,
+                `preferred`	INTEGER,
+                `size_min`	INTEGER,
+                `size_max`	INTEGER,
+                `rls_require_words`	TEXT,
+                `rls_ignore_words`	TEXT,
+                `rls_require_exclude`	INTEGER,
+                `rls_ignore_exclude`	INTEGER,
+                `priority`	INTEGER );
+            ''')
+
+        if not len(self.connection.select(
+                    'SELECT * FROM quality_profiles'
+        )):
+            log.info(u'Adding the default (0) quality profile')
+            new_profile = QualityProfile(description='default', enabled=True, default=True, quality=app.QUALITY_DEFAULT)
+            new_profile.save()
+
+        # Add new field 'quality_profile_id'
+        log.info(u'Adding new quality_profile_id field in the tv_shows table')
+        # Set it's default value to 1, for now. Each tvshow can have a different composite quality, so we need to
+        # add these profiles on the fly.
+        if not self.hasColumn('tv_shows', 'quality_profile_id'):
+            self.addColumn('tv_shows', 'quality_profile_id', 'NUMERIC', 1)
+
+        # loop through each show and get it's current configured quality
+        show_qualities = {app.QUALITY_DEFAULT: 1}
+        qualities = self.connection.select('SELECT quality, show_id, show_name FROM tv_shows')
+        counter = 1
+        for row in qualities:
+            if row['quality'] not in show_qualities:
+                profile_description = 'migrated quality profile ({0})'.format(counter)
+                counter += 1
+
+                # Create the profile
+                log.info(u'Adding a new quality profile {profile_description} for show {show}',
+                         {'profile_description': profile_description, 'show': row['show_name']})
+                profile = QualityProfile(description=profile_description, enabled=True, default=False,
+                                             quality=row['quality'])
+                profile.save()
+                show_qualities[row['quality']] = profile.profile_id
+
+            # Update the show's quality_profile_id field with the newly create profile_id
+            self.connection.action('UPDATE tv_shows SET quality_profile_id = ? WHERE show_id = ?',
+                                   [show_qualities[row['quality']], row['show_id']])
+
+
 
         self.inc_minor_version()
