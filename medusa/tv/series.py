@@ -624,8 +624,9 @@ class Series(TV):
         """Return aliases as a dict."""
         return [{
             'season': alias.season,
-            'title': alias.title
-            } for alias in self.aliases]
+            'title': alias.title,
+            'custom': alias.custom
+        } for alias in self.aliases]
 
     @property
     def xem_numbering(self):

@@ -881,7 +881,7 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
         self.inc_minor_version()
 
 
-class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+class AddReleaseIgnoreRequireExcludeOptions(AddTvshowStartSearchOffset):
     """Add release ignore and require exclude option flags."""
 
     def test(self):
@@ -900,7 +900,7 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
         self.inc_minor_version()
 
 
-class MoveSceneExceptions(AddReleaseIgnoreRequireExludeOptions):
+class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
     """Create a new table scene_exceptions in main.db, as part of the process to move it from cache to main."""
 
     def test(self):
@@ -912,7 +912,7 @@ class MoveSceneExceptions(AddReleaseIgnoreRequireExludeOptions):
     def execute(self):
         utils.backup_database(self.connection.path, self.connection.version)
 
-        log.info(u"Creating a new table scene_exceptions in the main.db database.")
+        log.info('Creating a new table scene_exceptions in the main.db database.')
 
         self.connection.action(
             'CREATE TABLE scene_exceptions '

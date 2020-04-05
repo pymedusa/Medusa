@@ -1221,15 +1221,7 @@ definitions:
             type: array
             description: Local aliases for the series
             items:
-              type: Object
-              properties:
-              season:
-                type: integer
-                format: int32
-                description: Season number
-              title:
-                type: string
-                description: The alias title
+              $ref: '#/definitions/ShowAlias'
           release:
             type: object
             description: Release configuration
@@ -2369,6 +2361,20 @@ definitions:
       series: tvdb301824
       name: TheBig
       type: local
+  ShowAlias:
+    type: object
+    description: An alias returned as part of a Series config
+    properties:
+      title:
+        type: string
+      season:
+        type: integer
+        minimum: -1
+      custom:
+        type: boolean
+    example:
+      title: TheBig
+      type: local
   Metadata:
     type: object
     properties:
@@ -2677,47 +2683,44 @@ definitions:
             format: int32
             minimum: 0
             maximum: 10000
-
-
   SearchedEpisode:
-      type: object
-      properties:
-        indexer:
-          type: integer
-          format: int32
-          description: Internal id for the shows indexer
-        series_id:
-          type: integer
-          format: int32
-          description: Unique id for the show from a shows indexer
-        episode:
-          type: integer
-          format: int32
-          description: Episode number
-        season:
-          type: integer
-          format: int32
-          description: Season number
-        episodeindexerid:
-          type: integer
-          format: int32
-          description: Unique id for the episode from a shows indexer
-        searchstatus:
-          enum:
-            - "finished"
-            - "searching"
-            - "queued"
-          description: Status of the search
-        status:
-          type: string
-          description: Episode status
-        quality_name:
-          type: string
-          description: Episode quality
-        overview:
-          type: string
-          description: Episode status/quality overview string
-
+    type: object
+    properties:
+      indexer:
+        type: integer
+        format: int32
+        description: Internal id for the shows indexer
+      series_id:
+        type: integer
+        format: int32
+        description: Unique id for the show from a shows indexer
+      episode:
+        type: integer
+        format: int32
+        description: Episode number
+      season:
+        type: integer
+        format: int32
+        description: Season number
+      episodeindexerid:
+        type: integer
+        format: int32
+        description: Unique id for the episode from a shows indexer
+      searchstatus:
+        enum:
+          - "finished"
+          - "searching"
+          - "queued"
+        description: Status of the search
+      status:
+        type: string
+        description: Episode status
+      quality_name:
+        type: string
+        description: Episode quality
+      overview:
+        type: string
+        description: Episode status/quality overview string
 parameters:
   detailed:
     name: detailed

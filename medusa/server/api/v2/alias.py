@@ -122,17 +122,17 @@ class AliasHandler(BaseRequestHandler):
         main_db_con = db.DBConnection()
         last_changes = main_db_con.connection.total_changes
         main_db_con.action('UPDATE scene_exceptions'
-                            ' set indexer = ?'
-                            ', series_id = ?'
-                            ', title = ?'
-                            ', season = ?'
-                            ', custom = 1'
-                            ' WHERE exception_id = ?',
-                            [series_identifier.indexer.id,
-                             series_identifier.id,
-                             data['name'],
-                             data.get('season'),
-                             identifier])
+                           ' set indexer = ?'
+                           ', series_id = ?'
+                           ', title = ?'
+                           ', season = ?'
+                           ', custom = 1'
+                           ' WHERE exception_id = ?',
+                           [series_identifier.indexer.id,
+                            series_identifier.id,
+                            data['name'],
+                            data.get('season'),
+                            identifier])
 
         if main_db_con.connection.total_changes - last_changes != 1:
             return self._not_found('Alias not found')
@@ -157,12 +157,12 @@ class AliasHandler(BaseRequestHandler):
         main_db_con = db.DBConnection()
         last_changes = main_db_con.connection.total_changes
         cursor = main_db_con.action('INSERT INTO scene_exceptions'
-                                     ' (indexer, series_id, title, season, custom) '
-                                     ' values (?,?,?,?,1)',
-                                     [series_identifier.indexer.id,
-                                      series_identifier.id,
-                                      data['name'],
-                                      data.get('season', -1)])
+                                    ' (indexer, series_id, title, season, custom) '
+                                    ' values (?,?,?,?,1)',
+                                    [series_identifier.indexer.id,
+                                     series_identifier.id,
+                                     data['name'],
+                                     data.get('season', -1)])
 
         if main_db_con.connection.total_changes - last_changes <= 0:
             return self._conflict('Unable to create alias')
