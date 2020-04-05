@@ -19,10 +19,10 @@
                     <div
                         v-if="!exception.custom"
                         class="external-scene-exception"
-                        v-tooltip.right="'This exception has been automatically added through an automated process sourcing title aliases from medusa.github.io, thexem.de or anidb.info'"
+                        v-tooltip.right="'This exception has been automatically added through an automated process sourcing title aliases from medusa github repo, thexem.de or anidb.info'"
                     >
                         <div class="align-center">
-                            <img src="images/ico/favicon-16.png" width="16" height="16" alt="search" title="This exception has been automatically added through an automated process sourcing title aliases from medusa.github.io, thexem.de or anidb.info.">
+                            <img src="images/ico/favicon-16.png" width="16" height="16" alt="search" title="This exception has been automatically added through an automated process sourcing title aliases from medusa github repo, thexem.de or anidb.info">
                         </div>
                     </div>
                     <div v-else class="input-group-btn" @click="removeException(exception)">
