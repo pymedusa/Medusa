@@ -50,7 +50,7 @@ class YggtorrentProvider(TorrentProvider):
         # Add Saison as a season pack search keyword, as this is a French provider.
         self.season_templates = (
             'S{season:0>2}',  # example: 'Series.Name.S03'
-            'Saison {saison:0>2}',  # example: 'Series.Name.Saison 03'
+            'Saison {season}',  # example: 'Series.Name.Saison 3'
         )
 
         # Cache
