@@ -109,7 +109,7 @@ def get_expected_titles(show_list):
             if year and not valid_year(int(year)):
                 series = name
 
-            if not any([char.isdigit() or char == '-' for char in series]):
+            if not any(char.isdigit() or char == '-' for char in series):
                 continue
 
             expected_titles.append(series)
