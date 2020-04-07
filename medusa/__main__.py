@@ -332,6 +332,14 @@ class Application(object):
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of October 1st Medusa will not run on python 2.x.\n'
+                "Python 2.x has passed it's sunset date as you can read here: {python_sunset_url}\n"
+                'Please upgrade your python version to 3.6 or higer as soon as possible!', python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
+
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
                 'Your system is using an invalid encoding: {encoding}. Please change your encoding '
