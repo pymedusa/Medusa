@@ -208,8 +208,7 @@ def update_scene_exceptions(series_obj, scene_exceptions):
     # Remove exceptions for this show, so removed exceptions also become visible.
     main_db_con.action(
         'DELETE FROM scene_exceptions '
-        'WHERE series_id=? AND '
-        '    indexer=?',
+        'WHERE series_id=? AND indexer=?',
         [series_obj.series_id, series_obj.indexer]
     )
 
@@ -221,7 +220,7 @@ def update_scene_exceptions(series_obj, scene_exceptions):
             # Add to db
             main_db_con.action(
                 'INSERT INTO scene_exceptions '
-                '    (indexer, series_id, title, season, custom)'
+                '(indexer, series_id, title, season, custom) '
                 'VALUES (?,?,?,?,?)',
                 [series_obj.indexer, series_obj.series_id, exception['title'], exception['season'], exception['custom']]
             )
@@ -270,10 +269,10 @@ def retrieve_exceptions(force=False, exception_type=None):
                 for scene_exception, season in iteritems(exception_dict):
                     if scene_exception not in existing_exceptions:
                         queries.append([
-                            'INSERT OR IGNORE INTO scene_exceptions'
-                            '(indexer, series_id, title, season, custom)'
+                            'INSERT OR IGNORE INTO scene_exceptions '
+                            '(indexer, series_id, title, season, custom) '
                             'VALUES (?,?,?,?,?)',
-                            [indexer, series_id, scene_exception, season, 0]
+                            [indexer, series_id, scene_exception, season, False]
                         ])
     if queries:
         main_db_con.mass_action(queries)
