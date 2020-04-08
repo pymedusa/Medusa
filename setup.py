@@ -97,6 +97,8 @@ setup(
         'zipp < 2.0.0 ; python_version == "2.*"',
         # configparser v5.0.0 dropped support for Python 2
         'configparser < 5.0.0 ; python_version == "2.*"',
+        # pyparsing 3.0.0 dropped support for Python 2
+        'pyparsing < 3.0.0 ; python_version == "2.*"',
         'flake8>=3.7.7',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',

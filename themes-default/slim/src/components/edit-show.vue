@@ -85,12 +85,12 @@
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
 
-                                <config-toggle-slider v-model="show.config.airByDate" label="Air by date" id="air_by_date">
+                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat($event, 'airByDate')" label="Air by date" id="airByDate">
                                     <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider v-model="show.config.anime" label="Anime" id="anime">
+                                <config-toggle-slider :value="show.config.anime" @input="changeFormat($event, 'anime')" label="Anime" id="anime">
                                     <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                                 </config-toggle-slider>
 
@@ -105,7 +105,7 @@
                                     />
                                 </config-template>
 
-                                <config-toggle-slider v-model="show.config.sports" label="Sports" id="sports">
+                                <config-toggle-slider :value="show.config.sports" @input="changeFormat($event, 'sports')" label="Sports" id="sports">
                                     <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
@@ -167,12 +167,8 @@
                                     <p>Currently the effective list is: {{ effectiveRequired }}</p>
                                 </config-toggle-slider>
 
-                                <config-template label-for="SceneName" label="Scene Exception">
-                                    <select-list
-                                        :list-items="show.config.aliases"
-                                        @change="onChangeAliases"
-                                    />
-                                    <p>This will affect episode search on NZB and torrent providers. This list appends to the original show name.</p>
+                                <config-template label-for="scene_exceptions" label="Scene Exception">
+                                    <config-scene-exceptions v-bind="{ show, exceptions: show.config.aliases }" />
                                 </config-template>
 
                                 <config-textbox-number
@@ -215,6 +211,7 @@ import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
     AppLink,
+    ConfigSceneExceptions,
     ConfigTemplate,
     ConfigTextboxNumber,
     ConfigToggleSlider,
@@ -230,6 +227,7 @@ export default {
         AnidbReleaseGroupUi,
         AppLink,
         Backstretch,
+        ConfigSceneExceptions,
         ConfigTemplate,
         ConfigTextboxNumber,
         ConfigToggleSlider,
@@ -440,15 +438,21 @@ export default {
         onChangeRequiredWords(items) {
             this.show.config.release.requiredWords = items.map(item => item.value);
         },
-        onChangeAliases(items) {
-            this.show.config.aliases = items.map(item => item.value);
-        },
         onChangeReleaseGroupsAnime(groupNames) {
             this.show.config.release.whitelist = groupNames.whitelist;
             this.show.config.release.blacklist = groupNames.blacklist;
         },
         updateLanguage(value) {
             this.show.language = value;
+        },
+        changeFormat(value, formatOption) {
+            this.show.config[formatOption] = value;
+            if (value) {
+                // Check each format option, disable the other options.
+                ['anime', 'sports', 'airByDate'].filter(item => item !== formatOption).forEach(option => {
+                    this.show.config[option] = false;
+                });
+            }
         }
     }
 };

@@ -217,3 +217,15 @@ class AddProviderTablesIdentifier(ClearProviderTables):
 
         self.drop_provider_tables()
         self.inc_major_version()
+
+
+class RemoveSceneExceptionsTable(AddProviderTablesIdentifier):
+    """The scene_exceptions table has been moved to main.db."""
+
+    def test(self):
+        """Test if the version is at least 4."""
+        return self.connection.version >= (4, None)
+
+    def execute(self):
+        self.connection.action('DROP TABLE IF EXISTS scene_exceptions;')
+        self.inc_major_version()

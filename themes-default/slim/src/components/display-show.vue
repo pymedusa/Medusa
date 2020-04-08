@@ -1084,7 +1084,8 @@ export default {
         },
         getSeasonExceptions(season) {
             const { show } = this;
-            const { allSceneExceptions } = show;
+            const { config } = show;
+            const { aliases } = config;
             let bindData = { class: 'display: none' };
 
             // Map the indexer season to a xem mapped season.
@@ -1100,15 +1101,15 @@ export default {
             }
 
             // Check if there is a season exception for this season
-            if (allSceneExceptions.find(x => x.season === season)) {
+            if (aliases.find(x => x.season === season)) {
                 // If there is not a match on the xem table, display it as a medusa scene exception
                 bindData = {
                     id: `xem-exception-season-${foundInXem ? xemSeasons[0] : season}`,
                     alt: foundInXem ? '[xem]' : '[medusa]',
                     src: foundInXem ? 'images/xem.png' : 'images/ico/favicon-16.png',
                     title: foundInXem ? xemSeasons.reduce((a, b) => {
-                        return a.concat(allSceneExceptions.find(x => x.season === b).exceptions);
-                    }, []).join(', ') : allSceneExceptions.find(x => x.season === season).exceptions.join(', ')
+                        return a.concat(aliases.filter(alias => alias.season === b).map(alias => alias.title));
+                    }, []).join(', ') : aliases.filter(alias => alias.season === season).map(alias => alias.title).join(', ')
                 };
             }
 
