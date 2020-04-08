@@ -63,7 +63,7 @@ export default {
     methods: {
         updateValue() {
             const { localChecked } = this;
-            this.$emit('input', localChecked, this);
+            this.$emit('input', localChecked);
         }
     }
 };

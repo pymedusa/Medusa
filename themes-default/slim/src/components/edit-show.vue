@@ -85,12 +85,12 @@
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
 
-                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat" label="Air by date" id="airByDate">
+                                <config-toggle-slider :value="show.config.airByDate" @input="changeFormat($event, 'airByDate')" label="Air by date" id="airByDate">
                                     <span>check if the show is released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
 
-                                <config-toggle-slider :value="show.config.anime" @input="changeFormat" label="Anime" id="anime">
+                                <config-toggle-slider :value="show.config.anime" @input="changeFormat($event, 'anime')" label="Anime" id="anime">
                                     <span>enable if the show is Anime and episodes are released as Show.265 rather than Show.S02E03</span>
                                 </config-toggle-slider>
 
@@ -105,7 +105,7 @@
                                     />
                                 </config-template>
 
-                                <config-toggle-slider :value="show.config.sports" @input="changeFormat" label="Sports" id="sports">
+                                <config-toggle-slider :value="show.config.sports" @input="changeFormat($event, 'sports')" label="Sports" id="sports">
                                     <span>enable if the show is a sporting or MMA event released as Show.03.02.2010 rather than Show.S02E03</span>
                                     <p style="color:rgb(255, 0, 0);">In case of an air date conflict between regular and special episodes, the later will be ignored.</p>
                                 </config-toggle-slider>
@@ -445,11 +445,12 @@ export default {
         updateLanguage(value) {
             this.show.language = value;
         },
-        changeFormat(value, el) {
-            this.show.config[el.id] = value;
+        changeFormat(value, formatOption) {
+            this.show.config[formatOption] = value;
             if (value) {
-                ['anime', 'sports', 'airByDate'].filter(item => item !== el.id).forEach(value => {
-                    this.show.config[value] = false;
+                // Check each format option, disable the other options.
+                ['anime', 'sports', 'airByDate'].filter(item => item !== formatOption).forEach(option => {
+                    this.show.config[option] = false;
                 });
             }
         }
