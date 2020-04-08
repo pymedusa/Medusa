@@ -770,9 +770,8 @@ class GenericProvider(object):
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
         if self.required_cookies:
-            if self.name != 'Beyond-HD':
-                if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
-                           for req_cookie in self.required_cookies):
+            if self.name == 'Beyond-HD':
+                if not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
                     return {
                         'result': False,
                         'message': "You haven't configured the required cookies. Please login at {provider_url}, "
@@ -780,8 +779,9 @@ class GenericProvider(object):
                             provider_url=self.name, required_cookies=self.required_cookies
                         )
                     }
-
-                elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
+            else:
+                if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                           for req_cookie in self.required_cookies):
                     return {
                         'result': False,
                         'message': "You haven't configured the required cookies. Please login at {provider_url}, "
