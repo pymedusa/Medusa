@@ -287,7 +287,10 @@ class AppWebServer(threading.Thread):
 
             # We need to set the WindowsSelectorEventLoop event loop on python 3 (3.8 and higher) running on windows
             if sys.platform == 'win32':
-                asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                try:
+                    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+                except AttributeError:  # Only available since Python 3.7.0
+                    pass
             asyncio.set_event_loop(asyncio.new_event_loop())
 
         if self.enable_https:
