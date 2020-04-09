@@ -80,13 +80,13 @@ jobs:
       env:
         - TOXENV=py38
       <<: *_backend_tests
-    # dredd tests (py2.7) start here
-    - name: 'Dredd tests (py2.7)'
-      python: '2.7'
+    # dredd tests (py3.7) start here
+    - name: 'Dredd tests (py3.7)'
+      python: '3.7'
       <<: *_dredd_tests
-    # dredd tests (py3.6) start here
-    - name: 'Dredd tests (py3.6)'
-      python: '3.6'
+    # dredd tests (py3.8) start here
+    - name: 'Dredd tests (py3.8)'
+      python: '3.8'
       <<: *_dredd_tests
 
 notifications:
