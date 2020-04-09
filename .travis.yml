@@ -68,6 +68,18 @@ jobs:
       env:
         - TOXENV=py36,lint
       <<: *_backend_tests
+    # backend tests (py3.7) start here
+    - name: 'Backend tests (py3.7)'
+      python: '3.7'
+      env:
+        - TOXENV=py37
+      <<: *_backend_tests
+    # backend tests (py3.8) start here
+    - name: 'Backend tests (py3.8)'
+      python: '3.8'
+      env:
+        - TOXENV=py38
+      <<: *_backend_tests
     # dredd tests (py2.7) start here
     - name: 'Dredd tests (py2.7)'
       python: '2.7'
