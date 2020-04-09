@@ -317,15 +317,16 @@ class AlterTVShowsFieldTypes(AddDefaultEpStatusToTvShows):
         log.info(u'Converting column indexer and default_ep_status field types to numeric')
         self.connection.action('DROP TABLE IF EXISTS tmp_tv_shows')
         self.connection.action('ALTER TABLE tv_shows RENAME TO tmp_tv_shows')
-        self.connection.action('CREATE TABLE tv_shows (show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, '
-                               'show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, '
-                               'runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, '
-                               'paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, '
-                               'notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, '
-                               'archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, '
-                               'sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC)')
-        self.connection.action("INSERT INTO tv_shows SELECT * FROM tmp_tv_shows")
-        self.connection.action("DROP TABLE tmp_tv_shows")
+        self.connection.action('CREATE TABLE tv_shows (show_id INTEGER PRIMARY KEY, indexer_id NUMERIC,'
+                               ' indexer NUMERIC, show_name TEXT, location TEXT, network TEXT, genre TEXT,'
+                               ' classification TEXT, runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT,'
+                               ' flatten_folders NUMERIC, paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC,'
+                               ' lang TEXT, subtitles NUMERIC, notify_list TEXT, imdb_id TEXT,'
+                               ' last_update_indexer NUMERIC, dvdorder NUMERIC, archive_firstmatch NUMERIC,'
+                               ' rls_require_words TEXT, rls_ignore_words TEXT, sports NUMERIC, anime NUMERIC,'
+                               ' scene NUMERIC, default_ep_status NUMERIC)')
+        self.connection.action('INSERT INTO tv_shows SELECT * FROM tmp_tv_shows')
+        self.connection.action('DROP TABLE tmp_tv_shows')
 
         self.incMajorDBVersion()
 
@@ -955,3 +956,4 @@ class AddSearchTemplates(MoveSceneExceptions):
             self.addColumn('tv_shows', 'templates', 'NUMERIC', 0)
 
         self.inc_minor_version()
+

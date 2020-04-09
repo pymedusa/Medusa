@@ -116,7 +116,7 @@ export default {
         });
     },
     mounted() {
-        const { $snotify, config, stateLayout, setConfig } = this;
+        const { $snotify, stateLayout, setConfig } = this;
         // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
         $(document.body).on('click', '.resetsorting', () => {
             $('table').trigger('filterReset');
@@ -400,26 +400,6 @@ export default {
                 }
             });
 
-            const rootDir = config.rootDirs;
-            const rootDirIndex = config.selectedRootIndex;
-            if (rootDir) {
-                const backendDirs = rootDir.slice(1);
-                if (backendDirs.length >= 2) {
-                    $('#showRoot').show();
-                    const item = ['All Folders'];
-                    const rootDirOptions = item.concat(backendDirs);
-                    $.each(rootDirOptions, (i, item) => {
-                        $('#showRootDir').append($('<option>', {
-                            value: i - 1,
-                            text: item
-                        }));
-                    });
-                    $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
-                } else {
-                    $('#showRoot').hide();
-                }
-            }
-
             $('#poster-container').sortable({
                 appendTo: document.body,
                 axis: 'y',
@@ -477,6 +457,34 @@ export default {
                 }
             });
         }; // END initializePage()
+
+        // Vue Stuff (prevent race condition issues)
+        const unwatch = this.$watch('config.rootDirs', () => {
+            unwatch();
+
+            const { config } = this;
+            const { rootDirs, selectedRootIndex } = config;
+
+            if (rootDirs) {
+                const backendDirs = rootDirs.slice(1);
+                if (backendDirs.length >= 2) {
+                    this.$nextTick(() => {
+                        $('#showRoot').show();
+                        const item = ['All Folders'];
+                        const rootDirOptions = item.concat(backendDirs);
+                        $.each(rootDirOptions, (i, item) => {
+                            $('#showRootDir').append($('<option>', {
+                                value: i - 1,
+                                text: item
+                            }));
+                        });
+                        $('select#showRootDir').prop('selectedIndex', selectedRootIndex + 1);
+                    });
+                } else {
+                    $('#showRoot').hide();
+                }
+            }
+        });
 
         window.addEventListener('load', initializePage, { once: true });
     }

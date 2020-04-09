@@ -47,6 +47,12 @@ class YggtorrentProvider(TorrentProvider):
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
+        # Add Saison as a season pack search keyword, as this is a French provider.
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+            'Saison {season}',  # example: 'Series.Name.Saison 3'
+        )
+
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 

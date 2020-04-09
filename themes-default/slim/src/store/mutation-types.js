@@ -16,9 +16,9 @@ const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
-const ADD_SHOW_CONFIG_TEMPLATE = '📺 Search template added to shows templates';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
 const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
+const ADD_SHOW_CONFIG_TEMPLATE = '📺 Search template added to shows templates';
 
 export {
     LOGIN_PENDING,
@@ -39,7 +39,7 @@ export {
     ADD_SHOW,
     ADD_SHOW_EPISODE,
     ADD_STATS,
-    ADD_SHOW_CONFIG_TEMPLATE,
     ADD_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW_SCENE_EXCEPTION
+    REMOVE_SHOW_SCENE_EXCEPTION,
+    ADD_SHOW_CONFIG_TEMPLATE
 };
