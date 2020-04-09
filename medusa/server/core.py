@@ -312,7 +312,7 @@ class AppWebServer(threading.Thread):
                 'port': self.options['port'],
                 'ex': ex
             })
-            #os._exit(1)  # pylint: disable=protected-access
+            os._exit(1)  # pylint: disable=protected-access
 
         try:
             self.io_loop = IOLoop.current()
