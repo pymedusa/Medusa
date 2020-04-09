@@ -13,7 +13,7 @@ ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2019.11.28](https://pypi.org/project/certifi/2019.11.28/) | **`medusa`**, `requests`, `traktor` | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
-ext | `cloudscraper` | [1.2.30](https://pypi.org/project/cloudscraper/1.2.30/) | **`medusa`** | -
+ext | `cloudscraper` | [1.2.33](https://pypi.org/project/cloudscraper/1.2.33/) | **`medusa`** | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
 ext | <code><b>contextlib2</b>.py</code> | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | -

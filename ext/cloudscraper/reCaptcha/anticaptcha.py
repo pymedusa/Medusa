@@ -1,16 +1,22 @@
 from __future__ import absolute_import
 
-from ..exceptions import reCaptchaParameter
+from ..exceptions import (
+    reCaptchaParameter,
+    reCaptchaTimeout,
+    reCaptchaAPIError
+)
 
 try:
     from python_anticaptcha import (
         AnticaptchaClient,
-        NoCaptchaTaskProxylessTask
+        NoCaptchaTaskProxylessTask,
+        HCaptchaTaskProxyless,
+        AnticaptchaException
     )
 except ImportError:
     raise ImportError(
-        "Please install the python module 'python_anticaptcha' via pip or download it from "
-        "https://github.com/ad-m/python-anticaptcha"
+        "Please install/upgrade the python module 'python_anticaptcha' via "
+        "pip install python-anticaptcha or https://github.com/ad-m/python-anticaptcha/"
     )
 
 from . import reCaptcha
@@ -23,7 +29,7 @@ class captchaSolver(reCaptcha):
 
     # ------------------------------------------------------------------------------- #
 
-    def getCaptchaAnswer(self, site_url, site_key, reCaptchaParams):
+    def getCaptchaAnswer(self, captchaType, url, siteKey, reCaptchaParams):
         if not reCaptchaParams.get('api_key'):
             raise reCaptchaParameter("anticaptcha: Missing api_key parameter.")
 
@@ -32,16 +38,30 @@ class captchaSolver(reCaptcha):
         if reCaptchaParams.get('proxy'):
             client.session.proxies = reCaptchaParams.get('proxies')
 
-        task = NoCaptchaTaskProxylessTask(site_url, site_key)
+        captchaMap = {
+            'reCaptcha': NoCaptchaTaskProxylessTask,
+            'hCaptcha': HCaptchaTaskProxyless
+        }
+
+        task = captchaMap[captchaType](url, siteKey)
 
         if not hasattr(client, 'createTaskSmee'):
             raise NotImplementedError(
                 "Please upgrade 'python_anticaptcha' via pip or download it from "
-                "https://github.com/ad-m/python-anticaptcha"
+                "https://github.com/ad-m/python-anticaptcha/tree/hcaptcha"
             )
 
         job = client.createTaskSmee(task)
-        return job.get_solution_response()
+
+        try:
+            job.join(maximum_time=180)
+        except (AnticaptchaException) as e:
+            raise reCaptchaTimeout('{}'.format(getattr(e, 'message', e)))
+
+        if 'solution' in job._last_result:
+            return job.get_solution_response()
+        else:
+            raise reCaptchaAPIError('Job did not return `solution` key in payload.')
 
 
 # ------------------------------------------------------------------------------- #
