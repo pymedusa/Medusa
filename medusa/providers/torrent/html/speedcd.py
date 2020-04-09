@@ -16,7 +16,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -29,16 +28,10 @@ class SpeedCDProvider(TorrentProvider):
         """Initialize the class."""
         super(SpeedCDProvider, self).__init__('Speedcd')
 
-        # Credentials
-        self.username = None
-        self.password = None
-
         # URLs
         self.url = 'https://speed.cd'
         self.urls = {
-            'login': urljoin(self.url, 'login.php'),
             'search': urljoin(self.url, 'browse.php'),
-            'login_post': None,
         }
 
         # Proper Strings
@@ -46,6 +39,9 @@ class SpeedCDProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = False
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies = ('inSpeed_speedian', 'inSpeed_uid')
 
         # Cache
         self.cache = tv.Cache(self)
@@ -62,17 +58,17 @@ class SpeedCDProvider(TorrentProvider):
         results = []
         if not self.login():
             return results
-
         # http://speed.cd/browse.php?c49=1&c50=1&c52=1&c41=1&c55=1&c2=1&c30=1&freeleech=on&search=arrow&d=on
         # Search Params
         search_params = {
-            'c2': 1,  # TV/Episodes
-            'c30': 1,  # Anime
-            'c41': 1,  # TV/Packs
-            'c49': 1,  # TV/HD
-            'c50': 1,  # TV/Sports
+            'c30': 1,  # TV/Anime
             'c52': 1,  # TV/B-Ray
+            'c57': 1,  # TV/DiVERSiTY
+            'c2': 1,  # TV/Episodes
+            'c49': 1,  # TV/HD
             'c55': 1,  # TV/Kids
+            'c41': 1,  # TV/Packs
+            'c50': 1,  # TV/Sports
             'search': '',
             'freeleech': 'on' if self.freeleech else None
         }
@@ -166,42 +162,7 @@ class SpeedCDProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-        }
-
-        if not self.urls['login_post'] and not self.login_url():
-            log.debug('Unable to get login URL')
-            return False
-
-        response = self.session.post(self.urls['login_post'], data=login_params)
-        if not response or not response.text:
-            log.debug('Unable to connect to provider using login URL: {url}',
-                      {'url': self.urls['login_post']})
-            return False
-        if 'incorrect username or password. please try again' in response.text.lower():
-            log.warning('Invalid username or password. Check your settings')
-            return False
-        return True
-
-        log.warning('Unable to connect to provider')
-        return
-
-    def login_url(self):
-        """Get the login url (post) as speed.cd keeps changing it."""
-        response = self.session.get(self.urls['login'])
-        if not response or not response.text:
-            log.debug('Unable to connect to provider to get login URL')
-            return
-        data = BS4Parser(response.text, 'html5lib')
-        login_post = data.soup.find('form', id='loginform').get('action')
-        if login_post:
-            self.urls['login_post'] = urljoin(self.url, login_post)
-            return True
+        return self.cookie_login('Sign in')
 
 
 provider = SpeedCDProvider()
