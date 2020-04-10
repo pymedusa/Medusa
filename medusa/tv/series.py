@@ -617,6 +617,9 @@ class Series(TV):
         """Set the series aliases."""
         update_scene_exceptions(self, exceptions)
         self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
+
+        # If we added or removed aliases, we need to make sure these are reflected in the search templates.
+        self._search_templates.generate()
         build_name_cache(self)
 
     @property
