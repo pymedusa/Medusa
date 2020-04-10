@@ -58,6 +58,7 @@ class SpeedCDProvider(TorrentProvider):
         results = []
         if not self.login():
             return results
+
         # http://speed.cd/browse.php?c49=1&c50=1&c52=1&c41=1&c55=1&c2=1&c30=1&freeleech=on&search=arrow&d=on
         # Search Params
         search_params = {
