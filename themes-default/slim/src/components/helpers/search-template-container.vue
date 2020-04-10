@@ -11,7 +11,7 @@
                     <search-template-pattern
                         v-for="template in defaultEpisodeTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
-                        :key="template.template"
+                        :key="template.id"
                     />
                 </div>
             </div>
@@ -27,7 +27,7 @@
                     <search-template-pattern
                         v-for="template in defaultSeasonTemplates"
                         v-bind="{ template, format: showFormat, animeType }"
-                        :key="template.template"
+                        :key="template.id"
                     />
                 </div>
             </div>
@@ -69,9 +69,7 @@
                             :value="1"
                             v-model="animeType"
                         />
-                        <span
-                            >Add the absolute number to the season/episode format?
-                        </span>
+                        <span>Add the absolute number to the season/episode format?</span>
                         <p>Only applies to animes. (e.g. S15E45 - 310 vs S15E45)</p>
                     </div>
                 </div>
@@ -90,10 +88,7 @@
                             :value="2"
                             v-model="animeType"
                         />
-                        <span
-                            >Replace season/episode format with absolute
-                            number</span
-                        >
+                        <span>Replace season/episode format with absolute number</span>
                         <p>Only applies to animes.</p>
                     </div>
                 </div>
@@ -356,15 +351,10 @@ export default {
         show: {
             type: Object,
             default: null
-        },
-        templates: {
-            type: Array,
-            default: () => []
         }
     },
     data() {
         return {
-            searchTemplates: [],
             animeType: 3,
             newTemplate: '',
             newTemplateShowExample: false,
@@ -372,8 +362,15 @@ export default {
         };
     },
     computed: {
+        searchTemplates() {
+            const { show } = this;
+            const { config } = show;
+            const { searchTemplates } = config;
+            return searchTemplates;
+        },
         defaultEpisodeTemplates() {
             const { searchTemplates } = this;
+
             return searchTemplates.filter(
                 template => template.default && !template.seasonSearch
             );
@@ -442,15 +439,6 @@ export default {
             } });
 
             this.update();
-        }
-    },
-    mounted() {
-        const { format, templates } = this;
-        this.searchTemplates = templates;
-    },
-    watch: {
-        templates(newTemplates, oldtemplates) {
-            this.searchTemplates = newTemplates;
         }
     }
 };

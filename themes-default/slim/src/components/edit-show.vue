@@ -200,7 +200,7 @@
                             <fieldset class="component-group-list">
                                 <search-template-container
                                     v-if="show.config.templates"
-                                    v-bind="{show, format: selectedFormat, templates: show.config.searchTemplates}"
+                                    v-bind="{show, format: selectedFormat}"
                                 />
                             </fieldset>
                         </div>

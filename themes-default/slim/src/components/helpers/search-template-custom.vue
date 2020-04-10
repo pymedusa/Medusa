@@ -23,7 +23,7 @@
                                         <option
                                             :value="option"
                                             v-for="option in selectTitles"
-                                            :key="option.seriesName"
+                                            :key="option.title"
                                             >{{
                                                 titleOptionDescription(option)
                                             }}
@@ -186,7 +186,7 @@ export default {
             if (!selectedTitle || !addPattern) {
                 return '';
             }
-            return `${selectedTitle.seriesName}${separator}${addPattern}`;
+            return `${selectedTitle.title}${separator}${addPattern}`;
         },
         selectTitles() {
             const { show } = this;
@@ -197,7 +197,7 @@ export default {
                 indexer: show.indexer,
                 seriesId: show.id[show.indexer],
                 season: -1,
-                seriesName: title
+                title: title
             };
 
             return [...[titleOption], ...aliases];
@@ -211,7 +211,7 @@ export default {
                 seasonDescription = ` (Season ${option.season} exception)`;
             }
 
-            return option.seriesName + seasonDescription;
+            return option.title + seasonDescription;
         },
         async testNaming() {
             const { animeType, combinedPattern, format } = this;
