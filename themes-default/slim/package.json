@@ -59,7 +59,7 @@
   "devDependencies": {
     "@babel/core": "7.9.0",
     "@babel/plugin-transform-runtime": "7.9.0",
-    "@babel/preset-env": "7.9.0",
+    "@babel/preset-env": "7.9.5",
     "@babel/runtime": "7.9.2",
     "@mapbox/stylelint-processor-arbitrary-tags": "0.3.0",
     "@sharkykh/eslint-plugin-vue-extra": "0.1.1",
