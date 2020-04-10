@@ -239,7 +239,7 @@ class PageElement(object):
             raise ValueError("Cannot replace a Tag with its parent.")
         old_parent = self.parent
         my_index = self.parent.index(self)
-        self.extract()
+        self.extract(_self_index=my_index)
         old_parent.insert(my_index, replace_with)
         return self
     replaceWith = replace_with  # BS3
@@ -255,7 +255,7 @@ class PageElement(object):
                 "Cannot replace an element with its contents when that"
                 "element is not part of a tree.")
         my_index = self.parent.index(self)
-        self.extract()
+        self.extract(_self_index=my_index)
         for child in reversed(self.contents[:]):
             my_parent.insert(my_index, child)
         return self
@@ -273,13 +273,19 @@ class PageElement(object):
         wrap_inside.append(me)
         return wrap_inside
 
-    def extract(self):
+    def extract(self, _self_index=None):
         """Destructively rips this element out of the tree.
+
+        :param _self_index: The location of this element in its parent's
+           .contents, if known. Passing this in allows for a performance
+           optimization.
 
         :return: `self`, no longer part of the tree.
         """
         if self.parent is not None:
-            del self.parent.contents[self.parent.index(self)]
+            if _self_index is None:
+                _self_index = self.parent.index(self)
+            del self.parent.contents[_self_index]
 
         #Find the two elements that would be next to each other if
         #this element (and any children) hadn't been parsed. Connect
@@ -481,7 +487,7 @@ class PageElement(object):
         :param text: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_one(self.find_all_next, name, attrs, text, **kwargs)
     findNext = find_next  # BS3
@@ -517,7 +523,7 @@ class PageElement(object):
         :param text: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_one(self.find_next_siblings, name, attrs, text,
                              **kwargs)
@@ -556,7 +562,7 @@ class PageElement(object):
         :param text: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_one(
             self.find_all_previous, name, attrs, text, **kwargs)
@@ -595,7 +601,7 @@ class PageElement(object):
         :param text: A filter for a NavigableString with specific text.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_one(self.find_previous_siblings, name, attrs, text,
                              **kwargs)
@@ -634,7 +640,7 @@ class PageElement(object):
         :kwargs: A dictionary of filters on attribute values.
 
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         # NOTE: We can't use _find_one because findParents takes a different
         # set of arguments.
@@ -657,7 +663,7 @@ class PageElement(object):
         :kwargs: A dictionary of filters on attribute values.
 
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self._find_all(name, attrs, None, limit, self.parents,
                              **kwargs)
@@ -669,7 +675,7 @@ class PageElement(object):
         """The PageElement, if any, that was parsed just after this one.
 
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self.next_element
 
@@ -678,7 +684,7 @@ class PageElement(object):
         """The PageElement, if any, that was parsed just before this one.
 
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         return self.previous_element
 
@@ -802,6 +808,14 @@ class PageElement(object):
             yield i
             i = i.parent
 
+    @property
+    def decomposed(self):
+        """Check whether a PageElement has been decomposed.
+
+        :rtype: bool
+        """
+        return getattr(self, '_decomposed', False) or False
+            
     # Old non-property versions of the generators, for backwards
     # compatibility with BS3.
     def nextGenerator(self):
@@ -976,6 +990,33 @@ class Doctype(PreformattedString):
 
     PREFIX = '<!DOCTYPE '
     SUFFIX = '>\n'
+
+
+class Stylesheet(NavigableString):
+    """A NavigableString representing an stylesheet (probably
+    CSS).
+
+    Used to distinguish embedded stylesheets from textual content.
+    """
+    pass
+
+    
+class Script(NavigableString):
+    """A NavigableString representing an executable script (probably
+    Javascript).
+
+    Used to distinguish executable code from textual content.
+    """
+    pass
+
+
+class TemplateString(NavigableString):
+    """A NavigableString representing a string found inside an HTML
+    template embedded in a larger document.
+
+    Used to distinguish such strings from the main body of the document.
+    """
+    pass
 
 
 class Tag(PageElement):
@@ -1197,7 +1238,7 @@ class Tag(PageElement):
             a subclass not found in this list will be ignored. By
             default, this means only NavigableString and CData objects
             will be considered. So no comments, processing instructions,
-            etc.
+            stylesheets, etc.
 
         :return: A string.
         """
@@ -1211,15 +1252,21 @@ class Tag(PageElement):
 
         This element will be removed from the tree and wiped out; so
         will everything beneath it.
+
+        The behavior of a decomposed PageElement is undefined and you
+        should never use one for anything, but if you need to _check_
+        whether an element has been decomposed, you can use the
+        `decomposed` property.
         """
         self.extract()
         i = self
         while i is not None:
-            next = i.next_element
+            n = i.next_element
             i.__dict__.clear()
             i.contents = []
-            i = next
-
+            i._decomposed = True
+            i = n
+           
     def clear(self, decompose=False):
         """Wipe out all children of this PageElement by calling extract()
            on them.
@@ -1670,7 +1717,7 @@ class Tag(PageElement):
         :param limit: Stop looking after finding this many results.
         :kwargs: A dictionary of filters on attribute values.
         :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
         """
         r = None
         l = self.find_all(name, attrs, recursive, text, 1, **kwargs)
@@ -1743,8 +1790,8 @@ class Tag(PageElement):
         :param kwargs: Keyword arguments to be passed into SoupSieve's 
            soupsieve.select() method.
 
-        :return: A PageElement.
-        :rtype: bs4.element.PageElement
+        :return: A Tag.
+        :rtype: bs4.element.Tag
         """
         value = self.select(selector, namespaces, 1, **kwargs)
         if value:
@@ -1768,7 +1815,7 @@ class Tag(PageElement):
         :param kwargs: Keyword arguments to be passed into SoupSieve's 
            soupsieve.select() method.
 
-        :return: A ResultSet of PageElements.
+        :return: A ResultSet of Tags.
         :rtype: bs4.element.ResultSet
         """
         if namespaces is None:
