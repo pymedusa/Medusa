@@ -3,7 +3,7 @@ babelfish @ https://codeload.github.com/Diaoul/babelfish/tar.gz/f403000dd63092cf
 beautifulsoup4==4.8.2
 bencode.py==2.1.0
 CacheControl==0.12.6
-certifi==2019.11.28
+certifi==2020.4.5.1
 chardet==3.0.4
 cloudscraper==1.2.33
 configobj==5.0.6
