@@ -39,7 +39,18 @@ except ImportError as e:
     new_html5lib = True
 
 class HTML5TreeBuilder(HTMLTreeBuilder):
-    """Use html5lib to build a tree."""
+    """Use html5lib to build a tree.
+
+    Note that this TreeBuilder does not support some features common
+    to HTML TreeBuilders. Some of these features could theoretically
+    be implemented, but at the very least it's quite difficult,
+    because html5lib moves the parse tree around as it's being built.
+
+    * This TreeBuilder doesn't use different subclasses of NavigableString
+      based on the name of the tag in which the string was found.
+
+    * You can't use a SoupStrainer to parse only part of a document.
+    """
 
     NAME = "html5lib"
 
@@ -116,6 +127,9 @@ class TreeBuilderForHtml5lib(treebuilder_base.TreeBuilder):
                 "", "html.parser", store_line_numbers=store_line_numbers,
                 **kwargs
             )
+        # TODO: What are **kwargs exactly? Should they be passed in
+        # here in addition to/instead of being passed to the BeautifulSoup
+        # constructor?
         super(TreeBuilderForHtml5lib, self).__init__(namespaceHTMLElements)
 
         # This will be set later to an html5lib.html5parser.HTMLParser

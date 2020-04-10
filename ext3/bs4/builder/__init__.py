@@ -7,8 +7,11 @@ import sys
 from bs4.element import (
     CharsetMetaAttributeValue,
     ContentMetaAttributeValue,
+    Stylesheet,
+    Script,
+    TemplateString,
     nonwhitespace_re
-    )
+)
 
 __all__ = [
     'HTMLTreeBuilder',
@@ -111,7 +114,12 @@ class TreeBuilder(object):
     # comma-separated list of CDATA, rather than a single CDATA.
     DEFAULT_CDATA_LIST_ATTRIBUTES = {}
 
+    # Whitespace should be preserved inside these tags.
     DEFAULT_PRESERVE_WHITESPACE_TAGS = set()
+
+    # The textual contents of tags with these names should be
+    # instantiated with some class other than NavigableString.
+    DEFAULT_STRING_CONTAINERS = {}
     
     USE_DEFAULT = object()
 
@@ -120,12 +128,14 @@ class TreeBuilder(object):
     
     def __init__(self, multi_valued_attributes=USE_DEFAULT,
                  preserve_whitespace_tags=USE_DEFAULT,
-                 store_line_numbers=USE_DEFAULT):
+                 store_line_numbers=USE_DEFAULT,
+                 string_containers=USE_DEFAULT,
+    ):
         """Constructor.
 
         :param multi_valued_attributes: If this is set to None, the
          TreeBuilder will not turn any values for attributes like
-         'class' into lists. Setting this do a dictionary will
+         'class' into lists. Setting this to a dictionary will
          customize this behavior; look at DEFAULT_CDATA_LIST_ATTRIBUTES
          for an example.
 
@@ -137,6 +147,12 @@ class TreeBuilder(object):
          the way <pre> tags are treated in HTML. Tags in this list
          are immune from pretty-printing; their contents will always be
          output as-is.
+
+        :param string_containers: A dictionary mapping tag names to
+        the classes that should be instantiated to contain the textual
+        contents of those tags. The default is to use NavigableString
+        for every tag, no matter what the name. You can override the
+        default by changing DEFAULT_STRING_CONTAINERS.
 
         :param store_line_numbers: If the parser keeps track of the
          line numbers and positions of the original markup, that
@@ -155,7 +171,10 @@ class TreeBuilder(object):
         self.preserve_whitespace_tags = preserve_whitespace_tags
         if store_line_numbers == self.USE_DEFAULT:
             store_line_numbers = self.TRACKS_LINE_NUMBERS
-        self.store_line_numbers = store_line_numbers
+        self.store_line_numbers = store_line_numbers 
+        if string_containers == self.USE_DEFAULT:
+            string_containers = self.DEFAULT_STRING_CONTAINERS
+        self.string_containers = string_containers
         
     def initialize_soup(self, soup):
         """The BeautifulSoup object has been initialized and is now
@@ -369,6 +388,22 @@ class HTMLTreeBuilder(TreeBuilder):
     # but it may do so eventually, and this information is available if
     # you need to use it.
     block_elements = set(["address", "article", "aside", "blockquote", "canvas", "dd", "div", "dl", "dt", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hr", "li", "main", "nav", "noscript", "ol", "output", "p", "pre", "section", "table", "tfoot", "ul", "video"])
+
+    # The HTML standard defines an unusual content model for these tags.
+    # We represent this by using a string class other than NavigableString
+    # inside these tags.
+    #
+    # I made this list by going through the HTML spec
+    # (https://html.spec.whatwg.org/#metadata-content) and looking for
+    # "metadata content" elements that can contain strings.
+    #
+    # TODO: Arguably <noscript> could go here but it seems
+    # qualitatively different from the other tags.
+    DEFAULT_STRING_CONTAINERS = {
+        'style': Stylesheet,
+        'script': Script,
+        'template': TemplateString,
+    }    
     
     # The HTML standard defines these attributes as containing a
     # space-separated list of values, not a single value. That is,

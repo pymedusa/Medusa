@@ -16,6 +16,8 @@ from bs4.element import (
     ContentMetaAttributeValue,
     Doctype,
     SoupStrainer,
+    Script,
+    Stylesheet,
     Tag
 )
 
@@ -233,6 +235,22 @@ class HTMLTreeBuilderSmokeTest(object):
             new_tag = soup.new_tag(name)
             self.assertEqual(True, new_tag.is_empty_element)
 
+    def test_special_string_containers(self):
+        soup = self.soup(
+            "<style>Some CSS</style><script>Some Javascript</script>"
+        )
+        assert isinstance(soup.style.string, Stylesheet)
+        assert isinstance(soup.script.string, Script)
+
+        soup = self.soup(
+            "<style><!--Some CSS--></style>"
+        )
+        assert isinstance(soup.style.string, Stylesheet)
+        # The contents of the style tag resemble an HTML comment, but
+        # it's not treated as a comment.
+        self.assertEqual("<!--Some CSS-->", soup.style.string)
+        assert isinstance(soup.style.string, Stylesheet)
+        
     def test_pickle_and_unpickle_identity(self):
         # Pickling a tree, then unpickling it, yields a tree identical
         # to the original.
