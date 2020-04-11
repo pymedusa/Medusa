@@ -18,6 +18,9 @@ const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
 const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
 const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
+const ADD_HISTORY = '📺 History added to store';
+const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
+const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
 
 export {
     LOGIN_PENDING,
@@ -35,9 +38,12 @@ export {
     NOTIFICATIONS_ENABLED,
     NOTIFICATIONS_DISABLED,
     ADD_CONFIG,
+    ADD_HISTORY,
     ADD_SHOW,
     ADD_SHOW_EPISODE,
     ADD_STATS,
     ADD_SHOW_SCENE_EXCEPTION,
-    REMOVE_SHOW_SCENE_EXCEPTION
+    REMOVE_SHOW_SCENE_EXCEPTION,
+    ADD_SHOW_HISTORY,
+    ADD_SHOW_EPISODE_HISTORY
 };
