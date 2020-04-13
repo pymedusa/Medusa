@@ -18,16 +18,16 @@
                     {{releaseName}}
                 </span>
                 <vue-good-table
-                            :columns="columns"
-                            :rows="subtitles"
-                            :search-options="{
-                                enabled: false
-                            }"
-                            :sort-options="{
-                                enabled: true,
-                                initialSortBy: { field: 'score', type: 'desc' }
-                            }"
-                            styleClass="vgt-table condensed subtitle-table"
+                    :columns="columns"
+                    :rows="subtitles"
+                    :search-options="{
+                        enabled: false
+                    }"
+                    :sort-options="{
+                        enabled: true,
+                        initialSortBy: { field: 'score', type: 'desc' }
+                    }"
+                    styleClass="vgt-table condensed subtitle-table"
                 >
                     <template v-slot:table-column="props">
                         <span v-if="props.column.label === 'Download'">
@@ -64,7 +64,6 @@
                     </template>
                 </vue-good-table>
             </div>
-
 
         </td>
     </tr>
@@ -205,7 +204,7 @@ export default {
                 });
         },
         manualSearch() {
-            const { getShowEpisodeHistory, subtitleParams } = this;
+            const { subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loading = true;

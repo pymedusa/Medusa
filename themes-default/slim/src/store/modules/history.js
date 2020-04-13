@@ -29,7 +29,7 @@ const mutations = {
         }
 
         Vue.set(state.episodeHistory[showSlug], episodeSlug, history);
-    },
+    }
 };
 
 const getters = {
@@ -37,14 +37,14 @@ const getters = {
     getLastReleaseName: state => ({ showSlug, episodeSlug }) => {
         if (state.episodeHistory[showSlug] !== undefined) {
             if (state.episodeHistory[showSlug][episodeSlug] !== undefined) {
-                if ( state.episodeHistory[showSlug][episodeSlug].length === 1) {
+                if (state.episodeHistory[showSlug][episodeSlug].length === 1) {
                     return state.episodeHistory[showSlug][episodeSlug][0].resource;
                 }
                 const filteredHistory = state.episodeHistory[showSlug][episodeSlug]
                     .sort((a, b) => (a.actionDate - b.actionDate) * -1)
-                    .filter(ep => ['Snatched', 'Downloaded'].includes(ep.statusName) &&  ep.resource !== '');
+                    .filter(ep => ['Snatched', 'Downloaded'].includes(ep.statusName) && ep.resource !== '');
                 if (filteredHistory.length > 0) {
-                    return filteredHistory[0].resource
+                    return filteredHistory[0].resource;
                 }
             }
         }
@@ -92,7 +92,7 @@ const actions = {
         while (!lastPage) {
             state.page += 1;
             params.page = state.page;
-            response = await api.get(`/history`, { params }); // No way around this.
+            response = await api.get('/history', { params }); // eslint-disable-line no-await-in-loop
             commit(ADD_HISTORY, response.data);
 
             if (response.data.length < limit) {
@@ -114,7 +114,7 @@ const actions = {
         if (response.data.length > 0) {
             commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });
         }
-    },
+    }
 };
 
 export default {
