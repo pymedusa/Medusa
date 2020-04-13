@@ -2103,6 +2103,12 @@ class Series(TV):
             data['config']['release']['blacklist'] = bw_list.blacklist
             data['config']['release']['whitelist'] = bw_list.whitelist
 
+        # Make sure these are at least defined
+        data['xemNumbering'] = []
+        data['sceneAbsoluteNumbering'] = []
+        data['xemAbsoluteNumbering'] = []
+        data['sceneNumbering'] = []
+
         if detailed:
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
@@ -2111,9 +2117,6 @@ class Series(TV):
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
-            else:
-                data['xemAbsoluteNumbering'] = []
-                data['sceneNumbering'] = []
 
         if episodes:
             all_episodes = self.get_all_episodes()
