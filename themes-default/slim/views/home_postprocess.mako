@@ -46,7 +46,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <b>Force already Post Processed Dir/Files:</b>
+                        <b>Force already Post-Processed Dir/Files:</b>
                     </td>
                     <td>
                         <input id="force" name="force" type="checkbox">

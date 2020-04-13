@@ -4,7 +4,7 @@
             <form id="configForm" class="form-horizontal" @submit.prevent="save()">
                 <div id="config-components">
                     <ul>
-                        <li><app-link href="#post-processing">Post Processing</app-link></li>
+                        <li><app-link href="#post-processing">Post-Processing</app-link></li>
                         <li><app-link href="#episode-naming">Episode Naming</app-link></li>
                         <li><app-link href="#metadata">Metadata</app-link></li>
                     </ul>
@@ -13,26 +13,26 @@
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>Scheduled Post-Processing</h3>
                                 <p>Settings that dictate how Medusa should process completed downloads.</p>
-                                <p>The scheduled postprocessor will periodically scan a folder for media to process.</p>
+                                <p>The scheduled post-processor will periodically scan a folder for media to process.</p>
                             </div>
 
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
                                     <div class="form-group">
                                         <label for="process_automatically" class="col-sm-2 control-label">
-                                            <span>Scheduled Postprocessor</span>
+                                            <span>Scheduled Post-Processor</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postprocessing.processAutomatically" sync />
-                                            <p>Enable the scheduled post processor to scan and process any files in your <i>Post Processing Dir</i>?</p>
-                                            <div class="clear-left"><p><b>Note:</b> Do not use if you use an external Post Processing script</p></div>
+                                            <p>Enable the scheduled post-processor to scan and process any files in your <i>Post-Processing Dir</i>?</p>
+                                            <div class="clear-left"><p><b>Note:</b> Do not use if you use an external post-processing script</p></div>
                                         </div>
                                     </div>
 
                                     <div v-show="postprocessing.processAutomatically" id="post-process-toggle-wrapper">
                                         <div class="form-group">
                                             <label for="tv_download_dir" class="col-sm-2 control-label">
-                                                <span>Post Processing Dir</span>
+                                                <span>Post-Processing Dir</span>
                                             </label>
                                             <div class="col-sm-10 content">
                                                 <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
@@ -72,13 +72,13 @@
                         <div class="row component-group">
                             <div class="component-group-desc col-xs-12 col-md-2">
                                 <h3>General Post-Processing</h3>
-                                <p>Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts</p>
+                                <p>Generic post-processing settings that apply both to the scheduled post-processor as external scripts</p>
                             </div>
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
                                     <div class="form-group">
                                         <label for="postpone_if_sync_files" class="col-sm-2 control-label">
-                                            <span>Postpone post processing</span>
+                                            <span>Postpone post-processing</span>
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="postpone_if_sync_files" name="postpone_if_sync_files" v-model="postprocessing.postponeIfSyncFiles" sync />
@@ -92,7 +92,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
-                                            <span>Comma separated list of extensions or filename globs Medusa ignores when post processing</span>
+                                            <span>Comma separated list of extensions or filename globs Medusa ignores when post-processing</span>
                                         </div>
                                     </div>
 
@@ -104,8 +104,8 @@
                                             <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postprocessing.postponeIfNoSubs" sync />
                                             <span>Wait to process a file until subtitles are present</span><br>
                                             <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
-                                            <span><b>Note:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
-                                            <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
+                                            <span><b>Note:</b> Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
+                                            <span>If you have any active show with subtitle search disabled, you must enable Automatic post-processor.</span>
                                         </div>
                                     </div>
 
@@ -145,7 +145,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="move_associated_files" name="move_associated_files" v-model="postprocessing.moveAssociatedFiles" sync />
-                                            <span>Delete srt/srr/sfv/etc files while post processing?</span>
+                                            <span>Delete srt/srr/sfv/etc files while post-processing?</span>
                                         </div>
                                     </div>
 
@@ -155,7 +155,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
-                                            <span>Comma separated list of associated file extensions Medusa should keep while post processing.</span><br>
+                                            <span>Comma separated list of associated file extensions Medusa should keep while post-processing.</span><br>
                                             <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
                                     </div>
@@ -219,8 +219,8 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postprocessing.noDelete" sync />
-                                            <span>Leave empty folders when Post Processing?</span><br>
-                                            <span><b>Note:</b> Can be overridden using manual Post Processing</span>
+                                            <span>Leave empty folders when post-processing?</span><br>
+                                            <span><b>Note:</b> Can be overridden using manual post-processing</span>
                                         </div>
                                     </div>
 
@@ -473,7 +473,7 @@ export default {
             try {
                 await setConfig({ section, config });
                 this.$snotify.success(
-                    'Saved Post-Processing config',
+                    'Saved Postprocessing config',
                     'Saved',
                     { timeout: 5000 }
                 );

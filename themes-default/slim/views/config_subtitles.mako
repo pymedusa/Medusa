@@ -100,7 +100,7 @@ window.app = new Vue({
                                     <span class="component-title">Download only one language (any)</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(app.SUBTITLES_STOP_AT_FIRST)]}/>
-                                        <p>Stop download subtitles after first download</p>
+                                        <p>Stop to download subtitles after first download</p>
                                     </span>
                                 </label>
                             </div>
@@ -109,7 +109,7 @@ window.app = new Vue({
                                     <span class="component-title">Erase subtitles cache on next boot</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="subtitles_erase_cache" id="subtitles_erase_cache" ${('', 'checked="checked"')[bool(app.SUBTITLES_ERASE_CACHE)]}/>
-                                        <p>Erases all subtitles cache files. May help fix some subtitles not being found</p>
+                                        <p>Erases all subtitles cache files. May fix some subtitles not being found</p>
                                     </span>
                                 </label>
                             </div>
@@ -191,8 +191,8 @@ window.app = new Vue({
                                     <span class="component-title">Unknown language</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS)]}/>
-                                        <p>Consider unknown embedded subtitles as wanted language to avoid postpone post-process</p>
-                                        <p>Only works with setting 'Postpone post processing' enabled</p>
+                                        <p>Consider unknown embedded subtitles as wanted language to avoid postponing of post-process</p>
+                                        <p>Only works with setting 'Postpone post-processing' enabled</p>
                                     </span>
                                 </label>
                             </div>
