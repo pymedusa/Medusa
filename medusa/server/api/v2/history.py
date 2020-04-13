@@ -25,7 +25,7 @@ class HistoryHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
 
     def get(self, series_slug, path_param):
-        """Query search history information."""
+        """Query history information."""
 
         sql_base = '''
             SELECT rowid, date, action, quality,
@@ -68,6 +68,7 @@ class HistoryHandler(BaseRequestHandler):
                 d['statusName'] = statusStrings.get(item['action'])
                 d['season'] = item['season']
                 d['episode'] = item['episode']
+                d['manuallySearched'] = bool(item['manually_searched'])
 
                 provider = get_provider_class(GenericProvider.make_id(item['provider']))
                 d['provider'] = {}
@@ -83,9 +84,8 @@ class HistoryHandler(BaseRequestHandler):
 
         return self._paginate(data_generator=data_generator)
 
-
     def delete(self, identifier, **kwargs):
-        """Delete an alias."""
+        """Delete a history record."""
         identifier = self._parse(identifier)
         if not identifier:
             return self._bad_request('Invalid history id')
@@ -94,6 +94,6 @@ class HistoryHandler(BaseRequestHandler):
         last_changes = cache_db_con.connection.total_changes
         cache_db_con.action('DELETE FROM history WHERE row_id = ?', [identifier])
         if cache_db_con.connection.total_changes - last_changes <= 0:
-            return self._not_found('Alias not found')
+            return self._not_found('History row not found')
 
         return self._no_content()

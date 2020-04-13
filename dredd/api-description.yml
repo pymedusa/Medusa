@@ -995,6 +995,66 @@ paths:
         400:
           $ref: '#/responses/error'
           x-disabled: true
+  /history/{seriesid}:
+    get:
+      summary: Return history entries to a specific show
+      description: |
+        The history endpoint returns logged activities stored in the history table, like episodes snatched and downloaded. Or downloaded subtitles for an episode.
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination'
+          description: A paged array of history entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/History'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            query-params:
+              sort: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
+  /history/{seriesid}/episode/{episodeid}:
+    get:
+      summary: Return history entries for a specific episode
+      description: |
+        The histories episode endpoint returns history entries for a specific episode
+      parameters:
+        - $ref: '#/parameters/series-id'
+          name: seriesid
+        - $ref: '#/parameters/episode-id'
+          name: episodeid
+      responses:
+        200:
+          description: Array of History entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/History'
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            query-params:
+              sort: abc
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
 
 definitions:
   Series:
@@ -2721,6 +2781,47 @@ definitions:
       overview:
         type: string
         description: Episode status/quality overview string
+
+  History:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: Internal id for the history row
+      series:
+        type: string
+        description: Series slug (if available)
+      status:
+        type: integer
+        format: int32
+        description: Status (numberic)
+      statusName:
+        type: string
+        description: Status description
+      actionDate:
+        type: integer
+        format: int32
+        description: Date of when the history entrie was stored
+      resource:
+        type: string
+        description: Description of what was stored
+        example:
+            - The release name for a statusName of "Downloaded" or "Snatched"
+            - The language of a subitle downloaded fo ra statusName of "Subtitled"
+      size:
+        type: integer
+        description: Snatched or Downloaded filesize
+      season:
+        type: integer
+        description: Season number
+      episode:
+        type: integer
+        description: Episode number
+      manuallySearched:
+        type: boolean
+        description: Specifies if an episode was snatched or downloaded through a manual search
+
 parameters:
   detailed:
     name: detailed

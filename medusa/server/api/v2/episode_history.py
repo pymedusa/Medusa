@@ -52,11 +52,11 @@ class EpisodeHistoryHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         if not episode_slug:
-            return self._not_found('Invalid episode slug')
+            return self._bad_request('Invalid episode slug')
 
         episode_number = EpisodeNumber.from_slug(episode_slug)
         if not episode_number:
-            return self._bad_request('Invalid episode number')
+            return self._not_found('Invalid episode number')
 
         episode = Episode.find_by_series_and_episode(series, episode_number)
         if not episode:
@@ -93,7 +93,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
                 d['statusName'] = statusStrings.get(item['action'])
                 d['season'] = item['season']
                 d['episode'] = item['episode']
-                d['manuallySearched'] = item['manually_searched']
+                d['manuallySearched'] = bool(item['manually_searched'])
 
                 provider = get_provider_class(GenericProvider.make_id(item['provider']))
                 d['provider'] = {}
