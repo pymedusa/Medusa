@@ -473,7 +473,7 @@ export default {
             try {
                 await setConfig({ section, config });
                 this.$snotify.success(
-                    'Saved Postprocessing config',
+                    'Saved Post-Processing config',
                     'Saved',
                     { timeout: 5000 }
                 );
