@@ -15,7 +15,7 @@
 
             <div v-if="subtitles.length > 0" class="subtitle-results">
                 <span class="release-name">
-                    Select subtitle for release name: {{releaseName}}
+                    {{releaseName}}
                 </span>
                 <vue-good-table
                             :columns="columns"
@@ -146,11 +146,9 @@ export default {
             const { episode, getLastReleaseName, show } = this;
             const lastKnownReleaseName = getLastReleaseName({ showSlug: show.id.slug, episodeSlug: episode.slug });
             if (lastKnownReleaseName) {
-                return lastKnownReleaseName;
-            } else {
-                return 'Could not get a downloaded release name from the history table'
+                return `Select subtitle for release: ${lastKnownReleaseName}`;
             }
-
+            return 'Could not get a downloaded release name from the history table';
         },
         subtitleParams() {
             const { episode, show } = this;

@@ -40,7 +40,12 @@ const getters = {
                 if ( state.episodeHistory[showSlug][episodeSlug].length === 1) {
                     return state.episodeHistory[showSlug][episodeSlug][0].resource;
                 }
-                return state.episodeHistory[showSlug][episodeSlug].sort((a, b) => (a.actionDate - b.actionDate) * -1).filter(ep => ep.resource !== '')[0].resource;
+                const filteredHistory = state.episodeHistory[showSlug][episodeSlug]
+                    .sort((a, b) => (a.actionDate - b.actionDate) * -1)
+                    .filter(ep => ['Snatched', 'Downloaded'].includes(ep.statusName) &&  ep.resource !== '');
+                if (filteredHistory.length > 0) {
+                    return filteredHistory[0].resource
+                }
             }
         }
     }
