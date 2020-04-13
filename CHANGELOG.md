@@ -1,6 +1,4 @@
-## Unreleased
-
-#### New Features
+## 0.3.15 (2020-04-13)
 
 #### Improvements
 - Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
