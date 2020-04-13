@@ -2821,6 +2821,18 @@ definitions:
       manuallySearched:
         type: boolean
         description: Specifies if an episode was snatched or downloaded through a manual search
+      provider:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Provider id
+          name:
+            type: string
+            description: Provider name
+          imagename:
+            type: string
+            description: Provider icon image name.
 
 parameters:
   detailed:
