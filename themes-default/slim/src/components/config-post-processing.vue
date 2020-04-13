@@ -87,6 +87,16 @@
                                     </div>
 
                                     <div class="form-group">
+                                        <label for="process_if_file_size_different" class="col-sm-2 control-label">
+                                            <span>Process file size changes</span>
+                                        </label>
+                                        <div class="col-sm-10 content">
+                                            <toggle-button :width="45" :height="22" id="process_if_file_size_different" name="process_if_file_size_different" v-model="postprocessing.processIfFileSizeDifferent" sync />
+                                            <span>If a download is of the same exist quality but file sizes are different, process anyhow.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
                                         <label for="sync_files" class="col-sm-2 control-label">
                                             <span>Sync File Extensions</span>
                                         </label>

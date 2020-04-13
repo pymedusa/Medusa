@@ -905,7 +905,7 @@ class PostProcessor(object):
         return any([self.in_history, self.is_priority, self.manually_searched])
 
     @staticmethod
-    def _should_process(current_quality, new_quality, allowed, preferred):
+    def _should_process(current_quality, new_quality, allowed, preferred, existing_file_status):
         """
         Determine if a quality should be processed according to the quality system.
 
@@ -918,6 +918,7 @@ class PostProcessor(object):
         :param new_quality: The new quality of the episode that is being processed
         :param allowed: Qualities that are allowed
         :param preferred: Qualities that are preferred
+        :param existing_file_status: PostProcessor enum with existing file status
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
         if new_quality in preferred:
@@ -927,6 +928,8 @@ class PostProcessor(object):
                 elif new_quality < current_quality:
                     return False, 'New quality is lower than current Preferred. Ignoring quality'
                 else:
+                    if existing_file_status != PostProcessor.EXISTS_SAME:
+                        return True, 'New size is different. Accepting quality'
                     return False, 'New quality is equal than current Preferred. Ignoring quality'
             return True, 'New quality is Preferred'
         elif new_quality in allowed:
@@ -939,6 +942,8 @@ class PostProcessor(object):
             elif new_quality < current_quality:
                 return False, 'New quality is lower than current Allowed. Ignoring quality'
             else:
+                if existing_file_status != PostProcessor.EXISTS_SAME:
+                    return True, 'New size is different. Accepting quality'
                 return False, 'New quality is equal to current Allowed. Ignoring quality'
         else:
             return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
@@ -1081,7 +1086,8 @@ class PostProcessor(object):
                              (Quality.qualityStrings[new_ep_quality],
                               Quality.qualityStrings[old_ep_quality]))
                     should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
-                                                                                 allowed_qualities, preferred_qualities)
+                                                                                 allowed_qualities, preferred_qualities,
+                                                                                 existing_file_status)
                     if not should_process:
                         raise EpisodePostProcessingFailedException(
                             u'File exists. Marking it unsafe to replace. Reason: {0}'.format(should_process_reason))
