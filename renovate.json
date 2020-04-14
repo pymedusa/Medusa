@@ -20,6 +20,10 @@
         "allowedVersions": "<4"
       },
       {
+        "packageNames": ["jquery"],
+        "allowedVersions": ">=3.5.1"
+      },
+      {
         "packageNames": [
           "vue",
           "vue-template-compiler",

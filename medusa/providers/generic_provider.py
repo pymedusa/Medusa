@@ -770,23 +770,25 @@ class GenericProvider(object):
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
         if self.required_cookies:
-            if self.name != 'Beyond-HD':
+            if self.name == 'Beyond-HD':
+                if not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
+                    return {
+                        'result': False,
+                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
+                    }
+            else:
                 if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
                            for req_cookie in self.required_cookies):
                     return {
                         'result': False,
                         'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                                   'and make sure you have copied the following cookies: {required_cookies!r}'
-                                   .format(provider_url=self.name, required_cookies=self.required_cookies)
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
                     }
-
-            elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
-                return {
-                    'result': False,
-                    'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                               'and make sure you have copied the following cookies: {required_cookies!r}'
-                               .format(provider_url=self.name, required_cookies=self.required_cookies)
-                }
 
         # cookie_validator got at least one cookie key/value pair, let's return success
         add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))

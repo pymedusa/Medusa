@@ -27,8 +27,11 @@ from bs4.element import (
     Doctype,
     Formatter,
     NavigableString,
+    Script,
     SoupStrainer,
+    Stylesheet,
     Tag,
+    TemplateString,
 )
 from bs4.testing import (
     SoupTest,
@@ -1275,6 +1278,23 @@ class TestTreeModification(SoupTest):
         a.clear(decompose=True)
         self.assertEqual(0, len(em.contents))
 
+       
+    def test_decompose(self):
+        # Test PageElement.decompose() and PageElement.decomposed
+        soup = self.soup("<p><a>String <em>Italicized</em></a></p><p>Another para</p>")
+        p1, p2 = soup.find_all('p')
+        a = p1.a
+        text = p1.em.string
+        for i in [p1, p2, a, text]:
+            self.assertEqual(False, i.decomposed)
+
+        # This sets p1 and everything beneath it to decomposed.
+        p1.decompose()
+        for i in [p1, a, text]:
+            self.assertEqual(True, i.decomposed)
+        # p2 is unaffected.
+        self.assertEqual(False, p2.decomposed)
+            
     def test_string_set(self):
         """Tag.string = 'string'"""
         soup = self.soup("<a></a> <b><c></c></b>")
@@ -1391,7 +1411,7 @@ class TestElementObjects(SoupTest):
         self.assertEqual(soup.a.get_text(","), "a,r, , t ")
         self.assertEqual(soup.a.get_text(",", strip=True), "a,r,t")
 
-    def test_get_text_ignores_comments(self):
+    def test_get_text_ignores_special_string_containers(self):
         soup = self.soup("foo<!--IGNORE-->bar")
         self.assertEqual(soup.get_text(), "foobar")
 
@@ -1400,9 +1420,16 @@ class TestElementObjects(SoupTest):
         self.assertEqual(
             soup.get_text(types=None), "fooIGNOREbar")
 
-    def test_all_strings_ignores_comments(self):
+        soup = self.soup("foo<style>CSS</style><script>Javascript</script>bar")
+        self.assertEqual(soup.get_text(), "foobar")
+        
+    def test_all_strings_ignores_special_string_containers(self):
         soup = self.soup("foo<!--IGNORE-->bar")
         self.assertEqual(['foo', 'bar'], list(soup.strings))
+
+        soup = self.soup("foo<style>CSS</style><script>Javascript</script>bar")
+        self.assertEqual(['foo', 'bar'], list(soup.strings))
+
 
 class TestCDAtaListAttributes(SoupTest):
 
@@ -1777,6 +1804,23 @@ class TestEncoding(SoupTest):
 
 class TestFormatter(SoupTest):
 
+    def test_default_attributes(self):
+        # Test the default behavior of Formatter.attributes().
+        formatter = Formatter()
+        tag = Tag(name="tag")
+        tag['b'] = 1
+        tag['a'] = 2
+
+        # Attributes come out sorted by name. In Python 3, attributes
+        # normally come out of a dictionary in the order they were
+        # added.
+        self.assertEqual([('a', 2), ('b', 1)], formatter.attributes(tag))
+
+        # This works even if Tag.attrs is None, though this shouldn't
+        # normally happen.
+        tag.attrs = None
+        self.assertEqual([], formatter.attributes(tag))
+        
     def test_sort_attributes(self):
         # Test the ability to override Formatter.attributes() to,
         # e.g., disable the normal sorting of attributes.
@@ -1839,6 +1883,31 @@ class TestNavigableStringSubclasses(SoupTest):
     def test_declaration(self):
         d = Declaration("foo")
         self.assertEqual("<?foo?>", d.output_ready())
+
+    def test_default_string_containers(self):
+        # In some cases, we use different NavigableString subclasses for
+        # the same text in different tags.
+        soup = self.soup(
+            "<div>text</div><script>text</script><style>text</style>"
+        )
+        self.assertEqual(
+            [NavigableString, Script, Stylesheet],
+            [x.__class__ for x in soup.find_all(text=True)]
+        )
+
+        # The TemplateString is a little unusual because it's generally found
+        # _inside_ children of a <template> element, not a direct child of the
+        # <template> element.
+        soup = self.soup(
+            "<template>Some text<p>In a tag</p></template>Some text outside"
+        )
+        assert all(isinstance(x, TemplateString) for x in soup.template.strings)
+
+        # Once the <template> tag closed, we went back to using
+        # NavigableString.
+        outside = soup.template.next_sibling
+        assert isinstance(outside, NavigableString)
+        assert not isinstance(outside, TemplateString)
 
 class TestSoupSelector(TreeTest):
 

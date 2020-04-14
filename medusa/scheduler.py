@@ -41,13 +41,12 @@ class Scheduler(threading.Thread):
             if self.start_time is None:
                 return self.cycleTime - (datetime.datetime.now() - self.lastRun)
             else:
-                time_now = datetime.datetime.now()
-                start_time_today = datetime.datetime.combine(time_now.date(), self.start_time)
-                if time_now >= start_time_today:
-                    start_time_tomorrow = start_time_today + datetime.timedelta(days=1)
-                    return start_time_tomorrow - time_now
-                else:
-                    return start_time_today - time_now
+                last_run = self.lastRun
+                start_time_next = datetime.datetime.combine(last_run.date(), self.start_time)
+                if last_run > start_time_next:
+                    start_time_next += self.cycleTime
+
+                return start_time_next - datetime.datetime.now()
         else:
             return datetime.timedelta(seconds=0)
 
