@@ -217,6 +217,7 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.deleteRarContent': BooleanField(app, 'DELRARCONTENTS'),
         'postProcessing.unpack': BooleanField(app, 'UNPACK'),
         'postProcessing.noDelete': BooleanField(app, 'NO_DELETE'),
+        'postProcessing.processIfFileSizeDifferent': BooleanField(app, 'PROCESS_IF_FILE_SIZE_DIFFERENT'),
         'postProcessing.postponeIfSyncFiles': BooleanField(app, 'POSTPONE_IF_SYNC_FILES'),
         'postProcessing.autoPostprocessorFrequency': IntegerField(app, 'AUTOPOSTPROCESSOR_FREQUENCY'),
         'postProcessing.airdateEpisodes': BooleanField(app, 'AIRDATE_EPISODES'),
@@ -1127,6 +1128,7 @@ class DataGenerator(object):
         section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
         section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
         section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+        section_data['processIfFileSizeDifferent'] = bool(app.PROCESS_IF_FILE_SIZE_DIFFERENT)
         section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
         section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
         section_data['renameEpisodes'] = bool(app.RENAME_EPISODES)
