@@ -161,8 +161,8 @@ def get_scene_exceptions_by_name(show_name):
     """Get the series_id, season and indexer of the scene exception."""
     # Flatten the exceptions_cache.
     scene_exceptions = set()
-    for exception_set in exceptions_cache.values():
-        for title_exception in exception_set.values():
+    for exception_set in list(exceptions_cache.values()):
+        for title_exception in list(exception_set.values()):
             scene_exceptions.update(title_exception)
 
     matches = set()

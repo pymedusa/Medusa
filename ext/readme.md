@@ -34,7 +34,7 @@ ext | `guessit` | [3.1.0](https://pypi.org/project/guessit/3.1.0/) | **`medusa`*
 ext | `html5lib` | [1.0.1](https://pypi.org/project/html5lib/1.0.1/) | **`medusa`** (via `beautifulsoup4`) | -
 ext | `idna` | [2.8](https://pypi.org/project/idna/2.8/) | `requests` | -
 ext | `imdbpie` | [5.6.4](https://pypi.org/project/imdbpie/5.6.4/) | **`medusa`** | -
-ext | `jsonrpclib-pelix` | [0.4.0](https://pypi.org/project/jsonrpclib-pelix/0.4.0/) | **`medusa`** | Module: `jsonrpclib`
+ext | `jsonrpclib-pelix` | [0.4.1](https://pypi.org/project/jsonrpclib-pelix/0.4.1/) | **`medusa`** | Module: `jsonrpclib`
 ext | `knowit` | [eea9ac1](https://github.com/ratoaq2/knowit/tree/eea9ac18e38c930230cf81b5dca4a9af9fb10d4e) | **`medusa`** | -
 ext | `Mako` | [1.1.2](https://pypi.org/project/Mako/1.1.2/) | **`medusa`** | Module: `mako`
 ext | <code><b>markdown2</b>.py</code> | [2.3.8](https://pypi.org/project/markdown2/2.3.8/) | **`medusa`** | -

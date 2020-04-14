@@ -11,6 +11,8 @@
 - Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
 - Fixed starting medusa failed running python3.8 on windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
 - Fixed Speed.cd provider login ([#7941](https://github.com/pymedusa/Medusa/pull/7941))
+- Fixed [#7959](https://github.com/pymedusa/Medusa/issues/7959) - UI bug on schedule calendar view ([#7962](https://github.com/pymedusa/Medusa/pull/7962))
+- Fixed running Scheduler with specific start time ([#7963](https://github.com/pymedusa/Medusa/pull/7963))
 
 -----
 
