@@ -928,7 +928,7 @@ class PostProcessor(object):
                 elif new_quality < current_quality:
                     return False, 'New quality is lower than current Preferred. Ignoring quality'
                 else:
-                    if existing_file_status != PostProcessor.EXISTS_SAME:
+                    if app.PROCESS_IF_FILE_SIZE_DIFFERENT and existing_file_status != PostProcessor.EXISTS_SAME:
                         return True, 'New size is different. Accepting quality'
                     return False, 'New quality is equal than current Preferred. Ignoring quality'
             return True, 'New quality is Preferred'
@@ -942,7 +942,7 @@ class PostProcessor(object):
             elif new_quality < current_quality:
                 return False, 'New quality is lower than current Allowed. Ignoring quality'
             else:
-                if existing_file_status != PostProcessor.EXISTS_SAME:
+                if app.PROCESS_IF_FILE_SIZE_DIFFERENT and existing_file_status != PostProcessor.EXISTS_SAME:
                     return True, 'New size is different. Accepting quality'
                 return False, 'New quality is equal to current Allowed. Ignoring quality'
         else:

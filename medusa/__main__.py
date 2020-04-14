@@ -643,6 +643,7 @@ class Application(object):
             app.PROCESS_METHOD = check_setting_str(app.CFG, 'General', 'process_method', 'copy' if app.KEEP_PROCESSED_DIR else 'move')
             app.DELRARCONTENTS = bool(check_setting_int(app.CFG, 'General', 'del_rar_contents', 0))
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
+            app.PROCESS_IF_FILE_SIZE_DIFFERENT = bool(check_setting_int(app.CFG, 'General', 'process_if_file_size_different', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
             app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
@@ -1563,6 +1564,7 @@ class Application(object):
         new_config['General']['move_associated_files'] = int(app.MOVE_ASSOCIATED_FILES)
         new_config['General']['sync_files'] = app.SYNC_FILES
         new_config['General']['postpone_if_sync_files'] = int(app.POSTPONE_IF_SYNC_FILES)
+        new_config['General']['process_if_file_size_different'] = int(app.PROCESS_IF_FILE_SIZE_DIFFERENT)
         new_config['General']['postpone_if_no_subs'] = int(app.POSTPONE_IF_NO_SUBS)
         new_config['General']['nfo_rename'] = int(app.NFO_RENAME)
         new_config['General']['process_automatically'] = int(app.PROCESS_AUTOMATICALLY)
