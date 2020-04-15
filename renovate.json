@@ -20,6 +20,10 @@
         "allowedVersions": "<4"
       },
       {
+        "packageNames": ["jquery"],
+        "allowedVersions": ">=3.5.1"
+      },
+      {
         "packageNames": [
           "vue",
           "vue-template-compiler",
@@ -38,6 +42,14 @@
       {
         "packageNames": ["tornado"],
         "allowedVersions": "<6"
+      },
+      {
+        "packageNames": ["PyGithub"],
+        "allowedVersions": "<=1.45"
+      },
+      {
+        "packageNames": ["rarfile"],
+        "allowedVersions": "<=3.1"
       }
     ]
   }

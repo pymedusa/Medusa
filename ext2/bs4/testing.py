@@ -16,6 +16,8 @@ from bs4.element import (
     ContentMetaAttributeValue,
     Doctype,
     SoupStrainer,
+    Script,
+    Stylesheet,
     Tag
 )
 
@@ -233,6 +235,22 @@ class HTMLTreeBuilderSmokeTest(object):
             new_tag = soup.new_tag(name)
             self.assertEqual(True, new_tag.is_empty_element)
 
+    def test_special_string_containers(self):
+        soup = self.soup(
+            "<style>Some CSS</style><script>Some Javascript</script>"
+        )
+        assert isinstance(soup.style.string, Stylesheet)
+        assert isinstance(soup.script.string, Script)
+
+        soup = self.soup(
+            "<style><!--Some CSS--></style>"
+        )
+        assert isinstance(soup.style.string, Stylesheet)
+        # The contents of the style tag resemble an HTML comment, but
+        # it's not treated as a comment.
+        self.assertEqual("<!--Some CSS-->", soup.style.string)
+        assert isinstance(soup.style.string, Stylesheet)
+        
     def test_pickle_and_unpickle_identity(self):
         # Pickling a tree, then unpickling it, yields a tree identical
         # to the original.
@@ -250,18 +268,21 @@ class HTMLTreeBuilderSmokeTest(object):
         doctype = soup.contents[0]
         self.assertEqual(doctype.__class__, Doctype)
         self.assertEqual(doctype, doctype_fragment)
-        self.assertEqual(str(soup)[:len(doctype_str)], doctype_str)
+        self.assertEqual(
+            soup.encode("utf8")[:len(doctype_str)],
+            doctype_str
+        )
 
         # Make sure that the doctype was correctly associated with the
         # parse tree and that the rest of the document parsed.
         self.assertEqual(soup.p.contents[0], 'foo')
 
-    def _document_with_doctype(self, doctype_fragment):
+    def _document_with_doctype(self, doctype_fragment, doctype_string="DOCTYPE"):
         """Generate and parse a document with the given doctype."""
-        doctype = '<!DOCTYPE %s>' % doctype_fragment
+        doctype = '<!%s %s>' % (doctype_string, doctype_fragment)
         markup = doctype + '\n<p>foo</p>'
         soup = self.soup(markup)
-        return doctype, soup
+        return doctype.encode("utf8"), soup
 
     def test_normal_doctypes(self):
         """Make sure normal, everyday HTML doctypes are handled correctly."""
@@ -274,6 +295,27 @@ class HTMLTreeBuilderSmokeTest(object):
         doctype = soup.contents[0]
         self.assertEqual("", doctype.strip())
 
+    def test_mixed_case_doctype(self):
+        # A lowercase or mixed-case doctype becomes a Doctype.
+        for doctype_fragment in ("doctype", "DocType"):
+            doctype_str, soup = self._document_with_doctype(
+                "html", doctype_fragment
+            )
+
+            # Make sure a Doctype object was created and that the DOCTYPE
+            # is uppercase.
+            doctype = soup.contents[0]
+            self.assertEqual(doctype.__class__, Doctype)
+            self.assertEqual(doctype, "html")
+            self.assertEqual(
+                soup.encode("utf8")[:len(doctype_str)],
+                b"<!DOCTYPE html>"
+            )
+
+            # Make sure that the doctype was correctly associated with the
+            # parse tree and that the rest of the document parsed.
+            self.assertEqual(soup.p.contents[0], 'foo')
+        
     def test_public_doctype_with_url(self):
         doctype = 'html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"'
         self.assertDoctypeHandled(doctype)
@@ -828,7 +870,7 @@ class XMLTreeBuilderSmokeTest(object):
         soup = self.soup(markup)
         self.assertEqual(
             soup.encode("utf-8"), markup)
-
+       
     def test_nested_namespaces(self):
         doc = b"""<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">

@@ -20,7 +20,11 @@ import sys
 import cProfile
 
 def diagnose(data):
-    """Diagnostic suite for isolating common problems."""
+    """Diagnostic suite for isolating common problems.
+
+    :param data: A string containing markup that needs to be explained.
+    :return: None; diagnostics are printed to standard output.
+    """
     print("Diagnostic running on Beautiful Soup %s" % __version__)
     print("Python version %s" % sys.version)
 
@@ -90,14 +94,25 @@ def lxml_trace(data, html=True, **kwargs):
     """Print out the lxml events that occur during parsing.
 
     This lets you see how lxml parses a document when no Beautiful
-    Soup code is running.
+    Soup code is running. You can use this to determine whether
+    an lxml-specific problem is in Beautiful Soup's lxml tree builders
+    or in lxml itself.
+
+    :param data: Some markup.
+    :param html: If True, markup will be parsed with lxml's HTML parser.
+       if False, lxml's XML parser will be used.
     """
     from lxml import etree
     for event, element in etree.iterparse(StringIO(data), html=html, **kwargs):
         print(("%s, %4s, %s" % (event, element.tag, element.text)))
 
 class AnnouncingParser(HTMLParser):
-    """Announces HTMLParser parse events, without doing anything else."""
+    """Subclass of HTMLParser that announces parse events, without doing
+    anything else.
+
+    You can use this to get a picture of how html.parser sees a given
+    document. The easiest way to do this is to call `htmlparser_trace`.
+    """
 
     def _p(self, s):
         print(s)
@@ -134,6 +149,8 @@ def htmlparser_trace(data):
 
     This lets you see how HTMLParser parses a document when no
     Beautiful Soup code is running.
+
+    :param data: Some markup.
     """
     parser = AnnouncingParser()
     parser.feed(data)
@@ -207,7 +224,7 @@ def benchmark_parsers(num_elements=100000):
     print("Raw html5lib parsed the markup in %.2fs." % (b-a))
 
 def profile(num_elements=100000, parser="lxml"):
-
+    """Use Python's profiler on a randomly generated document."""
     filehandle = tempfile.NamedTemporaryFile()
     filename = filehandle.name
 
@@ -220,5 +237,6 @@ def profile(num_elements=100000, parser="lxml"):
     stats.sort_stats("cumulative")
     stats.print_stats('_html5lib|bs4', 50)
 
+# If this file is run as a script, standard input is diagnosed.
 if __name__ == '__main__':
     diagnose(sys.stdin.read())

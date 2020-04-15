@@ -855,12 +855,12 @@ def create_https_certificates(ssl_cert, ssl_key):
     serial = int(time.time())
 
     # Create the CA Certificate
-    cakey = createKeyPair(TYPE_RSA, 1024)
+    cakey = createKeyPair(TYPE_RSA, 2048)
     careq = createCertRequest(cakey, CN='Certificate Authority')
     cacert = createCertificate(careq, (careq, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
     cname = 'Medusa'
-    pkey = createKeyPair(TYPE_RSA, 1024)
+    pkey = createKeyPair(TYPE_RSA, 2048)
     req = createCertRequest(pkey, CN=cname)
     cert = createCertificate(req, (cacert, cakey), serial, (0, 60 * 60 * 24 * 365 * 10))  # ten years
 
@@ -1020,11 +1020,10 @@ def get_show(name, try_indexers=False):
 
         # try scene exceptions
         if not series:
-            series_from_name = scene_exceptions.get_scene_exceptions_by_name(series_name)[0]
-            series_id = series_from_name[0]
-            indexer_id = series_from_name[2]
-            if series_id:
-                series = Show.find_by_id(app.showList, indexer_id, series_id)
+            found_exceptions = list(scene_exceptions.get_scene_exceptions_by_name(series_name))
+            if found_exceptions:
+                # Only use the first exception.
+                series = Show.find_by_id(app.showList, found_exceptions[0].indexer, found_exceptions[0].series_id)
 
         if not series:
             match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and

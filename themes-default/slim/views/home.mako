@@ -18,6 +18,7 @@
 
 <div>
     <input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
+    <vue-snotify></vue-snotify>
 
     <div class="row" v-if="layout === 'poster'">
         <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
@@ -85,7 +86,7 @@
     <div class="row">
         <div class="col-md-12">
             <!-- Split in tabs -->
-            <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
+            <div id="showTabs" v-show="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
                     <li v-for="(shows, listTitle) in showLists" :key="listTitle">
@@ -106,7 +107,7 @@
                     </template>
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
-            <template v-else>
+            <template v-show="!stateLayout.animeSplitHome || !stateLayout.animeSplitHomeInTabs">
                 % if not app.HOME_LAYOUT in ['banner', 'simple']:
                     <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                 % endif

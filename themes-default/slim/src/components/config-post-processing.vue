@@ -25,7 +25,7 @@
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="process_automatically" name="process_automatically" v-model="postprocessing.processAutomatically" sync />
                                             <p>Enable the scheduled post processor to scan and process any files in your <i>Post Processing Dir</i>?</p>
-                                            <div class="clear-left"><p><b>NOTE:</b> Do not use if you use an external Post Processing script</p></div>
+                                            <div class="clear-left"><p><b>Note:</b> Do not use if you use an external Post Processing script</p></div>
                                         </div>
                                     </div>
 
@@ -37,7 +37,7 @@
                                             <div class="col-sm-10 content">
                                                 <file-browser id="tv_download_dir" name="tv_download_dir" title="Select series download location" :initial-dir="postprocessing.showDownloadDir" @update="postprocessing.showDownloadDir = $event" />
                                                 <span class="clear-left">The folder where your download client puts the completed TV downloads.</span>
-                                                <div class="clear-left"><p><b>NOTE:</b> Please use seperate downloading and completed folders in your download client if possible.</p></div>
+                                                <div class="clear-left"><p><b>Note:</b> Please use separate downloading and completed folders in your download client if possible.</p></div>
                                             </div>
                                         </div>
 
@@ -50,7 +50,7 @@
                                                     <option :value="option.value" v-for="option in processMethods" :key="option.value">{{ option.text }}</option>
                                                 </select>
                                                 <span>What method should be used to put files into the library?</span>
-                                                <p><b>NOTE:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
+                                                <p><b>Note:</b> If you keep seeding torrents after they finish, please avoid the 'move' processing method to prevent errors.</p>
                                                 <p v-if="postprocessing.processMethod == 'reflink'">To use reference linking, the <app-link href="http://www.dereferer.org/?https://pypi.python.org/pypi/reflink/0.1.4">reflink package</app-link> needs to be installed.</p>
                                             </div>
                                         </div>
@@ -92,7 +92,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="sync_files" id="sync_files" csv-enabled :list-items="postprocessing.syncFiles" @change="onChangeSyncFiles" />
-                                            <span>comma seperated list of extensions or filename globs Medusa ignores when Post Processing</span>
+                                            <span>Comma separated list of extensions or filename globs Medusa ignores when post processing</span>
                                         </div>
                                     </div>
 
@@ -104,7 +104,7 @@
                                             <toggle-button :width="45" :height="22" id="postpone_if_no_subs" name="postpone_if_no_subs" v-model="postprocessing.postponeIfNoSubs" sync />
                                             <span>Wait to process a file until subtitles are present</span><br>
                                             <span>Language names are allowed in subtitle filename (en.srt, pt-br.srt, ita.srt, etc.)</span><br>
-                                            <span><b>NOTE:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
+                                            <span><b>Note:</b> Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.</span><br>
                                             <span>If you have any active show with subtitle search disabled, you must enable Automatic post processor.</span>
                                         </div>
                                     </div>
@@ -155,7 +155,7 @@
                                         </label>
                                         <div class="col-sm-10 content">
                                             <select-list name="allowed_extensions" id="allowed_extensions" csv-enabled :list-items="postprocessing.allowedExtensions" @change="onChangeAllowedExtensions" />
-                                            <span>Comma seperated list of associated file extensions Medusa should keep while post processing.</span><br>
+                                            <span>Comma separated list of associated file extensions Medusa should keep while post processing.</span><br>
                                             <span>Leaving it empty means all associated files will be deleted</span>
                                         </div>
                                     </div>
@@ -199,7 +199,7 @@
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="unpack" name="unpack" v-model="postprocessing.unpack" sync />
                                             <span>Unpack any TV releases in your <i>TV Download Dir</i>?</span><br>
-                                            <span><b>NOTE:</b> Only working with RAR archive</span>
+                                            <span><b>Note:</b> Only working with RAR archive</span>
                                         </div>
                                     </div>
 
@@ -220,7 +220,7 @@
                                         <div class="col-sm-10 content">
                                             <toggle-button :width="45" :height="22" id="no_delete" name="no_delete" v-model="postprocessing.noDelete" sync />
                                             <span>Leave empty folders when Post Processing?</span><br>
-                                            <span><b>NOTE:</b> Can be overridden using manual Post Processing</span>
+                                            <span><b>Note:</b> Can be overridden using manual Post Processing</span>
                                         </div>
                                     </div>
 
@@ -459,12 +459,12 @@ export default {
 
             // Clone the config into a new object
             const config = Object.assign({}, {
-                postprocessing,
+                postProcessing: postprocessing,
                 metadata
             });
 
             // Use destructuring to remove the unwanted keys.
-            const { multiEpStrings, reflinkAvailable, ...rest } = postprocessing;
+            const { multiEpStrings, reflinkAvailable, extraScriptsUrl, ...rest } = postprocessing;
             // Assign the object with the keys removed to our copied object.
             config.postProcessing = rest;
 

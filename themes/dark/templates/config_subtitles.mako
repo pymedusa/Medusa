@@ -124,7 +124,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Leave empty if you want store subtitle in episode path.</span>
+                                    <span class="component-desc"><b>Note:</b> Leave empty if you want store subtitle in episode path.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -163,7 +163,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> This option is required if you use multiple subtitle languages.</span>
+                                    <span class="component-desc"><b>Note:</b> This option is required if you use multiple subtitle languages.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -226,11 +226,7 @@ window.app = new Vue({
                                     <li>See the <app-link href="${app.SUBTITLES_URL}" class="wiki"><strong>Wiki</strong></app-link> for a script arguments description.</li>
                                     <li>Additional scripts separated by <b>|</b>.</li>
                                     <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
-                                    <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
-                                    <ul>
-                                        <li>For Windows: <pre>C:\Python27\pythonw.exe C:\Script\test.py</pre></li>
-                                        <li>For Linux: <pre>python /Script/test.py</pre></li>
-                                    </ul>
+                                    <li>Only Python scripts are allowed to be executed.</li>
                                 </span>
                                 </label>
                             </div>
@@ -268,7 +264,6 @@ window.app = new Vue({
                         <%
                             providerLoginDict = {
                                 'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
-                                'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>

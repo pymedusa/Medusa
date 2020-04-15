@@ -127,6 +127,7 @@ class ConfigHandler(BaseRequestHandler):
         'webInterface.httpsKey': StringField(app, 'HTTPS_KEY'),
         'webInterface.handleReverseProxy': BooleanField(app, 'HANDLE_REVERSE_PROXY'),
 
+        'webRoot': StringField(app, 'WEB_ROOT'),
         'cpuPreset': StringField(app, 'CPU_PRESET'),
         'sslVerify': BooleanField(app, 'SSL_VERIFY'),
         'sslCaBundle': StringField(app, 'SSL_CA_BUNDLE'),
@@ -230,7 +231,6 @@ class ConfigHandler(BaseRequestHandler):
         'postProcessing.syncFiles': ListField(app, 'SYNC_FILES'),
         'postProcessing.fileTimestampTimezone': StringField(app, 'FILE_TIMESTAMP_TIMEZONE'),
         'postProcessing.extraScripts': ListField(app, 'EXTRA_SCRIPTS'),
-        'postProcessing.extraScriptsUrl': StringField(app, 'EXTRA_SCRIPTS_URL'),
         'postProcessing.naming.pattern': StringField(app, 'NAMING_PATTERN'),
         'postProcessing.naming.enableCustomNamingAnime': BooleanField(app, 'NAMING_CUSTOM_ANIME'),
         'postProcessing.naming.enableCustomNamingSports': BooleanField(app, 'NAMING_CUSTOM_SPORTS'),
@@ -456,6 +456,7 @@ class ConfigHandler(BaseRequestHandler):
                                  default_value='poster'),
         'layout.show.specials': BooleanField(app, 'DISPLAY_SHOW_SPECIALS'),
         'layout.show.showListOrder': ListField(app, 'SHOW_LIST_ORDER'),
+        'layout.show.pagination.enable': BooleanField(app, 'SHOW_USE_PAGINATION'),
         'layout.wide': BooleanField(app, 'LAYOUT_WIDE'),
         'layout.posterSortdir': IntegerField(app, 'POSTER_SORTDIR'),
         'layout.themeName': StringField(app, 'THEME_NAME', setter=theme_name_setter),
@@ -657,6 +658,7 @@ class DataGenerator(object):
         section_data['webInterface']['httpsKey'] = app.HTTPS_KEY
         section_data['webInterface']['handleReverseProxy'] = bool(app.HANDLE_REVERSE_PROXY)
 
+        section_data['webRoot'] = app.WEB_ROOT
         section_data['cpuPreset'] = app.CPU_PRESET
         section_data['sslVerify'] = bool(app.SSL_VERIFY)
         section_data['sslCaBundle'] = app.SSL_CA_BUNDLE
@@ -1167,6 +1169,8 @@ class DataGenerator(object):
         section_data['show'] = {}
         section_data['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
         section_data['show']['showListOrder'] = app.SHOW_LIST_ORDER
+        section_data['show']['pagination'] = {}
+        section_data['show']['pagination']['enable'] = bool(app.SHOW_USE_PAGINATION)
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 

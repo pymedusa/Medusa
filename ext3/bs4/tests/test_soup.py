@@ -73,6 +73,7 @@ class TestConstructor(SoupTest):
                 self.store_line_numbers = False
                 self.cdata_list_attributes = []
                 self.preserve_whitespace_tags = []
+                self.string_containers = {}
             def initialize_soup(self, soup):
                 pass
             def feed(self, markup):
@@ -186,7 +187,41 @@ class TestConstructor(SoupTest):
             isinstance(x, (TagPlus, StringPlus, CommentPlus))
             for x in soup.recursiveChildGenerator()
         )
+
+    def test_alternate_string_containers(self):
+        # Test the ability to customize the string containers for
+        # different types of tags.
+        class PString(NavigableString):
+            pass
+
+        class BString(NavigableString):
+            pass
+
+        soup = self.soup(
+            "<div>Hello.<p>Here is <b>some <i>bolded</i></b> text",
+            string_containers = {
+                'b': BString,
+                'p': PString,
+            }
+        )
+
+        # The string before the <p> tag is a regular NavigableString.
+        assert isinstance(soup.div.contents[0], NavigableString)
         
+        # The string inside the <p> tag, but not inside the <i> tag,
+        # is a PString.
+        assert isinstance(soup.p.contents[0], PString)
+
+        # Every string inside the <b> tag is a BString, even the one that
+        # was also inside an <i> tag.
+        for s in soup.b.strings:
+            assert isinstance(s, BString)
+
+        # Now that parsing was complete, the string_container_stack
+        # (where this information was kept) has been cleared out.
+        self.assertEqual([], soup.string_container_stack)
+
+
 class TestWarnings(SoupTest):
 
     def _no_parser_specified(self, s, is_there=True):

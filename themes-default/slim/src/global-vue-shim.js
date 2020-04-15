@@ -113,7 +113,7 @@ export const registerPlugins = () => {
     Vue.use(VTooltip);
 
     // Set default cookie expire time
-    VueCookies.config('10y');
+    Vue.$cookies.config('10y');
 };
 
 /**
@@ -145,7 +145,7 @@ export default () => {
                     store.dispatch('getConfig'),
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
-                    this.$emit('loaded');
+                    this.$root.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
                     const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
                     window.dispatchEvent(event);
@@ -155,7 +155,7 @@ export default () => {
                 });
             }
 
-            this.$once('loaded', () => {
+            this.$root.$once('loaded', () => {
                 this.$root.globalLoading = false;
             });
         },

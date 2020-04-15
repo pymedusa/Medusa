@@ -18,7 +18,7 @@ from builtins import str
 from collections import (
     OrderedDict, namedtuple
 )
-from itertools import groupby
+from itertools import chain, groupby
 
 from medusa import (
     app,
@@ -224,7 +224,7 @@ class Series(TV):
         self.notify_list = {}
         self.dvd_order = 0
         self.lang = lang
-        self.last_update_indexer = 1
+        self._last_update_indexer = 1
         self.sports = 0
         self.anime = 0
         self.scene = 0
@@ -432,7 +432,7 @@ class Series(TV):
                 app.show_queue_scheduler.action.refreshShow(self)
             except CantRefreshShowException as error:
                 log.warning("Unable to refresh show '{show}'. Error: {error}",
-                            {'show': self.name, 'error': error.message})
+                            {'show': self.name, 'error': error})
 
     @property
     def indexer_name(self):
@@ -549,6 +549,13 @@ class Series(TV):
         return self.imdb_info.get('certificates')
 
     @property
+    def last_update_indexer(self):
+        """Return last indexer update as epoch."""
+        update_date = datetime.date.fromordinal(self._last_update_indexer)
+        epoch_date = update_date - datetime.date.fromtimestamp(0)
+        return int(epoch_date.total_seconds())
+
+    @property
     def next_airdate(self):
         """Return next airdate."""
         return (
@@ -592,14 +599,26 @@ class Series(TV):
     @property
     def aliases(self):
         """Return series aliases."""
-        return self.exceptions or get_scene_exceptions(self)
+        if self.exceptions:
+            return self.exceptions
+
+        return set(chain(*itervalues(get_all_scene_exceptions(self))))
 
     @aliases.setter
     def aliases(self, exceptions):
         """Set the series aliases."""
-        self.exceptions = exceptions
         update_scene_exceptions(self, exceptions)
+        self.exceptions = set(chain(*itervalues(get_all_scene_exceptions(self))))
         build_name_cache(self)
+
+    @property
+    def aliases_to_json(self):
+        """Return aliases as a dict."""
+        return [{
+            'season': alias.season,
+            'title': alias.title,
+            'custom': alias.custom
+        } for alias in self.aliases]
 
     @property
     def xem_numbering(self):
@@ -615,11 +634,6 @@ class Series(TV):
     def scene_absolute_numbering(self):
         """Return series scene absolute numbering."""
         return get_scene_absolute_numbering_for_show(self)
-
-    @property
-    def all_scene_exceptions(self):
-        """Return series season scene exceptions."""
-        return {season: list(exception_name) for season, exception_name in iteritems(get_all_scene_exceptions(self))}
 
     @property
     def scene_numbering(self):
@@ -874,77 +888,6 @@ class Series(TV):
             self.episodes[season][episode] = ep
 
         return ep
-
-    def should_update(self, update_date=datetime.date.today()):
-        """Whether the show information should be updated.
-
-        :param update_date:
-        :type update_date: datetime.date
-        :return:
-        :rtype: bool
-        """
-        # if show is 'paused' do not update_date
-        if self.paused:
-            log.info(u'{id}: Show {show} is paused. Update skipped',
-                     {'id': self.series_id, 'show': self.name})
-            return False
-
-        # if show is not 'Ended' always update (status 'Continuing')
-        if self.status == 'Continuing':
-            return True
-
-        # run logic against the current show latest aired and next unaired data to
-        # see if we should bypass 'Ended' status
-
-        graceperiod = datetime.timedelta(days=30)
-
-        last_airdate = datetime.date.fromordinal(1)
-
-        # get latest aired episode to compare against today - graceperiod and today + graceperiod
-        main_db_con = db.DBConnection()
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MAX(airdate), 0) as last_aired '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status > 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['last_aired'] != 0:
-            last_airdate = datetime.date.fromordinal(sql_result[0]['last_aired'])
-            if (update_date - graceperiod) <= last_airdate <= (update_date + graceperiod):
-                return True
-
-        # get next upcoming UNAIRED episode to compare against today + graceperiod
-        sql_result = main_db_con.select(
-            'SELECT '
-            '  IFNULL(MIN(airdate), 0) as airing_next '
-            'FROM '
-            '  tv_episodes '
-            'WHERE '
-            '  showid = ? '
-            '  AND season > 0 '
-            '  AND airdate > 1 '
-            '  AND status = 1',
-            [self.series_id])
-
-        if sql_result and sql_result[0]['airing_next'] != 0:
-            next_airdate = datetime.date.fromordinal(sql_result[0]['airing_next'])
-            if next_airdate <= (update_date + graceperiod):
-                return True
-
-        last_update_indexer = datetime.date.fromordinal(self.last_update_indexer)
-
-        # in the first year after ended (last airdate), update every 30 days
-        if (update_date - last_airdate) < datetime.timedelta(days=450) and (
-                (update_date - last_update_indexer) > datetime.timedelta(days=30)):
-            return True
-
-        return False
 
     def show_words(self):
         """Return all related words to show: preferred, undesired, ignore, require."""
@@ -1320,7 +1263,7 @@ class Series(TV):
             main_db_con.mass_action(sql_l)
 
         # Done updating save last update date
-        self.last_update_indexer = datetime.date.today().toordinal()
+        self._last_update_indexer = datetime.date.today().toordinal()
         log.debug(u'{id}: Saving indexer changes to database',
                   {'id': self.series_id})
         self.save_to_db()
@@ -1504,7 +1447,7 @@ class Series(TV):
             if not self.lang:
                 self.lang = sql_results[0]['lang']
 
-            self.last_update_indexer = sql_results[0]['last_update_indexer']
+            self._last_update_indexer = sql_results[0]['last_update_indexer']
 
             self.rls_ignore_words = sql_results[0]['rls_ignore_words']
             self.rls_require_words = sql_results[0]['rls_require_words']
@@ -2007,7 +1950,7 @@ class Series(TV):
                           'startyear': self.start_year,
                           'lang': self.lang,
                           'imdb_id': self.imdb_id,
-                          'last_update_indexer': self.last_update_indexer,
+                          'last_update_indexer': self._last_update_indexer,
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
                           'rls_ignore_exclude': self.rls_ignore_exclude,
@@ -2114,6 +2057,7 @@ class Series(TV):
         data['year'] = {}
         data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate.isoformat() if self.next_airdate else None
+        data['lastUpdate'] = datetime.date.fromordinal(self._last_update_indexer).isoformat()
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
         data['rating'] = {}
@@ -2145,7 +2089,7 @@ class Series(TV):
         data['config']['sports'] = self.is_sports
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
-        data['config']['aliases'] = list(self.aliases)
+        data['config']['aliases'] = self.aliases_to_json
         data['config']['release'] = {}
         data['config']['release']['ignoredWords'] = self.release_ignore_words
         data['config']['release']['requiredWords'] = self.release_required_words
@@ -2166,7 +2110,6 @@ class Series(TV):
             data['size'] = self.size
             data['showQueueStatus'] = self.show_queue_status
             data['sceneAbsoluteNumbering'] = dict_to_array(self.scene_absolute_numbering, key='absolute', value='sceneAbsolute')
-            data['allSceneExceptions'] = dict_to_array(self.all_scene_exceptions, key='season', value='exceptions')
             if self.is_scene:
                 data['xemAbsoluteNumbering'] = dict_to_array(self.xem_absolute_numbering, key='absolute', value='sceneAbsolute')
                 data['sceneNumbering'] = numbering_tuple_to_dict(self.scene_numbering)
@@ -2228,7 +2171,7 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-        show_names = get_scene_exceptions(self, season)
+        show_names = {exception.title for exception in get_scene_exceptions(self, season)}
         show_names.add(self.name)
 
         new_show_names = set()

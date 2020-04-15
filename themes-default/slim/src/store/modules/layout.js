@@ -4,7 +4,10 @@ import { api } from '../../api';
 const state = {
     show: {
         specials: null,
-        showListOrder: []
+        showListOrder: [],
+        pagination: {
+            enable: null
+        }
     },
     home: null,
     history: null,
@@ -63,10 +66,19 @@ const actions = {
         const { commit } = context;
         return api.patch('config/main', { layout: { themeName } })
             .then(() => {
-                return commit(ADD_CONFIG, { section: 'layout', layout: { themeName } });
+                return commit(ADD_CONFIG, { section: 'layout', config: { themeName } });
+            });
+    },
+    setSpecials(context, specials) {
+        const { commit, state } = context;
+        const show = Object.assign({}, state.show);
+        show.specials = specials;
+
+        return api.patch('config/main', { layout: { show } })
+            .then(() => {
+                return commit(ADD_CONFIG, { section: 'layout', config: { show } });
             });
     }
-
 };
 
 export default {

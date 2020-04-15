@@ -222,8 +222,14 @@ export default {
             });
         }
     },
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#showTabs').tabs();
+        });
+    },
     mounted() {
-        const { config, getShows, getStats, stateLayout, setConfig } = this;
+        const { $snotify, config, stateLayout, setConfig, getShows, getStats } = this;
 
         getShows();
         getStats('show');
@@ -511,26 +517,6 @@ export default {
                 }
             });
 
-            const rootDir = config.rootDirs;
-            const rootDirIndex = config.selectedRootIndex;
-            if (rootDir) {
-                const backendDirs = rootDir.slice(1);
-                if (backendDirs.length >= 2) {
-                    $('#showRoot').show();
-                    const item = ['All Folders'];
-                    const rootDirOptions = item.concat(backendDirs);
-                    $.each(rootDirOptions, (i, item) => {
-                        $('#showRootDir').append($('<option>', {
-                            value: i - 1,
-                            text: item
-                        }));
-                    });
-                    $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
-                } else {
-                    $('#showRoot').hide();
-                }
-            }
-
             $('#poster-container').sortable({
                 appendTo: document.body,
                 axis: 'y',
@@ -561,7 +547,7 @@ export default {
                         }
                     }
                 },
-                update(event) {
+                async update(event) {
                     const showListOrder = $(event.target.children).map((index, el) => {
                         return $(el).data('list');
                     });
@@ -571,17 +557,51 @@ export default {
                             showListOrder: showListOrder.toArray()
                         }
                     };
-                    const section = 'layout';
-                    setConfig({ section, config: { layout } })
-                        .then(response => {
-                            console.info(response);
-                        })
-                        .catch(error => {
-                            console.error(error);
-                        });
+
+                    try {
+                        await setConfig({ section: 'main', config: { layout } });
+                        $snotify.success(
+                            'Saved Home poster list type order',
+                            'Saved',
+                            { timeout: 5000 }
+                        );
+                    } catch (error) {
+                        $snotify.error(
+                            'Error while trying to save home poster list type order',
+                            'Error'
+                        );
+                }
                 }
             });
         }; // END initializePage()
+
+        // Vue Stuff (prevent race condition issues)
+        const unwatch = this.$watch('config.rootDirs', () => {
+            unwatch();
+
+            const { config } = this;
+            const { rootDirs, selectedRootIndex } = config;
+
+            if (rootDirs) {
+                const backendDirs = rootDirs.slice(1);
+                if (backendDirs.length >= 2) {
+                    this.$nextTick(() => {
+                        $('#showRoot').show();
+                        const item = ['All Folders'];
+                        const rootDirOptions = item.concat(backendDirs);
+                        $.each(rootDirOptions, (i, item) => {
+                            $('#showRootDir').append($('<option>', {
+                                value: i - 1,
+                                text: item
+                            }));
+                        });
+                        $('select#showRootDir').prop('selectedIndex', selectedRootIndex + 1);
+                    });
+                } else {
+                    $('#showRoot').hide();
+                }
+            }
+        });
 
         window.addEventListener('load', initializePage, { once: true });
     }
