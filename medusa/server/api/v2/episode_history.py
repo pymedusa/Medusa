@@ -7,7 +7,6 @@ import logging
 from medusa import db
 
 from medusa.common import statusStrings
-from medusa.helper.exceptions import EpisodeDeletedException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers import get_provider_class
@@ -34,7 +33,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'DELETE',)
+    allowed_methods = ('GET',)
 
     def get(self, series_slug, episode_slug, path_param):
         """Query episode's history information.
@@ -80,10 +79,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
             for item in results:
                 d = {}
                 d['id'] = item['rowid']
-
-                if item['indexer_id'] and item['showid']:
-                    d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-
+                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
                 d['status'] = item['action']
                 d['actionDate'] = item['date']
 
@@ -104,37 +100,9 @@ class EpisodeHistoryHandler(BaseRequestHandler):
 
                 yield d
 
-        if not len(results):
+        if not results:
             return self._not_found('History data not found for show {show} and episode {episode}'.format(
                 show=series.identifier.slug, episode=episode.slug
             ))
 
         return self._ok(data=list(data_generator()))
-
-    def delete(self, series_slug, episode_slug, **kwargs):
-        """Delete the episode."""
-        if not series_slug:
-            return self._method_not_allowed('Deleting multiple series are not allowed')
-
-        identifier = SeriesIdentifier.from_slug(series_slug)
-        if not identifier:
-            return self._bad_request('Invalid series identifier')
-
-        series = Series.find_by_identifier(identifier)
-        if not series:
-            return self._not_found('Series not found')
-
-        episode_number = EpisodeNumber.from_slug(episode_slug)
-        if not episode_number:
-            return self._bad_request('Invalid episode number')
-
-        episode = Episode.find_by_series_and_episode(series, episode_number)
-        if not episode:
-            return self._not_found('Episode not found')
-
-        try:
-            episode.delete_episode()
-        except EpisodeDeletedException:
-            return self._no_content()
-        else:
-            return self._conflict('Unable to delete episode')

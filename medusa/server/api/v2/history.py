@@ -25,8 +25,11 @@ class HistoryHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
 
     def get(self, series_slug, path_param):
-        """Query history information."""
+        """
+        Get history records.
 
+        History records can be specified using a show slug.
+        """
         sql_base = '''
             SELECT rowid, date, action, quality,
                    provider, version, resource, size,
@@ -56,15 +59,13 @@ class HistoryHandler(BaseRequestHandler):
             for item in results[start - 1:start - 1 + arg_limit]:
                 d = {}
                 d['id'] = item['rowid']
-
-                if item['indexer_id'] and item['showid']:
-                    d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-
+                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
                 d['status'] = item['action']
                 d['actionDate'] = item['date']
 
                 d['resource'] = basename(item['resource'])
                 d['size'] = item['size']
+                d['properTags'] = item['proper_tags']
                 d['statusName'] = statusStrings.get(item['action'])
                 d['season'] = item['season']
                 d['episode'] = item['episode']
@@ -79,7 +80,7 @@ class HistoryHandler(BaseRequestHandler):
 
                 yield d
 
-        if not len(results):
+        if not results:
             return self._not_found('History data not found')
 
         return self._paginate(data_generator=data_generator)
@@ -90,10 +91,10 @@ class HistoryHandler(BaseRequestHandler):
         if not identifier:
             return self._bad_request('Invalid history id')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action('DELETE FROM history WHERE row_id = ?', [identifier])
-        if cache_db_con.connection.total_changes - last_changes <= 0:
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('DELETE FROM history WHERE row_id = ?', [identifier])
+        if main_db_con.connection.total_changes - last_changes <= 0:
             return self._not_found('History row not found')
 
         return self._no_content()
