@@ -1,5 +1,15 @@
 import { ADD_CONFIG } from '../mutation-types';
 import { api } from '../../api';
+import formatDate from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
+import TimeAgo from 'javascript-time-ago';
+import timeAgoLocalEN from 'javascript-time-ago/locale/en';
+
+import { convertDateFormat } from '../../utils/core';
+
+// Add locale-specific relative date/time formatting rules.
+TimeAgo.addLocale(timeAgoLocalEN);
+
 
 const state = {
     show: {
@@ -47,7 +57,27 @@ const mutations = {
     }
 };
 
-const getters = {};
+const getters = {
+    fuzzyParseDateTime: state => airDate => {
+        const timeAgo = new TimeAgo('en-US');
+        const { dateStyle, fuzzyDating, timeStyle } = state;
+
+        if (!airDate) {
+            return '';
+        }
+
+        if (fuzzyDating) {
+            return timeAgo.format(new Date(airDate));
+        }
+
+        if (dateStyle === '%x') {
+            return new Date(airDate).toLocaleString();
+        }
+
+        const fdate = parseISO(airDate);
+        return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
+    }
+};
 
 const actions = {
     setLayout(context, { page, layout }) {

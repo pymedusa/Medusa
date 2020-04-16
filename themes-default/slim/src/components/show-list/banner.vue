@@ -33,7 +33,7 @@
             </tfoot>
             <tbody>
                 <tr v-for="show in sortedShows" :key="show.title">
-                    <template v-if="show.stats.airs.next">
+                    <template v-if="show.nextAirDate">
                         <!-- <%
                             try:
                                 airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network))
@@ -48,7 +48,7 @@
                         </td>
                     </template>
                     <td v-else align="center" class="nowrap"></td>
-                    <template v-if="show.stats.airs.prev">
+                    <template v-if="show.prevAirDate">
                         <!-- <%
                             try:
                                 airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network))

@@ -355,22 +355,15 @@
 </template>
 
 <script>
-import formatDate from 'date-fns/format';
-import parseISO from 'date-fns/parseISO';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, convertDateFormat } from '../utils/core';
+import { humanFileSize } from '../utils/core';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
 import ShowHeader from './show-header.vue';
 import SubtitleSearch from './subtitle-search.vue';
-import TimeAgo from 'javascript-time-ago';
-import timeAgoLocalEN from 'javascript-time-ago/locale/en';
 import QualityPill from './helpers/quality-pill.vue';
-
-// Add locale-specific relative date/time formatting rules.
-TimeAgo.addLocale(timeAgoLocalEN);
 
 export default {
     name: 'show',
@@ -521,8 +514,7 @@ export default {
             // We need to keep track of which episode where trying to search, for the vue-modal
             failedSearchEpisode: null,
             backlogSearchEpisodes: [],
-            filterByOverviewStatus: false,
-            timeAgo: new TimeAgo('en-US')
+            filterByOverviewStatus: false
         };
     },
     computed: {
@@ -535,7 +527,8 @@ export default {
         }),
         ...mapGetters({
             show: 'getCurrentShow',
-            getOverviewStatus: 'getOverviewStatus'
+            getOverviewStatus: 'getOverviewStatus',
+            fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         indexer() {
             return this.showIndexer || this.$route.query.indexername;
@@ -749,24 +742,8 @@ export default {
             }
         },
         parseDateFn(row) {
-            const { layout, timeAgo } = this;
-            const { dateStyle, timeStyle } = layout;
-            const { fuzzyDating } = layout;
-
-            if (!row.airDate) {
-                return '';
-            }
-
-            if (fuzzyDating) {
-                return timeAgo.format(new Date(row.airDate));
-            }
-
-            if (dateStyle === '%x') {
-                return new Date(row.airDate).toLocaleString();
-            }
-
-            const fdate = parseISO(row.airDate);
-            return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
+            const { fuzzyParseDateTime } = this;
+            return fuzzyParseDateTime(row.airDate)
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;

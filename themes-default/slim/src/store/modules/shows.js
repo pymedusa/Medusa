@@ -165,10 +165,6 @@ const getters = {
                     downloaded: showStats.epDownloaded,
                     size: showStats.seriesSize
                 },
-                airs: {
-                    prev: showStats.epAirsPrev,
-                    next: showStats.epAirsNext
-                },
                 tooltip: {
                     text,
                     title,
