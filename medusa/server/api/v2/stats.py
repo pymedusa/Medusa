@@ -17,6 +17,7 @@ from medusa.common import (
     UNAIRED,
     WANTED
 )
+from medusa.network_timezones import parse_date_time
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.show.show import Show
 
@@ -66,46 +67,49 @@ def per_show_stats():
         return '({0})'.format(','.join(map(str, items)))
 
     query = dedent("""\
-        SELECT indexer AS indexerId, showid AS seriesId,
+        SELECT tv_eps.indexer AS indexerId, tv_eps.showid AS seriesId,
             SUM(
                 season > 0 AND
                 episode > 0 AND
                 airdate > 1 AND
-                status IN {status_quality}
+                tv_eps.status IN {status_quality}
             ) AS epSnatched,
             SUM(
                 season > 0 AND
                 episode > 0 AND
                 airdate > 1 AND
-                status IN {status_download}
+                tv_eps.status IN {status_download}
             ) AS epDownloaded,
             SUM(
                 season > 0 AND
                 episode > 0 AND
                 airdate > 1 AND (
-                    (airdate <= {today} AND status IN {status_pre_today}) OR
-                    status IN {status_both}
+                    (airdate <= {today} AND tv_eps.status IN {status_pre_today}) OR
+                    tv_eps.status IN (2,9,12,4,6)
                 )
             ) AS epTotal,
             (SELECT airdate FROM tv_episodes
-            WHERE showid=tv_eps.showid AND
-                    indexer=tv_eps.indexer AND
+            WHERE tv_episodes.showid=tv_eps.showid AND
+                    tv_episodes.indexer=tv_eps.indexer AND
                     airdate >= {today} AND
-                    (status = {unaired} OR status = {wanted})
+                    (tv_eps.status = {unaired} OR tv_eps.status = {wanted})
             ORDER BY airdate ASC
             LIMIT 1
             ) AS epAirsNext,
             (SELECT airdate FROM tv_episodes
-            WHERE showid=tv_eps.showid AND
-                    indexer=tv_eps.indexer AND
-                    airdate > 1 AND
-                    status <> {unaired}
+            WHERE tv_episodes.showid=tv_eps.showid AND
+                    tv_episodes.indexer=tv_eps.indexer AND
+                    airdate > {today} AND
+                    tv_eps.status <> {unaired}
             ORDER BY airdate DESC
             LIMIT 1
             ) AS epAirsPrev,
-            SUM(file_size) AS seriesSize
-        FROM tv_episodes tv_eps
-        GROUP BY showid, indexer
+            SUM(file_size) AS seriesSize,
+            tv_shows.airs as airs,
+            tv_shows.network as network
+        FROM tv_episodes tv_eps, tv_shows
+        WHERE tv_eps.showid = tv_shows.indexer_id AND tv_eps.indexer = tv_shows.indexer
+        GROUP BY tv_eps.showid, tv_eps.indexer;
     """).format(
         status_quality=query_in(snatched),
         status_download=query_in(downloaded),
@@ -127,6 +131,10 @@ def per_show_stats():
         stats_data['stats'].append(cur_result)
         if cur_result['epTotal'] > stats_data['maxDownloadCount']:
             stats_data['maxDownloadCount'] = cur_result['epTotal']
+        if cur_result['epAirsNext']:
+            cur_result['epAirsNext'] = parse_date_time(cur_result['epAirsNext'], cur_result['airs'], cur_result['network'])
+        if cur_result['epAirsPrev']:
+            cur_result['epAirsPrev'] = parse_date_time(cur_result['epAirsPrev'], cur_result['airs'], cur_result['network'])
 
     stats_data['maxDownloadCount'] *= 100
     return stats_data
