@@ -92,7 +92,7 @@ import { QualityPill } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
 
 export default {
-    name: 'small',
+    name: 'smallposter',
     components: {
         Asset,
         AppLink,

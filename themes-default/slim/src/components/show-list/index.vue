@@ -1,7 +1,8 @@
 <template>
     <div>
         <h1 v-if="header" class="header">{{ listTitle }}</h1>
-        <component v-if="shows.length >= 1" :is="layout" v-bind="$props" />
+        <component v-if="shows.length >= 1" :is="mappedLayout" v-bind="$props" />
+
         <span v-else>No shows were found for this list type.</span>
     </div>
 </template>
@@ -9,19 +10,23 @@
 
 import Banner from './banner.vue';
 import Simple from './simple.vue';
-import Small from './small.vue';
+import Poster from './poster.vue';
+import Smallposter from './smallposter.vue';
+
 
 export default {
     name: 'show-list',
     components: {
-        Small,
         Banner,
-        Simple
+        Simple,
+        Poster,
+        Smallposter
     },
     props: {
         layout: {
             validator: layout => [
                 null,
+                '',
                 'poster',
                 'banner',
                 'simple',
@@ -41,6 +46,15 @@ export default {
         },
         sortArticle: {
             type: Boolean
+        }
+    },
+    computed: {
+        mappedLayout() {
+            const { layout } = this;
+            if (layout === 'small') {
+                return 'smallposter';
+            }
+            return layout;
         }
     }
 };
