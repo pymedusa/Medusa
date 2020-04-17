@@ -1141,6 +1141,18 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* WEBPACK VAR INJECTION */(f
 
 /***/ }),
 
+/***/ "./node_modules/pretty-bytes/index.js":
+/*!********************************************!*\
+  !*** ./node_modules/pretty-bytes/index.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nconst BYTE_UNITS = [\n\t'B',\n\t'kB',\n\t'MB',\n\t'GB',\n\t'TB',\n\t'PB',\n\t'EB',\n\t'ZB',\n\t'YB'\n];\n\nconst BIT_UNITS = [\n\t'b',\n\t'kbit',\n\t'Mbit',\n\t'Gbit',\n\t'Tbit',\n\t'Pbit',\n\t'Ebit',\n\t'Zbit',\n\t'Ybit'\n];\n\n/*\nFormats the given number using `Number#toLocaleString`.\n- If locale is a string, the value is expected to be a locale-key (for example: `de`).\n- If locale is true, the system default locale is used for translation.\n- If no value for locale is specified, the number is returned unmodified.\n*/\nconst toLocaleString = (number, locale) => {\n\tlet result = number;\n\tif (typeof locale === 'string') {\n\t\tresult = number.toLocaleString(locale);\n\t} else if (locale === true) {\n\t\tresult = number.toLocaleString();\n\t}\n\n\treturn result;\n};\n\nmodule.exports = (number, options) => {\n\tif (!Number.isFinite(number)) {\n\t\tthrow new TypeError(`Expected a finite number, got ${typeof number}: ${number}`);\n\t}\n\n\toptions = Object.assign({bits: false}, options);\n\tconst UNITS = options.bits ? BIT_UNITS : BYTE_UNITS;\n\n\tif (options.signed && number === 0) {\n\t\treturn ' 0 ' + UNITS[0];\n\t}\n\n\tconst isNegative = number < 0;\n\tconst prefix = isNegative ? '-' : (options.signed ? '+' : '');\n\n\tif (isNegative) {\n\t\tnumber = -number;\n\t}\n\n\tif (number < 1) {\n\t\tconst numberString = toLocaleString(number, options.locale);\n\t\treturn prefix + numberString + ' ' + UNITS[0];\n\t}\n\n\tconst exponent = Math.min(Math.floor(Math.log10(number) / 3), UNITS.length - 1);\n\t// eslint-disable-next-line unicorn/prefer-exponentiation-operator\n\tnumber = Number((number / Math.pow(1000, exponent)).toPrecision(3));\n\tconst numberString = toLocaleString(number, options.locale);\n\n\tconst unit = UNITS[exponent];\n\n\treturn prefix + numberString + ' ' + unit;\n};\n\n\n//# sourceURL=webpack:///./node_modules/pretty-bytes/index.js?");
+
+/***/ }),
+
 /***/ "./node_modules/process/browser.js":
 /*!*****************************************!*\
   !*** ./node_modules/process/browser.js ***!

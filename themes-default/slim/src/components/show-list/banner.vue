@@ -1,127 +1,95 @@
 <template>
     <div class="horizontal-scroll">
-        <table :id="`showListTable${listTitle.charAt(0).toUpperCase() + listTitle.substr(1)}`" :class="['tablesorter', { fanartOpacity: config.fanartBackground }]" cellspacing="1" border="0" cellpadding="0">
-            <thead>
-                <tr>
-                    <th class="nowrap">Next Ep</th>
-                    <th class="nowrap">Prev Ep</th>
-                    <th>Show</th>
-                    <th>Network</th>
-                    <th>Indexer</th>
-                    <th>Quality</th>
-                    <th>Downloads</th>
-                    <th>Size</th>
-                    <th>Active</th>
-                    <th>Status</th>
-                    <th>XEM</th>
-                </tr>
-            </thead>
-            <tfoot class="hidden-print">
-                <tr>
-                    <th rowspan="1" colspan="1" align="center"><app-link href="addShows/">Add {{ listTitle.charAt(0).toUpperCase() + listTitle.substr(1) }}</app-link></th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                    <th>&nbsp;</th>
-                </tr>
-            </tfoot>
-            <tbody>
-                <tr v-for="show in sortedShows" :key="show.title">
-                    <template v-if="show.nextAirDate">
-                        <!-- <%
-                            try:
-                                airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network))
-                                datetime = airDate.isoformat('T')
-                                text = sbdatetime.sbdatetime.sbfdate(airDate)
-                            except ValueError:
-                                datetime = ""
-                                text = ""
-                        %> -->
-                        <td align="center" class="nowrap">
-                            <!-- <time datetime="${datetime}" class="date">${text}</time> -->
-                        </td>
-                    </template>
-                    <td v-else align="center" class="nowrap"></td>
-                    <template v-if="show.prevAirDate">
-                        <!-- <%
-                            try:
-                                airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network))
-                                datetime = airDate.isoformat('T')
-                                text = sbdatetime.sbdatetime.sbfdate(airDate)
-                            except ValueError:
-                                datetime = ""
-                                text = ""
-                        %> -->
-                        <td align="center" class="nowrap">
-                            <!-- <time datetime="${datetime}" class="date">${text}</time> -->
-                        </td>
-                    </template>
-                    <td v-else align="center" class="nowrap"></td>
-                    <td>
-                        <span style="display: none;">{{ show.title }}</span>
+        <vue-good-table v-if="shows.length > 0"
+            :columns="columns"
+            :rows="shows"
+            :search-options="{
+                enabled: true,
+                trigger: 'enter',
+                skipDiacritics: false,
+                placeholder: 'Search',
+            }"
+            :sort-options="{
+                enabled: true,
+                initialSortBy: { field: 'title', type: 'asc' }
+            }"
+            :column-filter-options="{
+                enabled: true
+            }">
+
+                <template slot="table-row" slot-scope="props">
+                    <span v-if="props.column.label == 'Show'">
+                        <span style="display: none;">{{ props.row.title }}</span>
                         <div class="imgbanner banner">
-                            <app-link :href="'home/displayShow?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer]">
-                                <asset default="images/banner.png" :show-slug="show.indexer + show.id[show.indexer]" type="banner" class="banner" :alt="show.title" :title="show.title"></asset>
+                            <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
+                                <asset default="images/banner.png" :show-slug="props.row.id.slug" type="banner" class="banner" :alt="props.row.title" :title="props.row.title"></asset>
                             </app-link>
                         </div>
-                    </td>
-                    <td align="center">
-                        <template v-if="show.network">
-                            <span :title="show.network" class="hidden-print">
-                                <asset default="images/network/nonetwork.png" :show-slug="show.indexer + show.id[show.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="show.network" :title="show.network"></asset>
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Network'">
+                        <template v-if="props.row.network">
+                            <span :title="props.row.network" class="hidden-print">
+                                <asset default="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network"></asset>
                             </span>
-                            <span class="visible-print-inline">{{ show.network }}</span>
+                            <span class="visible-print-inline">{{ props.row.network }}</span>
                         </template>
                         <template v-else>
                             <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                             <span class="visible-print-inline">No Network</span>
                         </template>
-                    </td>
-                    <td align="center">
-                        <app-link v-if="show.id.imdb" :href="'http://www.imdb.com/title/' + show.id.imdb" :title="'http://www.imdb.com/title/' + show.id.imdb">
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Indexer'" class="align-center">
+                        <app-link v-if="props.row.id.imdb" :href="`http://www.imdb.com/title/${props.row.id.imdb}`" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                         </app-link>
-                        <app-link v-if="show.id.trakt" :href="'https://trakt.tv/shows/' + show.id.trakt" :title="'https://trakt.tv/shows/' + show.id.trakt">
+                        <app-link v-if="props.row.id.trakt" :href="`https://trakt.tv/shows/${props.row.id.trakt}`" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
                             <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                         </app-link>
-                        <!-- <app-link data-indexer-name="${indexerApi(cur_show.indexer).name}" href="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.series_id}">
-                            <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
-                        </app-link> -->
-                    </td>
-                    <td align="center"><quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" show-title></quality-pill></td>
-                    <td align="center">
-                        <!-- This first span is used for sorting and is never displayed to user -->
-                        <span style="display: none;">{{ show.stats.tooltip.text }}</span>
-                        <progress-bar v-bind="show.stats.tooltip"></progress-bar>
-                        <span class="visible-print-inline">{{ show.stats.tooltip.text }}</span>
-                    </td>
-                    <td align="center" :data-show-size="show.stats.episodes.size">{{ prettyBytes(show.stats.episodes.size) }}</td>
-                    <td align="center">
-                        <img :src="'images/' + (show.config.paused && show.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="show.config.paused && show.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
-                    </td>
-                    <td align="center">{{ show.status }}</td>
-                    <td align="center">
-                        <!-- <% have_xem = bool(get_xem_numbering_for_show(cur_show, refresh_data=False)) %>
-                        <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" /> -->
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
+                            <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
+                        </app-link>
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Quality'" class="align-center">
+                        <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title></quality-pill>
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Downloads'">
+                        <progress-bar v-bind="props.row.stats.tooltip"></progress-bar>
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Size'" class="align-center">
+                        {{ prettyBytes(props.row.stats.episodes.size) }}
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Active'" class="align-center">
+                       <img :src="'images/' + (!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
+                    </span>
+
+                    <span v-else-if="props.column.label == 'Xem'" class="align-center">
+                        <img :src="`images/${props.row.xemNumbering.length !== 0  ? 'yes16.png' : 'no16.png'}`" :alt="props.row.xemNumbering.length !== 0  ? 'yes' : 'no'" width="16" height="16" />
+                    </span>
+
+                    <span v-else class="align-center">
+                        {{props.formattedRow[props.column.field]}}
+                    </span>
+                </template>
+
+
+        </vue-good-table>
+
     </div> <!-- .horizontal-scroll -->
 </template>
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { Asset } from '../helpers';
 import { AppLink } from '../helpers';
 import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
+import { VueGoodTable } from 'vue-good-table';
 
 export default {
     name: 'banner',
@@ -129,7 +97,8 @@ export default {
         Asset,
         AppLink,
         ProgressBar,
-        QualityPill
+        QualityPill,
+        VueGoodTable
     },
     props: {
         layout: {
@@ -150,9 +119,53 @@ export default {
             type: Boolean
         }
     },
+    data() {
+        return {
+            columns: [{
+                label: 'Next Ep',
+                field: row => this.parseNextDateFn(row),
+                sortable: false
+            }, {
+                label: 'Prev Ep',
+                field: row => this.parsePrevDateFn(row),
+                sortable: false
+            }, {
+                label: 'Show',
+                field: 'title'
+            }, {
+                label: 'Network',
+                field: 'network'
+            }, {
+                label: 'Indexer',
+                field: 'id'
+            }, {
+                label: 'Quality',
+                field: 'quality'
+            }, {
+                label: 'Downloads',
+                field: 'stats.tooltip.text'
+            }, {
+                label: 'Size',
+                field: 'size'
+            }, {
+                label: 'Active',
+                field: 'config.paused'
+            }, {
+                label: 'Status',
+                field: 'status'
+            }, {
+                label: 'Xem',
+                field: 'status'
+            }]
+        }
+    },
     computed: {
         ...mapState({
             config: state => state.config,
+            indexerConfig: state => state.indexers.indexers
+        }),
+        ...mapGetters({
+            fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
             const removeArticle = str => this.sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
@@ -160,7 +173,36 @@ export default {
         }
     },
     methods: {
-        prettyBytes: bytes => pretty(bytes)
+        prettyBytes: bytes => pretty(bytes),
+        showIndexerUrl(show) {
+            const { indexerConfig } = this;
+            if (!show.indexer) {
+                return;
+            }
+
+            const id = show.id[show.indexer];
+            const indexerUrl = indexerConfig[show.indexer].showUrl;
+
+            return `${indexerUrl}${id}`;
+        },
+        parsePrevDateFn(row) {
+            const { fuzzyParseDateTime } = this;
+            if (row.prevAirDate) {
+                console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
+                return fuzzyParseDateTime(row.prevAirDate)
+            } else {
+                return ''
+            }
+        },
+        parseNextDateFn(row) {
+            const { fuzzyParseDateTime } = this;
+            if (row.nextAirDate) {
+                console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
+                return fuzzyParseDateTime(row.nextAirDate)
+            } else {
+                return ''
+            }
+        }
     }
 }
 </script>
