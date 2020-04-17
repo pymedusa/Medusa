@@ -69,7 +69,7 @@
                     </ul>
                     <!-- Tab panes -->
                     <div id="showTabPanes">
-                        <template v-if="['banner', 'simple'].includes(layout)">
+                        <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                             <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
                                 <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
                             </div> <!-- #...TabContent -->
@@ -80,7 +80,7 @@
                     <!-- if not app.HOME_LAYOUT in ['banner', 'simple']:
                         <include file="/partials/home/{app.HOME_LAYOUT}.mako"/>
                      endif -->
-                    <template v-if="['banner', 'simple'].includes(layout)">
+                    <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                         <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"/>
                     </template>
                 </template>

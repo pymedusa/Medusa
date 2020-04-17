@@ -6,12 +6,15 @@
     </div>
 </template>
 <script>
+
 import Banner from './banner.vue';
 import Simple from './simple.vue';
+import Small from './small.vue';
 
 export default {
     name: 'show-list',
     components: {
+        Small,
         Banner,
         Simple
     },
@@ -19,9 +22,10 @@ export default {
         layout: {
             validator: layout => [
                 null,
-                '',
+                'poster',
                 'banner',
-                'simple'
+                'simple',
+                'small'
             ].includes(layout),
             required: true
         },
