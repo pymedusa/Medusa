@@ -3,17 +3,17 @@
 from __future__ import unicode_literals
 
 import logging
+from os.path import basename
 
 from medusa import db
-
 from medusa.common import statusStrings
+
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
 
-from os.path import basename
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -59,13 +59,13 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         if not episode:
             return self._not_found('Episode not found')
 
-        sql_base = '''
+        sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, resource, size, proper_tags,
                    indexer_id, showid, season, episode, manually_searched
             FROM history
             WHERE showid = ? AND indexer_id = ? AND season = ? AND episode = ?
-        '''
+        """
 
         params = [series.series_id, series.indexer, episode.season, episode.episode]
 

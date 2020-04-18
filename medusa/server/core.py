@@ -22,8 +22,8 @@ from medusa.server.api.v2.alias_source import (
 from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import BaseRequestHandler, NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
-from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.episode_history import EpisodeHistoryHandler
+from medusa.server.api.v2.episodes import EpisodeHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.server.api.v2.internal import InternalHandler
 from medusa.server.api.v2.log import LogHandler

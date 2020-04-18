@@ -2,12 +2,12 @@
 """Request handler for alias (scene exceptions)."""
 from __future__ import unicode_literals
 
-from medusa import db
+from os.path import basename
 
+from medusa import db
+from medusa.common import statusStrings
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
-from os.path import basename
-from medusa.common import statusStrings
 
 
 class HistoryHandler(BaseRequestHandler):
@@ -28,12 +28,12 @@ class HistoryHandler(BaseRequestHandler):
 
         History records can be specified using a show slug.
         """
-        sql_base = '''
+        sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, proper_tags, manually_searched,
                    resource, size, indexer_id, showid, season, episode
             FROM history
-        '''
+        """
         params = []
 
         arg_page = self._get_page()
