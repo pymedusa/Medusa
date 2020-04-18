@@ -7,7 +7,6 @@ from os.path import basename
 
 from medusa import db
 from medusa.common import statusStrings
-
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
