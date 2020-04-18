@@ -135,8 +135,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
-            episodeHistory: state => state.episodeHistory
+            config: state => state.config
         }),
         ...mapGetters({
             getLastReleaseName: 'getLastReleaseName'
@@ -162,9 +161,7 @@ export default {
         }
     },
     mounted() {
-        const { episode, getShowEpisodeHistory, show } = this;
         this.displayQuestion = true;
-        getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episode.slug });
     },
     methods: {
         ...mapActions([
@@ -204,7 +201,7 @@ export default {
                 });
         },
         manualSearch() {
-            const { subtitleParams } = this;
+            const { episode, getShowEpisodeHistory, show, subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loading = true;
@@ -213,6 +210,8 @@ export default {
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
+                        // Load episode history if we have subtitles.
+                        getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episode.slug });
                     }
                 }).catch(error => {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);

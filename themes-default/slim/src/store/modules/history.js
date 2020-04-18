@@ -25,7 +25,7 @@ const mutations = {
         // Example: {tvdb1234: {s01e01: [history]}}
 
         if (!Object.keys(state.episodeHistory).includes(showSlug)) {
-            state.episodeHistory[showSlug] = {};
+            Vue.set(state.episodeHistory, showSlug, {});
         }
 
         Vue.set(state.episodeHistory[showSlug], episodeSlug, history);
@@ -110,9 +110,13 @@ const actions = {
     async getShowEpisodeHistory(context, { showSlug, episodeSlug }) {
         const { commit } = context;
 
-        const response = await api.get(`/history/${showSlug}/episode/${episodeSlug}`);
-        if (response.data.length > 0) {
-            commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });
+        try {
+            const response = await api.get(`/history/${showSlug}/episode/${episodeSlug}`);
+            if (response.data.length > 0) {
+                commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });
+            }
+        } catch {
+            console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
         }
     }
 };

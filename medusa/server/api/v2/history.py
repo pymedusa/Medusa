@@ -53,10 +53,10 @@ class HistoryHandler(BaseRequestHandler):
         results = db.DBConnection().select(sql_base, params)
 
         def data_generator():
-            """Read log lines based on the specified criteria."""
-            start = arg_limit * (arg_page - 1) + 1
+            """Read and paginate history records."""
+            start = arg_limit * (arg_page - 1)
 
-            for item in results[start - 1:start - 1 + arg_limit]:
+            for item in results[start:start + arg_limit]:
                 d = {}
                 d['id'] = item['rowid']
                 d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
