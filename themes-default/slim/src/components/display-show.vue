@@ -355,6 +355,7 @@
 </template>
 
 <script>
+import debounce from 'lodash/debounce';
 import formatDate from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { mapState, mapGetters, mapActions } from 'vuex';
@@ -808,14 +809,14 @@ export default {
          * Attaches IMDB tooltip,
          * Moves summary and checkbox controls backgrounds
          */
-        reflowLayout() {
+        reflowLayout: debounce(function() {
             console.debug('Reflowing layout');
 
             this.$nextTick(() => {
                 this.movecheckboxControlsBackground();
             });
             addQTip(); // eslint-disable-line no-undef
-        },
+        }, 1000),
         /**
          * Adjust the checkbox controls (episode filter) background position
          */
