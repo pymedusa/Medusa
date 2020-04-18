@@ -28,6 +28,9 @@ expected_groups = [
 
     # Scene release group confused with episode.
     'E7',
+
+    # Scene release group confused with absolute numbering.
+    '707',
 ]
 
 allowed_languages = [
