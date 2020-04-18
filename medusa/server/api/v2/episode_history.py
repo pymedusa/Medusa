@@ -8,8 +8,6 @@ from medusa import db
 
 from medusa.common import statusStrings
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers.generic_provider import GenericProvider
-from medusa.providers import get_provider_class
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -90,13 +88,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
                 d['season'] = item['season']
                 d['episode'] = item['episode']
                 d['manuallySearched'] = bool(item['manually_searched'])
-
-                provider = get_provider_class(GenericProvider.make_id(item['provider']))
-                d['provider'] = {}
-                if provider:
-                    d['provider']['id'] = provider.get_id()
-                    d['provider']['name'] = provider.name
-                    d['provider']['imageName'] = provider.image_name()
+                d['provider'] = item['provider']
 
                 yield d
 

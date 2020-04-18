@@ -2847,17 +2847,8 @@ definitions:
         type: boolean
         description: Specifies if an episode was snatched or downloaded through a manual search
       provider:
-        type: object
-        properties:
-          id:
-            type: string
-            description: Provider id
-          name:
-            type: string
-            description: Provider name
-          imagename:
-            type: string
-            description: Provider icon image name.
+        type: string
+        description: Provider of the history record. For example, the provider id if origin from snatch/download.
 
 parameters:
   detailed:
@@ -2997,36 +2988,6 @@ parameters:
           description: TBD
           type: object
   search-manual:
-    in: body
-    name: Search Config
-    description: Object with required information to search for a specific show's episode(s).
-    schema:
-      type: object
-      required:
-        - showSlug
-        - episodes
-      properties:
-        showSlug:
-          description: Show slug consisting of the indexer name + indexers id
-          type: string
-          example: tvdb301824
-        episodes:
-          description: An array of searched episode objects with information on the type of search used
-          type: array
-          items:
-            type: string
-          example: ["s01e01", "s03e03"]
-        options:
-          description: Type of the manual search. 'episode' or 'season' search.
-          type: object
-          properties:
-            type:
-              type: string
-              enum:
-                - 'episode'
-                - 'season'
-              example: 'episode'
-  history:
     in: body
     name: Search Config
     description: Object with required information to search for a specific show's episode(s).

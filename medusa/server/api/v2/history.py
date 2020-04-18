@@ -5,8 +5,6 @@ from __future__ import unicode_literals
 from medusa import db
 
 from medusa.server.api.v2.base import BaseRequestHandler
-from medusa.providers.generic_provider import GenericProvider
-from medusa.providers import get_provider_class
 from medusa.tv.series import SeriesIdentifier
 from os.path import basename
 from medusa.common import statusStrings
@@ -70,13 +68,7 @@ class HistoryHandler(BaseRequestHandler):
                 d['season'] = item['season']
                 d['episode'] = item['episode']
                 d['manuallySearched'] = bool(item['manually_searched'])
-
-                provider = get_provider_class(GenericProvider.make_id(item['provider']))
-                d['provider'] = {}
-                if provider:
-                    d['provider']['id'] = provider.get_id()
-                    d['provider']['name'] = provider.name
-                    d['provider']['imageName'] = provider.image_name()
+                d['provider'] = item['provider']
 
                 yield d
 
