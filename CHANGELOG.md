@@ -3,6 +3,14 @@
 #### New Features
 
 #### Improvements
+
+#### Fixes
+
+-----
+
+## 0.3.15 (2020-04-13)
+
+#### Improvements
 - Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
 - Provider YggTorrents: Add 'saison' as a season pack search keyword ([#7920](https://github.com/pymedusa/Medusa/pull/7920))
 - Show Snatched or Downloaded release name when manually picking a subtitle ([#7955](https://github.com/pymedusa/Medusa/pull/7955))
