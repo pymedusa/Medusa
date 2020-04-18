@@ -1,86 +1,76 @@
 <template>
-    <div class="horizontal-scroll">
-        <vue-good-table v-if="shows.length > 0"
-            :columns="columns"
-            :rows="shows"
-            :search-options="{
-                enabled: true,
-                trigger: 'enter',
-                skipDiacritics: false,
-                placeholder: 'Search',
-            }"
-            :sort-options="{
-                enabled: true,
-                initialSortBy: { field: 'title', type: 'asc' }
-            }"
-            :column-filter-options="{
-                enabled: true
-            }">
-
-                <template slot="table-row" slot-scope="props">
-                    <span v-if="props.column.label == 'Show'">
-                        <div class="imgsmallposter small">
-                            <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
-                                <asset default="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false"/>
-                            </app-link>
-                            <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" style="vertical-align: middle;">{{ props.row.title }}</app-link>
+        <isotope ref="filteredShows" :list="sortedShows" id="isotope-container" class="isoDefault" :options="option" @layout="isotopeLayout($event)">
+            <div v-for="show in sortedShows" :key="show.id[show.indexer]" class="show-container" :id="`show${show.id[show.indexer]}`" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+                <div class="aligner">
+                    <div class="background-image">
+                        <img src="images/poster-back-dark.png"/>
+                    </div>
+                    <div class="poster-overlay">
+                        <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
+                            <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="false" type="posterThumb" cls="show-image" :link="false"></asset>
+                        </app-link>
+                    </div>
+                </div>
+                <div class="show-poster-footer row">
+                    <div class="col-md-12">
+                        <div class="progressbar hidden-print" style="position:relative;" :data-show-id="show.id[show.indexer]" data-progress-percentage="${progressbar_percent}"></div>
+                        <div class="show-title">
+                            <div class="ellipsis">{{show.title}}</div>
+                            <!-- if get_xem_numbering_for_show(cur_show, refresh_data=False): -->
+                            <div class="xem">
+                                <img src="images/xem.png" width="16" height="16" />
+                            </div>
+                            <!--  endif -->
                         </div>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Network'">
-                        <template v-if="props.row.network">
-                            <span :title="props.row.network" class="hidden-print">
-                                <asset default="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network"></asset>
-                            </span>
-                            <span class="visible-print-inline">{{ props.row.network }}</span>
-                        </template>
-                        <template v-else>
-                            <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
-                            <span class="visible-print-inline">No Network</span>
-                        </template>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Indexer'" class="align-center">
-                        <app-link v-if="props.row.id.imdb" :href="`http://www.imdb.com/title/${props.row.id.imdb}`" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
-                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
-                        </app-link>
-                        <app-link v-if="props.row.id.trakt" :href="`https://trakt.tv/shows/${props.row.id.trakt}`" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
-                            <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
-                        </app-link>
-                        <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
-                            <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
-                        </app-link>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Quality'" class="align-center">
-                        <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title></quality-pill>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Downloads'">
-                        <progress-bar v-bind="props.row.stats.tooltip"></progress-bar>
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Size'" class="align-center">
-                        {{ prettyBytes(props.row.stats.episodes.size) }}
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Active'" class="align-center">
-                       <img :src="'images/' + (!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
-                    </span>
-
-                    <span v-else-if="props.column.label == 'Xem'" class="align-center">
-                        <img :src="`images/${props.row.xemNumbering.length !== 0  ? 'yes16.png' : 'no16.png'}`" :alt="props.row.xemNumbering.length !== 0  ? 'yes' : 'no'" width="16" height="16" />
-                    </span>
-
-                    <span v-else class="align-center">
-                        {{props.formattedRow[props.column.field]}}
-                    </span>
-                </template>
+                        <div class="show-date">
+                <!-- if cur_airs_next:
+                    < ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) >
+                    <
+                        try:
+                            out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
+                        except ValueError:
+                            out = 'Invalid date'
+                            pass
+                    >
+                        ${out}
+                 else:
+                    <
+                    output_html = '?'
+                    display_status = cur_show.status
+                    if None is not display_status:
+                        if 'nded' not in display_status and 1 == int(cur_show.paused):
+                          output_html = 'Paused'
+                        elif display_status:
+                            output_html = display_status
+                    ${output_html}
+                 endif -->
+                        </div>
+                        <div class="show-details">
+                            <table class="show-details ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%" cellspacing="1" border="0" cellpadding="0">
+                                <tr>
+                                    <td class="show-table">
+                                        <span class="show-dlstats" title="${download_stat_tip}">STATS HERE</span>
+                                    </td>
+                                    <td class="show-table">
+                                    <!--  if cur_show.network: -->
+                                        <span v-if="show.network" :title="show.network">
+                                            <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network"></asset>
+                                        </span>
+                                        <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                                    <!--  endif -->
+                                    </td>
+                                    <td class="show-table">
+                                        <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" :override="{ class: 'show-quality' }" show-title/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div> <!-- col -->
+                </div> <!-- show-poster-footer -->
 
 
-        </vue-good-table>
-
-    </div> <!-- .horizontal-scroll -->
+            </div>
+        </isotope>
 </template>
 <script>
 import { mapGetters, mapState } from 'vuex';
@@ -90,6 +80,7 @@ import { AppLink } from '../helpers';
 import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
+import isotope from 'vueisotope';
 
 export default {
     name: 'poster',
@@ -98,7 +89,8 @@ export default {
         AppLink,
         ProgressBar,
         QualityPill,
-        VueGoodTable
+        VueGoodTable,
+        isotope
     },
     props: {
         layout: {
@@ -121,42 +113,22 @@ export default {
     },
     data() {
         return {
-            columns: [{
-                label: 'Next Ep',
-                field: row => this.parseNextDateFn(row),
-                sortable: false
-            }, {
-                label: 'Prev Ep',
-                field: row => this.parsePrevDateFn(row),
-                sortable: false
-            }, {
-                label: 'Show',
-                field: 'title'
-            }, {
-                label: 'Network',
-                field: 'network'
-            }, {
-                label: 'Indexer',
-                field: 'id'
-            }, {
-                label: 'Quality',
-                field: 'quality'
-            }, {
-                label: 'Downloads',
-                field: 'stats.tooltip.text'
-            }, {
-                label: 'Size',
-                field: 'size'
-            }, {
-                label: 'Active',
-                field: 'config.paused'
-            }, {
-                label: 'Status',
-                field: 'status'
-            }, {
-                label: 'Xem',
-                field: 'status'
-            }]
+            // Isotope stuff
+            selected: null,
+            option: {
+                getSortData: {
+                    id: itemElem => itemElem.id.slug,
+                    title: 'title'
+                },
+                getFilterData: {
+                    filterByText: itemElem => {
+                        return itemElem.title.toLowerCase().includes(this.filterShows.toLowerCase());
+                    }
+                },
+                sortBy: 'id',
+                layoutMode: 'fitRows',
+                sortAscending: false
+            }
         }
     },
     computed: {
@@ -202,7 +174,14 @@ export default {
             } else {
                 return ''
             }
-        }
+        },
+        isotopeLayout() {
+            const { imgLazyLoad } = this;
+
+            console.log('isotope Layout loaded');
+            imgLazyLoad.update();
+            // imgLazyLoad.handleScroll();
+        },
     }
 }
 </script>
