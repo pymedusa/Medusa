@@ -221,7 +221,6 @@ paths:
         The Episode endpoint returns information about the Episodes from a given Series.
       parameters:
         - $ref: '#/parameters/series-id'
-          name: seriesid
         - name: season
           in: query
           required: false
@@ -1002,18 +1001,12 @@ paths:
         The history endpoint returns logged activities stored in the history table, like episodes snatched and downloaded. Or downloaded subtitles for an episode.
       parameters:
         - $ref: '#/parameters/series-id'
-          name: seriesid
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
       responses:
         200:
-          $ref: '#/responses/pagination'
-          description: A paged array of history entries
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/History'
+          $ref: '#/responses/pagination_history'
         400:
           $ref: '#/responses/error'
           description: Invalid series id or pagination parameters
@@ -1033,9 +1026,7 @@ paths:
         The histories episode endpoint returns history entries for a specific episode
       parameters:
         - $ref: '#/parameters/series-id'
-          name: seriesid
         - $ref: '#/parameters/episode-id'
-          name: episodeid
       responses:
         200:
           description: Array of History entries
@@ -2783,6 +2774,7 @@ definitions:
         description: Episode status/quality overview string
 
   History:
+    description: History object
     type: object
     properties:
       id:
@@ -3038,3 +3030,26 @@ responses:
     description: Unexpected error
     schema:
       $ref: '#/definitions/Error'
+  pagination_history:
+    description: A paged array of history records
+    headers:
+      X-Pagination-Page:
+        type: integer
+        format: int32
+        description: The page number
+      X-Pagination-Limit:
+        type: integer
+        format: int32
+        description: The pagination limit
+      X-Pagination-Count:
+        type: integer
+        format: int32
+        description: The total items count
+      Link:
+        type: string
+        description: "The pagination links: next, last, first and previous"
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/History'
+
