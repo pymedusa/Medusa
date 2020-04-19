@@ -46,7 +46,8 @@ const state = {
     backlogOverview: {
         status: null,
         period: null
-    }
+    },
+    posterFilterByName: ''
 };
 
 const mutations = {

@@ -6,7 +6,7 @@
             <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
                 <div class="pull-right">
                     <div class="show-option pull-right">
-                        <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                        <input v-model="posterFilterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                     </div>
                     <div class="show-option pull-right"> Direction:
                         <!-- These need to patch apiv2 on change! -->
@@ -127,6 +127,7 @@ export default {
                 { text: 'Progress', value: 'progress' },
                 { text: 'Indexer', value: 'indexer' }
             ],
+            filterShowName: ''
         };
     },
     computed: {
@@ -136,7 +137,8 @@ export default {
             indexers: state => state.indexers,
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.layout,
-            stats: state => state.stats
+            stats: state => state.stats,
+            posterFilterByName: state => state.layout.posterFilterByName
         }),
         ...mapGetters({
             showsWithStats: 'showsWithStats'
@@ -153,7 +155,7 @@ export default {
             }
         },
         showLists() {
-            const { indexers, stateLayout, showsWithStats, stats } = this;
+            const { indexers, filterShowName, stateLayout, showsWithStats, stats } = this;
             if (stats.show.stats.length === 0 || !indexers.indexers) {
                 return;
             }

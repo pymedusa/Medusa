@@ -135,13 +135,15 @@ export default {
                         }
                 },
                 getFilterData: {
-                    filterByText: itemElem => {
-                        return itemElem.title.toLowerCase().includes(this.filterShows.toLowerCase());
+                    filterByText: item => {
+                        const { stateLayout } = this;
+                        const { posterFilterByName } = stateLayout;
+                        return item.title.toLowerCase().includes(posterFilterByName.toLowerCase());
                     }
                 },
-                sortBy: 'id',
+                sortBy: () => this.posterSortBy,
                 layoutMode: 'fitRows',
-                sortAscending: false
+                sortAscending: () => this.posterSortDir
             }
         };
     },
@@ -150,8 +152,8 @@ export default {
             config: state => state.config,
             indexerConfig: state => state.indexers.indexers,
             sortArticle: state => state.layout.sortArticle ,
-            posterSortby: state => state.layout.posterSortby,
-            posterSortDir: state => state.layout.posterSortDir,
+            posterSortBy: state => state.layout.posterSortby,
+            posterSortDir: state => state.layout.posterSortdir,
             stateLayout: state => state.layout,
             indexers: state => state.indexers.indexers
         }),
@@ -202,17 +204,18 @@ export default {
         },
         updateLayout() {
             const { listTitle } = this;
-            
             this.$refs[`isotope-${listTitle}`].layout();
         }
     },
     watch: {
-        posterSortby(key) {
+        posterSortBy(key) {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].sort(key);
         },
-        posterSortByDir() {
-            debugger;
+        posterSortDir(value) {
+            const { listTitle, option } = this;
+            this.option.sortAscending = Boolean(value);
+            this.$refs[`isotope-${listTitle}`].arrange(option);
         }
     }
 }
