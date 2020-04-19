@@ -786,7 +786,7 @@ export default {
             const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
-                propsData: { show, season: episode.season, episode: episode.episode, key: episode.originalIndex, lang },
+                propsData: { show, episode, key: episode.originalIndex, lang },
                 parent: this
             });
 
