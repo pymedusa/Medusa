@@ -13,7 +13,6 @@ import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
 
-
 export default {
     name: 'show-list',
     components: {
@@ -42,9 +41,6 @@ export default {
             type: String
         },
         header: {
-            type: Boolean
-        },
-        sortArticle: {
             type: Boolean
         }
     },

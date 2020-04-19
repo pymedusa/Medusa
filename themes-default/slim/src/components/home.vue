@@ -10,16 +10,14 @@
                     </div>
                     <div class="show-option pull-right"> Direction:
                         <!-- These need to patch apiv2 on change! -->
-                        <select :value="config.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                        <select v-model="stateLayout.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
                             <option :value="1">Ascending</option>
                             <option :value="0">Descending</option>
                         </select>
                     </div>
 
-
-
                     <div class="show-option pull-right"> Sort By:
-                    <select :value="config.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                    <select v-model="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
                         <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value" @change="changePosterSortBy">
                             {{ option.text }}
                         </option>
@@ -78,7 +76,7 @@
                     <div id="showTabPanes">
                         <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                             <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
-                                <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
+                                <show-list v-bind="{ listTitle, layout, shows, header: true }"></show-list>
                             </div> <!-- #...TabContent -->
                         </template>
                     </div><!-- #showTabPanes -->
@@ -88,7 +86,7 @@
                         <include file="/partials/home/{app.HOME_LAYOUT}.mako"/>
                      endif -->
                     <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                        <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"/>
+                        <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1 }"/>
                     </template>
                 </template>
             </div>

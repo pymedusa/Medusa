@@ -114,9 +114,6 @@ export default {
         },
         header: {
             type: Boolean
-        },
-        sortArticle: {
-            type: Boolean
         }
     },
     data() {
@@ -162,14 +159,16 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            indexerConfig: state => state.indexers.indexers
+            indexerConfig: state => state.indexers.indexers,
+            sortArticle: state => state.layout.sortArticle 
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
-            const removeArticle = str => this.sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return this.shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+            const { show, sortArticle } = this;
+            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
+            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         }
     },
     methods: {

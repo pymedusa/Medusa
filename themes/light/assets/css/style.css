@@ -561,13 +561,6 @@ div.xem {
     display: inline-block;
 }
 
-.show-container {
-    margin: 4px;
-    background-color: rgb(243, 243, 243);
-    border: 5px solid rgb(243, 243, 243);
-    overflow: hidden;
-    box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
-}
 
 .aligner {
     display: flex;
@@ -727,29 +720,9 @@ div.xem {
     display: block;
 }
 
-.show-status {
-    font-size: 11px;
-    text-align: left;
-    display: block;
-}
-
 .show-network-image {
     width: 50px;
     height: auto;
-}
-
-.show-dlstats {
-    font-size: 11px;
-    text-align: left;
-    display: block;
-    margin-left: 4px;
-}
-
-.show-quality {
-    font-size: 11px;
-    text-align: right;
-    display: block;
-    margin-right: 4px;
 }
 
 #sort-by {
@@ -765,10 +738,6 @@ div.xem {
     padding: 0;
 }
 
-.posterview {
-    margin: 0 auto;
-    position: relative;
-}
 
 td.tvShow a {
     color: rgb(0, 0, 0);

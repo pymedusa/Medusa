@@ -833,4 +833,10 @@ span.snatched b {
 span.global-filter {
     font-style: italic;
 }
+
+.show-status {
+    font-size: 11px;
+    text-align: left;
+    display: block;
+}
 </style>
