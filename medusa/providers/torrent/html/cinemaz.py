@@ -146,6 +146,9 @@ class CinemaZProvider(TorrentProvider):
             return True
 
         login_html = self.session.get(self.urls['login'])
+        if not login_html or not login_html.text:
+            log.warning('Unable to connect to provider')
+            return False
         with BS4Parser(login_html.text, 'html5lib') as html:
             token = html.find('input', attrs={'name': '_token'}).get('value')
 
