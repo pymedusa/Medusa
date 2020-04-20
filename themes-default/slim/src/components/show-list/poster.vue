@@ -8,7 +8,7 @@
                             <img src="images/poster-back-dark.png">
                         </div>
                         <div class="poster-overlay">
-                            <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
+                            <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
                                 <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="false" type="posterThumb" cls="show-image" :link="false"/>
                             </app-link>
                         </div>

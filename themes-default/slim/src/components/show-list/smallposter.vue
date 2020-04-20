@@ -20,10 +20,10 @@
                 <template slot="table-row" slot-scope="props">
                     <span v-if="props.column.label == 'Show'">
                         <div class="imgsmallposter small">
-                            <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
+                            <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
                                 <asset default="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false"/>
                             </app-link>
-                            <app-link href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" style="vertical-align: middle;">{{ props.row.title }}</app-link>
+                            <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" style="vertical-align: middle;">{{ props.row.title }}</app-link>
                         </div>
                     </span>
 
