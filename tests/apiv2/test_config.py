@@ -374,6 +374,7 @@ def config_postprocessing():
     section_data['naming']['stripYear'] = bool(app.NAMING_STRIP_YEAR)
     section_data['showDownloadDir'] = app.TV_DOWNLOAD_DIR
     section_data['processAutomatically'] = bool(app.PROCESS_AUTOMATICALLY)
+    section_data['processIfFileSizeDifferent'] = bool(app.PROCESS_IF_FILE_SIZE_DIFFERENT)
     section_data['postponeIfSyncFiles'] = bool(app.POSTPONE_IF_SYNC_FILES)
     section_data['postponeIfNoSubs'] = bool(app.POSTPONE_IF_NO_SUBS)
     section_data['renameEpisodes'] = bool(app.RENAME_EPISODES)

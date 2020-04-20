@@ -283,6 +283,7 @@ class MedusaApp(object):
         self.PROCESS_METHOD = None
         self.DELRARCONTENTS = False
         self.MOVE_ASSOCIATED_FILES = False
+        self.PROCESS_IF_FILE_SIZE_DIFFERENT = False
         self.POSTPONE_IF_SYNC_FILES = True
         self.POSTPONE_IF_NO_SUBS = False
         self.NFO_RENAME = True
