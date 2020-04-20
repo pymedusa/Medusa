@@ -741,7 +741,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
 
-        video.alternative_series = list(tv_episode.series.aliases)
+        video.alternative_series = [alias.title for alias in tv_episode.series.aliases]
 
         payload['video'] = video
         memory_cache.set(key, payload)
