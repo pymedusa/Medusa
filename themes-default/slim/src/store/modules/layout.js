@@ -77,7 +77,11 @@ const getters = {
 
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
+    },
+    posterFilterByName: (state) => {
+        return state.posterFilterByName;
     }
+
 };
 
 const actions = {
@@ -109,6 +113,10 @@ const actions = {
             .then(() => {
                 return commit(ADD_CONFIG, { section: 'layout', config: { show } });
             });
+    },
+    setPosterFilterByName(context, { filter}) {
+        const { commit, state } = context;
+        return commit(ADD_CONFIG, { section: 'layout', config: { posterFilterByName: filter } });
     }
 };
 

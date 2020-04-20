@@ -57,7 +57,7 @@
                                         </td>
                                         <td class="show-table">
                                             <span v-if="show.network" :title="show.network">
-                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network"/>
+                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network">
                                             </span>
                                             <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                         </td>
@@ -155,7 +155,8 @@ export default {
             posterSortBy: state => state.layout.posterSortby,
             posterSortDir: state => state.layout.posterSortdir,
             stateLayout: state => state.layout,
-            indexers: state => state.indexers.indexers
+            indexers: state => state.indexers.indexers,
+            posterFilterByName: state => state.layout.posterFilterByName
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -176,7 +177,6 @@ export default {
 
             const id = show.id[show.indexer];
             const indexerUrl = indexerConfig[show.indexer].showUrl;
-
             return `${indexerUrl}${id}`;
         },
         parsePrevDateFn(row) {
@@ -205,6 +205,10 @@ export default {
         updateLayout() {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].layout();
+        },
+        filter(key) {
+            const { listTitle } = this;
+            
         }
     },
     watch: {
@@ -216,6 +220,10 @@ export default {
             const { listTitle, option } = this;
             this.option.sortAscending = Boolean(value);
             this.$refs[`isotope-${listTitle}`].arrange(option);
+        },
+        posterFilterByName(value) {
+            const { listTitle } = this;
+            this.$refs[`isotope-${listTitle}`].filter('filterByText');
         }
     }
 }

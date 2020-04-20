@@ -6,7 +6,7 @@
             <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
                 <div class="pull-right">
                     <div class="show-option pull-right">
-                        <input v-model="posterFilterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                        <input v-model="filter" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                     </div>
                     <div class="show-option pull-right"> Direction:
                         <!-- These need to patch apiv2 on change! -->
@@ -96,7 +96,6 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import debounce from 'lodash/debounce';
 import { api } from '../api';
 import { AppLink } from './helpers';
 import ShowList from './show-list';
@@ -154,6 +153,16 @@ export default {
                 setLayout({ page, layout });
             }
         },
+        filter: {
+            get() {
+                const { posterFilterByName } = this;
+                return posterFilterByName;
+            },
+            set(value) {
+                const { setPosterFilterByName } = this;
+                setPosterFilterByName({ filter: value });
+            } 
+        },
         showLists() {
             const { indexers, filterShowName, stateLayout, showsWithStats, stats } = this;
             if (stats.show.stats.length === 0 || !indexers.indexers) {
@@ -179,6 +188,7 @@ export default {
         ...mapActions({
             setLayout: 'setLayout',
             setConfig: 'setConfig',
+            setPosterFilterByName: 'setPosterFilterByName',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
