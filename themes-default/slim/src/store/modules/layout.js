@@ -24,7 +24,6 @@ const state = {
     historyLimit: null,
     schedule: null,
     wide: null,
-    posterSortdir: null,
     timezoneDisplay: null,
     timeStyle: null,
     dateStyle: null,
@@ -36,7 +35,6 @@ const state = {
     trimZero: null,
     sortArticle: null,
     fuzzyDating: null,
-    posterSortby: null,
     comingEps: {
         missedRange: null,
         sort: null,
@@ -47,7 +45,9 @@ const state = {
         status: null,
         period: null
     },
-    posterFilterByName: ''
+    posterFilterByName: '',
+    posterSortdir: null,
+    posterSortby: null
 };
 
 const mutations = {
@@ -86,22 +86,21 @@ const getters = {
 
 const actions = {
     setLayout(context, { page, layout }) {
-        return api.patch('config/main', {
-            layout: {
-                [page]: layout
-            }
-        }).then(() => {
-            setTimeout(() => {
-                // For now we reload the page since the layouts use python still
-                location.reload();
-            }, 500);
-        });
+        const { commit } = context;
+        return api.patch('config/main', { layout: { [page]: layout } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { [page]: layout }
+                });
+            });
     },
     setTheme(context, { themeName }) {
         const { commit } = context;
         return api.patch('config/main', { layout: { themeName } })
             .then(() => {
-                return commit(ADD_CONFIG, { section: 'layout', config: { themeName } });
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { themeName }
+                });
             });
     },
     setSpecials(context, specials) {
@@ -111,12 +110,22 @@ const actions = {
 
         return api.patch('config/main', { layout: { show } })
             .then(() => {
-                return commit(ADD_CONFIG, { section: 'layout', config: { show } });
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { show } 
+                });
             });
     },
     setPosterFilterByName(context, { filter}) {
-        const { commit, state } = context;
-        return commit(ADD_CONFIG, { section: 'layout', config: { posterFilterByName: filter } });
+        const { commit } = context;
+        return commit(ADD_CONFIG, {
+            section: 'layout', config: { posterFilterByName: filter } 
+        });
+    },
+    setPosterSortBy(context, { posterSortby }) {
+        const { commit } = context;
+        return commit(ADD_CONFIG, {
+            section: 'layout', config: { posterSortby }
+        });
     }
 };
 

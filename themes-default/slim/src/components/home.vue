@@ -17,7 +17,7 @@
                     </div>
 
                     <div class="show-option pull-right"> Sort By:
-                    <select v-model="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                    <select :value="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
                         <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value" @change="changePosterSortBy">
                             {{ option.text }}
                         </option>
@@ -253,9 +253,18 @@ export default {
                 }
             });
         },
-        changePosterSortBy() {
+        async changePosterSortBy() {
             // Patch new posterSOrtBy value
-            const { setConfig } = this;
+            const { posterSortby, setPosterSortBy } = this;
+
+            try {
+                await setPosterSortBy({ section: 'layout', config: { posterSortby } });
+            } catch (error) {
+                $snotify.error(
+                    'Error while trying to change poster sort option',
+                    'Error'
+                );
+            }
         }
     },
     beforeMount() {
@@ -265,7 +274,7 @@ export default {
         });
     },
     mounted() {
-        const { $snotify, config, stateLayout, setConfig, getShows, getStats } = this;
+        const { getShows, getStats } = this;
 
         getShows();
         getStats('show');
@@ -306,7 +315,7 @@ export default {
         //     });
         // });
 
-        // const initializePage = () => {
+        const initializePage = () => {
             // Reset the layout for the activated tab (when using ui tabs)
             // $('#showTabs').tabs({
             //     activate() {
@@ -548,63 +557,63 @@ export default {
             //     }
             // });
 
-            // $('#poster-container').sortable({
-            //     appendTo: document.body,
-            //     axis: 'y',
-            //     items: '> .show-grid',
-            //     scroll: false,
-            //     tolerance: 'pointer',
-            //     helper: 'clone',
-            //     handle: 'button.move-show-list',
-            //     cancel: '',
-            //     sort(event, ui) {
-            //         const draggedItem = $(ui.item);
-            //         const margin = 1.5;
+            $('#poster-container').sortable({
+                appendTo: document.body,
+                axis: 'y',
+                items: '> .show-grid',
+                scroll: false,
+                tolerance: 'pointer',
+                helper: 'clone',
+                handle: 'button.move-show-list',
+                cancel: '',
+                sort(event, ui) {
+                    const draggedItem = $(ui.item);
+                    const margin = 1.5;
 
-            //         if (ui.position.top !== ui.originalPosition.top) {
-            //             if (ui.position.top > ui.originalPosition.top * margin) {
-            //                 // Move to bottom
-            //                 setTimeout(() => {
-            //                     $(draggedItem).appendTo('#poster-container');
-            //                     return false;
-            //                 }, 400);
-            //             }
-            //             if (ui.position.top < ui.originalPosition.top / margin) {
-            //                 // Move to top
-            //                 setTimeout(() => {
-            //                     $(draggedItem).prependTo('#poster-container');
-            //                     return false;
-            //                 }, 400);
-            //             }
-            //         }
-            //     },
-            //     async update(event) {
-            //         const showListOrder = $(event.target.children).map((index, el) => {
-            //             return $(el).data('list');
-            //         });
+                    if (ui.position.top !== ui.originalPosition.top) {
+                        if (ui.position.top > ui.originalPosition.top * margin) {
+                            // Move to bottom
+                            setTimeout(() => {
+                                $(draggedItem).appendTo('#poster-container');
+                                return false;
+                            }, 400);
+                        }
+                        if (ui.position.top < ui.originalPosition.top / margin) {
+                            // Move to top
+                            setTimeout(() => {
+                                $(draggedItem).prependTo('#poster-container');
+                                return false;
+                            }, 400);
+                        }
+                    }
+                },
+                async update(event) {
+                    const showListOrder = $(event.target.children).map((index, el) => {
+                        return $(el).data('list');
+                    });
 
-            //         const layout = {
-            //             show: {
-            //                 showListOrder: showListOrder.toArray()
-            //             }
-            //         };
+                    const layout = {
+                        show: {
+                            showListOrder: showListOrder.toArray()
+                        }
+                    };
 
-            //         try {
-            //             await setConfig({ section: 'main', config: { layout } });
-            //             $snotify.success(
-            //                 'Saved Home poster list type order',
-            //                 'Saved',
-            //                 { timeout: 5000 }
-            //             );
-            //         } catch (error) {
-            //             $snotify.error(
-            //                 'Error while trying to save home poster list type order',
-            //                 'Error'
-            //             );
-            //     }
-            //     }
-            // });
-        // }; // END initializePage()
+                    try {
+                        await setConfig({ section: 'main', config: { layout } });
+                        $snotify.success(
+                            'Saved Home poster list type order',
+                            'Saved',
+                            { timeout: 5000 }
+                        );
+                    } catch (error) {
+                        $snotify.error(
+                            'Error while trying to save home poster list type order',
+                            'Error'
+                        );
+                    }
+                }
+            });
+        }; // END initializePage()
 
         // Vue Stuff (prevent race condition issues)
         const unwatch = this.$watch('config.rootDirs', () => {
@@ -632,9 +641,12 @@ export default {
                     $('#showRoot').hide();
                 }
             }
+
+            // I'm (mis-using) this for now.
+            this.initializePosterSizeSlider();
         });
 
-        // window.addEventListener('load', initializePage, { once: true });
+        window.addEventListener('load', initializePage, { once: true });
     }
 };
 </script>
