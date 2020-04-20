@@ -355,6 +355,7 @@
 </template>
 
 <script>
+import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
 import { humanFileSize } from '../utils/core';
@@ -762,7 +763,7 @@ export default {
             const { id, indexer, getEpisodes, show, subtitleSearchComponents } = this;
             const SubtitleSearchClass = Vue.extend(SubtitleSearch); // eslint-disable-line no-undef
             const instance = new SubtitleSearchClass({
-                propsData: { show, season: episode.season, episode: episode.episode, key: episode.originalIndex, lang },
+                propsData: { show, episode, key: episode.originalIndex, lang },
                 parent: this
             });
 
@@ -785,14 +786,14 @@ export default {
          * Attaches IMDB tooltip,
          * Moves summary and checkbox controls backgrounds
          */
-        reflowLayout() {
+        reflowLayout: debounce(function() {
             console.debug('Reflowing layout');
 
             this.$nextTick(() => {
                 this.movecheckboxControlsBackground();
             });
             addQTip(); // eslint-disable-line no-undef
-        },
+        }, 1000),
         /**
          * Adjust the checkbox controls (episode filter) background position
          */
