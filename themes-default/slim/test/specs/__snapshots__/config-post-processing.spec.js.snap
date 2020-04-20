@@ -204,6 +204,11 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         >
                           Symbolic Link
                         </option>
+                        <option
+                          value="keeplink"
+                        >
+                          Keep Link
+                        </option>
                       </select>
                        
                       <span>

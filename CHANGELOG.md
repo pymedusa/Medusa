@@ -1,6 +1,7 @@
 ## Unreleased
 
 #### New Features
+- Add Keep link as post processing method ([7986](https://github.com/pymedusa/Medusa/pull/7986))
 
 #### Improvements
 

@@ -389,7 +389,8 @@ export default {
                 { value: 'copy', text: 'Copy' },
                 { value: 'move', text: 'Move' },
                 { value: 'hardlink', text: 'Hard Link' },
-                { value: 'symlink', text: 'Symbolic Link' }
+                { value: 'symlink', text: 'Symbolic Link' },
+                { value: 'keeplink', text: 'Keep Link' }
             ],
             timezoneOptions: [
                 { value: 'local', text: 'Local' },
