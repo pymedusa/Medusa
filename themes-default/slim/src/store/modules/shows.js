@@ -140,7 +140,7 @@ const getters = {
         }
 
         return state.shows.map(show => {
-            const showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
+            let showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
             const newLine = '\u000d';
             let text = 'Unaired';
             let title = '';
