@@ -145,6 +145,15 @@ const getters = {
             let text = 'Unaired';
             let title = '';
 
+            if (!showStats) {
+                showStats = {
+                    epDownloaded: 0,
+                    epSnatched: 0,
+                    epTotal: 0,
+                    seriesSize: 0
+                }
+            }
+
             if (showStats.epTotal >= 1) {
                 text = showStats.epDownloaded;
                 title = `Downloaded: ${showStats.epDownloaded}`;
