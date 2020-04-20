@@ -137,7 +137,8 @@ export default {
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.layout,
             stats: state => state.stats,
-            posterFilterByName: state => state.layout.posterFilterByName
+            posterFilterByName: state => state.layout.posterFilterByName,
+            posterSize: state => state.layout.posterSize
         }),
         ...mapGetters({
             showsWithStats: 'showsWithStats'
@@ -189,10 +190,12 @@ export default {
             setLayout: 'setLayout',
             setConfig: 'setConfig',
             setPosterFilterByName: 'setPosterFilterByName',
+            setPosterSize: 'setPosterSize',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
         initializePosterSizeSlider() {
+            const { setPosterSize } = this;
             const resizePosters = newSize => {
                 let fontSize;
                 let logoWidth;
@@ -231,25 +234,32 @@ export default {
                 });
             };
 
-            let posterSize;
+            // Get poster size from localStorage
+            let slidePosterSize;
             if (typeof (Storage) !== 'undefined') {
-                posterSize = parseInt(localStorage.getItem('posterSize'), 10);
+                slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
             }
-            if (typeof (posterSize) !== 'number' || isNaN(posterSize)) {
-                posterSize = 188;
+            if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
+                slidePosterSize = 188;
             }
-            resizePosters(posterSize);
+
+            // Update poster size to store
+            setPosterSize({ posterSize: slidePosterSize });
+
+            resizePosters(slidePosterSize);
 
             $('#posterSizeSlider').slider({
                 min: 75,
                 max: 250,
-                value: posterSize,
+                value: slidePosterSize,
                 change(e, ui) {
+                    // Save to localStorage
                     if (typeof (Storage) !== 'undefined') {
                         localStorage.setItem('posterSize', ui.value);
                     }
+                    // Save to store
+                    setPosterSize({ posterSize: ui.value });
                     resizePosters(ui.value);
-                    $('.show-grid').isotope('layout');
                 }
             });
         },

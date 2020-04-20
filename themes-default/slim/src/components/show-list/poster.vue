@@ -156,7 +156,8 @@ export default {
             posterSortDir: state => state.layout.posterSortdir,
             stateLayout: state => state.layout,
             indexers: state => state.indexers.indexers,
-            posterFilterByName: state => state.layout.posterFilterByName
+            posterFilterByName: state => state.layout.posterFilterByName,
+            posterSize: state => state.layout.posterSize
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -224,6 +225,10 @@ export default {
         posterFilterByName(value) {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].filter('filterByText');
+        },
+        posterSize(value) {
+            const { listTitle } = this;
+            this.$refs[`isotope-${listTitle}`].arrange();
         }
     }
 }

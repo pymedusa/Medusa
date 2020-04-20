@@ -47,7 +47,8 @@ const state = {
     },
     posterFilterByName: '',
     posterSortdir: null,
-    posterSortby: null
+    posterSortby: null,
+    posterSize: 250
 };
 
 const mutations = {
@@ -115,7 +116,7 @@ const actions = {
                 });
             });
     },
-    setPosterFilterByName(context, { filter}) {
+    setPosterFilterByName(context, { filter }) {
         const { commit } = context;
         return commit(ADD_CONFIG, {
             section: 'layout', config: { posterFilterByName: filter } 
@@ -125,6 +126,12 @@ const actions = {
         const { commit } = context;
         return commit(ADD_CONFIG, {
             section: 'layout', config: { posterSortby }
+        });
+    },
+    setPosterSize(context, { posterSize }) {
+        const { commit } = context;
+        return commit(ADD_CONFIG, {
+            section: 'layout', config: { posterSize }
         });
     }
 };
