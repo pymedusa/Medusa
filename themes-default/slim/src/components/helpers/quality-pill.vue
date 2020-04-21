@@ -27,7 +27,7 @@ export default {
             type: Object,
             default: () => ({}),
             validator: value => {
-                return Object.keys(value).every(key => ['class', 'title', 'text'].includes(key));
+                return Object.keys(value).every(key => ['class', 'title', 'text', 'style'].includes(key));
             }
         }
     },

@@ -1,26 +1,26 @@
 <template>
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
-            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" class="isoDefault" :item-selector="'show-container'" :options="option" v-images-loaded:on.progress="updateLayout">
-                <div v-for="show in sortedShows" :key="show.id[show.indexer]" :id="`show${show.id[show.indexer]}`" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.progress="updateLayout">
+                <div v-for="show in sortedShows" :key="show.id[show.indexer]" :id="`show${show.id[show.indexer]}`" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
                             <img src="images/poster-back-dark.png">
                         </div>
                         <div class="poster-overlay">
                             <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
-                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="false" type="posterThumb" cls="show-image" :link="false"/>
+                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="false" type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
                     </div>
                     <div class="show-poster-footer row">
                         <div class="col-md-12">
-                            <div class="progressbar hidden-print" style="position:relative;" :data-show-id="show.id[show.indexer]" data-progress-percentage="${progressbar_percent}"></div>
+                            <div class="progressbar hidden-print" style="position:relative;" :data-show-id="show.id[show.indexer]" data-progress-percentage="${progressbar_percent}" />
                             <div class="show-title">
                                 <div class="ellipsis">{{show.title}}</div>
                                 <!-- if get_xem_numbering_for_show(cur_show, refresh_data=False): -->
                                 <div class="xem">
-                                    <img src="images/xem.png" width="16" height="16" />
+                                    <img src="images/xem.png" width="16" height="16">
                                 </div>
                                 <!--  endif -->
                             </div>
@@ -47,22 +47,22 @@
                         ${output_html}
                         endif -->
                             </div>
-                            <div class="show-details">
+                            <div v-show="fontSize !== null" class="show-details">
                                 <table :class="{fanartOpacity: stateLayout.fanartBackground}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
                                     <tr>
                                         <td class="show-table">
-                                            <span class="show-dlstats" :title="`Downloaded: ${show.stats.episodes.downloaded}${!show.stats.episodes.snatched ? '' : '; Snatched:' + show.stats.episodes.snatched}; Total: ${show.stats.episodes.total}`">
+                                            <span class="show-dlstats" :style="{fontSize}" :title="`Downloaded: ${show.stats.episodes.downloaded}${!show.stats.episodes.snatched ? '' : '; Snatched:' + show.stats.episodes.snatched}; Total: ${show.stats.episodes.total}`">
                                                 {{`${show.stats.episodes.downloaded}${!show.stats.episodes.snatched ? '' : '+' + show.stats.episodes.snatched} / ${show.stats.episodes.total}`}}
                                             </span>
                                         </td>
                                         <td class="show-table">
                                             <span v-if="show.network" :title="show.network">
-                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network"/>
+                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
-                                            <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                                            <span v-else title="No Network"><img class="show-network-image" :style="" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>
                                         <td class="show-table">
-                                            <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" :override="{ class: 'show-quality' }" show-title/>
+                                            <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" :override="{ class: 'show-quality', style: 'test' }" show-title />
                                         </td>
                                     </tr>
                                 </table>
@@ -75,11 +75,11 @@
     </div> 
 </template>
 <script>
-import { mapGetters, mapState } from 'vuex';
+import debounce from 'lodash/debounce';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { Asset } from '../helpers';
 import { AppLink } from '../helpers';
-import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import isotope from 'vueisotope';
 import imagesLoaded from 'vue-images-loaded';
@@ -92,7 +92,6 @@ export default {
     components: {
         Asset,
         AppLink,
-        ProgressBar,
         QualityPill,
         isotope
     },
@@ -127,12 +126,12 @@ export default {
                         if (!row.stats.episodes.total) {
                             return row.stats.episodes.total;
                         }
-                        return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100)
+                        return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100);
                     },
                     indexer: row => {
-                            const { indexers } = this;
-                            return indexers[row.indexer].id
-                        }
+                        const { indexers } = this;
+                        return indexers[row.indexer].id;
+                    }
                 },
                 getFilterData: {
                     filterByText: item => {
@@ -144,14 +143,19 @@ export default {
                 sortBy: () => this.posterSortBy,
                 layoutMode: 'fitRows',
                 sortAscending: () => this.posterSortDir
-            }
+            },
+            fontSize: null,
+            logoWidth: null,
+            borderRadius: null,
+            borderWidth: null,
+            isotopeLoaded: false
         };
     },
     computed: {
         ...mapState({
             config: state => state.config,
             indexerConfig: state => state.indexers.indexers,
-            sortArticle: state => state.layout.sortArticle ,
+            sortArticle: state => state.layout.sortArticle,
             posterSortBy: state => state.layout.posterSortby,
             posterSortDir: state => state.layout.posterSortdir,
             stateLayout: state => state.layout,
@@ -166,9 +170,20 @@ export default {
             const { shows, sortArticle } = this;
             const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
             return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+        },
+        showContainerStyle() {
+            const { posterSize, borderWidth, borderRadius } = this;
+            return {
+                width: posterSize + 'px',
+                borderWidth: borderWidth + 'px',
+                borderRadius: borderRadius + 'px'
+            };
         }
     },
     methods: {
+        ...mapActions({
+            setPosterSize: 'setPosterSize'
+        }),
         prettyBytes: bytes => pretty(bytes),
         showIndexerUrl(show) {
             const { indexerConfig } = this;
@@ -185,32 +200,96 @@ export default {
             if (row.prevAirDate) {
                 console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
                 return fuzzyParseDateTime(row.prevAirDate);
-            };
+            }
             return '';
         },
         parseNextDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.nextAirDate) {
                 console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
-                return fuzzyParseDateTime(row.nextAirDate)
-            };
+                return fuzzyParseDateTime(row.nextAirDate);
+            }
             return '';
         },
-        isotopeLayout() {
-            const { imgLazyLoad } = this;
-
+        updateLayout: debounce(function() {
+            const { calculateSize, listTitle } = this;
+            this.isotopeLoaded = true;
             console.log('isotope Layout loaded');
-            imgLazyLoad.update();
-            // imgLazyLoad.handleScroll();
-        },
-        updateLayout() {
-            const { listTitle } = this;
+            calculateSize();
             this.$refs[`isotope-${listTitle}`].layout();
-        },
-        filter(key) {
-            const { listTitle } = this;
+        }, 50),
+        // initializePosterSizeSlider() {
+        //     const { setPosterSize } = this;
+        //     const resizePosters = newSize => {                
+
+        //         // If there's a poster popup, remove it before resizing
+        //         $('#posterPopup').remove();
+
+        //         if (fontSize === undefined) {
+        //             $('.show-details').hide();
+        //         } else {
+        //             $('.show-details').show();
+        //             $('.show-dlstats, .show-quality').css('fontSize', fontSize);
+        //             $('.show-network-image').css('width', logoWidth);
+        //         }
+
+        //         $('.show-container').css({
+        //             width: newSize,
+        //             borderWidth,
+        //             borderRadius
+        //         });
+        //     };
+
             
+        // }
+        calculateSize() {
+            const { posterSize } = this;
+
+            if (posterSize < 125) { // Small
+                this.fontSize = null;
+                this.borderRadius = 3;
+                this.borderWidth = 4;
+            } else if (posterSize < 175) { // Medium
+                this.fontSize = 9;
+                this.logoWidth = 40;
+                this.borderRadius = 4;
+                this.borderWidth = 5;
+            } else { // Large
+                this.fontSize = 11;
+                this.logoWidth = 50;
+                this.borderRadius = 6;
+                this.borderWidth = 6;
+            }
+
         }
+    },
+    mounted() {
+        const { setPosterSize } = this;
+        // Get poster size from localStorage
+        let slidePosterSize;
+        if (typeof (Storage) !== 'undefined') {
+            slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
+        }
+        if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
+            slidePosterSize = 188;
+        }
+
+        // Update poster size to store
+        setPosterSize({ posterSize: slidePosterSize });
+
+        $('#posterSizeSlider').slider({
+            min: 75,
+            max: 250,
+            value: slidePosterSize,
+            change(e, ui) {
+                // Save to localStorage
+                if (typeof (Storage) !== 'undefined') {
+                    localStorage.setItem('posterSize', ui.value);
+                }
+                // Save to store
+                setPosterSize({ posterSize: ui.value });
+            }
+        });
     },
     watch: {
         posterSortBy(key) {
@@ -222,16 +301,22 @@ export default {
             this.option.sortAscending = Boolean(value);
             this.$refs[`isotope-${listTitle}`].arrange(option);
         },
-        posterFilterByName(value) {
+        posterFilterByName() {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].filter('filterByText');
         },
-        posterSize(value) {
-            const { listTitle } = this;
-            this.$refs[`isotope-${listTitle}`].arrange();
+        posterSize(oldSize, newSize) {
+            const { calculateSize, isotopeLoaded, listTitle } = this;
+            if (!isotopeLoaded || oldSize === newSize) {
+                return;
+            }
+            calculateSize();
+            this.$nextTick(() => {
+                this.$refs[`isotope-${listTitle}`].arrange();
+            });
         }
     }
-}
+};
 </script>
 <style>
 .show-container {

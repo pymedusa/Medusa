@@ -1,7 +1,7 @@
 <template>
-    <img v-if="!link" :src="src" :class="cls" @error="error = true">
+    <img v-if="!link" :src="src" :class="cls" @error="error = true" :style="{width: `${imgWidth} px`}">
     <app-link v-else :href="href">
-        <img :src="src" :class="cls" @error="error = true">
+        <img :src="src" :class="cls" :style="`width: ${styleWidth}`" @error="error = true" :style="{width: `${imgWidth} px`}">
     </app-link>
 </template>
 <script>
@@ -31,6 +31,9 @@ export default {
         },
         cls: {
             type: String
+        },
+        imgWidth: {
+            type: Number
         }
     },
     data() {

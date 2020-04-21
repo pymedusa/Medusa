@@ -162,10 +162,10 @@ export default {
             set(value) {
                 const { setPosterFilterByName } = this;
                 setPosterFilterByName({ filter: value });
-            } 
+            }
         },
         showLists() {
-            const { indexers, filterShowName, stateLayout, showsWithStats, stats } = this;
+            const { indexers, stateLayout, showsWithStats, stats } = this;
             if (stats.show.stats.length === 0 || !indexers.indexers) {
                 return;
             }
@@ -190,82 +190,12 @@ export default {
             setLayout: 'setLayout',
             setConfig: 'setConfig',
             setPosterFilterByName: 'setPosterFilterByName',
-            setPosterSize: 'setPosterSize',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
-        initializePosterSizeSlider() {
-            const { setPosterSize } = this;
-            const resizePosters = newSize => {
-                let fontSize;
-                let logoWidth;
-                let borderRadius;
-                let borderWidth;
-                if (newSize < 125) { // Small
-                    borderRadius = 3;
-                    borderWidth = 4;
-                } else if (newSize < 175) { // Medium
-                    fontSize = 9;
-                    logoWidth = 40;
-                    borderRadius = 4;
-                    borderWidth = 5;
-                } else { // Large
-                    fontSize = 11;
-                    logoWidth = 50;
-                    borderRadius = 6;
-                    borderWidth = 6;
-                }
-
-                // If there's a poster popup, remove it before resizing
-                $('#posterPopup').remove();
-
-                if (fontSize === undefined) {
-                    $('.show-details').hide();
-                } else {
-                    $('.show-details').show();
-                    $('.show-dlstats, .show-quality').css('fontSize', fontSize);
-                    $('.show-network-image').css('width', logoWidth);
-                }
-
-                $('.show-container').css({
-                    width: newSize,
-                    borderWidth,
-                    borderRadius
-                });
-            };
-
-            // Get poster size from localStorage
-            let slidePosterSize;
-            if (typeof (Storage) !== 'undefined') {
-                slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
-            }
-            if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
-                slidePosterSize = 188;
-            }
-
-            // Update poster size to store
-            setPosterSize({ posterSize: slidePosterSize });
-
-            resizePosters(slidePosterSize);
-
-            $('#posterSizeSlider').slider({
-                min: 75,
-                max: 250,
-                value: slidePosterSize,
-                change(e, ui) {
-                    // Save to localStorage
-                    if (typeof (Storage) !== 'undefined') {
-                        localStorage.setItem('posterSize', ui.value);
-                    }
-                    // Save to store
-                    setPosterSize({ posterSize: ui.value });
-                    resizePosters(ui.value);
-                }
-            });
-        },
         async changePosterSortBy() {
             // Patch new posterSOrtBy value
-            const { posterSortby, setPosterSortBy } = this;
+            const { $snotify, posterSortby, setPosterSortBy } = this;
 
             try {
                 await setPosterSortBy({ section: 'layout', config: { posterSortby } });
@@ -284,7 +214,7 @@ export default {
         });
     },
     mounted() {
-        const { getShows, getStats } = this;
+        const { $snotify, getShows, getStats, setConfig } = this;
 
         getShows();
         getStats('show');
@@ -653,7 +583,7 @@ export default {
             }
 
             // I'm (mis-using) this for now.
-            this.initializePosterSizeSlider();
+            // this.initializePosterSizeSlider();
         });
 
         window.addEventListener('load', initializePage, { once: true });
