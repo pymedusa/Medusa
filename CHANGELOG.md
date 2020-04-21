@@ -1,10 +1,55 @@
 ## Unreleased
 
 #### New Features
+- Add Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
 
 #### Improvements
 
 #### Fixes
+- Fixed PrivateHD and CinemaZ provider login ([#7991](https://github.com/pymedusa/Medusa/pull/7991))
+-----
+
+## 0.3.15 (2020-04-13)
+
+#### Improvements
+- Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
+- Provider YggTorrents: Add 'saison' as a season pack search keyword ([#7920](https://github.com/pymedusa/Medusa/pull/7920))
+- Show Snatched or Downloaded release name when manually picking a subtitle ([#7955](https://github.com/pymedusa/Medusa/pull/7955))
+
+#### Fixes
+- Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
+- Fixed starting medusa failed running python3.8 on windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
+- Fixed Speed.cd provider login ([#7941](https://github.com/pymedusa/Medusa/pull/7941))
+- Fixed [#7959](https://github.com/pymedusa/Medusa/issues/7959) - UI bug on schedule calendar view ([#7962](https://github.com/pymedusa/Medusa/pull/7962))
+- Fixed running Scheduler with specific start time ([#7963](https://github.com/pymedusa/Medusa/pull/7963))
+
+-----
+
+## 0.3.14 (2020-03-30)
+
+#### Improvements
+- Search sub-folders for subtitles during post-processing
+
+#### Fixes
+- Fixed a bug that prevented the scheduler to run correctly
+
+-----
+
+## 0.3.13 (2020-03-28)
+
+#### Improvements
+- Improved show loading speed with lazy seasons loading
+- Show specials are now always displayed at the bottom if enabled
+- Added dynamic loading of providers
+- Set scheduler last run after it has run
+- Restricted scripts execution to Python scripts for security reasons (see [External scripts](https://github.com/pymedusa/Medusa/wiki/External-scripts))
+- Added missing status handling in show header
+
+#### Fixes
+- Fixed indexer specific exceptions raising errors in show refresh ([#7837](https://github.com/pymedusa/Medusa/pull/7837))
+- Replaced deprecated error.message syntax ([#7819](https://github.com/pymedusa/Medusa/pull/7819))
+- Fixed saving of web root ([#7841](https://github.com/pymedusa/Medusa/pull/7841))
+- Fixed authentication token returned as bytes ([#7842](https://github.com/pymedusa/Medusa/pull/7842))
 
 -----
 

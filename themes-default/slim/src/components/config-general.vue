@@ -283,7 +283,7 @@
                                         <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
                                     </config-toggle-slider>
 
-                                    <config-textbox v-model="system.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
+                                    <config-textbox v-model="config.webRoot" label="HTTP web root" id="web_root" autocomplete="no">
                                         <p>Set a base URL, for use in reverse proxies.</p>
                                         <p>blank = disabled</p>
                                         <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>

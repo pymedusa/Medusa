@@ -673,7 +673,7 @@ class MedusaApp(object):
         self.FALLBACK_PLEX_NOTIFICATIONS = True
         self.FALLBACK_PLEX_TIMEOUT = 3
         self.FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
-        self.TVDB_API_KEY = '0629B785CE550C8D'
+        self.TVDB_API_KEY = 'd99c8e7dac2307355af4ab88720a6c32'
 
         self.GLOTZ_API_KEY = '9DAF49C96CBF8DAC'
 

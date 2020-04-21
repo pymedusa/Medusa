@@ -72,6 +72,10 @@ const getters = {
             return 'Skipped';
         }
 
+        if (['Archived'].includes(status)) {
+            return 'Preferred';
+        }
+
         if (['Wanted', 'Failed'].includes(status)) {
             return 'Wanted';
         }
@@ -97,6 +101,8 @@ const getters = {
             if (configQualities.allowed.includes(quality)) {
                 return 'Allowed';
             }
+
+            return 'Wanted';
         }
 
         return status;

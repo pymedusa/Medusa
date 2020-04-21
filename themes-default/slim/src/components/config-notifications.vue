@@ -952,7 +952,6 @@ export default {
             emailSelectedShowAdresses: []
         };
     },
-    // TODO: Replace with Object spread (`...mapState`)
     computed: {
         ...mapState([
             'config',

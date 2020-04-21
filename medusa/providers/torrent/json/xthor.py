@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
+from time import sleep
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -73,6 +74,7 @@ class XthorProvider(TorrentProvider):
                     search_params.pop('search', '')
 
                 data = self.session.get(self.urls['search'], params=search_params)
+                sleep(2)  # Limit to 1 request every 2 seconds.
                 if not data:
                     log.debug('No data returned from provider')
                     continue
