@@ -1,7 +1,7 @@
 <template>
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
-            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.progress="updateLayout">
+            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
                 <div v-for="show in sortedShows" :key="show.id[show.indexer]" :id="`show${show.id[show.indexer]}`" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
@@ -9,7 +9,7 @@
                         </div>
                         <div class="poster-overlay">
                             <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
-                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="false" type="posterThumb" cls="show-image" :link="false" />
+                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
                     </div>
@@ -82,6 +82,7 @@ import { Asset } from '../helpers';
 import { AppLink } from '../helpers';
 import { QualityPill } from '../helpers';
 import isotope from 'vueisotope';
+import LazyLoad from 'vanilla-lazyload';
 import imagesLoaded from 'vue-images-loaded';
 
 export default {
@@ -148,7 +149,8 @@ export default {
             logoWidth: null,
             borderRadius: null,
             borderWidth: null,
-            isotopeLoaded: false
+            isotopeLoaded: false,
+            imgLazyLoad: null
         };
     },
     computed: {
@@ -211,37 +213,6 @@ export default {
             }
             return '';
         },
-        updateLayout: debounce(function() {
-            const { calculateSize, listTitle } = this;
-            this.isotopeLoaded = true;
-            console.log('isotope Layout loaded');
-            calculateSize();
-            this.$refs[`isotope-${listTitle}`].layout();
-        }, 50),
-        // initializePosterSizeSlider() {
-        //     const { setPosterSize } = this;
-        //     const resizePosters = newSize => {                
-
-        //         // If there's a poster popup, remove it before resizing
-        //         $('#posterPopup').remove();
-
-        //         if (fontSize === undefined) {
-        //             $('.show-details').hide();
-        //         } else {
-        //             $('.show-details').show();
-        //             $('.show-dlstats, .show-quality').css('fontSize', fontSize);
-        //             $('.show-network-image').css('width', logoWidth);
-        //         }
-
-        //         $('.show-container').css({
-        //             width: newSize,
-        //             borderWidth,
-        //             borderRadius
-        //         });
-        //     };
-
-            
-        // }
         calculateSize() {
             const { posterSize } = this;
 
@@ -261,6 +232,21 @@ export default {
                 this.borderWidth = 6;
             }
 
+        },
+        // imgLazyLoad() {
+        //     console.log('imgLazyLoad object constructud!');
+        //     return new LazyLoad({
+        //         // Example of options object -> see options section
+        //         threshold: 500
+        //     });
+        // },
+        updateLayout() {
+            const { calculateSize, imgLazyLoad, listTitle } = this;
+            this.isotopeLoaded = true;
+            imgLazyLoad.update();
+            calculateSize();
+            this.$refs[`isotope-${listTitle}`].layout();
+            console.log('isotope Layout loaded');
         }
     },
     mounted() {
@@ -289,6 +275,10 @@ export default {
                 // Save to store
                 setPosterSize({ posterSize: ui.value });
             }
+        });
+
+        this.imgLazyLoad = new LazyLoad({
+            threshold: 500
         });
     },
     watch: {

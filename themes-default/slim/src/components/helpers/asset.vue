@@ -1,7 +1,7 @@
 <template>
-    <img v-if="!link" :src="src" :class="cls" @error="error = true" :style="{width: `${imgWidth} px`}">
+    <img v-if="!link" v-bind="{ src, class: cls, 'data-src': dataSrc, class: newCls }" @error="error = true">
     <app-link v-else :href="href">
-        <img :src="src" :class="cls" :style="`width: ${styleWidth}`" @error="error = true" :style="{width: `${imgWidth} px`}">
+        <img v-bind="{ src, class: cls, 'data-src': dataSrc, class: newCls }" @error="error = true">
     </app-link>
 </template>
 <script>
@@ -34,6 +34,9 @@ export default {
         },
         imgWidth: {
             type: Number
+        },
+        lazy: {
+            type: Boolean
         }
     },
     data() {
@@ -43,13 +46,17 @@ export default {
     },
     computed: {
         src() {
-            const { error, showSlug, type } = this;
+            const { lazy, error, showSlug, type } = this;
 
             if (error || !showSlug || !type) {
                 return this.default;
             }
+            
+            if (!lazy) {
+                return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
+            }
 
-            return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
+            return this.default;
         },
         href() {
             // Compute a link to the full asset, if applicable
@@ -57,10 +64,39 @@ export default {
                 return this.src.replace('Thumb', '');
             }
             return undefined;
+        },
+        newCls() {
+            const { cls, imgWidth } = this;
+            let newClass = cls;
+
+            if (imgWidth) {
+                newClass += ` width-${imgWidth}`; 
+            }
+
+            return newClass;
+        },
+        dataSrc() {
+            const { lazy, error, showSlug, type } = this;
+
+            if (error || !showSlug || !type) {
+                return this.default;
+            }
+            
+            if (lazy) {
+                return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
+            }
+
+            return '';
         }
     }
 };
 </script>
-<style>
+<style scoped>
+.width-40 {
+    width: 40px;
+}
 
+.width-50 {
+    width: 50px;
+}
 </style>
