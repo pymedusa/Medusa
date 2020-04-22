@@ -100,7 +100,7 @@ window.app = new Vue({
                                     <span class="component-title">Download only one language (any)</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(app.SUBTITLES_STOP_AT_FIRST)]}/>
-                                        <p>Stop to download subtitles after first download</p>
+                                        <p>Stop downloading subtitles after first download</p>
                                     </span>
                                 </label>
                             </div>
@@ -191,7 +191,7 @@ window.app = new Vue({
                                     <span class="component-title">Unknown language</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS)]}/>
-                                        <p>Consider unknown embedded subtitles as wanted language to avoid postponing of post-process</p>
+                                        <p>Consider unknown embedded subtitles as wanted language to avoid postponing the post-processor</p>
                                         <p>Only works with setting 'Postpone post-processing' enabled</p>
                                     </span>
                                 </label>
