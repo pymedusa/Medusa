@@ -10,11 +10,12 @@ from time import time
 from medusa import app
 from medusa.app import GLOTZ_API_KEY
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerError, IndexerException, IndexerShowNotFound)
+from medusa.indexers.indexer_exceptions import (IndexerError, IndexerException, IndexerShowNotFound, IndexerUnavailable)
 from medusa.logger.adapters.style import BraceAdapter
 
 from pyglotz import Glotz
-from pyglotz.exceptions import (ActorNotFound, BaseError, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound)
+from pyglotz.exceptions import (ActorNotFound, BannersNotFound, BaseError, IDNotFound, ShowIndexError,
+                                ShowNotFound, UpdateNotFound)
 
 from requests.compat import urljoin
 
@@ -152,14 +153,10 @@ class GLOTZ(BaseIndexer):
                 'Show search failed in getting a result with reason: {0}'.format(error.value)
             )
         except BaseError as error:
-            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
+            raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
-        if results:
-            return results
-        else:
-            return None
+        return results
 
-    # Tvdb implementation
     def search(self, series):
         """Search glotz.info for the series name.
 
@@ -169,7 +166,6 @@ class GLOTZ(BaseIndexer):
         log.debug('Searching for show {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
-
         if not results:
             return
 
@@ -186,11 +182,21 @@ class GLOTZ(BaseIndexer):
         results = None
         if tvdb_id:
             log.debug('Getting all show data for {0}', tvdb_id)
-            results = self.glotz_api.get_show(tvdb_id=tvdb_id, language=request_language)
+
+            try:
+                results = self.glotz_api.get_show(tvdb_id=tvdb_id, language=request_language)
+            except IDNotFound as error:
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {0}'.format(error.value)
+                )
+
+            except BaseError as error:
+                raise IndexerUnavailable('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if results:
             log.debug('Getting aliases for show {0}', tvdb_id)
             results.aliases = self.glotz_api.get_show_aliases(tvdb_id)
+
         if not results:
             log.debug('Getting show data for {0} on Glotz failed', tvdb_id)
             return
@@ -353,7 +359,7 @@ class GLOTZ(BaseIndexer):
         # Let's get the different types of images available for this series
         try:
             series_images = self.glotz_api.get_banners(sid)
-        except IndexerError as error:
+        except BannersNotFound as error:
             log.info('Could not get images for show ID: {0} with reason: {1}', sid, error)
             return
 
