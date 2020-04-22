@@ -44,12 +44,10 @@ class xBiTProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll xBiT every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
+    def search(self, search_strings, **kwargs):
         """
         Search a provider and parse the results.
         :param search_strings: A dict with mode (key) and the search value (value)
-        :param age: Not used
-        :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
         results = []
@@ -102,6 +100,7 @@ class xBiTProvider(TorrentProvider):
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
         """
+
         items = []
         torrent_rows = data.get('dht_results')
         if not torrent_rows:
