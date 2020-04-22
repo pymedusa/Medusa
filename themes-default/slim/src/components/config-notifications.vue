@@ -972,11 +972,11 @@ export default {
             });
         }
     },
-    created() {
-        const { getShows } = this;
-        // Needed for the show-selector component
-        getShows();
-    },
+    // created() {
+    //     const { getShows } = this;
+    //     // Needed for the show-selector component
+    //     getShows();
+    // },
     beforeMount() {
         // Wait for the next tick, so the component is rendered
         this.$nextTick(() => {

@@ -582,12 +582,12 @@ export default {
             return show.seasons.filter(season => season.season === 0);
         }
     },
-    created() {
-        const { getShows } = this;
-        // Without getting any specific show data, we pick the show needed from the shows array.
-        // We need to get the complete list of shows anyway, as this is also needed for the show-selector component
-        getShows();
-    },
+    // created() {
+    //     const { getShows } = this;
+    //     // Without getting any specific show data, we pick the show needed from the shows array.
+    //     // We need to get the complete list of shows anyway, as this is also needed for the show-selector component
+    //     getShows();
+    // },
     mounted() {
         const {
             id,

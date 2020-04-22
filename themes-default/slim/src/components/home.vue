@@ -216,7 +216,7 @@ export default {
     mounted() {
         const { $snotify, getShows, getStats, setConfig } = this;
 
-        getShows();
+        // getShows();
         getStats('show');
 
         // // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter

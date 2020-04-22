@@ -3,6 +3,7 @@ import Vue from 'vue';
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
+import { mapActions } from 'vuex';
 import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
@@ -24,6 +25,8 @@ const app = new Vue({
         };
     },
     mounted() {
+        const { getShows } = this;
+
         if (isDevelopment) {
             console.log('App Mounted!');
         }
@@ -46,6 +49,14 @@ const app = new Vue({
                 alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
             });
         }
+
+        // Let's bootstrap the app with essential data.
+        getShows();
+    },
+    methods: {
+        ...mapActions({
+            getShows: 'getShows'
+        })
     }
 }).$mount('#vue-wrap');
 

@@ -62,8 +62,14 @@ const mutations = {
         //     ...show
         // };
 
-        // Update state
-        Vue.set(state, 'shows', [...state.shows, ...shows]);
+        // Quick check on duplicate shows.
+        const newShows = shows.filter(newShow => {
+            return !state.shows.find(
+                ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && Number(newShow.indexer) === Number(indexer)
+            )
+        });
+
+        Vue.set(state, 'shows', [...state.shows, ...newShows]);
         console.debug(`Added ${shows.length} shows to store`);
     },
     currentShow(state, { indexer, id }) {
