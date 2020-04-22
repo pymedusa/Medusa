@@ -17,15 +17,10 @@
                     </div>
 
                     <div class="show-option pull-right"> Sort By:
-                    <select :value="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
-                        <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value" @change="changePosterSortBy">
+                    <select v-model="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                        <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
-                        <!-- <option value="name" data-sort="setPosterSortBy/?sort=name">Name</option>
-                        <option value="date" data-sort="setPosterSortBy/?sort=date">Next Episode</option>
-                        <option value="network" data-sort="setPosterSortBy/?sort=network">Network</option>
-                        <option value="progress" data-sort="setPosterSortBy/?sort=progress">Progress</option>
-                        <option value="indexer" data-sort="setPosterSortBy/?sort=indexer">Indexer</option> -->
                     </select>
                     </div>
                     <div class="show-option pull-right">
