@@ -1,12 +1,12 @@
 ## Unreleased
 
 #### New Features
-- Add Keep link as post processing method ([7986](https://github.com/pymedusa/Medusa/pull/7986))
+- Add Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
 
 #### Improvements
 
 #### Fixes
-
+- Fixed PrivateHD and CinemaZ provider login ([#7991](https://github.com/pymedusa/Medusa/pull/7991))
 -----
 
 ## 0.3.15 (2020-04-13)

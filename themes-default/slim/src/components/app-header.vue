@@ -68,7 +68,7 @@
                             <li><app-link href="config/search/"><i class="menu-icon-manage-searches" />&nbsp;Search Settings</app-link></li>
                             <li><app-link href="config/providers/"><i class="menu-icon-provider" />&nbsp;Search Providers</app-link></li>
                             <li><app-link href="config/subtitles/"><i class="menu-icon-backlog" />&nbsp;Subtitles Settings</app-link></li>
-                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Post Processing</app-link></li>
+                            <li><app-link href="config/postProcessing/"><i class="menu-icon-postprocess" />&nbsp;Post-Processing</app-link></li>
                             <li><app-link href="config/notifications/"><i class="menu-icon-notification" />&nbsp;Notifications</app-link></li>
                             <li><app-link href="config/anime/"><i class="menu-icon-anime" />&nbsp;Anime</app-link></li>
                         </ul>

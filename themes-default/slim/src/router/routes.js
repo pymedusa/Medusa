@@ -160,8 +160,8 @@ const configRoutes = [
         path: '/config/postProcessing',
         name: 'configPostProcessing',
         meta: {
-            title: 'Config - Post Processing',
-            header: 'Post Processing',
+            title: 'Config - Post-Processing',
+            header: 'Post-Processing',
             topMenu: 'config',
             subMenu: configSubMenu,
             converted: true
