@@ -1,7 +1,7 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW,
+import { ADD_SHOW, ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_SHOW_SCENE_EXCEPTION,
     REMOVE_SHOW_SCENE_EXCEPTION
@@ -43,6 +43,28 @@ const mutations = {
         // Update state
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
+    },
+    [ADD_SHOWS](state, shows) {
+        // const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+
+        // if (!existingShow) {
+        //     console.debug(`Adding ${show.title || show.indexer + String(show.id)} as it wasn't found in the shows array`, show);
+        //     state.shows.push(show);
+        //     return;
+        // }
+
+        // Merge new show object over old one
+        // this allows detailed queries to update the record
+        // without the non-detailed removing the extra data
+        // console.debug(`Found ${show.title || show.indexer + String(show.id)} in shows array attempting merge`);
+        // const newShow = {
+        //     ...existingShow,
+        //     ...show
+        // };
+
+        // Update state
+        Vue.set(state, 'shows', [...state.shows, ...shows]);
+        console.debug(`Added ${shows.length} shows to store`);
     },
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
@@ -284,21 +306,18 @@ const actions = {
                 // Get first page
                 api.get('/series', { params })
                     .then(response => {
-                        const totalPages = Number(response.headers['x-pagination-total']);
-                        response.data.forEach(show => {
-                            commit(ADD_SHOW, show);
-                        });
+                        const totalPages = Number(response.headers['x-pagination-total']);                        
+                        commit(ADD_SHOWS, response.data);
 
                         // Optionally get additional pages
                         const pageRequests = [];
                         for (let page = 2; page <= totalPages; page++) {
                             const newPage = { page };
                             newPage.limit = params.limit;
-                            pageRequests.push(api.get('/series', { params: newPage }).then(response => {
-                                response.data.forEach(show => {
-                                    commit(ADD_SHOW, show);
-                                });
-                            }));
+                            pageRequests.push(api.get('/series', { params: newPage })
+                                .then(response => {
+                                    commit(ADD_SHOWS, shows);
+                                }));
                         }
 
                         return Promise.all(pageRequests);
