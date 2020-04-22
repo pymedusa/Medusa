@@ -6,18 +6,18 @@
             <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
                 <div class="pull-right">
                     <div class="show-option pull-right">
-                        <input v-model="filter" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                        <input v-model="posterUiFilter" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                     </div>
                     <div class="show-option pull-right"> Direction:
                         <!-- These need to patch apiv2 on change! -->
-                        <select v-model="stateLayout.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                        <select v-model="posterUiSortDir" id="postersortdirection" class="form-control form-control-inline input-sm">
                             <option :value="1">Ascending</option>
                             <option :value="0">Descending</option>
                         </select>
                     </div>
 
                     <div class="show-option pull-right"> Sort By:
-                    <select v-model="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                    <select v-model="posterUiSortBy" id="postersort" class="form-control form-control-inline input-sm">
                         <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value">
                             {{ option.text }}
                         </option>
@@ -131,9 +131,7 @@ export default {
             indexers: state => state.indexers,
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.layout,
-            stats: state => state.stats,
-            posterFilterByName: state => state.layout.posterFilterByName,
-            posterSize: state => state.layout.posterSize
+            stats: state => state.stats
         }),
         ...mapGetters({
             showsWithStats: 'showsWithStats'
@@ -149,14 +147,37 @@ export default {
                 setLayout({ page, layout });
             }
         },
-        filter: {
+        posterUiFilter: {
             get() {
-                const { posterFilterByName } = this;
+                const { stateLayout } = this;
+                const { posterFilterByName } = stateLayout;
                 return posterFilterByName;
             },
             set(value) {
                 const { setPosterFilterByName } = this;
                 setPosterFilterByName({ filter: value });
+            }
+        },
+        posterUiSortBy: {
+            get() {
+                const { stateLayout } = this;
+                const { posterSortby } = stateLayout;
+                return posterSortby;
+            },
+            set(value) {
+                const { setPosterSortBy } = this;
+                setPosterSortBy({ value });
+            }
+        },
+        posterUiSortDir: {
+            get() {
+                const { stateLayout } = this;
+                const { posterSortdir } = stateLayout;
+                return posterSortdir;
+            },
+            set(value) {
+                const { setPosterSortDir } = this;
+                setPosterSortDir({ value });
             }
         },
         showLists() {
@@ -185,6 +206,8 @@ export default {
             setLayout: 'setLayout',
             setConfig: 'setConfig',
             setPosterFilterByName: 'setPosterFilterByName',
+            setPosterSortBy: 'setPosterSortBy',
+            setPosterSortDir: 'setPosterSortDir', 
             getShows: 'getShows',
             getStats: 'getStats'
         }),

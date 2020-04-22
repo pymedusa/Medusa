@@ -233,19 +233,22 @@ export default {
             }
 
         },
-        // imgLazyLoad() {
-        //     console.log('imgLazyLoad object constructud!');
-        //     return new LazyLoad({
-        //         // Example of options object -> see options section
-        //         threshold: 500
-        //     });
-        // },
         updateLayout() {
-            const { calculateSize, imgLazyLoad, listTitle } = this;
+            const {
+                calculateSize, imgLazyLoad,
+                listTitle, posterSortBy, 
+                posterSortDir, option 
+            } = this;
             this.isotopeLoaded = true;
             imgLazyLoad.update();
             calculateSize();
+            // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
+            // Sort
+            this.$refs[`isotope-${listTitle}`].sort(posterSortBy);
+            // Set sort direction
+            this.option.sortAscending = Boolean(posterSortDir);
+            this.$refs[`isotope-${listTitle}`].arrange(option);
             console.log('isotope Layout loaded');
         }
     },

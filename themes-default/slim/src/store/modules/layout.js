@@ -122,11 +122,23 @@ const actions = {
             section: 'layout', config: { posterFilterByName: filter } 
         });
     },
-    setPosterSortBy(context, { posterSortby }) {
+    setPosterSortBy(context, { value }) {
         const { commit } = context;
-        return commit(ADD_CONFIG, {
-            section: 'layout', config: { posterSortby }
-        });
+        return api.patch('config/main', { layout: { posterSortby: value } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { posterSortby: value }
+                });        
+            });
+    },
+    setPosterSortDir(context, { value }) {
+        const { commit } = context;
+        return api.patch('config/main', { layout: { posterSortdir: value } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { posterSortdir: value }
+                });        
+            });
     },
     setPosterSize(context, { posterSize }) {
         const { commit } = context;
