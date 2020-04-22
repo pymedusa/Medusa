@@ -14,6 +14,7 @@ const NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';
 const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
+const ADD_SHOWS = '📺 Multiple Shows added to store in bulk';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
 const SET_STATS = 'SET_STATS';
@@ -42,6 +43,7 @@ export {
     ADD_CONFIG,
     ADD_HISTORY,
     ADD_SHOW,
+    ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_STATS,
     SET_STATS,
