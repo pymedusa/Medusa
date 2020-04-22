@@ -20,7 +20,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               href="#post-processing"
               placeholder="indexer-to-name"
             >
-              Post Processing
+              Post-Processing
             </app-link-stub>
           </li>
            
@@ -61,7 +61,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               </p>
                
               <p>
-                The scheduled postprocessor will periodically scan a folder for media to process.
+                The scheduled post-processor will periodically scan a folder for media to process.
               </p>
             </div>
              
@@ -79,7 +79,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     for="process_automatically"
                   >
                     <span>
-                      Scheduled Postprocessor
+                      Scheduled Post-Processor
                     </span>
                   </label>
                    
@@ -98,9 +98,9 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <p>
-                      Enable the scheduled post processor to scan and process any files in your 
+                      Enable the scheduled post-processor to scan and process any files in your 
                       <i>
-                        Post Processing Dir
+                        Post-Processing Dir
                       </i>
                       ?
                     </p>
@@ -112,7 +112,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                         <b>
                           Note:
                         </b>
-                         Do not use if you use an external Post Processing script
+                         Do not use if you use an external post-processing script
                       </p>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       for="tv_download_dir"
                     >
                       <span>
-                        Post Processing Dir
+                        Post-Processing Dir
                       </span>
                     </label>
                      
@@ -271,7 +271,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
               </h3>
                
               <p>
-                Generic postprocessing settings that apply both to the scheduled postprocessor as external scripts
+                Generic post-processing settings that apply both to the scheduled post-processor as external scripts
               </p>
             </div>
              
@@ -289,7 +289,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     for="postpone_if_sync_files"
                   >
                     <span>
-                      Postpone post processing
+                      Postpone post-processing
                     </span>
                   </label>
                    
@@ -337,7 +337,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Comma separated list of extensions or filename globs Medusa ignores when post processing
+                      Comma separated list of extensions or filename globs Medusa ignores when post-processing
                     </span>
                   </div>
                 </div>
@@ -381,12 +381,12 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       <b>
                         Note:
                       </b>
-                       Automatic post processor should be disabled to avoid files with pending subtitles being processed over and over.
+                       Automatic post-processor should be disabled to avoid files with pending subtitles being processed over and over.
                     </span>
                     <br />
                      
                     <span>
-                      If you have any active show with subtitle search disabled, you must enable Automatic post processor.
+                      If you have any active show with subtitle search disabled, you must enable Automatic post-processor.
                     </span>
                   </div>
                 </div>
@@ -511,7 +511,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Delete srt/srr/sfv/etc files while post processing?
+                      Delete srt/srr/sfv/etc files while post-processing?
                     </span>
                   </div>
                 </div>
@@ -539,7 +539,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Comma separated list of associated file extensions Medusa should keep while post processing.
+                      Comma separated list of associated file extensions Medusa should keep while post-processing.
                     </span>
                     <br />
                      
@@ -750,7 +750,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                     />
                      
                     <span>
-                      Leave empty folders when Post Processing?
+                      Leave empty folders when post-processing?
                     </span>
                     <br />
                      
@@ -758,7 +758,7 @@ exports[`ConfigPostProcessing.test.js renders 1`] = `
                       <b>
                         Note:
                       </b>
-                       Can be overridden using manual Post Processing
+                       Can be overridden using manual post-processing
                     </span>
                   </div>
                 </div>
