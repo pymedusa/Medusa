@@ -1200,6 +1200,13 @@ export default {
             },
             deep: true
         }
+    },
+    beforeRouteLeave (to, from, next) {
+        // The show-header component has a summaryBackground and checkboxControlsBackground element.
+        // When leaving for another route, we need to hide these. 
+        $('#summaryBackground').hide();
+        $('#checkboxControlsBackground').hide();
+        next();
     }
 };
 </script>

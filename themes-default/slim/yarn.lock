@@ -12150,6 +12150,11 @@ vue-native-websocket@2.0.14:
   resolved "https://registry.yarnpkg.com/vue-native-websocket/-/vue-native-websocket-2.0.14.tgz#fddb56f9f93d2ecc861486ee3c8f29506ea2a168"
   integrity sha512-oK8+xG1gmqRs4JngHGwEc4zWoRjsdMB20Sz8pemkh4lW2Vr2676/cDRtd30aGnO2xF7Oxf003wS5JO0kypUsCw==
 
+vue-nav-tabs@0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/vue-nav-tabs/-/vue-nav-tabs-0.5.7.tgz#f9b8c410b43d9af1d92be6454f295af10c884e4a"
+  integrity sha512-Oqq7qnb0/JPAVSqM0haQ9TdEZaTbQq20TVn5ZCmBOu8m9qju9bI8cDdtWGHXSiMkpmhzsT83ybRb7S/+UYXRsw==
+
 vue-resize@^0.4.5:
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/vue-resize/-/vue-resize-0.4.5.tgz#4777a23042e3c05620d9cbda01c0b3cc5e32dcea"

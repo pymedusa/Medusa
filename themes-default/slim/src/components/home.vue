@@ -60,28 +60,46 @@
         <div class="row">
             <div class="col-md-12">
                 <!-- Split in tabs -->
-                <div id="showTabs" v-if="config.animeSplitHome && config.animeSplitHomeInTabs">
+                <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
+                    <vue-tabs>
+                        <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
+                            <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
+                                <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`" 
+                                    v-bind="{
+                                        listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                    }" 
+                                />
+                            </template>
+                        </v-tab>
+                    </vue-tabs>
                     <!-- Nav tabs -->
-                    <ul>
-                        <li v-for="showList in showLists" :key="showList.listTitle">
-                            <app-link :href="`#${listTitle}TabContent`" :id="`${listTitle}Tab`">{{ listTitle }}</app-link>
+                    <!-- <ul>
+                        <li v-for="showList in showLists" :key="showList.listTitle" @click="updateTabs">
+                            <app-link :href="`#${showList.listTitle.toLowerCase()}TabContent`" :id="`${showList.listTitle.toLowerCase()}Tab`">{{ showList.listTitle }}</app-link>
                         </li>
                     </ul>
-                    <!-- Tab panes -->
+                    <!-- Tab panes
                     <div id="showTabPanes">
                         <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                            <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
-                                <show-list v-bind="{ listTitle, layout, shows, header: true }"></show-list>
-                            </div> <!-- #...TabContent -->
+                            <show-list v-for="showList in showLists" 
+                                :key="showList.listTitle.toLowerCase()"
+                                :id="`${showList.listTitle.toLowerCase()}TabContent`" 
+                                v-bind="{
+                                    listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                }" 
+                            />
                         </template>
-                    </div><!-- #showTabPanes -->
+                    </div>#showTabPanes -->
+
                 </div> <!-- #showTabs -->
                 <template v-else>
-                    <!-- if not app.HOME_LAYOUT in ['banner', 'simple']:
-                        <include file="/partials/home/{app.HOME_LAYOUT}.mako"/>
-                     endif -->
                     <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                        <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1 }"/>
+                        <show-list v-for="showList in showLists"
+                            :key="showList.listTitle"
+                            v-bind="{
+                                listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                            }" 
+                        />
                     </template>
                 </template>
             </div>
@@ -95,12 +113,15 @@ import { api } from '../api';
 import { AppLink } from './helpers';
 import ShowList from './show-list';
 import LazyLoad from 'vanilla-lazyload';
+import { VueTabs, VTab }  from 'vue-nav-tabs/dist/vue-tabs.js';
 
 export default {
     name: 'home',
     components: {
         AppLink,
-        ShowList
+        ShowList,
+        VueTabs,
+        VTab
     },
     data() {
         return {
@@ -182,16 +203,22 @@ export default {
         },
         showLists() {
             const { indexers, stateLayout, showsWithStats, stats } = this;
-            if (stats.show.stats.length === 0 || !indexers.indexers) {
+            const { animeSplitHome, show } = stateLayout;
+            if (!indexers.indexers) {
                 return;
             }
-
-            const shows = showsWithStats;
-            return stateLayout.show.showListOrder.map(listTitle => {
+            
+            if (animeSplitHome) {
+                return show.showListOrder.map(listTitle => {
+                    return (
+                        { listTitle, shows: showsWithStats.filter(show => show.config.anime === (listTitle === 'Anime')) }
+                    );
+                });
+            } else {
                 return (
-                    { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
-                );
-            });
+                    [{ listTitle: 'Series', shows: showsWithStats }]
+                )
+            }
         },
         imgLazyLoad() {
             console.log('imgLazyLoad object constructud!');
@@ -224,12 +251,6 @@ export default {
                 );
             }
         }
-    },
-    beforeMount() {
-        // Wait for the next tick, so the component is rendered
-        this.$nextTick(() => {
-            $('#showTabs').tabs();
-        });
     },
     mounted() {
         const { $snotify, getShows, getStats, setConfig } = this;
