@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 
 import logging
-# import time
+import time
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -64,6 +64,7 @@ class EztvProvider(TorrentProvider):
                 if mode != 'RSS':
                     imdb_id = self.series.externals.get(mappings[10])
                     imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used by eztv
+
                     if imdb_id:
                         search_params['imdb_id'] = imdb_id
                         log.debug('Search string (IMDb ID): {imdb_id}',
@@ -74,8 +75,7 @@ class EztvProvider(TorrentProvider):
 
                 # Maximum requests allowed are 1req/2sec
                 # Changing to 5 because of server clock desync
-                # Uncomment if causing errors searching too quick
-                # time.sleep(5)
+                time.sleep(5)
 
                 search_url = self.urls['api']
                 data = self.session.get_json(search_url, params=search_params)
