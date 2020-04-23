@@ -8,13 +8,11 @@ import logging
 import time
 
 from medusa import (
-    app,
     tv,
 )
 
+from medusa.helper.common import convert_size
 from medusa.indexers.utils import mappings
-
-from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
