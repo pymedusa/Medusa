@@ -336,7 +336,8 @@ class Glotz(object):
         q = self._endpoint_get(url)
         if q and q.get('Banners') != '':
             banners = []
-            for result in q.get('Banners').get('Banner'):
+            for result in q.get('Banners').get('Banner') if isinstance(q.get('Banners').get('Banner'),
+                                                                       list) else [q.get('Banners').get('Banner')]:
                 banner = Banner(result)
                 banners.append(banner)
             return banners
