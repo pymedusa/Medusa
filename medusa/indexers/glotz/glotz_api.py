@@ -14,8 +14,8 @@ from medusa.indexers.indexer_exceptions import (IndexerError, IndexerException, 
 from medusa.logger.adapters.style import BraceAdapter
 
 from pyglotz import Glotz
-from pyglotz.exceptions import (ActorNotFound, BannersNotFound, BaseError, IDNotFound, ShowIndexError,
-                                ShowNotFound, UpdateNotFound)
+from pyglotz.exceptions import (ActorNotFound, BannersNotFound, BaseError,
+                                IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound)
 
 from requests.compat import urljoin
 
@@ -335,10 +335,14 @@ class GLOTZ(BaseIndexer):
 
         # Parse banners
         if self.config['banners_enabled']:
-            if series_info.get('series').get('poster'):
-                self._parse_images(sid, poster=series_info.get('series').get('poster'))
-            else:
-                self._parse_images(sid)
+            # Set the data from Series Info to avoid broken images caused by broken links
+            po = None
+            fa = None
+            if series_info.get('series').get('poster') and series_info.get('series').get('poster') != '':
+                po = series_info.get('series').get('poster')
+            if series_info.get('series').get('fanart') and series_info.get('series').get('fanart') != '':
+                fa = series_info.get('series').get('fanart')
+            self._parse_images(sid, poster=po, fanart=fa)
 
         # Parse actors
         if self.config['actors_enabled']:
@@ -346,7 +350,7 @@ class GLOTZ(BaseIndexer):
 
         return True
 
-    def _parse_images(self, sid, poster=None):
+    def _parse_images(self, sid, poster=None, fanart=None):
         """Get image information from Glotz and parse them."""
         key_mapping = {'id': 'id', 'banner_path': 'bannerpath', 'banner_type': 'bannertype',
                        'banner_type2': 'bannertype2', 'colors': 'colors', 'series_name': 'seriesname',
@@ -355,7 +359,8 @@ class GLOTZ(BaseIndexer):
 
         log.debug('Getting show banners for {0}', sid)
         _images = {}
-
+        pcounter = False
+        fcounter = False
         # Let's get the different types of images available for this series
         try:
             series_images = self.glotz_api.get_banners(sid)
@@ -367,7 +372,7 @@ class GLOTZ(BaseIndexer):
 
         img_types = ['poster', 'fanart', 'season', 'series', 'seasonwide']
 
-        for img in results:
+        for img in results if isinstance(results, list) else [results]:
             # don't process all languages
             if img.get('language') == 'en' or self.config['language']:
                 _img_type = img.get('bannertype')
@@ -422,6 +427,10 @@ class GLOTZ(BaseIndexer):
                     # rank posters from "Series" data higher than from banner query
                     if poster is not None and _img_type == 'poster' and img.get('bannerpath') == poster:
                         base_path['rating'] = 3
+                        pcounter = True
+                    elif fanart is not None and _img_type == 'fanart' and img.get('bannerpath') == fanart:
+                        base_path['rating'] = 3
+                        fcounter = True
                     else:
                         base_path['rating'] = 1
                 else:
@@ -431,6 +440,32 @@ class GLOTZ(BaseIndexer):
                     base_path['ratingcount'] = 1
                 else:
                     base_path['ratingcount'] = int(float(base_path['ratingcount']))
+
+        log.debug('Fix possible bad API image paths')
+        if pcounter is False and poster is not None:
+            if 'poster' not in _images:
+                _images['poster'] = {}
+            if '680x1000' not in _images['poster']:
+                _images['poster']['680x1000'] = {}
+            _images['poster']['680x1000']['00001'] = {}
+            _images['poster']['680x1000']['00001']['_bannerpath'] = self.config['artwork_prefix'].format(image=poster)
+            _images['poster']['680x1000']['00001']['bannertype'] = 'poster'
+            _images['poster']['680x1000']['00001']['bannertype2'] = '680x1000'
+            _images['poster']['680x1000']['00001']['language'] = 'en'
+            _images['poster']['680x1000']['00001']['rating'] = 5
+            _images['poster']['680x1000']['00001']['ratingcount'] = 1
+        if fcounter is False and fanart is not None:
+            if 'fanart' not in _images:
+                _images['fanart'] = {}
+            if '1920x1080' not in _images['fanart']:
+                _images['fanart']['1920x1080'] = {}
+            _images['fanart']['1920x1080']['00002'] = {}
+            _images['fanart']['1920x1080']['00002']['_bannerpath'] = self.config['artwork_prefix'].format(image=fanart)
+            _images['fanart']['1920x1080']['00002']['bannertype'] = 'fanart'
+            _images['fanart']['1920x1080']['00002']['bannertype2'] = '1920x1080'
+            _images['fanart']['1920x1080']['00002']['language'] = 'en'
+            _images['fanart']['1920x1080']['00002']['rating'] = 5
+            _images['fanart']['1920x1080']['00002']['ratingcount'] = 1
 
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
