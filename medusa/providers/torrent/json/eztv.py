@@ -147,4 +147,3 @@ class EztvProvider(TorrentProvider):
         return items
 
 provider = EztvProvider()
-
