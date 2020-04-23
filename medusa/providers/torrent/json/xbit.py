@@ -66,7 +66,8 @@ class xBiTProvider(TorrentProvider):
                         # Replaces spaces with either a dot or a plus
                         # Needed in order for it to return all results
                         search_string = search_string.replace(' ', separator)
-                    search_params = {'search': search_string}
+                    search_params = {'search': search_string,
+                                     'limit': 10}
 
                     response = self.session.get(self.urls['search'], params=search_params)
                     if not response:
@@ -80,16 +81,6 @@ class xBiTProvider(TorrentProvider):
                         continue
 
                     results += self.parse(jdata, mode)
-
-
-
-                try:
-                    jdata = response.json()
-                except ValueError:
-                    log.debug('No data returned from provider')
-                    continue
-
-                results += self.parse(jdata, mode)
 
         return results
 
