@@ -7,10 +7,7 @@ from __future__ import unicode_literals
 import logging
 import time
 
-from medusa import (
-    tv,
-)
-
+from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
