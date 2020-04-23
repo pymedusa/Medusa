@@ -75,6 +75,7 @@ class EztvProvider(TorrentProvider):
 
                 # Maximum requests allowed are 1req/2sec
                 # Changing to 5 because of server clock desync
+                # Uncomment if causing errors searching too quick
                 #time.sleep(5)
 
                 search_url = self.urls['api']
