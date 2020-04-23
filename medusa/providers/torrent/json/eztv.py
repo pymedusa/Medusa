@@ -31,7 +31,7 @@ class EztvProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://eztv.io' 
+        self.url = 'https://eztv.io'
         self.urls = {
             'api': 'https://eztv.io/api/get-torrents',
         }
@@ -39,7 +39,7 @@ class EztvProvider(TorrentProvider):
         # Proper Strings
 
         # Miscellaneous Options
-        
+
         # Cache
         self.cache = tv.Cache(self, min_time=15)
 
@@ -64,7 +64,7 @@ class EztvProvider(TorrentProvider):
             log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
-                
+
                 if mode != 'RSS':
                     imdb_id = self.series.externals.get(mappings[10])
                     imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used by eztv
@@ -110,7 +110,7 @@ class EztvProvider(TorrentProvider):
             try:
                 title = row.pop('title')
                 download_url = row.pop('torrent_url')
-				
+
                 if not all([title, download_url]):
                     continue
 
@@ -150,3 +150,4 @@ class EztvProvider(TorrentProvider):
         return items
 
 provider = EztvProvider()
+
