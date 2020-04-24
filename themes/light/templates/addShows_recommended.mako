@@ -41,7 +41,7 @@ window.app = new Vue({
                         <span class="component-title">Configure Show Options</span>
                         <span class="component-desc">
                             <input type="checkbox" class="enabler" name="configure_show_options" id="configure_show_options" />
-                            <p>Recommended shows will be added using your default options. Use this option if you want to change the options for that show.</p>
+                            <p>Recommended shows will be added using your default options. Use this if you want to change the options for that show.</p>
                         </span>
                     </label>
                 </div>

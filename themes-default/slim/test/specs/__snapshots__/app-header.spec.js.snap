@@ -428,7 +428,7 @@ exports[`AppHeader.test.js renders 1`] = `
                 <i
                   class="menu-icon-postprocess"
                 />
-                 Post Processing
+                 Post-Processing
               </app-link-stub>
             </li>
              

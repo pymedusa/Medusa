@@ -1,0 +1,44 @@
+[{
+    "id": 69,
+    "series": "tvdb5692427",
+    "status": 10,
+    "actionDate": 20200411194134,
+    "resource": "dut",
+    "size": -1,
+    "properTags": "",
+    "statusName": "Subtitled",
+    "season": 4,
+    "episode": 6,
+    "manuallySearched": false,
+    "provider": {}
+}, {
+    "id": 70,
+    "series": "tvdb5692427",
+    "status": 10,
+    "actionDate": 20200411194134,
+    "resource": "eng",
+    "size": -1,
+    "properTags": "",
+    "statusName": "Subtitled",
+    "season": 4,
+    "episode": 6,
+    "manuallySearched": false,
+    "provider": {}
+}, {
+    "id": 18,
+    "series": "tvdb5692427",
+    "status": 2,
+    "actionDate": 20190626052818,
+    "resource": "Example.S04E06.1080p.WEB.h264-TBS",
+    "size": 2553994732,
+    "properTags": "",
+    "statusName": "Snatched",
+    "season": 4,
+    "episode": 6,
+    "manuallySearched": false,
+    "provider": {
+        "id": "rarbg",
+        "name": "Rarbg",
+        "imageName": "rarbg.png"
+    }
+}]
