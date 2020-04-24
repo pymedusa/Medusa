@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import time
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -51,10 +50,7 @@ class EztvProvider(TorrentProvider):
         results = []
 
         # Search Params
-        search_params = {
-            'imdb_id': '*',
-            # 'limit': 30,
-        }
+        search_params = {}
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -64,17 +60,12 @@ class EztvProvider(TorrentProvider):
                 if mode != 'RSS':
                     imdb_id = self.series.externals.get(mappings[10])
                     if imdb_id:
-                        imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used by eztv > moved
+                        imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used
                         search_params['imdb_id'] = imdb_id
-                        log.debug('Search string (IMDb ID): {imdb_id}',
-                                  {'imdb_id': imdb_id})
+                        log.debug('Search string (IMDb ID): {imdb_id}', {'imdb_id': imdb_id})
                     else:
                         log.debug('IMDb ID not found')
                         continue
-
-                # Maximum requests allowed are 1req/2sec
-                # Changing to 5 because of server clock desync
-                time.sleep(5)
 
                 search_url = self.urls['api']
                 data = self.session.get_json(search_url, params=search_params)
@@ -102,9 +93,8 @@ class EztvProvider(TorrentProvider):
 
         for row in torrent_rows:
             try:
-                title = row.pop('title')
-                download_url = row.pop('torrent_url')
-
+                title = row.pop('title', None)
+                download_url = row.pop('torrent_url', None)
                 if not all([title, download_url]):
                     continue
 
