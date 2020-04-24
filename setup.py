@@ -104,7 +104,7 @@ setup(
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
         'pep8-naming>=0.7.0',
-        'pycodestyle>=2.4.0',
+        'pycodestyle<2.6.0',
         'pytest<5.0.0 ; python_version < "3.5"',
         'pytest>=5.0.0 ; python_version >= "3.5"',
         'pytest-cov>=2.6.1',
