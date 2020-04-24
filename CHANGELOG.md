@@ -1,11 +1,11 @@
 ## Unreleased
 
 #### New Features
-
+- Add new provider xBit ([#3572](https://github.com/pymedusa/Medusa/pull/3572))
 #### Improvements
 
 #### Fixes
-
+- Fix SceneTime when there are no results ([#7993](https://github.com/pymedusa/Medusa/pull/7993))
 -----
 
 ## 0.3.15 (2020-04-13)
