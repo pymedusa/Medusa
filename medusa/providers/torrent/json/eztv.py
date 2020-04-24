@@ -64,7 +64,7 @@ class EztvProvider(TorrentProvider):
                 if mode != 'RSS':
                     imdb_id = self.series.externals.get(mappings[10])
                     if imdb_id:
-                        imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used by eztv
+                        imdb_id = imdb_id[2:]  # strip two tt's of id as they are not used by eztv > moved
                         search_params['imdb_id'] = imdb_id
                         log.debug('Search string (IMDb ID): {imdb_id}',
                                   {'imdb_id': imdb_id})
