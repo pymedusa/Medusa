@@ -2,7 +2,7 @@ dry-run: null
 hookfiles: dredd/dredd_hook.py
 language: python
 server: python dredd/dredd_hook.py
-server-wait: 60
+server-wait: 30
 init: false
 names: false
 only: []
