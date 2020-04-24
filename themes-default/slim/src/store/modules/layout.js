@@ -145,6 +145,24 @@ const actions = {
         return commit(ADD_CONFIG, {
             section: 'layout', config: { posterSize }
         });
+    },
+    setShowListOrder(context, { value }) {
+        const { commit } = context;
+        return api.patch('config/main', { layout: { show: { showListOrder: value } } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { show: { showListOrder: value } }
+                });        
+            });
+    },
+    setLayoutConfig(context, { key, value }) {
+        const { commit } = context;
+        return api.patch('config/main', { layout: { [key]: value } })
+            .then(() => {
+                return commit(ADD_CONFIG, {
+                    section: 'layout', config: { [key]: value }
+                });
+            });
     }
 };
 

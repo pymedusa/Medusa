@@ -94,12 +94,17 @@
                 </div> <!-- #showTabs -->
                 <template v-else>
                     <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                        <show-list v-for="showList in showLists"
-                            :key="showList.listTitle"
-                            v-bind="{
-                                listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
-                            }" 
-                        />
+                        <draggable tag="ul" v-model="showList" class="list-group" handle=".move-show-list">
+                            <li v-for="showList in showLists" :key="showList.listTitle">
+                                <show-list
+                                    v-bind="{
+                                        listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                    }"
+                                />
+                            </li>
+                        </draggable>
+                            
+
                     </template>
                 </template>
             </div>
@@ -114,6 +119,8 @@ import { AppLink } from './helpers';
 import ShowList from './show-list';
 import LazyLoad from 'vanilla-lazyload';
 import { VueTabs, VTab }  from 'vue-nav-tabs/dist/vue-tabs.js';
+import draggable from 'vuedraggable'
+
 
 export default {
     name: 'home',
@@ -121,7 +128,8 @@ export default {
         AppLink,
         ShowList,
         VueTabs,
-        VTab
+        VTab,
+        draggable
     },
     data() {
         return {
@@ -199,6 +207,17 @@ export default {
             set(value) {
                 const { setPosterSortDir } = this;
                 setPosterSortDir({ value });
+            },
+        },
+        showList: {
+            get() {
+                const { stateLayout } = this;
+                const { show } = stateLayout;
+                return show.showListOrder;
+            },
+            set(value) {
+                const { setShowListOrder } = this;
+                setShowListOrder({ value });
             }
         },
         showLists() {
@@ -234,7 +253,8 @@ export default {
             setConfig: 'setConfig',
             setPosterFilterByName: 'setPosterFilterByName',
             setPosterSortBy: 'setPosterSortBy',
-            setPosterSortDir: 'setPosterSortDir', 
+            setPosterSortDir: 'setPosterSortDir',
+            setShowListOrder: 'setShowListOrder',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
@@ -294,7 +314,7 @@ export default {
         //     });
         // });
 
-        const initializePage = () => {
+        // const initializePage = () => {
             // Reset the layout for the activated tab (when using ui tabs)
             // $('#showTabs').tabs({
             //     activate() {
@@ -536,63 +556,63 @@ export default {
             //     }
             // });
 
-            $('#poster-container').sortable({
-                appendTo: document.body,
-                axis: 'y',
-                items: '> .show-grid',
-                scroll: false,
-                tolerance: 'pointer',
-                helper: 'clone',
-                handle: 'button.move-show-list',
-                cancel: '',
-                sort(event, ui) {
-                    const draggedItem = $(ui.item);
-                    const margin = 1.5;
+            // $('#poster-container').sortable({
+            //     appendTo: document.body,
+            //     axis: 'y',
+            //     items: '> .show-grid',
+            //     scroll: false,
+            //     tolerance: 'pointer',
+            //     helper: 'clone',
+            //     handle: 'button.move-show-list',
+            //     cancel: '',
+            //     sort(event, ui) {
+            //         const draggedItem = $(ui.item);
+            //         const margin = 1.5;
 
-                    if (ui.position.top !== ui.originalPosition.top) {
-                        if (ui.position.top > ui.originalPosition.top * margin) {
-                            // Move to bottom
-                            setTimeout(() => {
-                                $(draggedItem).appendTo('#poster-container');
-                                return false;
-                            }, 400);
-                        }
-                        if (ui.position.top < ui.originalPosition.top / margin) {
-                            // Move to top
-                            setTimeout(() => {
-                                $(draggedItem).prependTo('#poster-container');
-                                return false;
-                            }, 400);
-                        }
-                    }
-                },
-                async update(event) {
-                    const showListOrder = $(event.target.children).map((index, el) => {
-                        return $(el).data('list');
-                    });
+            //         if (ui.position.top !== ui.originalPosition.top) {
+            //             if (ui.position.top > ui.originalPosition.top * margin) {
+            //                 // Move to bottom
+            //                 setTimeout(() => {
+            //                     $(draggedItem).appendTo('#poster-container');
+            //                     return false;
+            //                 }, 400);
+            //             }
+            //             if (ui.position.top < ui.originalPosition.top / margin) {
+            //                 // Move to top
+            //                 setTimeout(() => {
+            //                     $(draggedItem).prependTo('#poster-container');
+            //                     return false;
+            //                 }, 400);
+            //             }
+            //         }
+            //     },
+            //     async update(event) {
+            //         const showListOrder = $(event.target.children).map((index, el) => {
+            //             return $(el).data('list');
+            //         });
 
-                    const layout = {
-                        show: {
-                            showListOrder: showListOrder.toArray()
-                        }
-                    };
+            //         const layout = {
+            //             show: {
+            //                 showListOrder: showListOrder.toArray()
+            //             }
+            //         };
 
-                    try {
-                        await setConfig({ section: 'main', config: { layout } });
-                        $snotify.success(
-                            'Saved Home poster list type order',
-                            'Saved',
-                            { timeout: 5000 }
-                        );
-                    } catch (error) {
-                        $snotify.error(
-                            'Error while trying to save home poster list type order',
-                            'Error'
-                        );
-                    }
-                }
-            });
-        }; // END initializePage()
+            //         try {
+            //             await setConfig({ section: 'main', config: { layout } });
+            //             $snotify.success(
+            //                 'Saved Home poster list type order',
+            //                 'Saved',
+            //                 { timeout: 5000 }
+            //             );
+            //         } catch (error) {
+            //             $snotify.error(
+            //                 'Error while trying to save home poster list type order',
+            //                 'Error'
+            //             );
+            //         }
+            //     }
+            // });
+        // }; // END initializePage()
 
         // Vue Stuff (prevent race condition issues)
         const unwatch = this.$watch('config.rootDirs', () => {
