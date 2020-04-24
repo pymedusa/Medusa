@@ -42,6 +42,7 @@ class EztvProvider(TorrentProvider):
     def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
+
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
@@ -80,6 +81,7 @@ class EztvProvider(TorrentProvider):
     def parse(self, data, mode):
         """
         Parse search results for items.
+
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
