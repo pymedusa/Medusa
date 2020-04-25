@@ -311,7 +311,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .show-container {
     display: inline-block;
     margin: 4px;

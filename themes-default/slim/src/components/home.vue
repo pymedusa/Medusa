@@ -644,11 +644,12 @@ export default {
             // I'm (mis-using) this for now.
             // this.initializePosterSizeSlider();
         });
-
-        window.addEventListener('load', initializePage, { once: true });
     }
 };
 </script>
 
 <style>
+ul.list-group > li {
+    list-style: none;
+}
 </style>

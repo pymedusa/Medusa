@@ -104,42 +104,54 @@ export default {
         }
     },
     data() {
+        const { getCookie } = this;
         return {
             columns: [{
                 label: 'Next Ep',
                 field: row => this.parseNextDateFn(row),
-                sortable: false
+                sortable: false,
+                hidden: getCookie('home-hide-field-Next Ep')
             }, {
                 label: 'Prev Ep',
                 field: row => this.parsePrevDateFn(row),
-                sortable: false
+                sortable: false,
+                hidden: getCookie('home-hide-field-Prev Ep')
             }, {
                 label: 'Show',
-                field: 'title'
+                field: 'title',
+                hidden: getCookie('home-hide-field-Show')
             }, {
                 label: 'Network',
-                field: 'network'
+                field: 'network',
+                hidden: getCookie('home-hide-field-Network')
             }, {
                 label: 'Indexer',
-                field: 'id'
+                field: 'id',
+                hidden: getCookie('home-hide-field-Indexer')
             }, {
                 label: 'Quality',
-                field: 'quality'
+                field: 'quality',
+                hidden: getCookie('home-hide-field-Quality')
             }, {
                 label: 'Downloads',
-                field: 'stats.tooltip.text'
+                field: 'stats.tooltip.text',
+                hidden: getCookie('home-hide-field-Downloads')
             }, {
                 label: 'Size',
-                field: 'size'
+                field: 'size',
+                hidden: getCookie('home-hide-field-Size')
             }, {
                 label: 'Active',
-                field: 'config.paused'
+                field: 'config.paused',
+                hidden: getCookie('home-hide-field-Active')
             }, {
                 label: 'Status',
-                field: 'status'
+                field: 'status',
+                hidden: getCookie('home-hide-field-Status')
             }, {
                 label: 'Xem',
-                field: 'status'
+                field: 'status',
+                hidden: getCookie('home-hide-field-Xem')
             }]
         }
     },
@@ -188,6 +200,27 @@ export default {
             } else {
                 return ''
             }
+        },
+        getCookie(key) {
+            const cookie = this.$cookies.get(key);
+            return JSON.parse(cookie);
+        },
+        setCookie(key, value) {
+            return this.$cookies.set(key, JSON.stringify(value));
+        }
+    },
+    watch: {
+        columns: {
+            handler: function(newVal) { // eslint-disable-line object-shorthand
+                // Monitor the columns, to update the cookies, when changed.
+                const { setCookie } = this;
+                for (const column of newVal) {
+                    if (column) {
+                        setCookie(`home-hide-field-${column.label}`, column.hidden);
+                    }
+                }
+            },
+            deep: true
         }
     }
 };
