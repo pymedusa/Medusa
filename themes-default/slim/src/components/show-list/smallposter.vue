@@ -90,6 +90,7 @@ import { AppLink } from '../helpers';
 import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
+import { manageCookieMixin } from '../../utils/core';
 
 export default {
     name: 'smallposter',
@@ -100,6 +101,9 @@ export default {
         QualityPill,
         VueGoodTable
     },
+    mixins: [
+        manageCookieMixin('home-hide-field')
+    ],
     props: {
         layout: {
             validator: val => val === null || typeof val === 'string',
@@ -117,44 +121,56 @@ export default {
         }
     },
     data() {
+        const { getCookie } = this;
         return {
             columns: [{
                 label: 'Next Ep',
                 field: row => this.parseNextDateFn(row),
-                sortable: false
+                sortable: false,
+                hidden: getCookie('Next Ep')
             }, {
                 label: 'Prev Ep',
                 field: row => this.parsePrevDateFn(row),
-                sortable: false
+                sortable: false,
+                hidden: getCookie('Prev Ep')
             }, {
                 label: 'Show',
-                field: 'title'
+                field: 'title',
+                hidden: getCookie('Show')
             }, {
                 label: 'Network',
-                field: 'network'
+                field: 'network',
+                hidden: getCookie('Network')
             }, {
                 label: 'Indexer',
-                field: 'id'
+                field: 'id',
+                hidden: getCookie('Indexer')
             }, {
                 label: 'Quality',
-                field: 'quality'
+                field: 'quality',
+                hidden: getCookie('Quality')
             }, {
                 label: 'Downloads',
-                field: 'stats.tooltip.text'
+                field: 'stats.tooltip.text',
+                hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
-                field: 'size'
+                field: 'size',
+                hidden: getCookie('Size')
             }, {
                 label: 'Active',
-                field: 'config.paused'
+                field: 'config.paused',
+                hidden: getCookie('Active')
             }, {
                 label: 'Status',
-                field: 'status'
+                field: 'status',
+                hidden: getCookie('Status')
             }, {
                 label: 'Xem',
-                field: 'status'
+                field: 'status',
+                hidden: getCookie('Xem')
             }]
-        }
+        };
     },
     computed: {
         ...mapState({

@@ -77,6 +77,7 @@ import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import { Asset } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
+import { manageCookieMixin } from '../../utils/core';
 
 export default {
     name: 'simple',
@@ -87,6 +88,9 @@ export default {
         QualityPill,
         VueGoodTable
     },
+    mixins: [
+        manageCookieMixin('home-hide-field')
+    ],
     props: {
         layout: {
             validator: val => val === null || typeof val === 'string',
@@ -110,48 +114,48 @@ export default {
                 label: 'Next Ep',
                 field: row => this.parseNextDateFn(row),
                 sortable: false,
-                hidden: getCookie('home-hide-field-Next Ep')
+                hidden: getCookie('Next Ep')
             }, {
                 label: 'Prev Ep',
                 field: row => this.parsePrevDateFn(row),
                 sortable: false,
-                hidden: getCookie('home-hide-field-Prev Ep')
+                hidden: getCookie('Prev Ep')
             }, {
                 label: 'Show',
                 field: 'title',
-                hidden: getCookie('home-hide-field-Show')
+                hidden: getCookie('Show')
             }, {
                 label: 'Network',
                 field: 'network',
-                hidden: getCookie('home-hide-field-Network')
+                hidden: getCookie('Network')
             }, {
                 label: 'Indexer',
                 field: 'id',
-                hidden: getCookie('home-hide-field-Indexer')
+                hidden: getCookie('Indexer')
             }, {
                 label: 'Quality',
                 field: 'quality',
-                hidden: getCookie('home-hide-field-Quality')
+                hidden: getCookie('Quality')
             }, {
                 label: 'Downloads',
                 field: 'stats.tooltip.text',
-                hidden: getCookie('home-hide-field-Downloads')
+                hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
                 field: 'size',
-                hidden: getCookie('home-hide-field-Size')
+                hidden: getCookie('Size')
             }, {
                 label: 'Active',
                 field: 'config.paused',
-                hidden: getCookie('home-hide-field-Active')
+                hidden: getCookie('Active')
             }, {
                 label: 'Status',
                 field: 'status',
-                hidden: getCookie('home-hide-field-Status')
+                hidden: getCookie('Status')
             }, {
                 label: 'Xem',
                 field: 'status',
-                hidden: getCookie('home-hide-field-Xem')
+                hidden: getCookie('Xem')
             }]
         }
     },
@@ -200,27 +204,6 @@ export default {
             } else {
                 return ''
             }
-        },
-        getCookie(key) {
-            const cookie = this.$cookies.get(key);
-            return JSON.parse(cookie);
-        },
-        setCookie(key, value) {
-            return this.$cookies.set(key, JSON.stringify(value));
-        }
-    },
-    watch: {
-        columns: {
-            handler: function(newVal) { // eslint-disable-line object-shorthand
-                // Monitor the columns, to update the cookies, when changed.
-                const { setCookie } = this;
-                for (const column of newVal) {
-                    if (column) {
-                        setCookie(`home-hide-field-${column.label}`, column.hidden);
-                    }
-                }
-            },
-            deep: true
         }
     }
 };

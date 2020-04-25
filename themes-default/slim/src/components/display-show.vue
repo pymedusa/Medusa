@@ -358,7 +358,7 @@
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize } from '../utils/core';
+import { humanFileSize, manageCookieMixin } from '../utils/core';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
@@ -376,6 +376,9 @@ export default {
         ShowHeader,
         QualityPill
     },
+    mixins: [
+        manageCookieMixin('displayShow-hide-field')
+    ],
     metaInfo() {
         if (!this.show || !this.show.title) {
             return {
@@ -426,23 +429,23 @@ export default {
                 field: 'content.hasNfo',
                 type: 'boolean',
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-NFO')
+                hidden: getCookie('NFO')
             }, {
                 label: 'TBN',
                 field: 'content.hasTbn',
                 type: 'boolean',
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-TBN')
+                hidden: getCookie('TBN')
             }, {
                 label: 'Episode',
                 field: 'episode',
                 type: 'number',
-                hidden: getCookie('displayShow-hide-field-Episode')
+                hidden: getCookie('Episode')
             }, {
                 label: 'Abs. #',
                 field: 'absoluteNumber',
                 type: 'number',
-                hidden: getCookie('displayShow-hide-field-Abs. #')
+                hidden: getCookie('Abs. #')
             }, {
                 label: 'Scene',
                 field: row => {
@@ -450,7 +453,7 @@ export default {
                     return getSceneNumbering(row);
                 },
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-Scene')
+                hidden: getCookie('Scene')
             }, {
                 label: 'Scene Abs. #',
                 field: row => {
@@ -467,47 +470,47 @@ export default {
                 sortFn(x, y) {
                     return (x < y ? -1 : (x > y ? 1 : 0));
                 },
-                hidden: getCookie('displayShow-hide-field-Scene Abs. #')
+                hidden: getCookie('Scene Abs. #')
             }, {
                 label: 'Title',
                 field: 'title',
-                hidden: getCookie('displayShow-hide-field-Title')
+                hidden: getCookie('Title')
             }, {
                 label: 'File',
                 field: 'file.location',
-                hidden: getCookie('displayShow-hide-field-File')
+                hidden: getCookie('File')
             }, {
                 label: 'Size',
                 field: 'file.size',
                 type: 'number',
                 formatFn: humanFileSize,
-                hidden: getCookie('displayShow-hide-field-Size')
+                hidden: getCookie('Size')
             }, {
                 // For now i'm using a custom function the parse it. As the type: date, isn't working for us.
                 // But the goal is to have this user formatted (as configured in backend)
                 label: 'Air date',
                 field: this.parseDateFn,
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-Air date')
+                hidden: getCookie('Air date')
             }, {
                 label: 'Download',
                 field: 'download',
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-Download')
+                hidden: getCookie('Download')
             }, {
                 label: 'Subtitles',
                 field: 'subtitles',
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-Subtitles')
+                hidden: getCookie('Subtitles')
             }, {
                 label: 'Status',
                 field: 'status',
-                hidden: getCookie('displayShow-hide-field-Status')
+                hidden: getCookie('Status')
             }, {
                 label: 'Search',
                 field: 'search',
                 sortable: false,
-                hidden: getCookie('displayShow-hide-field-Search')
+                hidden: getCookie('Search')
             }],
             perPageDropdown,
             paginationPerPage: getPaginationPerPage(),
@@ -1093,13 +1096,6 @@ export default {
 
             return bindData;
         },
-        getCookie(key) {
-            const cookie = this.$cookies.get(key);
-            return JSON.parse(cookie);
-        },
-        setCookie(key, value) {
-            return this.$cookies.set(key, JSON.stringify(value));
-        },
         updateEpisodeWatched(episode, watched) {
             const { id, indexer, getEpisodes, show } = this;
             const patchData = {};
@@ -1187,18 +1183,6 @@ export default {
                     }
                 }
             }
-        },
-        columns: {
-            handler: function(newVal) { // eslint-disable-line object-shorthand
-                // Monitor the columns, to update the cookies, when changed.
-                const { setCookie } = this;
-                for (const column of newVal) {
-                    if (column) {
-                        setCookie(`displayShow-hide-field-${column.label}`, column.hidden);
-                    }
-                }
-            },
-            deep: true
         }
     },
     beforeRouteLeave (to, from, next) {
