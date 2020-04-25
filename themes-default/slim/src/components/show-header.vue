@@ -679,12 +679,12 @@ span.ignored {
     color: red;
 }
 
-div#col-show-summary {
+#col-show-summary {
     display: table;
 }
 
-#col-show-summary img.show-image {
-    max-width: 180px;
+#col-show-summary >>> img.show-image {
+    width: 180px;
 }
 
 .show-poster-container {
@@ -729,7 +729,7 @@ div#col-show-summary {
         border-style: none;
     }
 
-    .show-poster-container img {
+    .show-poster-container >>> img {
         display: block;
         margin: 0 auto;
         max-width: 280px !important;
@@ -755,8 +755,8 @@ div#col-show-summary {
         width: 100%;
     }
 
-    #col-show-summary img.show-image {
-        max-width: 280px;
+    #col-show-summary >>> img.show-image {
+        width: 280px;
     }
 }
 

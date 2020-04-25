@@ -192,7 +192,7 @@ export default {
     }
 };
 </script>
-<style>
+<style scoped>
 .vgt-table {
     width: 100%;
     margin-right: auto;

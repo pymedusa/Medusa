@@ -1211,7 +1211,7 @@ export default {
 };
 </script>
 
-<style scope>
+<style scoped>
 .vgt-global-search__input.vgt-pull-left {
     float: left;
     height: 40px;
@@ -1279,7 +1279,7 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
 tablesorter.css
 ========================================================================== */
 
-.vgt-table {
+.displayShow >>> .vgt-table {
     width: 100%;
     margin-right: auto;
     margin-left: auto;
@@ -1288,8 +1288,8 @@ tablesorter.css
     border-spacing: 0;
 }
 
-.vgt-table th,
-.vgt-table td {
+.displayShow >>> .vgt-table th,
+.displayShow >>> .vgt-table td {
     padding: 4px;
     border-top: rgb(34, 34, 34) 1px solid;
     border-left: rgb(34, 34, 34) 1px solid;
@@ -1297,12 +1297,12 @@ tablesorter.css
 }
 
 /* remove extra border from left edge */
-.vgt-table th:first-child,
-.vgt-table td:first-child {
+.displayShow >>> .vgt-table th:first-child,
+.displayShow >>> .vgt-table td:first-child {
     border-left: none;
 }
 
-.vgt-table th {
+.displayShow >>> .vgt-table th {
     /* color: rgb(255, 255, 255); */
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
@@ -1313,33 +1313,33 @@ tablesorter.css
     color: rgb(255, 255, 255);
 }
 
-.vgt-table span.break-word {
+.displayShow >>> .vgt-table span.break-word {
     word-wrap: break-word;
 }
 
-.vgt-table thead th.sorting.sorting-desc {
+.displayShow >>> .vgt-table thead th.sorting.sorting-desc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
 }
 
-.vgt-table thead th.sorting.sorting-asc {
+.displayShow >>> .vgt-table thead th.sorting.sorting-asc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
     background-position-x: right;
     background-position-y: bottom;
 }
 
-.vgt-table thead th.sorting {
+.displayShow >>> .vgt-table thead th.sorting {
     background-repeat: no-repeat;
 }
 
-.vgt-table thead th {
+.displayShow >>> .vgt-table thead th {
     background-image: none;
     padding: 4px;
     cursor: default;
 }
 
-.vgt-table input.tablesorter-filter {
+.displayShow >>> .vgt-table input.tablesorter-filter {
     width: 98%;
     height: auto;
     -webkit-box-sizing: border-box;
@@ -1347,13 +1347,13 @@ tablesorter.css
     box-sizing: border-box;
 }
 
-.vgt-table tr.tablesorter-filter-row,
-.vgt-table tr.tablesorter-filter-row td {
+.displayShow >>> .vgt-table tr.tablesorter-filter-row,
+.displayShow >>> .vgt-table tr.tablesorter-filter-row td {
     text-align: center;
 }
 
 /* optional disabled input styling */
-.vgt-table input.tablesorter-filter-row .disabled {
+.displayShow >>> .vgt-table input.tablesorter-filter-row .disabled {
     display: none;
 }
 
@@ -1362,7 +1362,7 @@ tablesorter.css
     text-align: center;
 }
 
-.vgt-table tfoot tr {
+.displayShow >>> .vgt-table tfoot tr {
     color: rgb(255, 255, 255);
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
@@ -1370,90 +1370,90 @@ tablesorter.css
     border-collapse: collapse;
 }
 
-.vgt-table tfoot a {
+.displayShow >>> .vgt-table tfoot a {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
-.vgt-table th.vgt-row-header {
+.displayShow >>> .vgt-table th.vgt-row-header {
     text-align: left;
 }
 
-.vgt-table .season-header {
+.displayShow >>> .vgt-table .season-header {
     display: inline;
     margin-left: 5px;
 }
 
-.vgt-table tr.spacer {
+.displayShow >>> .vgt-table tr.spacer {
     height: 25px;
 }
 
-.unaired {
+.displayShow >>> .unaired {
     background-color: rgb(245, 241, 228);
 }
 
-.skipped {
+.displayShow >>> .skipped {
     background-color: rgb(190, 222, 237);
 }
 
-.preferred {
+.displayShow >>> .preferred {
     background-color: rgb(195, 227, 200);
 }
 
-.archived {
+.displayShow >>> .archived {
     background-color: rgb(195, 227, 200);
 }
 
-.allowed {
+.displayShow >>> .allowed {
     background-color: rgb(255, 218, 138);
 }
 
-.wanted {
+.displayShow >>> .wanted {
     background-color: rgb(255, 176, 176);
 }
 
-.snatched {
+.displayShow >>> .snatched {
     background-color: rgb(235, 193, 234);
 }
 
-.downloaded {
+.displayShow >>> .downloaded {
     background-color: rgb(255, 218, 138);
 }
 
-.failed {
+.displayShow >>> .failed {
     background-color: rgb(255, 153, 153);
 }
 
-span.unaired {
+.displayShow >>> span.unaired {
     color: rgb(88, 75, 32);
 }
 
-span.skipped {
+.displayShow >>> span.skipped {
     color: rgb(29, 80, 104);
 }
 
-span.preffered {
+.displayShow >>> span.preffered {
     color: rgb(41, 87, 48);
 }
 
-span.allowed {
+.displayShow >>> span.allowed {
     color: rgb(118, 81, 0);
 }
 
-span.wanted {
+.displayShow >>> span.wanted {
     color: rgb(137, 0, 0);
 }
 
-span.snatched {
+.displayShow >>> span.snatched {
     color: rgb(101, 33, 100);
 }
 
-span.unaired b,
-span.skipped b,
-span.preferred b,
-span.allowed b,
-span.wanted b,
-span.snatched b {
+.displayShow >>> span.unaired b,
+.displayShow >>> span.skipped b,
+.displayShow >>> span.preferred b,
+.displayShow >>> span.allowed b,
+.displayShow >>> span.wanted b,
+.displayShow >>> span.snatched b {
     color: rgb(0, 0, 0);
     font-weight: 800;
 }
@@ -1462,7 +1462,7 @@ td.col-footer {
     text-align: left !important;
 }
 
-.vgt-wrap__footer {
+.displayShow >>> .vgt-wrap__footer {
     color: rgb(255, 255, 255);
     padding: 1em;
     background-color: rgb(51, 51, 51);
@@ -1471,24 +1471,24 @@ td.col-footer {
     justify-content: space-between;
 }
 
-.footer__row-count,
-.footer__navigation__page-info {
+.displayShow >>> .footer__row-count,
+.displayShow >>> .footer__navigation__page-info {
     display: inline;
 }
 
-.footer__row-count__label {
+.displayShow >>> .footer__row-count__label {
     margin-right: 1em;
 }
 
-.vgt-wrap__footer .footer__navigation {
+.displayShow >>> .vgt-wrap__footer .footer__navigation {
     font-size: 14px;
 }
 
-.vgt-pull-right {
+.displayShow >>> .vgt-pull-right {
     float: right !important;
 }
 
-.vgt-wrap__footer .footer__navigation__page-btn .chevron {
+.displayShow >>> .vgt-wrap__footer .footer__navigation__page-btn .chevron {
     width: 24px;
     height: 24px;
     border-radius: 15%;
@@ -1496,8 +1496,8 @@ td.col-footer {
     margin: 0 8px;
 }
 
-.vgt-wrap__footer .footer__navigation__info,
-.vgt-wrap__footer .footer__navigation__page-info {
+.displayShow >>> .vgt-wrap__footer .footer__navigation__info,
+.displayShow >>> .vgt-wrap__footer .footer__navigation__page-info {
     display: inline-flex;
     color: #909399;
     margin: 0 16px;
@@ -1557,7 +1557,7 @@ td.col-footer {
     justify-content: center;
 }
 
-.vgt-dropdown-menu {
+.displayShow >>> .vgt-dropdown-menu {
     position: absolute;
     z-index: 1000;
     float: left;
@@ -1571,7 +1571,7 @@ td.col-footer {
     border-radius: 4px;
 }
 
-.vgt-dropdown-menu > li > span {
+.displayShow >>> .vgt-dropdown-menu > li > span {
     display: block;
     padding: 3px 20px;
     clear: both;
