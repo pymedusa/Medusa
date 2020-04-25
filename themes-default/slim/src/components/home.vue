@@ -33,8 +33,10 @@
 
         <div class="row">
             <div class="col-md-12">
-                <div class="pull-left" id="showRoot" style="display: none;">
-                    <select name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm"></select>
+                <div class="pull-left" id="showRoot">
+                    <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
+                        <option v-for="option in selectedRootIndexOptions" :value="String(option.value)">{{option.text}}</option>
+                    </select>
                 </div>
                 <div class="show-option pull-right">
                     <template v-if="layout !== 'poster'">
@@ -153,7 +155,8 @@ export default {
                 { text: 'Progress', value: 'progress' },
                 { text: 'Indexer', value: 'indexer' }
             ],
-            filterShowName: ''
+            filterShowName: '',
+            selectedRootDir: 0
         };
     },
     computed: {
@@ -224,21 +227,24 @@ export default {
             }
         },
         showLists() {
-            const { indexers, stateLayout, showsWithStats, stats } = this;
-            const { animeSplitHome, show } = stateLayout;
+            const { config, indexers, stateLayout, showsWithStats, stats } = this;
+            const { rootDirs } = config;
+            const { animeSplitHome, selectedRootIndex, show } = stateLayout;
             if (!indexers.indexers) {
                 return;
             }
+
+            const shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]))
             
             if (animeSplitHome) {
                 return show.showListOrder.map(listTitle => {
                     return (
-                        { listTitle, shows: showsWithStats.filter(show => show.config.anime === (listTitle === 'Anime')) }
+                        { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
                     );
                 });
             } else {
                 return (
-                    [{ listTitle: 'Series', shows: showsWithStats }]
+                    [{ listTitle: 'Series', shows }]
                 )
             }
         },
@@ -248,6 +254,11 @@ export default {
                 // Example of options object -> see options section
                 threshold: 500
             });
+        },
+        selectedRootIndexOptions() {
+            const { config } = this;
+            const { rootDirs } = config;
+            return [...[{value: -1, text: 'All Folders'}], ...rootDirs.slice(1).map((item, idx) => ({text: item, value: idx}))];
         }
     },
     methods: {
@@ -258,6 +269,7 @@ export default {
             setPosterSortBy: 'setPosterSortBy',
             setPosterSortDir: 'setPosterSortDir',
             setShowListOrder: 'setShowListOrder',
+            setStoreLayout: 'setStoreLayout',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
@@ -273,6 +285,10 @@ export default {
                     'Error'
                 );
             }
+        },
+        saveSelectedRootDir(value) {
+            const { setStoreLayout } = this;
+            setStoreLayout({ key: 'selectedRootIndex', value });
         }
     },
     mounted() {
@@ -618,35 +634,35 @@ export default {
         // }; // END initializePage()
 
         // Vue Stuff (prevent race condition issues)
-        const unwatch = this.$watch('config.rootDirs', () => {
-            unwatch();
+        // const unwatch = this.$watch('config.rootDirs', () => {
+        //     unwatch();
 
-            const { config } = this;
-            const { rootDirs, selectedRootIndex } = config;
+        //     const { config } = this;
+        //     const { rootDirs, selectedRootIndex } = config;
 
-            if (rootDirs) {
-                const backendDirs = rootDirs.slice(1);
-                if (backendDirs.length >= 2) {
-                    this.$nextTick(() => {
-                        $('#showRoot').show();
-                        const item = ['All Folders'];
-                        const rootDirOptions = item.concat(backendDirs);
-                        $.each(rootDirOptions, (i, item) => {
-                            $('#showRootDir').append($('<option>', {
-                                value: i - 1,
-                                text: item
-                            }));
-                        });
-                        $('select#showRootDir').prop('selectedIndex', selectedRootIndex + 1);
-                    });
-                } else {
-                    $('#showRoot').hide();
-                }
-            }
+        //     if (rootDirs) {
+        //         const backendDirs = rootDirs.slice(1);
+        //         if (backendDirs.length >= 2) {
+        //             this.$nextTick(() => {
+        //                 $('#showRoot').show();
+        //                 const item = ['All Folders'];
+        //                 const rootDirOptions = item.concat(backendDirs);
+        //                 $.each(rootDirOptions, (i, item) => {
+        //                     $('#showRootDir').append($('<option>', {
+        //                         value: i - 1,
+        //                         text: item
+        //                     }));
+        //                 });
+        //                 $('select#showRootDir').prop('selectedIndex', selectedRootIndex + 1);
+        //             });
+        //         } else {
+        //             $('#showRoot').hide();
+        //         }
+        //     }
 
-            // I'm (mis-using) this for now.
-            // this.initializePosterSizeSlider();
-        });
+        //     // I'm (mis-using) this for now.
+        //     // this.initializePosterSizeSlider();
+        // });
     }
 };
 </script>

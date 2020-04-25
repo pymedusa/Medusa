@@ -10,7 +10,6 @@ import { convertDateFormat } from '../../utils/core';
 // Add locale-specific relative date/time formatting rules.
 TimeAgo.addLocale(timeAgoLocalEN);
 
-
 const state = {
     show: {
         specials: null,
@@ -20,6 +19,7 @@ const state = {
         }
     },
     home: null,
+    selectedRootIndex: null,
     history: null,
     historyLimit: null,
     schedule: null,
@@ -155,7 +155,7 @@ const actions = {
                 });        
             });
     },
-    setLayoutConfig(context, { key, value }) {
+    setStoreLayout(context, { key, value }) {
         const { commit } = context;
         return api.patch('config/main', { layout: { [key]: value } })
             .then(() => {
