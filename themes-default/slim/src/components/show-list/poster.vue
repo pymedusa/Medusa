@@ -15,11 +15,10 @@
                     </div>
                     <div class="show-poster-footer row">
                         <div class="col-md-12">
-                            <div class="progressbar hidden-print" style="position:relative;" :data-show-id="show.id[show.indexer]" data-progress-percentage="${progressbar_percent}" />
+                            <progress-bar :percentage="show.stats.tooltip.percentage" />
                             <div class="show-title">
                                 <div class="ellipsis">{{show.title}}</div>
-                                <!-- if get_xem_numbering_for_show(cur_show, refresh_data=False): -->
-                                <div class="xem">
+                                <div v-if="show.xemNumbering.length > 0" class="xem">
                                     <img src="images/xem.png" width="16" height="16">
                                 </div>
                                 <!--  endif -->
@@ -78,9 +77,7 @@
 import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
-import { Asset } from '../helpers';
-import { AppLink } from '../helpers';
-import { QualityPill } from '../helpers';
+import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
 import isotope from 'vueisotope';
 import LazyLoad from 'vanilla-lazyload';
 import imagesLoaded from 'vue-images-loaded';
@@ -93,6 +90,7 @@ export default {
     components: {
         Asset,
         AppLink,
+        ProgressBar,
         QualityPill,
         isotope
     },
@@ -315,8 +313,9 @@ export default {
 .show-container {
     display: inline-block;
     margin: 4px;
-    background-color: rgb(243, 243, 243);
-    border: 5px solid rgb(243, 243, 243);
+    /* background-color: rgb(243, 243, 243); */
+    border-width: 5px;
+    border-style: solid; /*rgb(243, 243, 243); */
     overflow: hidden;
     box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
@@ -352,7 +351,7 @@ export default {
 }
 
 .background-image img {
-    max-width: 200px;
+    width: 100%;
     overflow: hidden;
 }
 
@@ -414,5 +413,6 @@ export default {
 
 .overlay-container {
     display: flex;
+    align-items: center;
 }
 </style>

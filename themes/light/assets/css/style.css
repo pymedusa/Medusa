@@ -605,6 +605,11 @@ div.xem {
     position: absolute;
 }
 
+.show-container {
+    background-color: rgb(243, 243, 243);
+    border-color: rgb(243, 243, 243);
+}
+
 .show-container .ui-progressbar {
     height: 7px !important;
     top: -2px;
