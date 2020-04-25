@@ -34,15 +34,13 @@ class xBiTProvider(TorrentProvider):
 
         # Proper Strings
 
-        # Miscellaneous Options
-        self.freeleech = False
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # Only poll xBiT every 10 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, **kwargs):
         """
@@ -51,6 +49,9 @@ class xBiTProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        # Search Params
+        search_params = {'limit': 30}
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -61,13 +62,12 @@ class xBiTProvider(TorrentProvider):
                 for search_string in search_strings[mode]:
                     search_url = self.urls['search']
                     if mode != 'RSS':
-                        log.debug('Search string: {search}',
-                                  {'search': search_string})
                         # Replaces spaces with either a dot or a plus
                         # Needed in order for it to return all results
                         search_string = search_string.replace(' ', separator)
-                    search_params = {'search': search_string,
-                                     'limit': 10}
+                        search_params['search'] = search_string
+                        log.debug('Search string: {search}',
+                                  {'search': search_string})
 
                     response = self.session.get(self.urls['search'], params=search_params)
                     if not response:
@@ -102,18 +102,18 @@ class xBiTProvider(TorrentProvider):
             try:
                 title = row['NAME']
                 download_url = row['MAGNET']
-                download_url = download_url + self._custom_trackers
                 if not all([title, download_url]):
                     continue
+                download_url = download_url + self._custom_trackers
 
                 seeders = 1  # Provider does not provide seeders
                 leechers = 0  # Provider does not provide leechers
 
                 # Filter unseeded torrent
-                if seeders < min(self.minseed, 1):
+                if seeders < self.minseed:
                     if mode != 'RSS':
                         log.debug("Discarding torrent because it doesn't meet the"
-                                  " minimum seeders: {0}. Seeders: {1}",
+                                  ' minimum seeders: {0}. Seeders: {1}',
                                   title, seeders)
                     continue
 
