@@ -377,7 +377,7 @@ export default {
         QualityPill
     },
     mixins: [
-        manageCookieMixin('displayShow-hide-field')
+        manageCookieMixin('displayShow')
     ],
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -410,7 +410,7 @@ export default {
         const { getCookie } = this;
         const perPageDropdown = [25, 50, 100, 250, 500];
         const getPaginationPerPage = () => {
-            const rows = getCookie('displayShow-pagination-perPage');
+            const rows = getCookie('pagination-perPage');
             if (!rows) {
                 return 50;
             }
