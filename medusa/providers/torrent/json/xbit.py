@@ -5,8 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
-import traceback
 
 from medusa import tv
 from medusa.helper.common import convert_size
@@ -34,7 +32,6 @@ class xBiTProvider(TorrentProvider):
 
         # Proper Strings
 
-
         # Torrent Stats
         self.minseed = None
         self.minleech = None
@@ -57,17 +54,15 @@ class xBiTProvider(TorrentProvider):
             log.debug('Search mode: {0}', mode)
 
             string_separator = ['+', '.'] if mode != 'RSS' else [' ']
-
             for separator in string_separator:
                 for search_string in search_strings[mode]:
-                    search_url = self.urls['search']
                     if mode != 'RSS':
                         # Replaces spaces with either a dot or a plus
                         # Needed in order for it to return all results
                         search_string = search_string.replace(' ', separator)
+
+                        log.debug('Search string: {search}', {'search': search_string})
                         search_params['search'] = search_string
-                        log.debug('Search string: {search}',
-                                  {'search': search_string})
 
                     response = self.session.get(self.urls['search'], params=search_params)
                     if not response:
@@ -91,19 +86,20 @@ class xBiTProvider(TorrentProvider):
         :param mode: The current mode used to search, e.g. RSS
         :return: A list of items found
         """
-
         items = []
+
         torrent_rows = data.get('dht_results')
         if not torrent_rows:
             log.debug('Data returned from provider does not contain any torrents')
             return items
-        for row in torrent_rows[:-1]:
 
+        for row in torrent_rows[:-1]:
             try:
                 title = row['NAME']
                 download_url = row['MAGNET']
                 if not all([title, download_url]):
                     continue
+
                 download_url = download_url + self._custom_trackers
 
                 seeders = 1  # Provider does not provide seeders
