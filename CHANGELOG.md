@@ -2,9 +2,13 @@
 
 #### New Features
 - Add new provider xBit ([#3572](https://github.com/pymedusa/Medusa/pull/3572))
+- Added Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
+- Added EZTV as torrent provider ([#8004](https://github.com/pymedusa/Medusa/pull/8004))
+
 #### Improvements
 
 #### Fixes
+- Fixed PrivateHD and CinemaZ provider login ([#7991](https://github.com/pymedusa/Medusa/pull/7991))
 - Fix SceneTime when there are no results ([#7993](https://github.com/pymedusa/Medusa/pull/7993))
 -----
 
@@ -13,6 +17,7 @@
 #### Improvements
 - Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
 - Provider YggTorrents: Add 'saison' as a season pack search keyword ([#7920](https://github.com/pymedusa/Medusa/pull/7920))
+- Show Snatched or Downloaded release name when manually picking a subtitle ([#7955](https://github.com/pymedusa/Medusa/pull/7955))
 
 #### Fixes
 - Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
