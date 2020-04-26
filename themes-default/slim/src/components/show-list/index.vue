@@ -3,12 +3,43 @@
         <!-- <h1 v-if="header" class="header">{{ listTitle }}</h1> -->
         <div class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                <span class="icon-bar" />
+                <span class="icon-bar" />
+                <span class="icon-bar" />
             </button>
             <h2 class="header">{{listTitle}}</h2>
         </div>
+
+        <div v-if="layout ==='poster'" class="row poster-ui-controls">
+            <div class="col-md-4">
+                <div class="show-option pull-right">
+                    <!-- These need to patch apiv2 on change! -->
+                    <select v-model="posterUiSortDir" id="postersortdirection" class="form-control form-control-inline input-sm" placeholder="Direction">
+                        <option :value="1">Ascending</option>
+                        <option :value="0">Descending</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="show-option pull-right">
+                    <select v-model="posterUiSortBy" id="postersort" class="form-control form-control-inline input-sm" placeholder="Sort By">
+                        <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value">
+                            {{ option.text }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="show-option pull-right">
+                    Poster Size:
+                    <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider" />
+                </div>
+            </div>
+
+        </div>
+
         <div v-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
@@ -18,6 +49,7 @@
 </template>
 <script>
 
+import { mapActions, mapState } from 'vuex';
 import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
@@ -54,14 +86,60 @@ export default {
             type: Boolean
         }
     },
+    data() {
+        return {
+            postSortDirOptions: [
+                { value: '0', text: 'Descending' },
+                { value: '1', text: 'Ascending' }
+            ],
+            posterSortByOptions: [
+                { text: 'Name', value: 'name' },
+                { text: 'Next episode', value: 'date' },
+                { text: 'Network', value: 'network' },
+                { text: 'Progress', value: 'progress' },
+                { text: 'Indexer', value: 'indexer' }
+            ]
+        }
+    },
     computed: {
+        ...mapState({
+            stateLayout: state => state.layout
+        }),
         mappedLayout() {
             const { layout } = this;
             if (layout === 'small') {
                 return 'smallposter';
             }
             return layout;
+        },
+        posterUiSortBy: {
+            get() {
+                const { stateLayout } = this;
+                const { posterSortby } = stateLayout;
+                return posterSortby;
+            },
+            set(value) {
+                const { setPosterSortBy } = this;
+                setPosterSortBy({ value });
+            }
+        },
+        posterUiSortDir: {
+            get() {
+                const { stateLayout } = this;
+                const { posterSortdir } = stateLayout;
+                return posterSortdir;
+            },
+            set(value) {
+                const { setPosterSortDir } = this;
+                setPosterSortDir({ value });
+            }
         }
+    },
+    methods: {
+        ...mapActions({
+            setPosterSortBy: 'setPosterSortBy',
+            setPosterSortDir: 'setPosterSortDir'
+        })
     }
 };
 </script>
@@ -174,6 +252,10 @@ export default {
 
 .table-layout >>> .vgt-table tr.spacer {
     height: 25px;
+}
+
+.table-layout >>> .vgt-dropdown > .button-group {
+    margin-bottom: 10px;
 }
 
 .table-layout >>> .vgt-dropdown-menu {

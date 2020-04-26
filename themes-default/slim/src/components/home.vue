@@ -1,55 +1,23 @@
 <template>
     <div id="home">
-        <input type="hidden" id="background-series-slug" value="" />
-
-        <div class="row" v-if="layout === 'poster'">
-            <div class="col-lg-9 col-md-12 col-sm-12 col-xs-12 pull-right">
-                <div class="pull-right">
-                    <div class="show-option pull-right">
-                        <input v-model="posterUiFilter" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
-                    </div>
-                    <div class="show-option pull-right"> Direction:
-                        <!-- These need to patch apiv2 on change! -->
-                        <select v-model="posterUiSortDir" id="postersortdirection" class="form-control form-control-inline input-sm">
-                            <option :value="1">Ascending</option>
-                            <option :value="0">Descending</option>
-                        </select>
-                    </div>
-
-                    <div class="show-option pull-right"> Sort By:
-                    <select v-model="posterUiSortBy" id="postersort" class="form-control form-control-inline input-sm">
-                        <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value">
-                            {{ option.text }}
-                        </option>
-                    </select>
-                    </div>
-                    <div class="show-option pull-right">
-                        Poster Size:
-                        <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
-                    </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="home-filter-option option-filter-name">
+                    <input v-model="filterByName" id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                 </div>
             </div>
-        </div> <!-- row !-->
+        </div>
 
         <div class="row">
-            <div class="col-md-12">
-                <div class="pull-left" id="showRoot">
+            <div class="col-sm-12">
+                <div class="home-filter-option pull-left" id="showRoot">
                     <select :value="stateLayout.selectedRootIndex" name="showRootDir" id="showRootDir" class="form-control form-control-inline input-sm" @change="setStoreLayout({ key: 'selectedRootIndex', value: Number($event.target.selectedOptions[0].value) });">
-                        <option v-for="option in selectedRootIndexOptions" :value="String(option.value)">{{option.text}}</option>
+                        <option v-for="option in selectedRootIndexOptions" :key="option.value" :value="String(option.value)">{{option.text}}</option>
                     </select>
                 </div>
-                <div class="show-option pull-right">
-                    <template v-if="layout !== 'poster'">
-                        <span class="show-option">
-                            <button id="popover" type="button" class="btn-medusa btn-inline">
-                                Select Columns <b class="caret"></b>
-                            </button>
-                        </span> <span class="show-option">
-                            <button type="button" class="resetsorting btn-medusa btn-inline">Clear
-                                Filter(s)</button>
-                        </span>&nbsp;
-                    </template>
-                    Layout: <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                <div class="home-filter-option show-option-layout pull-right">
+                    <span>Layout: </span>
+                    <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
                         <option value="poster">Poster</option>
                         <option value="small">Small Poster</option>
                         <option value="banner">Banner</option>
@@ -66,10 +34,10 @@
                     <vue-tabs>
                         <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                                <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`" 
+                                <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
                                     v-bind="{
                                         listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
-                                    }" 
+                                    }"
                                 />
                             </template>
                         </v-tab>
@@ -83,12 +51,12 @@
                     <!-- Tab panes
                     <div id="showTabPanes">
                         <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                            <show-list v-for="showList in showLists" 
+                            <show-list v-for="showList in showLists"
                                 :key="showList.listTitle.toLowerCase()"
-                                :id="`${showList.listTitle.toLowerCase()}TabContent`" 
+                                :id="`${showList.listTitle.toLowerCase()}TabContent`"
                                 v-bind="{
                                     listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
-                                }" 
+                                }"
                             />
                         </template>
                     </div>#showTabPanes -->
@@ -105,7 +73,7 @@
                                 />
                             </li>
                         </draggable>
-                            
+
 
                     </template>
                 </template>
@@ -144,18 +112,6 @@ export default {
                 { value: 'banner', text: 'Banner' },
                 { value: 'simple', text: 'Simple' }
             ],
-            postSortDirOptions: [
-                { value: '0', text: 'Descending' },
-                { value: '1', text: 'Ascending' }
-            ],
-            posterSortByOptions: [
-                { text: 'Name', value: 'name' },
-                { text: 'Next episode', value: 'date' },
-                { text: 'Network', value: 'network' },
-                { text: 'Progress', value: 'progress' },
-                { text: 'Indexer', value: 'indexer' }
-            ],
-            filterShowName: '',
             selectedRootDir: 0
         };
     },
@@ -182,38 +138,16 @@ export default {
                 setLayout({ page, layout });
             }
         },
-        posterUiFilter: {
+        filterByName: {
             get() {
                 const { stateLayout } = this;
-                const { posterFilterByName } = stateLayout;
-                return posterFilterByName;
+                const { showFilterByName } = stateLayout;
+                return showFilterByName;
             },
             set(value) {
-                const { setPosterFilterByName } = this;
-                setPosterFilterByName({ filter: value });
+                const { setShowFilterByName } = this;
+                setShowFilterByName({ filter: value });
             }
-        },
-        posterUiSortBy: {
-            get() {
-                const { stateLayout } = this;
-                const { posterSortby } = stateLayout;
-                return posterSortby;
-            },
-            set(value) {
-                const { setPosterSortBy } = this;
-                setPosterSortBy({ value });
-            }
-        },
-        posterUiSortDir: {
-            get() {
-                const { stateLayout } = this;
-                const { posterSortdir } = stateLayout;
-                return posterSortdir;
-            },
-            set(value) {
-                const { setPosterSortDir } = this;
-                setPosterSortDir({ value });
-            },
         },
         showList: {
             get() {
@@ -227,26 +161,30 @@ export default {
             }
         },
         showLists() {
-            const { config, indexers, stateLayout, showsWithStats, stats } = this;
+            const { config, indexers, filterByName, stateLayout, showsWithStats } = this;
             const { rootDirs } = config;
             const { animeSplitHome, selectedRootIndex, show } = stateLayout;
             if (!indexers.indexers) {
                 return;
             }
 
-            const shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]))
-            
+            let shows = null;
+
+            // Filter root dirs
+            shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]))
+
+            // Filter by text
+            shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
+
             if (animeSplitHome) {
                 return show.showListOrder.map(listTitle => {
                     return (
                         { listTitle, shows: shows.filter(show => show.config.anime === (listTitle === 'Anime')) }
                     );
                 });
-            } else {
-                return (
-                    [{ listTitle: 'Series', shows }]
-                )
             }
+
+            return ([{ listTitle: 'Series', shows }]);
         },
         imgLazyLoad() {
             console.log('imgLazyLoad object constructud!');
@@ -258,16 +196,14 @@ export default {
         selectedRootIndexOptions() {
             const { config } = this;
             const { rootDirs } = config;
-            return [...[{value: -1, text: 'All Folders'}], ...rootDirs.slice(1).map((item, idx) => ({text: item, value: idx}))];
+            return [...[{ value: -1, text: 'All Folders' }], ...rootDirs.slice(1).map((item, idx) => ({ text: item, value: idx }))];
         }
     },
     methods: {
         ...mapActions({
             setLayout: 'setLayout',
             setConfig: 'setConfig',
-            setPosterFilterByName: 'setPosterFilterByName',
-            setPosterSortBy: 'setPosterSortBy',
-            setPosterSortDir: 'setPosterSortDir',
+            setShowFilterByName: 'setShowFilterByName',
             setShowListOrder: 'setShowListOrder',
             setStoreLayout: 'setStoreLayout',
             getShows: 'getShows',
@@ -667,8 +603,24 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 ul.list-group > li {
     list-style: none;
+}
+
+.home-filter-option {
+    margin-left: 10px;
+    line-height: 40px;
+}
+
+@media (max-width: 768px) {
+    .show-option {
+        width: 100%;
+        display: inline-block;
+    }
+
+    .show-option-layout > span {
+        display: none;
+    }
 }
 </style>

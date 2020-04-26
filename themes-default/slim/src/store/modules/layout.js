@@ -45,7 +45,7 @@ const state = {
         status: null,
         period: null
     },
-    posterFilterByName: '',
+    showFilterByName: '',
     posterSortdir: null,
     posterSortby: null,
     posterSize: 188
@@ -79,8 +79,8 @@ const getters = {
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
     },
-    posterFilterByName: (state) => {
-        return state.posterFilterByName;
+    getShowFilterByName: (state) => {
+        return state.showFilterByName;
     }
 
 };
@@ -112,14 +112,14 @@ const actions = {
         return api.patch('config/main', { layout: { show } })
             .then(() => {
                 return commit(ADD_CONFIG, {
-                    section: 'layout', config: { show } 
+                    section: 'layout', config: { show }
                 });
             });
     },
-    setPosterFilterByName(context, { filter }) {
+    setShowFilterByName(context, { filter }) {
         const { commit } = context;
         return commit(ADD_CONFIG, {
-            section: 'layout', config: { posterFilterByName: filter } 
+            section: 'layout', config: { showFilterByName: filter }
         });
     },
     setPosterSortBy(context, { value }) {
@@ -128,7 +128,7 @@ const actions = {
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { posterSortby: value }
-                });        
+                });
             });
     },
     setPosterSortDir(context, { value }) {
@@ -137,7 +137,7 @@ const actions = {
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { posterSortdir: value }
-                });        
+                });
             });
     },
     setPosterSize(context, { posterSize }) {
@@ -152,7 +152,7 @@ const actions = {
             .then(() => {
                 return commit(ADD_CONFIG, {
                     section: 'layout', config: { show: { showListOrder: value } }
-                });        
+                });
             });
     },
     setStoreLayout(context, { key, value }) {

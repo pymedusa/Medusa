@@ -71,7 +71,7 @@
                 </div>
             </isotope>
         </div>
-    </div> 
+    </div>
 </template>
 <script>
 import debounce from 'lodash/debounce';
@@ -132,13 +132,6 @@ export default {
                         return indexers[row.indexer].id;
                     }
                 },
-                getFilterData: {
-                    filterByText: item => {
-                        const { stateLayout } = this;
-                        const { posterFilterByName } = stateLayout;
-                        return item.title.toLowerCase().includes(posterFilterByName.toLowerCase());
-                    }
-                },
                 sortBy: () => this.posterSortBy,
                 layoutMode: 'fitRows',
                 sortAscending: () => this.posterSortDir
@@ -161,7 +154,8 @@ export default {
             stateLayout: state => state.layout,
             indexers: state => state.indexers.indexers,
             posterFilterByName: state => state.layout.posterFilterByName,
-            posterSize: state => state.layout.posterSize
+            posterSize: state => state.layout.posterSize,
+            showFilterByName: state => state.layout.showFilterByName
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -234,8 +228,8 @@ export default {
         updateLayout() {
             const {
                 calculateSize, imgLazyLoad,
-                listTitle, posterSortBy, 
-                posterSortDir, option 
+                listTitle, posterSortBy,
+                posterSortDir, option
             } = this;
             this.isotopeLoaded = true;
             imgLazyLoad.update();
@@ -292,10 +286,6 @@ export default {
             this.option.sortAscending = Boolean(value);
             this.$refs[`isotope-${listTitle}`].arrange(option);
         },
-        posterFilterByName() {
-            const { listTitle } = this;
-            this.$refs[`isotope-${listTitle}`].filter('filterByText');
-        },
         posterSize(oldSize, newSize) {
             const { calculateSize, isotopeLoaded, listTitle } = this;
             if (!isotopeLoaded || oldSize === newSize) {
@@ -305,6 +295,10 @@ export default {
             this.$nextTick(() => {
                 this.$refs[`isotope-${listTitle}`].arrange();
             });
+        },
+        showFilterByName() {
+            const { listTitle } = this;
+            this.$refs[`isotope-${listTitle}`].layout();
         }
     }
 };

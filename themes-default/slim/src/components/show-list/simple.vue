@@ -1,69 +1,64 @@
 <template>
     <div class="horizontal-scroll">
         <vue-good-table v-if="shows.length > 0"
-            :columns="columns"
-            :rows="shows"
-            :search-options="{
-                enabled: true,
-                trigger: 'enter',
-                skipDiacritics: false,
-                placeholder: 'Search',
-            }"
-            :sort-options="{
-                enabled: true,
-                initialSortBy: { field: 'title', type: 'asc' }
-            }"
-            :column-filter-options="{
-                enabled: true
-            }">
+                        :columns="columns"
+                        :rows="shows"
+                        :search-options="{
+                            enabled: false
+                        }"
+                        :sort-options="{
+                            enabled: true,
+                            initialSortBy: { field: 'title', type: 'asc' }
+                        }"
+                        :column-filter-options="{
+                            enabled: true
+                        }">
 
-                <template slot="table-row" slot-scope="props">
-                    <span v-if="props.column.label == 'Show'">
-                        <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">{{ props.row.title }}</app-link>
-                    </span>
+            <template slot="table-row" slot-scope="props">
+                <span v-if="props.column.label == 'Show'">
+                    <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">{{ props.row.title }}</app-link>
+                </span>
 
-                    <span v-else-if="props.column.label == 'Network'">
-                        <span class="align-center">{{ props.row.network }}</span>
-                    </span>
+                <span v-else-if="props.column.label == 'Network'">
+                    <span class="align-center">{{ props.row.network }}</span>
+                </span>
 
-                    <span v-else-if="props.column.label == 'Indexer'" class="align-center">
-                        <app-link v-if="props.row.id.imdb" :href="'http://www.imdb.com/title/' + props.row.id.imdb" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
-                            <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
-                        </app-link>
-                        <app-link v-if="props.row.id.trakt" :href="'https://trakt.tv/shows/' + props.row.id.trakt" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
-                            <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
-                        </app-link>
-                        <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
-                            <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
-                        </app-link>
-                    </span>
+                <span v-else-if="props.column.label == 'Indexer'" class="align-center">
+                    <app-link v-if="props.row.id.imdb" :href="'http://www.imdb.com/title/' + props.row.id.imdb" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                    </app-link>
+                    <app-link v-if="props.row.id.trakt" :href="'https://trakt.tv/shows/' + props.row.id.trakt" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                    </app-link>
+                    <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
+                        <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
+                    </app-link>
+                </span>
 
-                    <span v-else-if="props.column.label == 'Quality'" class="align-center">
-                        <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title></quality-pill>
-                    </span>
+                <span v-else-if="props.column.label == 'Quality'" class="align-center">
+                    <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title></quality-pill>
+                </span>
 
-                    <span v-else-if="props.column.label == 'Downloads'">
-                        <progress-bar v-bind="props.row.stats.tooltip"></progress-bar>
-                    </span>
+                <span v-else-if="props.column.label == 'Downloads'">
+                    <progress-bar v-bind="props.row.stats.tooltip"></progress-bar>
+                </span>
 
-                    <span v-else-if="props.column.label == 'Size'" class="align-center">
-                        {{ prettyBytes(props.row.stats.episodes.size) }}
-                    </span>
+                <span v-else-if="props.column.label == 'Size'" class="align-center">
+                    {{ prettyBytes(props.row.stats.episodes.size) }}
+                </span>
 
-                    <span v-else-if="props.column.label == 'Active'" class="align-center">
-                       <img :src="'images/' + (!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
-                    </span>
+                <span v-else-if="props.column.label == 'Active'" class="align-center">
+                <img :src="'images/' + (!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
+                </span>
 
-                    <span v-else-if="props.column.label == 'Xem'" class="align-center">
-                        <img :src="`images/${props.row.xemNumbering.length !== 0  ? 'yes16.png' : 'no16.png'}`" :alt="props.row.xemNumbering.length !== 0  ? 'yes' : 'no'" width="16" height="16" />
-                    </span>
+                <span v-else-if="props.column.label == 'Xem'" class="align-center">
+                    <img :src="`images/${props.row.xemNumbering.length !== 0  ? 'yes16.png' : 'no16.png'}`" :alt="props.row.xemNumbering.length !== 0  ? 'yes' : 'no'" width="16" height="16" />
+                </span>
 
-                    <span v-else class="align-center">
-                        {{props.formattedRow[props.column.field]}}
-                    </span>
-                </template>
-
-
+                <span v-else class="align-center">
+                    {{props.formattedRow[props.column.field]}}
+                </span>
+            </template>
         </vue-good-table>
 
     </div> <!-- .horizontal-scroll -->
@@ -163,7 +158,7 @@ export default {
         ...mapState({
             config: state => state.config,
             indexerConfig: state => state.indexers.indexers,
-            sortArticle: state => state.layout.sortArticle 
+            sortArticle: state => state.layout.sortArticle
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
