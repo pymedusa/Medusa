@@ -99,7 +99,7 @@ setup(
         'configparser < 5.0.0 ; python_version == "2.*"',
         # pyparsing 3.0.0 dropped support for Python 2
         'pyparsing < 3.0.0 ; python_version == "2.*"',
-        'flake8>=3.7.7',
+        'flake8==3.7.9',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
@@ -107,7 +107,7 @@ setup(
         'pytest<5.0.0 ; python_version < "3.5"',
         'pytest>=5.0.0 ; python_version >= "3.5"',
         'pytest-cov>=2.6.1',
-        'pytest-flake8==1.0.4',
+        'pytest-flake8>=1.0.4',
         'pytest-tornado5>=2.0.0',
         'PyYAML>=5.1',
         'vcrpy<4.0.0 ; python_version < "3.5"',
