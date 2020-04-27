@@ -100,6 +100,7 @@ setup(
         # pyparsing 3.0.0 dropped support for Python 2
         'pyparsing < 3.0.0 ; python_version == "2.*"',
         'flake8==3.7.9',
+        'pycodestyle==2.5.0',
         'flake8-docstrings>=1.3.0',
         'flake8-import-order>=0.18',
         'flake8-quotes>=1.0.0',
