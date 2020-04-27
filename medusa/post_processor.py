@@ -512,6 +512,17 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
+        def keeplink(cur_file_path, new_file_path):
+            self.log(u'Symbolic linking file from {0} to {1}'.format
+                     (cur_file_path, new_file_path), logger.DEBUG)
+            try:
+                helpers.symlink(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
+            except (IOError, OSError) as e:
+                self.log(u'Unable to link file {0} to {1}: {2!r}'.format
+                         (cur_file_path, new_file_path, e), logger.ERROR)
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
+
         def reflink(cur_file_path, new_file_path):
             self.log(u'Reflink file from {0} to {1}'.format(cur_file_path, new_basename), logger.DEBUG)
             try:
@@ -522,7 +533,7 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
-        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink}.get(self.process_method)
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink, 'keeplink': keeplink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink|reflink as downloaded subtitle is not part of torrent
         subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move, 'reflink': move}.get(self.process_method)
         self._combined_file_operation(file_path, new_path, new_basename, associated_files=associated_files,
@@ -1229,7 +1240,7 @@ class PostProcessor(object):
 
         try:
             # do the action to the episode and associated files to the show dir
-            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink']:
+            if self.process_method in ['copy', 'hardlink', 'move', 'symlink', 'reflink', 'keeplink']:
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
@@ -1302,7 +1313,7 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if not self.nzb_name and all([app.USE_TORRENTS, app.TORRENT_SEED_LOCATION,
-                                      self.process_method in ('hardlink', 'symlink', 'reflink')]):
+                                      self.process_method in ('hardlink', 'symlink', 'reflink', 'keeplink')]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
