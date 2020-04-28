@@ -1631,38 +1631,37 @@ class Series(TV):
                   {'id': self.series_id})
 
         cur_date = datetime.date.today().toordinal()
-        if not self.next_aired or self.next_aired and cur_date > self.next_aired:
-            main_db_con = db.DBConnection()
-            sql_results = main_db_con.select(
-                'SELECT '
-                '  airdate,'
-                '  season,'
-                '  episode '
-                'FROM '
-                '  tv_episodes '
-                'WHERE '
-                '  indexer = ?'
-                '  AND showid = ? '
-                '  AND airdate < ? '
-                '  AND status <> ? '
-                'ORDER BY'
-                '  airdate '
-                'DESC LIMIT 1',
-                [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(
+            'SELECT '
+            '  airdate,'
+            '  season,'
+            '  episode '
+            'FROM '
+            '  tv_episodes '
+            'WHERE '
+            '  indexer = ?'
+            '  AND showid = ? '
+            '  AND airdate < ? '
+            '  AND status <> ? '
+            'ORDER BY'
+            '  airdate '
+            'DESC LIMIT 1',
+            [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
 
-            if sql_results is None or len(sql_results) == 0:
-                log.debug(u'{id}: No episode found... need to implement a show status',
-                          {'id': self.series_id})
-                self.prev_aired = u''
-            else:
-                log.debug(
-                    u'{id}: Found episode {ep}', {
-                        'id': self.series_id,
-                        'ep': episode_num(sql_results[0]['season'],
-                                          sql_results[0]['episode']),
-                    }
-                )
-                self.prev_aired = sql_results[0]['airdate']
+        if sql_results is None or len(sql_results) == 0:
+            log.debug(u'{id}: No episode found... need to implement a show status',
+                        {'id': self.series_id})
+            self.prev_aired = u''
+        else:
+            log.debug(
+                u'{id}: Found episode {ep}', {
+                    'id': self.series_id,
+                    'ep': episode_num(sql_results[0]['season'],
+                                        sql_results[0]['episode']),
+                }
+            )
+            self.prev_aired = sql_results[0]['airdate']
 
         return self.prev_aired
 
@@ -1689,11 +1688,10 @@ class Series(TV):
                 '  indexer = ?'
                 '  AND showid = ? '
                 '  AND airdate >= ? '
-                '  AND status IN (?,?) '
                 'ORDER BY'
                 '  airdate '
                 'ASC LIMIT 1',
-                [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED, WANTED])
+                [self.indexer, self.series_id, datetime.date.today().toordinal()])
 
             if sql_results is None or len(sql_results) == 0:
                 log.debug(u'{id}: No episode found... need to implement a show status',
