@@ -99,11 +99,11 @@ export default {
             }
 
             const matched =
-            // Is quality a preset?
+                // Is quality a preset?
                 this.getQualityPreset({ value: quality }) ||
-            // Is quality an 'anySet'? (any HDTV, any WEB-DL, any BluRay)
+                // Is quality an 'anySet'? (any HDTV, any WEB-DL, any BluRay)
                 this.getQualityAnySet({ value: quality }) ||
-            // Is quality a specific quality? (720p HDTV, 1080p WEB-DL, etc.)
+                // Is quality a specific quality? (720p HDTV, 1080p WEB-DL, etc.)
                 this.getQuality({ value: quality });
 
             if (matched !== undefined) {
@@ -152,7 +152,7 @@ export default {
                     name: 'UHD-8K',
                     key: 'anyuhd8k',
                     elements: ['uhd8ktv', 'uhd8kwebdl', 'uhd8kbluray']
-        }
+                }
             ];
 
             const { isSubsetOf, qualities, makeQualitySet } = this;
