@@ -119,7 +119,12 @@ export default {
                 getSortData: {
                     id: row => row.id.slug,
                     name: 'title',
-                    date: 'nextAirDate',
+                    date: row => {
+                        if (row.nextAirDate) {
+                            return row.nextAirDate;
+                        }
+                        return row.prevAirDate;
+                    },
                     network: 'network',
                     progress: row => {
                         if (!row.stats.episodes.total) {
@@ -147,21 +152,19 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            indexerConfig: state => state.indexers.indexers,
-            sortArticle: state => state.layout.sortArticle,
-            posterSortBy: state => state.layout.posterSortby,
-            posterSortDir: state => state.layout.posterSortdir,
             stateLayout: state => state.layout,
             indexers: state => state.indexers.indexers,
-            posterFilterByName: state => state.layout.posterFilterByName,
-            posterSize: state => state.layout.posterSize,
-            showFilterByName: state => state.layout.showFilterByName
+            // Need to map these computed, as we need them in the $watch.
+            posterSortBy: state => state.layout.posterSortby,
+            posterSortDir: state => state.layout.posterSortdir,
+            posterSize: state => state.layout.posterSize
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
-            const { shows, sortArticle } = this;
+            const { shows, stateLayout } = this;
+            const { sortArticle } = stateLayout;
             const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
             return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         },
@@ -180,13 +183,13 @@ export default {
         }),
         prettyBytes: bytes => pretty(bytes),
         showIndexerUrl(show) {
-            const { indexerConfig } = this;
+            const { indexers } = this;
             if (!show.indexer) {
                 return;
             }
 
             const id = show.id[show.indexer];
-            const indexerUrl = indexerConfig[show.indexer].showUrl;
+            const indexerUrl = indexers[show.indexer].showUrl;
             return `${indexerUrl}${id}`;
         },
         parsePrevDateFn(row) {
@@ -295,10 +298,6 @@ export default {
             this.$nextTick(() => {
                 this.$refs[`isotope-${listTitle}`].arrange();
             });
-        },
-        showFilterByName() {
-            const { listTitle } = this;
-            this.$refs[`isotope-${listTitle}`].layout();
         }
     }
 };

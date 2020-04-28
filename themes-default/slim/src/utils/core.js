@@ -177,7 +177,7 @@ export const waitFor = /* istanbul ignore next */ async (check, poll = 100, time
 };
 
 export const manageCookies = (vm, prefix) => {
-    
+
 }
 
 /**
@@ -189,7 +189,6 @@ export const manageCookieMixin = cookiePrefix => {
     return {
         methods: {
             getCookie(key) {
-
                 if (key.includes(cookiePrefix)) {
                     return JSON.parse(key);
                 }
@@ -200,7 +199,6 @@ export const manageCookieMixin = cookiePrefix => {
             }
         },
         created() {
-            const { setCookie } = this;
             // Watch the columns property on the VM. This is the default named property for the vue-good-tables columns.
             this.$watch(() => this.columns, columns => {
                 // Monitor the columns, to update the cookies, when changed.
@@ -212,5 +210,5 @@ export const manageCookieMixin = cookiePrefix => {
                 }
             }, { deep: true });
         }
-    }
-}
+    };
+};

@@ -62,11 +62,11 @@
                 </span>
 
                 <span v-else-if="props.column.label == 'Active'" class="align-center">
-                    <img :src="'images/' + (!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No') + '16.png'" :alt="!props.row.config.paused && props.row.status === 'Continuing' ? 'Yes' : 'No'" width="16" height="16" />
+                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
                 </span>
 
                 <span v-else-if="props.column.label == 'Xem'" class="align-center">
-                    <img :src="`images/${props.row.xemNumbering.length !== 0  ? 'yes16.png' : 'no16.png'}`" :alt="props.row.xemNumbering.length !== 0  ? 'yes' : 'no'" width="16" height="16" />
+                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
                 </span>
 
                 <span v-else class="align-center">
@@ -121,12 +121,14 @@ export default {
             columns: [{
                 label: 'Next Ep',
                 field: row => this.parseNextDateFn(row),
-                sortable: false,
+                sortable: true,
+                sortFn: this.sortDateNext,
                 hidden: getCookie('Next Ep')
             }, {
                 label: 'Prev Ep',
                 field: row => this.parsePrevDateFn(row),
-                sortable: false,
+                sortable: true,
+                sortFn: this.sortDatePrev,
                 hidden: getCookie('Prev Ep')
             }, {
                 label: 'Show',
@@ -138,11 +140,12 @@ export default {
                 hidden: getCookie('Network')
             }, {
                 label: 'Indexer',
-                field: 'id',
+                field: 'indexer',
                 hidden: getCookie('Indexer')
             }, {
                 label: 'Quality',
                 field: 'quality',
+                sortable: false,
                 hidden: getCookie('Quality')
             }, {
                 label: 'Downloads',
@@ -150,11 +153,11 @@ export default {
                 hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
-                field: 'size',
+                field: 'stats.episodes.size',
                 hidden: getCookie('Size')
             }, {
                 label: 'Active',
-                field: 'config.paused',
+                field: this.fealdFnActive,
                 hidden: getCookie('Active')
             }, {
                 label: 'Status',
@@ -162,7 +165,7 @@ export default {
                 hidden: getCookie('Status')
             }, {
                 label: 'Xem',
-                field: 'status',
+                field: this.fealdFnXem,
                 hidden: getCookie('Xem')
             }]
         };
@@ -175,12 +178,13 @@ export default {
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        }),
-        sortedShows() {
-            const { show, sortArticle } = this;
-            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
-        }
+        })
+        // ,
+        // sortedShows() {
+        //     const { show, sortArticle } = this;
+        //     const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
+        //     return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+        // }
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
@@ -199,22 +203,42 @@ export default {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {
                 console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
-                return fuzzyParseDateTime(row.prevAirDate)
-            } else {
-                return ''
+                return fuzzyParseDateTime(row.prevAirDate);
             }
+            return '';
         },
         parseNextDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.nextAirDate) {
                 console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
-                return fuzzyParseDateTime(row.nextAirDate)
-            } else {
-                return ''
+                return fuzzyParseDateTime(row.nextAirDate);
             }
+            return '';
+        },
+        sortDateNext(x, y, col, rowX, rowY) {
+            // rowX - row object for row1
+            // rowY - row object for row2
+            return (!rowX.nextAirDate && rowX.nextAirDate < rowY.nextAirDate ? -1 : (rowX.nextAirDate > rowY.nextAirDate ? 1 : 0));
+        },
+        sortDatePrev(x, y, col, rowX, rowY) {
+            // rowX - row object for row1
+            // rowY - row object for row2
+            return (rowX.prevAirDate < rowY.prevAirDate ? -1 : (rowX.prevAirDate > rowY.prevAirDate ? 1 : 0));
+        },
+        fealdFnXem(row) {
+            if (row.xemNumbering && row.xemNumbering.length !== 0) {
+                return 'yes';
+            }
+            return 'no';
+        },
+        fealdFnActive(row) {
+            if (row.config && row.config.paused && row.status === 'Continuing') {
+                return 'yes';
+            }
+            return 'no';
         }
     }
-}
+};
 </script>
 
 <style>
