@@ -281,7 +281,7 @@ export default {
     white-space: nowrap;
 }
 
-.align-center {
+.table-layout >>> .align-center {
     display: flex;
     justify-content: center;
 }

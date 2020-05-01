@@ -15,7 +15,15 @@
                         }">
 
             <template slot="table-row" slot-scope="props">
-                <span v-if="props.column.label == 'Show'">
+                <span v-if="props.column.label == 'Next Ep'">
+                    {{props.row.nextAirDate ? fuzzyParseDateTime(props.row.nextAirDate) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label == 'Prev Ep'">
+                    {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label == 'Show'">
                     <span style="display: none;">{{ props.row.title }}</span>
                     <div class="imgbanner banner">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
@@ -61,12 +69,12 @@
                     {{ prettyBytes(props.row.stats.episodes.size) }}
                 </span>
 
-                <span v-else-if="props.column.label == 'Active'" class="align-center">
-                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
+                <span v-else-if="props.column.label === 'Active'" class="align-center">
+                    <img :src="`images/${props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'}16.png`" :alt="props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'" width="16" height="16">
                 </span>
 
-                <span v-else-if="props.column.label == 'Xem'" class="align-center">
-                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
+                <span v-else-if="props.column.label === 'Xem'" class="align-center">
+                    <img :src="`images/${props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'}16.png`" :alt="props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'" width="16" height="16">
                 </span>
 
                 <span v-else class="align-center">
@@ -120,14 +128,20 @@ export default {
         return {
             columns: [{
                 label: 'Next Ep',
-                field: row => this.parseNextDateFn(row),
+                field: 'nextAirDate',
+                type: 'date',
                 sortable: true,
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
                 sortFn: this.sortDateNext,
                 hidden: getCookie('Next Ep')
             }, {
                 label: 'Prev Ep',
-                field: row => this.parsePrevDateFn(row),
+                field: 'prevAirDate',
+                type: 'date',
                 sortable: true,
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
                 sortFn: this.sortDatePrev,
                 hidden: getCookie('Prev Ep')
             }, {
@@ -154,10 +168,12 @@ export default {
             }, {
                 label: 'Size',
                 field: 'stats.episodes.size',
+                type: 'number',
                 hidden: getCookie('Size')
             }, {
                 label: 'Active',
                 field: this.fealdFnActive,
+                type: 'boolean',
                 hidden: getCookie('Active')
             }, {
                 label: 'Status',
@@ -166,6 +182,7 @@ export default {
             }, {
                 label: 'Xem',
                 field: this.fealdFnXem,
+                type: 'boolean',
                 hidden: getCookie('Xem')
             }]
         };
@@ -201,8 +218,8 @@ export default {
         parsePrevDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {
-                console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
-                return fuzzyParseDateTime(row.prevAirDate)
+                console.debug(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
+                return fuzzyParseDateTime(row.prevAirDate);
             }
 
             return '';
@@ -210,26 +227,32 @@ export default {
         parseNextDateFn(row) {
             const { fuzzyParseDateTime } = this;
             if (row.nextAirDate) {
-                console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
-                return fuzzyParseDateTime(row.nextAirDate)
+                console.debug(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
+                return fuzzyParseDateTime(row.nextAirDate);
             }
-             
+
             return '';
         },
         fealdFnXem(row) {
-            if (row.xemNumbering && row.xemNumbering.length !== 0) {
-                return 'yes';
-            }
-            return 'no';
+            return row.xemNumbering && row.xemNumbering.length !== 0;
         },
         fealdFnActive(row) {
-            if (row.config && row.config.paused && row.status === 'Continuing') {
-                return 'yes';
+            return row.config && !row.config.paused && row.status === 'Continuing';
+        },
+        sortDateNext(x, y) {
+            if ((x === null || y === null) && x !== y) {
+                return x < y ? 1 : -1;
             }
-            return 'no';
+            return (x < y ? -1 : (x > y ? 1 : 0));
+        },
+        sortDatePrev(x, y) {
+            if ((x === null || y === null) && x !== y) {
+                return x < y ? 1 : -1;
+            }
+            return (x < y ? -1 : (x > y ? 1 : 0));
         }
     }
-}
+};
 </script>
 
 <style>

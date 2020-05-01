@@ -15,7 +15,15 @@
                         }">
 
             <template slot="table-row" slot-scope="props">
-                <span v-if="props.column.label == 'Show'">
+                <span v-if="props.column.label == 'Next Ep'">
+                    {{props.row.nextAirDate ? fuzzyParseDateTime(props.row.nextAirDate) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label == 'Prev Ep'">
+                    {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
+                </span>
+
+                <span v-else-if="props.column.label == 'Show'">
                     <div class="imgsmallposter small">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
                             <asset default="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false"/>
@@ -61,12 +69,12 @@
                     {{ prettyBytes(props.row.stats.episodes.size) }}
                 </span>
 
-                <span v-else-if="props.column.label == 'Active'" class="align-center">
-                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
+                <span v-else-if="props.column.label === 'Active'" class="align-center">
+                    <img :src="`images/${props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'}16.png`" :alt="props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'" width="16" height="16" />
                 </span>
 
-                <span v-else-if="props.column.label == 'Xem'" class="align-center">
-                    <img :src="`images/${props.formattedRow[props.column.field]}16.png`" :alt="props.formattedRow[props.column.field]" width="16" height="16" />
+                <span v-else-if="props.column.label === 'Xem'" class="align-center">
+                    <img :src="`images/${props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'}16.png`" :alt="props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'" width="16" height="16" />
                 </span>
 
                 <span v-else class="align-center">
@@ -86,6 +94,7 @@ import { ProgressBar } from '../helpers';
 import { QualityPill } from '../helpers';
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../../utils/core';
+import parseISO from "date-fns/parseISO";
 
 export default {
     name: 'smallposter',
@@ -120,14 +129,20 @@ export default {
         return {
             columns: [{
                 label: 'Next Ep',
-                field: row => this.parseNextDateFn(row),
+                field: 'nextAirDate',
+                type: 'date',
                 sortable: true,
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
                 sortFn: this.sortDateNext,
                 hidden: getCookie('Next Ep')
             }, {
                 label: 'Prev Ep',
-                field: row => this.parsePrevDateFn(row),
+                field: 'prevAirDate',
+                type: 'date',
                 sortable: true,
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
+                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
                 sortFn: this.sortDatePrev,
                 hidden: getCookie('Prev Ep')
             }, {
@@ -153,6 +168,7 @@ export default {
                 hidden: getCookie('Downloads')
             }, {
                 label: 'Size',
+                type: 'number',
                 field: 'stats.episodes.size',
                 hidden: getCookie('Size')
             }, {
@@ -199,43 +215,23 @@ export default {
 
             return `${indexerUrl}${id}`;
         },
-        parsePrevDateFn(row) {
-            const { fuzzyParseDateTime } = this;
-            if (row.prevAirDate) {
-                console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
-                return fuzzyParseDateTime(row.prevAirDate);
-            }
-            return '';
-        },
-        parseNextDateFn(row) {
-            const { fuzzyParseDateTime } = this;
-            if (row.nextAirDate) {
-                console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
-                return fuzzyParseDateTime(row.nextAirDate);
-            }
-            return '';
-        },
-        sortDateNext(x, y, col, rowX, rowY) {
-            // rowX - row object for row1
-            // rowY - row object for row2
-            return (!rowX.nextAirDate && rowX.nextAirDate < rowY.nextAirDate ? -1 : (rowX.nextAirDate > rowY.nextAirDate ? 1 : 0));
-        },
-        sortDatePrev(x, y, col, rowX, rowY) {
-            // rowX - row object for row1
-            // rowY - row object for row2
-            return (rowX.prevAirDate < rowY.prevAirDate ? -1 : (rowX.prevAirDate > rowY.prevAirDate ? 1 : 0));
-        },
         fealdFnXem(row) {
-            if (row.xemNumbering && row.xemNumbering.length !== 0) {
-                return 'yes';
-            }
-            return 'no';
+            return row.xemNumbering && row.xemNumbering.length !== 0;
         },
         fealdFnActive(row) {
-            if (row.config && row.config.paused && row.status === 'Continuing') {
-                return 'yes';
+            return row.config && !row.config.paused && row.status === 'Continuing';
+        },
+        sortDateNext(x, y, col, rowX, rowY) {
+            if ((x === null || y === null) && x !== y) {
+                return x < y ? 1 : -1;
             }
-            return 'no';
+            return (x < y ? -1 : (x > y ? 1 : 0));
+        },
+        sortDatePrev(x, y, col, rowX, rowY) {
+            if ((x === null || y === null) && x !== y) {
+                return x < y ? 1 : -1;
+            }
+            return (x < y ? -1 : (x > y ? 1 : 0));
         }
     }
 };

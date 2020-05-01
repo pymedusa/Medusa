@@ -3706,7 +3706,7 @@ data-urls@^1.1.0:
     whatwg-mimetype "^2.2.0"
     whatwg-url "^7.0.0"
 
-date-fns@2.0.0-alpha.7, date-fns@2.12.0:
+date-fns@2.12.0, date-fns@^2.0.0-beta.4:
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.12.0.tgz#01754c8a2f3368fc1119cf4625c3dad8c1845ee6"
   integrity sha512-qJgn99xxKnFgB1qL4jpxU7Q2t0LOn1p8KMIveef3UZD7kqjT3tpFNNdXJelEHhE+rUgffriXriw/sOSU+cS1Hw==
@@ -12069,17 +12069,18 @@ vue-eslint-parser@^7.0.0:
     esquery "^1.0.1"
     lodash "^4.17.15"
 
-"vue-good-table@git+https://github.com/p0psicles/vue-good-table#25a6f282231426fbbdb44d8a6d1927e8abf21e4d":
-  version "2.16.3"
-  resolved "git+https://github.com/p0psicles/vue-good-table#25a6f282231426fbbdb44d8a6d1927e8abf21e4d"
+"vue-good-table@git+https://github.com/p0psicles/vue-good-table#225768daeef746a1fb5dae6a82653a4bf519ce22":
+  version "2.19.1"
+  resolved "git+https://github.com/p0psicles/vue-good-table#225768daeef746a1fb5dae6a82653a4bf519ce22"
   dependencies:
-    date-fns "2.0.0-alpha.7"
+    date-fns "^2.0.0-beta.4"
     diacriticless "1.0.1"
     lodash.assign "^4.2.0"
     lodash.clonedeep "^4.5.0"
     lodash.filter "^4.6.0"
     lodash.foreach "^4.5.0"
     lodash.isequal "^4.5.0"
+    vue-select "^3.1.0"
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
@@ -12176,6 +12177,11 @@ vue-scrollto@2.18.0:
   integrity sha512-XTVuw7ZMV8r+nNdzxel1uHKM2n0TOAq4H4FZUr9TqLMyyZYK1QVsBdCB9J5KiqabiyP41nxgvNlR9gf+6y2mJw==
   dependencies:
     bezier-easing "2.1.0"
+
+vue-select@^3.1.0:
+  version "3.10.3"
+  resolved "https://registry.yarnpkg.com/vue-select/-/vue-select-3.10.3.tgz#60659dc07ec4c96ec270fb12558eab7b938f5004"
+  integrity sha512-SgLmiSwnJwT2erxjq42AA1iTzu1uqhA5MPuF4UDtGot5YSgJLKy71H0LO0hHaBpIjb7d/nJHiufYKcrSakaupw==
 
 vue-snotify@3.2.1:
   version "3.2.1"
