@@ -744,12 +744,12 @@ div.xem {
 }
 
 
-td.tvShow a {
+span.tvShow a {
     color: rgb(0, 0, 0);
     text-decoration: none;
 }
 
-td.tvShow a:hover {
+span.tvShow a:hover {
     cursor: pointer;
     color: rgb(66, 139, 202);
 }
@@ -2766,20 +2766,64 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
 
-.vgt-dropdown-menu {
+.vgt-table {
+    color: rgb(0, 0, 0);
+    background-color: rgb(221, 221, 221);
+}
+
+.vgt-table th,
+.vgt-table td {
+    border-top: rgb(255, 255, 255) 1px solid;
+    border-left: rgb(255, 255, 255) 1px solid;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table thead th.sorting.sorting-desc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+
+.vgt-table thead th.sorting.sorting-asc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+
+.vgt-table tfoot tr {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table tfoot a {
+    color: rgb(255, 255, 255);
+}
+
+.vgt-table tr:nth-child(even){
+    background-color: rgb(223, 218, 207);
+}
+.vgt-table tr:nth-child(odd){
+    background-color: rgb(245, 241, 228);
+}
+
+.vgt-table .vgt-dropdown-menu {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
-.vgt-dropdown-menu > li > a:hover,
-.vgt-dropdown-menu > li > a:focus {
+.vgt-table .vgt-dropdown-menu > li > a:hover,
+.vgt-table .vgt-dropdown-menu > li > a:focus {
     color: rgb(38, 38, 38);
     text-decoration: none;
     background-color: rgb(245, 245, 245);
 }
 
-.vgt-dropdown-menu > li > span {
+.vgt-table .vgt-dropdown-menu > li > span {
     padding: 4px 36px 4px 20px;
     color: #333;
 }

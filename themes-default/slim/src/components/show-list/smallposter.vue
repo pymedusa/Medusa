@@ -12,7 +12,8 @@
                         }"
                         :column-filter-options="{
                             enabled: true
-                        }">
+                        }"
+                        :class="{fanartOpacity: fanartBackground}">
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'">

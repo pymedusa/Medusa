@@ -12,7 +12,8 @@
                         }"
                         :column-filter-options="{
                             enabled: true
-                        }">
+                        }"
+                        :class="{fanartOpacity: fanartBackground}">
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'">
@@ -23,7 +24,7 @@
                     {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label === 'Show'">
+                <span v-else-if="props.column.label === 'Show'" class="tvShow">
                     <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">{{ props.row.title }}</app-link>
                 </span>
 
@@ -176,7 +177,8 @@ export default {
         ...mapState({
             config: state => state.config,
             indexerConfig: state => state.indexers.indexers,
-            sortArticle: state => state.layout.sortArticle
+            sortArticle: state => state.layout.sortArticle,
+            fanartBackground: state => state.layout.fanartBackground 
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'

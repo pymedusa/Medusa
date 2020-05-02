@@ -146,17 +146,13 @@ export default {
     width: 100%;
     margin-right: auto;
     margin-left: auto;
-    color: rgb(0, 0, 0);
     text-align: left;
-    background-color: rgb(221, 221, 221);
     border-spacing: 0;
 }
 
 .table-layout >>> .vgt-table th,
 .table-layout >>> .vgt-table td {
     padding: 4px;
-    border-top: rgb(255, 255, 255) 1px solid;
-    border-left: rgb(255, 255, 255) 1px solid;
     vertical-align: middle;
 }
 
@@ -167,10 +163,7 @@ export default {
 }
 
 .table-layout >>> .vgt-table th {
-    color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
 }
@@ -179,14 +172,8 @@ export default {
     word-wrap: break-word;
 }
 
-.table-layout >>> .vgt-table thead th.sorting.sorting-desc {
-    background-color: rgb(85, 85, 85);
-    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-}
 
 .table-layout >>> .vgt-table thead th.sorting.sorting-asc {
-    background-color: rgb(85, 85, 85);
-    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
     background-position-x: right;
     background-position-y: bottom;
 }
@@ -196,7 +183,6 @@ export default {
 }
 
 .table-layout >>> .vgt-table thead th {
-    background-image: none;
     padding: 4px;
     cursor: default;
 }
@@ -225,15 +211,11 @@ export default {
 }
 
 .table-layout >>> .vgt-table tfoot tr {
-    color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
     border-collapse: collapse;
 }
 
 .table-layout >>> .vgt-table tfoot a {
-    color: rgb(255, 255, 255);
     text-decoration: none;
 }
 

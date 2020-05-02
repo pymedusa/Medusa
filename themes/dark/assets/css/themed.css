@@ -189,12 +189,12 @@ home.mako
     background-image: linear-gradient(to left, rgba(51, 51, 51, 1), rgba(51, 51, 51, 0));
 }
 
-td.tvShow a {
+span.tvShow a {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
-td.tvShow a:hover {
+span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -432,11 +432,11 @@ h2.network {
     color: rgb(9, 162, 255);
 }
 
-#showListTable td.tvShow a {
+#showListTable span.tvShow a {
     color: rgb(0, 0, 0);
 }
 
-#showListTable td.tvShow a:hover {
+#showListTable span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -664,6 +664,7 @@ body {
 }
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+
 .vgt-dropdown-menu {
     background-color: rgb(41, 41, 41);
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -681,6 +682,50 @@ body {
     padding: 4px 36px 4px 20px;
     color: rgb(255, 255, 255);
 }
+
+
+/* Generic vue-good-table dark template styling */
+
+.vgt-table {
+    color: rgb(255, 255, 255);
+    background-color: rgb(51, 51, 51);
+}
+
+.vgt-table th,
+.vgt-table td {
+    border-top: rgb(34, 34, 34) 1px solid;
+    border-left: rgb(34, 34, 34) 1px solid;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(85, 85, 85);
+}
+
+/* .tablesorter thead .tablesorter-headerDesc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+} */
+/* 
+.tablesorter thead .tablesorter-headerAsc {
+    background-color: rgb(85, 85, 85);
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+} */
+
+.vgt-table tr:nth-child(even){
+    background-color: rgb(46, 46, 46);
+}
+.vgt-table tr:nth-child(odd){
+    background-color: rgb(51, 51, 51);
+}
+
+.tablesorter tr.tablesorter-filter-row,
+.tablesorter tr.tablesorter-filter-row td {
+    background: rgb(51, 51, 51);
+    border-bottom: 1px solid rgb(17, 17, 17);
+}
+
 
 /* submenu styling */
 #sub-menu-container {
