@@ -59,7 +59,7 @@ ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1
 ext | <code><b>six</b>.py</code> | [1.14.0](https://pypi.org/project/six/1.14.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
 ext | `soupsieve` | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
-ext | `subliminal` | [develop@76525cc](https://github.com/Diaoul/subliminal/tree/76525cc2f6545aeeccf620ca46d40c2f0aa53c6d) | **`medusa`** | -
+ext | `subliminal` | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
