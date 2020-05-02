@@ -593,27 +593,13 @@ export default {
     // },
     mounted() {
         const {
-            id,
-            indexer,
-            getShow,
+            loadShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
             setInputValidInvalid,
-            $store
         } = this;
 
-        // Let's tell the store which show we currently want as current.
-        $store.commit('currentShow', {
-            indexer,
-            id
-        });
-
-        // We need detailed info for the xem / scene exceptions, so let's get it.
-        getShow({ id, indexer, detailed: true });
-
-        this.$watch('show', () => {
-            this.$nextTick(() => this.reflowLayout());
-        });
+        loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -694,6 +680,21 @@ export default {
             getShows: 'getShows',
             getEpisodes: 'getEpisodes'
         }),
+        loadShow() {
+            const { $store, id, indexer, getShow } = this;
+            // Let's tell the store which show we currently want as current.
+            $store.commit('currentShow', {
+                indexer,
+                id
+            });
+
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ id, indexer, detailed: true });
+
+            this.$watch('show', () => {
+                this.$nextTick(() => this.reflowLayout());
+            });
+        },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
 

@@ -339,8 +339,11 @@ export default {
     created() {
         this.loadShow();
     },
-    updated() {
-        $('#config-components').tabs();
+    beforeMount() {
+        // Wait for the next tick, so the component is rendered
+        this.$nextTick(() => {
+            $('#config-components').tabs();
+        });
     },
     methods: {
         ...mapActions([
