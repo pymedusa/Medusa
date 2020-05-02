@@ -65,7 +65,7 @@ const mutations = {
         // Quick check on duplicate shows.
         const newShows = shows.filter(newShow => {
             return !state.shows.find(
-                ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && Number(newShow.indexer) === Number(indexer)
+                ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && newShow.indexer === indexer
             )
         });
 

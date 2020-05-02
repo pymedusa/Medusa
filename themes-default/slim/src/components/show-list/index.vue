@@ -11,17 +11,15 @@
         </div>
 
         <div v-if="layout ==='poster'" class="row poster-ui-controls">
-            <div class="col-md-4">
-                <div class="show-option pull-right">
+            <div class="col-lg-12">
+                <div class="show-option">
                     <!-- These need to patch apiv2 on change! -->
                     <select v-model="posterUiSortDir" id="postersortdirection" class="form-control form-control-inline input-sm" placeholder="Direction">
                         <option :value="1">Ascending</option>
                         <option :value="0">Descending</option>
                     </select>
                 </div>
-            </div>
 
-            <div class="col-md-4">
                 <div class="show-option pull-right">
                     <select v-model="posterUiSortBy" id="postersort" class="form-control form-control-inline input-sm" placeholder="Sort By">
                         <option v-for="option in posterSortByOptions" :value="option.value" :key="option.value">
@@ -29,9 +27,7 @@
                         </option>
                     </select>
                 </div>
-            </div>
-
-            <div class="col-md-4">
+                
                 <div class="show-option pull-right">
                     Poster Size:
                     <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider" />
