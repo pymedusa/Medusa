@@ -30,11 +30,11 @@ PyJWT==1.7.1
 python-dateutil==2.8.1
 python-twitter==3.5
 rarfile==3.1
-rebulk==2.0.0
+rebulk==2.0.1
 requests==2.23.0
 requests-oauthlib==1.3.0
 six==1.14.0
-subliminal @ https://codeload.github.com/Diaoul/subliminal/tar.gz/76525cc2f6545aeeccf620ca46d40c2f0aa53c6d#egg=subliminal
+subliminal==2.1.0
 tornado==5.1.1
 tornroutes==0.5.1
 tvdbapiv2 @ https://codeload.github.com/pymedusa/tvdbv2/tar.gz/bf1272c9264c280c3048e89a1920e2bf5f386284#egg=tvdbapiv2

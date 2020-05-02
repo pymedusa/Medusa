@@ -51,7 +51,7 @@ ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | *
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
 **ext2 ext3** | **`PyYAML`**<br>`yaml` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `_yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | -
-ext | `rebulk` | [2.0.0](https://pypi.org/project/rebulk/2.0.0/) | **`medusa`**, `guessit` | -
+ext | `rebulk` | [2.0.1](https://pypi.org/project/rebulk/2.0.1/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.23.0](https://pypi.org/project/requests/2.23.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `rtorrent`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
 ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
@@ -59,7 +59,7 @@ ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1
 ext | <code><b>six</b>.py</code> | [1.14.0](https://pypi.org/project/six/1.14.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
 ext | `soupsieve` | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
-ext | `subliminal` | [develop@76525cc](https://github.com/Diaoul/subliminal/tree/76525cc2f6545aeeccf620ca46d40c2f0aa53c6d) | **`medusa`** | -
+ext | `subliminal` | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
