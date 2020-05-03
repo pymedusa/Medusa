@@ -17,7 +17,7 @@ feedparser @ https://codeload.github.com/kurtmckee/feedparser/tar.gz/2b11c802832
 future==0.17.1 ; python_version == '2.*'
 futures==3.2.0 ; python_version == '2.*'
 gntp==1.0.3
-guessit==3.1.0
+guessit==3.1.1
 html5lib==1.0.1
 imdbpie==5.6.4
 jsonrpclib-pelix==0.4.1
