@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- <h1 v-if="header" class="header">{{ listTitle }}</h1> -->
-        <div class="showListTitle listTitle">
+        <div v-if="(!(stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs))" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
                 <span class="icon-bar" />
@@ -230,10 +230,6 @@ export default {
 
 .table-layout >>> .vgt-table tr.spacer {
     height: 25px;
-}
-
-.table-layout >>> .vgt-dropdown > .button-group {
-    margin-bottom: 10px;
 }
 
 .table-layout >>> .vgt-dropdown-menu {

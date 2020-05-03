@@ -152,6 +152,8 @@ inc_top.mako
     text-decoration: none;
 }
 
+/* jQuery ui-tabs (remove when everyting moved to vue-tabs */
+
 .ui-tabs {
     padding: 0;
     background: none;
@@ -180,6 +182,81 @@ inc_top.mako
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
+
+/* Vue Tabs alternative */
+.vue-tabs {
+    padding: 0;
+    background: none;
+    border-width: 0;
+}
+
+.vue-tabs .nav-tabs-navigation {
+    padding-left: 0;
+    background: transparent;
+    border-width: 0;
+    border-radius: 0;
+}
+
+.vue-tabs .tab-content {
+    background-color: rgb(247, 247, 247) !important;
+    border: 1px solid rgb(204, 204, 204) !important;
+    padding: 1em;
+}
+
+.nav-tabs {
+    border-bottom: none;
+}
+
+.nav-tabs li.tab {
+    background: rgb(255, 255, 255);
+    border: 1px solid rgb(204, 204, 204);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin: 1px .2em 0 0;
+    padding: 0;
+    top: 1px;
+}
+
+.nav-tabs li.tab.active {
+    background: rgb(247, 247, 247);
+    top: 2px;
+
+}
+
+.nav-tabs li.tab a {
+    background-color: transparent;
+    border-color: transparent;
+    padding: .5em 1em;
+    padding-top: 0.5em;
+    padding-right: 1em;
+    padding-bottom: 0.5em;
+    padding-left: 1em;
+    text-decoration: none;
+}
+
+.nav-tabs li.tab a,
+.nav-tabs li.tab a:hover,
+.nav-tabs li.tab a:active,
+.nav-tabs li.tab a:focus {
+    color: #555;
+    cursor: default;
+    background-color: transparent;
+    border: 0;
+}
+
+.nav-tabs :not(li.tab.active) {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-width: 0;
+}
+
+.nav-tabs li {
+    border-bottom-width: 0 !important;
+    padding: 0;
+    white-space: nowrap;
+}
+
+
 
 #content {
     margin-left: auto;
@@ -2822,27 +2899,31 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     color: rgb(255, 255, 255);
 }
 
-.vgt-table tr:nth-child(even){
+.vgt-table tr:nth-child(even) {
     background-color: rgb(223, 218, 207);
 }
-.vgt-table tr:nth-child(odd){
+.vgt-table tr:nth-child(odd) {
     background-color: rgb(245, 241, 228);
 }
 
-.vgt-table .vgt-dropdown-menu {
+.vgt-dropdown > .button-group {
+    margin-bottom: 10px;
+}
+
+.vgt-dropdown-menu {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
-.vgt-table .vgt-dropdown-menu > li > a:hover,
-.vgt-table .vgt-dropdown-menu > li > a:focus {
+.vgt-dropdown-menu > li > a:hover,
+.vgt-dropdown-menu > li > a:focus {
     color: rgb(38, 38, 38);
     text-decoration: none;
     background-color: rgb(245, 245, 245);
 }
 
-.vgt-table .vgt-dropdown-menu > li > span {
+.vgt-dropdown-menu > li > span {
     padding: 4px 36px 4px 20px;
     color: #333;
 }
