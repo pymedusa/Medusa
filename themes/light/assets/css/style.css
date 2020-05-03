@@ -743,6 +743,17 @@ div.xem {
     padding: 0;
 }
 
+/* Used by History.mako */
+td.tvShow a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(66, 139, 202);
+}
+/*  */
 
 span.tvShow a {
     color: rgb(0, 0, 0);
@@ -1311,6 +1322,10 @@ ul.tags li a {
     border-width: 1px;
     border-style: solid none;
     border-color: rgb(136, 136, 136);
+    width: 100vw;
+    margin-left: -55vw;
+    margin-right: -55vw;
+    left: 55%;
 }
 
 #checkboxControlsBackground {
@@ -1324,6 +1339,10 @@ ul.tags li a {
     border-style: solid none;
     border-color: rgb(136, 136, 136);
     z-index: -2;
+    width: 100vw;
+    margin-left: -55vw;
+    margin-right: -55vw;
+    left: 55%;
 }
 
 #checkboxControls {
@@ -2768,7 +2787,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .vgt-table {
     color: rgb(0, 0, 0);
-    background-color: rgb(221, 221, 221);
+    /* background-color: rgb(221, 221, 221); */
 }
 
 .vgt-table th,

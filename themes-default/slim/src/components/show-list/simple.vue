@@ -16,11 +16,11 @@
                         :class="{fanartOpacity: fanartBackground}">
 
             <template slot="table-row" slot-scope="props">
-                <span v-if="props.column.label == 'Next Ep'">
+                <span v-if="props.column.label == 'Next Ep'" class="align-center">
                     {{props.row.nextAirDate ? fuzzyParseDateTime(props.row.nextAirDate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label === 'Prev Ep'">
+                <span v-else-if="props.column.label === 'Prev Ep'" class="align-center">
                     {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
                 </span>
 

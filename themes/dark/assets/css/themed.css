@@ -189,6 +189,18 @@ home.mako
     background-image: linear-gradient(to left, rgba(51, 51, 51, 1), rgba(51, 51, 51, 0));
 }
 
+/* Used by history.mako */
+td.tvShow a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(9, 162, 255);
+}
+/*  */
+
 span.tvShow a {
     color: rgb(255, 255, 255);
     text-decoration: none;

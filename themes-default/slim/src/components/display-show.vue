@@ -7,6 +7,7 @@
         <input type="hidden" id="series-slug" value="">
 
         <show-header type="show"
+                     ref="show-header"
                      @reflow="reflowLayout"
                      :show-id="id"
                      :show-indexer="indexer"
@@ -791,22 +792,19 @@ export default {
          */
         reflowLayout: debounce(function() {
             console.debug('Reflowing layout');
-
-            this.$nextTick(() => {
-                this.movecheckboxControlsBackground();
-            });
+            this.movecheckboxControlsBackground();
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
         /**
          * Adjust the checkbox controls (episode filter) background position
          */
         movecheckboxControlsBackground() {
-            const height = $('#checkboxControls').height() + 10;
-            const top = $('#checkboxControls').offset().top - 3;
-
-            $('#checkboxControlsBackground').height(height);
-            $('#checkboxControlsBackground').offset({ top, left: 0 });
-            $('#checkboxControlsBackground').show();
+            const height = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().height + 10 + 'px';
+            const top = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().top + 'px';
+            
+            this.$root.$refs.checkboxControlsBackground.style.top = top;
+            this.$root.$refs.checkboxControlsBackground.style.height = height;
+            this.$root.$refs.checkboxControlsBackground.style.display = 'block';
         },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const { $snotify, id, indexer, show } = this;
@@ -1188,8 +1186,8 @@ export default {
     beforeRouteLeave (to, from, next) {
         // The show-header component has a summaryBackground and checkboxControlsBackground element.
         // When leaving for another route, we need to hide these. 
-        $('#summaryBackground').hide();
-        $('#checkboxControlsBackground').hide();
+        this.$root.$refs.summaryBackground.style.display = 'none';
+        this.$root.$refs.checkboxControlsBackground.style.display = 'none';
         next();
     }
 };
