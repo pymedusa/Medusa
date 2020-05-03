@@ -24,27 +24,7 @@
                                 <!--  endif -->
                             </div>
                             <div class="show-date">
-                    <!-- if cur_airs_next:
-                        < ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) >
-                        <
-                            try:
-                                out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
-                            except ValueError:
-                                out = 'Invalid date'
-                                pass
-                        >
-                            ${out}
-                        else:
-                        <
-                        output_html = '?'
-                        display_status = cur_show.status
-                        if None is not display_status:
-                            if 'nded' not in display_status and 1 == int(cur_show.paused):
-                                output_html = 'Paused'
-                            elif display_status:
-                                output_html = display_status
-                        ${output_html}
-                        endif -->
+                                {{dateOrStatus(show)}}
                             </div>
                             <div v-show="fontSize !== null" class="show-details">
                                 <table :class="{fanartOpacity: stateLayout.fanartBackground}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
@@ -245,6 +225,16 @@ export default {
             this.option.sortAscending = Boolean(posterSortDir);
             this.$refs[`isotope-${listTitle}`].arrange(option);
             console.log('isotope Layout loaded');
+        },
+        dateOrStatus(show) {
+            if (show.nextAirDate) {
+                const { fuzzyParseDateTime } = this;
+                return fuzzyParseDateTime(show.nextAirDate);
+            }
+            if (!show.status.includes('nded') && show.config.paused) {
+                return 'Paused';
+            }
+            return show.status;
         }
     },
     mounted() {
