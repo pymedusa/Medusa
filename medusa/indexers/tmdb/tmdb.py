@@ -182,12 +182,17 @@ class Tmdb(BaseIndexer):
         """
         log.debug('Searching for show: {0}', series)
 
+        results = None
         # If search term is digit's only, store it and attempt to search by id.
         show_by_id = None
-        if series.isdigit():
-            show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
 
-        results = self._show_search(series, request_language=self.config['language'])
+        try:
+            if series.isdigit():
+                show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
+            results = self._show_search(series, request_language=self.config['language'])
+        except IndexerShowNotFound:
+            pass
+
         if not results and not show_by_id:
             return
 
