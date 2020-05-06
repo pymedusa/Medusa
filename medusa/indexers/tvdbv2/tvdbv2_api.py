@@ -80,7 +80,7 @@ class TVDBv2(BaseIndexer):
             'site_rating': 'rating'
         }
 
-    def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
+    def _map_results(self, tvdb_response, key_mapping=None, list_separator='|'):
         parsed_response = []
 
         tvdb_response = getattr(tvdb_response, 'data', tvdb_response)
@@ -101,7 +101,7 @@ class TVDBv2(BaseIndexer):
                             if list_separator and all(isinstance(x, string_types) for x in value):
                                 value = list_separator.join(value)
                             else:
-                                value = [self._object_to_dict(x, key_mapping) for x in value]
+                                value = [self._map_results(x, key_mapping) for x in value]
 
                         if key_mapping and key_mapping.get(attribute):
                             if isinstance(value, dict) and isinstance(key_mapping[attribute], dict):
@@ -161,7 +161,7 @@ class TVDBv2(BaseIndexer):
         if not results:
             return
 
-        mapped_results = self._object_to_dict(results, self.series_map, '|')
+        mapped_results = self._map_results(results, self.series_map, '|')
         mapped_results = [mapped_results] if not isinstance(mapped_results, list) else mapped_results
 
         # Remove results with an empty series_name.
@@ -202,7 +202,7 @@ class TVDBv2(BaseIndexer):
             raise IndexerShowNotFoundInLanguage('Missing attribute series_name, cant index in language: {0}'
                                                 .format(request_language), request_language)
 
-        mapped_results = self._object_to_dict(results, self.series_map, '|')
+        mapped_results = self._map_results(results, self.series_map, '|')
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tvdb_id, specials=False, aired_season=None):
@@ -304,7 +304,7 @@ class TVDBv2(BaseIndexer):
                     )
                 )
 
-        mapped_episodes = self._object_to_dict(results, self.series_map, '|')
+        mapped_episodes = self._map_results(results, self.series_map, '|')
         return OrderedDict({'episode': mapped_episodes if isinstance(mapped_episodes, list) else [mapped_episodes]})
 
     def _parse_episodes(self, tvdb_id, episode_data):
@@ -418,7 +418,7 @@ class TVDBv2(BaseIndexer):
             log.info('Could not get image count for show ID: {0} with reason: {1}', sid, error.reason)
             return
 
-        for image_type, image_count in viewitems(self._object_to_dict(series_images_count)):
+        for image_type, image_count in viewitems(self._map_results(series_images_count)):
             if not image_count:
                 continue
 
@@ -449,7 +449,7 @@ class TVDBv2(BaseIndexer):
                     _images[image_type][resolution] = {}
 
                 # _images[image_type][resolution][image.id] = image_dict
-                image_attributes = self._object_to_dict(image, key_mapping)
+                image_attributes = self._map_results(image, key_mapping)
 
                 bid = image_attributes.pop('id')
 
