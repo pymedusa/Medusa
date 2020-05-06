@@ -344,6 +344,9 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                     if 'aliases' in cur_show:
                         series_names.extend(cur_show['aliases'].split('|'))
 
+                    if search_term.isdigit():
+                        series_names.append(search_term)
+
                     for name in series_names:
                         if search_term.lower() in name.lower():
                             if 'firstaired' not in cur_show:
@@ -352,10 +355,6 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
 
                             if cur_show not in search_results:
                                 search_results += [cur_show]
-
-                    # add the show if it's a digit search term
-                    if search_term.isdigit() and str(search_term) == str(cur_show['id']):
-                        search_results += [cur_show]
 
         return search_results
 
