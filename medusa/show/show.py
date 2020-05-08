@@ -91,7 +91,7 @@ class Show(object):
             DeprecationWarning,
         )
 
-        from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT
+        from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT
         if indexer_id is None or shows is None or len(shows) == 0:
             return None
 

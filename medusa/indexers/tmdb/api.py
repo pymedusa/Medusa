@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
     IndexerError, IndexerException,
     IndexerShowNotFound, IndexerUnavailable
 )

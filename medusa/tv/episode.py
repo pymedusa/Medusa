@@ -59,9 +59,9 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import indexerConfig
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,
     IndexerSeasonNotFound,

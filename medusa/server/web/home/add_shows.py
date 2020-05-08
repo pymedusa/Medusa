@@ -13,8 +13,8 @@ from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.anidb import short_group_names
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home

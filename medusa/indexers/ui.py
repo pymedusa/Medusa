@@ -10,7 +10,7 @@ from builtins import input
 from builtins import object
 from builtins import str
 
-from medusa.indexers.indexer_exceptions import IndexerUserAbort
+from medusa.indexers.exceptions import IndexerUserAbort
 
 log = logging.getLogger(__name__)
 log.logger.addHandler(logging.NullHandler())

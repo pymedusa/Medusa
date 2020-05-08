@@ -9,8 +9,8 @@ import re
 
 from medusa import helpers
 from medusa.helper.common import dateFormat, episode_num as ep_num, replace_extension
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 

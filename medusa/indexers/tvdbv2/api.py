@@ -9,8 +9,8 @@ from collections import OrderedDict
 from medusa import app
 from medusa.app import TVDB_API_KEY
 from medusa.helper.metadata import needs_metadata
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
     IndexerAuthFailed, IndexerError, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )

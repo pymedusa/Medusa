@@ -14,7 +14,7 @@ from medusa import (
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,

@@ -31,7 +31,7 @@ from builtins import str
 from medusa import db, logger
 from medusa.helper.exceptions import ex
 from medusa.helpers import get_absolute_number_from_season_and_episode
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.scene_exceptions import safe_session
 
 from six import viewitems
