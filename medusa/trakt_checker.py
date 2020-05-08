@@ -13,7 +13,7 @@ from medusa import app, db, ui
 from medusa.common import ARCHIVED, DOWNLOADED, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 from medusa.helper.common import episode_num
 from medusa.helpers import get_title_without_year
-from medusa.indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
+from medusa.indexers.config import EXTERNAL_IMDB, EXTERNAL_TRAKT, indexerConfig
 from medusa.indexers.utils import get_trakt_indexer
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.queue import BacklogQueueItem

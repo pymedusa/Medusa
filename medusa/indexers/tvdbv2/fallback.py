@@ -7,7 +7,7 @@ import logging
 from builtins import object
 
 from medusa import app, ui
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound,
     IndexerShowNotFoundInLanguage, IndexerUnavailable
 )

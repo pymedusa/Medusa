@@ -6,9 +6,9 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app, db
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAlreadyInLibrary, IndexerUnavailable
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import indexerConfig
+from medusa.indexers.exceptions import IndexerException, IndexerShowAlreadyInLibrary, IndexerUnavailable
 from medusa.indexers.utils import mappings
 from medusa.logger.adapters.style import BraceAdapter
 

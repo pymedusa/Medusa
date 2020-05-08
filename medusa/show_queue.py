@@ -51,8 +51,8 @@ from medusa.helpers import (
 )
 from medusa.helpers.externals import check_existing_shows
 from medusa.image_cache import replace_images
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerError,
     IndexerException,

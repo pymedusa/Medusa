@@ -3,8 +3,8 @@
     import json
 
     from medusa import app
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import indexerConfig
+    from medusa.indexers.api import indexerApi
+    from medusa.indexers.config import indexerConfig
 
     from six import iteritems, text_type as str
 %>

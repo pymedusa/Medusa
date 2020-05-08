@@ -21,7 +21,7 @@ from medusa import (
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
+from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.server.api.v2.base import (
