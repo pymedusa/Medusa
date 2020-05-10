@@ -13,7 +13,7 @@ ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | -
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2020.4.5.1](https://pypi.org/project/certifi/2020.4.5.1/) | **`medusa`**, `requests`, `traktor` | -
 ext | `chardet` | [3.0.4](https://pypi.org/project/chardet/3.0.4/) | **`medusa`**, `feedparser`, `html5lib`, `pysrt`, `requests`, `subliminal` | -
-ext | `cloudscraper` | [1.2.34](https://pypi.org/project/cloudscraper/1.2.34/) | **`medusa`** | -
+ext | `cloudscraper` | [1.2.36](https://pypi.org/project/cloudscraper/1.2.36/) | **`medusa`** | -
 ext | <code><b>configobj</b>.py</code><br>`validate.py`<br>`_version.py` | [5.0.6](https://pypi.org/project/configobj/5.0.6/) | **`medusa`** | -
 **ext2** | <code><b>configparser</b>.py</code><br>`backports.configparser` | [3.7.4](https://pypi.org/project/configparser/3.7.4/) | `adba` | -
 ext | <code><b>contextlib2</b>.py</code> | [0.6.0.post1](https://pypi.org/project/contextlib2/0.6.0.post1/) | **`medusa`** | -
@@ -45,6 +45,7 @@ ext | `Pint` | [0.9](https://pypi.org/project/Pint/0.9/) | `knowit` | Module: `p
 ext | <code><b>profilehooks</b>.py</code> | [1.11.2](https://pypi.org/project/profilehooks/1.11.2/) | **`medusa`** | -
 ext | `PyGithub` | [1.45](https://pypi.org/project/PyGithub/1.45/) | **`medusa`** | Module: `github`
 ext | `PyJWT` | [1.7.1](https://pypi.org/project/pyjwt/1.7.1/) | **`medusa`**, `PyGithub` | Module: `jwt`
+ext | <code><b>pyparsing</b>.py</code> | [2.4.7](https://pypi.org/project/pyparsing/2.4.7/) | `cloudscraper` | -
 ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | -
 ext | `python-dateutil` | [2.8.1](https://pypi.org/project/python-dateutil/2.8.1/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
