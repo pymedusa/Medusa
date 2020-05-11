@@ -55,7 +55,7 @@
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.11",
     "vue-truncate-collapsed": "2.1.0",
-    "vuex": "3.3.0"
+    "vuex": "3.4.0"
   },
   "devDependencies": {
     "@babel/core": "7.9.6",
