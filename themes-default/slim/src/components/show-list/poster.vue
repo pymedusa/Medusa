@@ -2,7 +2,7 @@
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
             <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
-                <div v-for="show in sortedShows" :key="show.id[show.indexer]" :id="`show${show.id[show.indexer]}`" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+                <div v-for="show in sortedShows" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
                             <img src="images/poster-back-dark.png">
@@ -54,7 +54,6 @@
     </div>
 </template>
 <script>
-import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
@@ -100,16 +99,23 @@ export default {
                     id: row => row.id.slug,
                     name: 'title',
                     date: row => {
-                        if (row.nextAirDate) {
-                            return row.nextAirDate;
+                        const { maxNextAirDate } = this;
+                        if (row.nextAirDate && Date.parse(row.nextAirDate) > Date.now()) {
+                            return Date.parse(row.nextAirDate) - Date.now();
                         }
-                        return row.prevAirDate;
+
+                        if (row.prevAirDate) {
+                            return maxNextAirDate + Date.now() - Date.parse(row.prevAirDate);
+                        }
+
+                        return Date.now();
                     },
                     network: 'network',
                     progress: row => {
-                        if (!row.stats.episodes.total) {
-                            return row.stats.episodes.total;
+                        if (!row.stats) {
+                            return 0;
                         }
+
                         return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100);
                     },
                     indexer: row => {
@@ -143,8 +149,12 @@ export default {
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
-            const { shows, stateLayout } = this;
+            const { shows, stateLayout, maxNextAirDate } = this;
             const { sortArticle } = stateLayout;
+            if (shows.length === 0 || !maxNextAirDate) {
+                return [];
+            }
+
             const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
             return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         },
@@ -155,6 +165,10 @@ export default {
                 borderWidth: borderWidth + 'px',
                 borderRadius: borderRadius + 'px'
             };
+        },
+        maxNextAirDate() {
+            const { shows } = this;
+            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
         }
     },
     methods: {
@@ -212,18 +226,15 @@ export default {
             const {
                 calculateSize, imgLazyLoad,
                 listTitle, posterSortBy,
-                posterSortDir, option
+                posterSortDir
             } = this;
             this.isotopeLoaded = true;
             imgLazyLoad.update();
             calculateSize();
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
-            // Sort
-            this.$refs[`isotope-${listTitle}`].sort(posterSortBy);
-            // Set sort direction
-            this.option.sortAscending = Boolean(posterSortDir);
-            this.$refs[`isotope-${listTitle}`].arrange(option);
+            // Arrange & Sort
+            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: posterSortDir });
             console.log('isotope Layout loaded');
         },
         dateOrStatus(show) {
@@ -274,11 +285,11 @@ export default {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].sort(key);
         },
-        posterSortDir(value) {
-            const { listTitle, option } = this;
-            this.option.sortAscending = Boolean(value);
-            this.$refs[`isotope-${listTitle}`].arrange(option);
-        },
+        // posterSortDir(value) {
+        //     const { listTitle, option } = this;
+        //     this.option.sortAscending = Boolean(value);
+        //     this.$refs[`isotope-${listTitle}`].arrange(option);
+        // },
         posterSize(oldSize, newSize) {
             const { calculateSize, isotopeLoaded, listTitle } = this;
             if (!isotopeLoaded || oldSize === newSize) {
