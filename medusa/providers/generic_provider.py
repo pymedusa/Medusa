@@ -36,7 +36,7 @@ from medusa.helper.common import (
 from medusa.helpers import (
     download_file,
 )
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,

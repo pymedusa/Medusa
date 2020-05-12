@@ -52,7 +52,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.anidb import get_release_groups_for_anime
-from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.api import indexerApi
 from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
 from medusa.providers.generic_provider import GenericProvider
 from medusa.sbdatetime import sbdatetime

@@ -10,7 +10,7 @@ import warnings
 from medusa import common, db, subtitles
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 

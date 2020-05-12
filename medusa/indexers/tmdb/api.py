@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
     IndexerError, IndexerException,
     IndexerShowNotFound, IndexerUnavailable
 )
@@ -56,7 +56,7 @@ class Tmdb(BaseIndexer):
         self.series_map = {
             'id': 'id',
             'name': 'seriesname',
-            'original_name': 'aliasnames',
+            'original_name': 'aliases',
             'overview': 'overview',
             'air_date': 'firstaired',
             'first_air_date': 'firstaired',
@@ -182,11 +182,27 @@ class Tmdb(BaseIndexer):
         """
         log.debug('Searching for show: {0}', series)
 
-        results = self._show_search(series, request_language=self.config['language'])
-        if not results:
+        results = None
+        # If search term is digit's only, store it and attempt to search by id.
+        show_by_id = None
+
+        try:
+            if series.isdigit():
+                show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
+            results = self._show_search(series, request_language=self.config['language'])
+        except IndexerShowNotFound:
+            pass
+
+        if not results and not show_by_id:
             return
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        mapped_results = []
+        if results:
+            mapped_results = self._map_results(results, self.series_map, '|')
+
+        # The search by id result, is already mapped. We can just add it to the array with results.
+        if show_by_id:
+            mapped_results.append(show_by_id['series'])
 
         return OrderedDict({'series': mapped_results})['series']
 

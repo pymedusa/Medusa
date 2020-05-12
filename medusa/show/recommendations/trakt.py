@@ -10,8 +10,8 @@ from medusa import app
 from medusa.cache import recommended_series_cache
 from medusa.helper.common import try_int
 from medusa.helper.exceptions import MultipleShowObjectsException
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.recommendations import ExpiringList
 from medusa.show.recommendations.recommended import (
