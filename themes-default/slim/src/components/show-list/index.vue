@@ -264,4 +264,7 @@ export default {
     justify-content: center;
 }
 
+.table-layout >>> .indexer-image :not(:last-child) {
+    margin-right: 5px;
+}
 </style>

@@ -33,7 +33,7 @@
                     </div>
                 </span>
 
-                <span v-else-if="props.column.label == 'Network'">
+                <span v-else-if="props.column.label == 'Network'" class="align-center">
                     <template v-if="props.row.network">
                         <span :title="props.row.network" class="hidden-print">
                             <asset default="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network" />
@@ -46,7 +46,7 @@
                     </template>
                 </span>
 
-                <span v-else-if="props.column.label == 'Indexer'" class="align-center">
+                <span v-else-if="props.column.label == 'Indexer'" class="align-center indexer-image">
                     <app-link v-if="props.row.id.imdb" :href="`http://www.imdb.com/title/${props.row.id.imdb}`" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
                     </app-link>

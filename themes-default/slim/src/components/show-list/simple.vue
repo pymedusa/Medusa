@@ -28,11 +28,11 @@
                     <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">{{ props.row.title }}</app-link>
                 </span>
 
-                <span v-else-if="props.column.label === 'Network'">
+                <span v-else-if="props.column.label === 'Network'" class="align-center">
                     <span class="align-center">{{ props.row.network }}</span>
                 </span>
 
-                <span v-else-if="props.column.label === 'Indexer'" class="align-center">
+                <span v-else-if="props.column.label === 'Indexer'" class="align-center indexer-image">
                     <app-link v-if="props.row.id.imdb" :href="'http://www.imdb.com/title/' + props.row.id.imdb" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
                     </app-link>
