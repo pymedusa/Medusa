@@ -79,7 +79,7 @@ const getters = {
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
     },
-    getShowFilterByName: (state) => {
+    getShowFilterByName: state => {
         return state.showFilterByName;
     }
 

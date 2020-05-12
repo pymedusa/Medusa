@@ -212,7 +212,7 @@ inc_top.mako
     border: 1px solid rgb(204, 204, 204);
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    margin: 1px .2em 0 0;
+    margin: 1px 0.2em 0 0;
     padding: 0;
     top: 1px;
 }
@@ -220,13 +220,12 @@ inc_top.mako
 .nav-tabs li.tab.active {
     background: rgb(247, 247, 247);
     top: 2px;
-
 }
 
 .nav-tabs li.tab a {
     background-color: transparent;
     border-color: transparent;
-    padding: .5em 1em;
+    padding: 0.5em 1em;
     padding-top: 0.5em;
     padding-right: 1em;
     padding-bottom: 0.5em;
@@ -255,8 +254,6 @@ inc_top.mako
     padding: 0;
     white-space: nowrap;
 }
-
-
 
 #content {
     margin-left: auto;
@@ -638,7 +635,6 @@ div.xem {
     display: inline-block;
 }
 
-
 .aligner {
     display: flex;
     align-items: center;
@@ -830,8 +826,8 @@ td.tvShow a:hover {
     cursor: pointer;
     color: rgb(66, 139, 202);
 }
-/*  */
 
+/* Used by history.mako */
 span.tvShow a {
     color: rgb(0, 0, 0);
     text-decoration: none;
@@ -1392,8 +1388,6 @@ ul.tags li a {
 #summaryBackground {
     position: absolute;
     top: 305px;
-    width: 100%;
-    height: 200px;
     background-color: #efefef;
     opacity: 0.8;
     border-width: 1px;
@@ -1408,7 +1402,6 @@ ul.tags li a {
 #checkboxControlsBackground {
     position: absolute;
     top: 0;
-    width: 100%;
     height: 0;
     background-color: #ddd;
     opacity: 0.8;
@@ -2861,10 +2854,8 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
-
 .vgt-table {
     color: rgb(0, 0, 0);
-    /* background-color: rgb(221, 221, 221); */
 }
 
 .vgt-table th,
@@ -2902,6 +2893,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .vgt-table tr:nth-child(even) {
     background-color: rgb(223, 218, 207);
 }
+
 .vgt-table tr:nth-child(odd) {
     background-color: rgb(245, 241, 228);
 }

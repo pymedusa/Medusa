@@ -696,8 +696,6 @@ span.ignored {
     background-color: green;
 } */
 
-
-
 #col-show-summary {
     display: table;
 }

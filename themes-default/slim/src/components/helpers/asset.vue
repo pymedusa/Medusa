@@ -51,7 +51,7 @@ export default {
             if (error || !showSlug || !type) {
                 return this.default;
             }
-            
+
             if (!lazy) {
                 return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
             }
@@ -70,7 +70,7 @@ export default {
             let newClass = cls;
 
             if (imgWidth) {
-                newClass += ` width-${imgWidth}`; 
+                newClass += ` width-${imgWidth}`;
             }
 
             return newClass;
@@ -81,7 +81,7 @@ export default {
             if (error || !showSlug || !type) {
                 return this.default;
             }
-            
+
             if (lazy) {
                 return webRoot + '/api/v2/series/' + showSlug + '/asset/' + type + '?api_key=' + apiKey;
             }

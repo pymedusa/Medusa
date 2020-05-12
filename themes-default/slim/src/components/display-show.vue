@@ -586,12 +586,7 @@ export default {
             return show.seasons.filter(season => season.season === 0);
         }
     },
-    // created() {
-    //     const { getShows } = this;
-    //     // Without getting any specific show data, we pick the show needed from the shows array.
-    //     // We need to get the complete list of shows anyway, as this is also needed for the show-selector component
-    //     getShows();
-    // },
+
     mounted() {
         const {
             id,
@@ -748,7 +743,7 @@ export default {
         },
         parseDateFn(row) {
             const { fuzzyParseDateTime } = this;
-            return fuzzyParseDateTime(row.airDate)
+            return fuzzyParseDateTime(row.airDate);
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
@@ -801,7 +796,7 @@ export default {
         movecheckboxControlsBackground() {
             const height = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().height + 10 + 'px';
             const top = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().top + 'px';
-            
+
             this.$root.$refs.checkboxControlsBackground.style.top = top;
             this.$root.$refs.checkboxControlsBackground.style.height = height;
             this.$root.$refs.checkboxControlsBackground.style.display = 'block';
@@ -1183,9 +1178,9 @@ export default {
             }
         }
     },
-    beforeRouteLeave (to, from, next) {
+    beforeRouteLeave(to, from, next) {
         // The show-header component has a summaryBackground and checkboxControlsBackground element.
-        // When leaving for another route, we need to hide these. 
+        // When leaving for another route, we need to hide these.
         this.$root.$refs.summaryBackground.style.display = 'none';
         this.$root.$refs.checkboxControlsBackground.style.display = 'none';
         next();

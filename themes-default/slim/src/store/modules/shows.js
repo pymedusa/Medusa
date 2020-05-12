@@ -45,7 +45,7 @@ const mutations = {
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
     },
     [ADD_SHOWS](state, shows) {
-        // const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
+        // Const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
 
         // if (!existingShow) {
         //     console.debug(`Adding ${show.title || show.indexer + String(show.id)} as it wasn't found in the shows array`, show);
@@ -66,7 +66,7 @@ const mutations = {
         const newShows = shows.filter(newShow => {
             return !state.shows.find(
                 ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && newShow.indexer === indexer
-            )
+            );
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
@@ -169,7 +169,7 @@ const getters = {
 
         return state.shows.map(show => {
             let showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
-            const newLine = '\u000d';
+            const newLine = '\u000D';
             let text = 'Unaired';
             let title = '';
 
@@ -179,7 +179,7 @@ const getters = {
                     epSnatched: 0,
                     epTotal: 0,
                     seriesSize: 0
-                }
+                };
             }
 
             if (showStats.epTotal >= 1) {
@@ -312,7 +312,7 @@ const actions = {
                 // Get first page
                 api.get('/series', { params })
                     .then(response => {
-                        const totalPages = Number(response.headers['x-pagination-total']);                        
+                        const totalPages = Number(response.headers['x-pagination-total']);
                         commit(ADD_SHOWS, response.data);
 
                         // Optionally get additional pages
@@ -321,7 +321,7 @@ const actions = {
                             const newPage = { page };
                             newPage.limit = params.limit;
                             pageRequests.push(api.get('/series', { params: newPage })
-                                .then(response => {
+                                .then(() => {
                                     commit(ADD_SHOWS, shows);
                                 }));
                         }

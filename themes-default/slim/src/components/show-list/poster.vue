@@ -38,7 +38,7 @@
                                             <span v-if="show.network" :title="show.network">
                                                 <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
-                                            <span v-else title="No Network"><img class="show-network-image" :style="" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
+                                            <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>
                                         <td class="show-table">
                                             <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" :override="{ class: 'show-quality', style: 'test' }" show-title />
@@ -57,7 +57,7 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
-import isotope from 'vueisotope';
+import Isotope from 'vueisotope';
 import LazyLoad from 'vanilla-lazyload';
 import imagesLoaded from 'vue-images-loaded';
 
@@ -71,7 +71,7 @@ export default {
         AppLink,
         ProgressBar,
         QualityPill,
-        isotope
+        Isotope
     },
     props: {
         layout: {
@@ -149,14 +149,12 @@ export default {
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
-            const { shows, stateLayout, maxNextAirDate } = this;
-            const { sortArticle } = stateLayout;
+            const { shows, maxNextAirDate } = this;
             if (shows.length === 0 || !maxNextAirDate) {
                 return [];
             }
 
-            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+            return shows;
         },
         showContainerStyle() {
             const { posterSize, borderWidth, borderRadius } = this;
@@ -220,7 +218,6 @@ export default {
                 this.borderRadius = 6;
                 this.borderWidth = 6;
             }
-
         },
         updateLayout() {
             const {
@@ -285,11 +282,10 @@ export default {
             const { listTitle } = this;
             this.$refs[`isotope-${listTitle}`].sort(key);
         },
-        // posterSortDir(value) {
-        //     const { listTitle, option } = this;
-        //     this.option.sortAscending = Boolean(value);
-        //     this.$refs[`isotope-${listTitle}`].arrange(option);
-        // },
+        posterSortDir(value) {
+            const { listTitle, posterSortBy } = this;
+            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: value });
+        },
         posterSize(oldSize, newSize) {
             const { calculateSize, isotopeLoaded, listTitle } = this;
             if (!isotopeLoaded || oldSize === newSize) {
@@ -307,9 +303,8 @@ export default {
 .show-container {
     display: inline-block;
     margin: 4px;
-    /* background-color: rgb(243, 243, 243); */
     border-width: 5px;
-    border-style: solid; /*rgb(243, 243, 243); */
+    border-style: solid;
     overflow: hidden;
     box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
@@ -331,10 +326,6 @@ export default {
 .posterview {
     margin: 0 auto;
     position: relative;
-}
-
-.show-image {
-    max-width: 200px;
 }
 
 /* Used by isotope scaling */

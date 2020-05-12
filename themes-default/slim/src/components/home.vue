@@ -35,32 +35,13 @@
                         <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                                 <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
-                                    v-bind="{
-                                        listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
-                                    }"
+                                           v-bind="{
+                                               listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
+                                           }"
                                 />
                             </template>
                         </v-tab>
                     </vue-tabs>
-                    <!-- Nav tabs -->
-                    <!-- <ul>
-                        <li v-for="showList in showLists" :key="showList.listTitle" @click="updateTabs">
-                            <app-link :href="`#${showList.listTitle.toLowerCase()}TabContent`" :id="`${showList.listTitle.toLowerCase()}Tab`">{{ showList.listTitle }}</app-link>
-                        </li>
-                    </ul>
-                    <!-- Tab panes
-                    <div id="showTabPanes">
-                        <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
-                            <show-list v-for="showList in showLists"
-                                :key="showList.listTitle.toLowerCase()"
-                                :id="`${showList.listTitle.toLowerCase()}TabContent`"
-                                v-bind="{
-                                    listTitle: showList.listTitle, layout, shows: showList.shows, header: showLists.length > 1
-                                }"
-                            />
-                        </template>
-                    </div>#showTabPanes -->
-
                 </div> <!-- #showTabs -->
                 <template v-else>
                     <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
@@ -73,8 +54,6 @@
                                 />
                             </li>
                         </draggable>
-
-
                     </template>
                 </template>
             </div>
@@ -85,24 +64,20 @@
 
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { api } from '../api';
-import { AppLink } from './helpers';
-import ShowList from './show-list';
+import { ShowList } from './show-list';
 import LazyLoad from 'vanilla-lazyload';
-import { VueTabs, VTab }  from 'vue-nav-tabs/dist/vue-tabs.js';
-import draggable from 'vuedraggable';
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
+import Draggable from 'vuedraggable';
 import Backstretch from './backstretch.vue';
-
 
 export default {
     name: 'home',
     components: {
-        AppLink,
         Backstretch,
         ShowList,
         VueTabs,
         VTab,
-        draggable
+        Draggable
     },
     data() {
         return {
@@ -171,7 +146,7 @@ export default {
             let shows = null;
 
             // Filter root dirs
-            shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]))
+            shows = showsWithStats.filter(show => selectedRootIndex === -1 || show.config.location.includes(rootDirs.slice(1)[selectedRootIndex]));
 
             // Filter by text
             shows = shows.filter(show => show.title.toLowerCase().includes(filterByName.toLowerCase()));
@@ -228,9 +203,8 @@ export default {
         }
     },
     mounted() {
-        const { $snotify, getShows, getStats, setConfig } = this;
-
-        // getShows();
+        const { getStats } = this;
+        // GetShows();
         getStats('show');
     }
 };

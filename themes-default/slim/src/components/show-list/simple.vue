@@ -13,7 +13,7 @@
                         :column-filter-options="{
                             enabled: true
                         }"
-                        :class="{fanartOpacity: fanartBackground}">
+                        :class="{fanartOpacity: stateLayout.fanartBackground}">
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'" class="align-center">
@@ -34,10 +34,10 @@
 
                 <span v-else-if="props.column.label === 'Indexer'" class="align-center">
                     <app-link v-if="props.row.id.imdb" :href="'http://www.imdb.com/title/' + props.row.id.imdb" :title="`http://www.imdb.com/title/${props.row.id.imdb}`">
-                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png">
                     </app-link>
                     <app-link v-if="props.row.id.trakt" :href="'https://trakt.tv/shows/' + props.row.id.trakt" :title="`https://trakt.tv/shows/${props.row.id.trakt}`">
-                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
                     </app-link>
                     <app-link v-if="showIndexerUrl && indexerConfig[props.row.indexer].icon" :href="showIndexerUrl(props.row)" :title="showIndexerUrl(props.row)">
                         <img :alt="indexerConfig[props.row.indexer].name" height="16" width="16" :src="'images/' + indexerConfig[props.row.indexer].icon" style="margin-top: -1px; vertical-align:middle;">
@@ -45,11 +45,11 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Quality'" class="align-center">
-                    <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title></quality-pill>
+                    <quality-pill :allowed="props.row.config.qualities.allowed" :preferred="props.row.config.qualities.preferred" show-title />
                 </span>
 
                 <span v-else-if="props.column.label === 'Downloads'">
-                    <progress-bar v-bind="props.row.stats.tooltip"></progress-bar>
+                    <progress-bar v-bind="props.row.stats.tooltip" />
                 </span>
 
                 <span v-else-if="props.column.label === 'Size'" class="align-center">
@@ -57,11 +57,11 @@
                 </span>
 
                 <span v-else-if="props.column.label === 'Active'" class="align-center">
-                    <img :src="`images/${props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'}16.png`" :alt="props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'" width="16" height="16" />
+                    <img :src="`images/${props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'}16.png`" :alt="props.row.config && !props.row.config.paused && props.row.status === 'Continuing' ? 'yes' : 'no'" width="16" height="16">
                 </span>
 
                 <span v-else-if="props.column.label === 'Xem'" class="align-center">
-                    <img :src="`images/${props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'}16.png`" :alt="props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'" width="16" height="16" />
+                    <img :src="`images/${props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'}16.png`" :alt="props.row.xemNumbering && props.row.xemNumbering.length !== 0 ? 'yes' : 'no'" width="16" height="16">
                 </span>
 
                 <span v-else class="align-center">
@@ -76,9 +76,8 @@
 import pretty from 'pretty-bytes';
 
 import { mapGetters, mapState } from 'vuex';
-import { AppLink } from '../helpers';
-import { ProgressBar } from '../helpers';
-import { QualityPill } from '../helpers';
+import { AppLink, ProgressBar, QualityPill } from '../helpers';
+
 import { VueGoodTable } from 'vue-good-table';
 import { manageCookieMixin } from '../../utils/core';
 
@@ -177,17 +176,11 @@ export default {
         ...mapState({
             config: state => state.config,
             indexerConfig: state => state.indexers.indexers,
-            sortArticle: state => state.layout.sortArticle,
-            fanartBackground: state => state.layout.fanartBackground 
+            stateLayout: state => state.layout
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
-        }),
-        sortedShows() {
-            const { show, sortArticle } = this;
-            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
-        }
+        })
     },
     methods: {
         prettyBytes: bytes => pretty(bytes),
@@ -206,7 +199,7 @@ export default {
             const { fuzzyParseDateTime } = this;
             if (row.prevAirDate) {
                 console.log(`Calculating time for show ${row.title} prev date: ${row.prevAirDate}`);
-                return fuzzyParseDateTime(row.prevAirDate)
+                return fuzzyParseDateTime(row.prevAirDate);
             }
 
             return '';
@@ -215,7 +208,7 @@ export default {
             const { fuzzyParseDateTime } = this;
             if (row.nextAirDate) {
                 console.log(`Calculating time for show ${row.title} next date: ${row.nextAirDate}`);
-                return fuzzyParseDateTime(row.nextAirDate)
+                return fuzzyParseDateTime(row.nextAirDate);
             }
 
             return '';

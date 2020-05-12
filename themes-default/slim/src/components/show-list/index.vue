@@ -27,7 +27,7 @@
                         </option>
                     </select>
                 </div>
-                
+
                 <div class="show-option pull-right">
                     Poster Size:
                     <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider" />
@@ -95,7 +95,7 @@ export default {
                 { text: 'Progress', value: 'progress' },
                 { text: 'Indexer', value: 'indexer' }
             ]
-        }
+        };
     },
     computed: {
         ...mapState({
@@ -129,6 +129,12 @@ export default {
                 const { setPosterSortDir } = this;
                 setPosterSortDir({ value });
             }
+        },
+        sortedShows() {
+            const { shows, stateLayout } = this;
+            const { sortArticle } = stateLayout;
+            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
+            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         }
     },
     methods: {
@@ -140,7 +146,6 @@ export default {
 };
 </script>
 <style scoped>
-
 /** Use this as table styling for all table layouts */
 .table-layout >>> .vgt-table {
     width: 100%;
@@ -171,7 +176,6 @@ export default {
 .table-layout >>> .vgt-table span.break-word {
     word-wrap: break-word;
 }
-
 
 .table-layout >>> .vgt-table thead th.sorting.sorting-asc {
     background-position-x: right;
