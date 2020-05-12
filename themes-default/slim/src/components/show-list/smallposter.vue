@@ -24,7 +24,7 @@
                     {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label == 'Show'">
+                <span v-else-if="props.column.label == 'Show'" class="tvShow">
                     <div class="imgsmallposter small">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
                             <asset default="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false" />

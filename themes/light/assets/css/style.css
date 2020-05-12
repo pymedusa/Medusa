@@ -827,7 +827,7 @@ td.tvShow a:hover {
     color: rgb(66, 139, 202);
 }
 
-/* Used by history.mako */
+/* Used by home.mako */
 span.tvShow a {
     color: rgb(0, 0, 0);
     text-decoration: none;

@@ -24,7 +24,7 @@
                     {{props.row.prevAirDate ? fuzzyParseDateTime(props.row.prevAirDate) : ''}}
                 </span>
 
-                <span v-else-if="props.column.label == 'Show'">
+                <span v-else-if="props.column.label == 'Show'" class="tvShow">
                     <span style="display: none;">{{ props.row.title }}</span>
                     <div class="imgbanner banner">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
