@@ -143,7 +143,8 @@ export default {
             // Need to map these computed, as we need them in the $watch.
             posterSortBy: state => state.layout.posterSortby,
             posterSortDir: state => state.layout.posterSortdir,
-            posterSize: state => state.layout.posterSize
+            posterSize: state => state.layout.posterSize,
+            currentShowTab: state => state.layout.currentShowTab
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -246,32 +247,6 @@ export default {
         }
     },
     mounted() {
-        const { setPosterSize } = this;
-        // Get poster size from localStorage
-        let slidePosterSize;
-        if (typeof (Storage) !== 'undefined') {
-            slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
-        }
-        if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
-            slidePosterSize = 188;
-        }
-
-        // Update poster size to store
-        setPosterSize({ posterSize: slidePosterSize });
-
-        $('#posterSizeSlider').slider({
-            min: 75,
-            max: 250,
-            value: slidePosterSize,
-            change(e, ui) {
-                // Save to localStorage
-                if (typeof (Storage) !== 'undefined') {
-                    localStorage.setItem('posterSize', ui.value);
-                }
-                // Save to store
-                setPosterSize({ posterSize: ui.value });
-            }
-        });
 
         this.imgLazyLoad = new LazyLoad({
             threshold: 500
@@ -292,6 +267,16 @@ export default {
                 return;
             }
             calculateSize();
+            this.$nextTick(() => {
+                this.$refs[`isotope-${listTitle}`].arrange();
+            });
+        },
+        currentShowTab() {
+            const { isotopeLoaded, listTitle } = this;
+            if (!isotopeLoaded) {
+                return;
+            }
+
             this.$nextTick(() => {
                 this.$refs[`isotope-${listTitle}`].arrange();
             });

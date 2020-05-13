@@ -1,6 +1,6 @@
 <template>
     <div>
-        <!-- <h1 v-if="header" class="header">{{ listTitle }}</h1> -->
+        <!-- Only show the list title when not in tabs -->
         <div v-if="(!(stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs))" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
@@ -28,10 +28,7 @@
                     </select>
                 </div>
 
-                <div class="show-option pull-right">
-                    Poster Size:
-                    <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider" />
-                </div>
+                <poster-size-slider/>
             </div>
 
         </div>
@@ -50,6 +47,7 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
+import { PosterSizeSlider } from '../helpers';
 
 export default {
     name: 'show-list',
@@ -57,6 +55,7 @@ export default {
         Banner,
         Simple,
         Poster,
+        PosterSizeSlider,
         Smallposter
     },
     props: {

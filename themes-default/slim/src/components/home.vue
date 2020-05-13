@@ -31,7 +31,7 @@
             <div class="col-md-12">
                 <!-- Split in tabs -->
                 <div id="showTabs" v-if="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
-                    <vue-tabs>
+                    <vue-tabs @tab-change="updateTabContent">
                         <v-tab v-for="showList in showLists" :key="showList.listTitle" :title="showList.listTitle">
                             <template v-if="['banner', 'simple', 'small', 'poster'].includes(layout)">
                                 <show-list :id="`${showList.listTitle.toLowerCase()}TabContent`"
@@ -200,11 +200,14 @@ export default {
         saveSelectedRootDir(value) {
             const { setStoreLayout } = this;
             setStoreLayout({ key: 'selectedRootIndex', value });
+        },
+        updateTabContent(tabIndex, newTab) {
+            const { setStoreLayout } = this;
+            setStoreLayout({ key: 'currentShowTab', value: newTab.title });
         }
     },
     mounted() {
         const { getStats } = this;
-        // GetShows();
         getStats('show');
     }
 };

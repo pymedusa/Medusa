@@ -48,7 +48,8 @@ const state = {
     showFilterByName: '',
     posterSortdir: null,
     posterSortby: null,
-    posterSize: 188
+    posterSize: 188,
+    currentShowTab: null
 };
 
 const mutations = {
