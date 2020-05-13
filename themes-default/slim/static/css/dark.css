@@ -676,6 +676,19 @@ body {
 }
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+.dropdown-toggle a:hover,
+.dropdown-toggle a:focus {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    background-color: rgb(119, 119, 119);
+}
+
+.dropdown-toggle {
+    color: rgb(255, 255, 255);
+    background-color: rgb(41, 41, 41);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
 
 .vgt-dropdown-menu {
     background-color: rgb(41, 41, 41);
@@ -1119,3 +1132,44 @@ new #confirmBox
 .modal-footer button.cancel:hover {
     background-color: rgb(161, 51, 49);
 }
+
+/* =======================================================================
+vue-nav-tabs
+========================================================================== */
+
+.vue-tabs .tab-content {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.nav-tabs li.tab {
+    border-color: rgb(17, 17, 17);
+}
+
+.nav-tabs li.tab.active {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.vue-tabs li.tab:not(.active) {
+    background: rgb(51, 51, 51);
+}
+
+.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    text-decoration-line: none;
+    text-decoration-style: initial;
+    text-decoration-color: initial;
+}
+
+.nav-tabs li.tab a,
+.nav-tabs li.tab a:hover,
+.nav-tabs li.tab a:active,
+.nav-tabs li.tab a:focus {
+    color: rgb(255, 255, 255);
+}
+
+/* End of nav tabs section */
+
+/*

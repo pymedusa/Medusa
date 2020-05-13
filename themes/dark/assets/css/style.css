@@ -219,6 +219,10 @@ inc_top.mako
 
 .nav-tabs li.tab.active {
     background: rgb(247, 247, 247);
+    border-bottom-style: none !important;
+}
+
+.vue-tabs li.tab:not(.active) {
     top: 2px;
 }
 
@@ -241,6 +245,7 @@ inc_top.mako
     cursor: default;
     background-color: transparent;
     border: 0;
+    text-decoration: none;
 }
 
 .nav-tabs :not(li.tab.active) {
@@ -254,6 +259,7 @@ inc_top.mako
     padding: 0;
     white-space: nowrap;
 }
+/* End of nav tabs section */
 
 #content {
     margin-left: auto;
