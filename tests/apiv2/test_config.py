@@ -774,7 +774,7 @@ def config_layout():
 
     section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-    section_data['posterSortdir'] = app.POSTER_SORTDIR
+    section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
     section_data['themeName'] = app.THEME_NAME
     section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
     section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -807,7 +807,7 @@ def config_layout():
 @pytest.mark.gen_test
 def test_config_get_layout(http_client, create_url, auth_headers, config_layout):
     # given
-    expected = config_search
+    expected = config_layout
 
     url = create_url('/config/layout')
 

@@ -1172,7 +1172,7 @@ class DataGenerator(object):
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-        section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
+        section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
         section_data['themeName'] = app.THEME_NAME
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -1190,7 +1190,7 @@ class DataGenerator(object):
         section_data['comingEps'] = {}
         section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['comingEps']['sort'] = app.COMING_EPS_SORT
-        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE or 0)
         section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
 
         section_data['backlogOverview'] = {}
