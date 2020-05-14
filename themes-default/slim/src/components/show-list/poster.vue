@@ -247,7 +247,6 @@ export default {
         }
     },
     mounted() {
-
         this.imgLazyLoad = new LazyLoad({
             threshold: 500
         });

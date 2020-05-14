@@ -28,7 +28,7 @@
                     </select>
                 </div>
 
-                <poster-size-slider/>
+                <poster-size-slider />
             </div>
 
         </div>

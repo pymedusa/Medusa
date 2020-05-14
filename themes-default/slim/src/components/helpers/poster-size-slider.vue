@@ -52,9 +52,6 @@ export default {
         ...mapActions({
             setPosterSize: 'setPosterSize'
         })
-    },
-    activated() {
-        console.log("activate");
     }
 };
 </script>
