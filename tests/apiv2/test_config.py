@@ -792,7 +792,7 @@ def config_layout():
     section_data['comingEps'] = {}
     section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
     section_data['comingEps']['sort'] = app.COMING_EPS_SORT
-    section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+    section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE or 0)
     section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
 
     section_data['backlogOverview'] = {}
