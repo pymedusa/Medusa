@@ -774,7 +774,7 @@ def config_layout():
 
     section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-    section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
+    section_data['posterSortdir'] = app.POSTER_SORTDIR
     section_data['themeName'] = app.THEME_NAME
     section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
     section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
