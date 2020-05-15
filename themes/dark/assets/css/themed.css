@@ -1155,14 +1155,6 @@ vue-nav-tabs
     background: rgb(51, 51, 51);
 }
 
-.ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
-    color: rgb(255, 255, 255);
-    text-decoration: none;
-    text-decoration-line: none;
-    text-decoration-style: initial;
-    text-decoration-color: initial;
-}
-
 .nav-tabs li.tab a,
 .nav-tabs li.tab a:hover,
 .nav-tabs li.tab a:active,
