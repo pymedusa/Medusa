@@ -1630,7 +1630,6 @@ class Series(TV):
         log.debug(u'{id}: Finding the episode which aired last',
                   {'id': self.series_id})
 
-        cur_date = datetime.date.today().toordinal()
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT '
@@ -1650,15 +1649,13 @@ class Series(TV):
             [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
 
         if sql_results is None or len(sql_results) == 0:
-            log.debug(u'{id}: No episode found... need to implement a show status',
-                        {'id': self.series_id})
+            log.debug(u'{id}: No episode found... need to implement a show status', {'id': self.series_id})
             self.prev_aired = u''
         else:
             log.debug(
                 u'{id}: Found episode {ep}', {
                     'id': self.series_id,
-                    'ep': episode_num(sql_results[0]['season'],
-                                        sql_results[0]['episode']),
+                    'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode'])
                 }
             )
             self.prev_aired = sql_results[0]['airdate']
