@@ -1,14 +1,15 @@
 # coding=utf-8
 """Api v2 tests."""
 from __future__ import unicode_literals
-import os
-import six
 
+import os
+import sys
+
+import six
 
 # Start event loop in python3
 if six.PY3:
     import asyncio
-    import sys
 
     # We need to set the WindowsSelectorEventLoop event loop on python 3 (3.8 and higher) running on windows
     if sys.platform == 'win32':
