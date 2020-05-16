@@ -687,7 +687,6 @@ export default {
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
-            getShows: 'getShows',
             getEpisodes: 'getEpisodes'
         }),
         statusQualityUpdate(event) {

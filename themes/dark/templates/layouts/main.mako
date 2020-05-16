@@ -55,7 +55,8 @@
 
 <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
     <div id="vue-wrap" class="container-fluid">
-    
+        <load-progress-bar v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
+
         <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
         <div ref="summaryBackground" id="summaryBackground" class="shadow summaryBackground" style="display: none"></div>
         <div ref="checkboxControlsBackground" id="checkboxControlsBackground" class="shadow checkboxControlsBackground" style="display: none"></div>

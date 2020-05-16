@@ -7,6 +7,7 @@ export { default as ConfigTextboxNumber } from './config-textbox-number.vue';
 export { default as ConfigToggleSlider } from './config-toggle-slider.vue';
 export { default as FileBrowser } from './file-browser.vue';
 export { default as LanguageSelect } from './language-select.vue';
+export { default as LoadProgressBar } from './load-progress-bar.vue';
 export { default as NamePattern } from './name-pattern.vue';
 export { default as PlotInfo } from './plot-info.vue';
 export { default as ProgressBar } from './progress-bar.vue';

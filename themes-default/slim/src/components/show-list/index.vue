@@ -33,10 +33,17 @@
 
         </div>
 
-        <div v-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
+        <!-- Where still loading -->
+        <div v-if="!test && shows.length === 0">
+            <state-switch state="loading" :theme="stateLayout.themeName" />
+            <span>Loading shows...</span>
+        </div>
+
+        <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
 
+        <!-- No Shows added -->
         <span v-else>Please add a show <a href="/addShows">here</a> to get started</span>
     </div>
 </template>
@@ -47,7 +54,7 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
-import { PosterSizeSlider } from '../helpers';
+import { PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
@@ -56,7 +63,8 @@ export default {
         Simple,
         Poster,
         PosterSizeSlider,
-        Smallposter
+        Smallposter,
+        StateSwitch
     },
     props: {
         layout: {
@@ -98,7 +106,8 @@ export default {
     },
     computed: {
         ...mapState({
-            stateLayout: state => state.layout
+            stateLayout: state => state.layout,
+            showsLoading: state => state.shows.loading
         }),
         mappedLayout() {
             const { layout } = this;
@@ -134,6 +143,9 @@ export default {
             const { sortArticle } = stateLayout;
             const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
             return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+        },
+        test() {
+            return this.showsLoading.finished;
         }
     },
     methods: {
