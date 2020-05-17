@@ -132,7 +132,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};

@@ -1163,16 +1163,3 @@ vue-nav-tabs
 }
 
 /* End of nav tabs section */
-
-/* =======================================================================
-load-progress-bar
-========================================================================== */
-
-.load-progress-bar-container .border {
-    border-color: rgb(0, 0, 0) !important;
-}
-
-.load-progress-bar-container .progress {
-    color: rgb(255, 255, 255) !important;
-    background-color: rgb(41, 41, 41) !important;
-}
