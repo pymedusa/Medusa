@@ -359,7 +359,8 @@
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, manageCookieMixin } from '../utils/core';
+import { humanFileSize } from '../utils/core';
+import { manageCookieMixin } from '../../mixins/manage-cookie';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
