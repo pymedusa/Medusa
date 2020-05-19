@@ -8,12 +8,13 @@
                         }"
                         :sort-options="{
                             enabled: true,
-                            initialSortBy: { field: 'title', type: 'asc' }
+                            initialSortBy: getSortBy()
                         }"
                         :column-filter-options="{
                             enabled: true
                         }"
-                        :class="{fanartOpacity: stateLayout.fanartBackground}">
+                        :class="{fanartOpacity: stateLayout.fanartBackground}"
+                        @on-sort-change="saveSorting">
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'" class="align-center">
@@ -88,7 +89,7 @@ export default {
         VueGoodTable
     },
     mixins: [
-        manageCookieMixin('home-hide-field'),
+        manageCookieMixin('home'),
         showlistTableMixin
     ],
     props: {

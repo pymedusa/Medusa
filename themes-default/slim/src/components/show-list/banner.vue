@@ -13,7 +13,8 @@
                         :column-filter-options="{
                             enabled: true
                         }"
-                        :class="{fanartOpacity: stateLayout.fanartBackground}">
+                        :class="{fanartOpacity: stateLayout.fanartBackground}"
+                        @on-sort-change="saveSorting">
 
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.label == 'Next Ep'" class="align-center">
