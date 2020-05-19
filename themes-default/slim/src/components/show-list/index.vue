@@ -36,7 +36,7 @@
         <!-- Where still loading -->
         <div v-if="!test && shows.length === 0">
             <state-switch state="loading" :theme="stateLayout.themeName" />
-            <span>Loading shows...</span>
+            <span>Loading</span>
         </div>
 
         <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">

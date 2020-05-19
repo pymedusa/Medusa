@@ -118,16 +118,46 @@ export const showlistTableMixin = {
             return row.config && !row.config.paused && row.status === 'Continuing';
         },
         sortDateNext(x, y) {
+            const { maxNextAirDate } = this;
+
+            if (x === null && y === null) {
+                return 0;
+            }
+
             if ((x === null || y === null) && x !== y) {
                 return x < y ? 1 : -1;
             }
-            return (x < y ? -1 : (x > y ? 1 : 0));
+
+            let xTsDiff = Date.parse(x) - Date.now();
+            let yTsDiff = Date.parse(y) - Date.now();
+
+            if (x && Date.parse(x) < Date.now()) {
+                xTsDiff += maxNextAirDate;
+            }
+
+            if (y && Date.parse(y) < Date.now()) {
+                yTsDiff += maxNextAirDate;
+            }
+
+            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
         },
         sortDatePrev(x, y) {
+            if (x === null && y === null) {
+                return 0;
+            }
+
             if ((x === null || y === null) && x !== y) {
                 return x < y ? 1 : -1;
             }
-            return (x < y ? -1 : (x > y ? 1 : 0));
+
+            const xTsDiff = Date.parse(x) - Date.now();
+            const yTsDiff = Date.parse(y) - Date.now();
+
+            return (xTsDiff < yTsDiff ? -1 : (xTsDiff > yTsDiff ? 1 : 0));
+        },
+        maxNextAirDate() {
+            const { shows } = this;
+            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
         }
     }
 };
