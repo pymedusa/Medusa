@@ -632,7 +632,7 @@ class Series(TV):
     @property
     def xem_numbering(self):
         """Return series episode xem numbering."""
-        return get_xem_numbering_for_show(self, False)
+        return get_xem_numbering_for_show(self, refresh_data=False)
 
     @property
     def xem_absolute_numbering(self):
@@ -1627,8 +1627,7 @@ class Series(TV):
         :return:
         :rtype: datetime.date
         """
-        log.debug(u'{id}: Finding the episode which aired last',
-                  {'id': self.series_id})
+        log.debug(u'{id}: Finding the episode which aired last', {'id': self.series_id})
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
@@ -1649,11 +1648,11 @@ class Series(TV):
             [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
 
         if sql_results is None or len(sql_results) == 0:
-            log.debug(u'{id}: No episode found... need to implement a show status', {'id': self.series_id})
+            log.debug(u'{id}: Could not find a previous aired episode', {'id': self.series_id})
             self.prev_aired = u''
         else:
             log.debug(
-                u'{id}: Found episode {ep}', {
+                u'{id}: Found previous aired episode number {ep}', {
                     'id': self.series_id,
                     'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode'])
                 }
@@ -1691,7 +1690,7 @@ class Series(TV):
                 [self.indexer, self.series_id, datetime.date.today().toordinal()])
 
             if sql_results is None or len(sql_results) == 0:
-                log.debug(u'{id}: No episode found... need to implement a show status',
+                log.debug(u'{id}: Could not find a next episode',
                           {'id': self.series_id})
                 self.next_aired = u''
             else:

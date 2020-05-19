@@ -85,7 +85,7 @@ def per_show_stats():
                 episode > 0 AND
                 airdate > 1 AND (
                     (airdate <= {today} AND tv_eps.status IN {status_pre_today}) OR
-                    tv_eps.status IN (2,9,12,4,6)
+                    tv_eps.status IN {status_both}
                 )
             ) AS epTotal,
             (SELECT airdate FROM tv_episodes
