@@ -596,6 +596,9 @@ export default {
             });
         },
         reflowLayout() {
+            if (!this.$refs.summary) {
+                return;
+            }
             this.$root.$refs.summaryBackground.style.top = this.$refs.summary.getBoundingClientRect().top + 'px';
             this.$root.$refs.summaryBackground.style.height = this.$refs.summary.getBoundingClientRect().height + 'px';
             this.$root.$refs.summaryBackground.style.display = 'block';

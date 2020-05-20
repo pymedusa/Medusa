@@ -794,6 +794,9 @@ export default {
          * Adjust the checkbox controls (episode filter) background position
          */
         movecheckboxControlsBackground() {
+            if (!this.$refs['show-header'].$refs.checkboxControls) {
+                return;
+            }
             const height = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().height + 10 + 'px';
             const top = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().top + 'px';
 
