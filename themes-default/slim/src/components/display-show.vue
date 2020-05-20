@@ -1111,7 +1111,7 @@ export default {
         updatePaginationPerPage(rows) {
             const { setCookie } = this;
             this.paginationPerPage = rows;
-            setCookie('displayShow-pagination-perPage', rows);
+            setCookie('pagination-perPage', rows);
         },
         onPageChange(params) {
             this.loadEpisodes(params.currentPage);
