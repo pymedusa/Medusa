@@ -35,6 +35,12 @@ export default {
 };
 </script>
 <style>
+.load-progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
 .border {
     box-sizing: border-box;
     height: 26px;
@@ -46,6 +52,16 @@ export default {
     border-radius: 5px;
 }
 
+@media (max-width: 767px) {
+    .border {
+        width: 100%;
+    }
+
+    .load-progress-bar-container {
+        width: 100%;
+    }
+}
+
 .progress {
     box-sizing: border-box;
     height: 24px;
@@ -54,12 +70,6 @@ export default {
     perspective-origin: 38px 12px;
     transform-origin: 38px 12px;
     background: rgba(99, 177, 137, 0.63) none repeat scroll 0% 0% / auto padding-box border-box;
-}
-
-.load-progress-bar-container {
-    position: absolute;
-    bottom: 0;
-    right: 0;
 }
 
 .msg {
