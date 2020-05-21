@@ -31,10 +31,10 @@
                         </ul>
                         <div style="clear:both;" />
                     </li>
-                    <li id="NAVschedule" :class="{ active: topMenu === 'schedule' }">
+                    <li id="NAVschedule" class="navbar-split" :class="{ active: topMenu === 'schedule' }">
                         <app-link href="schedule/">Schedule</app-link>
                     </li>
-                    <li id="NAVhistory" :class="{ active: topMenu === 'history' }">
+                    <li id="NAVhistory" class="navbar-split" :class="{ active: topMenu === 'history' }">
                         <app-link href="history/">History</app-link>
                     </li>
                     <li id="NAVmanage" class="navbar-split dropdown" :class="{ active: topMenu === 'manage' }">
