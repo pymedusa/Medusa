@@ -350,11 +350,7 @@ ul.tags li {
 }
 
 #summaryBackground {
-    background-color: rgb(61, 61, 61);
-}
-
-#checkboxControlsBackground {
-    background-color: rgb(41, 41, 41);
+    background-color: rgb(61, 61, 61, 0.8);
 }
 
 .defaultTable {

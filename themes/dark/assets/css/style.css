@@ -1392,36 +1392,6 @@ ul.tags li a {
     cursor: default;
 }
 
-#summaryBackground {
-    position: absolute;
-    top: 305px;
-    background-color: #efefef;
-    opacity: 0.8;
-    border-width: 1px;
-    border-style: solid none;
-    border-color: rgb(136, 136, 136);
-    width: 100vw;
-    margin-left: -55vw;
-    margin-right: -55vw;
-    left: 55%;
-}
-
-#checkboxControlsBackground {
-    position: absolute;
-    top: 0;
-    height: 0;
-    background-color: #ddd;
-    opacity: 0.8;
-    border-width: 1px;
-    border-style: solid none;
-    border-color: rgb(136, 136, 136);
-    z-index: -2;
-    width: 100vw;
-    margin-left: -55vw;
-    margin-right: -55vw;
-    left: 55%;
-}
-
 #checkboxControls {
     padding-top: 2px;
 }
@@ -2774,6 +2744,7 @@ select,
 .navbar-default .navbar-nav > li.navbar-split > a {
     display: inline-block;
     float: left;
+    border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .navbar-default .navbar-nav > li.navbar-split > a:first-child {

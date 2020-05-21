@@ -782,28 +782,13 @@ export default {
         },
 
         /**
-         * Attaches IMDB tooltip,
-         * Moves summary and checkbox controls backgrounds
+         * Attaches IMDB tooltip
          */
-        reflowLayout: debounce(function() {
+        reflowLayout: debounce(() => {
             console.debug('Reflowing layout');
-            this.movecheckboxControlsBackground();
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
-        /**
-         * Adjust the checkbox controls (episode filter) background position
-         */
-        movecheckboxControlsBackground() {
-            if (!this.$refs['show-header'].$refs.checkboxControls) {
-                return;
-            }
-            const height = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().height + 10 + 'px';
-            const top = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().top + 'px';
 
-            this.$root.$refs.checkboxControlsBackground.style.top = top;
-            this.$root.$refs.checkboxControlsBackground.style.height = height;
-            this.$root.$refs.checkboxControlsBackground.style.display = 'block';
-        },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const { $snotify, id, indexer, show } = this;
 
@@ -1180,13 +1165,6 @@ export default {
                 }
             }
         }
-    },
-    beforeRouteLeave(to, from, next) {
-        // The show-header component has a summaryBackground and checkboxControlsBackground element.
-        // When leaving for another route, we need to hide these.
-        this.$root.$refs.summaryBackground.style.display = 'none';
-        this.$root.$refs.checkboxControlsBackground.style.display = 'none';
-        next();
     }
 };
 </script>
