@@ -1,5 +1,6 @@
 <template>
     <div class="show-header-container">
+
         <div class="row">
             <!-- @TODO: Remove data attributes -->
             <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436 -->
@@ -49,13 +50,13 @@
             </div> <!-- end show title -->
         </div> <!-- end row showtitle-->
 
-        <div v-for="queueItem of activeShowQueueStatuses" :key="queueItem.action" class="row">
+        <div class="row" v-for="queueItem of activeShowQueueStatuses" :key="queueItem.action">
             <div class="alert alert-info">
                 {{ queueItem.message }}
             </div>
         </div>
 
-        <div id="row-show-summary" class="row">
+        <div class="row" id="row-show-summary">
             <div id="col-show-summary" class="col-md-12">
                 <div class="show-poster-container">
                     <div class="row">
@@ -122,7 +123,8 @@
 
                     <div class="row">
                         <!-- Show Summary -->
-                        <div v-if="configLoaded" id="summary" class="col-md-12">
+                        <div ref="summary" v-if="configLoaded" id="summary" class="col-md-12">
+
                             <div id="show-summary" :class="[{ summaryFanArt: layout.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
                                 <table class="summaryTable pull-left">
                                     <tr v-if="show.plot">
@@ -276,7 +278,7 @@
         <div v-if="show" id="row-show-episodes-controls" class="row">
             <div id="col-show-episodes-controls" class="col-md-12">
                 <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
-                    <div class="col-lg-12" id="checkboxControls">
+                    <div ref="checkboxControls" class="col-lg-12" id="checkboxControls">
                         <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
                             <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
                                 <span :class="status.id">
@@ -525,12 +527,16 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
+        },
+        summaryBackgroundStyle() {
+            const { top, height } = this;
+            return { top, height };
         }
     },
     mounted() {
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
-                this.reflowLayout();
+                this.$nextTick(() => this.reflowLayout());
             });
         });
         this.$watch('show', function(slug) { // eslint-disable-line object-shorthand
@@ -590,27 +596,14 @@ export default {
             });
         },
         reflowLayout() {
-            this.$nextTick(() => {
-                this.moveSummaryBackground();
-            });
-
-            attachImdbTooltip(); // eslint-disable-line no-undef
-        },
-        /**
-         * Adjust the summary background position and size on page load and resize
-         */
-        moveSummaryBackground() {
-            const summary = $('#summary');
-            // A hack for now, to bail if the page hasn't fully been rendered yet.
-            if (Object.keys(summary).length === 0) {
+            if (!this.$refs.summary) {
                 return;
             }
+            this.$root.$refs.summaryBackground.style.top = this.$refs.summary.getBoundingClientRect().top + 'px';
+            this.$root.$refs.summaryBackground.style.height = this.$refs.summary.getBoundingClientRect().height + 'px';
+            this.$root.$refs.summaryBackground.style.display = 'block';
 
-            const height = summary.height() + 10;
-            const top = summary.offset().top + 5;
-            $('#summaryBackground').height(height);
-            $('#summaryBackground').offset({ top, left: 0 });
-            $('#summaryBackground').show();
+            attachImdbTooltip(); // eslint-disable-line no-undef
         }
     },
     watch: {
@@ -679,12 +672,39 @@ span.ignored {
     color: red;
 }
 
-div#col-show-summary {
+/* .summaryBackground {
+    position: absolute;
+    /* top: 305px;
+    width: 100%;
+    height: 200px;
+    background-color: #efefef;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none;
+    border-color: rgb(136, 136, 136);
+    width: 100vw;
+    margin-left: -55vw;
+    margin-right: -55vw;
+    left: 56%;
+    right: 56%;
+} */
+
+/* #summary::before {
+    width: 100%;
+    background-color: green;
+}
+
+#summary::after {
+    width: 100%;
+    background-color: green;
+} */
+
+#col-show-summary {
     display: table;
 }
 
-#col-show-summary img.show-image {
-    max-width: 180px;
+#col-show-summary >>> img.show-image {
+    width: 180px;
 }
 
 .show-poster-container {
@@ -729,7 +749,7 @@ div#col-show-summary {
         border-style: none;
     }
 
-    .show-poster-container img {
+    .show-poster-container >>> img {
         display: block;
         margin: 0 auto;
         max-width: 280px !important;
@@ -755,8 +775,8 @@ div#col-show-summary {
         width: 100%;
     }
 
-    #col-show-summary img.show-image {
-        max-width: 280px;
+    #col-show-summary >>> img.show-image {
+        width: 280px;
     }
 }
 
@@ -832,5 +852,11 @@ span.snatched b {
 
 span.global-filter {
     font-style: italic;
+}
+
+.show-status {
+    font-size: 11px;
+    text-align: left;
+    display: block;
 }
 </style>

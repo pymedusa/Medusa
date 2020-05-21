@@ -2134,6 +2134,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

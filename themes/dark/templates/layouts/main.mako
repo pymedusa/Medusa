@@ -55,6 +55,11 @@
 
 <body ${('', attributes)[bool(loggedIn)]} web-root="${app.WEB_ROOT}">
     <div id="vue-wrap" class="container-fluid">
+        <load-progress-bar v-if="showsLoading" v-bind="{display: showsLoading.display, current: showsLoading.current, total: showsLoading.total}"></load-progress-bar>
+
+        <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
+        <div ref="summaryBackground" id="summaryBackground" class="shadow summaryBackground" style="display: none"></div>
+        <div ref="checkboxControlsBackground" id="checkboxControlsBackground" class="shadow checkboxControlsBackground" style="display: none"></div>
 
         <div v-if="globalLoading" class="text-center">
             <h3>Loading&hellip;</h3>
@@ -62,11 +67,6 @@
             <i style="cursor: pointer;" @click="globalLoading = false;">click here</i> to show the page.
         </div>
         <div v-cloak :style="globalLoading ? { opacity: '0 !important' } : undefined">
-
-            <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
-            <div id="summaryBackground" class="shadow" style="display: none"></div>
-            <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
-
             <app-header></app-header>
             <sub-menu></sub-menu>
             <%include file="/partials/alerts.mako"/>
