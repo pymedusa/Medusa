@@ -41,7 +41,7 @@
     "lodash": "4.17.15",
     "tablesorter": "2.31.3",
     "v-tooltip": "2.0.3",
-    "vanilla-lazyload": "15.2.0",
+    "vanilla-lazyload": "16.1.0",
     "vue": "2.6.11",
     "vue-async-computed": "3.8.2",
     "vue-cookies": "1.7.0",
