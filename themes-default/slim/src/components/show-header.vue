@@ -531,10 +531,6 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
-        },
-        summaryBackgroundStyle() {
-            const { top, height } = this;
-            return { top, height };
         }
     },
     mounted() {
