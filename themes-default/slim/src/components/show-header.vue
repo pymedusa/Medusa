@@ -642,7 +642,7 @@ export default {
 }
 
 .summaryTable tr td {
-    word-break: break-all;
+    word-break: break-word;
 }
 
 .ver-spacer {
