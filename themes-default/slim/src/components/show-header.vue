@@ -1,6 +1,5 @@
 <template>
     <div class="show-header-container">
-
         <div class="row">
             <!-- @TODO: Remove data attributes -->
             <!-- @SEE: https://github.com/pymedusa/Medusa/pull/5087#discussion_r214074436 -->
@@ -56,262 +55,267 @@
             </div>
         </div>
 
-        <div class="row" id="row-show-summary">
-            <div id="col-show-summary" class="col-md-12">
-                <div class="show-poster-container">
-                    <div class="row">
-                        <div class="image-flex-container col-md-12">
-                            <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ver-spacer" />
-
-                <div class="show-info-container">
-                    <div class="row">
-                        <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                            <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
-                        </div>
-                        <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                            <span
-                                v-if="show.rating.imdb && show.rating.imdb.rating"
-                                class="imdbstars"
-                                :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
-                            >
-                                <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
-                            </span>
-                            <template v-if="!show.id.imdb">
-                                <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
-                            </template>
-                            <template v-else>
-                                <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
-                                <span v-if="show.imdbInfo.year">
-                                    ({{ show.imdbInfo.year }}) -
-                                </span>
-                                <span>
-                                    {{ show.imdbInfo.runtimes || show.runtime }} minutes
-                                </span>
-                                <app-link :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
-                                </app-link>
-                            </template>
-                            <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
-                                <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
-                            </app-link>
-                            <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
-                                <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
-                            </app-link>
-
-                            <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
-                                <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
-                            </app-link>
-
-                            <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
-                                <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
-                            </app-link>
-                        </div>
-                        <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                            <ul class="tags" v-if="show.genres">
-                                <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="`https://trakt.tv/shows/popular/?genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on trakt.tv`"><li>{{ genre }}</li></app-link>
-                            </ul>
-                            <ul class="tags" v-else>
-                                <app-link v-for="genre in showGenres" :key="genre.toString()" :href="`https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on IMDB`"><li>{{ genre }}</li></app-link>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Show Summary -->
-                        <div ref="summary" v-if="configLoaded" id="summary" class="col-md-12">
-
-                            <div id="show-summary" :class="[{ summaryFanArt: layout.fanartBackground }, 'col-lg-9', 'col-md-8', 'col-sm-8', 'col-xs-12']">
-                                <table class="summaryTable pull-left">
-                                    <tr v-if="show.plot">
-                                        <td colspan="2" style="padding-bottom: 15px;">
-                                            <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot" />
-                                        </td>
-                                    </tr>
-
-                                    <!-- Preset -->
-                                    <tr v-if="getQualityPreset({ value: combinedQualities }) !== undefined">
-                                        <td class="showLegend">Quality:</td>
-                                        <td><quality-pill :quality="combinedQualities" /></td>
-                                    </tr>
-
-                                    <!-- Custom quality -->
-                                    <template v-else>
-                                        <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
-                                            <td class="showLegend">Allowed Qualities:</td>
-                                            <td>
-                                                <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
-                                                    -->{{ index > 0 ? ', ' : '' }}<!--
-                                                    --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
-                                                </template>
-                                            </td>
-                                        </tr>
-
-                                        <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
-                                            <td class="showLegend">Preferred Qualities:</td>
-                                            <td>
-                                                <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
-                                                    -->{{ index > 0 ? ', ' : '' }}<!--
-                                                    --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
-                                                </template>
-                                            </td>
-                                        </tr>
-                                    </template>
-
-                                    <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b> on {{ show.network }}</td></tr>
-                                    <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
-                                    <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b></td></tr>
-                                    <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
-                                    <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
-                                    <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
-
-                                    <tr v-if="show.config.aliases.filter(alias => alias.season === -1).length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
-                                        <td>{{show.config.aliases.filter(alias => alias.season === -1).map(alias => alias.title).join(', ')}}</td>
-                                    </tr>
-
-                                    <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">
-                                            <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
-                                        </td>
-                                        <td>
-                                            <span v-if="show.config.release.requiredWords.length" class="break-word">
-                                                {{show.config.release.requiredWords.join(', ')}}
-                                            </span>
-                                            <span v-if="search.filters.required.length > 0" class="break-word global-filter">
-                                                <app-link href="config/search/#searchfilters">
-                                                    <template v-if="show.config.release.requiredWords.length > 0">
-                                                        <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
-                                                        <span v-else>+ </span>
-                                                    </template>
-                                                    {{search.filters.required.join(', ')}}
-                                                </app-link>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                    <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">
-                                            <span :class="{ignored: type === 'snatch-selection'}">Ignored Words: </span>
-                                        </td>
-                                        <td>
-                                            <span v-if="show.config.release.ignoredWords.length" class="break-word">
-                                                {{show.config.release.ignoredWords.join(', ')}}
-                                            </span>
-                                            <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
-                                                <app-link href="config/search/#searchfilters">
-                                                    <template v-if="show.config.release.ignoredWords.length > 0">
-                                                        <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
-                                                        <span v-else>+ </span>
-                                                    </template>
-                                                    {{search.filters.ignored.join(', ')}}
-                                                </app-link>
-                                            </span>
-                                        </td>
-                                    </tr>
-
-                                    <tr v-if="search.filters.preferred.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">
-                                            <span :class="{preferred: type === 'snatch-selection'}">Preferred Words: </span>
-                                        </td>
-                                        <td>
-                                            <app-link href="config/search/#searchfilters">
-                                                <span class="break-word">{{search.filters.preferred.join(', ')}}</span>
-                                            </app-link>
-                                        </td>
-                                    </tr>
-                                    <tr v-if="search.filters.undesired.length > 0">
-                                        <td class="showLegend" style="vertical-align: top;">
-                                            <span :class="{undesired: type === 'snatch-selection'}">Undesired Words: </span>
-                                        </td>
-                                        <td>
-                                            <app-link href="config/search/#searchfilters">
-                                                <span class="break-word">{{search.filters.undesired.join(', ')}}</span>
-                                            </app-link>
-                                        </td>
-                                    </tr>
-
-                                    <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
-                                        <td class="showLegend">Wanted Groups:</td>
-                                        <td>{{show.config.release.whitelist.join(', ')}}</td>
-                                    </tr>
-
-                                    <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
-                                        <td class="showLegend">Unwanted Groups:</td>
-                                        <td>{{show.config.release.blacklist.join(', ')}}</td>
-                                    </tr>
-
-                                    <tr v-if="show.config.airdateOffset !== 0">
-                                        <td class="showLegend">Daily search offset:</td>
-                                        <td>{{show.config.airdateOffset}} hours</td>
-                                    </tr>
-                                    <tr v-if="show.config.locationValid && show.size > -1">
-                                        <td class="showLegend">Size:</td>
-                                        <td>{{humanFileSize(show.size)}}</td>
-                                    </tr>
-                                </table><!-- Option table right -->
+        <div id="summaryBackground" class="shadow shadow-background">
+            <div class="row" id="row-show-summary">
+                <div id="col-show-summary" class="col-md-12">
+                    <div class="show-poster-container">
+                        <div class="row">
+                            <div class="image-flex-container col-md-12">
+                                <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Option table right -->
-                            <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
-                                <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
-                                    <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
-                                    <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
-                                    <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
-                                    <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
-                                    <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
-                                    <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
-                                    <tr><td class="showLegend">Anime: </td><td><state-switch :theme="layout.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
-                                    <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="layout.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
-                                    <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="layout.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
-                                </table>
-                            </div> <!-- end of show-status -->
-                        </div> <!-- end of summary -->
-                    </div> <!-- end of row -->
-                </div> <!-- show-info-container -->
-            </div> <!-- end of col -->
-        </div> <!-- end of row row-show-summary-->
+                    <div class="ver-spacer" />
 
-        <div v-if="show" id="row-show-episodes-controls" class="row">
-            <div id="col-show-episodes-controls" class="col-md-12">
-                <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
-                    <div ref="checkboxControls" class="col-lg-12" id="checkboxControls">
-                        <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
-                            <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
-                                <span :class="status.id">
-                                    <input type="checkbox" :id="status.id" v-model="status.checked" @change="$emit('update-overview-status', overviewStatus)">
-                                    {{status.name}}: <b>{{episodeSummary[status.name]}}</b>
+                    <div class="show-info-container">
+                        <div class="row">
+                            <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
+                                <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
+                            </div>
+                            <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                                <span
+                                    v-if="show.rating.imdb && show.rating.imdb.rating"
+                                    class="imdbstars"
+                                    :qtip-content="`${show.rating.imdb.rating} / 10 Stars<br> ${show.rating.imdb.votes} Votes`"
+                                >
+                                    <span :style="{ width: (Number(show.rating.imdb.rating) * 10) + '%' }" />
                                 </span>
-                            </label>
-                        </div>
-                        <div class="pull-lg-right top-5">
+                                <template v-if="!show.id.imdb">
+                                    <span v-if="show.year.start">({{ show.year.start }}) - {{ show.runtime }} minutes - </span>
+                                </template>
+                                <template v-else>
+                                    <img v-for="country in show.countryCodes" :key="'flag-' + country" src="images/blank.png" :class="['country-flag', 'flag-' + country]" width="16" height="11" style="margin-left: 3px; vertical-align:middle;">
+                                    <span v-if="show.imdbInfo.year">
+                                        ({{ show.imdbInfo.year }}) -
+                                    </span>
+                                    <span>
+                                        {{ show.imdbInfo.runtimes || show.runtime }} minutes
+                                    </span>
+                                    <app-link :href="`https://www.imdb.com/title/${show.id.imdb}`" :title="'https://www.imdb.com/title/' + show.id.imdb">
+                                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;">
+                                    </app-link>
+                                </template>
+                                <app-link v-if="show.id.trakt" :href="`https://trakt.tv/shows/${show.id.trakt}`" :title="`https://trakt.tv/shows/${show.id.trakt}`">
+                                    <img alt="[trakt]" height="16" width="16" src="images/trakt.png">
+                                </app-link>
+                                <app-link v-if="showIndexerUrl && indexerConfig[show.indexer].icon" :href="showIndexerUrl" :title="showIndexerUrl">
+                                    <img :alt="indexerConfig[show.indexer].name" height="16" width="16" :src="`images/${indexerConfig[show.indexer].icon}`" style="margin-top: -1px; vertical-align:middle;">
+                                </app-link>
 
-                            <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="'Change status to:'">Change status to:</option>
-                                <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
-                                    {{ status.name }}
-                                </option>
-                            </select>
+                                <app-link v-if="show.xemNumbering && show.xemNumbering.length > 0" :href="`http://thexem.de/search?q=${show.title}`" :title="`http://thexem.de/search?q=${show.title}`">
+                                    <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;">
+                                </app-link>
 
-                            <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option :value="'Change quality to:'">Change quality to:</option>
-                                <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
-                                    {{ quality.name }}
-                                </option>
-                            </select>
-                            <input type="hidden" id="series-slug" :value="show.id.slug">
-                            <input type="hidden" id="series-id" :value="show.id[show.indexer]">
-                            <input type="hidden" id="indexer" :value="show.indexer">
-                            <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked">
+                                <app-link v-if="show.id.tvdb" :href="`https://fanart.tv/series/${show.id.tvdb}`" :title="`https://fanart.tv/series/${show.id[show.indexer]}`">
+                                    <img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart">
+                                </app-link>
+                            </div>
+                            <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                                <ul class="tags" v-if="show.genres">
+                                    <app-link v-for="genre in dedupeGenres(show.genres)" :key="genre.toString()" :href="`https://trakt.tv/shows/popular/?genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on trakt.tv`"><li>{{ genre }}</li></app-link>
+                                </ul>
+                                <ul class="tags" v-else>
+                                    <app-link v-for="genre in showGenres" :key="genre.toString()" :href="`https://www.imdb.com/search/title?count=100&title_type=tv_series&genres=${genre.toLowerCase().replace(' ', '-')}`" :title="`View other popular ${genre} shows on IMDB`"><li>{{ genre }}</li></app-link>
+                                </ul>
+                            </div>
                         </div>
-                    </div> <!-- checkboxControls -->
-                </div> <!-- end of row -->
-                <div v-else />
-            </div> <!-- end of col -->
-        </div> <!-- end of row -->
+
+                        <div class="row">
+                            <!-- Show Summary -->
+                            <div ref="summary" v-if="configLoaded" id="summary" class="col-md-12">
+                                <div class="row">
+                                    <div id="show-summary" :class="{summaryFanArt: layout.fanartBackground}" class="col-lg-9 col-md-8 col-sm-8 col-xs-12">
+                                        <table class="summaryTable pull-left">
+                                            <tr v-if="show.plot">
+                                                <td colspan="2" style="padding-bottom: 15px;">
+                                                    <truncate @toggle="$emit('reflow')" :length="250" clamp="show more..." less="show less..." :text="show.plot" />
+                                                </td>
+                                            </tr>
+
+                                            <!-- Preset -->
+                                            <tr v-if="getQualityPreset({ value: combinedQualities }) !== undefined">
+                                                <td class="showLegend">Quality:</td>
+                                                <td><quality-pill :quality="combinedQualities" /></td>
+                                            </tr>
+
+                                            <!-- Custom quality -->
+                                            <template v-else>
+                                                <tr v-if="combineQualities(show.config.qualities.allowed) > 0">
+                                                    <td class="showLegend">Allowed Qualities:</td>
+                                                    <td>
+                                                        <template v-for="(curQuality, index) in show.config.qualities.allowed"><!--
+                                                            -->{{ index > 0 ? ', ' : '' }}<!--
+                                                            --><quality-pill :quality="curQuality" :key="`allowed-${curQuality}`" />
+                                                        </template>
+                                                    </td>
+                                                </tr>
+
+                                                <tr v-if="combineQualities(show.config.qualities.preferred) > 0">
+                                                    <td class="showLegend">Preferred Qualities:</td>
+                                                    <td>
+                                                        <template v-for="(curQuality, index) in show.config.qualities.preferred"><!--
+                                                            -->{{ index > 0 ? ', ' : '' }}<!--
+                                                            --><quality-pill :quality="curQuality" :key="`preferred-${curQuality}`" />
+                                                        </template>
+                                                    </td>
+                                                </tr>
+                                            </template>
+
+                                            <tr v-if="show.network && show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b> on {{ show.network }}</td></tr>
+                                            <tr v-else-if="show.network"><td class="showLegend">Originally Airs: </td><td>{{ show.network }}</td></tr>
+                                            <tr v-else-if="show.airs"><td class="showLegend">Originally Airs: </td><td>{{ show.airs }}<b v-if="!show.airsFormatValid" class="invalid-value"> (invalid time format)</b></td></tr>
+                                            <tr><td class="showLegend">Show Status: </td><td>{{ show.status }}</td></tr>
+                                            <tr><td class="showLegend">Default EP Status: </td><td>{{ show.config.defaultEpisodeStatus }}</td></tr>
+                                            <tr><td class="showLegend"><span :class="{'invalid-value': !show.config.locationValid}">Location: </span></td><td><span :class="{'invalid-value': !show.config.locationValid}">{{show.config.location}}</span>{{show.config.locationValid ? '' : ' (Missing)'}}</td></tr>
+
+                                            <tr v-if="show.config.aliases.filter(alias => alias.season === -1).length > 0">
+                                                <td class="showLegend" style="vertical-align: top;">Scene Name:</td>
+                                                <td>{{show.config.aliases.filter(alias => alias.season === -1).map(alias => alias.title).join(', ')}}</td>
+                                            </tr>
+
+                                            <tr v-if="show.config.release.requiredWords.length + search.filters.required.length > 0">
+                                                <td class="showLegend" style="vertical-align: top;">
+                                                    <span :class="{required: type === 'snatch-selection'}">Required Words: </span>
+                                                </td>
+                                                <td>
+                                                    <span v-if="show.config.release.requiredWords.length" class="break-word">
+                                                        {{show.config.release.requiredWords.join(', ')}}
+                                                    </span>
+                                                    <span v-if="search.filters.required.length > 0" class="break-word global-filter">
+                                                        <app-link href="config/search/#searchfilters">
+                                                            <template v-if="show.config.release.requiredWords.length > 0">
+                                                                <span v-if="show.config.release.requiredWordsExclude"> excluded from: </span>
+                                                                <span v-else>+ </span>
+                                                            </template>
+                                                            {{search.filters.required.join(', ')}}
+                                                        </app-link>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="show.config.release.ignoredWords.length + search.filters.ignored.length > 0">
+                                                <td class="showLegend" style="vertical-align: top;">
+                                                    <span :class="{ignored: type === 'snatch-selection'}">Ignored Words: </span>
+                                                </td>
+                                                <td>
+                                                    <span v-if="show.config.release.ignoredWords.length" class="break-word">
+                                                        {{show.config.release.ignoredWords.join(', ')}}
+                                                    </span>
+                                                    <span v-if="search.filters.ignored.length > 0" class="break-word global-filter">
+                                                        <app-link href="config/search/#searchfilters">
+                                                            <template v-if="show.config.release.ignoredWords.length > 0">
+                                                                <span v-if="show.config.release.ignoredWordsExclude"> excluded from: </span>
+                                                                <span v-else>+ </span>
+                                                            </template>
+                                                            {{search.filters.ignored.join(', ')}}
+                                                        </app-link>
+                                                    </span>
+                                                </td>
+                                            </tr>
+
+                                            <tr v-if="search.filters.preferred.length > 0">
+                                                <td class="showLegend" style="vertical-align: top;">
+                                                    <span :class="{preferred: type === 'snatch-selection'}">Preferred Words: </span>
+                                                </td>
+                                                <td>
+                                                    <app-link href="config/search/#searchfilters">
+                                                        <span class="break-word">{{search.filters.preferred.join(', ')}}</span>
+                                                    </app-link>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="search.filters.undesired.length > 0">
+                                                <td class="showLegend" style="vertical-align: top;">
+                                                    <span :class="{undesired: type === 'snatch-selection'}">Undesired Words: </span>
+                                                </td>
+                                                <td>
+                                                    <app-link href="config/search/#searchfilters">
+                                                        <span class="break-word">{{search.filters.undesired.join(', ')}}</span>
+                                                    </app-link>
+                                                </td>
+                                            </tr>
+
+                                            <tr v-if="show.config.release.whitelist && show.config.release.whitelist.length > 0">
+                                                <td class="showLegend">Wanted Groups:</td>
+                                                <td>{{show.config.release.whitelist.join(', ')}}</td>
+                                            </tr>
+
+                                            <tr v-if="show.config.release.blacklist && show.config.release.blacklist.length > 0">
+                                                <td class="showLegend">Unwanted Groups:</td>
+                                                <td>{{show.config.release.blacklist.join(', ')}}</td>
+                                            </tr>
+
+                                            <tr v-if="show.config.airdateOffset !== 0">
+                                                <td class="showLegend">Daily search offset:</td>
+                                                <td>{{show.config.airdateOffset}} hours</td>
+                                            </tr>
+                                            <tr v-if="show.config.locationValid && show.size > -1">
+                                                <td class="showLegend">Size:</td>
+                                                <td>{{humanFileSize(show.size)}}</td>
+                                            </tr>
+                                        </table><!-- Option table right -->
+                                    </div>
+
+                                    <!-- Option table right -->
+                                    <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
+                                        <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
+                                            <tr v-if="show.language"><td class="showLegend">Info Language:</td><td><img :src="'images/subtitles/flags/' + getCountryISO2ToISO3(show.language) + '.png'" width="16" height="11" :alt="show.language" :title="show.language" onError="this.onerror=null;this.src='images/flags/unknown.png';"></td></tr>
+                                            <tr v-if="config.subtitles.enabled"><td class="showLegend">Subtitles: </td><td><state-switch :theme="layout.themeName" :state="show.config.subtitlesEnabled" @click="toggleConfigOption('subtitlesEnabled');" /></td></tr>
+                                            <tr><td class="showLegend">Season Folders: </td><td><state-switch :theme="layout.themeName" :state="show.config.seasonFolders || config.namingForceFolders" /></td></tr>
+                                            <tr><td class="showLegend">Paused: </td><td><state-switch :theme="layout.themeName" :state="show.config.paused" @click="toggleConfigOption('paused')" /></td></tr>
+                                            <tr><td class="showLegend">Air-by-Date: </td><td><state-switch :theme="layout.themeName" :state="show.config.airByDate" @click="toggleConfigOption('airByDate')" /></td></tr>
+                                            <tr><td class="showLegend">Sports: </td><td><state-switch :theme="layout.themeName" :state="show.config.sports" @click="toggleConfigOption('sports')" /></td></tr>
+                                            <tr><td class="showLegend">Anime: </td><td><state-switch :theme="layout.themeName" :state="show.config.anime" @click="toggleConfigOption('anime')" /></td></tr>
+                                            <tr><td class="showLegend">DVD Order: </td><td><state-switch :theme="layout.themeName" :state="show.config.dvdOrder" @click="toggleConfigOption('dvdOrder')" /></td></tr>
+                                            <tr><td class="showLegend">Scene Numbering: </td><td><state-switch :theme="layout.themeName" :state="show.config.scene" @click="toggleConfigOption('scene')" /></td></tr>
+                                        </table>
+                                    </div> <!-- end of show-status -->
+                                </div> <!-- end of show-satus row -->
+                            </div> <!-- end of summary -->
+                        </div> <!-- end of row -->
+                    </div> <!-- show-info-container -->
+                </div> <!-- end of col -->
+            </div> <!-- end of row row-show-summary-->
+        </div>
+
+        <div id="episodes-controll-background" class="shadow shadow-background">
+            <div v-if="show" id="row-show-episodes-controls" class="row">
+                <div id="col-show-episodes-controls" class="col-md-12">
+                    <div v-if="type === 'show'" class="row key"> <!-- Checkbox filter controls -->
+                        <div ref="checkboxControls" class="col-lg-12" id="checkboxControls">
+                            <div v-if="show.seasons" id="key-padding" class="pull-left top-5">
+                                <label v-for="status of overviewStatus" :key="status.id" :for="status.id">
+                                    <span :class="status.id">
+                                        <input type="checkbox" :id="status.id" v-model="status.checked" @change="$emit('update-overview-status', overviewStatus)">
+                                        {{status.name}}: <b>{{episodeSummary[status.name]}}</b>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="pull-lg-right top-5">
+
+                                <select id="statusSelect" v-model="selectedStatus" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                    <option :value="'Change status to:'">Change status to:</option>
+                                    <option v-for="status in changeStatusOptions" :key="status.key" :value="status.value">
+                                        {{ status.name }}
+                                    </option>
+                                </select>
+
+                                <select id="qualitySelect" v-model="selectedQuality" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                                    <option :value="'Change quality to:'">Change quality to:</option>
+                                    <option v-for="quality in qualities" :key="quality.key" :value="quality.value">
+                                        {{ quality.name }}
+                                    </option>
+                                </select>
+                                <input type="hidden" id="series-slug" :value="show.id.slug">
+                                <input type="hidden" id="series-id" :value="show.id[show.indexer]">
+                                <input type="hidden" id="indexer" :value="show.indexer">
+                                <input class="btn-medusa" type="button" id="changeStatus" value="Go" @click="changeStatusClicked">
+                            </div>
+                        </div> <!-- checkboxControls -->
+                    </div> <!-- end of row -->
+                    <div v-else />
+                </div> <!-- end of col -->
+            </div> <!-- end of row -->
+        </div> <!-- end of background -->
     </div>
 </template>
 
@@ -527,10 +531,6 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
-        },
-        summaryBackgroundStyle() {
-            const { top, height } = this;
-            return { top, height };
         }
     },
     mounted() {
@@ -596,13 +596,6 @@ export default {
             });
         },
         reflowLayout() {
-            if (!this.$refs.summary) {
-                return;
-            }
-            this.$root.$refs.summaryBackground.style.top = this.$refs.summary.getBoundingClientRect().top + 'px';
-            this.$root.$refs.summaryBackground.style.height = this.$refs.summary.getBoundingClientRect().height + 'px';
-            this.$root.$refs.summaryBackground.style.display = 'block';
-
             attachImdbTooltip(); // eslint-disable-line no-undef
         }
     },
@@ -672,32 +665,9 @@ span.ignored {
     color: red;
 }
 
-/* .summaryBackground {
-    position: absolute;
-    /* top: 305px;
-    width: 100%;
-    height: 200px;
-    background-color: #efefef;
-    opacity: 0.8;
-    border-width: 1px;
-    border-style: solid none;
-    border-color: rgb(136, 136, 136);
-    width: 100vw;
-    margin-left: -55vw;
-    margin-right: -55vw;
-    left: 56%;
-    right: 56%;
-} */
-
-/* #summary::before {
-    width: 100%;
-    background-color: green;
+.shadow-background {
+    padding: 10px;
 }
-
-#summary::after {
-    width: 100%;
-    background-color: green;
-} */
 
 #col-show-summary {
     display: table;

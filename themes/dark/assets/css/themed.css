@@ -349,12 +349,8 @@ ul.tags li {
     border-radius: 5px;
 }
 
-#summaryBackground {
-    background-color: rgb(61, 61, 61);
-}
-
-#checkboxControlsBackground {
-    background-color: rgb(41, 41, 41);
+.shadow-background {
+    background-color: rgb(61, 61, 61, 0.8);
 }
 
 .defaultTable {
