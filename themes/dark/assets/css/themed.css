@@ -349,7 +349,7 @@ ul.tags li {
     border-radius: 5px;
 }
 
-#summaryBackground {
+.shadow-background {
     background-color: rgb(61, 61, 61, 0.8);
 }
 
