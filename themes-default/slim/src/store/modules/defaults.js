@@ -37,6 +37,8 @@ const state = {
         genres: [],
         id: {
             tvdb: null,
+            trakt: null,
+            imdb: null,
             slug: null
         },
         indexer: null,
