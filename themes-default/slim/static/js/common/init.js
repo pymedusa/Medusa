@@ -7,7 +7,7 @@ MEDUSA.common.init = function() {
 
     // Function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
-        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        hex = String(hex).replace(/[\da-f]/gi, '');
         if (hex.length < 6) {
             hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
         }
@@ -16,9 +16,9 @@ MEDUSA.common.init = function() {
         let c;
         let i;
         for (i = 0; i < 3; i++) {
-            c = parseInt(hex.substr(i * 2, 2), 16);
+            c = Number.parseInt(hex.slice(i * 2, 2), 16);
             c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-            rgb += ('00' + c).substr(c.length);
+            rgb += ('00' + c).slice(c.length);
         }
         return rgb;
     }
@@ -27,7 +27,7 @@ MEDUSA.common.init = function() {
     function rgb2hex(rgb) {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         function hex(x) {
-            return ('0' + parseInt(x, 10).toString(16)).slice(-2);
+            return ('0' + Number.parseInt(x, 10).toString(16)).slice(-2);
         }
         return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }

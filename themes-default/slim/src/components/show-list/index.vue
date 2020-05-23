@@ -141,7 +141,7 @@ export default {
         sortedShows() {
             const { shows, stateLayout } = this;
             const { sortArticle } = stateLayout;
-            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
+            const removeArticle = str => sortArticle ? str.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '') : str;
             return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
         },
         test() {

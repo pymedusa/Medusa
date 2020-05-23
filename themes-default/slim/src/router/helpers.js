@@ -18,7 +18,7 @@ export const makeLegacyRedirect = ({ target, from, targetParams, ...config }) =>
 /** @type {import('.').extractLegacyPath} */
 const extractLegacyPath = path => {
     const pos = path.indexOf(':');
-    const legacyPath = pos === -1 ? path : path.substring(0, pos - 1);
+    const legacyPath = pos === -1 ? path : path.slice(0, pos - 1);
     return legacyPath.endsWith('/') ? legacyPath.slice(0, -1) : legacyPath;
 };
 

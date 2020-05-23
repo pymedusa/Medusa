@@ -636,7 +636,7 @@ export default {
             const target = event.currentTarget;
             // Strip non-numeric characters
             const value = $(target).val();
-            $(target).val(value.replace(/[^0-9xX]*/g, ''));
+            $(target).val(value.replace(/[^\dXx]*/g, ''));
             const forSeason = $(target).attr('data-for-season');
             const forEpisode = $(target).attr('data-for-episode');
 
@@ -672,7 +672,7 @@ export default {
         $(document.body).on('change', '.sceneAbsolute', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
-            $(target).val($(target).val().replace(/[^0-9xX]*/g, ''));
+            $(target).val($(target).val().replace(/[^\dXx]*/g, ''));
             const forAbsolute = $(target).attr('data-for-absolute');
 
             const m = $(target).val().match(/^(\d{1,3})$/i);
@@ -706,7 +706,7 @@ export default {
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[episode.slug] = { quality: parseInt(quality, 10) };
+                patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
