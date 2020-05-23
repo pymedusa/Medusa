@@ -14,7 +14,23 @@ export default {
     computed: {
         normalisedPercentage() {
             const percentage = Number(this.percentage);
-            return percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
+            if (percentage === 100) {
+                return 100;
+            }
+
+            if (percentage > 80) {
+                return 80;
+            }
+
+            if (percentage > 60) {
+                return 60;
+            }
+
+            if (percentage > 40) {
+                return 40;
+            }
+
+            return 20;
         }
     }
 };

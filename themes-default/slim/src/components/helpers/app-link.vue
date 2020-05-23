@@ -58,7 +58,7 @@ export default {
             if (!href) {
                 return;
             }
-            return /^[a-z][a-z0-9+.-]*:/.test(href);
+            return /^[a-z][\d+.a-z-]*:/.test(href);
         },
         isExternal() {
             const base = this.computedBase;

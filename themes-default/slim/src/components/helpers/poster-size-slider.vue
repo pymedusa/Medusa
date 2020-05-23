@@ -25,9 +25,9 @@ export default {
         // Get poster size from localStorage
         let slidePosterSize;
         if (typeof (Storage) !== 'undefined') {
-            slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
+            slidePosterSize = Number.parseInt(localStorage.getItem('posterSize'), 10);
         }
-        if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
+        if (typeof (slidePosterSize) !== 'number' || Number.isNaN(slidePosterSize)) {
             slidePosterSize = 188;
         }
 

@@ -152,7 +152,7 @@ const startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-
                             });
                         }
                         let subtitleScore = subtitle.score;
-                        const subtitleName = subtitle.filename.substring(0, 99);
+                        const subtitleName = subtitle.filename.slice(0, 99);
                         // If hash match, don't show missingGuess
                         if (subtitle.sub_score >= subtitle.max_score) {
                             missingGuess = '';

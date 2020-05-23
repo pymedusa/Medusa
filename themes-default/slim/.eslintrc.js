@@ -68,6 +68,7 @@ module.exports = {
         'unicorn/no-useless-undefined': 'off',
         'unicorn/no-reduce': 'off',
         'unicorn/consistent-function-scoping': 'off',
+        'unicorn/prefer-optional-catch-binding': 'off',
         'vue/html-indent': [
             'error',
             4,
