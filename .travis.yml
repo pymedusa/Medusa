@@ -13,8 +13,8 @@ script: false
 
 # Use of YAML aliases inspired by https://link.medium.com/vUG5hZ9oW3
 # There's no support for concatenation so we must do this
-_node_version: &_node_version '10.16.0'
-_nvm_install: &_nvm_install nvm install v10.16.0
+_node_version: &_node_version '12.13.0'
+_nvm_install: &_nvm_install nvm install v12.13.0
 _install_yarn_bin: &_install_yarn_bin >-
   curl -o- -L https://yarnpkg.com/install.sh | bash &&
   export PATH="$HOME/.yarn/bin:$PATH"
