@@ -38,7 +38,7 @@ class TorrentProvider(GenericProvider):
             'https://p2pdl.com/download/{info_hash}',
             'https://itorrents.org/torrent/{info_hash}.torrent',
             'https://watercache.nanobytes.org/get/{info_hash}',
-            'https://medusa.win/dl?magnet:?xt=urn:btih:{info_hash}&direct=true',
+            'https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true',
         ]
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
@@ -199,7 +199,7 @@ class TorrentProvider(GenericProvider):
                     return urls, filename
 
                 urls = [
-                    cache_url.format(info_hash=info_hash.decode('utf-8'),
+                    cache_url.format(info_hash=info_hash,
                                      torrent_name=torrent_name)
                     for cache_url in self.bt_cache_urls
                 ]
