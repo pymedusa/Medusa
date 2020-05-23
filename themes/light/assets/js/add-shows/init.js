@@ -60,7 +60,7 @@ MEDUSA.addShows.init = function() {
             getSortData: {
                 name(itemElem) {
                     const name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.layout.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.layout.sortArticle ? name : name.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'

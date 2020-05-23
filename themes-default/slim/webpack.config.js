@@ -106,7 +106,7 @@ const webpackConfig = (env, mode) => ({
     },
     stats: {
         // Hides assets copied from `./dist` to `../../themes` by CopyWebpackPlugin
-        excludeAssets: /(\.\.[\\/])+themes[\\/].*/,
+        excludeAssets: /(\.\.[/\\])+themes[/\\].*/,
         // When `false`, hides extra information about assets collected by children (e.g. plugins)
         children: false
     },
@@ -121,19 +121,19 @@ const webpackConfig = (env, mode) => ({
             cacheGroups: {
                 runtime: {
                     name: 'medusa-runtime',
-                    test: /[\\/]src[\\/]/,
+                    test: /[/\\]src[/\\]/,
                     minChunks: 2,
                     priority: 0,
                     reuseExistingChunk: true
                 },
                 'date-fns': {
                     name: 'vendors~date-fns',
-                    test: /[\\/]node_modules[\\/]date-fns[\\/]/,
+                    test: /[/\\]node_modules[/\\]date-fns[/\\]/,
                     priority: -5
                 },
                 vendors: {
                     name: 'vendors',
-                    test: /[\\/](vendor|node_modules)[\\/]/,
+                    test: /[/\\](vendor|node_modules)[/\\]/,
                     priority: -10
                 },
                 default: {
@@ -161,7 +161,7 @@ const webpackConfig = (env, mode) => ({
             },
             {
                 test: /\.js$/,
-                exclude: /[\\/]node_modules[\\/]/,
+                exclude: /[/\\]node_modules[/\\]/,
                 loader: 'babel-loader',
                 options: {
                     cacheDirectory: mode !== 'production'

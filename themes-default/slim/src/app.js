@@ -3,6 +3,7 @@ import Vue from 'vue';
 import { registerGlobalComponents, registerPlugins } from './global-vue-shim';
 import router from './router';
 import store from './store';
+import { mapActions, mapMutations, mapState } from 'vuex';
 import { isDevelopment } from './utils/core';
 
 Vue.config.devtools = true;
@@ -23,7 +24,14 @@ const app = new Vue({
             pageComponent: false
         };
     },
+    computed: {
+        ...mapState({
+            showsLoading: state => state.shows.loading
+        })
+    },
     mounted() {
+        const { getShows, setLoadingDisplay, setLoadingFinished } = this;
+
         if (isDevelopment) {
             console.log('App Mounted!');
         }
@@ -46,6 +54,25 @@ const app = new Vue({
                 alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
             });
         }
+
+        // Let's bootstrap the app with essential data.
+        getShows()
+            .then(() => {
+                console.log('Finished loading all shows.');
+                setTimeout(() => {
+                    setLoadingFinished(true);
+                    setLoadingDisplay(false);
+                }, 2000);
+            });
+    },
+    methods: {
+        ...mapActions({
+            getShows: 'getShows'
+        }),
+        ...mapMutations([
+            'setLoadingDisplay',
+            'setLoadingFinished'
+        ])
     }
 }).$mount('#vue-wrap');
 

@@ -21,8 +21,8 @@ import {
     ConfigToggleSlider,
     FileBrowser,
     History,
-    Home,
     LanguageSelect,
+    LoadProgressBar,
     ManualPostProcess,
     PlotInfo,
     QualityChooser,
@@ -74,6 +74,7 @@ export const registerGlobalComponents = () => {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        LoadProgressBar,
         PlotInfo,
         QualityChooser,
         QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
@@ -87,7 +88,6 @@ export const registerGlobalComponents = () => {
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
         History,
-        Home,
         ManualPostProcess,
         Schedule,
         SnatchSelection,
@@ -132,7 +132,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};

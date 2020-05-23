@@ -5,7 +5,6 @@ import { arrayUnique, arrayExclude } from '../../utils/core';
 const state = {
     wikiUrl: null,
     donationsUrl: null,
-    selectedRootIndex: null,
     namingForceFolders: null,
     sourceUrl: null,
     downloadUrl: null,
@@ -112,7 +111,6 @@ const mutations = {
 };
 
 const getters = {
-    layout: state => layout => state.layout[layout],
     effectiveIgnored: (state, _, rootState) => series => {
         const seriesIgnored = series.config.release.ignoredWords.map(x => x.toLowerCase());
         const globalIgnored = rootState.search.filters.ignored.map(x => x.toLowerCase());

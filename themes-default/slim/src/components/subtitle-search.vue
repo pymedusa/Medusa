@@ -283,7 +283,7 @@ export default {
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
+            this.$el.remove();
         }
     }
 };
