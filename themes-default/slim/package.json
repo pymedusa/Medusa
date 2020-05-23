@@ -27,7 +27,7 @@
   },
   "resolutions": {
     "**/jquery": "3.5.1",
-    "**/date-fns": "2.13.0",
+    "**/date-fns": "2.14.0",
     "jest/**/@babel/core": "7.9.6"
   },
   "dependencies": {
