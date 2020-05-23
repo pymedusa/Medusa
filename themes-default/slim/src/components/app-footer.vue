@@ -92,7 +92,7 @@ export default {
          * @example
          */
         formatTimeDuration(durationInMs) {
-            const days = parseInt(durationInMs / 86400000, 10);
+            const days = Number.parseInt(durationInMs / 86400000, 10);
             let daysText = '';
             if (days > 0) {
                 daysText = String(days) + (days > 1 ? ' days, ' : ' day, ');

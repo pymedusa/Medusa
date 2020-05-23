@@ -85,12 +85,12 @@ export default {
         matchingVueRoute() {
             const { isAbsolute, isExternal, computedHref } = this;
             if (isAbsolute && isExternal) {
-                return undefined;
+                return;
             }
 
             const { route } = router.resolve(routerBase + computedHref);
             if (!route.name) {
-                return undefined;
+                return;
             }
 
             return route;

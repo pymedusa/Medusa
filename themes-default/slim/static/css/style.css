@@ -1251,7 +1251,7 @@ h1.title {
     margin-bottom: 15px;
     line-height: 30px;
     text-align: left;
-    text-rendering: optimizelegibility;
+    text-rendering: optimizeLegibility;
     border-bottom: 1px solid rgb(136, 136, 136);
 }
 
