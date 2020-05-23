@@ -34,14 +34,14 @@
     "axios": "0.19.2",
     "bootstrap": "3.4.1",
     "country-language": "0.1.7",
-    "date-fns": "2.13.0",
+    "date-fns": "2.14.0",
     "is-visible": "2.2.0",
     "javascript-time-ago": "2.0.7",
     "jquery": "3.5.1",
     "lodash": "4.17.15",
     "tablesorter": "2.31.3",
     "v-tooltip": "2.0.3",
-    "vanilla-lazyload": "15.2.0",
+    "vanilla-lazyload": "16.1.0",
     "vue": "2.6.11",
     "vue-async-computed": "3.8.2",
     "vue-cookies": "1.7.0",
@@ -53,7 +53,7 @@
     "vue-multiselect": "2.1.6",
     "vue-native-websocket": "2.0.14",
     "vue-nav-tabs": "0.5.7",
-    "vue-router": "3.1.6",
+    "vue-router": "3.2.0",
     "vue-scrollto": "2.18.1",
     "vue-snotify": "3.2.1",
     "vue-template-compiler": "2.6.11",
@@ -164,7 +164,9 @@
     "coverageReporters": [
       "json"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/test/jest/setup.js"]
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/jest/setup.js"
+    ]
   },
   "nyc": {
     "sourceMap": false,
