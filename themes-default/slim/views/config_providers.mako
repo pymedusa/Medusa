@@ -509,7 +509,7 @@ window.app = new Vue({
 
         $(document.body).on('change', '.newznab_api_key', event => {
             let providerId = $(event.currentTarget).prop('id');
-            providerId = providerId.substring(0, providerId.length - '_hash'.length);
+            providerId = providerId.slice(0, providerId.length - '_hash'.length);
 
             const url = $('#' + providerId + '_url').val();
             const cat = $('#' + providerId + '_cat').val();

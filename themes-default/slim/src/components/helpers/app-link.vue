@@ -139,7 +139,7 @@ export default {
                         const { location } = window;
                         if (location.hash.length === 0) {
                             // Current location might be `url#`
-                            const newHash = location.href.endsWith('#') ? href.substr(1) : href;
+                            const newHash = location.href.endsWith('#') ? href.slice(1) : href;
                             return location.href + newHash;
                         }
                         return location.href.replace(location.hash, '') + href;
