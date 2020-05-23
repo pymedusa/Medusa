@@ -33,6 +33,13 @@ class TorrentProvider(GenericProvider):
         """Initialize the class."""
         super(TorrentProvider, self).__init__(name)
 
+        self.bt_cache_urls = [
+            'https://asnet.pw/download/{info_hash}/',
+            'https://p2pdl.com/download/{info_hash}',
+            'https://itorrents.org/torrent/{info_hash}.torrent',
+            'https://watercache.nanobytes.org/get/{info_hash}',
+            'https://medusa.win/dl?magnet:?xt=urn:btih:{info_hash}&direct=true',
+        ]
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
         self.minseed = 0
@@ -191,7 +198,11 @@ class TorrentProvider(GenericProvider):
                     log.error('Unable to extract torrent hash from magnet: {0}', result.url)
                     return urls, filename
 
-                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                urls = [
+                    cache_url.format(info_hash=info_hash.decode('utf-8'),
+                                     torrent_name=torrent_name)
+                    for cache_url in self.bt_cache_urls
+                ]
                 shuffle(urls)
             except Exception:
                 log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
