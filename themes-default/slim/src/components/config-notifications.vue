@@ -1187,7 +1187,7 @@ export default {
         testKODI() {
             const kodi = {};
             const kodiHostInput = $('#kodi_host').find('input');
-            const kodiHosts = kodiHostInput.map(value => value.value).filter(item => item !== '');
+            const kodiHosts = kodiHostInput.toArray().map(value => value.value).filter(item => item !== '');
             kodi.host = kodiHosts.join(',');
             kodi.username = $.trim($('#kodi_username').val());
             kodi.password = $.trim($('#kodi_password').val());
@@ -1212,7 +1212,7 @@ export default {
             const plex = {};
             plex.client = {};
             const plexHostsInput = $('#plex_client_host').find('input');
-            const plexHosts = plexHostsInput.map(value => value.value).filter(item => item !== '');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.client.host = plexHosts.join(',');
             plex.client.username = $.trim($('#plex_client_username').val());
             plex.client.password = $.trim($('#plex_client_password').val());
@@ -1237,7 +1237,7 @@ export default {
             const plex = {};
             plex.server = {};
             const plexHostsInput = $('#plex_server_host').find('input');
-            const plexHosts = plexHostsInput.map(value => value.value).filter(item => item !== '');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.server.host = plexHosts.join(',');
 
             plex.server.username = $.trim($('#plex_server_username').val());

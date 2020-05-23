@@ -38,7 +38,7 @@ export default {
             }
             // Filters `requires = false` and reverses the array
             const reducer = (arr, item) => (item.requires === undefined || item.requires) ? arr.concat(item) : arr;
-            return subMenu.reduceRight(menu => reducer(menu), []);
+            return subMenu.reduceRight(reducer, []);
         },
         showSelectorVisible() {
             const { $route } = this;
