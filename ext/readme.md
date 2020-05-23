@@ -57,7 +57,7 @@ ext | `requests` | [2.23.0](https://pypi.org/project/requests/2.23.0/) | **`medu
 ext | `requests-oauthlib` | [1.3.0](https://pypi.org/project/requests-oauthlib/1.3.0/) | **`medusa`**, `python-twitter` | Module: `requests_oauthlib`
 **ext3** | `sgmllib3k` | [1.0.0](https://pypi.org/project/sgmllib3k/1.0.0/) | `feedparser` | File: `sgmllib.py`
 **ext2** | <code><b>singledispatch</b>.py</code><br>`singledispatch_helpers.py` | [3.4.0.3](https://pypi.org/project/singledispatch/3.4.0.3/) | `tornado` | -
-ext | <code><b>six</b>.py</code> | [1.14.0](https://pypi.org/project/six/1.14.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
+ext | <code><b>six</b>.py</code> | [1.15.0](https://pypi.org/project/six/1.15.0/) | **`medusa`**, `adba`, `configobj`, `guessit`, `html5lib`, `imdbpie`, `knowit`, `PyGithub`, `rebulk`, `subliminal`, `tvdbapiv2`, `validators` | -
 ext | `soupsieve` | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | `subliminal` | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
