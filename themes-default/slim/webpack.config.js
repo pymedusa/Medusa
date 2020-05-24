@@ -114,9 +114,6 @@ const webpackConfig = (env, mode) => ({
         runtimeChunk: {
             name: 'vendors'
         },
-        minimizer: [
-            new OptimizeCssAssetsPlugin({})
-        ],
         splitChunks: {
             chunks: 'all',
             maxInitialRequests: Infinity,
@@ -216,6 +213,7 @@ const webpackConfig = (env, mode) => ({
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
+        mode === 'production' ? new OptimizeCssAssetsPlugin({}) : null,
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
@@ -277,7 +275,7 @@ const webpackConfig = (env, mode) => ({
                 }))
             ]
         })
-    ]
+    ].filter(Boolean) // Remove non-plugins.
 });
 
 /**
