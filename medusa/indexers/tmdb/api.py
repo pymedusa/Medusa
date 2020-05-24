@@ -546,7 +546,7 @@ class Tmdb(BaseIndexer):
         try:
             while page <= total_pages:
                 # Requesting for the changes on a specific showid, will result in json with changes per season.
-                updates = self.tmdb.TV(tmdb_id).changes(start_date=start_date, end_date=end_date)
+                updates = self.tmdb.TV_Changes(tmdb_id).series(start_date=start_date, end_date=end_date)
                 if updates and updates.get('changes'):
                     for items in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
                         for season in items:
