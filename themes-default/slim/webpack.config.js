@@ -266,7 +266,7 @@ const webpackConfig = (env, mode) => ({
                     to: path.resolve(theme.dest, 'assets'),
                     globOptions: {
                         // Ignore theme-specific files as they are handled by the next entry
-                        ignore: cssThemes.map(theme => `css/${theme.css}`)
+                        ignore: cssThemes.map(theme => `**/css/${theme.css}`)
                     }
                 })),
                 // Old CSS files - themed.css
