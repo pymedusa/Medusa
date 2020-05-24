@@ -173,7 +173,7 @@ exports[`AppHeader.test.js renders 1`] = `
         </li>
          
         <li
-          class=""
+          class="navbar-split"
           id="NAVschedule"
         >
           <app-link-stub
@@ -185,7 +185,7 @@ exports[`AppHeader.test.js renders 1`] = `
         </li>
          
         <li
-          class=""
+          class="navbar-split"
           id="NAVhistory"
         >
           <app-link-stub

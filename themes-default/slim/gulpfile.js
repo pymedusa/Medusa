@@ -43,7 +43,7 @@ const makeMoveImagesTask = theme => {
 /** Gulp tasks */
 
 const generateSyncTasks = () => {
-    const tasks = pkg.config.cssThemes.map(makeMoveImagesTask);
+    const tasks = pkg.config.cssThemes.map(theme => makeMoveImagesTask(theme));
     return gulp.series(...tasks);
 };
 

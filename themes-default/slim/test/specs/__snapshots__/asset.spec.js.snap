@@ -2,12 +2,22 @@
 
 exports[`Asset.test.js renders default content for network 1`] = `
 <img
+  data-src="https://default_website.tld/img.png"
   src="https://default_website.tld/img.png"
 />
 `;
 
 exports[`Asset.test.js renders image with API v2 path for network 1`] = `
 <img
+  data-src=""
   src="/api/v2/series/tvdb1000/asset/network?api_key=1234567890ABCDEF1234567890ABCDEF"
+/>
+`;
+
+exports[`Asset.test.js renders image with API v2 path for network with lazy loading 1`] = `
+<img
+  class="show-image"
+  data-src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
+  src="https://default_website.tld/img.png"
 />
 `;
