@@ -230,47 +230,51 @@ const webpackConfig = (env, mode) => ({
         }),
         // Copy static files for each theme
         // Don't use for assets emitted by Webpack because this plugin runs before the bundle is created.
-        new CopyWebpackPlugin([
-            // Templates
-            ...perTheme(theme => ({
-                context: './views/',
-                from: '**',
-                to: path.resolve(theme.dest, 'templates')
-            })),
-            // Create package.json
-            ...perTheme(theme => ({
-                from: 'package.json',
-                to: path.resolve(theme.dest, 'package.json'),
-                toType: 'file',
-                transform: content => theme.makeMetadata(content)
-            })),
-            // Root files: index.html
-            ...perTheme(theme => ({
-                from: 'index.html',
-                to: path.resolve(theme.dest),
-                toType: 'dir'
-            })),
-            // Old JS files
-            ...perTheme(theme => ({
-                context: './static/',
-                from: 'js/**',
-                to: path.resolve(theme.dest, 'assets')
-            })),
-            // Old CSS files
-            ...perTheme(theme => ({
-                context: './static/',
-                from: 'css/**',
-                // Ignore theme-specific files as they are handled by the next entry
-                ignore: cssThemes.map(theme => `css/${theme.css}`),
-                to: path.resolve(theme.dest, 'assets')
-            })),
-            // Old CSS files - themed.css
-            ...perTheme(theme => ({
-                from: `static/css/${theme.css}`,
-                to: path.resolve(theme.dest, 'assets', 'css', 'themed.css'),
-                toType: 'file'
-            }))
-        ])
+        new CopyWebpackPlugin({
+            patterns: [
+                // Templates
+                ...perTheme(theme => ({
+                    context: './views/',
+                    from: '**',
+                    to: path.resolve(theme.dest, 'templates')
+                })),
+                // Create package.json
+                ...perTheme(theme => ({
+                    from: 'package.json',
+                    to: path.resolve(theme.dest, 'package.json'),
+                    toType: 'file',
+                    transform: content => theme.makeMetadata(content)
+                })),
+                // Root files: index.html
+                ...perTheme(theme => ({
+                    from: 'index.html',
+                    to: path.resolve(theme.dest),
+                    toType: 'dir'
+                })),
+                // Old JS files
+                ...perTheme(theme => ({
+                    context: './static/',
+                    from: 'js/**',
+                    to: path.resolve(theme.dest, 'assets')
+                })),
+                // Old CSS files
+                ...perTheme(theme => ({
+                    context: './static/',
+                    from: 'css/**',
+                    to: path.resolve(theme.dest, 'assets'),
+                    globOptions: {
+                        // Ignore theme-specific files as they are handled by the next entry
+                        ignore: cssThemes.map(theme => `css/${theme.css}`)
+                    }
+                })),
+                // Old CSS files - themed.css
+                ...perTheme(theme => ({
+                    from: `static/css/${theme.css}`,
+                    to: path.resolve(theme.dest, 'assets', 'css', 'themed.css'),
+                    toType: 'file'
+                }))
+            ]
+        })
     ]
 });
 
