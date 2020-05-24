@@ -114,6 +114,9 @@ const webpackConfig = (env, mode) => ({
         runtimeChunk: {
             name: 'vendors'
         },
+        minimizer: [
+            new OptimizeCssAssetsPlugin({})
+        ],
         splitChunks: {
             chunks: 'all',
             maxInitialRequests: Infinity,
@@ -213,7 +216,6 @@ const webpackConfig = (env, mode) => ({
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
-        new OptimizeCssAssetsPlugin({}),
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
