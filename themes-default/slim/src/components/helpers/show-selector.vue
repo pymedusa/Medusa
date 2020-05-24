@@ -65,7 +65,7 @@ export default {
                 lists[type].shows.push(show);
             });
 
-            const sortKey = title => (sortArticle ? title : title.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
             lists.forEach(list => {
                 list.shows.sort((showA, showB) => {
                     const titleA = sortKey(showA.title);

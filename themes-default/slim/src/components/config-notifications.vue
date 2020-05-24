@@ -1186,9 +1186,8 @@ export default {
         },
         testKODI() {
             const kodi = {};
-            const kodiHosts = $.map($('#kodi_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const kodiHostInput = $('#kodi_host').find('input');
+            const kodiHosts = kodiHostInput.toArray().map(value => value.value).filter(item => item !== '');
             kodi.host = kodiHosts.join(',');
             kodi.username = $.trim($('#kodi_username').val());
             kodi.password = $.trim($('#kodi_password').val());
@@ -1212,9 +1211,8 @@ export default {
         testPHT() {
             const plex = {};
             plex.client = {};
-            const plexHosts = $.map($('#plex_client_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const plexHostsInput = $('#plex_client_host').find('input');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.client.host = plexHosts.join(',');
             plex.client.username = $.trim($('#plex_client_username').val());
             plex.client.password = $.trim($('#plex_client_password').val());
@@ -1238,9 +1236,8 @@ export default {
         testPMS() {
             const plex = {};
             plex.server = {};
-            const plexHosts = $.map($('#plex_server_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const plexHostsInput = $('#plex_server_host').find('input');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.server.host = plexHosts.join(',');
 
             plex.server.username = $.trim($('#plex_server_username').val());
@@ -1600,7 +1597,7 @@ export default {
             }
             if (port === null) {
                 err += '<li style="color: red;">You must specify an SMTP port!</li>';
-            } else if (port.match(/^\d+$/) === null || parseInt(port, 10) > 65535) {
+            } else if (port.match(/^\d+$/) === null || Number.parseInt(port, 10) > 65535) {
                 err += '<li style="color: red;">SMTP port must be between 0 and 65535!</li>';
             }
             if (err.length > 0) {

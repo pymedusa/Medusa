@@ -636,7 +636,7 @@ export default {
             const target = event.currentTarget;
             // Strip non-numeric characters
             const value = $(target).val();
-            $(target).val(value.replace(/[^0-9xX]*/g, ''));
+            $(target).val(value.replace(/[^\dXx]*/g, ''));
             const forSeason = $(target).attr('data-for-season');
             const forEpisode = $(target).attr('data-for-episode');
 
@@ -672,7 +672,7 @@ export default {
         $(document.body).on('change', '.sceneAbsolute', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
-            $(target).val($(target).val().replace(/[^0-9xX]*/g, ''));
+            $(target).val($(target).val().replace(/[^\dXx]*/g, ''));
             const forAbsolute = $(target).attr('data-for-absolute');
 
             const m = $(target).val().match(/^(\d{1,3})$/i);
@@ -706,7 +706,7 @@ export default {
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[episode.slug] = { quality: parseInt(quality, 10) };
+                patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
@@ -782,28 +782,13 @@ export default {
         },
 
         /**
-         * Attaches IMDB tooltip,
-         * Moves summary and checkbox controls backgrounds
+         * Attaches IMDB tooltip
          */
-        reflowLayout: debounce(function() {
+        reflowLayout: debounce(() => {
             console.debug('Reflowing layout');
-            this.movecheckboxControlsBackground();
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
-        /**
-         * Adjust the checkbox controls (episode filter) background position
-         */
-        movecheckboxControlsBackground() {
-            if (!this.$refs['show-header'].$refs.checkboxControls) {
-                return;
-            }
-            const height = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().height + 10 + 'px';
-            const top = this.$refs['show-header'].$refs.checkboxControls.getBoundingClientRect().top + 'px';
 
-            this.$root.$refs.checkboxControlsBackground.style.top = top;
-            this.$root.$refs.checkboxControlsBackground.style.height = height;
-            this.$root.$refs.checkboxControlsBackground.style.display = 'block';
-        },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const { $snotify, id, indexer, show } = this;
 
@@ -1180,13 +1165,6 @@ export default {
                 }
             }
         }
-    },
-    beforeRouteLeave(to, from, next) {
-        // The show-header component has a summaryBackground and checkboxControlsBackground element.
-        // When leaving for another route, we need to hide these.
-        this.$root.$refs.summaryBackground.style.display = 'none';
-        this.$root.$refs.checkboxControlsBackground.style.display = 'none';
-        next();
     }
 };
 </script>
