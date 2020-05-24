@@ -6,6 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
 
 const pkg = require('./package.json');
 
@@ -114,6 +115,14 @@ const webpackConfig = (env, mode) => ({
         runtimeChunk: {
             name: 'vendors'
         },
+        minimizer: [
+            // Minify js files:
+            // (TerserJS is webpack default minifier but we have to specify it explicitly
+            // as soon as we include more minifiers)
+            new TerserJSPlugin({}),
+            // Minify css files:
+            new OptimizeCssAssetsPlugin({})
+        ],
         splitChunks: {
             chunks: 'all',
             maxInitialRequests: Infinity,
@@ -213,7 +222,6 @@ const webpackConfig = (env, mode) => ({
             jQuery: 'jquery'
         }),
         new VueLoaderPlugin(),
-        mode === 'production' ? new OptimizeCssAssetsPlugin({}) : null,
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
@@ -275,7 +283,7 @@ const webpackConfig = (env, mode) => ({
                 }))
             ]
         })
-    ].filter(Boolean) // Remove non-plugins.
+    ]
 });
 
 /**
