@@ -14,14 +14,8 @@
 
         <div v-if="showLoaded" id="config" :class="{ summaryFanArt: layout.fanartBackground }">
             <form @submit.prevent="saveShow('all')" class="form-horizontal">
-                <div id="config-components">
-                    <ul>
-                        <li><app-link href="#core-component-group1">Main</app-link></li>
-                        <li><app-link href="#core-component-group2">Format</app-link></li>
-                        <li><app-link href="#core-component-group3">Advanced</app-link></li>
-                    </ul>
-
-                    <div id="core-component-group1">
+                <vue-tabs>
+                    <v-tab title="Main">
                         <div class="component-group">
                             <h3>Main Settings</h3>
                             <fieldset class="component-group-list">
@@ -29,6 +23,7 @@
                                     <file-browser
                                         name="location"
                                         title="Select Show Location"
+                                        :key="show.id.slug"
                                         :initial-dir="show.config.location"
                                         @update="show.config.location = $event"
                                     />
@@ -78,9 +73,9 @@
                                 </config-toggle-slider>
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group2">
+                    <v-tab title="Format">
                         <div class="component-group">
                             <h3>Format Settings</h3>
                             <fieldset class="component-group-list">
@@ -124,9 +119,9 @@
                                 </config-toggle-slider>
                             </fieldset>
                         </div>
-                    </div>
+                    </v-tab>
 
-                    <div id="core-component-group3">
+                    <v-tab title="Advanced">
                         <div class="component-group">
                             <h3>Advanced Settings</h3>
                             <fieldset class="component-group-list">
@@ -186,8 +181,8 @@
 
                             </fieldset>
                         </div>
-                    </div>
-                </div>
+                    </v-tab>
+                </vue-tabs>
 
                 <br>
                 <input
@@ -206,7 +201,7 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 
 import { arrayUnique, arrayExclude, combineQualities } from '../utils/core';
-
+import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import AnidbReleaseGroupUi from './anidb-release-group-ui.vue';
 import Backstretch from './backstretch.vue';
 import {
@@ -234,7 +229,9 @@ export default {
         FileBrowser,
         LanguageSelect,
         QualityChooser,
-        SelectList
+        SelectList,
+        VueTabs,
+        VTab
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -339,34 +336,22 @@ export default {
     created() {
         this.loadShow();
     },
-    beforeMount() {
-        // Wait for the next tick, so the component is rendered
-        this.$nextTick(() => {
-            $('#config-components').tabs();
-        });
-    },
     methods: {
         ...mapActions([
             'getShow',
-            'setShow'
+            'setShow',
+            'setCurrentShow'
         ]),
-        async loadShow(params) {
-            const { $store, id, indexer, getShow } = params || this;
-
+        loadShow() {
+            const { setCurrentShow, id, indexer, getShow } = this;
             // Let's tell the store which show we currently want as current.
-            $store.commit('currentShow', { indexer, id });
+            setCurrentShow({
+                indexer,
+                id
+            });
 
-            try {
-                this.loadError = null;
-                await getShow({ indexer, id, detailed: false });
-            } catch (error) {
-                const { data } = error.response;
-                if (data && data.error) {
-                    this.loadError = data.error;
-                } else {
-                    this.loadError = String(error);
-                }
-            }
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ id, indexer, detailed: true });
         },
         async saveShow(subject) {
             const { show, showLoaded } = this;
