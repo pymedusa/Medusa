@@ -366,6 +366,11 @@ const actions = {
     removeSceneException(context, { show, exception }) {
         const { commit } = context;
         commit(REMOVE_SHOW_SCENE_EXCEPTION, { show, exception });
+    },
+    setCurrentShow(context, { indexer, id }) {
+        // Set current show
+        const { commit } = context;
+        return commit('currentShow', { indexer, id });
     }
 };
 
