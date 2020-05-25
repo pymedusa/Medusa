@@ -6,8 +6,8 @@ import logging
 from collections import OrderedDict
 from time import time
 
-from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.exceptions import (
     IndexerError,
     IndexerException,
     IndexerShowNotFound,
@@ -43,10 +43,7 @@ class TVmaze(BaseIndexer):
             'ru', 'he', 'ja', 'pt', 'zh', 'cs', 'sl', 'hr', 'ko', 'en', 'sv', 'no'
         ]
 
-        # thetvdb.com should be based around numeric language codes,
-        # but to link to a series like http://thetvdb.com/?tab=series&id=79349&lid=16
-        # requires the language ID, thus this mapping is required (mainly
-        # for usage in tvdb_ui - internally tvdb_api will use the language abbreviations)
+        # for usage in the indexer UI - the api will use the language abbreviations)
         self.config['langabbv_to_id'] = {'el': 20, 'en': 7, 'zh': 27,
                                          'it': 15, 'cs': 28, 'es': 16, 'ru': 22, 'nl': 13, 'pt': 26, 'no': 9,
                                          'tr': 21, 'pl': 18, 'fr': 17, 'hr': 31, 'de': 14, 'da': 10, 'fi': 11,
@@ -183,11 +180,29 @@ class TVmaze(BaseIndexer):
         """
         log.debug('Searching for show {0}', series)
 
-        results = self._show_search(series, request_language=self.config['language'])
-        if not results:
-            return
+        results = None
+        # If search term is digit's only, store it and attempt to search by id.
+        show_by_id = None
 
-        mapped_results = self._map_results(results, self.series_map, '|')
+        try:
+            if series.isdigit():
+                show_by_id = self._get_show_by_id(series, request_language=self.config['language'])
+            results = self._show_search(series, request_language=self.config['language'])
+        except IndexerShowNotFound:
+            pass
+
+        if not results and not show_by_id:
+            raise IndexerShowNotFound(
+                'Tvmaze show search failed in getting a result for search term {search}'.format(search=series)
+            )
+
+        mapped_results = []
+        if results:
+            mapped_results = self._map_results(results, self.series_map, '|')
+
+        # The search by id result, is already mapped. We can just add it to the array with results.
+        if show_by_id:
+            mapped_results.append(show_by_id['series'])
 
         return OrderedDict({'series': mapped_results})['series']
 

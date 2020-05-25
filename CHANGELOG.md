@@ -1,12 +1,24 @@
 ## Unreleased
 
 #### New Features
-- Add Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
+- Added Search shows by id ([#8058](https://github.com/pymedusa/Medusa/pull/8058))
 
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.3.16 (2020-04-27)
+
+#### New Features
+- Added Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
+- Added EZTV as torrent provider ([#8004](https://github.com/pymedusa/Medusa/pull/8004))
+
+#### Fixes
 - Fixed PrivateHD and CinemaZ provider login ([#7991](https://github.com/pymedusa/Medusa/pull/7991))
+- Fixed occasional subliminal exception ([#7989](https://github.com/pymedusa/Medusa/pull/7989))
+
 -----
 
 ## 0.3.15 (2020-04-13)

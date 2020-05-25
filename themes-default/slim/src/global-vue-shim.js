@@ -22,6 +22,7 @@ import {
     FileBrowser,
     History,
     LanguageSelect,
+    LoadProgressBar,
     ManualPostProcess,
     PlotInfo,
     QualityChooser,
@@ -73,6 +74,7 @@ export const registerGlobalComponents = () => {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        LoadProgressBar,
         PlotInfo,
         QualityChooser,
         QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
@@ -130,7 +132,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};

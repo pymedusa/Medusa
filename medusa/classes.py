@@ -336,13 +336,16 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
                 for cur_show in all_series:
-                    if cur_show in search_results:
+                    if [result for result in search_results if str(cur_show['id']) == str(result['id'])]:
                         continue
 
                     if 'seriesname' in cur_show:
                         series_names.append(cur_show['seriesname'])
-                    if 'aliasnames' in cur_show:
-                        series_names.extend(cur_show['aliasnames'].split('|'))
+                    if 'aliases' in cur_show:
+                        series_names.extend(cur_show['aliases'].split('|'))
+
+                    if search_term.isdigit():
+                        series_names.append(search_term)
 
                     for name in series_names:
                         if search_term.lower() in name.lower():

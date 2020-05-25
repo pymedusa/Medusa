@@ -67,18 +67,18 @@ from medusa.helpers.anidb import short_group_names
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.helpers.utils import dict_to_array, safe_get, to_camel_case
 from medusa.imdb import Imdb
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
     indexerConfig
 )
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
-from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.tmdb.api import Tmdb
 from medusa.indexers.utils import (
     indexer_id_to_slug,
     mappings,
@@ -632,7 +632,7 @@ class Series(TV):
     @property
     def xem_numbering(self):
         """Return series episode xem numbering."""
-        return get_xem_numbering_for_show(self, False)
+        return get_xem_numbering_for_show(self, refresh_data=False)
 
     @property
     def xem_absolute_numbering(self):
@@ -1627,10 +1627,8 @@ class Series(TV):
         :return:
         :rtype: datetime.date
         """
-        log.debug(u'{id}: Finding the episode which aired last',
-                  {'id': self.series_id})
+        log.debug(u'{id}: Finding the episode which aired last', {'id': self.series_id})
 
-        cur_date = datetime.date.today().toordinal()
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             'SELECT '
@@ -1650,15 +1648,13 @@ class Series(TV):
             [self.indexer, self.series_id, datetime.date.today().toordinal(), UNAIRED])
 
         if sql_results is None or len(sql_results) == 0:
-            log.debug(u'{id}: No episode found... need to implement a show status',
-                        {'id': self.series_id})
+            log.debug(u'{id}: Could not find a previous aired episode', {'id': self.series_id})
             self.prev_aired = u''
         else:
             log.debug(
-                u'{id}: Found episode {ep}', {
+                u'{id}: Found previous aired episode number {ep}', {
                     'id': self.series_id,
-                    'ep': episode_num(sql_results[0]['season'],
-                                        sql_results[0]['episode']),
+                    'ep': episode_num(sql_results[0]['season'], sql_results[0]['episode'])
                 }
             )
             self.prev_aired = sql_results[0]['airdate']
@@ -1694,7 +1690,7 @@ class Series(TV):
                 [self.indexer, self.series_id, datetime.date.today().toordinal()])
 
             if sql_results is None or len(sql_results) == 0:
-                log.debug(u'{id}: No episode found... need to implement a show status',
+                log.debug(u'{id}: Could not find a next episode',
                           {'id': self.series_id})
                 self.next_aired = u''
             else:

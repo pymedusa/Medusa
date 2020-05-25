@@ -18,6 +18,12 @@ const state = {
     currentShow: {
         indexer: null,
         id: null
+    },
+    loading: {
+        total: null,
+        current: null,
+        display: false,
+        finished: false
     }
 };
 
@@ -45,28 +51,11 @@ const mutations = {
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
     },
     [ADD_SHOWS](state, shows) {
-        // const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
-
-        // if (!existingShow) {
-        //     console.debug(`Adding ${show.title || show.indexer + String(show.id)} as it wasn't found in the shows array`, show);
-        //     state.shows.push(show);
-        //     return;
-        // }
-
-        // Merge new show object over old one
-        // this allows detailed queries to update the record
-        // without the non-detailed removing the extra data
-        // console.debug(`Found ${show.title || show.indexer + String(show.id)} in shows array attempting merge`);
-        // const newShow = {
-        //     ...existingShow,
-        //     ...show
-        // };
-
         // Quick check on duplicate shows.
         const newShows = shows.filter(newShow => {
             return !state.shows.find(
                 ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && newShow.indexer === indexer
-            )
+            );
         });
 
         Vue.set(state, 'shows', [...state.shows, ...newShows]);
@@ -75,6 +64,21 @@ const mutations = {
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
         state.currentShow.id = id;
+    },
+    setLoadingTotal(state, total) {
+        state.loading.total = total;
+    },
+    setLoadingCurrent(state, current) {
+        state.loading.current = current;
+    },
+    updateLoadingCurrent(state, current) {
+        state.loading.current += current;
+    },
+    setLoadingDisplay(state, display) {
+        state.loading.display = display;
+    },
+    setLoadingFinished(state, finished) {
+        state.loading.finished = finished;
     },
     [ADD_SHOW_EPISODE](state, { show, episodes }) {
         // Creating a new show object (from the state one) as we want to trigger a store update
@@ -169,7 +173,7 @@ const getters = {
 
         return state.shows.map(show => {
             let showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
-            const newLine = '\u000d';
+            const newLine = '\u000D';
             let text = 'Unaired';
             let title = '';
 
@@ -179,7 +183,7 @@ const getters = {
                     epSnatched: 0,
                     epTotal: 0,
                     seriesSize: 0
-                }
+                };
             }
 
             if (showStats.epTotal >= 1) {
@@ -301,37 +305,47 @@ const actions = {
 
         // If no shows are provided get the first 1000
         if (!shows) {
-            return (() => {
-                const limit = 1000;
-                const page = 1;
-                const params = {
-                    limit,
-                    page
-                };
+            // Loading new shows, commit show loading information to state.
+            commit('setLoadingTotal', 0);
+            commit('setLoadingCurrent', 0);
+            commit('setLoadingDisplay', true);
 
-                // Get first page
-                api.get('/series', { params })
-                    .then(response => {
-                        const totalPages = Number(response.headers['x-pagination-total']);                        
-                        commit(ADD_SHOWS, response.data);
+            const limit = 1000;
+            const page = 1;
+            const params = {
+                limit,
+                page
+            };
 
-                        // Optionally get additional pages
-                        const pageRequests = [];
-                        for (let page = 2; page <= totalPages; page++) {
-                            const newPage = { page };
-                            newPage.limit = params.limit;
-                            pageRequests.push(api.get('/series', { params: newPage })
-                                .then(response => {
-                                    commit(ADD_SHOWS, shows);
-                                }));
-                        }
+            const pageRequests = [];
 
-                        return Promise.all(pageRequests);
-                    })
-                    .catch(() => {
-                        console.log('Could not retrieve a list of shows');
-                    });
-            })();
+            // Get first page
+            pageRequests.push(api.get('/series', { params })
+                .then(response => {
+                    commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
+                    const totalPages = Number(response.headers['x-pagination-total']);
+
+                    commit(ADD_SHOWS, response.data);
+
+                    commit('updateLoadingCurrent', response.data.length);
+                    // Optionally get additional pages
+
+                    for (let page = 2; page <= totalPages; page++) {
+                        const newPage = { page };
+                        newPage.limit = params.limit;
+                        pageRequests.push(api.get('/series', { params: newPage })
+                            .then(response => {
+                                commit(ADD_SHOWS, response.data);
+                                commit('updateLoadingCurrent', response.data.length);
+                            }));
+                    }
+                })
+                .catch(() => {
+                    console.log('Could not retrieve a list of shows');
+                })
+            );
+
+            return Promise.all(pageRequests);
         }
 
         return shows.forEach(show => dispatch('getShow', show));

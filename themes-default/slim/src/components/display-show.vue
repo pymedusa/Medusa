@@ -7,6 +7,7 @@
         <input type="hidden" id="series-slug" value="">
 
         <show-header type="show"
+                     ref="show-header"
                      @reflow="reflowLayout"
                      :show-id="id"
                      :show-indexer="indexer"
@@ -358,7 +359,8 @@
 import debounce from 'lodash/debounce';
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink, PlotInfo } from './helpers';
-import { humanFileSize, manageCookieMixin } from '../utils/core';
+import { humanFileSize } from '../utils/core';
+import { manageCookieMixin } from '../mixins/manage-cookie';
 import { addQTip, updateSearchIcons } from '../utils/jquery';
 import { VueGoodTable } from 'vue-good-table';
 import Backstretch from './backstretch.vue';
@@ -585,12 +587,7 @@ export default {
             return show.seasons.filter(season => season.season === 0);
         }
     },
-    // created() {
-    //     const { getShows } = this;
-    //     // Without getting any specific show data, we pick the show needed from the shows array.
-    //     // We need to get the complete list of shows anyway, as this is also needed for the show-selector component
-    //     getShows();
-    // },
+
     mounted() {
         const {
             loadShow,
@@ -625,7 +622,7 @@ export default {
             const target = event.currentTarget;
             // Strip non-numeric characters
             const value = $(target).val();
-            $(target).val(value.replace(/[^0-9xX]*/g, ''));
+            $(target).val(value.replace(/[^\dXx]*/g, ''));
             const forSeason = $(target).attr('data-for-season');
             const forEpisode = $(target).attr('data-for-episode');
 
@@ -661,7 +658,7 @@ export default {
         $(document.body).on('change', '.sceneAbsolute', event => {
             const target = event.currentTarget;
             // Strip non-numeric characters
-            $(target).val($(target).val().replace(/[^0-9xX]*/g, ''));
+            $(target).val($(target).val().replace(/[^\dXx]*/g, ''));
             const forAbsolute = $(target).attr('data-for-absolute');
 
             const m = $(target).val().match(/^(\d{1,3})$/i);
@@ -677,7 +674,6 @@ export default {
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
-            getShows: 'getShows',
             getEpisodes: 'getEpisodes'
         }),
         loadShow() {
@@ -711,7 +707,7 @@ export default {
             const patchData = {};
 
             episodes.forEach(episode => {
-                patchData[episode.slug] = { quality: parseInt(quality, 10) };
+                patchData[episode.slug] = { quality: Number.parseInt(quality, 10) };
             });
 
             api.patch('series/' + show.id.slug + '/episodes', patchData) // eslint-disable-line no-undef
@@ -748,7 +744,7 @@ export default {
         },
         parseDateFn(row) {
             const { fuzzyParseDateTime } = this;
-            return fuzzyParseDateTime(row.airDate)
+            return fuzzyParseDateTime(row.airDate);
         },
         rowStyleClassFn(row) {
             const { getOverviewStatus, show } = this;
@@ -787,28 +783,13 @@ export default {
         },
 
         /**
-         * Attaches IMDB tooltip,
-         * Moves summary and checkbox controls backgrounds
+         * Attaches IMDB tooltip
          */
-        reflowLayout: debounce(function() {
+        reflowLayout: debounce(() => {
             console.debug('Reflowing layout');
-
-            this.$nextTick(() => {
-                this.movecheckboxControlsBackground();
-            });
             addQTip(); // eslint-disable-line no-undef
         }, 1000),
-        /**
-         * Adjust the checkbox controls (episode filter) background position
-         */
-        movecheckboxControlsBackground() {
-            const height = $('#checkboxControls').height() + 10;
-            const top = $('#checkboxControls').offset().top - 3;
 
-            $('#checkboxControlsBackground').height(height);
-            $('#checkboxControlsBackground').offset({ top, left: 0 });
-            $('#checkboxControlsBackground').show();
-        },
         setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
             const { $snotify, id, indexer, show } = this;
 
@@ -1116,7 +1097,7 @@ export default {
         updatePaginationPerPage(rows) {
             const { setCookie } = this;
             this.paginationPerPage = rows;
-            setCookie('displayShow-pagination-perPage', rows);
+            setCookie('pagination-perPage', rows);
         },
         onPageChange(params) {
             this.loadEpisodes(params.currentPage);

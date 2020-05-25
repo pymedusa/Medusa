@@ -48,7 +48,8 @@ const state = {
     showFilterByName: '',
     posterSortdir: null,
     posterSortby: null,
-    posterSize: 188
+    posterSize: 188,
+    currentShowTab: null
 };
 
 const mutations = {
@@ -79,7 +80,7 @@ const getters = {
         const fdate = parseISO(airDate);
         return formatDate(fdate, convertDateFormat(`${dateStyle} ${timeStyle}`));
     },
-    getShowFilterByName: (state) => {
+    getShowFilterByName: state => {
         return state.showFilterByName;
     }
 

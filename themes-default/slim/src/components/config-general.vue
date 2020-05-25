@@ -726,7 +726,7 @@ export default {
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to get a new api key',
-                    'Error'
+                    `Error: ${error}`
                 );
             }
         },
@@ -746,7 +746,7 @@ export default {
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to change the theme',
-                    'Error'
+                    `Error: ${error}`
                 );
             }
         },
@@ -796,7 +796,7 @@ export default {
             } catch (error) {
                 this.$snotify.error(
                     'Error while trying to save general config',
-                    'Error'
+                    `Error: ${error}`
                 );
             } finally {
                 this.saving = false;

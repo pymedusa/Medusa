@@ -6,9 +6,9 @@ from __future__ import unicode_literals
 from builtins import str
 
 from medusa.app import app
-from medusa.indexers.tmdb.tmdb import Tmdb
-from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
-from medusa.indexers.tvmaze.tvmaze_api import TVmaze
+from medusa.indexers.tmdb.api import Tmdb
+from medusa.indexers.tvdbv2.api import TVDBv2
+from medusa.indexers.tvmaze.api import TVmaze
 from medusa.session.core import MedusaSession
 
 from six import iteritems

@@ -21,7 +21,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helpers.utils import split_and_strip
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,

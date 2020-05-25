@@ -1,7 +1,7 @@
 <template>
     <div>
-        <!-- <h1 v-if="header" class="header">{{ listTitle }}</h1> -->
-        <div class="showListTitle listTitle">
+        <!-- Only show the list title when not in tabs -->
+        <div v-if="(!(stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs))" class="showListTitle listTitle">
             <button type="button" class="nav-show-list move-show-list">
                 <span class="icon-bar" />
                 <span class="icon-bar" />
@@ -27,19 +27,23 @@
                         </option>
                     </select>
                 </div>
-                
-                <div class="show-option pull-right">
-                    Poster Size:
-                    <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider" />
-                </div>
+
+                <poster-size-slider />
             </div>
 
         </div>
 
-        <div v-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
+        <!-- Where still loading -->
+        <div v-if="!test && shows.length === 0">
+            <state-switch state="loading" :theme="stateLayout.themeName" />
+            <span>Loading</span>
+        </div>
+
+        <div v-else-if="shows.length >= 1" :class="[['simple', 'small', 'banner'].includes(layout) ? 'table-layout' : '']">
             <component :is="mappedLayout" v-bind="$props" />
         </div>
 
+        <!-- No Shows added -->
         <span v-else>Please add a show <a href="/addShows">here</a> to get started</span>
     </div>
 </template>
@@ -50,6 +54,7 @@ import Banner from './banner.vue';
 import Simple from './simple.vue';
 import Poster from './poster.vue';
 import Smallposter from './smallposter.vue';
+import { PosterSizeSlider, StateSwitch } from '../helpers';
 
 export default {
     name: 'show-list',
@@ -57,7 +62,9 @@ export default {
         Banner,
         Simple,
         Poster,
-        Smallposter
+        PosterSizeSlider,
+        Smallposter,
+        StateSwitch
     },
     props: {
         layout: {
@@ -95,11 +102,12 @@ export default {
                 { text: 'Progress', value: 'progress' },
                 { text: 'Indexer', value: 'indexer' }
             ]
-        }
+        };
     },
     computed: {
         ...mapState({
-            stateLayout: state => state.layout
+            stateLayout: state => state.layout,
+            showsLoading: state => state.shows.loading
         }),
         mappedLayout() {
             const { layout } = this;
@@ -129,6 +137,15 @@ export default {
                 const { setPosterSortDir } = this;
                 setPosterSortDir({ value });
             }
+        },
+        sortedShows() {
+            const { shows, stateLayout } = this;
+            const { sortArticle } = stateLayout;
+            const removeArticle = str => sortArticle ? str.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '') : str;
+            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+        },
+        test() {
+            return this.showsLoading.finished;
         }
     },
     methods: {
@@ -140,23 +157,18 @@ export default {
 };
 </script>
 <style scoped>
-
 /** Use this as table styling for all table layouts */
 .table-layout >>> .vgt-table {
     width: 100%;
     margin-right: auto;
     margin-left: auto;
-    color: rgb(0, 0, 0);
     text-align: left;
-    background-color: rgb(221, 221, 221);
     border-spacing: 0;
 }
 
 .table-layout >>> .vgt-table th,
 .table-layout >>> .vgt-table td {
     padding: 4px;
-    border-top: rgb(255, 255, 255) 1px solid;
-    border-left: rgb(255, 255, 255) 1px solid;
     vertical-align: middle;
 }
 
@@ -167,10 +179,7 @@ export default {
 }
 
 .table-layout >>> .vgt-table th {
-    color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
     border-collapse: collapse;
     font-weight: normal;
 }
@@ -179,14 +188,7 @@ export default {
     word-wrap: break-word;
 }
 
-.table-layout >>> .vgt-table thead th.sorting.sorting-desc {
-    background-color: rgb(85, 85, 85);
-    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-}
-
 .table-layout >>> .vgt-table thead th.sorting.sorting-asc {
-    background-color: rgb(85, 85, 85);
-    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
     background-position-x: right;
     background-position-y: bottom;
 }
@@ -196,7 +198,6 @@ export default {
 }
 
 .table-layout >>> .vgt-table thead th {
-    background-image: none;
     padding: 4px;
     cursor: default;
 }
@@ -225,15 +226,11 @@ export default {
 }
 
 .table-layout >>> .vgt-table tfoot tr {
-    color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
     border-collapse: collapse;
 }
 
 .table-layout >>> .vgt-table tfoot a {
-    color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
@@ -248,10 +245,6 @@ export default {
 
 .table-layout >>> .vgt-table tr.spacer {
     height: 25px;
-}
-
-.table-layout >>> .vgt-dropdown > .button-group {
-    margin-bottom: 10px;
 }
 
 .table-layout >>> .vgt-dropdown-menu {
@@ -282,4 +275,7 @@ export default {
     justify-content: center;
 }
 
+.table-layout >>> .indexer-image :not(:last-child) {
+    margin-right: 5px;
+}
 </style>

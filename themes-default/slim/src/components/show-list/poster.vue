@@ -2,7 +2,7 @@
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
             <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
-                <div v-for="show in sortedShows" :key="show.id[show.indexer]" :id="`show${show.id[show.indexer]}`" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+                <div v-for="show in sortedShows" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
                             <img src="images/poster-back-dark.png">
@@ -24,27 +24,7 @@
                                 <!--  endif -->
                             </div>
                             <div class="show-date">
-                    <!-- if cur_airs_next:
-                        < ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) >
-                        <
-                            try:
-                                out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
-                            except ValueError:
-                                out = 'Invalid date'
-                                pass
-                        >
-                            ${out}
-                        else:
-                        <
-                        output_html = '?'
-                        display_status = cur_show.status
-                        if None is not display_status:
-                            if 'nded' not in display_status and 1 == int(cur_show.paused):
-                                output_html = 'Paused'
-                            elif display_status:
-                                output_html = display_status
-                        ${output_html}
-                        endif -->
+                                {{dateOrStatus(show)}}
                             </div>
                             <div v-show="fontSize !== null" class="show-details">
                                 <table :class="{fanartOpacity: stateLayout.fanartBackground}" class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
@@ -58,7 +38,7 @@
                                             <span v-if="show.network" :title="show.network">
                                                 <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
-                                            <span v-else title="No Network"><img class="show-network-image" :style="" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
+                                            <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>
                                         <td class="show-table">
                                             <quality-pill :allowed="show.config.qualities.allowed" :preferred="show.config.qualities.preferred" :override="{ class: 'show-quality', style: 'test' }" show-title />
@@ -74,11 +54,10 @@
     </div>
 </template>
 <script>
-import debounce from 'lodash/debounce';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
-import isotope from 'vueisotope';
+import Isotope from 'vueisotope';
 import LazyLoad from 'vanilla-lazyload';
 import imagesLoaded from 'vue-images-loaded';
 
@@ -92,7 +71,7 @@ export default {
         AppLink,
         ProgressBar,
         QualityPill,
-        isotope
+        Isotope
     },
     props: {
         layout: {
@@ -120,16 +99,23 @@ export default {
                     id: row => row.id.slug,
                     name: 'title',
                     date: row => {
-                        if (row.nextAirDate) {
-                            return row.nextAirDate;
+                        const { maxNextAirDate } = this;
+                        if (row.nextAirDate && Date.parse(row.nextAirDate) > Date.now()) {
+                            return Date.parse(row.nextAirDate) - Date.now();
                         }
-                        return row.prevAirDate;
+
+                        if (row.prevAirDate) {
+                            return maxNextAirDate + Date.now() - Date.parse(row.prevAirDate);
+                        }
+
+                        return Date.now();
                     },
                     network: 'network',
                     progress: row => {
-                        if (!row.stats.episodes.total) {
-                            return row.stats.episodes.total;
+                        if (!row.stats) {
+                            return 0;
                         }
+
                         return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100);
                     },
                     indexer: row => {
@@ -157,16 +143,19 @@ export default {
             // Need to map these computed, as we need them in the $watch.
             posterSortBy: state => state.layout.posterSortby,
             posterSortDir: state => state.layout.posterSortdir,
-            posterSize: state => state.layout.posterSize
+            posterSize: state => state.layout.posterSize,
+            currentShowTab: state => state.layout.currentShowTab
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         sortedShows() {
-            const { shows, stateLayout } = this;
-            const { sortArticle } = stateLayout;
-            const removeArticle = str => sortArticle ? str.replace(/^((?:A(?!\s+to)n?)|The)\s/i, '') : str;
-            return shows.concat().sort((a, b) => removeArticle(a.title).toLowerCase().localeCompare(removeArticle(b.title).toLowerCase()));
+            const { shows, maxNextAirDate } = this;
+            if (shows.length === 0 || !maxNextAirDate) {
+                return [];
+            }
+
+            return shows;
         },
         showContainerStyle() {
             const { posterSize, borderWidth, borderRadius } = this;
@@ -175,6 +164,10 @@ export default {
                 borderWidth: borderWidth + 'px',
                 borderRadius: borderRadius + 'px'
             };
+        },
+        maxNextAirDate() {
+            const { shows } = this;
+            return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
         }
     },
     methods: {
@@ -226,55 +219,34 @@ export default {
                 this.borderRadius = 6;
                 this.borderWidth = 6;
             }
-
         },
         updateLayout() {
             const {
                 calculateSize, imgLazyLoad,
                 listTitle, posterSortBy,
-                posterSortDir, option
+                posterSortDir
             } = this;
             this.isotopeLoaded = true;
             imgLazyLoad.update();
             calculateSize();
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
-            // Sort
-            this.$refs[`isotope-${listTitle}`].sort(posterSortBy);
-            // Set sort direction
-            this.option.sortAscending = Boolean(posterSortDir);
-            this.$refs[`isotope-${listTitle}`].arrange(option);
+            // Arrange & Sort
+            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: posterSortDir });
             console.log('isotope Layout loaded');
+        },
+        dateOrStatus(show) {
+            if (show.nextAirDate) {
+                const { fuzzyParseDateTime } = this;
+                return fuzzyParseDateTime(show.nextAirDate);
+            }
+            if (!show.status.includes('nded') && show.config.paused) {
+                return 'Paused';
+            }
+            return show.status;
         }
     },
     mounted() {
-        const { setPosterSize } = this;
-        // Get poster size from localStorage
-        let slidePosterSize;
-        if (typeof (Storage) !== 'undefined') {
-            slidePosterSize = parseInt(localStorage.getItem('posterSize'), 10);
-        }
-        if (typeof (slidePosterSize) !== 'number' || isNaN(slidePosterSize)) {
-            slidePosterSize = 188;
-        }
-
-        // Update poster size to store
-        setPosterSize({ posterSize: slidePosterSize });
-
-        $('#posterSizeSlider').slider({
-            min: 75,
-            max: 250,
-            value: slidePosterSize,
-            change(e, ui) {
-                // Save to localStorage
-                if (typeof (Storage) !== 'undefined') {
-                    localStorage.setItem('posterSize', ui.value);
-                }
-                // Save to store
-                setPosterSize({ posterSize: ui.value });
-            }
-        });
-
         this.imgLazyLoad = new LazyLoad({
             threshold: 500
         });
@@ -285,9 +257,8 @@ export default {
             this.$refs[`isotope-${listTitle}`].sort(key);
         },
         posterSortDir(value) {
-            const { listTitle, option } = this;
-            this.option.sortAscending = Boolean(value);
-            this.$refs[`isotope-${listTitle}`].arrange(option);
+            const { listTitle, posterSortBy } = this;
+            this.$refs[`isotope-${listTitle}`].arrange({ sortBy: posterSortBy, sortAscending: value });
         },
         posterSize(oldSize, newSize) {
             const { calculateSize, isotopeLoaded, listTitle } = this;
@@ -295,6 +266,16 @@ export default {
                 return;
             }
             calculateSize();
+            this.$nextTick(() => {
+                this.$refs[`isotope-${listTitle}`].arrange();
+            });
+        },
+        currentShowTab() {
+            const { isotopeLoaded, listTitle } = this;
+            if (!isotopeLoaded) {
+                return;
+            }
+
             this.$nextTick(() => {
                 this.$refs[`isotope-${listTitle}`].arrange();
             });
@@ -306,9 +287,8 @@ export default {
 .show-container {
     display: inline-block;
     margin: 4px;
-    /* background-color: rgb(243, 243, 243); */
     border-width: 5px;
-    border-style: solid; /*rgb(243, 243, 243); */
+    border-style: solid;
     overflow: hidden;
     box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
@@ -330,10 +310,6 @@ export default {
 .posterview {
     margin: 0 auto;
     position: relative;
-}
-
-.show-image {
-    max-width: 200px;
 }
 
 /* Used by isotope scaling */

@@ -7,7 +7,7 @@ from builtins import object
 
 from medusa import app
 from medusa.helper.common import try_int
-from medusa.indexers.indexer_config import indexerConfig, init_config
+from medusa.indexers.config import indexerConfig, init_config
 from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 from six import itervalues
