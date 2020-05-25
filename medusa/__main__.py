@@ -336,7 +336,7 @@ class Application(object):
         if sys.version_info < (3,):
             logger.warning(
                 'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
-                "Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n"
+                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
                 'Please upgrade your Python version to 3.6 or higher as soon as possible!',
                 python_sunset_url='https://tinyurl.com/y4zwbawq'
             )
