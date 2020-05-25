@@ -80,7 +80,7 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
@@ -2143,6 +2143,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

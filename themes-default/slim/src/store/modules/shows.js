@@ -1,7 +1,11 @@
 import Vue from 'vue';
 
 import { api } from '../../api';
-import { ADD_SHOW, ADD_SHOW_EPISODE } from '../mutation-types';
+import { ADD_SHOW, ADD_SHOWS,
+    ADD_SHOW_EPISODE,
+    ADD_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_SCENE_EXCEPTION
+} from '../mutation-types';
 
 /**
  * @typedef {object} ShowIdentifier
@@ -14,6 +18,12 @@ const state = {
     currentShow: {
         indexer: null,
         id: null
+    },
+    loading: {
+        total: null,
+        current: null,
+        display: false,
+        finished: false
     }
 };
 
@@ -40,9 +50,35 @@ const mutations = {
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.debug(`Merged ${newShow.title || newShow.indexer + String(newShow.id)}`, newShow);
     },
+    [ADD_SHOWS](state, shows) {
+        // Quick check on duplicate shows.
+        const newShows = shows.filter(newShow => {
+            return !state.shows.find(
+                ({ id, indexer }) => Number(newShow.id[newShow.indexer]) === Number(id[indexer]) && newShow.indexer === indexer
+            );
+        });
+
+        Vue.set(state, 'shows', [...state.shows, ...newShows]);
+        console.debug(`Added ${shows.length} shows to store`);
+    },
     currentShow(state, { indexer, id }) {
         state.currentShow.indexer = indexer;
         state.currentShow.id = id;
+    },
+    setLoadingTotal(state, total) {
+        state.loading.total = total;
+    },
+    setLoadingCurrent(state, current) {
+        state.loading.current = current;
+    },
+    updateLoadingCurrent(state, current) {
+        state.loading.current += current;
+    },
+    setLoadingDisplay(state, display) {
+        state.loading.display = display;
+    },
+    setLoadingFinished(state, finished) {
+        state.loading.finished = finished;
     },
     [ADD_SHOW_EPISODE](state, { show, episodes }) {
         // Creating a new show object (from the state one) as we want to trigger a store update
@@ -81,6 +117,28 @@ const mutations = {
         const existingShow = state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer]));
         Vue.set(state.shows, state.shows.indexOf(existingShow), newShow);
         console.log(`Storing episodes for show ${newShow.title} seasons: ${[...new Set(episodes.map(episode => episode.season))].join(', ')}`);
+    },
+    [ADD_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
+            console.warn(`Can't add exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it already exists.`);
+            return;
+        }
+
+        currentShow.config.aliases.push(exception);
+    },
+    [REMOVE_SHOW_SCENE_EXCEPTION](state, { show, exception }) {
+        // Get current show object
+        const currentShow = Object.assign({}, state.shows.find(({ id, indexer }) => Number(show.id[show.indexer]) === Number(id[indexer])));
+
+        if (!currentShow.config.aliases.find(e => e.title === exception.title && e.season === exception.season)) {
+            console.warn(`Can't remove exception ${exception.title} with season ${exception.season} to show ${currentShow.title} as it does not exist.`);
+            return;
+        }
+
+        currentShow.config.aliases.splice(currentShow.config.aliases.indexOf(exception), 1);
     }
 
 };
@@ -107,6 +165,55 @@ const getters = {
     },
     getCurrentShow: (state, getters, rootState) => {
         return state.shows.find(show => Number(show.id[state.currentShow.indexer]) === Number(state.currentShow.id)) || rootState.defaults.show;
+    },
+    showsWithStats: (state, getters, rootState) => {
+        if (!state.shows) {
+            return [];
+        }
+
+        return state.shows.map(show => {
+            let showStats = rootState.stats.show.stats.find(stat => stat.indexerId === getters.indexerNameToId(show.indexer) && stat.seriesId === show.id[show.indexer]);
+            const newLine = '\u000D';
+            let text = 'Unaired';
+            let title = '';
+
+            if (!showStats) {
+                showStats = {
+                    epDownloaded: 0,
+                    epSnatched: 0,
+                    epTotal: 0,
+                    seriesSize: 0
+                };
+            }
+
+            if (showStats.epTotal >= 1) {
+                text = showStats.epDownloaded;
+                title = `Downloaded: ${showStats.epDownloaded}`;
+
+                if (showStats.epSnatched) {
+                    text += `+${showStats.epSnatched}`;
+                    title += `${newLine}Snatched: ${showStats.epSnatched}`;
+                }
+
+                text += ` / ${showStats.epTotal}`;
+                title += `${newLine}Total: ${showStats.epTotal}`;
+            }
+
+            show.stats = {
+                episodes: {
+                    total: showStats.epTotal,
+                    snatched: showStats.epSnatched,
+                    downloaded: showStats.epDownloaded,
+                    size: showStats.seriesSize
+                },
+                tooltip: {
+                    text,
+                    title,
+                    percentage: (showStats.epDownloaded * 100) / (showStats.epTotal || 1)
+                }
+            };
+            return show;
+        });
     }
 };
 
@@ -198,40 +305,47 @@ const actions = {
 
         // If no shows are provided get the first 1000
         if (!shows) {
-            return (() => {
-                const limit = 1000;
-                const page = 1;
-                const params = {
-                    limit,
-                    page
-                };
+            // Loading new shows, commit show loading information to state.
+            commit('setLoadingTotal', 0);
+            commit('setLoadingCurrent', 0);
+            commit('setLoadingDisplay', true);
 
-                // Get first page
-                api.get('/series', { params })
-                    .then(response => {
-                        const totalPages = Number(response.headers['x-pagination-total']);
-                        response.data.forEach(show => {
-                            commit(ADD_SHOW, show);
-                        });
+            const limit = 1000;
+            const page = 1;
+            const params = {
+                limit,
+                page
+            };
 
-                        // Optionally get additional pages
-                        const pageRequests = [];
-                        for (let page = 2; page <= totalPages; page++) {
-                            const newPage = { page };
-                            newPage.limit = params.limit;
-                            pageRequests.push(api.get('/series', { params: newPage }).then(response => {
-                                response.data.forEach(show => {
-                                    commit(ADD_SHOW, show);
-                                });
+            const pageRequests = [];
+
+            // Get first page
+            pageRequests.push(api.get('/series', { params })
+                .then(response => {
+                    commit('setLoadingTotal', Number(response.headers['x-pagination-count']));
+                    const totalPages = Number(response.headers['x-pagination-total']);
+
+                    commit(ADD_SHOWS, response.data);
+
+                    commit('updateLoadingCurrent', response.data.length);
+                    // Optionally get additional pages
+
+                    for (let page = 2; page <= totalPages; page++) {
+                        const newPage = { page };
+                        newPage.limit = params.limit;
+                        pageRequests.push(api.get('/series', { params: newPage })
+                            .then(response => {
+                                commit(ADD_SHOWS, response.data);
+                                commit('updateLoadingCurrent', response.data.length);
                             }));
-                        }
+                    }
+                })
+                .catch(() => {
+                    console.log('Could not retrieve a list of shows');
+                })
+            );
 
-                        return Promise.all(pageRequests);
-                    })
-                    .catch(() => {
-                        console.log('Could not retrieve a list of shows');
-                    });
-            })();
+            return Promise.all(pageRequests);
         }
 
         return shows.forEach(show => dispatch('getShow', show));
@@ -244,6 +358,14 @@ const actions = {
         // Update local store
         const { commit } = context;
         return commit(ADD_SHOW, show);
+    },
+    addSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(ADD_SHOW_SCENE_EXCEPTION, { show, exception });
+    },
+    removeSceneException(context, { show, exception }) {
+        const { commit } = context;
+        commit(REMOVE_SHOW_SCENE_EXCEPTION, { show, exception });
     }
 };
 

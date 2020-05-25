@@ -5,7 +5,7 @@ export const configSubMenu = [
     { title: 'Search Settings', path: 'config/search/', icon: 'menu-icon-manage-searches' },
     { title: 'Search Providers', path: 'config/providers/', icon: 'menu-icon-provider' },
     { title: 'Subtitles Settings', path: 'config/subtitles/', icon: 'menu-icon-backlog' },
-    { title: 'Post Processing', path: 'config/postProcessing/', icon: 'menu-icon-postprocess' },
+    { title: 'Post-Processing', path: 'config/postProcessing/', icon: 'menu-icon-postprocess' },
     { title: 'Notifications', path: 'config/notifications/', icon: 'menu-icon-notification' },
     { title: 'Anime', path: 'config/anime/', icon: 'menu-icon-anime' }
 ];

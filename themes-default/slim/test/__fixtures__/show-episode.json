@@ -1,0 +1,35 @@
+{
+    "episode": 6,
+    "airDate": "2016-10-21T09:00:00+02:00",
+    "scene": {
+        "episode": 6,
+        "season": 4,
+        "absoluteNumber": 6
+    },
+    "status": "Skipped",
+    "identifier": "s04e06",
+    "title": "Nosedive",
+    "file": {
+        "location": ""
+    },
+    "description": "Insecure office worker Lacie lives in a happy, smiley, status-obsessed nightmare world. Her old friend Naomi is one of society\u2019s elites, and Lacie may have found a way to join her\u2026",
+    "watched": false,
+    "quality": 0,
+    "content": {
+        "hasTbn": false,
+        "hasNfo": false
+    },
+    "season": 4,
+    "id": {
+        "tvdb": 5692427
+    },
+    "release": {
+        "name": "",
+        "group": "",
+        "version": 0,
+        "proper": false
+    },
+    "subtitles": [],
+    "absoluteNumber": 42,
+    "slug": "s04e06"
+}

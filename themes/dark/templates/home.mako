@@ -5,6 +5,7 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
+    from random import choice
     import re
 %>
 <%block name="metas">
@@ -12,8 +13,11 @@
 </%block>
 <%block name="scripts">
 <script type="text/x-template" id="home-template">
+    <!-- # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None -->
+
 <div>
-    <backstretch :slug="config.randomShowSlug"></backstretch>
+    <input type="hidden" id="background-series-slug" value="${getattr(random_show, 'slug', '')}" />
     <vue-snotify></vue-snotify>
 
     <div class="row" v-if="layout === 'poster'">
@@ -23,12 +27,13 @@
                     <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                 </div>
                 <div class="show-option pull-right"> Direction:
-                    <select :value.number="stateLayout.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
-                        <option :value="option.value" v-for="option in postSortDirOptions" :key="option.value" :data-sort="'setPosterSortDir/?direction=' + option.value">{{ option.text }}</option>
+                    <select :value.number="config.posterSortdir" id="postersortdirection" class="form-control form-control-inline input-sm">
+                        <option :value="1" data-sort="setPosterSortDir/?direction=1">Ascending</option>
+                        <option :value="0" data-sort="setPosterSortDir/?direction=0">Descending</option>
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
-                <select :value="stateLayout.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
+                <select :value="config.posterSortby" id="postersort" class="form-control form-control-inline input-sm">
                     <option value="name" data-sort="setPosterSortBy/?sort=name">Name</option>
                     <option value="date" data-sort="setPosterSortBy/?sort=date">Next Episode</option>
                     <option value="network" data-sort="setPosterSortBy/?sort=network">Network</option>
@@ -68,9 +73,11 @@
                             Filter(s)</button>
                     </span>&nbsp;
                 </template>
-                Layout:
-                <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
-                    <option :value="option.value" v-for="option in layoutOptions" :key="option.value">{{ option.text }}</option>
+                Layout: <select v-model="layout" name="layout" class="form-control form-control-inline input-sm show-layout">
+                    <option value="poster">Poster</option>
+                    <option value="small">Small Poster</option>
+                    <option value="banner">Banner</option>
+                    <option value="simple">Simple</option>
                 </select>
             </div>
         </div>
@@ -82,23 +89,31 @@
             <div id="showTabs" v-show="stateLayout.animeSplitHome && stateLayout.animeSplitHomeInTabs">
                 <!-- Nav tabs -->
                 <ul>
-                % for cur_show_list in show_lists:
-                    <li><app-link href="#${cur_show_list[0].lower()}TabContent" id="${cur_show_list[0].lower()}Tab">${cur_show_list[0]}</app-link></li>
-                % endfor
+                    <li v-for="(shows, listTitle) in showLists" :key="listTitle">
+                        <%text>
+                        <app-link :href="`#${listTitle}TabContent`" :id="`${listTitle}Tab`">{{ listTitle }}</app-link>
+                        </%text>
+                    </li>
                 </ul>
                 <!-- Tab panes -->
                 <div id="showTabPanes">
-                    ## Checking with Mako as well, so we don't import the home page layout multiple times.
-                    % if app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS:
-                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                    % if not app.HOME_LAYOUT in ['banner', 'simple']:
+                        <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                     % endif
+                    <template v-if="['banner', 'simple'].includes(layout)">
+                        <div v-for="showList in showLists" :key="showList.listTitle" :id="`${showList.listTitle}TabContent`">
+                            <show-list v-bind="{ listTitle, layout, shows, header: true, sortArticle: config.sortArticle }"></show-list>
+                        </div> <!-- #...TabContent -->
+                    </template>
                 </div><!-- #showTabPanes -->
             </div> <!-- #showTabs -->
             <template v-show="!stateLayout.animeSplitHome || !stateLayout.animeSplitHomeInTabs">
-                ## Checking with Mako as well, so we don't import the home page layout multiple times.
-                % if not (app.ANIME_SPLIT_HOME and app.ANIME_SPLIT_HOME_IN_TABS):
-                <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
+                % if not app.HOME_LAYOUT in ['banner', 'simple']:
+                    <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
                 % endif
+                <template v-if="['banner', 'simple'].includes(layout)">
+                    <show-list v-for="showList in showLists" :key="showList.listTitle" v-bind="{ showList.listTitle, layout, showList.shows, header: showLists.length > 1, sortArticle: config.sortArticle }"></show-list>
+                </template>
             </template>
         </div>
     </div>

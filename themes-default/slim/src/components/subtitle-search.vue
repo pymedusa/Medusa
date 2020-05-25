@@ -1,7 +1,7 @@
 <template>
     <tr class="subtitle-search-wrapper">
         <td colspan="9999">
-            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="layout.themeName" state="loading" /></span>
+            <span v-if="loading" class="loading-message">{{loadingMessage}} <state-switch :theme="config.themeName" state="loading" /></span>
             <div v-if="displayQuestion" class="search-question">
                 <div class="question">
                     <p v-if="!lang">Do you want to manually pick subtitles or let us choose it for you?</p>
@@ -13,58 +13,64 @@
                 </div>
             </div>
 
-            <vue-good-table v-if="subtitles.length > 0"
-                            :columns="columns"
-                            :rows="subtitles"
-                            :search-options="{
-                                enabled: false
-                            }"
-                            :sort-options="{
-                                enabled: true,
-                                initialSortBy: { field: 'score', type: 'desc' }
-                            }"
-                            styleClass="vgt-table condensed subtitle-table"
-            >
-                <template v-slot:table-column="props">
-                    <span v-if="props.column.label === 'Download'">
-                        <span>{{props.column.label}}</span>
-                        <span class="btn-medusa btn-xs pull-right" @click="close">hide</span>
-                    </span>
-                    <span v-else>
-                        {{props.column.label}}
-                    </span>
-                </template>
-                <template v-slot:table-row="props">
-                    <span v-if="props.column.field === 'provider'">
-                        <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16">
-                        <span :title="props.row.provider">{{props.row.provider}}</span>
-                    </span>
-                    <span v-else-if="props.column.field === 'lang'">
-                        <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11">
-                    </span>
-                    <span v-else-if="props.column.field === 'filename'">
-                        <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                            <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16">
-                            <span class="subtitle-name">{{props.row.filename}}</span>
-                            <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16">
-                        </a>
-                    </span>
-                    <span v-else-if="props.column.field === 'download'">
-                        <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
-                            <img src="images/download.png" width="16" height="16">
-                        </a>
-                    </span>
-                    <span v-else>
-                        {{props.formattedRow[props.column.field]}}
-                    </span>
-                </template>
-            </vue-good-table>
+            <div v-if="subtitles.length > 0" class="subtitle-results">
+                <span class="release-name">
+                    {{releaseName}}
+                </span>
+                <vue-good-table
+                    :columns="columns"
+                    :rows="subtitles"
+                    :search-options="{
+                        enabled: false
+                    }"
+                    :sort-options="{
+                        enabled: true,
+                        initialSortBy: { field: 'score', type: 'desc' }
+                    }"
+                    styleClass="vgt-table condensed subtitle-table"
+                >
+                    <template v-slot:table-column="props">
+                        <span v-if="props.column.label === 'Download'">
+                            <span>{{props.column.label}}</span>
+                            <span class="btn-medusa btn-xs pull-right" @click="close">hide</span>
+                        </span>
+                        <span v-else>
+                            {{props.column.label}}
+                        </span>
+                    </template>
+                    <template v-slot:table-row="props">
+                        <span v-if="props.column.field === 'provider'">
+                            <img :src="`images/subtitles/${props.row.provider}.png`" width="16" height="16">
+                            <span :title="props.row.provider">{{props.row.provider}}</span>
+                        </span>
+                        <span v-else-if="props.column.field === 'lang'">
+                            <img :title="props.row.lang" :src="`images/subtitles/flags/${props.row.lang}.png`" width="16" height="11">
+                        </span>
+                        <span v-else-if="props.column.field === 'filename'">
+                            <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                                <img v-if="props.row.hearing_impaired" src="images/hearing_impaired.png" width="16" height="16">
+                                <span class="subtitle-name">{{props.row.filename}}</span>
+                                <img v-if="props.row.sub_score >= props.row.min_score" src="images/save.png" width="16" height="16">
+                            </a>
+                        </span>
+                        <span v-else-if="props.column.field === 'download'">
+                            <a :title="`Download${props.row.hearing_impaired ? ' hearing impaired ' : ' '}subtitle: ${props.row.filename}`" @click="pickSubtitle(props.row.id)">
+                                <img src="images/download.png" width="16" height="16">
+                            </a>
+                        </span>
+                        <span v-else>
+                            {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
+                </vue-good-table>
+            </div>
+
         </td>
     </tr>
 </template>
 <script>
 
-import { mapState } from 'vuex';
+import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { apiRoute } from '../api';
 import { StateSwitch } from './helpers';
@@ -80,12 +86,8 @@ export default {
             type: Object,
             required: true
         },
-        season: {
-            type: [String, Number],
-            required: true
-        },
         episode: {
-            type: [String, Number],
+            type: Object,
             required: true
         },
         lang: {
@@ -133,15 +135,26 @@ export default {
     },
     computed: {
         ...mapState({
-            layout: state => state.layout
+            config: state => state.config
         }),
+        ...mapGetters({
+            getLastReleaseName: 'getLastReleaseName'
+        }),
+        releaseName() {
+            const { episode, getLastReleaseName, show } = this;
+            const lastKnownReleaseName = getLastReleaseName({ showSlug: show.id.slug, episodeSlug: episode.slug });
+            if (lastKnownReleaseName) {
+                return `Select subtitle for release: ${lastKnownReleaseName}`;
+            }
+            return 'Could not get a downloaded release name from the history table';
+        },
         subtitleParams() {
-            const { episode, show, season } = this;
+            const { episode, show } = this;
             const params = {
                 indexername: show.indexer,
                 seriesid: show.id[show.indexer],
-                season,
-                episode
+                season: episode.season,
+                episode: episode.episode
             };
 
             return params;
@@ -151,6 +164,9 @@ export default {
         this.displayQuestion = true;
     },
     methods: {
+        ...mapActions([
+            'getShowEpisodeHistory'
+        ]),
         autoSearch() {
             const { lang, subtitleParams } = this;
             const params = subtitleParams;
@@ -185,7 +201,7 @@ export default {
                 });
         },
         manualSearch() {
-            const { subtitleParams } = this;
+            const { episode, getShowEpisodeHistory, show, subtitleParams } = this;
 
             this.displayQuestion = false;
             this.loading = true;
@@ -194,6 +210,8 @@ export default {
                 .then(response => {
                     if (response.data.result === 'success') {
                         this.subtitles.push(...response.data.subtitles);
+                        // Load episode history if we have subtitles.
+                        getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episode.slug });
                     }
                 }).catch(error => {
                     console.log(`Error trying to search for subtitles. Error: ${error}`);
@@ -265,7 +283,7 @@ export default {
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
+            this.$el.remove();
         }
     }
 };
@@ -294,5 +312,14 @@ export default {
 
 span.subtitle-name {
     color: rgb(0, 0, 0);
+}
+
+span.release-name {
+    text-align: left;
+    width: 100%;
+    display: block;
+    background-color: rgb(51, 51, 51);
+    color: rgb(255, 255, 255);
+    padding: 4px;
 }
 </style>

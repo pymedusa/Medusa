@@ -1,10 +1,39 @@
 ## Unreleased
 
 #### New Features
+- Added Search shows by id ([#8058](https://github.com/pymedusa/Medusa/pull/8058))
 
 #### Improvements
 
 #### Fixes
+
+-----
+
+## 0.3.16 (2020-04-27)
+
+#### New Features
+- Added Keep link as post processing method ([#7986](https://github.com/pymedusa/Medusa/pull/7986))
+- Added EZTV as torrent provider ([#8004](https://github.com/pymedusa/Medusa/pull/8004))
+
+#### Fixes
+- Fixed PrivateHD and CinemaZ provider login ([#7991](https://github.com/pymedusa/Medusa/pull/7991))
+- Fixed occasional subliminal exception ([#7989](https://github.com/pymedusa/Medusa/pull/7989))
+
+-----
+
+## 0.3.15 (2020-04-13)
+
+#### Improvements
+- Add show names with dashes to guessit expected titles ([#7918](https://github.com/pymedusa/Medusa/pull/7918))
+- Provider YggTorrents: Add 'saison' as a season pack search keyword ([#7920](https://github.com/pymedusa/Medusa/pull/7920))
+- Show Snatched or Downloaded release name when manually picking a subtitle ([#7955](https://github.com/pymedusa/Medusa/pull/7955))
+
+#### Fixes
+- Fixed root dirs not always shown on Home page ([#7921](https://github.com/pymedusa/Medusa/pull/7921))
+- Fixed starting medusa failed running python3.8 on windows ([#7940](https://github.com/pymedusa/Medusa/pull/7940))
+- Fixed Speed.cd provider login ([#7941](https://github.com/pymedusa/Medusa/pull/7941))
+- Fixed [#7959](https://github.com/pymedusa/Medusa/issues/7959) - UI bug on schedule calendar view ([#7962](https://github.com/pymedusa/Medusa/pull/7962))
+- Fixed running Scheduler with specific start time ([#7963](https://github.com/pymedusa/Medusa/pull/7963))
 
 -----
 

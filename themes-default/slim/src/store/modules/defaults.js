@@ -37,6 +37,8 @@ const state = {
         genres: [],
         id: {
             tvdb: null,
+            trakt: null,
+            imdb: null,
             slug: null
         },
         indexer: null,
@@ -82,7 +84,6 @@ const state = {
         showQueueStatus: [],
         xemNumbering: [],
         sceneAbsoluteNumbering: [],
-        allSceneExceptions: [],
         xemAbsoluteNumbering: [],
         sceneNumbering: [],
 

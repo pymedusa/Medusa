@@ -15,8 +15,8 @@ documentation: http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 """
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "4.8.2"
-__copyright__ = "Copyright (c) 2004-2019 Leonard Richardson"
+__version__ = "4.9.1"
+__copyright__ = "Copyright (c) 2004-2020 Leonard Richardson"
 # Use of this source code is governed by the MIT license.
 __license__ = "MIT"
 
@@ -39,14 +39,31 @@ from .element import (
     NavigableString,
     PageElement,
     ProcessingInstruction,
+    PYTHON_SPECIFIC_ENCODINGS,
     ResultSet,
+    Script,
+    Stylesheet,
     SoupStrainer,
     Tag,
+    TemplateString,
     )
 
 # The very first thing we do is give a useful error if someone is
 # running this code under Python 3 without converting it.
 'You are trying to run the Python 2 version of Beautiful Soup under Python 3. This will not work.'<>'You need to convert the code, either by installing it (`python setup.py install`) or by running 2to3 (`2to3 -w bs4`).'
+
+# Define some custom warnings.
+class GuessedAtParserWarning(UserWarning):
+    """The warning issued when BeautifulSoup has to guess what parser to
+    use -- probably because no parser was specified in the constructor.
+    """
+
+class MarkupResemblesLocatorWarning(UserWarning):
+    """The warning issued when BeautifulSoup is given 'markup' that
+    actually looks like a resource locator -- a URL or a path to a file
+    on disk.
+    """
+
 
 class BeautifulSoup(Tag):
     """A data structure representing a parsed HTML or XML document.
@@ -93,7 +110,7 @@ class BeautifulSoup(Tag):
     ASCII_SPACES = '\x20\x0a\x09\x0c\x0d'
 
     NO_PARSER_SPECIFIED_WARNING = "No parser was explicitly specified, so I'm using the best available %(markup_type)s parser for this system (\"%(parser)s\"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.\n\nThe code that caused this warning is on line %(line_number)s of the file %(filename)s. To get rid of this warning, pass the additional argument 'features=\"%(parser)s\"' to the BeautifulSoup constructor.\n"
-
+    
     def __init__(self, markup="", features=None, builder=None,
                  parse_only=None, from_encoding=None, exclude_encodings=None,
                  element_classes=None, **kwargs):
@@ -269,7 +286,10 @@ class BeautifulSoup(Tag):
                         parser=builder.NAME,
                         markup_type=markup_type
                     )
-                    warnings.warn(self.NO_PARSER_SPECIFIED_WARNING % values, stacklevel=2)
+                    warnings.warn(
+                        self.NO_PARSER_SPECIFIED_WARNING % values,
+                        GuessedAtParserWarning, stacklevel=2
+                    )
         else:
             if kwargs:
                 warnings.warn("Keyword arguments to the BeautifulSoup constructor will be ignored. These would normally be passed into the TreeBuilder constructor, but a TreeBuilder instance was passed in as `builder`.")
@@ -306,12 +326,12 @@ class BeautifulSoup(Tag):
                 # system. Just let it go.
                 pass
             if is_file:
-                if isinstance(markup, unicode):
-                    markup = markup.encode("utf8")
                 warnings.warn(
                     '"%s" looks like a filename, not markup. You should'
                     ' probably open this file and pass the filehandle into'
-                    ' Beautiful Soup.' % markup)
+                    ' Beautiful Soup.' % self._decode_markup(markup),
+                    MarkupResemblesLocatorWarning
+                )
             self._check_markup_is_url(markup)
 
         rejections = []
@@ -360,8 +380,21 @@ class BeautifulSoup(Tag):
             d['builder'] = None
         return d
 
-    @staticmethod
-    def _check_markup_is_url(markup):
+    @classmethod
+    def _decode_markup(cls, markup):
+        """Ensure `markup` is bytes so it's safe to send into warnings.warn.
+
+        TODO: warnings.warn had this problem back in 2010 but it might not
+        anymore.
+        """
+        if isinstance(markup, bytes):
+            decoded = markup.decode('utf-8', 'replace')
+        else:
+            decoded = markup
+        return decoded
+
+    @classmethod
+    def _check_markup_is_url(cls, markup):
         """Error-handling method to raise a warning if incoming markup looks
         like a URL.
 
@@ -378,15 +411,14 @@ class BeautifulSoup(Tag):
 
         if any(markup.startswith(prefix) for prefix in cant_start_with):
             if not space in markup:
-                if isinstance(markup, bytes):
-                    decoded_markup = markup.decode('utf-8', 'replace')
-                else:
-                    decoded_markup = markup
                 warnings.warn(
                     '"%s" looks like a URL. Beautiful Soup is not an'
                     ' HTTP client. You should probably use an HTTP client like'
                     ' requests to get the document behind the URL, and feed'
-                    ' that document to Beautiful Soup.' % decoded_markup
+                    ' that document to Beautiful Soup.' % cls._decode_markup(
+                        markup
+                    ),
+                    MarkupResemblesLocatorWarning
                 )
 
     def _feed(self):
@@ -413,25 +445,54 @@ class BeautifulSoup(Tag):
         self.currentTag = None
         self.tagStack = []
         self.preserve_whitespace_tag_stack = []
+        self.string_container_stack = []
         self.pushTag(self)
 
     def new_tag(self, name, namespace=None, nsprefix=None, attrs={},
                 sourceline=None, sourcepos=None, **kwattrs):
-        """Create a new Tag associated with this BeautifulSoup object."""
+        """Create a new Tag associated with this BeautifulSoup object.
+
+        :param name: The name of the new Tag.
+        :param namespace: The URI of the new Tag's XML namespace, if any.
+        :param prefix: The prefix for the new Tag's XML namespace, if any.
+        :param attrs: A dictionary of this Tag's attribute values; can
+            be used instead of `kwattrs` for attributes like 'class'
+            that are reserved words in Python.
+        :param sourceline: The line number where this tag was
+            (purportedly) found in its source document.
+        :param sourcepos: The character position within `sourceline` where this
+            tag was (purportedly) found.
+        :param kwattrs: Keyword arguments for the new Tag's attribute values.
+
+        """
         kwattrs.update(attrs)
         return self.element_classes.get(Tag, Tag)(
             None, self.builder, name, namespace, nsprefix, kwattrs,
             sourceline=sourceline, sourcepos=sourcepos
         )
 
+    def string_container(self, base_class=None):
+        container = base_class or NavigableString
+        
+        # There may be a general override of NavigableString.
+        container = self.element_classes.get(
+            container, container
+        )
+
+        # On top of that, we may be inside a tag that needs a special
+        # container class.
+        if self.string_container_stack:
+            container = self.builder.string_containers.get(
+                self.string_container_stack[-1].name, container
+            )
+        return container
+        
     def new_string(self, s, subclass=None):
         """Create a new NavigableString associated with this BeautifulSoup
         object.
         """
-        subclass = subclass or self.element_classes.get(
-            NavigableString, NavigableString
-        )
-        return subclass(s)
+        container = self.string_container(subclass)
+        return container(s)
 
     def insert_before(self, successor):
         """This method is part of the PageElement API, but `BeautifulSoup` doesn't implement
@@ -450,33 +511,30 @@ class BeautifulSoup(Tag):
         tag = self.tagStack.pop()
         if self.preserve_whitespace_tag_stack and tag == self.preserve_whitespace_tag_stack[-1]:
             self.preserve_whitespace_tag_stack.pop()
-        #print "Pop", tag.name
+        if self.string_container_stack and tag == self.string_container_stack[-1]:
+            self.string_container_stack.pop()
+        #print("Pop", tag.name)
         if self.tagStack:
             self.currentTag = self.tagStack[-1]
         return self.currentTag
 
     def pushTag(self, tag):
         """Internal method called by handle_starttag when a tag is opened."""
-        #print "Push", tag.name
+        #print("Push", tag.name)
         if self.currentTag is not None:
             self.currentTag.contents.append(tag)
         self.tagStack.append(tag)
         self.currentTag = self.tagStack[-1]
         if tag.name in self.builder.preserve_whitespace_tags:
             self.preserve_whitespace_tag_stack.append(tag)
+        if tag.name in self.builder.string_containers:
+            self.string_container_stack.append(tag)
 
     def endData(self, containerClass=None):
         """Method called by the TreeBuilder when the end of a data segment
         occurs.
         """
-        # Default container is NavigableString.
-        containerClass = containerClass or NavigableString
-
-        # The user may want us to instantiate some alias for the
-        # container class.
-        containerClass = self.element_classes.get(
-            containerClass, containerClass
-        )
+        containerClass = self.string_container(containerClass)
         
         if self.current_data:
             current_data = u''.join(self.current_data)
@@ -585,7 +643,7 @@ class BeautifulSoup(Tag):
           to but *not* including the most recent instqance of the
           given tag.
         """
-        #print "Popping to %s" % name
+        #print("Popping to %s" % name)
         if name == self.ROOT_TAG_NAME:
             # The BeautifulSoup object itself can never be popped.
             return
@@ -620,7 +678,7 @@ class BeautifulSoup(Tag):
         in the document. For instance, if this was a self-closing tag,
         don't call handle_endtag.
         """
-        # print "Start tag %s: %s" % (name, attrs)
+        # print("Start tag %s: %s" % (name, attrs))
         self.endData()
 
         if (self.parse_only and len(self.tagStack) <= 1
@@ -647,14 +705,14 @@ class BeautifulSoup(Tag):
         :param name: Name of the tag.
         :param nsprefix: Namespace prefix for the tag.
         """
-        #print "End tag: " + name
+        #print("End tag: " + name)
         self.endData()
         self._popToTag(name, nsprefix)
 
     def handle_data(self, data):
         """Called by the tree builder when a chunk of textual data is encountered."""
         self.current_data.append(data)
-
+       
     def decode(self, pretty_print=False,
                eventual_encoding=DEFAULT_OUTPUT_ENCODING,
                formatter="minimal"):
@@ -669,6 +727,11 @@ class BeautifulSoup(Tag):
         if self.is_xml:
             # Print the XML declaration
             encoding_part = ''
+            if eventual_encoding in PYTHON_SPECIFIC_ENCODINGS:
+                # This is a special Python encoding; it can't actually
+                # go into an XML document because it means nothing
+                # outside of Python.
+                eventual_encoding = None
             if eventual_encoding != None:
                 encoding_part = ' encoding="%s"' % eventual_encoding
             prefix = u'<?xml version="1.0"%s?>\n' % encoding_part
@@ -711,4 +774,4 @@ class FeatureNotFound(ValueError):
 if __name__ == '__main__':
     import sys
     soup = BeautifulSoup(sys.stdin)
-    print soup.prettify()
+    print(soup.prettify())

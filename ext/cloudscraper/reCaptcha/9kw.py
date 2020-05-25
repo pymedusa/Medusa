@@ -143,7 +143,7 @@ class captchaSolver(reCaptcha):
 
     # ------------------------------------------------------------------------------- #
 
-    def requestSolve(self, site_url, site_key):
+    def requestSolve(self, captchaType, url, siteKey):
         def _checkRequest(response):
             if response.ok and response.text.startswith('{') and response.json().get('captchaid'):
                 return response
@@ -152,6 +152,11 @@ class captchaSolver(reCaptcha):
 
             return None
 
+        captchaMap = {
+            'reCaptcha': 'recaptchav2',
+            'hCaptcha': 'hcaptcha'
+        }
+
         response = polling.poll(
             lambda: self.session.post(
                 self.host,
@@ -159,9 +164,9 @@ class captchaSolver(reCaptcha):
                     'apikey': self.api_key,
                     'action': 'usercaptchaupload',
                     'interactive': 1,
-                    'file-upload-01': site_key,
-                    'oldsource': 'recaptchav2',
-                    'pageurl': site_url,
+                    'file-upload-01': siteKey,
+                    'oldsource': captchaMap[captchaType],
+                    'pageurl': url,
                     'maxtimeout': self.maxtimeout,
                     'json': 1
                 },
@@ -179,7 +184,7 @@ class captchaSolver(reCaptcha):
 
     # ------------------------------------------------------------------------------- #
 
-    def getCaptchaAnswer(self, site_url, site_key, reCaptchaParams):
+    def getCaptchaAnswer(self, captchaType, url, siteKey, reCaptchaParams):
         jobID = None
 
         if not reCaptchaParams.get('api_key'):
@@ -194,7 +199,7 @@ class captchaSolver(reCaptcha):
             self.session.proxies = reCaptchaParams.get('proxies')
 
         try:
-            jobID = self.requestSolve(site_url, site_key)
+            jobID = self.requestSolve(captchaType, url, siteKey)
             return self.requestJob(jobID)
         except polling.TimeoutException:
             raise reCaptchaTimeout(

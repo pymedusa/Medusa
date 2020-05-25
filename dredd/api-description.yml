@@ -221,7 +221,6 @@ paths:
         The Episode endpoint returns information about the Episodes from a given Series.
       parameters:
         - $ref: '#/parameters/series-id'
-          name: seriesid
         - name: season
           in: query
           required: false
@@ -995,6 +994,91 @@ paths:
         400:
           $ref: '#/responses/error'
           x-disabled: true
+  /history:
+    get:
+      summary: Return history entries to a specific show
+      description: |
+        The history endpoint returns logged activities stored in the history table, like episodes snatched and downloaded. Or downloaded subtitles for an episode.
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination_history'
+          x-disabled: true
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            path-params:
+              seriesid: asdf
+          x-disabled: true
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
+          x-disabled: true
+  /history/{seriesid}:
+    get:
+      summary: Return history entries to a specific show
+      description: |
+        The history endpoint returns logged activities stored in the history table, like episodes snatched and downloaded. Or downloaded subtitles for an episode.
+      parameters:
+        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/sort'
+      responses:
+        200:
+          $ref: '#/responses/pagination_history'
+          x-disabled: true
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            path-params:
+              seriesid: asdf
+          x-disabled: true
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
+          x-disabled: true
+  /history/{seriesid}/episode/{episodeid}:
+    get:
+      summary: Return history entries for a specific episode
+      description: |
+        The histories episode endpoint returns history entries for a specific episode
+      parameters:
+        - $ref: '#/parameters/series-id'
+        - $ref: '#/parameters/episode-id'
+      responses:
+        200:
+          description: Array of History entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/History'
+          x-disabled: true
+        400:
+          $ref: '#/responses/error'
+          description: Invalid series id or pagination parameters
+          x-request:
+            path-params:
+              seriesid: asdf
+          x-disabled: true
+        404:
+          $ref: '#/responses/error'
+          description: Series not found
+          x-request:
+            path-params:
+              seriesid: tvdb999999999
+          x-disabled: true
 
 definitions:
   Series:
@@ -1221,8 +1305,7 @@ definitions:
             type: array
             description: Local aliases for the series
             items:
-              type: string
-            example: [MySeries, MS]
+              $ref: '#/definitions/ShowAlias'
           release:
             type: object
             description: Release configuration
@@ -1303,22 +1386,6 @@ definitions:
               type: integer
               format: int32
               description: Scene absolute episode number.
-      allSceneExceptions:
-        type: array
-        description: Array of objects with xem indexer to scene mappings. Available through the detailed query param.
-        items:
-          type: object
-          properties:
-            season:
-              type: integer
-              format: int32
-              description: Absolute episode number.
-            exceptions:
-              type: array
-              description: Show name exceptions (season = -1) or season exceptions (season > 0)
-              items:
-                type: string
-                description: Scene name for a show or season
       xemAbsoluteNumbering:
         type: array
         description:
@@ -1792,8 +1859,13 @@ definitions:
                 type: array
               allowHighPriority:
                 type: boolean
-              useFailedDownloads:
-                type: boolean
+              failedDownloads:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+                  deleteFailed:
+                    type: boolean
               deleteFailed:
                 type: boolean
               cacheTrimming:
@@ -2373,6 +2445,20 @@ definitions:
       series: tvdb301824
       name: TheBig
       type: local
+  ShowAlias:
+    type: object
+    description: An alias returned as part of a Series config
+    properties:
+      title:
+        type: string
+      season:
+        type: integer
+        minimum: -1
+      custom:
+        type: boolean
+    example:
+      title: TheBig
+      type: local
   Metadata:
     type: object
     properties:
@@ -2681,46 +2767,88 @@ definitions:
             format: int32
             minimum: 0
             maximum: 10000
-
-
   SearchedEpisode:
-      type: object
-      properties:
-        indexer:
-          type: integer
-          format: int32
-          description: Internal id for the shows indexer
-        series_id:
-          type: integer
-          format: int32
-          description: Unique id for the show from a shows indexer
-        episode:
-          type: integer
-          format: int32
-          description: Episode number
-        season:
-          type: integer
-          format: int32
-          description: Season number
-        episodeindexerid:
-          type: integer
-          format: int32
-          description: Unique id for the episode from a shows indexer
-        searchstatus:
-          enum:
-            - "finished"
-            - "searching"
-            - "queued"
-          description: Status of the search
-        status:
-          type: string
-          description: Episode status
-        quality_name:
-          type: string
-          description: Episode quality
-        overview:
-          type: string
-          description: Episode status/quality overview string
+    type: object
+    properties:
+      indexer:
+        type: integer
+        format: int32
+        description: Internal id for the shows indexer
+      series_id:
+        type: integer
+        format: int32
+        description: Unique id for the show from a shows indexer
+      episode:
+        type: integer
+        format: int32
+        description: Episode number
+      season:
+        type: integer
+        format: int32
+        description: Season number
+      episodeindexerid:
+        type: integer
+        format: int32
+        description: Unique id for the episode from a shows indexer
+      searchstatus:
+        enum:
+          - "finished"
+          - "searching"
+          - "queued"
+        description: Status of the search
+      status:
+        type: string
+        description: Episode status
+      quality_name:
+        type: string
+        description: Episode quality
+      overview:
+        type: string
+        description: Episode status/quality overview string
+
+  History:
+    description: History object
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+        description: Internal id for the history row
+      series:
+        type: string
+        description: Series slug (if available)
+      status:
+        type: integer
+        format: int32
+        description: Status (numberic)
+      statusName:
+        type: string
+        description: Status description
+      actionDate:
+        type: integer
+        format: int32
+        description: Date of when the history entrie was stored
+      resource:
+        type: string
+        description: Description of what was stored
+        example:
+            - The release name for a statusName of "Downloaded" or "Snatched"
+            - The language of a subitle downloaded fo ra statusName of "Subtitled"
+      size:
+        type: integer
+        description: Snatched or Downloaded filesize
+      season:
+        type: integer
+        description: Season number
+      episode:
+        type: integer
+        description: Episode number
+      manuallySearched:
+        type: boolean
+        description: Specifies if an episode was snatched or downloaded through a manual search
+      provider:
+        type: string
+        description: Provider of the history record. For example, the provider id if origin from snatch/download.
 
 parameters:
   detailed:
@@ -2763,7 +2891,7 @@ parameters:
     x-example: tvdb301824
     type: string
   episode-id:
-    name: episode-id
+    name: episodeid
     in: path
     required: true
     description: The episode id to retrieve. E.g. s02e03, e34 or 2016-12-31
@@ -2926,3 +3054,26 @@ responses:
     description: Unexpected error
     schema:
       $ref: '#/definitions/Error'
+  pagination_history:
+    description: A paged array of history records
+    headers:
+      X-Pagination-Page:
+        type: integer
+        format: int32
+        description: The page number
+      X-Pagination-Limit:
+        type: integer
+        format: int32
+        description: The pagination limit
+      X-Pagination-Count:
+        type: integer
+        format: int32
+        description: The total items count
+      Link:
+        type: string
+        description: "The pagination links: next, last, first and previous"
+    schema:
+      type: array
+      items:
+        $ref: '#/definitions/History'
+

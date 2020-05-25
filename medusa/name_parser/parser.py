@@ -18,8 +18,8 @@ from medusa import (
     scene_numbering,
 )
 from medusa.helper.common import episode_num
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import (
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import (
     IndexerEpisodeNotFound,
     IndexerError,
     IndexerException,
@@ -187,7 +187,9 @@ class NameParser(object):
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         season_exception = None
         if result.season_number is None:
-            season_exception = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
+            season_exception = list(scene_exceptions.get_scene_exceptions_by_name(result.series_name))
+            if season_exception:
+                season_exception = season_exception[0].season
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:

@@ -8,7 +8,7 @@ import logging
 
 from medusa import app
 from medusa.helper.exceptions import ex
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from medusa.indexers.utils import indexer_id_to_name, mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession

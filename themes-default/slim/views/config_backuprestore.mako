@@ -75,9 +75,9 @@ window.app = new Vue({
                     </div>
                     <fieldset class="component-group-list">
                         <div class="field-pair">
-                            Select the folder you wish to save your backup file to:
+                            Select the folder you wish to save your backup-file to:
                             <br><br>
-                            <file-browser name="backupDir" title="Select backup folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
+                            <file-browser name="backupDir" title="Select folder to save to" local-storage-key="backupPath" @update="backup.dir = $event"></file-browser>
                             <br>
                             <input @click="runBackup" :disabled="backup.disabled" class="btn-medusa btn-inline" type="button" value="Backup" id="Backup" />
                             <br>

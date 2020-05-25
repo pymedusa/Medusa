@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "pillTestCase"] }] */
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
