@@ -107,6 +107,14 @@ const mutations = {
         if (section === 'main') {
             state = Object.assign(state, config);
         }
+    },
+    addRecentShow(state, { show }) {
+        state.recentShows = state.recentShows.filter(
+            filterShow =>
+                !(filterShow.indexerName === show.indexerName && filterShow.showId === show.showId && filterShow.name === show.name)
+        );
+        // Vue.set(state.showHistory, showSlug, history);
+        state.recentShows.push(show);
     }
 };
 
@@ -163,6 +171,13 @@ const actions = {
                 config.webInterface.apiKey = response.data;
                 return commit(ADD_CONFIG, { section, config });
             });
+    },
+    setRecentShow({ commit, state }, show) {
+        commit('addRecentShow', { show });
+        const config = {
+            recentShows: state.recentShows
+        };
+        return api.patch('config/main', config);
     }
 
 };

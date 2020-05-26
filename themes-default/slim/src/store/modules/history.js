@@ -48,6 +48,22 @@ const getters = {
                 }
             }
         }
+    },
+    getEpisodeHistory: state => ({ showSlug, episodeSlug }) => {
+        if (state.episodeHistory[showSlug] === undefined) {
+            return [];
+        }
+
+        return state.episodeHistory[showSlug][episodeSlug] || [];
+    },
+    getSeasonHistory: state => ({ showSlug }) => {
+        if (state.episodeHistory[showSlug] === undefined) {
+            return [];
+        }
+
+        return Object.keys(state.episodeHistory[showSlug]).reduce((r, k) => {
+            return r.concat(state.episodeHistory[showSlug][k]);
+        }, []);
     }
 };
 

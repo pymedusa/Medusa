@@ -11,7 +11,7 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <show-history v-if="show && season" v-bind="{ show, season, episode }" />
+        <show-history v-if="show && season" v-bind="{ show, season, episode }" :key="show.id.slug + season + episode || ''" />
 
         <div class="row">
             <div class="col-md-12 horizontal-scroll">

@@ -2,7 +2,7 @@
     <div class="show-history-wrapper">
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
-                <vue-good-table v-if="history.length > 0"
+                <vue-good-table v-if="show.id.slug && history.length > 0"
                                 :columns="columns"
                                 :rows="history"
                                 :search-options="{
@@ -85,11 +85,19 @@ export default {
             history: []
         };
     },
+    mounted() {
+        const { getHistory } = this;
+        this.history = getHistory();
+    },
     computed: {
         ...mapState({
             config: state => state.config,
             showHistory: state => state.history.showHistory,
             episodeHistory: state => state.history.episodeHistory
+        }),
+        ...mapGetters({
+            getEpisodeHistory: 'getEpisodeHistory',
+            getSeasonHistory: 'getSeasonHistory'
         })
     },
     methods: {
@@ -107,35 +115,18 @@ export default {
         episodeSlug() {
             const { season, episode } = this;
             return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
-        }
-    },
-    watch: {
-        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { episodeSlug, getShowEpisodeHistory } = this;
-            if (slug) {
-                getShowEpisodeHistory({ showSlug: slug, episodeSlug: episodeSlug() });
-            }
         },
-        episodeHistory: {
-            handler(history) {
-                const { episodeSlug, season, searchType, show } = this;
+        getHistory() {
+            const { getEpisodeHistory, getSeasonHistory, getShowEpisodeHistory, show, episodeSlug, searchType } = this;
+            if (show.id.slug) {
+                getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
+            }
 
-                if (show && show.id.slug && history[show.id.slug]) {
-                    // In case of an episode search
-                    if (searchType === 'episode' && episodeSlug()) {
-                        this.history = history[show.id.slug][episodeSlug()] || [];
-                    }
+            if (searchType === 'episode') {
+                return getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
+            }
 
-                    // In case of a season search
-                    if (searchType === 'season' && season) {
-                        this.history = Object.keys(history[show.id.slug]).reduce((r, k) => {
-                            return r.concat(history[show.id.slug][k]);
-                        }, []);
-                    }
-                }
-            },
-            deep: true,
-            immediate: false
+            return getSeasonHistory({ showSlug: show.id.slug });
         }
     }
 };

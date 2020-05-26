@@ -676,7 +676,8 @@ export default {
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
             getEpisodes: 'getEpisodes',
-            setCurrentShow: 'setCurrentShow'
+            setCurrentShow: 'setCurrentShow',
+            setRecentShow: 'setRecentShow'
         }),
         loadShow() {
             const { setCurrentShow, id, indexer, getShow } = this;
@@ -1147,7 +1148,7 @@ export default {
             _getEpisodes(id, indexer);
         },
         initializeEpisodes() {
-            const { getEpisodes, id, indexer, show } = this;
+            const { getEpisodes, id, indexer, setRecentShow, show } = this;
             if (!show.seasons) {
                 // Load episodes for the first page.
                 this.loadEpisodes(1);
@@ -1155,6 +1156,15 @@ export default {
                 if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
                     getEpisodes({ id, indexer, season: 0 });
                 }
+            }
+
+            if (show.id.slug) {
+                // For now i'm dumping this here
+                setRecentShow({
+                    indexerName: show.indexer,
+                    showId: show.id[show.indexer],
+                    name: show.title
+                });
             }
         }
     },
