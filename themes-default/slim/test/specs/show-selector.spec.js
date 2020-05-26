@@ -1,6 +1,6 @@
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
-import { createLocalVue, mount, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowSelector } from '../../src/components';
 import fixtures from '../__fixtures__/common';
 import { shows } from '../__fixtures__/shows';
