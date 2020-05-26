@@ -14,10 +14,16 @@ const NOTIFICATIONS_ENABLED = '🔔 Notifications Enabled';
 const NOTIFICATIONS_DISABLED = '🔔 Notifications Disabled';
 const ADD_CONFIG = '⚙️ Config added to store';
 const ADD_SHOW = '📺 Show added to store';
+const ADD_SHOWS = '📺 Multiple Shows added to store in bulk';
 const ADD_SHOW_EPISODE = '📺 Shows season with episodes added to store';
 const ADD_STATS = 'ℹ️ Statistics added to store';
+const SET_STATS = 'SET_STATS';
+const SET_MAX_DOWNLOAD_COUNT = 'SET_MAX_DOWNLOAD_COUNT';
+const ADD_SHOW_SCENE_EXCEPTION = '📺 Add a scene exception';
+const REMOVE_SHOW_SCENE_EXCEPTION = '📺 Remove a scene exception';
 const ADD_HISTORY = '📺 History added to store';
 const ADD_SHOW_HISTORY = '📺 Show specific History added to store';
+const ADD_SHOW_EPISODE_HISTORY = "📺 Show's episode specific History added to store";
 
 export {
     LOGIN_PENDING,
@@ -37,7 +43,13 @@ export {
     ADD_CONFIG,
     ADD_HISTORY,
     ADD_SHOW,
+    ADD_SHOWS,
     ADD_SHOW_EPISODE,
     ADD_STATS,
-    ADD_SHOW_HISTORY
+    SET_STATS,
+    SET_MAX_DOWNLOAD_COUNT,
+    ADD_SHOW_SCENE_EXCEPTION,
+    REMOVE_SHOW_SCENE_EXCEPTION,
+    ADD_SHOW_HISTORY,
+    ADD_SHOW_EPISODE_HISTORY
 };

@@ -220,8 +220,14 @@ class SearchResult(object):
         if self.actual_season is not None and self.series:
             if self.actual_episodes:
                 self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+                if len(self.actual_episodes) == 1:
+                    self.episode_number = self.actual_episodes[0]
+                else:
+                    self.episode_number = MULTI_EP_RESULT
             else:
                 self.episodes = self.series.get_all_episodes(self.actual_season)
+                self.actual_episodes = [ep.episode for ep in self.episodes]
+                self.episode_number = SEASON_RESULT
 
         return self.episodes
 
@@ -245,12 +251,6 @@ class SearchResult(object):
         # Season result
         if not sql_episodes:
             ep_objs = series_obj.get_all_episodes(actual_season)
-            if not ep_objs:
-                # We couldn't get any episodes for this season, which is odd, skip the result.
-                log.debug("We couldn't get any episodes for season {0} of {1}, skipping",
-                          actual_season, cached_data['name'])
-                return
-
             self.actual_episodes = [ep.episode for ep in ep_objs]
             self.episode_number = SEASON_RESULT
 
@@ -336,13 +336,16 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
                 for cur_show in all_series:
-                    if cur_show in search_results:
+                    if [result for result in search_results if str(cur_show['id']) == str(result['id'])]:
                         continue
 
                     if 'seriesname' in cur_show:
                         series_names.append(cur_show['seriesname'])
-                    if 'aliasnames' in cur_show:
-                        series_names.extend(cur_show['aliasnames'].split('|'))
+                    if 'aliases' in cur_show:
+                        series_names.extend(cur_show['aliases'].split('|'))
+
+                    if search_term.isdigit():
+                        series_names.append(search_term)
 
                     for name in series_names:
                         if search_term.lower() in name.lower():

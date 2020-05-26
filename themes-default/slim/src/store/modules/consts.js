@@ -54,15 +54,26 @@ const getters = {
         }
         return state.statuses.find(status => key === status.key || value === status.value);
     },
-    // Get an episode overview status using the episode status and quality
+    /**
+     * Get an episode overview status using the episode status and quality.
+     *
+     * @typedef {Object} - Episode status
+     * @property {Object} quality - Episode quality
+     * @property {Object} configQualities - Shows configured qualities (allowed and preferred)
+     * @returns {String} The overview status
+     */
     // eslint-disable-next-line no-unused-vars
-    getOverviewStatus: _state => (status, quality, showQualities) => {
+    getOverviewStatus: _state => (status, quality, configQualities) => {
         if (['Unset', 'Unaired'].includes(status)) {
             return 'Unaired';
         }
 
         if (['Skipped', 'Ignored'].includes(status)) {
             return 'Skipped';
+        }
+
+        if (['Archived'].includes(status)) {
+            return 'Preferred';
         }
 
         if (['Wanted', 'Failed'].includes(status)) {
@@ -74,13 +85,24 @@ const getters = {
         }
 
         if (['Downloaded'].includes(status)) {
-            if (showQualities.preferred.includes(quality)) {
+            // Check if the show has been configured with only allowed qualities.
+            if (configQualities.allowed.length > 0 && configQualities.preferred.length === 0) {
+                // This is a hack, because technically the quality does not fit in the Preferred quality.
+                // But because 'preferred' translates to the css color "green", we use it.
+                if (configQualities.allowed.includes(quality)) {
+                    return 'Preferred';
+                }
+            }
+
+            if (configQualities.preferred.includes(quality)) {
                 return 'Preferred';
             }
 
-            if (showQualities.allowed.includes(quality)) {
+            if (configQualities.allowed.includes(quality)) {
                 return 'Allowed';
             }
+
+            return 'Wanted';
         }
 
         return status;

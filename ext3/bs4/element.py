@@ -16,7 +16,11 @@ except ImportError as e:
         'The soupsieve package is not installed. CSS selectors cannot be used.'
     )
 
-from bs4.dammit import EntitySubstitution
+from bs4.formatter import (
+    Formatter,
+    HTMLFormatter,
+    XMLFormatter,
+)
 
 DEFAULT_OUTPUT_ENCODING = "utf-8"
 PY3K = (sys.version_info[0] > 2)
@@ -39,9 +43,46 @@ def _alias(attr):
     return alias
 
 
-class NamespacedAttribute(str):
+# These encodings are recognized by Python (so PageElement.encode
+# could theoretically support them) but XML and HTML don't recognize
+# them (so they should not show up in an XML or HTML document as that
+# document's encoding).
+#
+# If an XML document is encoded in one of these encodings, no encoding
+# will be mentioned in the XML declaration. If an HTML document is
+# encoded in one of these encodings, and the HTML document has a
+# <meta> tag that mentions an encoding, the encoding will be given as
+# the empty string.
+#
+# Source:
+# https://docs.python.org/3/library/codecs.html#python-specific-encodings
+PYTHON_SPECIFIC_ENCODINGS = set([
+    "idna",
+    "mbcs",
+    "oem",
+    "palmos",
+    "punycode",
+    "raw_unicode_escape",
+    "undefined",
+    "unicode_escape",
+    "raw-unicode-escape",
+    "unicode-escape",
+    "string-escape",
+    "string_escape",
+])
+    
 
-    def __new__(cls, prefix, name, namespace=None):
+class NamespacedAttribute(str):
+    """A namespaced string (e.g. 'xml:lang') that remembers the namespace
+    ('xml') and the name ('lang') that were used to create it.
+    """
+    
+    def __new__(cls, prefix, name=None, namespace=None):
+        if not name:
+            # This is the default namespace. Its name "has no value"
+            # per https://www.w3.org/TR/xml-names/#defaulting
+            name = None
+
         if name is None:
             obj = str.__new__(cls, prefix)
         elif prefix is None:
@@ -70,6 +111,11 @@ class CharsetMetaAttributeValue(AttributeValueWithCharsetSubstitution):
         return obj
 
     def encode(self, encoding):
+        """When an HTML document is being encoded to a given encoding, the
+        value of a meta tag's 'charset' is the name of the encoding.
+        """
+        if encoding in PYTHON_SPECIFIC_ENCODINGS:
+            return ''
         return encoding
 
 
@@ -95,170 +141,39 @@ class ContentMetaAttributeValue(AttributeValueWithCharsetSubstitution):
         return obj
 
     def encode(self, encoding):
+        if encoding in PYTHON_SPECIFIC_ENCODINGS:
+            return ''
         def rewrite(match):
             return match.group(1) + encoding
         return self.CHARSET_RE.sub(rewrite, self.original_value)
 
-class HTMLAwareEntitySubstitution(EntitySubstitution):
-
-    """Entity substitution rules that are aware of some HTML quirks.
-
-    Specifically, the contents of <script> and <style> tags should not
-    undergo entity substitution.
-
-    Incoming NavigableString objects are checked to see if they're the
-    direct children of a <script> or <style> tag.
-    """
-
-    cdata_containing_tags = set(["script", "style"])
-
-    preformatted_tags = set(["pre"])
-
-    preserve_whitespace_tags = set(['pre', 'textarea'])
-
-    @classmethod
-    def _substitute_if_appropriate(cls, ns, f):
-        if (isinstance(ns, NavigableString)
-            and ns.parent is not None
-            and ns.parent.name in cls.cdata_containing_tags):
-            # Do nothing.
-            return ns
-        # Substitute.
-        return f(ns)
-
-    @classmethod
-    def substitute_html(cls, ns):
-        return cls._substitute_if_appropriate(
-            ns, EntitySubstitution.substitute_html)
-
-    @classmethod
-    def substitute_xml(cls, ns):
-        return cls._substitute_if_appropriate(
-            ns, EntitySubstitution.substitute_xml)
-
-class Formatter(object):
-    """Contains information about how to format a parse tree."""
-    
-    # By default, represent void elements as <tag/> rather than <tag>
-    void_element_close_prefix = '/'
-
-    def substitute_entities(self, *args, **kwargs):
-        """Transform certain characters into named entities."""
-        raise NotImplementedError()
-
-class HTMLFormatter(Formatter):
-    """The default HTML formatter."""
-    def substitute(self, *args, **kwargs):
-        return HTMLAwareEntitySubstitution.substitute_html(*args, **kwargs)
-
-class MinimalHTMLFormatter(Formatter):
-    """A minimal HTML formatter."""
-    def substitute(self, *args, **kwargs):
-        return HTMLAwareEntitySubstitution.substitute_xml(*args, **kwargs)
-    
-class HTML5Formatter(HTMLFormatter):
-    """An HTML formatter that omits the slash in a void tag."""
-    void_element_close_prefix = None
-
-class XMLFormatter(Formatter):
-    """Substitute only the essential XML entities."""
-    def substitute(self, *args, **kwargs):
-        return EntitySubstitution.substitute_xml(*args, **kwargs)
-
-class HTMLXMLFormatter(Formatter):
-    """Format XML using HTML rules."""
-    def substitute(self, *args, **kwargs):
-        return HTMLAwareEntitySubstitution.substitute_html(*args, **kwargs)
-
     
 class PageElement(object):
-    """Contains the navigational information for some part of the page
-    (either a tag or a piece of text)"""
+    """Contains the navigational information for some part of the page:
+    that is, its current location in the parse tree.
 
-    # There are five possible values for the "formatter" argument passed in
-    # to methods like encode() and prettify():
-    #
-    # "html" - All Unicode characters with corresponding HTML entities
-    #   are converted to those entities on output.
-    # "html5" - The same as "html", but empty void tags are represented as
-    #   <tag> rather than <tag/>
-    # "minimal" - Bare ampersands and angle brackets are converted to
-    #   XML entities: &amp; &lt; &gt;
-    # None - The null formatter. Unicode characters are never
-    #   converted to entities.  This is not recommended, but it's
-    #   faster than "minimal".
-    # A callable function - it will be called on every string that needs to undergo entity substitution.
-    # A Formatter instance - Formatter.substitute(string) will be called on every string that
-    #  needs to undergo entity substitution.
-    #
-
-    # In an HTML document, the default "html", "html5", and "minimal"
-    # functions will leave the contents of <script> and <style> tags
-    # alone. For an XML document, all tags will be given the same
-    # treatment.
-
-    HTML_FORMATTERS = {
-        "html" : HTMLFormatter(),
-        "html5" : HTML5Formatter(),
-        "minimal" : MinimalHTMLFormatter(),
-        None : None
-        }
-
-    XML_FORMATTERS = {
-        "html" : HTMLXMLFormatter(),
-        "minimal" : XMLFormatter(),
-        None : None
-        }
-
-    def format_string(self, s, formatter='minimal'):
-        """Format the given string using the given formatter."""
-        if isinstance(formatter, str):
-            formatter = self._formatter_for_name(formatter)
-        if formatter is None:
-            output = s
-        else:
-            if isinstance(formatter, Callable):
-                # Backwards compatibility -- you used to pass in a formatting method.
-                output = formatter(s)
-            else:
-                output = formatter.substitute(s)
-        return output
-
-    @property
-    def _is_xml(self):
-        """Is this element part of an XML tree or an HTML tree?
-
-        This is used when mapping a formatter name ("minimal") to an
-        appropriate function (one that performs entity-substitution on
-        the contents of <script> and <style> tags, or not). It can be
-        inefficient, but it should be called very rarely.
-        """
-        if self.known_xml is not None:
-            # Most of the time we will have determined this when the
-            # document is parsed.
-            return self.known_xml
-
-        # Otherwise, it's likely that this element was created by
-        # direct invocation of the constructor from within the user's
-        # Python code.
-        if self.parent is None:
-            # This is the top-level object. It should have .known_xml set
-            # from tree creation. If not, take a guess--BS is usually
-            # used on HTML markup.
-            return getattr(self, 'is_xml', False)
-        return self.parent._is_xml
-
-    def _formatter_for_name(self, name):
-        "Look up a formatter function based on its name and the tree."
-        if self._is_xml:
-            return self.XML_FORMATTERS.get(name, XMLFormatter())
-        else:
-            return self.HTML_FORMATTERS.get(name, HTMLFormatter())
-
+    NavigableString, Tag, etc. are all subclasses of PageElement.
+    """
+   
     def setup(self, parent=None, previous_element=None, next_element=None,
               previous_sibling=None, next_sibling=None):
         """Sets up the initial relations between this element and
-        other elements."""
+        other elements.
+
+        :param parent: The parent of this element.
+
+        :param previous_element: The element parsed immediately before
+            this one.
+        
+        :param next_element: The element parsed immediately before
+            this one.
+
+        :param previous_sibling: The most recently encountered element
+            on the same level of the parse tree as this one.
+
+        :param previous_sibling: The next element to be encountered
+            on the same level of the parse tree as this one.
+        """
         self.parent = parent
 
         self.previous_element = previous_element
@@ -281,13 +196,75 @@ class PageElement(object):
         if previous_sibling is not None:
             self.previous_sibling.next_sibling = self
 
+    def format_string(self, s, formatter):
+        """Format the given string using the given formatter.
+
+        :param s: A string.
+        :param formatter: A Formatter object, or a string naming one of the standard formatters.
+        """
+        if formatter is None:
+            return s
+        if not isinstance(formatter, Formatter):
+            formatter = self.formatter_for_name(formatter)
+        output = formatter.substitute(s)
+        return output
+
+    def formatter_for_name(self, formatter):
+        """Look up or create a Formatter for the given identifier,
+        if necessary.
+
+        :param formatter: Can be a Formatter object (used as-is), a
+            function (used as the entity substitution hook for an
+            XMLFormatter or HTMLFormatter), or a string (used to look
+            up an XMLFormatter or HTMLFormatter in the appropriate
+            registry.
+        """
+        if isinstance(formatter, Formatter):
+            return formatter
+        if self._is_xml:
+            c = XMLFormatter
+        else:
+            c = HTMLFormatter
+        if isinstance(formatter, Callable):
+            return c(entity_substitution=formatter)
+        return c.REGISTRY[formatter]
+
+    @property
+    def _is_xml(self):
+        """Is this element part of an XML tree or an HTML tree?
+
+        This is used in formatter_for_name, when deciding whether an
+        XMLFormatter or HTMLFormatter is more appropriate. It can be
+        inefficient, but it should be called very rarely.
+        """
+        if self.known_xml is not None:
+            # Most of the time we will have determined this when the
+            # document is parsed.
+            return self.known_xml
+
+        # Otherwise, it's likely that this element was created by
+        # direct invocation of the constructor from within the user's
+        # Python code.
+        if self.parent is None:
+            # This is the top-level object. It should have .known_xml set
+            # from tree creation. If not, take a guess--BS is usually
+            # used on HTML markup.
+            return getattr(self, 'is_xml', False)
+        return self.parent._is_xml
+
     nextSibling = _alias("next_sibling")  # BS3
     previousSibling = _alias("previous_sibling")  # BS3
 
     def replace_with(self, replace_with):
+        """Replace this PageElement with another one, keeping the rest of the
+        tree the same.
+        
+        :param replace_with: A PageElement.
+        :return: `self`, no longer part of the tree.
+        """
         if self.parent is None:
             raise ValueError(
-                "Cannot replace one element with another when the"
+                "Cannot replace one element with another when the "
                 "element to be replaced is not part of a tree.")
         if replace_with is self:
             return
@@ -295,19 +272,23 @@ class PageElement(object):
             raise ValueError("Cannot replace a Tag with its parent.")
         old_parent = self.parent
         my_index = self.parent.index(self)
-        self.extract()
+        self.extract(_self_index=my_index)
         old_parent.insert(my_index, replace_with)
         return self
     replaceWith = replace_with  # BS3
 
     def unwrap(self):
+        """Replace this PageElement with its contents.
+
+        :return: `self`, no longer part of the tree.
+        """
         my_parent = self.parent
         if self.parent is None:
             raise ValueError(
                 "Cannot replace an element with its contents when that"
                 "element is not part of a tree.")
         my_index = self.parent.index(self)
-        self.extract()
+        self.extract(_self_index=my_index)
         for child in reversed(self.contents[:]):
             my_parent.insert(my_index, child)
         return self
@@ -315,14 +296,29 @@ class PageElement(object):
     replaceWithChildren = unwrap  # BS3
 
     def wrap(self, wrap_inside):
+        """Wrap this PageElement inside another one.
+
+        :param wrap_inside: A PageElement.
+        :return: `wrap_inside`, occupying the position in the tree that used
+           to be occupied by `self`, and with `self` inside it.
+        """
         me = self.replace_with(wrap_inside)
         wrap_inside.append(me)
         return wrap_inside
 
-    def extract(self):
-        """Destructively rips this element out of the tree."""
+    def extract(self, _self_index=None):
+        """Destructively rips this element out of the tree.
+
+        :param _self_index: The location of this element in its parent's
+           .contents, if known. Passing this in allows for a performance
+           optimization.
+
+        :return: `self`, no longer part of the tree.
+        """
         if self.parent is not None:
-            del self.parent.contents[self.parent.index(self)]
+            if _self_index is None:
+                _self_index = self.parent.index(self)
+            del self.parent.contents[_self_index]
 
         #Find the two elements that would be next to each other if
         #this element (and any children) hadn't been parsed. Connect
@@ -349,7 +345,12 @@ class PageElement(object):
         return self
 
     def _last_descendant(self, is_initialized=True, accept_self=True):
-        "Finds the last element beneath this object to be parsed."
+        """Finds the last element beneath this object to be parsed.
+
+        :param is_initialized: Has `setup` been called on this PageElement
+            yet?
+        :param accept_self: Is `self` an acceptable answer to the question?
+        """
         if is_initialized and self.next_sibling is not None:
             last_child = self.next_sibling.previous_element
         else:
@@ -363,6 +364,14 @@ class PageElement(object):
     _lastRecursiveChild = _last_descendant
 
     def insert(self, position, new_child):
+        """Insert a new PageElement in the list of this PageElement's children.
+
+        This works the same way as `list.insert`.
+
+        :param position: The numeric position that should be occupied
+           in `self.children` by the new PageElement. 
+        :param new_child: A PageElement.
+        """
         if new_child is None:
             raise ValueError("Cannot insert None into a tag.")
         if new_child is self:
@@ -437,19 +446,27 @@ class PageElement(object):
         self.contents.insert(position, new_child)
 
     def append(self, tag):
-        """Appends the given tag to the contents of this tag."""
+        """Appends the given PageElement to the contents of this one.
+
+        :param tag: A PageElement.
+        """
         self.insert(len(self.contents), tag)
 
     def extend(self, tags):
-        """Appends the given tags to the contents of this tag."""
+        """Appends the given PageElements to this one's contents.
+
+        :param tags: A list of PageElements.
+        """
         for tag in tags:
             self.append(tag)
 
     def insert_before(self, *args):
         """Makes the given element(s) the immediate predecessor of this one.
 
-        The elements will have the same parent, and the given elements
+        All the elements will have the same parent, and the given elements
         will be immediately before this one.
+
+        :param args: One or more PageElements.
         """
         parent = self.parent
         if parent is None:
@@ -470,6 +487,8 @@ class PageElement(object):
 
         The elements will have the same parent, and the given elements
         will be immediately after this one.
+
+        :param args: One or more PageElements.
         """
         # Do all error checking before modifying the tree.
         parent = self.parent
@@ -490,70 +509,172 @@ class PageElement(object):
             offset += 1
 
     def find_next(self, name=None, attrs={}, text=None, **kwargs):
-        """Returns the first item that matches the given criteria and
-        appears after this Tag in the document."""
+        """Find the first PageElement that matches the given criteria and
+        appears later in the document than this PageElement.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self._find_one(self.find_all_next, name, attrs, text, **kwargs)
     findNext = find_next  # BS3
 
     def find_all_next(self, name=None, attrs={}, text=None, limit=None,
                     **kwargs):
-        """Returns all items that match the given criteria and appear
-        after this Tag in the document."""
+        """Find all PageElements that match the given criteria and appear
+        later in the document than this PageElement.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A ResultSet containing PageElements.
+        """
         return self._find_all(name, attrs, text, limit, self.next_elements,
                              **kwargs)
     findAllNext = find_all_next  # BS3
 
     def find_next_sibling(self, name=None, attrs={}, text=None, **kwargs):
-        """Returns the closest sibling to this Tag that matches the
-        given criteria and appears after this Tag in the document."""
+        """Find the closest sibling to this PageElement that matches the
+        given criteria and appears later in the document.
+
+        All find_* methods take a common set of arguments. See the
+        online documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self._find_one(self.find_next_siblings, name, attrs, text,
                              **kwargs)
     findNextSibling = find_next_sibling  # BS3
 
     def find_next_siblings(self, name=None, attrs={}, text=None, limit=None,
                            **kwargs):
-        """Returns the siblings of this Tag that match the given
-        criteria and appear after this Tag in the document."""
+        """Find all siblings of this PageElement that match the given criteria
+        and appear later in the document.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A ResultSet of PageElements.
+        :rtype: bs4.element.ResultSet
+        """
         return self._find_all(name, attrs, text, limit,
                               self.next_siblings, **kwargs)
     findNextSiblings = find_next_siblings   # BS3
     fetchNextSiblings = find_next_siblings  # BS2
 
     def find_previous(self, name=None, attrs={}, text=None, **kwargs):
-        """Returns the first item that matches the given criteria and
-        appears before this Tag in the document."""
+        """Look backwards in the document from this PageElement and find the
+        first PageElement that matches the given criteria.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self._find_one(
             self.find_all_previous, name, attrs, text, **kwargs)
     findPrevious = find_previous  # BS3
 
     def find_all_previous(self, name=None, attrs={}, text=None, limit=None,
                         **kwargs):
-        """Returns all items that match the given criteria and appear
-        before this Tag in the document."""
+        """Look backwards in the document from this PageElement and find all
+        PageElements that match the given criteria.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A ResultSet of PageElements.
+        :rtype: bs4.element.ResultSet
+        """
         return self._find_all(name, attrs, text, limit, self.previous_elements,
                            **kwargs)
     findAllPrevious = find_all_previous  # BS3
     fetchPrevious = find_all_previous    # BS2
 
     def find_previous_sibling(self, name=None, attrs={}, text=None, **kwargs):
-        """Returns the closest sibling to this Tag that matches the
-        given criteria and appears before this Tag in the document."""
+        """Returns the closest sibling to this PageElement that matches the
+        given criteria and appears earlier in the document.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self._find_one(self.find_previous_siblings, name, attrs, text,
                              **kwargs)
     findPreviousSibling = find_previous_sibling  # BS3
 
     def find_previous_siblings(self, name=None, attrs={}, text=None,
                                limit=None, **kwargs):
-        """Returns the siblings of this Tag that match the given
-        criteria and appear before this Tag in the document."""
+        """Returns all siblings to this PageElement that match the
+        given criteria and appear earlier in the document.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A ResultSet of PageElements.
+        :rtype: bs4.element.ResultSet
+        """
         return self._find_all(name, attrs, text, limit,
                               self.previous_siblings, **kwargs)
     findPreviousSiblings = find_previous_siblings   # BS3
     fetchPreviousSiblings = find_previous_siblings  # BS2
 
     def find_parent(self, name=None, attrs={}, **kwargs):
-        """Returns the closest parent of this Tag that matches the given
-        criteria."""
+        """Find the closest parent of this PageElement that matches the given
+        criteria.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :kwargs: A dictionary of filters on attribute values.
+
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         # NOTE: We can't use _find_one because findParents takes a different
         # set of arguments.
         r = None
@@ -564,9 +685,19 @@ class PageElement(object):
     findParent = find_parent  # BS3
 
     def find_parents(self, name=None, attrs={}, limit=None, **kwargs):
-        """Returns the parents of this Tag that match the given
-        criteria."""
+        """Find all parents of this PageElement that match the given criteria.
 
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self._find_all(name, attrs, None, limit, self.parents,
                              **kwargs)
     findParents = find_parents   # BS3
@@ -574,10 +705,20 @@ class PageElement(object):
 
     @property
     def next(self):
+        """The PageElement, if any, that was parsed just after this one.
+
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self.next_element
 
     @property
     def previous(self):
+        """The PageElement, if any, that was parsed just before this one.
+
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         return self.previous_element
 
     #These methods do the real heavy lifting.
@@ -645,6 +786,10 @@ class PageElement(object):
     #NavigableStrings and Tags.
     @property
     def next_elements(self):
+        """All PageElements that were parsed after this one.
+
+        :yield: A sequence of PageElements.
+        """
         i = self.next_element
         while i is not None:
             yield i
@@ -652,6 +797,11 @@ class PageElement(object):
 
     @property
     def next_siblings(self):
+        """All PageElements that are siblings of this one but were parsed
+        later.
+
+        :yield: A sequence of PageElements.
+        """
         i = self.next_sibling
         while i is not None:
             yield i
@@ -659,6 +809,10 @@ class PageElement(object):
 
     @property
     def previous_elements(self):
+        """All PageElements that were parsed before this one.
+
+        :yield: A sequence of PageElements.
+        """
         i = self.previous_element
         while i is not None:
             yield i
@@ -666,6 +820,11 @@ class PageElement(object):
 
     @property
     def previous_siblings(self):
+        """All PageElements that are siblings of this one but were parsed
+        earlier.
+
+        :yield: A sequence of PageElements.
+        """
         i = self.previous_sibling
         while i is not None:
             yield i
@@ -673,11 +832,23 @@ class PageElement(object):
 
     @property
     def parents(self):
+        """All PageElements that are parents of this PageElement.
+
+        :yield: A sequence of PageElements.
+        """
         i = self.parent
         while i is not None:
             yield i
             i = i.parent
 
+    @property
+    def decomposed(self):
+        """Check whether a PageElement has been decomposed.
+
+        :rtype: bool
+        """
+        return getattr(self, '_decomposed', False) or False
+            
     # Old non-property versions of the generators, for backwards
     # compatibility with BS3.
     def nextGenerator(self):
@@ -697,6 +868,11 @@ class PageElement(object):
 
 
 class NavigableString(str, PageElement):
+    """A Python Unicode string that is part of a parse tree.
+
+    When Beautiful Soup parses the markup <b>penguin</b>, it will
+    create a NavigableString for the string "penguin".
+    """   
 
     PREFIX = ''
     SUFFIX = ''
@@ -742,32 +918,58 @@ class NavigableString(str, PageElement):
                     self.__class__.__name__, attr))
 
     def output_ready(self, formatter="minimal"):
+        """Run the string through the provided formatter.
+
+        :param formatter: A Formatter object, or a string naming one of the standard formatters.
+        """
         output = self.format_string(self, formatter)
         return self.PREFIX + output + self.SUFFIX
 
     @property
     def name(self):
+        """Since a NavigableString is not a Tag, it has no .name.
+
+        This property is implemented so that code like this doesn't crash
+        when run on a mixture of Tag and NavigableString objects:
+            [x.name for x in tag.children]
+        """
         return None
 
     @name.setter
     def name(self, name):
+        """Prevent NavigableString.name from ever being set."""
         raise AttributeError("A NavigableString cannot be given a name.")
 
+    
 class PreformattedString(NavigableString):
     """A NavigableString not subject to the normal formatting rules.
 
-    The string will be passed into the formatter (to trigger side effects),
-    but the return value will be ignored.
+    This is an abstract class used for special kinds of strings such
+    as comments (the Comment class) and CDATA blocks (the CData
+    class).
     """
+    
+    PREFIX = ''
+    SUFFIX = ''
+    
+    def output_ready(self, formatter=None):
+        """Make this string ready for output by adding any subclass-specific
+            prefix or suffix.
 
-    def output_ready(self, formatter="minimal"):
-        """CData strings are passed into the formatter.
-        But the return value is ignored."""
-        self.format_string(self, formatter)
+        :param formatter: A Formatter object, or a string naming one
+            of the standard formatters. The string will be passed into the
+            Formatter, but only to trigger any side effects: the return
+            value is ignored.
+
+        :return: The string, with any subclass-specific prefix and
+           suffix added on.
+        """
+        if formatter is not None:
+            ignore = self.format_string(self, formatter)
         return self.PREFIX + self + self.SUFFIX
 
 class CData(PreformattedString):
-
+    """A CDATA block."""
     PREFIX = '<![CDATA['
     SUFFIX = ']]>'
 
@@ -783,20 +985,32 @@ class XMLProcessingInstruction(ProcessingInstruction):
     SUFFIX = '?>'
 
 class Comment(PreformattedString):
-
+    """An HTML or XML comment."""
     PREFIX = '<!--'
     SUFFIX = '-->'
 
 
 class Declaration(PreformattedString):
+    """An XML declaration."""
     PREFIX = '<?'
     SUFFIX = '?>'
 
 
 class Doctype(PreformattedString):
-
+    """A document type declaration."""
     @classmethod
     def for_name_and_ids(cls, name, pub_id, system_id):
+        """Generate an appropriate document type declaration for a given
+        public ID and system ID.
+
+        :param name: The name of the document's root element, e.g. 'html'.
+        :param pub_id: The Formal Public Identifier for this document type,
+            e.g. '-//W3C//DTD XHTML 1.1//EN'
+        :param system_id: The system identifier for this document type,
+            e.g. 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'
+
+        :return: A Doctype.
+        """
         value = name or ''
         if pub_id is not None:
             value += ' PUBLIC "%s"' % pub_id
@@ -811,15 +1025,72 @@ class Doctype(PreformattedString):
     SUFFIX = '>\n'
 
 
-class Tag(PageElement):
+class Stylesheet(NavigableString):
+    """A NavigableString representing an stylesheet (probably
+    CSS).
 
-    """Represents a found HTML tag with its attributes and contents."""
+    Used to distinguish embedded stylesheets from textual content.
+    """
+    pass
+
+    
+class Script(NavigableString):
+    """A NavigableString representing an executable script (probably
+    Javascript).
+
+    Used to distinguish executable code from textual content.
+    """
+    pass
+
+
+class TemplateString(NavigableString):
+    """A NavigableString representing a string found inside an HTML
+    template embedded in a larger document.
+
+    Used to distinguish such strings from the main body of the document.
+    """
+    pass
+
+
+class Tag(PageElement):
+    """Represents an HTML or XML tag that is part of a parse tree, along
+    with its attributes and contents.
+
+    When Beautiful Soup parses the markup <b>penguin</b>, it will
+    create a Tag object representing the <b> tag.
+    """
 
     def __init__(self, parser=None, builder=None, name=None, namespace=None,
                  prefix=None, attrs=None, parent=None, previous=None,
-                 is_xml=None):
-        "Basic constructor."
+                 is_xml=None, sourceline=None, sourcepos=None,
+                 can_be_empty_element=None, cdata_list_attributes=None,
+                 preserve_whitespace_tags=None
+    ):
+        """Basic constructor.
 
+        :param parser: A BeautifulSoup object.
+        :param builder: A TreeBuilder.
+        :param name: The name of the tag.
+        :param namespace: The URI of this Tag's XML namespace, if any.
+        :param prefix: The prefix for this Tag's XML namespace, if any.
+        :param attrs: A dictionary of this Tag's attribute values.
+        :param parent: The PageElement to use as this Tag's parent.
+        :param previous: The PageElement that was parsed immediately before
+            this tag.
+        :param is_xml: If True, this is an XML tag. Otherwise, this is an
+            HTML tag.
+        :param sourceline: The line number where this tag was found in its
+            source document.
+        :param sourcepos: The character position within `sourceline` where this
+            tag was found.
+        :param can_be_empty_element: If True, this tag should be
+            represented as <tag/>. If False, this tag should be represented
+            as <tag></tag>.
+        :param cdata_list_attributes: A list of attributes whose values should
+            be treated as CDATA if they ever show up on this tag.
+        :param preserve_whitespace_tags: A list of tag names whose contents
+            should have their whitespace preserved.
+        """
         if parser is None:
             self.parser_class = None
         else:
@@ -831,14 +1102,10 @@ class Tag(PageElement):
         self.name = name
         self.namespace = namespace
         self.prefix = prefix
-        if builder is not None:
-            preserve_whitespace_tags = builder.preserve_whitespace_tags
-        else:
-            if is_xml:
-                preserve_whitespace_tags = []
-            else:
-                preserve_whitespace_tags = HTMLAwareEntitySubstitution.preserve_whitespace_tags
-        self.preserve_whitespace_tags = preserve_whitespace_tags
+        if ((not builder or builder.store_line_numbers)
+            and (sourceline is not None or sourcepos is not None)):
+            self.sourceline = sourceline
+            self.sourcepos = sourcepos        
         if attrs is None:
             attrs = {}
         elif attrs:
@@ -861,12 +1128,33 @@ class Tag(PageElement):
         self.setup(parent, previous)
         self.hidden = False
 
-        # Set up any substitutions, such as the charset in a META tag.
-        if builder is not None:
-            builder.set_up_substitutions(self)
-            self.can_be_empty_element = builder.can_be_empty_element(name)
+        if builder is None:
+            # In the absence of a TreeBuilder, use whatever values were
+            # passed in here. They're probably None, unless this is a copy of some
+            # other tag.
+            self.can_be_empty_element = can_be_empty_element
+            self.cdata_list_attributes = cdata_list_attributes
+            self.preserve_whitespace_tags = preserve_whitespace_tags
         else:
-            self.can_be_empty_element = False
+            # Set up any substitutions for this tag, such as the charset in a META tag.
+            builder.set_up_substitutions(self)
+
+            # Ask the TreeBuilder whether this tag might be an empty-element tag.
+            self.can_be_empty_element = builder.can_be_empty_element(name)
+
+            # Keep track of the list of attributes of this tag that
+            # might need to be treated as a list.
+            #
+            # For performance reasons, we store the whole data structure
+            # rather than asking the question of every tag. Asking would
+            # require building a new data structure every time, and
+            # (unlike can_be_empty_element), we almost never need
+            # to check this.
+            self.cdata_list_attributes = builder.cdata_list_attributes
+
+            # Keep track of the names that might cause this tag to be treated as a
+            # whitespace-preserved tag.
+            self.preserve_whitespace_tags = builder.preserve_whitespace_tags
             
     parserClass = _alias("parser_class")  # BS3
 
@@ -874,8 +1162,14 @@ class Tag(PageElement):
         """A copy of a Tag is a new Tag, unconnected to the parse tree.
         Its contents are a copy of the old Tag's contents.
         """
-        clone = type(self)(None, self.builder, self.name, self.namespace,
-                           self.prefix, self.attrs, is_xml=self._is_xml)
+        clone = type(self)(
+            None, self.builder, self.name, self.namespace,
+            self.prefix, self.attrs, is_xml=self._is_xml,
+            sourceline=self.sourceline, sourcepos=self.sourcepos,
+            can_be_empty_element=self.can_be_empty_element,
+            cdata_list_attributes=self.cdata_list_attributes,
+            preserve_whitespace_tags=self.preserve_whitespace_tags
+        )
         for attr in ('can_be_empty_element', 'hidden'):
             setattr(clone, attr, getattr(self, attr))
         for child in self.contents:
@@ -902,13 +1196,17 @@ class Tag(PageElement):
 
     @property
     def string(self):
-        """Convenience property to get the single string within this tag.
+        """Convenience property to get the single string within this
+        PageElement.
 
-        :Return: If this tag has a single string child, return value
-         is that string. If this tag has no children, or more than one
-         child, return value is None. If this tag has one child tag,
+        TODO It might make sense to have NavigableString.string return
+        itself.
+
+        :return: If this element has a single string child, return
+         value is that string. If this element has one child tag,
          return value is the 'string' attribute of the child tag,
-         recursively.
+         recursively. If this element is itself a string, has no
+         children, or has more than one child, return value is None.
         """
         if len(self.contents) != 1:
             return None
@@ -919,14 +1217,23 @@ class Tag(PageElement):
 
     @string.setter
     def string(self, string):
+        """Replace this PageElement's contents with `string`."""
         self.clear()
         self.append(string.__class__(string))
 
     def _all_strings(self, strip=False, types=(NavigableString, CData)):
         """Yield all strings of certain classes, possibly stripping them.
 
-        By default, yields only NavigableString and CData objects. So
-        no comments, processing instructions, etc.
+        :param strip: If True, all strings will be stripped before being
+            yielded.
+
+        :types: A tuple of NavigableString subclasses. Any strings of
+            a subclass not found in this list will be ignored. By
+            default, this means only NavigableString and CData objects
+            will be considered. So no comments, processing instructions,
+            etc.
+
+        :yield: A sequence of strings.
         """
         for descendant in self.descendants:
             if (
@@ -944,13 +1251,29 @@ class Tag(PageElement):
 
     @property
     def stripped_strings(self):
+        """Yield all strings in the document, stripping them first.
+
+        :yield: A sequence of stripped strings.
+        """
         for string in self._all_strings(True):
             yield string
 
     def get_text(self, separator="", strip=False,
                  types=(NavigableString, CData)):
-        """
-        Get all child strings, concatenated using the given separator.
+        """Get all child strings, concatenated using the given separator.
+
+        :param separator: Strings will be concatenated using this separator.
+
+        :param strip: If True, strings will be stripped before being
+            concatenated.
+
+        :types: A tuple of NavigableString subclasses. Any strings of
+            a subclass not found in this list will be ignored. By
+            default, this means only NavigableString and CData objects
+            will be considered. So no comments, processing instructions,
+            stylesheets, etc.
+
+        :return: A string.
         """
         return separator.join([s for s in self._all_strings(
                     strip, types=types)])
@@ -958,18 +1281,31 @@ class Tag(PageElement):
     text = property(get_text)
 
     def decompose(self):
-        """Recursively destroys the contents of this tree."""
+        """Recursively destroys this PageElement and its children.
+
+        This element will be removed from the tree and wiped out; so
+        will everything beneath it.
+
+        The behavior of a decomposed PageElement is undefined and you
+        should never use one for anything, but if you need to _check_
+        whether an element has been decomposed, you can use the
+        `decomposed` property.
+        """
         self.extract()
         i = self
         while i is not None:
-            next = i.next_element
+            n = i.next_element
             i.__dict__.clear()
             i.contents = []
-            i = next
-
+            i._decomposed = True
+            i = n
+           
     def clear(self, decompose=False):
-        """
-        Extract all children. If decompose is True, decompose instead.
+        """Wipe out all children of this PageElement by calling extract()
+           on them.
+
+        :param decompose: If this is True, decompose() (a more
+            destructive method) will be called instead of extract().
         """
         if decompose:
             for element in self.contents[:]:
@@ -981,10 +1317,51 @@ class Tag(PageElement):
             for element in self.contents[:]:
                 element.extract()
 
-    def index(self, element):
+    def smooth(self):
+        """Smooth out this element's children by consolidating consecutive
+        strings.
+
+        This makes pretty-printed output look more natural following a
+        lot of operations that modified the tree.
         """
-        Find the index of a child by identity, not value. Avoids issues with
-        tag.contents.index(element) getting the index of equal elements.
+        # Mark the first position of every pair of children that need
+        # to be consolidated.  Do this rather than making a copy of
+        # self.contents, since in most cases very few strings will be
+        # affected.
+        marked = []
+        for i, a in enumerate(self.contents):
+            if isinstance(a, Tag):
+                # Recursively smooth children.
+                a.smooth()
+            if i == len(self.contents)-1:
+                # This is the last item in .contents, and it's not a
+                # tag. There's no chance it needs any work.
+                continue
+            b = self.contents[i+1]
+            if (isinstance(a, NavigableString)
+                and isinstance(b, NavigableString)
+                and not isinstance(a, PreformattedString)
+                and not isinstance(b, PreformattedString)
+            ):
+                marked.append(i)
+
+        # Go over the marked positions in reverse order, so that
+        # removing items from .contents won't affect the remaining
+        # positions.
+        for i in reversed(marked):
+            a = self.contents[i]
+            b = self.contents[i+1]
+            b.extract()
+            n = NavigableString(a+b)
+            a.replace_with(n)
+
+    def index(self, element):
+        """Find the index of a child by identity, not value.
+
+        Avoids issues with tag.contents.index(element) getting the
+        index of equal elements.
+
+        :param element: Look for this PageElement in `self.contents`.
         """
         for i, child in enumerate(self.contents):
             if child is element:
@@ -998,29 +1375,37 @@ class Tag(PageElement):
         return self.attrs.get(key, default)
 
     def get_attribute_list(self, key, default=None):
-        """The same as get(), but always returns a list."""
+        """The same as get(), but always returns a list.
+
+        :param key: The attribute to look for.
+        :param default: Use this value if the attribute is not present
+            on this PageElement.
+        :return: A list of values, probably containing only a single
+            value.
+        """
         value = self.get(key, default)
         if not isinstance(value, list):
             value = [value]
         return value
     
     def has_attr(self, key):
+        """Does this PageElement have an attribute with the given name?"""
         return key in self.attrs
 
     def __hash__(self):
         return str(self).__hash__()
 
     def __getitem__(self, key):
-        """tag[key] returns the value of the 'key' attribute for the tag,
+        """tag[key] returns the value of the 'key' attribute for the Tag,
         and throws an exception if it's not there."""
         return self.attrs[key]
 
     def __iter__(self):
-        "Iterating over a tag iterates over its contents."
+        "Iterating over a Tag iterates over its contents."
         return iter(self.contents)
 
     def __len__(self):
-        "The length of a tag is the length of its list of contents."
+        "The length of a Tag is the length of its list of contents."
         return len(self.contents)
 
     def __contains__(self, x):
@@ -1040,13 +1425,14 @@ class Tag(PageElement):
         self.attrs.pop(key, None)
 
     def __call__(self, *args, **kwargs):
-        """Calling a tag like a function is the same as calling its
+        """Calling a Tag like a function is the same as calling its
         find_all() method. Eg. tag('a') returns a list of all the A tags
         found within this tag."""
         return self.find_all(*args, **kwargs)
 
     def __getattr__(self, tag):
-        #print "Getattr %s.%s" % (self.__class__, tag)
+        """Calling tag.subtag is the same as calling tag.find(name="subtag")"""
+        #print("Getattr %s.%s" % (self.__class__, tag))
         if len(tag) > 3 and tag.endswith('Tag'):
             # BS3: soup.aTag -> "soup.find("a")
             tag_name = tag[:-3]
@@ -1063,8 +1449,8 @@ class Tag(PageElement):
             "'%s' object has no attribute '%s'" % (self.__class__, tag))
 
     def __eq__(self, other):
-        """Returns true iff this tag has the same name, the same attributes,
-        and the same contents (recursively) as the given tag."""
+        """Returns true iff this Tag has the same name, the same attributes,
+        and the same contents (recursively) as `other`."""
         if self is other:
             return True
         if (not hasattr(other, 'name') or
@@ -1080,12 +1466,17 @@ class Tag(PageElement):
         return True
 
     def __ne__(self, other):
-        """Returns true iff this tag is not identical to the other tag,
+        """Returns true iff this Tag is not identical to `other`,
         as defined in __eq__."""
         return not self == other
 
     def __repr__(self, encoding="unicode-escape"):
-        """Renders this tag as a string."""
+        """Renders this PageElement as a string.
+
+        :param encoding: The encoding to use (Python 2 only).
+        :return: Under Python 2, a bytestring; under Python 3,
+            a Unicode string.
+        """
         if PY3K:
             # "The return value must be a string object", i.e. Unicode
             return self.decode()
@@ -1096,9 +1487,15 @@ class Tag(PageElement):
             return self.encode(encoding)
 
     def __unicode__(self):
+        """Renders this PageElement as a Unicode string."""
         return self.decode()
 
     def __str__(self):
+        """Renders this PageElement as a generic string.
+
+        :return: Under Python 2, a UTF-8 bytestring; under Python 3,
+            a Unicode string.        
+        """
         if PY3K:
             return self.decode()
         else:
@@ -1110,56 +1507,72 @@ class Tag(PageElement):
     def encode(self, encoding=DEFAULT_OUTPUT_ENCODING,
                indent_level=None, formatter="minimal",
                errors="xmlcharrefreplace"):
+        """Render a bytestring representation of this PageElement and its
+        contents.
+
+        :param encoding: The destination encoding.
+        :param indent_level: Each line of the rendering will be
+            indented this many spaces. Used internally in
+            recursive calls while pretty-printing.
+        :param formatter: A Formatter object, or a string naming one of
+            the standard formatters.
+        :param errors: An error handling strategy such as
+            'xmlcharrefreplace'. This value is passed along into
+            encode() and its value should be one of the constants
+            defined by Python.
+        :return: A bytestring.
+
+        """
         # Turn the data structure into Unicode, then encode the
         # Unicode.
         u = self.decode(indent_level, encoding, formatter)
         return u.encode(encoding, errors)
 
-    def _should_pretty_print(self, indent_level):
-        """Should this tag be pretty-printed?"""
-
-        return (
-            indent_level is not None
-            and self.name not in self.preserve_whitespace_tags
-        )
-
     def decode(self, indent_level=None,
                eventual_encoding=DEFAULT_OUTPUT_ENCODING,
                formatter="minimal"):
-        """Returns a Unicode representation of this tag and its contents.
+        """Render a Unicode representation of this PageElement and its
+        contents.
 
+        :param indent_level: Each line of the rendering will be
+             indented this many spaces. Used internally in
+             recursive calls while pretty-printing.
         :param eventual_encoding: The tag is destined to be
-           encoded into this encoding. This method is _not_
-           responsible for performing that encoding. This information
-           is passed in so that it can be substituted in if the
-           document contains a <META> tag that mentions the document's
-           encoding.
+            encoded into this encoding. This method is _not_
+            responsible for performing that encoding. This information
+            is passed in so that it can be substituted in if the
+            document contains a <META> tag that mentions the document's
+            encoding.
+        :param formatter: A Formatter object, or a string naming one of
+            the standard formatters.
         """
 
-        # First off, turn a string formatter into a Formatter object. This
-        # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
-            formatter = self._formatter_for_name(formatter)
+        # First off, turn a non-Formatter `formatter` into a Formatter
+        # object. This will stop the lookup from happening over and
+        # over again.
+        if not isinstance(formatter, Formatter):
+            formatter = self.formatter_for_name(formatter)
+        attributes = formatter.attributes(self)
         attrs = []
-        if self.attrs:
-            for key, val in sorted(self.attrs.items()):
-                if val is None:
-                    decoded = key
-                else:
-                    if isinstance(val, list) or isinstance(val, tuple):
-                        val = ' '.join(val)
-                    elif not isinstance(val, str):
-                        val = str(val)
-                    elif (
+        for key, val in attributes:
+            if val is None:
+                decoded = key
+            else:
+                if isinstance(val, list) or isinstance(val, tuple):
+                    val = ' '.join(val)
+                elif not isinstance(val, str):
+                    val = str(val)
+                elif (
                         isinstance(val, AttributeValueWithCharsetSubstitution)
-                        and eventual_encoding is not None):
-                        val = val.encode(eventual_encoding)
+                        and eventual_encoding is not None
+                ):
+                    val = val.encode(eventual_encoding)
 
-                    text = self.format_string(val, formatter)
-                    decoded = (
-                        str(key) + '='
-                        + EntitySubstitution.quoted_attribute_value(text))
-                attrs.append(decoded)
+                text = formatter.attribute_value(val)
+                decoded = (
+                    str(key) + '='
+                    + formatter.quoted_attribute_value(text))
+            attrs.append(decoded)
         close = ''
         closeTag = ''
 
@@ -1168,9 +1581,7 @@ class Tag(PageElement):
             prefix = self.prefix + ":"
 
         if self.is_empty_element:
-            close = ''
-            if isinstance(formatter, Formatter):
-                close = formatter.void_element_close_prefix or close
+            close = formatter.void_element_close_prefix or ''
         else:
             closeTag = '</%s%s>' % (prefix, self.name)
 
@@ -1185,7 +1596,8 @@ class Tag(PageElement):
         else:
             indent_contents = None
         contents = self.decode_contents(
-            indent_contents, eventual_encoding, formatter)
+            indent_contents, eventual_encoding, formatter
+        )
 
         if self.hidden:
             # This is the 'document root' object.
@@ -1217,7 +1629,30 @@ class Tag(PageElement):
             s = ''.join(s)
         return s
 
+    def _should_pretty_print(self, indent_level):
+        """Should this tag be pretty-printed?
+
+        Most of them should, but some (such as <pre> in HTML
+        documents) should not.
+        """
+        return (
+            indent_level is not None
+            and (
+                not self.preserve_whitespace_tags
+                or self.name not in self.preserve_whitespace_tags
+            )
+        )
+
     def prettify(self, encoding=None, formatter="minimal"):
+        """Pretty-print this PageElement as a string.
+
+        :param encoding: The eventual encoding of the string. If this is None,
+            a Unicode string will be returned.
+        :param formatter: A Formatter object, or a string naming one of
+            the standard formatters.
+        :return: A Unicode string (if encoding==None) or a bytestring 
+            (otherwise).
+        """
         if encoding is None:
             return self.decode(True, formatter=formatter)
         else:
@@ -1229,22 +1664,23 @@ class Tag(PageElement):
         """Renders the contents of this tag as a Unicode string.
 
         :param indent_level: Each line of the rendering will be
-           indented this many spaces.
+           indented this many spaces. Used internally in
+           recursive calls while pretty-printing.
 
         :param eventual_encoding: The tag is destined to be
-           encoded into this encoding. This method is _not_
+           encoded into this encoding. decode_contents() is _not_
            responsible for performing that encoding. This information
            is passed in so that it can be substituted in if the
            document contains a <META> tag that mentions the document's
            encoding.
 
-        :param formatter: The output formatter responsible for converting
-           entities to Unicode characters.
+        :param formatter: A Formatter object, or a string naming one of
+            the standard Formatters.
         """
         # First off, turn a string formatter into a Formatter object. This
         # will stop the lookup from happening over and over again.
-        if not isinstance(formatter, Formatter) and not isinstance(formatter, Callable):
-            formatter = self._formatter_for_name(formatter)
+        if not isinstance(formatter, Formatter):
+            formatter = self.formatter_for_name(formatter)
 
         pretty_print = (indent_level is not None)
         s = []
@@ -1255,36 +1691,42 @@ class Tag(PageElement):
             elif isinstance(c, Tag):
                 s.append(c.decode(indent_level, eventual_encoding,
                                   formatter))
-            if text and indent_level and not self.name == 'pre':
+            preserve_whitespace = (
+                self.preserve_whitespace_tags and self.name in self.preserve_whitespace_tags
+            )
+            if text and indent_level and not preserve_whitespace:
                 text = text.strip()
             if text:
-                if pretty_print and not self.name == 'pre':
+                if pretty_print and not preserve_whitespace:
                     s.append(" " * (indent_level - 1))
                 s.append(text)
-                if pretty_print and not self.name == 'pre':
+                if pretty_print and not preserve_whitespace:
                     s.append("\n")
         return ''.join(s)
-
+       
     def encode_contents(
         self, indent_level=None, encoding=DEFAULT_OUTPUT_ENCODING,
         formatter="minimal"):
-        """Renders the contents of this tag as a bytestring.
+        """Renders the contents of this PageElement as a bytestring.
 
         :param indent_level: Each line of the rendering will be
-           indented this many spaces.
+           indented this many spaces. Used internally in
+           recursive calls while pretty-printing.
 
         :param eventual_encoding: The bytestring will be in this encoding.
 
-        :param formatter: The output formatter responsible for converting
-           entities to Unicode characters.
-        """
+        :param formatter: A Formatter object, or a string naming one of
+            the standard Formatters.
 
+        :return: A bytestring.
+        """
         contents = self.decode_contents(indent_level, encoding, formatter)
         return contents.encode(encoding)
 
     # Old method for BS3 compatibility
     def renderContents(self, encoding=DEFAULT_OUTPUT_ENCODING,
                        prettyPrint=False, indentLevel=0):
+        """Deprecated method for BS3 compatibility."""
         if not prettyPrint:
             indentLevel = None
         return self.encode_contents(
@@ -1294,27 +1736,47 @@ class Tag(PageElement):
 
     def find(self, name=None, attrs={}, recursive=True, text=None,
              **kwargs):
-        """Return only the first child of this Tag matching the given
-        criteria."""
+        """Look in the children of this PageElement and find the first
+        PageElement that matches the given criteria.
+
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param recursive: If this is True, find() will perform a
+            recursive search of this PageElement's children. Otherwise,
+            only the direct children will be considered.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A PageElement.
+        :rtype: bs4.element.Tag | bs4.element.NavigableString
+        """
         r = None
         l = self.find_all(name, attrs, recursive, text, 1, **kwargs)
         if l:
             r = l[0]
         return r
-    findChild = find
+    findChild = find #BS2
 
     def find_all(self, name=None, attrs={}, recursive=True, text=None,
                  limit=None, **kwargs):
-        """Extracts a list of Tag objects that match the given
-        criteria.  You can specify the name of the Tag and any
-        attributes you want the Tag to have.
+        """Look in the children of this PageElement and find all
+        PageElements that match the given criteria.
 
-        The value of a key-value pair in the 'attrs' map can be a
-        string, a list of strings, a regular expression object, or a
-        callable that takes a string and returns whether or not the
-        string matches for some custom definition of 'matches'. The
-        same is true of the tag name."""
+        All find_* methods take a common set of arguments. See the online
+        documentation for detailed explanations.
 
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param recursive: If this is True, find_all() will perform a
+            recursive search of this PageElement's children. Otherwise,
+            only the direct children will be considered.
+        :param limit: Stop looking after finding this many results.
+        :kwargs: A dictionary of filters on attribute values.
+        :return: A ResultSet of PageElements.
+        :rtype: bs4.element.ResultSet
+        """
         generator = self.descendants
         if not recursive:
             generator = self.children
@@ -1325,11 +1787,20 @@ class Tag(PageElement):
     #Generator methods
     @property
     def children(self):
+        """Iterate over all direct children of this PageElement.
+
+        :yield: A sequence of PageElements.
+        """
         # return iter() to make the purpose of the method clear
         return iter(self.contents)  # XXX This seems to be untested.
 
     @property
     def descendants(self):
+        """Iterate over all children of this PageElement in a
+        breadth-first sequence.
+
+        :yield: A sequence of PageElements.
+        """
         if not len(self.contents):
             return
         stopNode = self._last_descendant().next_element
@@ -1340,7 +1811,21 @@ class Tag(PageElement):
 
     # CSS selector code
     def select_one(self, selector, namespaces=None, **kwargs):
-        """Perform a CSS selection operation on the current element."""
+        """Perform a CSS selection operation on the current element.
+
+        :param selector: A CSS selector.
+
+        :param namespaces: A dictionary mapping namespace prefixes
+           used in the CSS selector to namespace URIs. By default,
+           Beautiful Soup will use the prefixes it encountered while
+           parsing the document.
+
+        :param kwargs: Keyword arguments to be passed into SoupSieve's 
+           soupsieve.select() method.
+
+        :return: A Tag.
+        :rtype: bs4.element.Tag
+        """
         value = self.select(selector, namespaces, 1, **kwargs)
         if value:
             return value[0]
@@ -1354,14 +1839,17 @@ class Tag(PageElement):
         :param selector: A string containing a CSS selector.
 
         :param namespaces: A dictionary mapping namespace prefixes
-        used in the CSS selector to namespace URIs. By default,
-        Beautiful Soup will use the prefixes it encountered while
-        parsing the document.
+           used in the CSS selector to namespace URIs. By default,
+           Beautiful Soup will use the prefixes it encountered while
+           parsing the document.
 
         :param limit: After finding this number of results, stop looking.
 
-        :param kwargs: Any extra arguments you'd like to pass in to
-        soupsieve.select().
+        :param kwargs: Keyword arguments to be passed into SoupSieve's 
+           soupsieve.select() method.
+
+        :return: A ResultSet of Tags.
+        :rtype: bs4.element.ResultSet
         """
         if namespaces is None:
             namespaces = self._namespaces
@@ -1373,19 +1861,27 @@ class Tag(PageElement):
                 "Cannot execute CSS selectors because the soupsieve package is not installed."
             )
             
-        return soupsieve.select(selector, self, namespaces, limit, **kwargs)
+        results = soupsieve.select(selector, self, namespaces, limit, **kwargs)
+
+        # We do this because it's more consistent and because
+        # ResultSet.__getattr__ has a helpful error message.
+        return ResultSet(None, results)
 
     # Old names for backwards compatibility
     def childGenerator(self):
+        """Deprecated generator."""
         return self.children
 
     def recursiveChildGenerator(self):
+        """Deprecated generator."""
         return self.descendants
 
     def has_key(self, key):
-        """This was kind of misleading because has_key() (attributes)
-        was different from __in__ (contents). has_key() is gone in
-        Python 3, anyway."""
+        """Deprecated method. This was kind of misleading because has_key()
+        (attributes) was different from __in__ (contents).
+
+        has_key() is gone in Python 3, anyway.
+        """
         warnings.warn('has_key is deprecated. Use has_attr("%s") instead.' % (
                 key))
         return self.has_attr(key)
@@ -1393,9 +1889,26 @@ class Tag(PageElement):
 # Next, a couple classes to represent queries and their results.
 class SoupStrainer(object):
     """Encapsulates a number of ways of matching a markup element (tag or
-    text)."""
+    string).
+
+    This is primarily used to underpin the find_* methods, but you can
+    create one yourself and pass it in as `parse_only` to the
+    `BeautifulSoup` constructor, to parse a subset of a large
+    document.
+    """
 
     def __init__(self, name=None, attrs={}, text=None, **kwargs):
+        """Constructor.
+
+        The SoupStrainer constructor takes the same arguments passed
+        into the find_* methods. See the online documentation for
+        detailed explanations.
+
+        :param name: A filter on tag name.
+        :param attrs: A dictionary of filters on attribute values.
+        :param text: A filter for a NavigableString with specific text.
+        :kwargs: A dictionary of filters on attribute values.
+        """        
         self.name = self._normalize_search_value(name)
         if not isinstance(attrs, dict):
             # Treat a non-dict value for attrs as a search for the 'class'
@@ -1453,12 +1966,25 @@ class SoupStrainer(object):
         return str(str(value))
 
     def __str__(self):
+        """A human-readable representation of this SoupStrainer."""
         if self.text:
             return self.text
         else:
             return "%s|%s" % (self.name, self.attrs)
 
     def search_tag(self, markup_name=None, markup_attrs={}):
+        """Check whether a Tag with the given name and attributes would
+        match this SoupStrainer.
+
+        Used prospectively to decide whether to even bother creating a Tag
+        object.
+
+        :param markup_name: A tag name as found in some markup.
+        :param markup_attrs: A dictionary of attributes as found in some markup.
+
+        :return: True if the prospective tag would match this SoupStrainer;
+            False otherwise.
+        """
         found = None
         markup = None
         if isinstance(markup_name, Tag):
@@ -1497,10 +2023,19 @@ class SoupStrainer(object):
         if found and self.text and not self._matches(found.string, self.text):
             found = None
         return found
+
+    # For BS3 compatibility.
     searchTag = search_tag
 
     def search(self, markup):
-        # print 'looking for %s in %s' % (self, markup)
+        """Find all items in `markup` that match this SoupStrainer.
+
+        Used by the core _find_all() method, which is ultimately
+        called by all find_* methods.
+
+        :param markup: A PageElement or a list of them.
+        """
+        # print('looking for %s in %s' % (self, markup))
         found = None
         # If given a list of items, scan it for a text element that
         # matches.
@@ -1526,7 +2061,7 @@ class SoupStrainer(object):
         return found
 
     def _matches(self, markup, match_against, already_tried=None):
-        # print u"Matching %s against %s" % (markup, match_against)
+        # print(u"Matching %s against %s" % (markup, match_against))
         result = False
         if isinstance(markup, list) or isinstance(markup, tuple):
             # This should only happen when searching a multi-valued attribute
@@ -1612,10 +2147,16 @@ class ResultSet(list):
     """A ResultSet is just a list that keeps track of the SoupStrainer
     that created it."""
     def __init__(self, source, result=()):
+        """Constructor.
+
+        :param source: A SoupStrainer.
+        :param result: A list of PageElements.
+        """
         super(ResultSet, self).__init__(result)
         self.source = source
 
     def __getattr__(self, key):
+        """Raise a helpful exception to explain a common code fix."""
         raise AttributeError(
-            "ResultSet object has no attribute '%s'. You're probably treating a list of items like a single item. Did you call find_all() when you meant to call find()?" % key
+            "ResultSet object has no attribute '%s'. You're probably treating a list of elements like a single element. Did you call find_all() when you meant to call find()?" % key
         )

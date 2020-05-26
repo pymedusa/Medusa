@@ -28,1903 +28,1834 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
     <!---->
      
     <div
-      class="vgt-wrap"
+      class="subtitle-results"
     >
-      <!---->
+      <span
+        class="release-name"
+      >
+        
+                Could not get a downloaded release name from the history table
+            
+      </span>
        
       <div
-        class="vgt-inner-wrap"
+        class="vgt-wrap "
       >
         <!---->
          
-        <!---->
-         
-        <!---->
-         
         <div
-          class="vgt-fixed-header"
+          class="vgt-inner-wrap"
         >
           <!---->
-        </div>
-         
-        <div
-          class="vgt-responsive"
-          style="overflow: scroll-y; max-height: auto;"
-        >
-          <table
-            class="vgt-table condensed subtitle-table "
+           
+          <!---->
+           
+          <!---->
+           
+          <div
+            class="vgt-fixed-header"
           >
-            <thead
-              data-v-1a3bd028=""
-            >
-              <tr
-                data-v-1a3bd028=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <th
-                  class="vgt-left-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Filename
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-left-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Language
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-left-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Provider
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-right-align sorting sorting-desc"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Score
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-right-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Sub Score
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-left-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    
-                    Missing Matches
-                
-                  </span>
-                </th>
-                <th
-                  class="vgt-left-align"
-                  data-v-1a3bd028=""
-                >
-                  <span
-                    data-v-1a3bd028=""
-                  >
-                    <span
-                      data-v-1a3bd028=""
-                    >
-                      Download
-                    </span>
-                     
-                    <span
-                      class="btn-medusa btn-xs pull-right"
-                      data-v-1a3bd028=""
-                    >
-                      hide
-                    </span>
-                  </span>
-                </th>
-              </tr>
-               
-              <!---->
-            </thead>
-             
-            <tbody>
-              <!---->
-               
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    10
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    359
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    10
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    359
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    9
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    355
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/podnapisi.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="podnapisi"
-                    >
-                      podnapisi
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    9
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    355
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    9
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    354
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/podnapisi.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="podnapisi"
-                    >
-                      podnapisi
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    9
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    354
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    7
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    342
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    7
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    341
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/dut.png"
-                      title="dut"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    7
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    340
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    7
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    339
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    333
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/hearing_impaired.png"
-                        width="16"
-                      />
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    332
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download hearing impaired subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror S04E06.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black Mirror S04E06.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    331
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source, video_codec
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror S04E06.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/opensubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="opensubtitles"
-                    >
-                      opensubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    331
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source, video_codec
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: xhtF"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        xhtF
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/dut.png"
-                      title="dut"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/podnapisi.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="podnapisi"
-                    >
-                      podnapisi
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    331
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source, video_codec
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: xhtF"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-              <tr
-                class=""
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror 4x06 (HDTV)"
-                    >
-                      <!---->
-                       
-                      <span
-                        class="subtitle-name"
-                      >
-                        Black Mirror 4x06 (HDTV)
-                      </span>
-                       
-                      <img
-                        height="16"
-                        src="images/save.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="11"
-                      src="images/subtitles/flags/eng.png"
-                      title="eng"
-                      width="16"
-                    />
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <img
-                      height="16"
-                      src="images/subtitles/tvsubtitles.png"
-                      width="16"
-                    />
-                     
-                    <span
-                      title="tvsubtitles"
-                    >
-                      tvsubtitles
-                    </span>
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    6
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-right-align"
-                >
-                  <span>
-                    
-                    331
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    
-                    audio_codec, release_group, resolution, source, video_codec
-                
-                  </span>
-                </td>
-                <td
-                  class="vgt-left-align"
-                >
-                  <span>
-                    <a
-                      title="Download subtitle: Black Mirror 4x06 (HDTV)"
-                    >
-                      <img
-                        height="16"
-                        src="images/download.png"
-                        width="16"
-                      />
-                    </a>
-                  </span>
-                </td>
-              </tr>
-               
-              <tr
-                mode="local"
-              >
-                <!---->
-                 
-                <!---->
-                 
-                <!---->
-                 
-                <th
-                  class="vgt-row-header vgt-left-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-left-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-left-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-right-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-right-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-left-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-                <th
-                  class="vgt-row-header vgt-left-align"
-                >
-                  <span>
-                    
-          
-        
-                  </span>
-                   
-                  <!---->
-                </th>
-              </tr>
-               
-            </tbody>
-             
             <!---->
-          </table>
+          </div>
+           
+          <div
+            class="vgt-responsive"
+            style="overflow: scroll-y; max-height: auto;"
+          >
+            <table
+              class="vgt-table condensed subtitle-table "
+            >
+              <thead
+                data-v-eb5a915e=""
+              >
+                <tr
+                  data-v-eb5a915e=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Filename
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Language
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Provider
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable sorting sorting-desc"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Score
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Sub Score
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      
+                        Missing Matches
+                    
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      <span
+                        data-v-eb5a915e=""
+                      >
+                        Download
+                      </span>
+                       
+                      <span
+                        class="btn-medusa btn-xs pull-right"
+                        data-v-eb5a915e=""
+                      >
+                        hide
+                      </span>
+                    </span>
+                  </th>
+                </tr>
+                 
+                <!---->
+              </thead>
+               
+              <tbody>
+                <!---->
+                 
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        10
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        359
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        10
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        359
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        9
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        355
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/podnapisi.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="podnapisi"
+                      >
+                        podnapisi
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        9
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        355
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        9
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        354
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/podnapisi.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="podnapisi"
+                      >
+                        podnapisi
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        9
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        354
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: ['Black.Mirror.S04E06.720p.WEBRip.x264-STRiFE']"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        7
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        342
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - m.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        7
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        341
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.REPACK - Black Museum.1080p.WEBRip.x264-SERIOUSLY - HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/dut.png"
+                        title="dut"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        7
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        340
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG4_Dut.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        7
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        339
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.WEBRip.x264-RARBG2_Eng.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        333
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/hearing_impaired.png"
+                          width="16"
+                        />
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        332
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download hearing impaired subtitle: Black.Mirror.S04E06.BDRip.x264-HAGGiS-HI.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror S04E06.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black Mirror S04E06.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        331
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source, video_codec
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror S04E06.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/opensubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="opensubtitles"
+                      >
+                        opensubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        331
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source, video_codec
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror (2011) - 04x06 - Black Museum.STRiFE.English.C.orig.Addic7ed.com.srt"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: xhtF"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          xhtF
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/dut.png"
+                        title="dut"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/podnapisi.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="podnapisi"
+                      >
+                        podnapisi
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        331
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source, video_codec
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: xhtF"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror 4x06 (HDTV)"
+                      >
+                        <!---->
+                         
+                        <span
+                          class="subtitle-name"
+                        >
+                          Black Mirror 4x06 (HDTV)
+                        </span>
+                         
+                        <img
+                          height="16"
+                          src="images/save.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="11"
+                        src="images/subtitles/flags/eng.png"
+                        title="eng"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        height="16"
+                        src="images/subtitles/tvsubtitles.png"
+                        width="16"
+                      />
+                       
+                      <span
+                        title="tvsubtitles"
+                      >
+                        tvsubtitles
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        6
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        331
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        audio_codec, release_group, resolution, source, video_codec
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <a
+                        title="Download subtitle: Black Mirror 4x06 (HDTV)"
+                      >
+                        <img
+                          height="16"
+                          src="images/download.png"
+                          width="16"
+                        />
+                      </a>
+                    </span>
+                  </td>
+                </tr>
+                 
+                <!---->
+                 
+              </tbody>
+               
+              <!---->
+            </table>
+          </div>
+           
+          <!---->
+           
+          <!---->
         </div>
-         
-        <div
-          class="vgt-wrap__actions-footer"
-        />
-         
-        <!---->
       </div>
     </div>
   </td>
@@ -1940,7 +1871,35 @@ exports[`SubtitleSearch renders subtitle component with question 1`] = `
   >
     <!---->
      
-    <!---->
+    <div
+      class="search-question"
+    >
+      <div
+        class="question"
+      >
+        <p>
+          Do you want to manually pick subtitles or let us choose it for you?
+        </p>
+      </div>
+       
+      <div
+        class="options"
+      >
+        <button
+          class="btn-medusa btn-info"
+          type="button"
+        >
+          Auto
+        </button>
+         
+        <button
+          class="btn-medusa btn-success"
+          type="button"
+        >
+          Manual
+        </button>
+      </div>
+    </div>
      
     <!---->
   </td>

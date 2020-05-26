@@ -10,7 +10,7 @@ import warnings
 from medusa import common, db, subtitles
 from medusa.databases import utils
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import STATUS_MAP
+from medusa.indexers.config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -882,7 +882,7 @@ class AddTvshowStartSearchOffset(AddEpisodeWatchedField):
         self.inc_minor_version()
 
 
-class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
+class AddReleaseIgnoreRequireExcludeOptions(AddTvshowStartSearchOffset):
     """Add release ignore and require exclude option flags."""
 
     def test(self):
@@ -897,5 +897,28 @@ class AddReleaseIgnoreRequireExludeOptions(AddTvshowStartSearchOffset):
             self.addColumn('tv_shows', 'rls_require_exclude', 'NUMERIC', 0)
         if not self.hasColumn('tv_shows', 'rls_ignore_exclude'):
             self.addColumn('tv_shows', 'rls_ignore_exclude', 'NUMERIC', 0)
+
+        self.inc_minor_version()
+
+
+class MoveSceneExceptions(AddReleaseIgnoreRequireExcludeOptions):
+    """Create a new table scene_exceptions in main.db, as part of the process to move it from cache to main."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.15
+        """
+        return self.connection.version >= (44, 15)
+
+    def execute(self):
+        utils.backup_database(self.connection.path, self.connection.version)
+
+        log.info('Creating a new table scene_exceptions in the main.db database.')
+
+        self.connection.action(
+            'CREATE TABLE scene_exceptions '
+            '(exception_id INTEGER PRIMARY KEY, indexer INTEGER, series_id INTEGER, title TEXT, '
+            'season NUMERIC DEFAULT -1, custom NUMERIC DEFAULT 0);'
+        )
 
         self.inc_minor_version()

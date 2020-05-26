@@ -31,13 +31,13 @@
                     <td>
                         <select name="process_method" id="process_method" class="form-control form-control-inline input-sm" >
                         % if pkgutil.find_loader('reflink') is not None:
-                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link"} %>
-                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
+                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link", 'keeplink' : "Keep Link" } %>
+                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink', 'keeplink'):
                                 <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                             % endfor
                         % else:
-                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'keeplink' : "Keep Link"} %>
+                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'keeplink'):
                                 <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                             % endfor
                         % endif
@@ -46,7 +46,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <b>Force already Post Processed Dir/Files:</b>
+                        <b>Force already Post-Processed Dir/Files:</b>
                     </td>
                     <td>
                         <input id="force" name="force" type="checkbox">

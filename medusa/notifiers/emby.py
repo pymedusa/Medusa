@@ -8,7 +8,7 @@ import logging
 
 from medusa import app
 from medusa.helper.exceptions import ex
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVRAGE
 from medusa.indexers.utils import indexer_id_to_name, mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
@@ -56,8 +56,8 @@ class Notifier(object):
             )
             resp.raise_for_status()
 
-            if resp.content:
-                log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+            if resp.text:
+                log.debug('EMBY: HTTP response: {0}', resp.text.replace('\n', ''))
 
             log.info('EMBY: Successfully sent a test notification.')
             return True
@@ -127,8 +127,8 @@ class Notifier(object):
                 )
                 resp.raise_for_status()
 
-                if resp.content:
-                    log.debug('EMBY: HTTP response: {0}', resp.content.replace('\n', ''))
+                if resp.text:
+                    log.debug('EMBY: HTTP response: {0}', resp.text.replace('\n', ''))
 
                 log.info('EMBY: Successfully sent a "Series Library Updated" command.')
                 return True

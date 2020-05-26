@@ -12,7 +12,6 @@ lib | `rtorrent-python` | [0.2.9](https://pypi.org/project/rtorrent-python/0.2.9
 lib | `send2trash` | [1.5.0](https://pypi.org/project/Send2Trash/1.5.0/) | **`medusa`** | **Modified**: Applied [hsoft/send2trash#33](https://github.com/hsoft/send2trash/pull/33)
 lib | `shutil_custom` | - | **`medusa`** | **Custom**
 lib | `simpleanidb` | pymedusa/[5d26c8c](https://github.com/pymedusa/simpleanidb/tree/5d26c8c146891225c05651821ef34ced0c118221) | **`medusa`** | -
-lib | `tmdbsimple` | [2.2.0](https://pypi.org/project/tmdbsimple/2.2.0/) | **`medusa`** | **Modified**: [#4026](https://github.com/pymedusa/Medusa/pull/4026) -- [Upstream PR](https://github.com/celiao/tmdbsimple/pull/52)
 lib | `traktor` | - | **`medusa`** | **Custom**
 
 #### Notes:

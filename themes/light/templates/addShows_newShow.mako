@@ -3,8 +3,8 @@
     import json
 
     from medusa import app
-    from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_config import indexerConfig
+    from medusa.indexers.api import indexerApi
+    from medusa.indexers.config import indexerConfig
 
     from six import iteritems, text_type
 %>
@@ -529,29 +529,29 @@ window.app = new Vue({
                                 <div class="show-add-option">
                                     <input type="text" v-model.trim="nameToSearch" ref="nameToSearch" @keyup.enter="searchIndexers" class="form-control form-control-inline input-sm input350"/>
                                 </div>
-                                
+
                                 <div class="show-add-option">
                                     <language-select @update-language="indexerLanguage = $event" ref="indexerLanguage" :language="indexerLanguage" :available="validLanguages.join(',')" class="form-control form-control-inline input-sm"></language-select>
                                     <b>*</b>
                                 </div>
-                                
+
                                 <div class="show-add-option">
                                     <select v-model.number="indexerId" class="form-control form-control-inline input-sm">
                                         <option v-for="(indexer, indexerId) in indexers" :value="indexerId">{{indexer.name}}</option>
-                                    </select>        
+                                    </select>
                                 </div>
 
                                 <div class="show-add-option">
                                     <input class="btn-medusa btn-inline" type="button" value="Search" @click="searchIndexers" />
                                 </div>
-                                    
+
                                 <div style="display: inline-block">
                                     <p style="padding: 20px 0;">
                                         <b>*</b> This will only affect the language of the retrieved metadata file contents and episode filenames.<br>
                                         This <b>DOES NOT</b> allow Medusa to download non-english TV episodes!
                                     </p>
                                 </div>
-                                
+
                                 <div>
                                     <div v-show="displayStatus === 'searching'">
                                         <img :src="spinnerSrc" height="32" width="32" />

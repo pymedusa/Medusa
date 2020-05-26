@@ -8,7 +8,7 @@
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
     from medusa.metadata.generic import GenericMetadata
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
 <%block name="scripts">

@@ -13,15 +13,18 @@ const homeRoutes = [
         meta: {
             title: 'Home',
             header: 'Show List',
-            topMenu: 'home'
-        }
+            topMenu: 'home',
+            converted: true
+        },
+        component: () => import('../components/home.vue')
     },
     {
         path: '/home/editShow',
         name: 'editShow',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/edit-show.vue')
     },
@@ -30,7 +33,8 @@ const homeRoutes = [
         name: 'show',
         meta: {
             topMenu: 'home',
-            subMenu: showSubMenu
+            subMenu: showSubMenu,
+            converted: true
         },
         component: () => import('../components/display-show.vue')
     },
@@ -135,8 +139,10 @@ const configRoutes = [
             title: 'Config - General',
             header: 'General Configuration',
             topMenu: 'config',
-            subMenu: configSubMenu
-        }
+            subMenu: configSubMenu,
+            converted: true
+        },
+        component: () => import('../components/config-general.vue')
     },
     {
         path: '/config/notifications',
@@ -154,8 +160,8 @@ const configRoutes = [
         path: '/config/postProcessing',
         name: 'configPostProcessing',
         meta: {
-            title: 'Config - Post Processing',
-            header: 'Post Processing',
+            title: 'Config - Post-Processing',
+            header: 'Post-Processing',
             topMenu: 'config',
             subMenu: configSubMenu,
             converted: true

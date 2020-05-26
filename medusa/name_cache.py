@@ -98,9 +98,9 @@ def build_name_cache(series_obj=None):
         series_identifier = (cache_series_obj.indexer, cache_series_obj.series_id)
         scene_exceptions = exceptions_cache[series_identifier].copy()
         names = {
-            full_sanitize_scene_name(name): series_identifier
+            full_sanitize_scene_name(exception.title): series_identifier
             for season_exceptions in itervalues(scene_exceptions)
-            for name in season_exceptions
+            for exception in season_exceptions
         }
         # Add original name to name cache
         series_name = full_sanitize_scene_name(cache_series_obj.name)

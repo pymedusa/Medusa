@@ -20,13 +20,15 @@ import {
     ConfigTextboxNumber,
     ConfigToggleSlider,
     FileBrowser,
-    Home,
+    History,
     LanguageSelect,
+    LoadProgressBar,
     ManualPostProcess,
     PlotInfo,
     QualityChooser,
     QualityPill,
     RootDirs,
+    Schedule,
     ScrollButtons,
     SelectList,
     ShowSelector,
@@ -72,6 +74,7 @@ export const registerGlobalComponents = () => {
         ConfigToggleSlider,
         FileBrowser,
         LanguageSelect,
+        LoadProgressBar,
         PlotInfo,
         QualityChooser,
         QualityPill, // @FIXME: (sharkykh) Used in a hack/workaround in `static/js/ajax-episode-search.js`
@@ -84,8 +87,9 @@ export const registerGlobalComponents = () => {
     // Add components for pages that use `pageComponent`
     // @TODO: These need to be converted to Vue SFCs
     components = components.concat([
-        Home,
+        History,
         ManualPostProcess,
+        Schedule,
         SnatchSelection,
         Status
     ]);
@@ -111,7 +115,7 @@ export const registerPlugins = () => {
     Vue.use(VTooltip);
 
     // Set default cookie expire time
-    VueCookies.config('10y');
+    Vue.$cookies.config('10y');
 };
 
 /**
@@ -128,7 +132,8 @@ export default () => {
             if (this.$root === this) {
                 return {
                     globalLoading: true,
-                    pageComponent: false
+                    pageComponent: false,
+                    showsLoading: false
                 };
             }
             return {};
@@ -143,7 +148,7 @@ export default () => {
                     store.dispatch('getConfig'),
                     store.dispatch('getStats')
                 ]).then(([_, config]) => {
-                    this.$emit('loaded');
+                    this.$root.$emit('loaded');
                     // Legacy - send config.main to jQuery (received by index.js)
                     const event = new CustomEvent('medusa-config-loaded', { detail: config.main });
                     window.dispatchEvent(event);
@@ -153,7 +158,7 @@ export default () => {
                 });
             }
 
-            this.$once('loaded', () => {
+            this.$root.$once('loaded', () => {
                 this.$root.globalLoading = false;
             });
         },

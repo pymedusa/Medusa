@@ -17,7 +17,7 @@ from github.Repository import Repository
 from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality, SD
 from medusa.helper.common import dateTimeFormat
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
 from medusa.providers.generic_provider import GenericProvider
@@ -111,13 +111,6 @@ def tvshow(create_tvshow):
 
 
 @pytest.fixture
-def tvepisode(tvshow, create_tvepisode):
-    return create_tvepisode(series=tvshow, season=3, episode=4, indexer=34, file_size=1122334455,
-                            name='Episode Title', status=DOWNLOADED, quality=Quality.FULLHDBLURAY,
-                            release_group='SuperGroup')
-
-
-@pytest.fixture
 def parse_method(create_tvshow):
     def parse(self, name):
         """Parse the string and add a TVShow object with the parsed series name."""
@@ -165,10 +158,10 @@ def create_tvepisode(monkeypatch):
 
 @pytest.fixture
 def create_search_result(monkeypatch):
-    def create(provider, series, **kwargs):
+    def create(provider, series, episode, **kwargs):
         target = provider.get_result(series=series)
-        target.provider = provider
-        target.series = series
+        target.actual_season = episode.season
+        target.actual_episodes = [episode.episode]
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create

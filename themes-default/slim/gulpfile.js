@@ -6,52 +6,44 @@ const changed = require('gulp-changed');
 
 const pkg = require('./package.json');
 
-const { config } = pkg;
-let buildDest = '';
-
 /**
- * Attempt to get the cssTheme config object from the package.json.
- * @param {string} theme theme to try and get
- */
-const setCsstheme = theme => {
-    const cssTheme = config.cssThemes[theme];
-    if (cssTheme) {
-        buildDest = path.normalize(cssTheme.dest);
-    }
-};
-
-/**
- * Compressing and copying images to their destinations.
- * Should save up to 50% of total filesize.
+ * Make an "images" task for the provided theme.
  *
- * @returns {NodeJS.ReadWriteStream} stream
+ * @param {string} theme - Theme object.
+ * @returns {function} A function (task) that performs as described above.
  */
-const moveImages = () => {
-    const dest = `${buildDest}/assets/img`;
-    return gulp
-        .src('static/images/**/*', {
-            base: 'static/images/'
-        })
-        .pipe(changed(dest))
-        .pipe(imagemin({
-            progressive: true,
-            svgoPlugins: [{ removeViewBox: false }, { cleanupIDs: false }],
-            use: [pngquant()]
-        }))
-        .pipe(gulp.dest(dest));
+const makeMoveImagesTask = theme => {
+    /**
+      * Compressing and copying images to their destinations.
+      * Should save up to 50% of total filesize.
+      *
+      * @returns {NodeJS.ReadWriteStream} stream
+      */
+    const moveImages = () => {
+        const buildDest = path.normalize(theme.dest);
+        const dest = `${buildDest}/assets/img`;
+        return gulp
+            .src('static/images/**/*', {
+                base: 'static/images/'
+            })
+            .pipe(changed(dest))
+            .pipe(imagemin({
+                progressive: true,
+                svgoPlugins: [{ removeViewBox: false }, { cleanupIDs: false }],
+                use: [pngquant()]
+            }))
+            .pipe(gulp.dest(dest));
+    };
+
+    // Rename `moveImages` function so it has a more descriptive name
+    Object.defineProperty(moveImages, 'name', { value: `move-images-${theme.name}` });
+    return moveImages;
 };
 
 /** Gulp tasks */
 
 const generateSyncTasks = () => {
-    const tasks = Object.keys(config.cssThemes).map(theme => {
-        const setTheme = callback => {
-            console.log(`Starting syncing for theme: ${theme}`);
-            setCsstheme(theme);
-            callback();
-        };
-        return gulp.series(setTheme, moveImages);
-    });
+    const tasks = pkg.config.cssThemes.map(theme => makeMoveImagesTask(theme));
     return gulp.series(...tasks);
 };
 

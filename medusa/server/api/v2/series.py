@@ -55,6 +55,7 @@ class SeriesHandler(BaseRequestHandler):
                 s.to_json(detailed=detailed, episodes=episodes)
                 for s in Series.find_series(predicate=filter_series)
             ]
+
             return self._paginate(data, sort='title')
 
         identifier = SeriesIdentifier.from_slug(series_slug)

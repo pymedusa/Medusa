@@ -75,7 +75,7 @@ def _queued_show_to_json(item):
         show_title = item.show.name
     except AttributeError:
         if item.action_id == ShowQueueActions.ADD:
-            show_dir = item.showDir
+            show_dir = item.show_dir
 
     if item.priority == QueuePriorities.LOW:
         priority = 'low'

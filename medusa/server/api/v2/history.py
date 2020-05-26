@@ -2,16 +2,12 @@
 """Request handler for alias (scene exceptions)."""
 from __future__ import unicode_literals
 
-from medusa import db
-
-from medusa.server.api.v2.base import BaseRequestHandler
-from medusa.providers.generic_provider import GenericProvider
-from medusa.providers import get_provider_class
-from medusa.tv.series import SeriesIdentifier
 from os.path import basename
-from medusa.common import statusStrings
 
-from tornado.escape import json_decode
+from medusa import db
+from medusa.common import statusStrings
+from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.tv.series import SeriesIdentifier
 
 
 class HistoryHandler(BaseRequestHandler):
@@ -27,14 +23,17 @@ class HistoryHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE')
 
     def get(self, series_slug, path_param):
-        """Query search history information."""
+        """
+        Get history records.
 
-        sql_base = '''
-            SELECT rowid, date, action, quality, 
-                   provider, version, resource, size, 
-                   indexer_id, showid, season, episode
-            FROM history 
-        '''
+        History records can be specified using a show slug.
+        """
+        sql_base = """
+            SELECT rowid, date, action, quality,
+                   provider, version, proper_tags, manually_searched,
+                   resource, size, indexer_id, showid, season, episode
+            FROM history
+        """
         params = []
 
         arg_page = self._get_page()
@@ -52,50 +51,42 @@ class HistoryHandler(BaseRequestHandler):
         results = db.DBConnection().select(sql_base, params)
 
         def data_generator():
-            """Read log lines based on the specified criteria."""
-            start = arg_limit * (arg_page - 1) + 1
+            """Read and paginate history records."""
+            start = arg_limit * (arg_page - 1)
 
-            for item in results[start - 1:start - 1 + arg_limit]:
+            for item in results[start:start + arg_limit]:
                 d = {}
                 d['id'] = item['rowid']
-
-                if item['indexer_id'] and item['showid']:
-                    d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-
+                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
                 d['status'] = item['action']
                 d['actionDate'] = item['date']
 
                 d['resource'] = basename(item['resource'])
                 d['size'] = item['size']
+                d['properTags'] = item['proper_tags']
                 d['statusName'] = statusStrings.get(item['action'])
                 d['season'] = item['season']
                 d['episode'] = item['episode']
-
-                provider = get_provider_class(GenericProvider.make_id(item['provider']))
-                d['provider'] = {}
-                if provider:
-                    d['provider']['id'] = provider.get_id()
-                    d['provider']['name'] = provider.name
-                    d['provider']['imageName'] = provider.image_name()
+                d['manuallySearched'] = bool(item['manually_searched'])
+                d['provider'] = item['provider']
 
                 yield d
 
-        if not len(results):
+        if not results:
             return self._not_found('History data not found')
 
         return self._paginate(data_generator=data_generator)
 
-
     def delete(self, identifier, **kwargs):
-        """Delete an alias."""
+        """Delete a history record."""
         identifier = self._parse(identifier)
         if not identifier:
             return self._bad_request('Invalid history id')
 
-        cache_db_con = db.DBConnection('cache.db')
-        last_changes = cache_db_con.connection.total_changes
-        cache_db_con.action('DELETE FROM history WHERE row_id = ?', [identifier])
-        if cache_db_con.connection.total_changes - last_changes <= 0:
-            return self._not_found('Alias not found')
+        main_db_con = db.DBConnection()
+        last_changes = main_db_con.connection.total_changes
+        main_db_con.action('DELETE FROM history WHERE row_id = ?', [identifier])
+        if main_db_con.connection.total_changes - last_changes <= 0:
+            return self._not_found('History row not found')
 
         return self._no_content()

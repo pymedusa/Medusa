@@ -21,7 +21,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helpers.utils import split_and_strip
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
@@ -555,32 +555,6 @@ class NewznabProvider(NZBProvider):
             {
                 'name': 'NZBGeek',
                 'url': 'https://api.nzbgeek.info/',
-                'api_key': '',
-                'category_ids': ['5030', '5040'],
-                'enabled': False,
-                'default': True,
-                'search_mode': 'eponly',
-                'search_fallback': False,
-                'enable_daily': False,
-                'enable_backlog': False,
-                'enable_manualsearch': False,
-            },
-            {
-                'name': 'NZBs.org',
-                'url': 'https://nzbs.org/',
-                'api_key': '',
-                'category_ids': ['5030', '5040'],
-                'enabled': False,
-                'default': True,
-                'search_mode': 'eponly',
-                'search_fallback': False,
-                'enable_daily': False,
-                'enable_backlog': False,
-                'enable_manualsearch': False,
-            },
-            {
-                'name': 'Usenet-Crawler',
-                'url': 'https://usenet-crawler.com/',
                 'api_key': '',
                 'category_ids': ['5030', '5040'],
                 'enabled': False,

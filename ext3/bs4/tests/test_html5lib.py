@@ -22,7 +22,7 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
 
     @property
     def default_builder(self):
-        return HTML5TreeBuilder()
+        return HTML5TreeBuilder
 
     def test_soupstrainer(self):
         # The html5lib tree builder does not support SoupStrainers.
@@ -168,3 +168,23 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
         for form in soup.find_all('form'):
             inputs.extend(form.find_all('input'))
         self.assertEqual(len(inputs), 1)
+
+    def test_tracking_line_numbers(self):
+        # The html.parser TreeBuilder keeps track of line number and
+        # position of each element.
+        markup = "\n   <p>\n\n<sourceline>\n<b>text</b></sourceline><sourcepos></p>"
+        soup = self.soup(markup)
+        self.assertEqual(2, soup.p.sourceline)
+        self.assertEqual(5, soup.p.sourcepos)
+        self.assertEqual("sourceline", soup.p.find('sourceline').name)
+
+        # You can deactivate this behavior.
+        soup = self.soup(markup, store_line_numbers=False)
+        self.assertEqual("sourceline", soup.p.sourceline.name)
+        self.assertEqual("sourcepos", soup.p.sourcepos.name)
+
+    def test_special_string_containers(self):
+        # The html5lib tree builder doesn't support this standard feature,
+        # because there's no way of knowing, when a string is created,
+        # where in the tree it will eventually end up.
+        pass

@@ -13,8 +13,8 @@ from medusa.common import Quality
 from medusa.helper.common import sanitize_filename, try_int
 from medusa.helpers import get_showname_from_indexer
 from medusa.helpers.anidb import short_group_names
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.api import indexerApi
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.web.core import PageTemplate
 from medusa.server.web.home.handler import Home
@@ -27,7 +27,7 @@ from requests import RequestException
 
 from simpleanidb import REQUEST_HOT
 
-from six import text_type
+from six import ensure_text, text_type
 
 from tornroutes import route
 
@@ -494,11 +494,11 @@ class HomeAddShows(Home):
         if whitelist:
             if not isinstance(whitelist, list):
                 whitelist = [whitelist]
-            whitelist = short_group_names(whitelist)
+            whitelist = short_group_names([ensure_text(w) for w in whitelist])
         if blacklist:
             if not isinstance(blacklist, list):
                 blacklist = [blacklist]
-            blacklist = short_group_names(blacklist)
+            blacklist = short_group_names([ensure_text(b) for b in blacklist])
 
         if not allowed_qualities:
             allowed_qualities = []

@@ -43,11 +43,13 @@ export default {
         };
     },
     computed: {
-        ...mapState(['config']),
-        ...mapState({ shows: state => state.shows.shows }),
+        ...mapState({
+            layout: state => state.layout,
+            shows: state => state.shows.shows
+        }),
         showLists() {
-            const { config, shows } = this;
-            const { animeSplitHome, sortArticle } = config;
+            const { layout, shows } = this;
+            const { animeSplitHome, sortArticle } = layout;
             const lists = [
                 { type: 'Shows', shows: [] },
                 { type: 'Anime', shows: [] }
@@ -63,7 +65,7 @@ export default {
                 lists[type].shows.push(show);
             });
 
-            const sortKey = title => (sortArticle ? title : title.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+            const sortKey = title => (sortArticle ? title : title.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
             lists.forEach(list => {
                 list.shows.sort((showA, showB) => {
                     const titleA = sortKey(showA.title);

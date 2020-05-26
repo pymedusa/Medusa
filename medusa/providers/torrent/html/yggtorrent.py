@@ -36,7 +36,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://www2.yggtorrent.ch'
+        self.url = 'https://www.yggtorrent.to'
         self.urls = {
             'auth': urljoin(self.url, 'user/ajax_usermenu'),
             'login': urljoin(self.url, 'user/login'),
@@ -46,6 +46,12 @@ class YggtorrentProvider(TorrentProvider):
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
+
+        # Add Saison as a season pack search keyword, as this is a French provider.
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+            'Saison {season}',  # example: 'Series.Name.Saison 3'
+        )
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)
@@ -177,7 +183,7 @@ class YggtorrentProvider(TorrentProvider):
                 log.warning('Unable to connect to provider')
                 return False
 
-            if not login_resp.ok:
+            if not login_resp.ok and login_resp.status_code == 401:
                 log.warning('Invalid username or password. Check your settings')
                 return False
 

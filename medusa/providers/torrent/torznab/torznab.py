@@ -14,7 +14,7 @@ from medusa import (
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.indexers.indexer_config import (
+from medusa.indexers.config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
     INDEXER_TVMAZE,
@@ -43,7 +43,7 @@ class TorznabProvider(TorrentProvider):
 
         self.url = url or ''
         self.api_key = api_key or ''
-        self.cat_ids = cat_ids or ['5010', '5030', '5040']
+        self.cat_ids = cat_ids or ['5010', '5030', '5040', '7000']
         self.cap_tv_search = cap_tv_search or []
 
         # For now apply the additional season search string for all torznab providers.
@@ -178,7 +178,8 @@ class TorznabProvider(TorrentProvider):
                     seeders_attr = item.find('torznab:attr', attrs={'name': 'seeders'})
                     peers_attr = item.find('torznab:attr', attrs={'name': 'peers'})
                     seeders = int(seeders_attr.get('value', 0)) if seeders_attr else 1
-                    leechers = int(peers_attr.get('value', 0)) if peers_attr else 0
+                    peers = int(peers_attr.get('value', 0)) if peers_attr else 0
+                    leechers = peers - seeders if peers - seeders > 0 else 0
 
                     # Filter unseeded torrent
                     if seeders < self.minseed:

@@ -20,9 +20,9 @@ window.app = new Vue({
 <%block name="content">
 <h1 class="header">{{header}}</h1>
 <p>
-A mako error has occured.<br>
+A mako error has occurred.<br>
 If this happened during an update a simple page refresh may be the solution.<br>
-Mako errors that happen during updates may be a one time error if there were significant ui changes.<br>
+Mako errors that happen during updates may be a one-time error if there were significant ui changes.<br>
 </p>
 <hr>
 <app-link href="#mako-error" class="btn-medusa btn-default" data-toggle="collapse">Show/Hide Error</app-link>

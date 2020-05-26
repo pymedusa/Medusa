@@ -21,6 +21,8 @@
 #			Default: /usr/local/medusa
 # medusa_datadir:	Data directory for Medusa (DB, Logs, config)
 #			Default is same as medusa_dir
+# medusa_python_dir: The directory where python is installed.
+#			Default: /usr/local/bin/python3.7
 
 . /etc/rc.subr
 
@@ -34,12 +36,17 @@ load_rc_config ${name}
 : ${medusa_group:="medusa"}
 : ${medusa_dir:="/usr/local/medusa"}
 : ${medusa_datadir:="${medusa_dir}"}
+: ${medusa_python_dir="/usr/local/bin/python3.7"}
 
 pidfile="/var/run/PyMedusa/Medusa.pid"
-command="/usr/local/bin/python3"
-command_args="${medusa_dir}/start.py --datadir ${medusa_datadir} -d --pidfile ${pidfile} --quiet --nolaunch"
+pidfile_child="/var/run/PyMedusa/Medusa_child.pid"
+command="/usr/sbin/daemon"
+command_args="-cf -P ${pidfile} -p ${pidfile_child} ${medusa_python_dir} ${medusa_dir}/start.py -q --nolaunch --pidfile /var/run/Pymedusa/child.pid --datadir ${medusa_datadir}"
 
 start_precmd="medusa_prestart"
+stop_precmd="medusa_prestop"
+stop_postcmd="medusa_poststop"
+
 medusa_prestart() {
 	if [ -f ${pidfile} ]; then
 		rm -f ${pidfile}
@@ -51,6 +58,19 @@ medusa_prestart() {
 	if [ ! -d ${medusa_datadir} ]; then
 		install -d -o ${medusa_user} -g ${medusa_group} ${medusa_datadir}
 	fi
+}
+
+medusa_prestop() {
+	if [ -r ${pidfile} ]; then
+		export _MEDUSAPID=$(check_pidfile ${pidfile} daemon)
+	fi
+}
+
+medusa_poststop() {	
+	_MEDUSA_CHILDREN=$(pgrep -g ${_MEDUSAPID})
+	echo "Waiting for child processes to stop."
+	kill -3 ${_MEDUSA_CHILDREN}
+	wait_for_pids ${_MEDUSA_CHILDREN}
 }
 
 run_rc_command "$1"

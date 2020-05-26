@@ -15,7 +15,7 @@
                     Memory used: <span class="footerhighlight">{{ system.memoryUsage }}</span> |
                 </template>
                 <!-- Load time: <span class="footerhighlight">{{ loadTime }}s</span> / Mako: <span class="footerhighlight">{{ makoTime }}s</span> | -->
-                Branch: <span class="footerhighlight">{{ config.branch || 'Unknown' }}</span> |
+                Branch: <span class="footerhighlight">{{ system.branch || 'Unknown' }}</span> |
                 Now: <span class="footerhighlight">{{ nowInUserPreset }}</span>
             </div>
         </div>
@@ -36,7 +36,7 @@ export default {
     },
     computed: {
         ...mapState([
-            'config',
+            'layout',
             'stats',
             'system'
         ]),
@@ -57,8 +57,8 @@ export default {
             return raw.toFixed(1) + '%';
         },
         nowInUserPreset() {
-            const { datePreset, timePreset } = this.config;
-            const preset = convertDateFormat(`${datePreset} ${timePreset}`);
+            const { dateStyle, timeStyle } = this.layout;
+            const preset = convertDateFormat(`${dateStyle} ${timeStyle}`);
             return formatDate(new Date(), preset);
         }
     },
@@ -92,7 +92,7 @@ export default {
          * @example
          */
         formatTimeDuration(durationInMs) {
-            const days = parseInt(durationInMs / 86400000, 10);
+            const days = Number.parseInt(durationInMs / 86400000, 10);
             let daysText = '';
             if (days > 0) {
                 daysText = String(days) + (days > 1 ? ' days, ' : ' day, ');

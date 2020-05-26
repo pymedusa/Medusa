@@ -80,7 +80,7 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
@@ -318,19 +318,28 @@ class Application(object):
 
         app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
-        # Initialize the config and our threads
-        self.initialize(console_logging=self.console_logging)
-
         if self.run_as_daemon:
             self.daemonize()
 
         # Get PID
         app.PID = os.getpid()
 
+        # Initialize the config and our threads
+        self.initialize(console_logging=self.console_logging)
+
         # Build from the DB to start with
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
+
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
+                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
+                'Please upgrade your Python version to 3.6 or higher as soon as possible!',
+                python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
 
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
@@ -907,9 +916,6 @@ class Application(object):
             app.ADDIC7ED_USER = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_username', '', censor_log='normal')
             app.ADDIC7ED_PASS = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_password', '', censor_log='low')
 
-            app.ITASA_USER = check_setting_str(app.CFG, 'Subtitles', 'itasa_username', '', censor_log='normal')
-            app.ITASA_PASS = check_setting_str(app.CFG, 'Subtitles', 'itasa_password', '', censor_log='low')
-
             app.LEGENDASTV_USER = check_setting_str(app.CFG, 'Subtitles', 'legendastv_username', '', censor_log='normal')
             app.LEGENDASTV_PASS = check_setting_str(app.CFG, 'Subtitles', 'legendastv_password', '', censor_log='low')
 
@@ -979,6 +985,7 @@ class Application(object):
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'General', 'backlog_status', 'all')
             app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
             app.SHOW_LIST_ORDER = check_setting_list(app.CFG, 'GUI', 'show_list_order', app.SHOW_LIST_ORDER)
+            app.SHOW_USE_PAGINATION = check_setting_bool(app.CFG, 'GUI', 'show_use_pagination', app.SHOW_USE_PAGINATION)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -1167,7 +1174,6 @@ class Application(object):
                                                            threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
-                                                            cycleTime=datetime.timedelta(hours=1),
                                                             threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
@@ -1189,54 +1195,44 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName='DAILYSEARCHER',
-                                                             run_delay=update_interval)
+                                                             threadName='DAILYSEARCHER')
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName='BACKLOG',
-                                                                  run_delay=update_interval)
+                                                                  threadName='BACKLOG')
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
                 update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
-                run_at = None
             else:
-                update_interval = datetime.timedelta(hours=1)
-                run_at = datetime.time(hour=1)  # 1 AM
+                update_interval = datetime.timedelta(hours=4)
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName='FINDPROPERS',
-                                                              start_time=run_at,
-                                                              run_delay=update_interval)
+                                                              threadName='FINDPROPERS')
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.post_processor_scheduler = scheduler.Scheduler(process_tv.PostProcessorRunner(),
                                                                cycleTime=update_interval,
                                                                threadName='POSTPROCESSOR',
-                                                               silent=not app.PROCESS_AUTOMATICALLY,
-                                                               run_delay=update_interval)
-            update_interval = datetime.timedelta(minutes=5)
+                                                               silent=not app.PROCESS_AUTOMATICALLY)
+
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
                                                               threadName='TRAKTCHECKER',
-                                                              run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
                                                                  threadName='FINDSUBTITLES',
-                                                                 run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName='TORRENTCHECKER',
-                                                                run_delay=update_interval)
+                                                                threadName='TORRENTCHECKER')
 
             app.__INITIALIZED__ = True
             return True
@@ -1938,6 +1934,7 @@ class Application(object):
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
         new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
         new_config['GUI']['show_list_order'] = app.SHOW_LIST_ORDER
+        new_config['GUI']['show_use_pagination'] = app.SHOW_USE_PAGINATION
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
@@ -1960,9 +1957,6 @@ class Application(object):
         new_config['Subtitles']['subtitles_keep_only_wanted'] = int(app.SUBTITLES_KEEP_ONLY_WANTED)
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)
-
-        new_config['Subtitles']['itasa_username'] = app.ITASA_USER
-        new_config['Subtitles']['itasa_password'] = helpers.encrypt(app.ITASA_PASS, app.ENCRYPTION_VERSION)
 
         new_config['Subtitles']['legendastv_username'] = app.LEGENDASTV_USER
         new_config['Subtitles']['legendastv_password'] = helpers.encrypt(app.LEGENDASTV_PASS, app.ENCRYPTION_VERSION)
@@ -2149,6 +2143,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

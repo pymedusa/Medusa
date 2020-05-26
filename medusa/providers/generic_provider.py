@@ -36,7 +36,7 @@ from medusa.helper.common import (
 from medusa.helpers import (
     download_file,
 )
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -69,15 +69,6 @@ class GenericProvider(object):
         self.name = name
 
         self.anime_only = False
-        self.bt_cache_urls = [
-            'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'https://asnet.pw/download/{info_hash}/',
-            'http://p2pdl.com/download/{info_hash}',
-            'http://itorrents.org/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'https://cache.torrentgalaxy.org/get/{info_hash}',
-            'https://www.seedpeer.me/torrent/{info_hash}',
-        ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
@@ -424,23 +415,20 @@ class GenericProvider(object):
 
             search_result.update_search_result()
 
-            if not search_result.actual_episodes:
-                episode_number = SEASON_RESULT
+            if search_result.episode_number == SEASON_RESULT:
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
-            elif len(search_result.actual_episodes) == 1:
-                episode_number = search_result.actual_episode
-                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
-            else:
-                episode_number = MULTI_EP_RESULT
+            elif search_result.episode_number == MULTI_EP_RESULT:
                 log.debug('Found multi-episode ({0}) result {1} at {2}',
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
-
-            if episode_number not in final_results:
-                final_results[episode_number] = [search_result]
             else:
-                final_results[episode_number].append(search_result)
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
+
+            if search_result.episode_number not in final_results:
+                final_results[search_result.episode_number] = [search_result]
+            else:
+                final_results[search_result.episode_number].append(search_result)
 
         if cl:
             # Access to a protected member of a client class
@@ -773,23 +761,25 @@ class GenericProvider(object):
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
         if self.required_cookies:
-            if self.name != 'Beyond-HD':
+            if self.name == 'Beyond-HD':
+                if not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
+                    return {
+                        'result': False,
+                        'message': "You haven't configured the required cookies. Please login at {provider_url}, "
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
+                    }
+            else:
                 if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
                            for req_cookie in self.required_cookies):
                     return {
                         'result': False,
                         'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                                   'and make sure you have copied the following cookies: {required_cookies!r}'
-                                   .format(provider_url=self.name, required_cookies=self.required_cookies)
+                        'and make sure you have copied the following cookies: {required_cookies!r}'.format(
+                            provider_url=self.name, required_cookies=self.required_cookies
+                        )
                     }
-
-            elif not any('remember_web_' in x.rsplit('=', 1)[0] for x in self.cookies.split(';')):
-                return {
-                    'result': False,
-                    'message': "You haven't configured the required cookies. Please login at {provider_url}, "
-                               'and make sure you have copied the following cookies: {required_cookies!r}'
-                               .format(provider_url=self.name, required_cookies=self.required_cookies)
-                }
 
         # cookie_validator got at least one cookie key/value pair, let's return success
         add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))

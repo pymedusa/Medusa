@@ -100,7 +100,7 @@ window.app = new Vue({
                                     <span class="component-title">Download only one language (any)</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="subtitles_stop_at_first" id="subtitles_stop_at_first" ${('', 'checked="checked"')[bool(app.SUBTITLES_STOP_AT_FIRST)]}/>
-                                        <p>Stop download subtitles after first download</p>
+                                        <p>Stop downloading subtitles after first download</p>
                                     </span>
                                 </label>
                             </div>
@@ -109,7 +109,7 @@ window.app = new Vue({
                                     <span class="component-title">Erase subtitles cache on next boot</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="subtitles_erase_cache" id="subtitles_erase_cache" ${('', 'checked="checked"')[bool(app.SUBTITLES_ERASE_CACHE)]}/>
-                                        <p>Erases all subtitles cache files. May help fix some subtitles not being found</p>
+                                        <p>Erases all subtitles cache files. May fix some subtitles not being found</p>
                                     </span>
                                 </label>
                             </div>
@@ -124,7 +124,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> Leave empty if you want store subtitle in episode path.</span>
+                                    <span class="component-desc"><b>Note:</b> Leave empty if you want store subtitle in episode path.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -163,7 +163,7 @@ window.app = new Vue({
                                 </label>
                                 <label>
                                     <span class="component-title">&nbsp;</span>
-                                    <span class="component-desc"><b>NOTE:</b> This option is required if you use multiple subtitle languages.</span>
+                                    <span class="component-desc"><b>Note:</b> This option is required if you use multiple subtitle languages.</span>
                                 </label>
                             </div>
                             <div class="field-pair">
@@ -191,8 +191,8 @@ window.app = new Vue({
                                     <span class="component-title">Unknown language</span>
                                     <span class="component-desc">
                                         <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS)]}/>
-                                        <p>Consider unknown embedded subtitles as wanted language to avoid postpone post-process</p>
-                                        <p>Only works with setting 'Postpone post processing' enabled</p>
+                                        <p>Consider unknown embedded subtitles as wanted language to avoid postponing the post-processor</p>
+                                        <p>Only works with setting 'Postpone post-processing' enabled</p>
                                     </span>
                                 </label>
                             </div>
@@ -226,11 +226,7 @@ window.app = new Vue({
                                     <li>See the <app-link href="${app.SUBTITLES_URL}" class="wiki"><strong>Wiki</strong></app-link> for a script arguments description.</li>
                                     <li>Additional scripts separated by <b>|</b>.</li>
                                     <li>Scripts are called after each episode has searched and downloaded subtitles.</li>
-                                    <li>For any scripted languages, include the interpreter executable before the script. See the following example:</li>
-                                    <ul>
-                                        <li>For Windows: <pre>C:\Python27\pythonw.exe C:\Script\test.py</pre></li>
-                                        <li>For Linux: <pre>python /Script/test.py</pre></li>
-                                    </ul>
+                                    <li>Only Python scripts are allowed to be executed.</li>
                                 </span>
                                 </label>
                             </div>
@@ -268,7 +264,6 @@ window.app = new Vue({
                         <%
                             providerLoginDict = {
                                 'addic7ed': {'user': app.ADDIC7ED_USER, 'pass': app.ADDIC7ED_PASS},
-                                'itasa': {'user': app.ITASA_USER, 'pass': app.ITASA_PASS},
                                 'legendastv': {'user': app.LEGENDASTV_USER, 'pass': app.LEGENDASTV_PASS},
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>

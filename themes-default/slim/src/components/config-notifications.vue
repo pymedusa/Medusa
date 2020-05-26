@@ -136,7 +136,7 @@
                                                 <div class="testNotification" id="testPHT-result">Click below to test Plex Home Theater(s)</div>
                                                 <input class="btn-medusa" type="button" value="Test Plex Home Theater" id="testPHT" @click="testPHT">
                                                 <input type="submit" class="config_submitter btn-medusa" value="Save Changes">
-                                                <div class="clear-left"><p>Note: some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
+                                                <div class="clear-left"><p><b>Note:</b> some Plex Home Theaters <b class="boldest">do not</b> support notifications e.g. Plexapp for Samsung TVs</p></div>
                                             </div>
 
                                         </div>
@@ -952,10 +952,10 @@ export default {
             emailSelectedShowAdresses: []
         };
     },
-    // TODO: Replace with Object spread (`...mapState`)
     computed: {
         ...mapState([
             'config',
+            'indexers',
             'notifiers'
         ]),
         traktNewTokenMessage() {
@@ -963,20 +963,16 @@ export default {
             return 'Get ' + accessToken ? 'New ' : ' Trakt PIN';
         },
         traktIndexersOptions() {
-            const { traktIndexers } = this.config.indexers.config.main;
-            const { indexers } = this.config.indexers.config;
+            const { indexers } = this;
+            const { traktIndexers } = indexers.main;
 
-            const validTraktIndexer = Object.keys(indexers).filter(k => traktIndexers[k]);
+            const validTraktIndexer = Object.keys(indexers.indexers).filter(k => traktIndexers[k]);
             return validTraktIndexer.map(indexer => {
-                return { text: indexer, value: indexers[indexer].id };
+                return { text: indexer, value: indexers.indexers[indexer].id };
             });
         }
     },
-    created() {
-        const { getShows } = this;
-        // Needed for the show-selector component
-        getShows();
-    },
+
     beforeMount() {
         // Wait for the next tick, so the component is rendered
         this.$nextTick(() => {
@@ -1190,9 +1186,8 @@ export default {
         },
         testKODI() {
             const kodi = {};
-            const kodiHosts = $.map($('#kodi_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const kodiHostInput = $('#kodi_host').find('input');
+            const kodiHosts = kodiHostInput.toArray().map(value => value.value).filter(item => item !== '');
             kodi.host = kodiHosts.join(',');
             kodi.username = $.trim($('#kodi_username').val());
             kodi.password = $.trim($('#kodi_password').val());
@@ -1216,9 +1211,8 @@ export default {
         testPHT() {
             const plex = {};
             plex.client = {};
-            const plexHosts = $.map($('#plex_client_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const plexHostsInput = $('#plex_client_host').find('input');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.client.host = plexHosts.join(',');
             plex.client.username = $.trim($('#plex_client_username').val());
             plex.client.password = $.trim($('#plex_client_password').val());
@@ -1242,9 +1236,8 @@ export default {
         testPMS() {
             const plex = {};
             plex.server = {};
-            const plexHosts = $.map($('#plex_server_host').find('input'), value => {
-                return value.value;
-            }).filter(item => item !== '');
+            const plexHostsInput = $('#plex_server_host').find('input');
+            const plexHosts = plexHostsInput.toArray().map(value => value.value).filter(item => item !== '');
             plex.server.host = plexHosts.join(',');
 
             plex.server.username = $.trim($('#plex_server_username').val());
@@ -1604,7 +1597,7 @@ export default {
             }
             if (port === null) {
                 err += '<li style="color: red;">You must specify an SMTP port!</li>';
-            } else if (port.match(/^\d+$/) === null || parseInt(port, 10) > 65535) {
+            } else if (port.match(/^\d+$/) === null || Number.parseInt(port, 10) > 65535) {
                 err += '<li style="color: red;">SMTP port must be between 0 and 65535!</li>';
             }
             if (err.length > 0) {

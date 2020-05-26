@@ -58,7 +58,7 @@ export default {
             if (!href) {
                 return;
             }
-            return /^[a-z][a-z0-9+.-]*:/.test(href);
+            return /^[a-z][\d+.a-z-]*:/.test(href);
         },
         isExternal() {
             const base = this.computedBase;
@@ -85,12 +85,12 @@ export default {
         matchingVueRoute() {
             const { isAbsolute, isExternal, computedHref } = this;
             if (isAbsolute && isExternal) {
-                return undefined;
+                return;
             }
 
             const { route } = router.resolve(routerBase + computedHref);
             if (!route.name) {
-                return undefined;
+                return;
             }
 
             return route;
@@ -124,7 +124,9 @@ export default {
                 if (window.loadMainApp) {
                     return {
                         is: 'router-link',
-                        to: matchingVueRoute.fullPath
+                        to: matchingVueRoute.fullPath,
+                        // Add a `href` attribute to enable native mouse navigation (middle click, ctrl+click, etc.)
+                        href: new URL(matchingVueRoute.fullPath, base).href
                     };
                 }
             }
@@ -137,7 +139,7 @@ export default {
                         const { location } = window;
                         if (location.hash.length === 0) {
                             // Current location might be `url#`
-                            const newHash = location.href.endsWith('#') ? href.substr(1) : href;
+                            const newHash = location.href.endsWith('#') ? href.slice(1) : href;
                             return location.href + newHash;
                         }
                         return location.href.replace(location.hash, '') + href;

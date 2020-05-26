@@ -56,7 +56,10 @@
                     "ignoredWords": [],
                     "requiredWords": []
                 },
-                "aliases": [],
+                "aliases": [
+                    {"season": -1, "title": "Blue Planet duex"},
+                    {"season": 2, "title": "Blue planet II second season"}
+                ],
                 "subtitlesEnabled": true,
                 "anime": false
             },

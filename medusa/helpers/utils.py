@@ -4,12 +4,12 @@
 from __future__ import unicode_literals
 
 from builtins import str
-from collections import Iterable
 from datetime import datetime
 
 from dateutil import tz
 
 from six import string_types, viewitems
+from six.moves.collections_abc import Iterable
 
 
 def generate(it):
@@ -135,3 +135,10 @@ def timedelta_in_milliseconds(td):
         return 0
 
     return int(td.total_seconds() * 1000)
+
+
+def int_default(value, default=0):
+    """Cast value to integer or default if None."""
+    if value is not None:
+        return int(value)
+    return default
