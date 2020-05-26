@@ -113,9 +113,9 @@ export default {
             }
             const indexerName = selectedShow.indexer;
             const seriesId = selectedShow.id[indexerName];
-            
-            // Make sure the correct show, has been set as current show.
-            console.debug(`Setting current show to ${selectedShow.title}`)
+
+            // TODO: Make sure the correct show, has been set as current show.
+            console.debug(`Setting current show to ${selectedShow.title}`);
             $store.commit('currentShow', {
                 indexer: indexerName,
                 id: seriesId

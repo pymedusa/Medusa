@@ -1170,7 +1170,7 @@ export default {
     },
     beforeRouteEnter(to, from, next) {
         next(vm => {
-            // Access to component instance via `vm`
+            // Access to component instance via `vm`.
             // When moving from editShow to displayShow we might not have loaded the episodes yet.
             // The watch on show.id.slug will also not be triggered.
             vm.initializeEpisodes();
