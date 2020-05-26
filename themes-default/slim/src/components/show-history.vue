@@ -2,9 +2,9 @@
     <div class="show-history-wrapper">
         <div class="row">
             <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
-                <vue-good-table v-if="showHistoryByEpisode.length > 0"
+                <vue-good-table v-if="history.length > 0"
                                 :columns="columns"
-                                :rows="showHistoryByEpisode"
+                                :rows="history"
                                 :search-options="{
                                     enabled: false
                                 }"
@@ -35,12 +35,16 @@ export default {
             required: true
         },
         season: {
-            type: [String, Number],
+            type: Number,
             required: true
         },
         episode: {
-            type: [String, Number],
-            required: true
+            type: Number,
+            required: false
+        },
+        searchType: {
+            type: String,
+            default: 'episode'
         }
     },
     data() {
@@ -77,42 +81,61 @@ export default {
                 type: 'number'
             }],
             loading: false,
-            loadingMessage: ''
+            loadingMessage: '',
+            history: []
         };
     },
     computed: {
         ...mapState({
             config: state => state.config,
-            showHistory: state => state.showHistory
-        }),
-        ...mapGetters([
-            'getShowHistoryBySlug'
-        ]),
-        showHistoryByEpisode() {
-            const { episode, season, show, getShowHistoryBySlug } = this;
-            const historyBySlug = getShowHistoryBySlug(show.id.slug);
-            if (!historyBySlug) {
-                return [];
-            }
-            return historyBySlug.filter(history => history.season === season && history.episode === episode) || [];
-        }
-    },
-    mounted() {
-        const { getShowHistory, show } = this;
-        // Get showHistory
-        getShowHistory({ slug: show.id.slug });
+            showHistory: state => state.history.showHistory,
+            episodeHistory: state => state.history.episodeHistory
+        })
     },
     methods: {
         humanFileSize,
         ...mapActions({
-            getShowHistory: 'getShowHistory'
+            getShowEpisodeHistory: 'getShowEpisodeHistory'
         }),
         close() {
             this.$emit('close');
             // Destroy the vue listeners, etc
             this.$destroy();
             // Remove the element from the DOM
-            this.$el.parentNode.removeChild(this.$el);
+            this.$el.remove();
+        },
+        episodeSlug() {
+            const { season, episode } = this;
+            return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
+        }
+    },
+    watch: {
+        'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
+            const { episodeSlug, getShowEpisodeHistory } = this;
+            if (slug) {
+                getShowEpisodeHistory({ showSlug: slug, episodeSlug: episodeSlug() });
+            }
+        },
+        episodeHistory: {
+            handler(history) {
+                const { episodeSlug, season, searchType, show } = this;
+
+                if (show && show.id.slug && history[show.id.slug]) {
+                    // In case of an episode search
+                    if (searchType === 'episode' && episodeSlug()) {
+                        this.history = history[show.id.slug][episodeSlug()] || [];
+                    }
+
+                    // In case of a season search
+                    if (searchType === 'season' && season) {
+                        this.history = Object.keys(history[show.id.slug]).reduce((r, k) => {
+                            return r.concat(history[show.id.slug][k]);
+                        }, []);
+                    }
+                }
+            },
+            deep: true,
+            immediate: false
         }
     }
 };

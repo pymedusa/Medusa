@@ -12,7 +12,8 @@
                      :show-id="id"
                      :show-indexer="indexer"
                      @update="statusQualityUpdate"
-                     @update-overview-status="filterByOverviewStatus = $event" />
+                     @update-overview-status="filterByOverviewStatus = $event"
+        />
 
         <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
             <div class="col-md-12 top-15 displayShow horizontal-scroll">
