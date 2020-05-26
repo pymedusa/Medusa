@@ -591,27 +591,13 @@ export default {
 
     mounted() {
         const {
-            id,
-            indexer,
-            getShow,
+            loadShow,
             setEpisodeSceneNumbering,
             setAbsoluteSceneNumbering,
-            setInputValidInvalid,
-            $store
+            setInputValidInvalid
         } = this;
 
-        // Let's tell the store which show we currently want as current.
-        $store.commit('currentShow', {
-            indexer,
-            id
-        });
-
-        // We need detailed info for the xem / scene exceptions, so let's get it.
-        getShow({ id, indexer, detailed: true });
-
-        this.$watch('show', () => {
-            this.$nextTick(() => this.reflowLayout());
-        });
+        loadShow();
 
         ['load', 'resize'].map(event => {
             return window.addEventListener(event, () => {
@@ -689,8 +675,20 @@ export default {
         humanFileSize,
         ...mapActions({
             getShow: 'getShow', // Map `this.getShow()` to `this.$store.dispatch('getShow')`
-            getEpisodes: 'getEpisodes'
+            getEpisodes: 'getEpisodes',
+            setCurrentShow: 'setCurrentShow'
         }),
+        loadShow() {
+            const { setCurrentShow, id, indexer, getShow } = this;
+            // Let's tell the store which show we currently want as current.
+            setCurrentShow({
+                indexer,
+                id
+            });
+
+            // We need detailed info for the xem / scene exceptions, so let's get it.
+            getShow({ id, indexer, detailed: true });
+        },
         statusQualityUpdate(event) {
             const { selectedEpisodes, setStatus, setQuality } = this;
 
@@ -1147,25 +1145,37 @@ export default {
                 }
             };
             _getEpisodes(id, indexer);
+        },
+        initializeEpisodes() {
+            const { getEpisodes, id, indexer, show } = this;
+            if (!show.seasons) {
+                // Load episodes for the first page.
+                this.loadEpisodes(1);
+                // Always get special episodes if available.
+                if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
+                    getEpisodes({ id, indexer, season: 0 });
+                }
+            }
         }
     },
     watch: {
         'show.id.slug': function(slug) { // eslint-disable-line object-shorthand
-            const { getEpisodes, id, indexer } = this;
+            const { initializeEpisodes } = this;
             // Show's slug has changed, meaning the show's page has finished loading.
             if (slug) {
+                // This is still technically jQuery. Meaning whe're still letting jQuery do its thing on the entire dom.
                 updateSearchIcons(slug, this);
-                const { show } = this;
-                if (!show.seasons) {
-                    // Load episodes for the first page.
-                    this.loadEpisodes(1);
-                    // Always get special episodes if available.
-                    if (show.seasonCount.length > 0 && show.seasonCount[0].season === 0) {
-                        getEpisodes({ id, indexer, season: 0 });
-                    }
-                }
+                initializeEpisodes();
             }
         }
+    },
+    beforeRouteEnter(to, from, next) {
+        next(vm => {
+            // Access to component instance via `vm`.
+            // When moving from editShow to displayShow we might not have loaded the episodes yet.
+            // The watch on show.id.slug will also not be triggered.
+            vm.initializeEpisodes();
+        });
     }
 };
 </script>

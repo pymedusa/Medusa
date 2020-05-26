@@ -707,7 +707,6 @@ body {
 /* Generic vue-good-table dark template styling */
 .vgt-table {
     color: rgb(255, 255, 255);
-    background-color: rgb(51, 51, 51);
 }
 
 .vgt-table th,
