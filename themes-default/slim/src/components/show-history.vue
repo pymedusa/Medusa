@@ -86,8 +86,9 @@ export default {
         };
     },
     mounted() {
-        const { getHistory } = this;
-        this.history = getHistory();
+        const { getHistory, getEpisodeHistory, show, episodeSlug } = this;
+        getHistory();
+        this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
     },
     computed: {
         ...mapState({

@@ -113,8 +113,9 @@ const mutations = {
             filterShow =>
                 !(filterShow.indexerName === show.indexerName && filterShow.showId === show.showId && filterShow.name === show.name)
         );
-        // Vue.set(state.showHistory, showSlug, history);
-        state.recentShows.push(show);
+
+        state.recentShows.unshift(show); // Add the new show object to the start of the array.
+        state.recentShows = state.recentShows.slice(0, 5); // Cut the array of at 5 items.
     }
 };
 
