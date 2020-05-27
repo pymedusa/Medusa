@@ -8,6 +8,8 @@ from distutils.version import LooseVersion
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
+from github import GithubException
+from requests.exceptions import RequestException
 from six import text_type
 
 
@@ -39,6 +41,10 @@ class UpdateManager(object):
 
     def is_latest_version(self):
         """Compare the current installed version with the remote version."""
-        if LooseVersion(self.newest_version) > LooseVersion(self.current_version):
-            return False
+        try:
+            if LooseVersion(self.newest_version) > LooseVersion(self.current_version):
+                return False
+        except (GithubException, RequestException) as error:
+            log.warning("Unable to contact GitHub, can't get latest version: {0!r}", error)
+
         return True
