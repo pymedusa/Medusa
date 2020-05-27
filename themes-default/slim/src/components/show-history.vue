@@ -86,9 +86,8 @@ export default {
         };
     },
     mounted() {
-        const { getHistory, getEpisodeHistory, show, episodeSlug } = this;
+        const { getHistory } = this;
         getHistory();
-        this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
     },
     computed: {
         ...mapState({
@@ -118,16 +117,34 @@ export default {
             return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
         },
         getHistory() {
-            const { getEpisodeHistory, getSeasonHistory, getShowEpisodeHistory, show, episodeSlug, searchType } = this;
+            const { getShowEpisodeHistory, show, episodeSlug, updateHistory } = this;
             if (show.id.slug) {
+                // Use apiv2 to get latest episode history
                 getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
             }
 
+            // Update the local history array with store data.
+            updateHistory();
+        },
+        updateHistory() {
+            const { getEpisodeHistory, getSeasonHistory, show, episodeSlug, searchType } = this;
             if (searchType === 'episode') {
-                return getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
+                this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
             }
 
-            return getSeasonHistory({ showSlug: show.id.slug });
+            this.history = getSeasonHistory({ showSlug: show.id.slug });
+        }
+    },
+    watch: {
+        episodeHistory: {
+            handler() {
+                const { show, updateHistory } = this;
+                if (show.id.slug) {
+                    updateHistory();
+                }
+            },
+            deep: true,
+            immediate: false
         }
     }
 };
