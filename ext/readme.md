@@ -61,7 +61,7 @@ ext | <code><b>six</b>.py</code> | [1.15.0](https://pypi.org/project/six/1.15.0/
 ext | `soupsieve` | [1.9.5](https://pypi.org/project/soupsieve/1.9.5/) | `beautifulsoup4` | -
 ext | `stevedore` | [1.30.1](https://pypi.org/project/stevedore/1.30.1/) | `subliminal` | -
 ext | `subliminal` | [2.1.0](https://pypi.org/project/subliminal/2.1.0/) | **`medusa`** | -
-ext | `tmdbsimple` | [2.2.5](https://pypi.org/project/tmdbsimple/2.2.5/) | **`medusa`** | -
+ext | `tmdbsimple` | [2.2.6](https://pypi.org/project/tmdbsimple/2.2.6/) | **`medusa`** | -
 ext | `tornado` | [5.1.1](https://pypi.org/project/tornado/5.1.1/) | **`medusa`**, `tornroutes` | -
 ext | `tornroutes` | [0.5.1](https://pypi.org/project/tornroutes/0.5.1/) | **`medusa`** | -
 ext | <code><b>trans</b>.py</code> | [2.1.0](https://pypi.org/project/trans/2.1.0/) | `imdbpie` | -
