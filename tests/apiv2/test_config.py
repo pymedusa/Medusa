@@ -637,6 +637,7 @@ def config_notifiers():
     section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
     section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
     section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+    section_data['discord']['name'] = app.DISCORD_NAME
 
     section_data['twitter'] = {}
     section_data['twitter']['enabled'] = bool(app.USE_TWITTER)
