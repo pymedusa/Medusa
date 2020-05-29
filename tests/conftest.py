@@ -335,7 +335,7 @@ def monkeypatch_function_return(monkeypatch):
 
         for function_to_mock, return_value in mocks:
             def create_function(return_value):
-                def create_return(*args):
+                def create_return(*args, **kwargs):
                     return return_value
                 return create_return
 

@@ -185,6 +185,7 @@ class NameParser(object):
         # "diamond is unbreakable" exception back to season 4 of it's "master" table. This will be used later
         # to translate it to an absolute number, which in turn can be translated to an indexer SxEx.
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
+        season_exception = None
         if result.season_number is None:
             season_exception = get_season_from_name(result.series, result.series_name)
 
