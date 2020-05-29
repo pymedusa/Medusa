@@ -147,6 +147,26 @@ def get_season_scene_exceptions(series_obj, season=-1):
     return set(exceptions_list)
 
 
+def get_season_from_name(series_obj, series_name):
+    """
+    Get season number from exceptions_cache for a series scene exception name.
+
+    Use this method if you expect to get back a season number from a scene exception.
+    :param series_obj: A Series object.
+    :param series_name: The scene exception name.
+
+    :return: The season number or None.
+    """
+    exceptions_list = exceptions_cache[(series_obj.indexer, series_obj.series_id)]
+    for season, exceptions in exceptions_list.items():
+        # Skip whole series exceptions
+        if season == -1:
+            continue
+        for exception in exceptions:
+            if exception.title == series_name:
+                return exception.season
+
+
 def get_all_scene_exceptions(series_obj):
     """
     Get all scene exceptions for a show ID.
@@ -157,7 +177,7 @@ def get_all_scene_exceptions(series_obj):
     return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
 
 
-def get_scene_exceptions_by_name(show_name):
+def get_scene_exceptions_by_name(series_name):
     """Get the series_id, season and indexer of the scene exception."""
     # Flatten the exceptions_cache.
     scene_exceptions = set()
@@ -168,7 +188,7 @@ def get_scene_exceptions_by_name(show_name):
     matches = set()
     # First attempt exact match.
     for title_exception in scene_exceptions:
-        if show_name == title_exception.title:
+        if series_name == title_exception.title:
             matches.add(title_exception)
 
     if matches:
@@ -182,7 +202,7 @@ def get_scene_exceptions_by_name(show_name):
             sanitized_name.lower().replace('.', ' '),
         )
 
-        if show_name.lower() in titles:
+        if series_name.lower() in titles:
             logger.debug(
                 'Scene exception lookup got series id {title_exception.series_id} '
                 'from indexer {title_exception.indexer},'
