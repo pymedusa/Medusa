@@ -41,9 +41,9 @@ const mutations = {
             // In that case, we update the existing object.
             const existingSearchResult = (cache || []).find(result => result.identifier === searchResult.identifier);
             if (existingSearchResult) {
-                // Because this is an existing result, whe're not overwriting the dateAdded field and time field.
-                const { dateAdded, time, ...rest } = existingSearchResult;
-                Vue.set(state.providers[searchResult.provider.id].cache, cache.indexOf(existingSearchResult), rest);
+                // Because this is an existing result, whe're not overwriting dateAdded field.
+                const { dateAdded, ...rest } = existingSearchResult;
+                Vue.set(state.providers[searchResult.provider.id].cache, cache.indexOf(existingSearchResult), { ...existingSearchResult, ...rest });
             } else {
                 Vue.set(state.providers[searchResult.provider.id], 'cache', [...cache || [], ...[searchResult]]);
             }
