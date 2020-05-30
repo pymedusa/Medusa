@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div id="snatch-selection-template" class="snatch-selection-template">
         <vue-snotify />
         <backstretch v-if="show.id.slug" :slug="show.id.slug" />
 
@@ -11,18 +11,10 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <show-history v-if="show && season" v-bind="{ show, season, episode }" :key="show.id.slug + season + episode || ''" />
+        <show-history v-show="show && season" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
 
-        <div class="row">
-            <div class="col-md-12 horizontal-scroll">
-                <div class="clearfix" /><!-- .clearfix //-->
-                <div id="wrapper" data-history-toggle="hide">
-                    <div id="container">
-                        Table here
-                    </div><!-- #container //-->
-                </div><!-- #wrapper //-->
-            </div><!-- col -->
-        </div><!-- row -->
+        <show-results v-show="show && season" class="table-layout" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
+
     </div>
 </template>
 
@@ -31,16 +23,17 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { AppLink } from './helpers';
 import ShowHeader from './show-header.vue';
 import ShowHistory from './show-history.vue';
+import ShowResults from './show-results.vue';
 import Backstretch from './backstretch.vue';
 
 export default {
     name: 'snatch-selection',
     template: '#snatch-selection-template',
     components: {
-        AppLink,
         Backstretch,
         ShowHeader,
-        ShowHistory
+        ShowHistory,
+        ShowResults
     },
     metaInfo() {
         if (!this.show || !this.show.title) {
@@ -423,7 +416,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 span.global-ignored {
     color: red;
 }
@@ -444,5 +437,136 @@ span.show-required {
 
 span.global-undesired {
     color: orange;
+}
+
+/** Use this as table styling for all table layouts */
+.snatch-selection-template >>> .vgt-table {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: left;
+    border-spacing: 0;
+}
+
+.snatch-selection-template >>> .vgt-table th,
+.snatch-selection-template >>> .vgt-table td {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+/* remove extra border from left edge */
+.snatch-selection-template >>> .vgt-table th:first-child,
+.snatch-selection-template >>> .vgt-table td:first-child {
+    border-left: none;
+}
+
+.snatch-selection-template >>> .vgt-table th {
+    text-align: center;
+    border-collapse: collapse;
+    font-weight: normal;
+}
+
+.snatch-selection-template >>> .vgt-table span.break-word {
+    word-wrap: break-word;
+}
+
+.snatch-selection-template >>> .vgt-table thead th.sorting.sorting-asc {
+    background-position-x: right;
+    background-position-y: bottom;
+}
+
+.snatch-selection-template >>> .vgt-table thead th.sorting {
+    background-repeat: no-repeat;
+}
+
+.snatch-selection-template >>> .vgt-table thead th {
+    padding: 4px;
+    cursor: default;
+}
+
+.snatch-selection-template >>> .vgt-table input.tablesorter-filter {
+    width: 98%;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.snatch-selection-template >>> .vgt-table tr.tablesorter-filter-row,
+.snatch-selection-template >>> .vgt-table tr.tablesorter-filter-row td {
+    text-align: center;
+}
+
+/* optional disabled input styling */
+.snatch-selection-template >>> .vgt-table input.tablesorter-filter-row .disabled {
+    display: none;
+}
+
+.tablesorter-header-inner {
+    padding: 0 2px;
+    text-align: center;
+}
+
+.snatch-selection-template >>> .vgt-table tfoot tr {
+    text-align: center;
+    border-collapse: collapse;
+}
+
+.snatch-selection-template >>> .vgt-table tfoot a {
+    text-decoration: none;
+}
+
+.snatch-selection-template >>> .vgt-table th.vgt-row-header {
+    text-align: left;
+}
+
+.snatch-selection-template >>> .vgt-table .season-header {
+    display: inline;
+    margin-left: 5px;
+}
+
+.snatch-selection-template >>> .vgt-table tr.spacer {
+    height: 25px;
+}
+
+.snatch-selection-template >>> .vgt-dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-clip: padding-box;
+    border-radius: 4px;
+}
+
+.snatch-selection-template >>> .vgt-dropdown-menu > li > span {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    white-space: nowrap;
+}
+
+.snatch-selection-template >>> .align-center {
+    display: flex;
+    justify-content: center;
+}
+
+.snatch-selection-template >>> .indexer-image :not(:last-child) {
+    margin-right: 5px;
+}
+
+.snatch-selection-template >>> .button-row {
+    width: 100%;
+    display: inline-block;
+}
+
+show-history {
+    margin-bottom: 10px;
 }
 </style>

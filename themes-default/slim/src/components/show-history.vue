@@ -1,8 +1,13 @@
 <template>
     <div class="show-history-wrapper">
         <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
-                <vue-good-table v-if="show.id.slug && history.length > 0"
+            <div class="col-md-12 top-15 displayShow horizontal-scroll table-layout" :class="{ fanartBackground: config.fanartBackground }">
+                <div class="button-row">
+                    <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" @click="hideHistory = !hideHistory">
+                        {{hideHistory ? 'Show History' : 'Hide History'}}
+                    </button>
+                </div>
+                <vue-good-table v-show="!hideHistory && show.id.slug && history.length > 0"
                                 :columns="columns"
                                 :rows="history"
                                 :search-options="{
@@ -82,7 +87,8 @@ export default {
             }],
             loading: false,
             loadingMessage: '',
-            history: []
+            history: [],
+            hideHistory: true
         };
     },
     mounted() {
@@ -150,11 +156,6 @@ export default {
 };
 </script>
 <style scoped>
-.show-history-wrapper {
-    display: table-row;
-    column-span: all;
-}
-
 .show-history-wrapper >>> table.subtitle-table tr {
     background-color: rgb(190, 222, 237);
 }
