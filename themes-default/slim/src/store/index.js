@@ -14,6 +14,7 @@ import {
     notifications,
     notifiers,
     postprocessing,
+    provider,
     search,
     shows,
     socket,
@@ -45,6 +46,7 @@ const store = new Store({
         notifications,
         notifiers,
         postprocessing,
+        provider,
         search,
         shows,
         socket,
@@ -75,6 +77,8 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('updateConfig', { section, config });
         } else if (event === 'showUpdated') {
             this.store.dispatch('updateShow', data);
+        } else if (event === 'addManualSearchResult') {
+            this.store.dispatch('addManualSearchResult', data);
         } else {
             window.displayNotification('info', event, data);
         }
