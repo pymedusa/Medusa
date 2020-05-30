@@ -14,7 +14,7 @@ from time import time
 
 from medusa import (
     app,
-    db,
+    db
 )
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
@@ -637,8 +637,8 @@ class Cache(object):
             param += [season]
 
         if episode:
-            where += ['episode']
-            param += [episode]
+            where += ['episodes']
+            param += ['|{0}|'.format(episode)]
 
         base_sql = 'SELECT * FROM [{name}]'.format(name=self.provider_id)
         base_params = []

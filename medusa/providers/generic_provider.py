@@ -851,6 +851,7 @@ class GenericProvider(object):
 
     def to_json(self):
         """Return a json representation for a provider."""
+        from medusa.providers.torrent.torrent_provider import TorrentProvider
         return {
             'name': self.name,
             'id': self.get_id(),
@@ -881,7 +882,7 @@ class GenericProvider(object):
             'animeOnly': self.anime_only,
             'type': self.provider_type,
             'public': self.public,
-            'btCacheUrls': self.bt_cache_urls,
+            'btCacheUrls': self.bt_cache_urls if isinstance(self, TorrentProvider) else [],
             'properStrings': self.proper_strings,
             'headers': self.headers,
             'supportsAbsoluteNumbering': self.supports_absolute_numbering,

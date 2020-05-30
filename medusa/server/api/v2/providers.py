@@ -52,12 +52,13 @@ class ProvidersHandler(BaseRequestHandler):
             return self._not_found('Provider not found')
 
         if not path_param == 'results':
-            return self._bad_request('You need to provide the path_param `results` for this route')
+            return self._ok(provider.to_json())
 
         provider_results = provider.cache.get_results(show_slug=show_slug, season=season, episode=episode)
 
         arg_page = self._get_page()
         arg_limit = self._get_limit(default=50)
+
         def data_generator():
             """Read log lines based on the specified criteria."""
             start = arg_limit * (arg_page - 1) + 1
@@ -71,16 +72,17 @@ class ProvidersHandler(BaseRequestHandler):
                     'seasonPack': item['episodes'] == '||',
                     'indexer': item['indexer'],
                     'seriesId': item['indexerid'],
-                    'showSlug': identifier,
+                    'showSlug': show_slug,
                     'url': item['url'],
                     'time': datetime.datetime.fromtimestamp(item['time']),
                     'quality': item['quality'],
                     'releaseGroup': item['release_group'],
-                    'dateAdded':  datetime.datetime.fromtimestamp(item['date_added']),
+                    'dateAdded': datetime.datetime.fromtimestamp(item['date_added']),
                     'version': item['version'],
                     'seeders': item['seeders'],
+                    'size': item['size'],
                     'leechers': item['leechers'],
-                    'pubdate': parser.parse(item['pubdate']),
+                    'pubdate': parser.parse(item['pubdate']) if item['pubdate'] else None,
                     'provider': {
                         'id': provider.get_id(),
                         'name': provider.name,

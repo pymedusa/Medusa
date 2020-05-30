@@ -23,7 +23,7 @@ from datetime import datetime
 
 from dateutil import parser
 
-from medusa import app
+from medusa import app, ws
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
@@ -34,6 +34,7 @@ from medusa.search import SearchType
 
 
 from six import itervalues
+from time import time
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -204,6 +205,34 @@ class SearchResult(object):
 
         return '<{0}: {1}>'.format(type(self).__name__, result)
 
+    def to_json(self):
+        """Return JSON representation."""
+        return {
+            'identifier': self.identifier,
+            'release': self.name,
+            'season': self.actual_season,
+            'episodes': self.actual_episodes,
+            'seasonPack': self.actual_season == -1,
+            'indexer': self.series.indexer,
+            'seriesId': self.series.series_id,
+            'showSlug': self.series.slug,
+            'url': self.url,
+            'time': datetime.now().isoformat(),
+            'quality': self.quality,
+            'releaseGroup': self.release_group,
+            'dateAdded': datetime.now().isoformat(),
+            'version': self.version,
+            'seeders': self.seeders,
+            'size': self.size,
+            'leechers': self.leechers,
+            'pubdate': self.pubdate.isoformat() if self.pubdate else None,
+            'provider': {
+                'id': self.provider.get_id(),
+                'name': self.provider.name,
+                'imageName': self.provider.image_name()
+            }
+        }
+
     def file_name(self):
         return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.result_type)
 
@@ -213,6 +242,11 @@ class SearchResult(object):
             # FIXME: Added repr parsing, as that prevents the logger from throwing an exception.
             # This can happen when there are unicode decoded chars in the release name.
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
+
+            # Push an update to any open Web UIs through the WebSocket
+            msg = ws.Message('addManualSearchResult', self.to_json())
+            msg.push()
+
             return cache.add_cache_entry(self, parsed_result=self.parsed_result)
 
     def _create_episode_objects(self):
