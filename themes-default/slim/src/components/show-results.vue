@@ -107,12 +107,12 @@ export default {
             providers: state => state.provider.providers
         }),
         combinedResults() {
-            const { providers } = this;
+            const { episode, providers, season } = this;
             let results = [];
 
             for (const provider of Object.values(providers).filter(provider => provider.config.enabled)) {
                 if (provider.cache && provider.cache.length > 0) {
-                    results = [...results, ...provider.cache];
+                    results = [...results, ...provider.cache.filter(results => season === season && results.episodes.includes(episode))];
                 }
             }
             return results;
