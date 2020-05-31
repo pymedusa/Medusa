@@ -178,6 +178,21 @@ import pytest
         },
         'expected': ([12], [2], [38]),
     },
+    {
+        'name': u"[HorribleSubs] JoJo's Bizarre Adventure - Stardust Crusaders - 12 [1080p].mkv",
+        'indexer_id': 1,
+        'indexer': 262954,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_absolute_numbering', 38),
+            ('medusa.helpers.get_all_episodes_from_absolute_number', (2, [12])),
+        ],
+        'series_info': {
+            'name': u"JoJo's Bizarre Adventure",
+            'is_scene': False
+        },
+        'expected': ([12], [2], [38]),
+    },
     # Anime show, season scene name with two aliases because it's parsing the full path inc the show folder,
     # with scene numbering. Using the season scene name.
     {
