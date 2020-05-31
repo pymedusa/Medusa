@@ -68,13 +68,13 @@ import pytest
         'indexer': 260586,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_numbering', (12, 2))
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12))
         ],
         'series_info': {
             'name': u'Universe (2014)',
             'is_scene': False
         },
-        'expected': ([12], [2], []),
+        'expected': ([2], [12], []),
     },
     {
         'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
@@ -82,7 +82,7 @@ import pytest
         'indexer': 260586,
         'mocks': [
             ('medusa.scene_exceptions.get_season_from_name', 2),
-            ('medusa.scene_numbering.get_indexer_numbering', (12, 2))
+            ('medusa.scene_numbering.get_indexer_numbering', (2, 12))
         ],
         'series_info': {
             'name': u'Universe (2014)',
