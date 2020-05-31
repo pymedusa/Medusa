@@ -14,6 +14,7 @@ from medusa import (
     common,
     db,
     helpers,
+    scene_exceptions,
     scene_numbering,
 )
 from medusa.helper.common import episode_num
@@ -24,7 +25,6 @@ from medusa.indexers.exceptions import (
     IndexerException,
 )
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.scene_exceptions import get_season_from_name
 
 from six import iteritems
 
@@ -187,7 +187,7 @@ class NameParser(object):
         # For example Diamond is unbreakable - 26 -> Season 4 -> Absolute number 100 -> tvdb S03E26
         season_exception = None
         if result.season_number is None:
-            season_exception = get_season_from_name(result.series, result.series_name)
+            season_exception = scene_exceptions.get_season_from_name(result.series, result.series_name)
 
         if result.ab_episode_numbers:
             for absolute_episode in result.ab_episode_numbers:
@@ -268,7 +268,7 @@ class NameParser(object):
         new_season_numbers = []
         new_absolute_numbers = []
 
-        season = get_season_from_name(result.series, result.series_name) or result.season_number
+        season = scene_exceptions.get_season_from_name(result.series, result.series_name) or result.season_number
 
         for episode_number in result.episode_numbers:
             episode = episode_number
