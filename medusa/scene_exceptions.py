@@ -147,7 +147,7 @@ def get_season_scene_exceptions(series_obj, season=-1):
     return set(exceptions_list)
 
 
-def get_season_from_name(series_obj, series_name):
+def get_season_from_name(series_obj, exception_name):
     """
     Get season number from exceptions_cache for a series scene exception name.
 
@@ -163,7 +163,7 @@ def get_season_from_name(series_obj, series_name):
         if season == -1:
             continue
         for exception in exceptions:
-            if exception.title == series_name:
+            if exception.title == exception_name:
                 return exception.season
 
 
@@ -177,22 +177,18 @@ def get_all_scene_exceptions(series_obj):
     return exceptions_cache.get((series_obj.indexer, series_obj.series_id), defaultdict(set))
 
 
-def get_scene_exceptions_by_name(series_name):
-    """Get the series_id, season and indexer of the scene exception."""
+def get_scene_exception_by_name(series_name):
+    """Get the season of a scene exception."""
     # Flatten the exceptions_cache.
-    scene_exceptions = set()
+    scene_exceptions = []
     for exception_set in list(exceptions_cache.values()):
         for title_exception in list(exception_set.values()):
-            scene_exceptions.update(title_exception)
+            scene_exceptions += title_exception
 
-    matches = set()
     # First attempt exact match.
     for title_exception in scene_exceptions:
         if series_name == title_exception.title:
-            matches.add(title_exception)
-
-    if matches:
-        return matches
+            return title_exception
 
     # Let's try out some sanitized names.
     for title_exception in scene_exceptions:
@@ -208,9 +204,7 @@ def get_scene_exceptions_by_name(series_name):
                 'from indexer {title_exception.indexer},'
                 ' using that', title_exception=title_exception
             )
-            matches.add(title_exception)
-
-    return matches
+            return title_exception
 
 
 def update_scene_exceptions(series_obj, scene_exceptions):

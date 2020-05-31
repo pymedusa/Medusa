@@ -62,6 +62,34 @@ import pytest
         },
         'expected': ([1], [15], []),
     },
+    {
+        'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
+        'indexer_id': 1,
+        'indexer': 260586,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_numbering', (12, 2))
+        ],
+        'series_info': {
+            'name': u'Universe (2014)',
+            'is_scene': False
+        },
+        'expected': ([2], [12], []),
+    },
+    {
+        'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
+        'indexer_id': 1,
+        'indexer': 260586,
+        'mocks': [
+            ('medusa.scene_exceptions.get_season_from_name', 2),
+            ('medusa.scene_numbering.get_indexer_numbering', (12, 2))
+        ],
+        'series_info': {
+            'name': u'Universe (2014)',
+            'is_scene': True
+        },
+        'expected': ([2], [12], []),
+    },
 ])
 def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
 
