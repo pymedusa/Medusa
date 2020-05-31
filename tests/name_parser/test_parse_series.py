@@ -74,7 +74,7 @@ import pytest
             'name': u'Universe (2014)',
             'is_scene': False
         },
-        'expected': ([2], [12], []),
+        'expected': ([12], [2], []),
     },
     {
         'name': u'Universe.Possible.Worlds.S01E12.HDTV.x264-aAF',
@@ -88,7 +88,7 @@ import pytest
             'name': u'Universe (2014)',
             'is_scene': True
         },
-        'expected': ([2], [12], []),
+        'expected': ([12], [2], []),
     },
 ])
 def test_series_parsing(p, create_tvshow, monkeypatch_function_return):
