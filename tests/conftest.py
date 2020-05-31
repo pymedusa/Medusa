@@ -328,14 +328,13 @@ def monkeypatch_function_return(monkeypatch):
         Example: The following structure will mock two functions with their expected return values.
         [
             ('medusa.scene_numbering.get_indexer_numbering', (None, None)),
-            ('get_scene_exceptions_by_name': [(70668, 2, 1)]),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
         ]
         :mocks: A list of two value tuples.
         """
-
         for function_to_mock, return_value in mocks:
             def create_function(return_value):
-                def create_return(*args):
+                def create_return(*args, **kwargs):
                     return return_value
                 return create_return
 
