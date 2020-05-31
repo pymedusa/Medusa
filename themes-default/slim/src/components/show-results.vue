@@ -77,7 +77,15 @@ export default {
                 type: 'date',
                 sortable: true,
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
-                dateOutputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX'
+                dateOutputFormat: 'yyyy-MM-dd HH:mm:ssXXX'
+            },
+            {
+                label: 'Date Searched',
+                field: 'time',
+                type: 'date',
+                sortable: true,
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss',
+                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss'
             },
             {
                 label: 'Provider',
