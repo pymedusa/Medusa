@@ -328,7 +328,7 @@ def monkeypatch_function_return(monkeypatch):
         Example: The following structure will mock two functions with their expected return values.
         [
             ('medusa.scene_numbering.get_indexer_numbering', (None, None)),
-            ('medusa.scene_exceptions.get_scene_exception_by_name', 2),
+            ('medusa.scene_exceptions.get_season_from_name', 2),
         ]
         :mocks: A list of two value tuples.
         """
