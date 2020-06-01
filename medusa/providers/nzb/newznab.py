@@ -72,8 +72,6 @@ class NewznabProvider(NZBProvider):
 
         self.cat_ids = cat_ids or ['5030', '5040']
 
-        self.torznab = False
-
         self.params = False
         self.cap_tv_search = []
         self.providers_without_caps = ['gingadaddy', '6box']
@@ -121,7 +119,6 @@ class NewznabProvider(NZBProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
-            self.torznab = False
             if self.needs_auth and self.api_key:
                 search_params['apikey'] = self.api_key
 
@@ -205,11 +202,6 @@ class NewznabProvider(NZBProvider):
                     ' in provider settings and/or usenet retention')
                 return items
 
-            try:
-                self.torznab = 'xmlns:torznab' in html.rss.attrs
-            except AttributeError:
-                self.torznab = False
-
             for item in rows:
                 try:
                     title = item.title.get_text(strip=True)
@@ -217,30 +209,22 @@ class NewznabProvider(NZBProvider):
 
                     if item.enclosure:
                         url = item.enclosure.get('url', '').strip()
-                        if url.startswith('magnet:'):
+                        if url:
                             download_url = url
-                        elif validators.url(url):
-                            download_url = url
-                            # Jackett needs extension added (since v0.8.396)
-                            if not url.endswith('.torrent'):
-                                content_type = item.enclosure.get('type', '')
-                                if content_type == 'application/x-bittorrent':
-                                    download_url = '{0}{1}'.format(url, '.torrent')
 
                     if not download_url and item.link:
                         url = item.link.get_text(strip=True)
-                        if validators.url(url) or url.startswith('magnet:'):
+                        if url:
                             download_url = url
 
                         if not download_url:
                             url = item.link.next.strip()
-                            if validators.url(url) or url.startswith('magnet:'):
+                            if url:
                                 download_url = url
 
                     if not (title and download_url):
                         continue
 
-                    seeders = leechers = -1
                     if 'gingadaddy' in self.url:
                         size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
                         item_size = size_regex.group() if size_regex else -1
@@ -250,15 +234,8 @@ class NewznabProvider(NZBProvider):
                         # see BeautifulSoup4 bug 1720605
                         # https://bugs.launchpad.net/beautifulsoup/+bug/1720605
                         newznab_attrs = item(re.compile('newznab:attr'))
-                        torznab_attrs = item(re.compile('torznab:attr'))
-                        for attr in newznab_attrs + torznab_attrs:
+                        for attr in newznab_attrs:
                             item_size = attr['value'] if attr['name'] == 'size' else item_size
-                            seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
-                            peers = try_int(attr['value']) if attr['name'] == 'peers' else None
-                            leechers = peers - seeders if peers else leechers
-
-                    if not item_size or (self.torznab and (seeders == -1 or leechers == -1)):
-                        continue
 
                     size = convert_size(item_size) or -1
 
@@ -269,16 +246,10 @@ class NewznabProvider(NZBProvider):
                         'title': title,
                         'link': download_url,
                         'size': size,
-                        'seeders': seeders,
-                        'leechers': leechers,
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        if seeders == -1:
-                            log.debug('Found result: {0}', title)
-                        else:
-                            log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                      title, seeders, leechers)
+                        log.debug('Found result: {0}', title)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
