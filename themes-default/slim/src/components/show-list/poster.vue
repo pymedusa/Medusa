@@ -119,8 +119,9 @@ export default {
                         return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100);
                     },
                     indexer: row => {
-                        const { indexers } = this;
-                        return indexers[row.indexer].id;
+                        const { config } = this;
+                        const { indexers } = config;
+                        return indexers.indexers[row.indexer].id;
                     }
                 },
                 sortBy: () => this.posterSortBy,
@@ -138,13 +139,12 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            stateLayout: state => state.layout,
-            indexers: state => state.indexers.indexers,
+            stateLayout: state => state.config.layout,
             // Need to map these computed, as we need them in the $watch.
-            posterSortBy: state => state.layout.posterSortby,
-            posterSortDir: state => state.layout.posterSortdir,
-            posterSize: state => state.layout.posterSize,
-            currentShowTab: state => state.layout.currentShowTab
+            posterSortBy: state => state.config.layout.posterSortby,
+            posterSortDir: state => state.config.layout.posterSortdir,
+            posterSize: state => state.config.layout.posterSize,
+            currentShowTab: state => state.config.layout.currentShowTab
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -176,13 +176,14 @@ export default {
         }),
         prettyBytes: bytes => pretty(bytes),
         showIndexerUrl(show) {
-            const { indexers } = this;
+            const { config } = this;
+            const { indexers } = config;
             if (!show.indexer) {
                 return;
             }
 
             const id = show.id[show.indexer];
-            const indexerUrl = indexers[show.indexer].showUrl;
+            const indexerUrl = indexers.indexers[show.indexer].showUrl;
             return `${indexerUrl}${id}`;
         },
         parsePrevDateFn(row) {

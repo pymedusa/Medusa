@@ -93,10 +93,8 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            // We don't directly need this. But at some point we need to translate indexerName to id, which uses the state.indexers module.
-            indexers: state => state.indexers,
             // Renamed because of the computed property 'layout'.
-            stateLayout: state => state.layout,
+            stateLayout: state => state.config.layout,
             stats: state => state.stats
         }),
         ...mapGetters({
@@ -136,10 +134,10 @@ export default {
             }
         },
         showLists() {
-            const { config, indexers, filterByName, stateLayout, showsWithStats } = this;
+            const { config, filterByName, stateLayout, showsWithStats } = this;
             const { rootDirs } = config;
             const { animeSplitHome, selectedRootIndex, show } = stateLayout;
-            if (!indexers.indexers) {
+            if (!config.indexers.indexers) {
                 return;
             }
 

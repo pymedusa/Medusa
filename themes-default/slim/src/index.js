@@ -37,10 +37,11 @@ if (window) {
 
     window.MEDUSA = {
         common: {},
-        config: {},
+        config: {
+            layout: {}
+        },
         home: {},
-        addShows: {},
-        layout: {}
+        addShows: {}
     };
     window.webRoot = webRoot;
     window.apiKey = apiKey;
@@ -76,12 +77,13 @@ const UTIL = {
 const { pathname } = window.location;
 if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
     const configLoaded = event => {
-        const data = event.detail;
+        const { main, layout } = event.detail;
 
-        const themeSpinner = data.themeName === 'dark' ? '-dark' : '';
+        const themeSpinner = layout.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config = {
             ...MEDUSA.config,
-            ...data,
+            ...main,
+            layout,
             themeSpinner,
             loading: '<img src="images/loading16' + themeSpinner + '.gif" height="16" width="16" />'
         };

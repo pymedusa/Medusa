@@ -527,10 +527,10 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            configLoaded: state => state.layout.fanartBackground !== null,
             config: state => state.config,
-            layout: state => state.layout,
-            stateSearch: state => state.search
+            configLoaded: state => state.config.layout.fanartBackground !== null,
+            layout: state => state.config.layout,
+            stateSearch: state => state.config.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',

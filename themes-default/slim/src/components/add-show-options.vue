@@ -246,7 +246,7 @@ export default {
             defaultConfig: state => state.config.showDefaults,
             namingForceFolders: state => state.config.namingForceFolders,
             subtitlesEnabled: state => state.config.subtitles.enabled,
-            episodeStatuses: state => state.consts.statuses
+            episodeStatuses: state => state.config.consts.statuses
         }),
         ...mapGetters([
             'getStatus'

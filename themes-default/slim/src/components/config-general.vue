@@ -583,11 +583,11 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            configLoaded: state => state.consts.statuses.length > 0,
-            layout: state => state.layout,
-            statuses: state => state.consts.statuses,
-            indexers: state => state.indexers,
-            system: state => state.system
+            configLoaded: state => state.config.consts.statuses.length > 0,
+            layout: state => state.config.layout,
+            statuses: state => state.config.consts.statuses,
+            indexers: state => state.config.indexers,
+            system: state => state.config.system
         }),
         ...mapGetters([
             'getStatus'

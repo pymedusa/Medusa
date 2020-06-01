@@ -174,9 +174,9 @@ export default {
         }
     },
     computed: {
-        ...mapState([
-            'layout'
-        ]),
+        ...mapState({
+            layout: state => state.config.layout
+        }),
         itemsWhitelist() {
             return this.allReleaseGroups.filter(x => x.memberOf === 'whitelist');
         },

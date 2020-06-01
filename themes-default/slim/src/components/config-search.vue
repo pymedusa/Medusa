@@ -484,11 +484,11 @@ export default {
         };
     },
     computed: {
-        ...mapState([
-            'clients',
-            'search',
-            'system'
-        ]),
+        ...mapState({
+            clients: state => state.config.clients,
+            search: state => state.config.search,
+            system: state => state.config.system
+        }),
         torrentUsernameIsDisabled() {
             const { clients } = this;
             const { torrents } = clients;

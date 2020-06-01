@@ -429,14 +429,15 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            layout: state => state.layout,
+            layout: state => state.config.layout,
             shows: state => state.shows.shows,
-            indexerConfig: state => state.indexers.indexers,
-            displaySpecials: state => state.layout.show.specials,
-            qualities: state => state.consts.qualities.values,
-            statuses: state => state.consts.statuses,
-            search: state => state.search,
-            configLoaded: state => state.layout.fanartBackground !== null
+            indexers: state => state.config.indexers,
+            indexerConfig: state => state.config.indexers.indexers,
+            displaySpecials: state => state.config.layout.show.specials,
+            qualities: state => state.config.consts.qualities.values,
+            statuses: state => state.config.consts.statuses,
+            search: state => state.config.search,
+            configLoaded: state => state.config.layout.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',

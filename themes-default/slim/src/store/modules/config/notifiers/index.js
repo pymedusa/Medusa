@@ -1,4 +1,4 @@
-import { ADD_CONFIG } from '../../mutation-types';
+import { ADD_CONFIG } from '../../../mutation-types';
 import boxcar2 from './boxcar2';
 import discord from './discord';
 import email from './email';

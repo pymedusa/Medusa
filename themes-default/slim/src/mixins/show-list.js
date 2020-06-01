@@ -73,8 +73,8 @@ export const showlistTableMixin = {
     computed: {
         ...mapState({
             config: state => state.config,
-            indexerConfig: state => state.indexers.indexers,
-            stateLayout: state => state.layout
+            indexerConfig: state => state.config.indexers.indexers,
+            stateLayout: state => state.config.layout
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'

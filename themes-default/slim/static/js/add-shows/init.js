@@ -1,7 +1,7 @@
 MEDUSA.addShows.init = function() {
     $('#tabs').tabs({
         collapsible: true,
-        selected: (MEDUSA.layout.sortArticle ? -1 : 0)
+        selected: (MEDUSA.config.layout.sortArticle ? -1 : 0)
     });
 
     const imgLazyLoad = new LazyLoad({
@@ -60,7 +60,7 @@ MEDUSA.addShows.init = function() {
             getSortData: {
                 name(itemElem) {
                     const name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.layout.sortArticle ? name : name.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.layout.sortArticle ? name : name.replace(/^((?:the|a|an)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'

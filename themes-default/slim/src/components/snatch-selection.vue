@@ -51,6 +51,7 @@ export default {
         ...mapState({
             shows: state => state.shows.shows,
             config: state => state.config,
+            search: state => state.config.search,
             history: state => state.history
         }),
         ...mapGetters({
@@ -85,7 +86,7 @@ export default {
         //     attachImdbTooltip(); // eslint-disable-line no-undef
         // },
         getReleaseNameClasses(name) {
-            const { effectiveIgnored, effectiveRequired, show } = this;
+            const { effectiveIgnored, effectiveRequired, search, show } = this;
             const classes = [];
 
             if (effectiveIgnored(show).map(word => {
@@ -100,7 +101,7 @@ export default {
                 classes.push('global-required');
             }
 
-            if (this.$store.state.search.filters.undesired.map(word => {
+            if (search.filters.undesired.map(word => {
                 return name.toLowerCase().includes(word.toLowerCase());
             }).filter(x => x === true).length > 0) {
                 classes.push('global-undesired');

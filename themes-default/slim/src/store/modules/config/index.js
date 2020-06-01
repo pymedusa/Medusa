@@ -1,6 +1,16 @@
-import { api, apiRoute } from '../../api';
-import { ADD_CONFIG } from '../mutation-types';
-import { arrayUnique, arrayExclude } from '../../utils/core';
+import clients from './clients';
+import consts from './consts';
+import indexers from './indexers';
+import layout from './layout';
+import metadata from './metadata';
+import notifiers from './notifiers';
+import postprocessing from './postprocessing';
+import search from './search';
+import system from './system';
+
+import { api, apiRoute } from '../../../api';
+import { ADD_CONFIG } from '../../mutation-types';
+import { arrayUnique, arrayExclude } from '../../../utils/core';
 
 const state = {
     wikiUrl: null,
@@ -183,9 +193,22 @@ const actions = {
 
 };
 
+const modules = {
+    clients,
+    consts,
+    indexers,
+    layout,
+    metadata,
+    notifiers,
+    postprocessing,
+    search,
+    system
+};
+
 export default {
     state,
     mutations,
     getters,
-    actions
+    actions,
+    modules
 };

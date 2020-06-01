@@ -56,7 +56,8 @@ export const historySubMenu = [
 /** @type {import('.').SubMenuFunction} */
 export const showSubMenu = vm => {
     const { $route, $store } = vm;
-    const { config, notifiers } = $store.state;
+    const { config } = $store.state;
+    const { notifiers } = config;
 
     const indexerName = $route.params.indexer || $route.query.indexername;
     const showId = $route.params.id || $route.query.seriesid;
