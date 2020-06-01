@@ -7,6 +7,7 @@ import logging
 import threading
 from builtins import object
 from functools import cmp_to_key
+from uuid import uuid4
 
 log = logging.getLogger()
 
@@ -113,6 +114,15 @@ class QueueItem(threading.Thread):
         self.added = None
         self.queue_time = datetime.datetime.now()
         self.start_time = None
+        self.to_json = {
+            'identifier': str(uuid4()),
+            'name': self.name,
+            'inProgress': self.inProgress,
+            'priority': self.priority,
+            'actionId': self.action_id,
+            'queueTime': self.queue_time.isoformat(),
+            'startTime': self.start_time.isoFormat() if self.start_time else None
+        }
 
     def run(self):
         """Implementing classes should call this."""
