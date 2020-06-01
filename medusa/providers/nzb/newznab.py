@@ -34,8 +34,6 @@ from requests.compat import urljoin
 
 from six import iteritems, itervalues, text_type as str
 
-import validators
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
