@@ -3,7 +3,7 @@ Folder | Package | Version / Commit | Usage | Notes
 :----: | :-----: | :--------------: | :---- | :----
 lib | `certgen.py` | [d52975c](https://github.com/pyca/pyopenssl/blob/d52975cef3a36e18552aeb23de7c06aa73d76454/examples/certgen.py) | **`medusa`** | **Not a package**
 lib | `native` | - | `pymediainfo` | **Not a package**
-lib | `pkg_resources` | - | `babelfish`, `enzyme`, `guessit`, `pint`, `stevedore` | **Not a package**<br>Part of `setuptools`
+lib | `pkg_resources` | - | `babelfish`, `enzyme`, `guessit`, `Pint`, `stevedore` | **Not a package**<br>Part of `setuptools`
 lib | `pymediainfo` | [3.2.1](https://pypi.org/project/pymediainfo/3.2.1/) | `knowit` | **Modified**: Version number fixed
 lib | `pytimeparse` | [1.1.5](https://pypi.org/project/pytimeparse/1.1.5/) | **`medusa`** | **Modified**: [#1792](https://github.com/pymedusa/Medusa/pull/1792)
 lib | `pytvmaze` | [2.0.7](https://pypi.org/project/pytvmaze/2.0.7/) | **`medusa`** | **Modified**: [#1706](https://github.com/pymedusa/Medusa/pull/1706)
