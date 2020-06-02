@@ -2,8 +2,8 @@
   <img src="https://cdn.rawgit.com/pymedusa/medusa.github.io/4360d494/images/logo/new-logo.png"/>
 </p>
 <p align="center" title="Build Status">
-  <a href="https://travis-ci.org/pymedusa/Medusa">
-    <img src="https://travis-ci.org/pymedusa/Medusa.svg?branch=develop" alt=""/>
+  <a href="https://travis-ci.com/github/pymedusa/Medusa">
+    <img src="https://api.travis-ci.com/pymedusa/Medusa.svg?branch=develop" alt=""/>
   </a>
   <a href="http://isitmaintained.com/project/pymedusa/Medusa" title="Average time to resolve an issue">
     <img src="http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg" alt="Average time to resolve an issue"/>
