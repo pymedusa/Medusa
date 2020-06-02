@@ -204,7 +204,7 @@ class GenericClient(object):
             try:
                 # `bencode.bdecode` is monkeypatched in `medusa.init`
                 torrent_bdecode = bdecode(result.content, allow_extra_data=True)
-                info = torrent_bdecode['info']
+                info = torrent_bdecode[b'info']
                 result.hash = sha1(bencode(info)).hexdigest()
             except (BencodeDecodeError, KeyError):
                 log.warning(
