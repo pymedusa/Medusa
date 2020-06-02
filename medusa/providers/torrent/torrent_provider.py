@@ -126,7 +126,7 @@ class TorrentProvider(GenericProvider):
             with open(file_name, 'rb') as f:
                 # `bencode.bdecode` is monkeypatched in `medusa.init`
                 meta_info = bdecode(f.read(), allow_extra_data=True)
-            return 'info' in meta_info and meta_info['info']
+            return b'info' in meta_info and meta_info[b'info']
         except BencodeDecodeError as error:
             log.debug('Failed to validate torrent file: {name}. Error: {error}',
                       {'name': file_name, 'error': error})
