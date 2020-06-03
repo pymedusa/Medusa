@@ -50,7 +50,7 @@ ext | `pysrt` | [1.1.0](https://pypi.org/project/pysrt/1.1.0/) | `subliminal` | 
 ext | `python-dateutil` | [2.8.1](https://pypi.org/project/python-dateutil/2.8.1/) | **`medusa`**, `guessit`, `imdbpie`, `tvdbapiv2` | Module: `dateutil`
 ext | `python-twitter` | [3.5](https://pypi.org/project/python-twitter/3.5/) | **`medusa`** | Module: `twitter`
 ext | `pytz` | [2018.4](https://pypi.org/project/pytz/2018.4/) | `subliminal` | -
-**ext2 ext3** | **`PyYAML`**<br>`yaml` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `_yaml`
+**ext2 ext3** | `PyYAML` | [5.3.1](https://pypi.org/project/PyYAML/5.3.1/) | `knowit` | Module: `yaml`
 ext | <code><b>rarfile</b>.py</code> | [3.1](https://pypi.org/project/rarfile/3.1/) | **`medusa`**, `subliminal` | -
 ext | `rebulk` | [2.0.1](https://pypi.org/project/rebulk/2.0.1/) | **`medusa`**, `guessit` | -
 ext | `requests` | [2.23.0](https://pypi.org/project/requests/2.23.0/) | **`medusa`**, `adba`, `boto`, `CacheControl`, `cloudscraper`, `PyGithub`, `python-twitter`, `pytvmaze`, `requests-oauthlib`, `requests-toolbelt`, `rtorrent-python`, `simpleanidb`, `subliminal`, `tmdbsimple`, `traktor`, `tvdbapiv2` | -
