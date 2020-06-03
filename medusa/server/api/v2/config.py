@@ -21,7 +21,7 @@ from medusa import (
 )
 from medusa.common import IGNORED, Quality, SKIPPED, WANTED, cpu_presets
 from medusa.helpers.utils import int_default, to_camel_case
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, get_indexer_config
+from medusa.indexers.config import INDEXER_TVDBV2, get_indexer_config
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import date_presets, time_presets
 from medusa.server.api.v2.base import (
@@ -80,7 +80,6 @@ class ConfigHandler(BaseRequestHandler):
     #: patch mapping
     patches = {
         # Main
-        'selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
         'rootDirs': ListField(app, 'ROOT_DIRS'),
 
         'showDefaults.status': EnumField(app, 'STATUS_DEFAULT', (SKIPPED, WANTED, IGNORED), int),
@@ -475,6 +474,7 @@ class ConfigHandler(BaseRequestHandler):
         'layout.backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
         'layout.timeStyle': StringField(app, 'TIME_PRESET_W_SECONDS'),
         'layout.dateStyle': StringField(app, 'DATE_PRESET'),
+        'layout.selectedRootIndex': IntegerField(app, 'SELECTED_ROOT'),
     }
 
     def get(self, identifier, path_param=None):
@@ -615,8 +615,6 @@ class DataGenerator(object):
         section_data['logs']['size'] = float(app.LOG_SIZE)
         section_data['logs']['subliminalLog'] = bool(app.SUBLIMINAL_LOG)
         section_data['logs']['privacyLevel'] = app.PRIVACY_LEVEL
-
-        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
         # Added for config - main, needs refactoring in the structure.
         section_data['launchBrowser'] = bool(app.LAUNCH_BROWSER)
@@ -1176,7 +1174,7 @@ class DataGenerator(object):
 
         section_data['wide'] = bool(app.LAYOUT_WIDE)
 
-        section_data['posterSortdir'] = int(app.POSTER_SORTDIR)
+        section_data['posterSortdir'] = int(app.POSTER_SORTDIR or 0)
         section_data['themeName'] = app.THEME_NAME
         section_data['animeSplitHomeInTabs'] = bool(app.ANIME_SPLIT_HOME_IN_TABS)
         section_data['animeSplitHome'] = bool(app.ANIME_SPLIT_HOME)
@@ -1194,11 +1192,13 @@ class DataGenerator(object):
         section_data['comingEps'] = {}
         section_data['comingEps']['displayPaused'] = bool(app.COMING_EPS_DISPLAY_PAUSED)
         section_data['comingEps']['sort'] = app.COMING_EPS_SORT
-        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE)
+        section_data['comingEps']['missedRange'] = int(app.COMING_EPS_MISSED_RANGE or 0)
         section_data['comingEps']['layout'] = app.COMING_EPS_LAYOUT
 
         section_data['backlogOverview'] = {}
         section_data['backlogOverview']['status'] = app.BACKLOG_STATUS
         section_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+
+        section_data['selectedRootIndex'] = int_default(app.SELECTED_ROOT, -1)  # All paths
 
         return section_data

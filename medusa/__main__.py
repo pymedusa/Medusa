@@ -80,7 +80,7 @@ from medusa.config import (
 )
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.event_queue import Events
-from medusa.indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
+from medusa.indexers.config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
@@ -331,6 +331,15 @@ class Application(object):
         self.load_shows_from_db()
 
         logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
+
+        # Python 2 EOL warning
+        if sys.version_info < (3,):
+            logger.warning(
+                'As of October 1st 2020 Medusa will not run on Python 2.x any longer.\n'
+                'Python 2.x has passed its sunset date as you can read here: {python_sunset_url}\n'
+                'Please upgrade your Python version to 3.6 or higher as soon as possible!',
+                python_sunset_url='https://tinyurl.com/y4zwbawq'
+            )
 
         if not is_valid_encoding(app.SYS_ENCODING):
             logger.warning(
@@ -2136,6 +2145,7 @@ class Application(object):
         for sql_show in sql_results:
             try:
                 cur_show = Series(sql_show['indexer'], sql_show['indexer_id'])
+                cur_show.prev_episode()
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

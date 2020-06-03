@@ -33,6 +33,9 @@ try:
 except ImportError:
     pathlib = None
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
 __all__ = (
     'BTFailure',
     'BencodeDecodeError',
@@ -60,21 +63,9 @@ def decode_int(x, f):
     return n, newf + 1
 
 
-def decode_string(x, f, try_decode_utf8=True, force_decode_utf8=False):
-    # type: (bytes, int, bool, bool) -> Tuple[bytes, int]
-    """Decode torrent bencoded 'string' in x starting at f.
-
-    An attempt is made to convert the string to a python string from utf-8.
-    However, both string and non-string binary data is intermixed in the
-    torrent bencoding standard. So we have to guess whether the byte
-    sequence is a string or just binary data. We make this guess by trying
-    to decode (from utf-8), and if that fails, assuming it is binary data.
-    There are some instances where the data SHOULD be a string though.
-    You can check enforce this by setting force_decode_utf8 to True. If the
-    decoding from utf-8 fails, an UnidcodeDecodeError is raised. Similarly,
-    if you know it should not be a string, you can skip the decoding
-    attempt by setting try_decode_utf8=False.
-    """
+def decode_string(x, f):
+    # type: (bytes, int) -> Tuple[bytes, int]
+    """Decode torrent bencoded 'string' in x starting at f."""
     colon = x.index(b':', f)
     n = int(x[f:colon])
 
@@ -83,13 +74,6 @@ def decode_string(x, f, try_decode_utf8=True, force_decode_utf8=False):
 
     colon += 1
     s = x[colon:colon + n]
-
-    if try_decode_utf8:
-        try:
-            return s.decode('utf-8'), colon + n
-        except UnicodeDecodeError:
-            if force_decode_utf8:
-                raise
 
     return bytes(s), colon + n
 
@@ -101,17 +85,6 @@ def decode_list(x, f):
     while x[f:f + 1] != b'e':
         v, f = decode_func[x[f:f + 1]](x, f)
         r.append(v)
-
-    return r, f + 1
-
-
-def decode_dict_py26(x, f):
-    # type: (bytes, int) -> Tuple[Dict[str, Any], int]
-    r, f = {}, f + 1
-
-    while x[f] != 'e':
-        k, f = decode_string(x, f)
-        r[k], f = decode_func[x[f]](x, f)
 
     return r, f + 1
 
@@ -135,7 +108,7 @@ def decode_dict(x, f, force_sort=True):
     r, f = OrderedDict(), f + 1
 
     while x[f:f + 1] != b'e':
-        k, f = decode_string(x, f, force_decode_utf8=True)
+        k, f = decode_string(x, f)
         r[k], f = decode_func[x[f:f + 1]](x, f)
 
     if force_sort:
@@ -158,11 +131,7 @@ decode_func[b'6'] = decode_string
 decode_func[b'7'] = decode_string
 decode_func[b'8'] = decode_string
 decode_func[b'9'] = decode_string
-
-if sys.version_info[0] == 2 and sys.version_info[1] == 6:
-    decode_func[b'd'] = decode_dict_py26
-else:
-    decode_func[b'd'] = decode_dict
+decode_func[b'd'] = decode_dict
 
 
 def bdecode(value):
@@ -177,14 +146,15 @@ def bdecode(value):
     :rtype: object
     """
     try:
-        r, l = decode_func[value[0:1]](value, 0)
+        value = to_binary(value)
+        data, length = decode_func[value[0:1]](value, 0)
     except (IndexError, KeyError, TypeError, ValueError):
         raise BencodeDecodeError("not a valid bencoded string")
 
-    if l != len(value):
+    if length != len(value):
         raise BencodeDecodeError("invalid bencoded value (data after valid prefix)")
 
-    return r
+    return data
 
 
 class Bencached(object):
@@ -219,13 +189,7 @@ def encode_bytes(x, r):
 
 def encode_string(x, r):
     # type: (str, Deque[bytes]) -> None
-    try:
-        s = x.encode('utf-8')
-    except UnicodeDecodeError:
-        encode_bytes(x, r)
-        return
-
-    r.extend((str(len(s)).encode('utf-8'), b':', s))
+    return encode_bytes(x.encode("UTF-8"), r)
 
 
 def encode_list(x, r):
@@ -241,29 +205,54 @@ def encode_list(x, r):
 def encode_dict(x, r):
     # type: (Dict, Deque[bytes]) -> None
     r.append(b'd')
-    ilist = list(x.items())
-    ilist.sort()
+
+    # force all keys to bytes, because str and bytes are incomparable
+    ilist = [(to_binary(k), v) for k, v in x.items()]
+    ilist.sort(key=lambda kv: kv[0])
 
     for k, v in ilist:
-        k = k.encode('utf-8')
-        r.extend((str(len(k)).encode('utf-8'), b':', k))
+        encode_func[type(k)](k, r)
         encode_func[type(v)](v, r)
 
     r.append(b'e')
+
+
+def is_binary(s):
+    if PY3:
+        return isinstance(s, bytes)
+
+    return isinstance(s, str)
+
+
+def is_text(s):
+    if PY3:
+        return isinstance(s, str)
+
+    return isinstance(s, unicode)  # noqa: F821
+
+
+def to_binary(s):
+    if is_binary(s):
+        return s
+
+    if is_text(s):
+        return s.encode('utf-8', 'strict')
+
+    raise TypeError("expected binary or text (found %s)" % type(s))
 
 
 # noinspection PyDictCreation
 encode_func = {}
 encode_func[Bencached] = encode_bencached
 
-if sys.version_info[0] == 2:
+if PY2:
     from types import DictType, IntType, ListType, LongType, StringType, TupleType, UnicodeType
 
     encode_func[DictType] = encode_dict
     encode_func[IntType] = encode_int
     encode_func[ListType] = encode_list
     encode_func[LongType] = encode_int
-    encode_func[StringType] = encode_string
+    encode_func[StringType] = encode_bytes
     encode_func[TupleType] = encode_list
     encode_func[UnicodeType] = encode_string
 
@@ -330,8 +319,10 @@ def bread(fd):
         return bdecode(fd.read())
 
 
-def bwrite(data, fd):
-    # type: (Union[Tuple, List, OrderedDict, Dict, bool, int, str, bytes], Union[bytes, str, pathlib.Path, pathlib.PurePath, TextIO, BinaryIO]) -> None
+def bwrite(data,  # type: Union[Tuple, List, OrderedDict, Dict, bool, int, str, bytes]
+           fd     # type: Union[bytes, str, pathlib.Path, pathlib.PurePath, TextIO, BinaryIO]
+           ):
+    # type: (...) -> None
     """Write data in bencoded form to filename, file, or file-like object.
 
     if fd is bytes/string or pathlib.Path-like object, it is opened and

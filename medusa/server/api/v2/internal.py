@@ -8,8 +8,8 @@ import re
 
 from medusa import app, classes, db
 from medusa.helper.common import sanitize_filename, try_int
-from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from medusa.indexers.api import indexerApi
+from medusa.indexers.exceptions import IndexerException, IndexerUnavailable
 from medusa.indexers.utils import reverse_mappings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler

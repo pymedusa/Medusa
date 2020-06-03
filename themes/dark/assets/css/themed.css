@@ -189,12 +189,24 @@ home.mako
     background-image: linear-gradient(to left, rgba(51, 51, 51, 1), rgba(51, 51, 51, 0));
 }
 
+/* Used by history.mako */
 td.tvShow a {
     color: rgb(255, 255, 255);
     text-decoration: none;
 }
 
 td.tvShow a:hover {
+    cursor: pointer;
+    color: rgb(9, 162, 255);
+}
+
+/* Used by home.vue, for the anchors to displayShow. */
+span.tvShow a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+}
+
+span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -315,7 +327,7 @@ h1.title {
     margin-bottom: 15px;
     line-height: 30px;
     text-align: left;
-    text-rendering: optimizelegibility;
+    text-rendering: optimizeLegibility;
     border-bottom: 1px solid rgb(85, 85, 85);
 }
 
@@ -337,12 +349,8 @@ ul.tags li {
     border-radius: 5px;
 }
 
-#summaryBackground {
-    background-color: rgb(61, 61, 61);
-}
-
-#checkboxControlsBackground {
-    background-color: rgb(41, 41, 41);
+.shadow-background {
+    background-color: rgb(61, 61, 61, 0.8);
 }
 
 .defaultTable {
@@ -432,11 +440,11 @@ h2.network {
     color: rgb(9, 162, 255);
 }
 
-#showListTable td.tvShow a {
+#showListTable span.tvShow a {
     color: rgb(0, 0, 0);
 }
 
-#showListTable td.tvShow a:hover {
+#showListTable span.tvShow a:hover {
     cursor: pointer;
     color: rgb(9, 162, 255);
 }
@@ -664,6 +672,20 @@ body {
 }
 
 /* Vueified DisplayShow uses the vue component vue-good-table to display tables. */
+.dropdown-toggle a:hover,
+.dropdown-toggle a:focus {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    background-color: rgb(119, 119, 119);
+}
+
+.dropdown-toggle {
+    color: rgb(255, 255, 255);
+    background-color: rgb(41, 41, 41);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
+}
+
 .vgt-dropdown-menu {
     background-color: rgb(41, 41, 41);
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -680,6 +702,31 @@ body {
 .vgt-dropdown-menu > li > span {
     padding: 4px 36px 4px 20px;
     color: rgb(255, 255, 255);
+}
+
+/* Generic vue-good-table dark template styling */
+.vgt-table {
+    color: rgb(255, 255, 255);
+}
+
+.vgt-table th,
+.vgt-table td {
+    border-top: rgb(34, 34, 34) 1px solid;
+    border-left: rgb(34, 34, 34) 1px solid;
+}
+
+.vgt-table th {
+    color: rgb(255, 255, 255);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(85, 85, 85);
+}
+
+.vgt-table tr:nth-child(even) {
+    background-color: rgb(46, 46, 46);
+}
+
+.vgt-table tr:nth-child(odd) {
+    background-color: rgb(51, 51, 51);
 }
 
 /* submenu styling */
@@ -1080,3 +1127,34 @@ new #confirmBox
 .modal-footer button.cancel:hover {
     background-color: rgb(161, 51, 49);
 }
+
+/* =======================================================================
+vue-nav-tabs
+========================================================================== */
+
+.vue-tabs .tab-content {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.nav-tabs li.tab {
+    border-color: rgb(17, 17, 17);
+}
+
+.nav-tabs li.tab.active {
+    background-color: rgb(61, 61, 61) !important;
+    border-color: rgb(17, 17, 17) !important;
+}
+
+.vue-tabs li.tab:not(.active) {
+    background: rgb(51, 51, 51);
+}
+
+.nav-tabs li.tab a,
+.nav-tabs li.tab a:hover,
+.nav-tabs li.tab a:active,
+.nav-tabs li.tab a:focus {
+    color: rgb(255, 255, 255);
+}
+
+/* End of nav tabs section */

@@ -9,34 +9,38 @@ def template(body, domain):
 
     try:
         js = re.search(
-            r'setTimeout\(function\(\){\s+(var s,t,o,p,b,r,e,a,k,i,n,g,f.+?\r?\n[\s\S]+?a\.value =.+?)\r?\n',
-            body
+            r'setTimeout\(function\(\){\s+(.*?a\.value\s*=\s*\S+toFixed\(10\);)',
+            body,
+            re.M | re.S
         ).group(1)
     except Exception:
         raise ValueError('Unable to identify Cloudflare IUAM Javascript on website. {}'.format(BUG_REPORT))
 
-    js = re.sub(r'\s{2,}', ' ', js, flags=re.MULTILINE | re.DOTALL).replace('\'; 121\'', '')
-    js += '\na.value;'
-
-    jsEnv = '''
-        String.prototype.italics=function(str) {{return "<i>" + this + "</i>";}};
+    jsEnv = '''String.prototype.italics=function(str) {{return "<i>" + this + "</i>";}};
+        var subVars= {{{subVars}}};
         var document = {{
             createElement: function () {{
                 return {{ firstChild: {{ href: "https://{domain}/" }} }}
             }},
-            getElementById: function () {{
-                return {{"innerHTML": "{innerHTML}"}};
+            getElementById: function (str) {{
+                return {{"innerHTML": subVars[str]}};
             }}
         }};
     '''
 
     try:
-        innerHTML = re.search(
-            r'<div(?: [^<>]*)? id="([^<>]*?)">([^<>]*?)</div>',
-            body,
-            re.MULTILINE | re.DOTALL
+        js = js.replace(
+            r"(setInterval(function(){}, 100),t.match(/https?:\/\//)[0]);",
+            r"t.match(/https?:\/\//)[0];"
         )
-        innerHTML = innerHTML.group(2) if innerHTML else ''
+
+        k = re.search(r" k\s*=\s*'(?P<k>\S+)';", body).group('k')
+        r = re.compile(r'<div id="{}(?P<id>\d+)">\s*(?P<jsfuck>[^<>]*)</div>'.format(k))
+
+        subVars = ''
+        for m in r.finditer(body):
+            subVars = '{}\n\t\t{}{}: {},\n'.format(subVars, k, m.group('id'), m.group('jsfuck'))
+        subVars = subVars[:-2]
 
     except:  # noqa
         logging.error('Error extracting Cloudflare IUAM Javascript. {}'.format(BUG_REPORT))
@@ -48,7 +52,7 @@ def template(body, domain):
             ' ',
             jsEnv.format(
                 domain=domain,
-                innerHTML=innerHTML
+                subVars=subVars
             ),
             re.MULTILINE | re.DOTALL
         ),

@@ -2,7 +2,7 @@
     import datetime
 
     from medusa import app, sbdatetime
-    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.api import indexerApi
     from medusa.indexers.utils import indexer_id_to_name
 %>
 <!-- start list view //-->

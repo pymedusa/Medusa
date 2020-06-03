@@ -110,7 +110,7 @@ export default {
             }
 
             // Transform raw root dirs in the form of an array, to an array of objects
-            const defaultDir = parseInt(rawRootDirs[0], 10);
+            const defaultDir = Number.parseInt(rawRootDirs[0], 10);
             return rawRootDirs
                 .slice(1)
                 .map((path, index) => {

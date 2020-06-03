@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import re
 
-from medusa.indexers.indexer_config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
+from medusa.indexers.config import EXTERNAL_MAPPINGS, TRAKT_INDEXERS, indexerConfig
 
 from six import viewitems
 

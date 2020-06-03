@@ -39,7 +39,7 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
       </span>
        
       <div
-        class="vgt-wrap"
+        class="vgt-wrap "
       >
         <!---->
          
@@ -66,21 +66,22 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
               class="vgt-table condensed subtitle-table "
             >
               <thead
-                data-v-1a3bd028=""
+                data-v-eb5a915e=""
               >
                 <tr
-                  data-v-1a3bd028=""
+                  data-v-eb5a915e=""
                 >
                   <!---->
                    
                   <!---->
                    
                   <th
-                    class="vgt-left-align"
-                    data-v-1a3bd028=""
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Filename
@@ -88,11 +89,12 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                     </span>
                   </th>
                   <th
-                    class="vgt-left-align"
-                    data-v-1a3bd028=""
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Language
@@ -100,11 +102,12 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                     </span>
                   </th>
                   <th
-                    class="vgt-left-align"
-                    data-v-1a3bd028=""
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Provider
@@ -112,11 +115,12 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                     </span>
                   </th>
                   <th
-                    class="vgt-right-align sorting sorting-desc"
-                    data-v-1a3bd028=""
+                    class="vgt-right-align sortable sorting sorting-desc"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Score
@@ -124,11 +128,12 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                     </span>
                   </th>
                   <th
-                    class="vgt-right-align"
-                    data-v-1a3bd028=""
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Sub Score
@@ -136,11 +141,12 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                     </span>
                   </th>
                   <th
-                    class="vgt-left-align"
-                    data-v-1a3bd028=""
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       
                         Missing Matches
@@ -149,20 +155,21 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                   </th>
                   <th
                     class="vgt-left-align"
-                    data-v-1a3bd028=""
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
                   >
                     <span
-                      data-v-1a3bd028=""
+                      data-v-eb5a915e=""
                     >
                       <span
-                        data-v-1a3bd028=""
+                        data-v-eb5a915e=""
                       >
                         Download
                       </span>
                        
                       <span
                         class="btn-medusa btn-xs pull-right"
-                        data-v-1a3bd028=""
+                        data-v-eb5a915e=""
                       >
                         hide
                       </span>
@@ -1837,93 +1844,7 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
                   </td>
                 </tr>
                  
-                <tr
-                  mode="local"
-                >
-                  <!---->
-                   
-                  <!---->
-                   
-                  <!---->
-                   
-                  <th
-                    class="vgt-row-header vgt-left-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-left-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-left-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-right-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-right-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-left-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                  <th
-                    class="vgt-row-header vgt-left-align"
-                  >
-                    <span>
-                      
-          
-        
-                    </span>
-                     
-                    <!---->
-                  </th>
-                </tr>
+                <!---->
                  
               </tbody>
                
@@ -1931,9 +1852,7 @@ exports[`SubtitleSearch renders subtitle component with manual subtitle results 
             </table>
           </div>
            
-          <div
-            class="vgt-wrap__actions-footer"
-          />
+          <!---->
            
           <!---->
         </div>

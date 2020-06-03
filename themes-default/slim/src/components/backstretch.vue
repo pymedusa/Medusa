@@ -34,7 +34,9 @@ export default {
     async mounted() {
         try {
             await waitFor(() => this.enabled !== null);
-        } catch (_) {}
+        } catch (error) {
+            console.error(error);
+        }
 
         if (!this.enabled) {
             return;

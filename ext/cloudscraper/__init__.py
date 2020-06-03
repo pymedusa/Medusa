@@ -1,8 +1,26 @@
+# ------------------------------------------------------------------------------- #
+
 import logging
 import re
+import requests
 import sys
 import ssl
-import requests
+
+from collections import OrderedDict
+from copy import deepcopy
+
+from requests.adapters import HTTPAdapter
+from requests.sessions import Session
+from requests_toolbelt.utils import dump
+
+from time import sleep
+
+# ------------------------------------------------------------------------------- #
+
+try:
+    import brotli
+except ImportError:
+    pass
 
 try:
     import copyreg
@@ -17,17 +35,18 @@ except ImportError:
     else:
         from html.parser import HTMLParser
 
-from copy import deepcopy
-from time import sleep
-from collections import OrderedDict
+try:
+    from urlparse import urlparse, urljoin
+except ImportError:
+    from urllib.parse import urlparse, urljoin
 
-from requests.sessions import Session
-from requests.adapters import HTTPAdapter
+# ------------------------------------------------------------------------------- #
 
 from .exceptions import (
     CloudflareLoopProtection,
     CloudflareCode1020,
     CloudflareIUAMError,
+    CloudflareChallengeError,
     CloudflareReCaptchaError,
     CloudflareReCaptchaProvider
 )
@@ -36,25 +55,9 @@ from .interpreters import JavaScriptInterpreter
 from .reCaptcha import reCaptcha
 from .user_agent import User_Agent
 
-try:
-    from requests_toolbelt.utils import dump
-except ImportError:
-    pass
-
-try:
-    import brotli
-except ImportError:
-    pass
-
-try:
-    from urlparse import urlparse, urljoin
-except ImportError:
-    from urllib.parse import urlparse, urljoin
-
-
 # ------------------------------------------------------------------------------- #
 
-__version__ = '1.2.34'
+__version__ = '1.2.40'
 
 # ------------------------------------------------------------------------------- #
 
@@ -77,6 +80,7 @@ class CipherSuiteAdapter(HTTPAdapter):
         if not self.ssl_context:
             self.ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
             self.ssl_context.set_ciphers(self.cipherSuite)
+            self.ssl_context.set_ecdh_curve('prime256v1')
             self.ssl_context.options |= (ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3 | ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1)
 
         super(CipherSuiteAdapter, self).__init__(**kwargs)
@@ -105,6 +109,9 @@ class CloudScraper(Session):
         self.ssl_context = kwargs.pop('ssl_context', None)
         self.interpreter = kwargs.pop('interpreter', 'native')
         self.recaptcha = kwargs.pop('recaptcha', {})
+        self.requestPreHook = kwargs.pop('requestPreHook', None)
+        self.requestPostHook = kwargs.pop('requestPostHook', None)
+
         self.allow_brotli = kwargs.pop(
             'allow_brotli',
             True if 'brotli' in sys.modules.keys() else False
@@ -211,19 +218,46 @@ class CloudScraper(Session):
         if kwargs.get('proxies') and kwargs.get('proxies') != self.proxies:
             self.proxies = kwargs.get('proxies')
 
-        resp = self.decodeBrotli(
+        # ------------------------------------------------------------------------------- #
+        # Pre-Hook the request via user defined function.
+        # ------------------------------------------------------------------------------- #
+
+        if self.requestPreHook:
+            (method, url, args, kwargs) = self.requestPreHook(
+                self,
+                method,
+                url,
+                *args,
+                **kwargs
+            )
+
+        # ------------------------------------------------------------------------------- #
+        # Make the request via requests.
+        # ------------------------------------------------------------------------------- #
+
+        response = self.decodeBrotli(
             super(CloudScraper, self).request(method, url, *args, **kwargs)
         )
 
         # ------------------------------------------------------------------------------- #
-        # Debug request
+        # Debug the request via the Response object.
         # ------------------------------------------------------------------------------- #
 
         if self.debug:
-            self.debugRequest(resp)
+            self.debugRequest(response)
+
+        # ------------------------------------------------------------------------------- #
+        # Post-Hook the request aka Post-Hook the response via user defined function.
+        # ------------------------------------------------------------------------------- #
+
+        if self.requestPostHook:
+            response = self.requestPostHook(self, response)
+
+            if self.debug:
+                self.debugRequest(response)
 
         # Check if Cloudflare anti-bot is on
-        if self.is_Challenge_Request(resp):
+        if self.is_Challenge_Request(response):
             # ------------------------------------------------------------------------------- #
             # Try to solve the challenge and send it back
             # ------------------------------------------------------------------------------- #
@@ -237,12 +271,12 @@ class CloudScraper(Session):
 
             self._solveDepthCnt += 1
 
-            resp = self.Challenge_Response(resp, **kwargs)
+            response = self.Challenge_Response(response, **kwargs)
         else:
-            if not resp.is_redirect and resp.status_code not in [429, 503]:
+            if not response.is_redirect and response.status_code not in [429, 503]:
                 self._solveDepthCnt = 0
 
-        return resp
+        return response
 
     # ------------------------------------------------------------------------------- #
     # check if the response contains a valid Cloudflare challenge
@@ -255,9 +289,30 @@ class CloudScraper(Session):
                 resp.headers.get('Server', '').startswith('cloudflare')
                 and resp.status_code in [429, 503]
                 and re.search(
-                    r'<form id="challenge-form" action="/.*?__cf_chl_jschl_tk__=\S+"',
+                    r'<form .*?="challenge-form" action="/.*?__cf_chl_jschl_tk__=\S+"',
                     resp.text,
-                    re.M | re.DOTALL
+                    re.M | re.S
+                )
+            )
+        except AttributeError:
+            pass
+
+        return False
+
+    # ------------------------------------------------------------------------------- #
+    # check if the response contains new Cloudflare challenge
+    # ------------------------------------------------------------------------------- #
+
+    @staticmethod
+    def is_New_IUAM_Challenge(resp):
+        try:
+            return (
+                resp.headers.get('Server', '').startswith('cloudflare')
+                and resp.status_code in [429, 503]
+                and re.search(
+                    r'cpo.src\s*=\s*"/cdn-cgi/challenge-platform/orchestrate/jsch/v1"',
+                    resp.text,
+                    re.M | re.S
                 )
             )
         except AttributeError:
@@ -318,7 +373,15 @@ class CloudScraper(Session):
                 'Cloudflare has blocked this request (Code 1020 Detected).'
             )
 
+        if self.is_New_IUAM_Challenge(resp):
+            self.simpleException(
+                CloudflareChallengeError,
+                'Detected the new Cloudflare challenge.'
+            )
+
         if self.is_reCaptcha_Challenge(resp) or self.is_IUAM_Challenge(resp):
+            if self.debug:
+                print('Detected Challenge.')
             return True
 
         return False
@@ -330,7 +393,8 @@ class CloudScraper(Session):
     def IUAM_Challenge_Response(self, body, url, interpreter):
         try:
             formPayload = re.search(
-                r'<form (?P<form>id="challenge-form" action="(?P<challengeUUID>.*?'
+                r'<form (?P<form>.*?="challenge-form" '
+                r'action="(?P<challengeUUID>.*?'
                 r'__cf_chl_jschl_tk__=\S+)"(.*?)</form>)',
                 body,
                 re.M | re.DOTALL
@@ -343,7 +407,7 @@ class CloudScraper(Session):
                 )
 
             payload = OrderedDict()
-            for challengeParam in re.findall(r'<input\s(.*?)>', formPayload['form']):
+            for challengeParam in re.findall(r'^\s*<input\s(.*?)/>', formPayload['form'], re.M | re.S):
                 inputPayload = dict(re.findall(r'(\S+)="(\S+)"', challengeParam))
                 if inputPayload.get('name') in ['r', 'jschl_vc', 'pass']:
                     payload.update({inputPayload['name']: inputPayload['value']})
@@ -384,7 +448,7 @@ class CloudScraper(Session):
     def reCaptcha_Challenge_Response(self, provider, provider_params, body, url):
         try:
             formPayload = re.search(
-                r'<form class="challenge-form" (?P<form>id="challenge-form" '
+                r'<form (?P<form>.*?="challenge-form" '
                 r'action="(?P<challengeUUID>.*?__cf_chl_captcha_tk__=\S+)"(.*?)</form>)',
                 body,
                 re.M | re.DOTALL
