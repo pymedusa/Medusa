@@ -215,7 +215,7 @@ class SearchResult(object):
             'seasonPack': self.actual_season == -1,
             'indexer': self.series.indexer,
             'seriesId': self.series.series_id,
-            'showSlug': self.series.slug,
+            'showSlug': self.series.identifier.slug,
             'url': self.url,
             'time': datetime.now().isoformat(),
             'quality': self.quality,

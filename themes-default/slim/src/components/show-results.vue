@@ -112,15 +112,20 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
-            providers: state => state.provider.providers
+            providers: state => state.provider.providers,
+            queueitems: state => state.search.queueitems
         }),
         combinedResults() {
-            const { episode, providers, season } = this;
+            const { episode, providers, season, show } = this;
             let results = [];
 
             for (const provider of Object.values(providers).filter(provider => provider.config.enabled)) {
                 if (provider.cache && provider.cache.length > 0) {
-                    results = [...results, ...provider.cache.filter(results => season === season && results.episodes.includes(episode))];
+                    results = [...results, ...provider.cache.filter(
+                        searchResult =>
+                            searchResult.showSlug === show.id.slug &&
+                            searchResult.season === season &&
+                            searchResult.episodes.includes(episode))];
                 }
             }
             return results;
@@ -140,12 +145,12 @@ export default {
             this.$el.remove();
         },
         getProviderResults() {
-            const { episode, getProviderCacheResults, season } = this;
-            const unwatch = this.$watch('show.id.slug', showSlug => {
+            const { episode, getProviderCacheResults, season, show } = this;
+            // const unwatch = this.$watch('show.id.slug', showSlug => {
                 // Use apiv2 to get latest provider cache results
-                getProviderCacheResults({ showSlug, season, episode });
-                unwatch();
-            });
+            getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+            //     unwatch();
+            // });
         },
         refreshResults() {
             const { episode, getProviderCacheResults, season, show } = this;
@@ -157,7 +162,7 @@ export default {
             search([episodeToSlug(season, episode)]);
         },
         search(episodes) {
-            const { show } = this;
+            const { episode, season, show } = this;
             let data = {};
 
             if (episodes) {
@@ -169,14 +174,39 @@ export default {
             }
 
             this.loading = true;
-            this.loadingMessage = `Manual searching providers for episode ${episodes.join(' ,')}`;
+            this.loadingMessage = 'Queue search...';
             api.put('search/manual', data) // eslint-disable-line no-undef
                 .then(() => {
-                    console.info(`started search for show: ${show.id.slug} episode: ${episodes[0]}`);
-                    this.loadingMessage = `started search for show: ${show.id.slug} episode: ${episodes[0]}`;
+                    console.info(`Queued search for show: ${show.id.slug} season: ${season}, episode: ${episode}`);
+                    this.loadingMessage = 'Queued search...';
                 }).catch(error => {
                     console.error(String(error));
                 });
+        }
+    },
+    watch: {
+        queueitems: {
+            handler(queue) {
+                const queueForThisEpisode = queue.filter(q => q.segment.length && q.segment.find(
+                    ep => ep.season === this.season && ep.episode === this.episode
+                ));
+
+                const [last] = queueForThisEpisode.slice(-1);
+                const searchStatus = last.success === null ? 'running' : 'finished';
+
+                if (searchStatus === 'running') {
+                    this.loading = true;
+                    this.loadingMessage = 'Started searching providers...';
+                } else {
+                    this.loadingMessage = 'Finished manual search';
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.loadingMessage = '';
+                    }, 5000);
+                }
+            },
+            deep: true,
+            immediate: false
         }
     }
 };

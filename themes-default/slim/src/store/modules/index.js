@@ -7,4 +7,5 @@ export { default as shows } from './shows';
 export { default as socket } from './socket';
 export { default as stats } from './stats';
 export { default as config } from './config';
+export { default as search } from './search';
 // export * from './configs/index.js';

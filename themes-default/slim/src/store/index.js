@@ -9,6 +9,7 @@ import {
     notifications,
     provider,
     shows,
+    search,
     socket,
     stats
 } from './modules';
@@ -31,6 +32,7 @@ const store = new Store({
         history,
         notifications,
         provider,
+        search,
         shows,
         socket,
         stats
@@ -61,6 +63,8 @@ const passToStoreHandler = function(eventName, event, next) {
             this.store.dispatch('updateShow', data);
         } else if (event === 'addManualSearchResult') {
             this.store.dispatch('addManualSearchResult', data);
+        } else if (event === 'QueueItemUpdate') {
+            this.store.dispatch('updateQueueItem', data);
         } else {
             window.displayNotification('info', event, data);
         }
