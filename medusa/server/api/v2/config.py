@@ -400,6 +400,7 @@ class ConfigHandler(BaseRequestHandler):
         'notifiers.discord.notifyOnSnatch': BooleanField(app, 'DISCORD_NOTIFY_ONSNATCH'),
         'notifiers.discord.notifyOnDownload': BooleanField(app, 'DISCORD_NOTIFY_ONDOWNLOAD'),
         'notifiers.discord.notifyOnSubtitleDownload': BooleanField(app, 'DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD'),
+        'notifiers.discord.name': StringField(app, 'DISCORD_NAME'),
 
         'notifiers.twitter.enabled': BooleanField(app, 'USE_TWITTER'),
         'notifiers.twitter.dmto': StringField(app, 'TWITTER_DMTO'),
@@ -963,6 +964,7 @@ class DataGenerator(object):
         section_data['discord']['notifyOnSubtitleDownload'] = bool(app.DISCORD_NOTIFY_ONSUBTITLEDOWNLOAD)
         section_data['discord']['webhook'] = app.DISCORD_WEBHOOK
         section_data['discord']['tts'] = bool(app.DISCORD_TTS)
+        section_data['discord']['name'] = app.DISCORD_NAME
 
         section_data['twitter'] = {}
         section_data['twitter']['enabled'] = bool(app.USE_TWITTER)

@@ -166,14 +166,15 @@ def _monkey_patch_bdecode():
 
     def _patched_bdecode(value, allow_extra_data=False):
         try:
-            result, length = bencode.decode_func[value[0:1]](value, 0)
+            value = bencode.to_binary(value)
+            data, length = bencode.decode_func[value[0:1]](value, 0)
         except (IndexError, KeyError, TypeError, ValueError):
             raise bencode.BencodeDecodeError('not a valid bencoded string')
 
         if length != len(value) and not allow_extra_data:
             raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
 
-        return result
+        return data
 
     bencode.bdecode = _patched_bdecode
 
