@@ -2,7 +2,7 @@
 """Request handler for series and episodes."""
 from __future__ import unicode_literals
 
-import datetime
+from datetime import datetime
 from dateutil import parser
 import logging
 
@@ -74,10 +74,10 @@ class ProvidersHandler(BaseRequestHandler):
                     'seriesId': item['indexerid'],
                     'showSlug': show_slug,
                     'url': item['url'],
-                    'time': datetime.datetime.fromtimestamp(item['time']),
+                    'time': datetime.fromtimestamp(item['time']),
                     'quality': item['quality'],
                     'releaseGroup': item['release_group'],
-                    'dateAdded': datetime.datetime.fromtimestamp(item['date_added']),
+                    'dateAdded': datetime.fromtimestamp(item['date_added']),
                     'version': item['version'],
                     'seeders': item['seeders'],
                     'size': item['size'],

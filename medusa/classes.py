@@ -217,10 +217,10 @@ class SearchResult(object):
             'seriesId': self.series.series_id,
             'showSlug': self.series.identifier.slug,
             'url': self.url,
-            'time': datetime.now().isoformat(),
+            'time': datetime.now().replace(microsecond=0).isoformat(),
             'quality': self.quality,
             'releaseGroup': self.release_group,
-            'dateAdded': datetime.now().isoformat(),
+            'dateAdded': datetime.now().replace(microsecond=0).isoformat(),
             'version': self.version,
             'seeders': self.seeders,
             'size': self.size,
@@ -244,8 +244,7 @@ class SearchResult(object):
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
 
             # Push an update to any open Web UIs through the WebSocket
-            msg = ws.Message('addManualSearchResult', self.to_json())
-            msg.push()
+            msg = ws.Message('addManualSearchResult', self.to_json()).push()
 
             return cache.add_cache_entry(self, parsed_result=self.parsed_result)
 
