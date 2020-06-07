@@ -59,12 +59,12 @@ class HistoryHandler(BaseRequestHandler):
                 d['id'] = item['rowid']
                 d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
                 d['status'] = item['action']
+                d['statusName'] = statusStrings.get(item['action'])
+                d['quality'] = item['quality']
                 d['actionDate'] = item['date']
-
                 d['resource'] = basename(item['resource'])
                 d['size'] = item['size']
                 d['properTags'] = item['proper_tags']
-                d['statusName'] = statusStrings.get(item['action'])
                 d['season'] = item['season']
                 d['episode'] = item['episode']
                 d['manuallySearched'] = bool(item['manually_searched'])
