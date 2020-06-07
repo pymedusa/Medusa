@@ -758,21 +758,20 @@ class Home(WebRoot):
             controller='home', action='displayShow',
         )
 
-    def pickManualSearch(self, provider=None, rowid=None):
+    def pickManualSearch(self, provider=None, identifier=None):
         """
         Tries to Perform the snatch for a manualSelected episode, episodes or season pack.
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
-        @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param identifier: The provider's cache table's identifier (unique).
 
         @return: A json with a {'success': true} or false.
         """
         # Try to retrieve the cached result from the providers cache table.
-        # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         provider_obj = providers.get_provider_class(provider)
 
         try:
-            cached_result = Cache(provider_obj).load_from_row(rowid)
+            cached_result = Cache(provider_obj).load_from_row(identifier)
         except Exception as msg:
             error_message = "Couldn't read cached results. Error: {error}".format(error=msg)
             logger.log(error_message)
