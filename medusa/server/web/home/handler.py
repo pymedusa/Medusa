@@ -723,7 +723,11 @@ class Home(WebRoot):
         })
 
     def displayShow(self, indexername=None, seriesid=None, ):
-        # @TODO: Remove all this code. And track visited shows, through the Vue router.
+        """
+        Render the home page.
+
+        [Converted to VueRouter]
+        """
         try:
             indexer_id = indexer_name_to_id(indexername)
             series_obj = Show.find_by_id(app.showList, indexer_id, seriesid)
@@ -734,25 +738,6 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Show not in show list')
 
         t = PageTemplate(rh=self, filename='index.mako')
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
 
         return t.render(
             controller='home', action='displayShow',
@@ -899,8 +884,11 @@ class Home(WebRoot):
 
     def snatchSelection(self, indexername, seriesid, season=None, episode=None, manual_search_type='episode',
                         perform_search=0, down_cur_quality=0, show_all_results=0):
-        """ The view with results for the manual selected show/episode """
+        """
+        Render the home page.
 
+        [Converted to VueRouter]
+        """
         # @TODO: add more comprehensive show validation
         try:
             indexer_id = indexer_name_to_id(indexername)
@@ -911,96 +899,7 @@ class Home(WebRoot):
         if series_obj is None:
             return self._genericMessage('Error', 'Show not in show list')
 
-        # Retrieve cache results from providers
-        search_show = {'series': series_obj, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
-
-        provider_results = get_provider_cache_results(series_obj, perform_search=perform_search,
-                                                      show_all_results=show_all_results, **search_show)
-
         t = PageTemplate(rh=self, filename='index.mako')
-
-        series_obj.exceptions = get_scene_exceptions(series_obj)
-
-        indexer_id = int(series_obj.indexer)
-        series_id = int(series_obj.series_id)
-
-        # Delete any previous occurrances
-        indexer_name = indexer_id_to_name(indexer_id)
-        for index, recentShow in enumerate(app.SHOWS_RECENT):
-            if recentShow['indexerName'] == indexer_name and recentShow['showId'] == series_id:
-                del app.SHOWS_RECENT[index]
-
-        # Only track 5 most recent shows
-        del app.SHOWS_RECENT[4:]
-
-        # Insert most recent show
-        app.SHOWS_RECENT.insert(0, {
-            'indexerName': indexer_name,
-            'showId': series_id,
-            'name': series_obj.name,
-        })
-
-        # episode_history = []
-        # try:
-        #     main_db_con = db.DBConnection()
-        #     episode_status_result = main_db_con.select(
-        #         'SELECT date, action, quality, provider, resource, size '
-        #         'FROM history '
-        #         'WHERE indexer_id = ? '
-        #         'AND showid = ? '
-        #         'AND season = ? '
-        #         'AND episode = ? '
-        #         'AND action in (?, ?, ?, ?, ?) '
-        #         'ORDER BY date DESC',
-        #         [indexer_id, series_id, season, episode,
-        #          DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED]
-        #     )
-        #     episode_history = episode_status_result
-        #     for i in episode_history:
-        #         i['status'] = i['action']
-        #         i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(text_type(i['date']), History.date_format), show_seconds=True)
-        #         i['resource_file'] = os.path.basename(i['resource'])
-        #         i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
-        #         i['status_name'] = statusStrings[i['status']]
-        #         provider = None
-        #         if i['status'] == DOWNLOADED:
-        #             i['status_color_style'] = 'downloaded'
-        #         elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-        #             i['status_color_style'] = 'snatched'
-        #             provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-        #         elif i['status'] == FAILED:
-        #             i['status_color_style'] = 'failed'
-        #             provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
-        #         if provider is not None:
-        #             i['provider_name'] = provider.name
-        #             i['provider_img_link'] = 'images/providers/' + provider.image_name()
-        #         else:
-        #             i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
-        #             i['provider_img_link'] = ''
-
-        #     # Compare manual search results with history and set status
-        #     for provider_result in provider_results['found_items']:
-        #         failed_statuses = [FAILED, ]
-        #         snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-        #         if any([item for item in episode_history
-        #                 if all([prepare_failed_name(provider_result['name']) in item['resource'],
-        #                         item['provider'] in (provider_result['provider'], provider_result['release_group'],),
-        #                         item['status'] in failed_statuses])
-        #                 ]):
-        #             provider_result['status_highlight'] = 'failed'
-        #         elif any([item for item in episode_history
-        #                   if all([provider_result['name'] in item['resource'],
-        #                           item['provider'] in provider_result['provider'],
-        #                           item['status'] in snatched_statuses,
-        #                           item['size'] == provider_result['size']])
-        #                   ]):
-        #             provider_result['status_highlight'] = 'snatched'
-        #         else:
-        #             provider_result['status_highlight'] = ''
-
-        # # TODO: Remove the catchall, make sure we only catch expected exceptions!
-        # except Exception as msg:
-        #     logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
         return t.render(
             controller='home', action='snatchSelection'
