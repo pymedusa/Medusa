@@ -179,6 +179,7 @@ export default {
             setShowFilterByName: 'setShowFilterByName',
             setShowListOrder: 'setShowListOrder',
             setStoreLayout: 'setStoreLayout',
+            setCurrentTab: 'setCurrentTab',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
@@ -200,8 +201,8 @@ export default {
             setStoreLayout({ key: 'selectedRootIndex', value });
         },
         updateTabContent(tabIndex, newTab) {
-            const { setStoreLayout } = this;
-            setStoreLayout({ key: 'currentShowTab', value: newTab.title });
+            const { setCurrentTab } = this;
+            setCurrentTab(newTab.title);
         }
     },
     mounted() {
