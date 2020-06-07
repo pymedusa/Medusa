@@ -6,7 +6,7 @@ from os.path import basename
 
 from medusa import db
 from medusa.common import statusStrings
-from meudsa.provider import GenericProvider
+from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 
