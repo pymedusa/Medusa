@@ -312,7 +312,7 @@ class SearchResult(object):
         self.leechers = int(cached_result['leechers'])
         self.release_group = cached_result['release_group']
         self.version = int(cached_result['version'])
-        self.pubdate = cached_result['pubdate']
+        self.pubdate = parser.parse(cached_result['pubdate']) if cached_result['pubdate'] else None
         self.proper_tags = cached_result['proper_tags'].split('|') \
             if cached_result['proper_tags'] else []
         self.date = datetime.today()
