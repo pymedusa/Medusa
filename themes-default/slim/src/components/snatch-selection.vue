@@ -567,6 +567,49 @@ span.global-undesired {
     display: inline-block;
 }
 
+.snatch-selection-template >>> .fanartBackground {
+    clear: both;
+    opacity: 0.9;
+}
+
+.snatch-selection-template >>> .fanartBackground table {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border: none;
+    empty-cells: show;
+    color: rgb(0, 0, 0) !important;
+}
+
+.snatch-selection-template >>> .fanartBackground > table th.vgt-row-header {
+    border: none !important;
+    background-color: transparent !important;
+    color: rgb(255, 255, 255) !important;
+    padding-top: 15px !important;
+    text-align: left !important;
+}
+
+.snatch-selection-template >>> .fanartBackground td.col-search {
+    text-align: center;
+}
+
+.snatch-selection-template >>> .skipped {
+    background-color: rgb(190, 222, 237);
+}
+
+.snatch-selection-template >>> .snatched {
+    background-color: rgb(235, 193, 234);
+}
+
+.snatch-selection-template >>> .downloaded {
+    background-color: rgb(255, 218, 138);
+}
+
+.snatch-selection-template >>> .failed {
+    background-color: rgb(255, 153, 153);
+}
 show-history {
     margin-bottom: 10px;
 }
