@@ -1,9 +1,9 @@
 <template>
     <div class="show-results-wrapper">
-        <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll" :class="{ fanartBackground: config.fanartBackground }">
+        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+            <div class="col-md-12 top-15 horizontal-scroll">
                 <div class="button-row">
-                    <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="refreshResults">
+                    <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Force Search" @click="forceSearch">
                     <template v-if="loading">
                         <state-switch state="loading" />
@@ -11,6 +11,7 @@
                     </template>
                 </div>
                 <vue-good-table v-show="show.id.slug"
+                                ref="vgt-show-results"
                                 :columns="columns"
                                 :rows="combinedResults"
                                 :search-options="{
@@ -44,6 +45,10 @@
                             {{props.row.time ? fuzzyParseDateTime(props.row.time) : ''}}
                         </span>
 
+                        <span v-else-if="props.column.label == 'Snatch'">
+                            <img src="images/download.png" width="16" height="16" alt="snatch" title="Download selected episode" :data-identifier="props.row.identifier" @click="snatchResult($event, props.row)">
+                        </span>
+
                         <span v-else>
                             {{props.formattedRow[props.column.field]}}
                         </span>
@@ -56,6 +61,7 @@
 </template>
 <script>
 
+import { apiRoute } from '../api';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { StateSwitch } from './helpers';
@@ -144,6 +150,11 @@ export default {
                 sortable: true,
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss',
                 dateOutputFormat: 'yyyy/MM/dd HH:mm:ss'
+            },
+            {
+                label: 'Snatch',
+                field: 'snatch',
+                sortable: false
             }],
             loading: false,
             loadingMessage: ''
@@ -160,15 +171,26 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
+            layout: state => state.config.layout,
             providers: state => state.provider.providers,
-            queueitems: state => state.search.queueitems
+            queueitems: state => state.search.queueitems,
+            history: state => state.history.episodeHistory
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
         combinedResults() {
-            const { episode, providers, season, show } = this;
+            const { episode, episodeHistory, providers, season, show } = this;
             let results = [];
+
+            const getLastHistoryStatus = result => {
+                for (const historyRow of episodeHistory.sort(item => item.actionDate).reverse()) {
+                    if (historyRow.resource === result.release && historyRow.size === result.size) {
+                        return historyRow.statusName.toLocaleLowerCase();
+                    }
+                }
+                return 'skipped';
+            };
 
             for (const provider of Object.values(providers).filter(provider => provider.config.enabled)) {
                 if (provider.cache && provider.cache.length > 0) {
@@ -176,17 +198,40 @@ export default {
                         searchResult =>
                             searchResult.showSlug === show.id.slug &&
                             searchResult.season === season &&
-                            searchResult.episodes.includes(episode))];
+                            searchResult.episodes.includes(episode)
+                    ).map(result => {
+                        return { ...result, status: getLastHistoryStatus(result) };
+                    })];
                 }
             }
             return results;
+        },
+        /**
+         * Helper to get the current episode slug.
+         * @returns {string} episode slug.
+         */
+        episodeSlug() {
+            const { season, episode } = this;
+            return episodeToSlug(season, episode);
+        },
+        /**
+         * Helper to check if showSlug and season/episode slug exist.
+         * @returns {array} history for episode or empty array.
+         */
+        episodeHistory() {
+            const { episodeSlug, history, show } = this;
+            if (!history[show.id.slug] || !history[show.id.slug][episodeSlug]) {
+                return [];
+            }
+            return history[show.id.slug][episodeSlug];
         }
     },
     methods: {
         humanFileSize,
         ...mapActions({
             getProviders: 'getProviders',
-            getProviderCacheResults: 'getProviderCacheResults'
+            getProviderCacheResults: 'getProviderCacheResults',
+            getShowEpisodeHistory: 'getShowEpisodeHistory'
         }),
         close() {
             this.$emit('close');
@@ -196,14 +241,6 @@ export default {
             this.$el.remove();
         },
         getProviderResults() {
-            const { episode, getProviderCacheResults, season, show } = this;
-            // const unwatch = this.$watch('show.id.slug', showSlug => {
-            // Use apiv2 to get latest provider cache results
-            getProviderCacheResults({ showSlug: show.id.slug, season, episode });
-            //     unwatch();
-            // });
-        },
-        refreshResults() {
             const { episode, getProviderCacheResults, season, show } = this;
             getProviderCacheResults({ showSlug: show.id.slug, season, episode });
         },
@@ -235,29 +272,72 @@ export default {
                 });
         },
         rowStyleClassFn(row) {
-            const classes = [];
-            return classes;
+            return row.status || 'skipped';
+        },
+        async snatchResult(evt, result) {
+            const { layout } = this;
+            evt.target.src = `images/loading16-${layout.themeName}.gif`;
+            try {
+                const response = await apiRoute('home/pickManualSearch', { params: { provider: result.provider.id, identifier: result.identifier } });
+                if (response.data.result === 'success') {
+                    evt.target.src = 'images/save.png';
+                } else {
+                    evt.target.src = 'images/no16.png';
+                }
+            } catch (error) {
+                console.error(String(error));
+                evt.target.src = 'images/no16.png';
+            }
         }
     },
     watch: {
         queueitems: {
-            handler(queue) {
-                const queueForThisEpisode = queue.filter(q => q.segment.length && q.segment.find(
+            async handler(queue) {
+                // Check for manual searches
+                const queueForThisEpisode = queue.filter(q => ['MANUAL-SEARCH'].includes(q.name) && q.segment.length && q.segment.find(
                     ep => ep.season === this.season && ep.episode === this.episode
                 ));
 
                 const [last] = queueForThisEpisode.slice(-1);
-                const searchStatus = last.success === null ? 'running' : 'finished';
+                if (last) {
+                    const searchStatus = last.success === null ? 'running' : 'finished';
 
-                if (searchStatus === 'running') {
-                    this.loading = true;
-                    this.loadingMessage = 'Started searching providers...';
-                } else {
-                    this.loadingMessage = 'Finished manual search';
-                    setTimeout(() => {
-                        this.loading = false;
-                        this.loadingMessage = '';
-                    }, 5000);
+                    if (searchStatus === 'running') {
+                        this.loading = true;
+                        this.loadingMessage = 'Started searching providers...';
+                    } else {
+                        this.loadingMessage = 'Finished manual search';
+                        setTimeout(() => {
+                            this.loading = false;
+                            this.loadingMessage = '';
+                        }, 5000);
+                    }
+                }
+
+                // Check for snach selection
+                const snatchedForThisEpisode = queue.filter(q => q.name === 'SNATCH-RESULT' && q.segment.length && q.segment.find(
+                    ep => ep.season === this.season && ep.episode === this.episode
+                ));
+
+                const [lastSnatch] = snatchedForThisEpisode.slice(-1);
+                if (lastSnatch && lastSnatch.success === true) {
+                    const { getProviderCacheResults, getShowEpisodeHistory, show, season, episode } = this;
+                    // // Change the row indication into snatched.
+                    // for (const row in this.$refs['vgt-show-results'].$refs) {
+                    //     if (!row.includes('row')) {
+                    //         continue;
+                    //     }
+                    //     const rowRef = this.$refs['vgt-show-results'].$refs[row];
+                    //     const snatchButton = rowRef[0].lastChild;
+                    //     const identifier = snatchButton.firstChild.firstChild.getAttribute('data-identifier');
+                    //     if (lastSnatch.searchResult.identifier === identifier) {
+                    //         rowRef[0].setAttribute('class', 'snatched');
+                    //     }
+                    // }
+
+                    // Something changed, let's get a new batch of provider results.
+                    await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
+                    await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
                 }
             },
             deep: true,
@@ -267,5 +347,4 @@ export default {
 };
 </script>
 <style scoped>
-
 </style>
