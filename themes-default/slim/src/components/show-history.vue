@@ -1,7 +1,7 @@
 <template>
     <div class="show-history-wrapper">
-        <div class="row">
-            <div class="col-md-12 top-15 displayShow horizontal-scroll table-layout" :class="{ fanartBackground: config.fanartBackground }">
+        <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
+            <div class="col-md-12 top-15 horizontal-scroll">
                 <div class="button-row">
                     <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" @click="hideHistory = !hideHistory">
                         {{hideHistory ? 'Show History' : 'Hide History'}}
@@ -18,7 +18,28 @@
                                     initialSortBy: { field: 'actionDate', type: 'desc' }
                                 }"
                                 styleClass="vgt-table condensed"
-                />
+                                :row-style-class="rowStyleClassFn"
+                >
+                    <template slot="table-row" slot-scope="props">
+
+                        <span v-if="props.column.label === 'Date'" class="align-center">
+                            {{props.row.actionDate ? fuzzyParseDateTime(props.formattedRow[props.column.field]) : ''}}
+                        </span>
+
+                        <span v-else-if="props.column.label === 'Quality'" class="align-center">
+                            <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
+                        </span>
+
+                        <span v-else-if="props.column.label === 'Provider'" class="align-center">
+                            <img style="margin-right: 5px;" :src="`images/providers/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
+                            {{props.row.provider.name}}
+                        </span>
+
+                        <span v-else>
+                            {{props.formattedRow[props.column.field]}}
+                        </span>
+                    </template>
+                </vue-good-table>
             </div>
         </div>
     </div>
@@ -27,12 +48,15 @@
 
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
-import { humanFileSize } from '../utils/core';
+import { humanFileSize, episodeToSlug } from '../utils/core';
+import QualityPill from './helpers/quality-pill.vue';
+
 
 export default {
     name: 'show-history',
     components: {
-        VueGoodTable
+        VueGoodTable,
+        QualityPill
     },
     props: {
         show: {
@@ -57,32 +81,26 @@ export default {
             columns: [{
                 label: 'Date',
                 field: 'actionDate',
-                /**
-                 * Vue-good-table sort overwrite function.
-                 * @param {Object} x - row1 value for column.
-                 * @param {object} y - row2 value for column.
-                 * @returns {Boolean} - if we want to display this row before the next
-                 */
                 dateInputFormat: 'yyyyMMddHHmmss', //e.g. 07-09-2017 19:16:25
-                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss',
+                dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
                 type: 'date'
             }, {
                 label: 'Status',
-                field: 'status',
-                sortable: false
+                field: 'statusName'
+            }, {
+                label: 'Quality',
+                field: 'quality',
+                type: 'number'
             }, {
                 label: 'Provider',
-                sortable: false,
-                field: 'provider.name'
+                field: 'provider.id'
             }, {
                 label: 'Release',
-                field: 'resource',
-                sortable: false
+                field: 'resource'
             }, {
                 label: 'Size',
                 field: 'size',
                 formatFn: humanFileSize,
-                sortable: false,
                 type: 'number'
             }],
             loading: false,
@@ -98,12 +116,14 @@ export default {
     computed: {
         ...mapState({
             config: state => state.config,
+            layout: state => state.config.layout,
             showHistory: state => state.history.showHistory,
             episodeHistory: state => state.history.episodeHistory
         }),
         ...mapGetters({
             getEpisodeHistory: 'getEpisodeHistory',
-            getSeasonHistory: 'getSeasonHistory'
+            getSeasonHistory: 'getSeasonHistory',
+            fuzzyParseDateTime: 'fuzzyParseDateTime'
         })
     },
     methods: {
@@ -118,27 +138,26 @@ export default {
             // Remove the element from the DOM
             this.$el.remove();
         },
-        episodeSlug() {
-            const { season, episode } = this;
-            return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
-        },
         getHistory() {
-            const { getShowEpisodeHistory, show, episodeSlug, updateHistory } = this;
+            const { getShowEpisodeHistory, show, episode, season, updateHistory } = this;
             if (show.id.slug) {
                 // Use apiv2 to get latest episode history
-                getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
+                getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
             }
 
             // Update the local history array with store data.
             updateHistory();
         },
         updateHistory() {
-            const { getEpisodeHistory, getSeasonHistory, show, episodeSlug, searchType } = this;
+            const { getEpisodeHistory, getSeasonHistory, show, episode, season, searchType } = this;
             if (searchType === 'episode') {
-                this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeSlug() });
+                this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
             }
 
             this.history = getSeasonHistory({ showSlug: show.id.slug });
+        },
+        rowStyleClassFn(row) {
+            return row.statusName.toLowerCase() || 'skipped';
         }
     },
     watch: {
