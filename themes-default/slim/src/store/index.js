@@ -59,7 +59,7 @@ const passToStoreHandler = function(eventName, event, next) {
         } else if (event === 'configUpdated') {
             const { section, config } = data;
             this.store.dispatch('updateConfig', { section, config });
-        } else if (event === 'showUpdated') {
+        } else if (event === 'showUpdated' || event === 'showAdded') {
             this.store.dispatch('updateShow', data);
         } else if (event === 'addManualSearchResult') {
             this.store.dispatch('addManualSearchResult', data);
