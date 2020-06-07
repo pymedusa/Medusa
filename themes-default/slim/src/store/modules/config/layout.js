@@ -164,6 +164,12 @@ const actions = {
                     section: 'layout', config: { [key]: value }
                 });
             });
+    },
+    setCurrentTab(context, value) {
+        const { commit } = context;
+        return commit(ADD_CONFIG, {
+            section: 'layout', config: { currentShowTab: value }
+        });
     }
 };
 
