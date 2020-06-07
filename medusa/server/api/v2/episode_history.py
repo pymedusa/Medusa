@@ -8,6 +8,7 @@ from os.path import basename
 from medusa import db
 from medusa.common import statusStrings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -74,22 +75,28 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         def data_generator():
             """Read history data and normalize key/value pairs."""
             for item in results:
-                d = {}
-                d['id'] = item['rowid']
-                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-                d['status'] = item['action']
-                d['statusName'] = statusStrings.get(item['action'])
-                d['actionDate'] = item['date']
-                d['quality'] = item['quality']
-                d['resource'] = basename(item['resource'])
-                d['size'] = item['size']
-                d['properTags'] = item['proper_tags']
-                d['season'] = item['season']
-                d['episode'] = item['episode']
-                d['manuallySearched'] = bool(item['manually_searched'])
-                d['provider'] = item['provider']
+                provider_id = None
+                if item['provider']:
+                    provider_id = GenericProvider.make_id(item['provider'])
 
-                yield d
+                yield {
+                    'id': item['rowid'],
+                    'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
+                    'status': item['action'],
+                    'statusName': statusStrings.get(item['action']),
+                    'actionDate': item['date'],
+                    'quality': item['quality'],
+                    'resource': basename(item['resource']),
+                    'size': item['size'],
+                    'properTags': item['proper_tags'],
+                    'season': item['season'],
+                    'episode': item['episode'],
+                    'manuallySearched': bool(item['manually_searched']),
+                    'provider': {
+                        'id': provider_id,
+                        'name': item['provider'],
+                    }
+                }
 
         if not results:
             return self._not_found('History data not found for show {show} and episode {episode}'.format(

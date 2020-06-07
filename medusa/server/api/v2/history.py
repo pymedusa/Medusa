@@ -6,6 +6,7 @@ from os.path import basename
 
 from medusa import db
 from medusa.common import statusStrings
+from meudsa.provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 
@@ -55,22 +56,28 @@ class HistoryHandler(BaseRequestHandler):
             start = arg_limit * (arg_page - 1)
 
             for item in results[start:start + arg_limit]:
-                d = {}
-                d['id'] = item['rowid']
-                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-                d['status'] = item['action']
-                d['statusName'] = statusStrings.get(item['action'])
-                d['quality'] = item['quality']
-                d['actionDate'] = item['date']
-                d['resource'] = basename(item['resource'])
-                d['size'] = item['size']
-                d['properTags'] = item['proper_tags']
-                d['season'] = item['season']
-                d['episode'] = item['episode']
-                d['manuallySearched'] = bool(item['manually_searched'])
-                d['provider'] = item['provider']
+                provider_id = None
+                if item['provider']:
+                    provider_id = GenericProvider.make_id(item['provider'])
 
-                yield d
+                yield {
+                    'id': item['rowid'],
+                    'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
+                    'status': item['action'],
+                    'statusName': statusStrings.get(item['action']),
+                    'actionDate': item['date'],
+                    'quality': item['quality'],
+                    'resource': basename(item['resource']),
+                    'size': item['size'],
+                    'properTags': item['proper_tags'],
+                    'season': item['season'],
+                    'episode': item['episode'],
+                    'manuallySearched': bool(item['manually_searched']),
+                    'provider': {
+                        'id': provider_id,
+                        'name': item['provider'],
+                    }
+                }
 
         if not results:
             return self._not_found('History data not found')
