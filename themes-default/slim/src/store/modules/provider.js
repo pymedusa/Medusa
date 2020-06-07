@@ -119,11 +119,14 @@ const actions = {
 
                 params.page = page;
                 response = await api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
-                commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
+                return new Promise(resolve => {
+                    commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
 
-                if (response.data.length < limit) {
-                    lastPage = true;
-                }
+                    if (response.data.length < limit) {
+                        lastPage = true;
+                    }
+                    resolve();
+                });
             }
         }
     },

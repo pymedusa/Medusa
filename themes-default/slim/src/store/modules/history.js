@@ -123,17 +123,21 @@ const actions = {
      * @param {ShowIdentifier&ShowGetParameters} parameters Request parameters.
      * @returns {Promise} The API response.
      */
-    async getShowEpisodeHistory(context, { showSlug, episodeSlug }) {
-        const { commit } = context;
+    getShowEpisodeHistory(context, { showSlug, episodeSlug }) {
+        return new Promise(resolve => {
+            const { commit } = context;
 
-        try {
-            const response = await api.get(`/history/${showSlug}/episode/${episodeSlug}`);
-            if (response.data.length > 0) {
-                commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });
-            }
-        } catch {
-            console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
-        }
+            api.get(`/history/${showSlug}/episode/${episodeSlug}`)
+                .then(response => {
+                    if (response.data.length > 0) {
+                        commit(ADD_SHOW_EPISODE_HISTORY, { showSlug, episodeSlug, history: response.data });
+                    }
+                    resolve();
+                })
+                .catch(() => {
+                    console.warn(`No episode history found for show ${showSlug} and episode ${episodeSlug}`);
+                });
+        });
     }
 };
 
