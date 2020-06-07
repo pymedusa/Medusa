@@ -279,8 +279,8 @@
                         </span>
 
                         <span v-else-if="props.column.field == 'search'">
-                            <img class="epForcedSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
-                            <app-link class="epManualSearch" :id="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :name="show.indexer + 'x' + show.id[show.indexer] + 'x' + props.row.season + 'x' + props.row.episode" :href="'home/snatchSelection?indexername=' + show.indexer + '&seriesid=' + show.id[show.indexer] + '&season=' + props.row.season + '&episode=' + props.row.episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
+                            <img class="epForcedSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :ref="`search-${props.row.slug}`" src="images/search16.png" height="16" :alt="retryDownload(props.row) ? 'retry' : 'search'" :title="retryDownload(props.row) ? 'Retry Download' : 'Forced Seach'" @click="queueSearch(props.row)">
+                            <app-link class="epManualSearch" :id="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :name="`${show.indexer}x${show.id[show.indexer]}x${props.row.season}x${props.row.episode}`" :href="`home/snatchSelection?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}&season=${props.row.season}&episode=${props.row.episode}`"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search"></app-link>
                             <img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" @click="searchSubtitle($event, props.row)">
                         </span>
 
@@ -1212,17 +1212,17 @@ div.vgt-responsive > table tbody > tr > th.vgt-row-header > span {
     margin-bottom: 10px;
 }
 
-.fanartBackground.displayShow {
-    clear: both;
-    opacity: 0.9;
-}
-
 .defaultTable.displayShow {
     clear: both;
 }
 
 .displayShowTable.displayShow {
     clear: both;
+}
+
+.fanartBackground.displayShow {
+    clear: both;
+    opacity: 0.9;
 }
 
 .fanartBackground table {
