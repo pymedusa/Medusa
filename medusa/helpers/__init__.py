@@ -930,8 +930,8 @@ def check_url(url):
 
     We only check the URL header.
     """
-    # see also http://stackoverflow.com/questions/2924422
-    # http://stackoverflow.com/questions/1140661
+    # see also https://stackoverflow.com/questions/2924422
+    # https://stackoverflow.com/questions/1140661
     good_codes = [http_client.OK, http_client.FOUND, http_client.MOVED_PERMANENTLY]
 
     host, path = urlparse(url)[1:3]  # elems [1] and [2]
@@ -1489,7 +1489,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
 
     if indexer == 'IMDB':
-        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
@@ -1503,7 +1503,7 @@ def get_tvdb_from_id(indexer_id, indexer):
             return tvdb_id
 
     elif indexer == 'ZAP2IT':
-        url = 'http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
+        url = 'https://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s' % indexer_id
         data = session.get_content(url)
         if data is None:
             return tvdb_id
@@ -1516,7 +1516,7 @@ def get_tvdb_from_id(indexer_id, indexer):
         return tvdb_id
 
     elif indexer == 'TVMAZE':
-        url = 'http://api.tvmaze.com/shows/%s' % indexer_id
+        url = 'https://api.tvmaze.com/shows/%s' % indexer_id
         data = session.get_json(url)
         if data is None:
             return tvdb_id
@@ -1526,7 +1526,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # If indexer is IMDB and we've still not returned a tvdb_id,
     # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
-        url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
+        url = 'https://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
         data = session.get_json(url)
         if not data:
             return tvdb_id
@@ -1563,7 +1563,7 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     return data.get('seriesname')
 
 
-# http://stackoverflow.com/a/20380514
+# https://stackoverflow.com/a/20380514
 def get_image_size(image_path):
     """Determine the image type of image_path and return its size.."""
     img_ext = os.path.splitext(image_path)[1].lower().strip('.')
