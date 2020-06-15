@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from os.path import basename
 
 from medusa import db
-from medusa.common import statusStrings
+from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
@@ -56,9 +56,28 @@ class HistoryHandler(BaseRequestHandler):
             start = arg_limit * (arg_page - 1)
 
             for item in results[start:start + arg_limit]:
-                provider_id = None
-                if item['provider']:
-                    provider_id = GenericProvider.make_id(item['provider'])
+                provider = {}
+                release_group = None
+                release_name = None
+                file_name = None
+                subtitle_language = None
+
+                if item['action'] in (SNATCHED, FAILED):
+                    provider.update({
+                        'id': GenericProvider.make_id(item['provider']),
+                        'name': item['provider']
+                    })
+                    release_name = item['resource']
+
+                if item['action'] == DOWNLOADED:
+                    release_group = item['provider']
+                    file_name = item['resource']
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
 
                 yield {
                     'id': item['rowid'],
@@ -73,10 +92,12 @@ class HistoryHandler(BaseRequestHandler):
                     'season': item['season'],
                     'episode': item['episode'],
                     'manuallySearched': bool(item['manually_searched']),
-                    'provider': {
-                        'id': provider_id,
-                        'name': item['provider'],
-                    }
+                    'infoHash': item['info_hash'],
+                    'provider': provider,
+                    'release_name': release_name,
+                    'releaseGroup': release_group,
+                    'fileName': file_name,
+                    'subtitleLanguage': subtitle_language
                 }
 
         if not results:

@@ -6,7 +6,7 @@ import logging
 from os.path import basename
 
 from medusa import db
-from medusa.common import statusStrings
+from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
@@ -62,7 +62,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, resource, size, proper_tags,
-                   indexer_id, showid, season, episode, manually_searched
+                   indexer_id, showid, season, episode, manually_searched, info_hash
             FROM history
             WHERE showid = ? AND indexer_id = ? AND season = ? AND episode = ?
         """
@@ -75,9 +75,28 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         def data_generator():
             """Read history data and normalize key/value pairs."""
             for item in results:
-                provider_id = None
-                if item['provider']:
-                    provider_id = GenericProvider.make_id(item['provider'])
+                provider = {}
+                release_group = None
+                release_name = None
+                file_name = None
+                subtitle_language = None
+
+                if item['action'] in (SNATCHED, FAILED):
+                    provider.update({
+                        'id': GenericProvider.make_id(item['provider']),
+                        'name': item['provider']
+                    })
+                    release_name = item['resource']
+
+                if item['action'] == DOWNLOADED:
+                    release_group = item['provider']
+                    file_name = item['resource']
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
 
                 yield {
                     'id': item['rowid'],
@@ -92,10 +111,12 @@ class EpisodeHistoryHandler(BaseRequestHandler):
                     'season': item['season'],
                     'episode': item['episode'],
                     'manuallySearched': bool(item['manually_searched']),
-                    'provider': {
-                        'id': provider_id,
-                        'name': item['provider'],
-                    }
+                    'infoHash': item['info_hash'],
+                    'provider': provider,
+                    'release_name': release_name,
+                    'releaseGroup': release_group,
+                    'fileName': file_name,
+                    'subtitleLanguage': subtitle_language
                 }
 
         if not results:
