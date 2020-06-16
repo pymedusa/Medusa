@@ -18,6 +18,9 @@ mappings.update(EXTERNAL_MAPPINGS)
 reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
 reverse_mappings.update({v: k for k, v in viewitems(EXTERNAL_MAPPINGS)})
 
+# For example: {'tvdb': 1, 'tvmaze': 3, 'tmdb': 4}
+indexer_name_mapping = {indexerConfig[indexer]['identifier']: indexer for indexer in indexerConfig}
+
 
 def indexer_name_to_id(indexer_name):
     """Reverse translate the indexer identifier to it's id.

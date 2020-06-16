@@ -30,7 +30,7 @@ from medusa import (
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
 from medusa.imdb import Imdb
-from medusa.indexers.utils import indexer_id_to_name
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -130,9 +130,19 @@ class RecommendedShow(object):
         self.is_anime = False
 
         # Check if the show is currently already in the db
-        self.show_in_list = bool([show.indexerid for show in app.showList
-                                 if show.series_id == self.mapped_series_id and
-                                 show.indexer == self.mapped_indexer])
+        indexers = {mapped_indexer: mapped_series_id}
+        indexers.update({indexer_name_mapping[indexer_name]: indexers_series_id
+                         for indexer_name, indexers_series_id
+                         in self.ids.items() if indexer_name in indexer_name_mapping})
+
+        self.show_in_list = False
+        for show in app.showList:
+            if show.indexer in indexers and show.series_id == indexers[show.indexer]:
+                self.show_in_list = True
+                self.mapped_indexer = show.indexer
+                self.mapped_indexer_name = show.identifier.indexer.slug
+                self.series_id = show.series_id
+
         self.session = session
 
     def cache_image(self, image_url, default=None):
