@@ -29,10 +29,8 @@ from medusa import (
 )
 from medusa.cache import recommended_series_cache
 from medusa.helpers import ensure_list
-
 from medusa.imdb import Imdb
-from medusa.indexers.config import indexerConfig
-from medusa.indexers.utils import indexer_id_to_name
+from medusa.indexers.utils import indexer_id_to_name, indexer_name_mapping
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -44,7 +42,6 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSession()
-VALID_INDEXERS = {indexerConfig[indexer]['identifier']: indexer for indexer in indexerConfig}
 
 
 class LazyApi(object):
@@ -134,9 +131,9 @@ class RecommendedShow(object):
 
         # Check if the show is currently already in the db
         indexers = {mapped_indexer: mapped_series_id}
-        indexers.update({VALID_INDEXERS[indexer_name]: indexers_series_id
+        indexers.update({indexer_name_mapping[indexer_name]: indexers_series_id
                          for indexer_name, indexers_series_id
-                         in self.ids.items() if indexer_name in VALID_INDEXERS})
+                         in self.ids.items() if indexer_name in indexer_name_mapping})
 
         self.show_in_list = False
         for show in app.showList:
