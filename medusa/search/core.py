@@ -218,16 +218,15 @@ def snatch_result(result):
 
             sql_l.append(cur_ep_obj.get_sql())
 
-        if cur_ep_obj.status != common.DOWNLOADED:
-            notifiers.notify_snatch(cur_ep_obj, result)
+        notifiers.notify_snatch(cur_ep_obj, result)
 
-            if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
-                log.info(
-                    u'Adding {0} {1} to Trakt watchlist',
-                    result.series.name,
-                    episode_num(cur_ep_obj.season, cur_ep_obj.episode),
-                )
+        if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
+            trakt_data.append((cur_ep_obj.season, cur_ep_obj.episode))
+            log.info(
+                u'Adding {0} {1} to Trakt watchlist',
+                result.series.name,
+                episode_num(cur_ep_obj.season, cur_ep_obj.episode),
+            )
 
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
