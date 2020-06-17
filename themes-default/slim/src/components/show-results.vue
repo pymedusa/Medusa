@@ -161,11 +161,13 @@ export default {
         };
     },
     async mounted() {
-        const { combinedResults, forceSearch, getProviders, getProviderCacheResults, show, season, episode } = this;
+        const { forceSearch, getProviders, getProviderCacheResults, show, season, episode } = this;
         await getProviders();
-        await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+
+        const result = await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+
         // TODO: put a modal in between
-        if (combinedResults.length === 0) {
+        if (result.providersSearched > 0 && result.totalSearchResults.length === 0) {
             forceSearch();
         }
     },

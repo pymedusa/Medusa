@@ -89,7 +89,7 @@ const actions = {
      * @param {String} The provider id.
      * @returns {void}.
      */
-    getProviderCacheResults(context, { showSlug, season, episode }) {
+    async getProviderCacheResults(context, { showSlug, season, episode }) {
         const { commit, state } = context;
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
@@ -101,6 +101,7 @@ const actions = {
             let response = null;
             let page = 0;
             let lastPage = false;
+            const results = [];
 
             // Empty the providers cache
             commit(SET_PROVIDER_CACHE, { providerId: provider, cache: [] });
@@ -116,7 +117,9 @@ const actions = {
                 params.page = page;
                 try {
                     response = await api.get(`/providers/${providerId}/results`, { params });
+
                     commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
+                    results.push(...response.data);
 
                     if (response.data.length < limit) {
                         lastPage = true;
@@ -126,6 +129,12 @@ const actions = {
                     lastPage = true;
                 }
             }
+            return results;
+        };
+
+        const result = {
+            providersSearched: 0,
+            totalSearchResults: []
         };
 
         for (const provider in state.providers) {
@@ -133,8 +142,12 @@ const actions = {
                 continue;
             }
 
-            getProviderResults(provider);
+            result.providersSearched += 1;
+            const providerResults = await getProviderResults(provider);
+            result.totalSearchResults.push(...providerResults);
         }
+
+        return result;
     },
     /**
      * Get provider cache results for enabled providers.

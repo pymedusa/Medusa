@@ -12,7 +12,7 @@ const mutations = {
         if (existingQueueItem) {
             Vue.set(state.queueitems, state.queueitems.indexOf(existingQueueItem), { ...existingQueueItem, ...queueItem });
         } else {
-            state.queueitems.push(queueItem);
+            Vue.set(state.queueitems, state.queueitems.length, queueItem);
         }
     }
 };
