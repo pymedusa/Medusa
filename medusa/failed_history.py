@@ -42,7 +42,6 @@ def prepare_failed_name(release):
 
 def log_failed(release):
     """Log release as failed in failed.db."""
-    log_str = u''
     size = -1
     provider = ''
 
@@ -95,8 +94,6 @@ def log_failed(release):
         )
 
     delete_logged_snatch(release, size, provider)
-
-    return log_str
 
 
 def log_success(release):
@@ -183,8 +180,6 @@ def mark_failed(ep_obj):
     :param ep_obj: Episode object to mark as failed
     :return: empty string
     """
-    log_str = u''
-
     try:
         with ep_obj.lock:
             ep_obj.status = FAILED
@@ -194,8 +189,6 @@ def mark_failed(ep_obj):
         logger.log(u'Unable to get episode, please set its status '
                    u'manually: {error}'.format(error=error),
                    logger.WARNING)
-
-    return log_str
 
 
 def log_snatch(search_result):

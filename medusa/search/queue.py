@@ -584,8 +584,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         try:
             for ep_obj in self.segment:
 
-                log.info('Marking episode as bad: {ep}',
-                         {'ep': ep_obj.pretty_name()})
+                log.info('Marking episode as failed: {ep}', {'ep': ep_obj.pretty_name()})
 
                 failed_history.mark_failed(ep_obj)
 
@@ -600,7 +599,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.down_cur_quality doesnt matter
             # if it isn't wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = search_providers(self.show, self.segment, True)
+            search_result = search_providers(self.show, self.segment, forced_search=True)
 
             if search_result:
                 for result in search_result:

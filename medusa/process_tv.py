@@ -281,15 +281,16 @@ class ProcessResult(object):
             failed = True
 
         if failed:
-            self.process_failed(path)
-            self.missedfiles.append('{0}: Failed download'.format(path))
+            self.missedfiles.append('{0}: Failed download.'.format(path))
+            if app.USE_FAILED_DOWNLOADS:
+                self._process_failed(path)
             return False
 
         # SABnzbd: _UNPACK_, NZBGet: _unpack
         if folder.startswith(('_UNPACK_', '_unpack')):
             self.log('The directory name indicates that this release is in the process of being unpacked.',
                      logger.DEBUG)
-            self.missedfiles.append('{0}: Being unpacked'.format(path))
+            self.missedfiles.append('{0}: Being unpacked.'.format(path))
             return False
 
         return True
@@ -643,31 +644,30 @@ class ProcessResult(object):
                      'Continuing the post-processing of this file: {0}'.format(video))
         return True
 
-    def process_failed(self, path):
+    def _process_failed(self, path):
         """Process a download that did not complete correctly."""
-        if app.USE_FAILED_DOWNLOADS:
-            try:
-                processor = failed_processor.FailedProcessor(path, self.resource_name)
-                self.result = processor.process()
-                process_fail_message = ''
-            except FailedPostProcessingFailedException as error:
-                processor = None
-                self.result = False
-                process_fail_message = ex(error)
+        try:
+            processor = failed_processor.FailedProcessor(path, self.resource_name)
+            self.result = processor.process()
+            process_fail_message = ''
+        except FailedPostProcessingFailedException as error:
+            processor = None
+            self.result = False
+            process_fail_message = ex(error)
 
-            if processor:
-                self._output.append(processor.output)
+        if processor:
+            self._output.append(processor.output)
 
-            if app.DELETE_FAILED and self.result:
-                if self.delete_folder(path, check_empty=False):
-                    self.log('Deleted folder: {0}'.format(path), logger.DEBUG)
+        if app.DELETE_FAILED and self.result:
+            if self.delete_folder(path, check_empty=False):
+                self.log('Deleted folder: {0}'.format(path), logger.DEBUG)
 
-            if self.result:
-                self.log('Failed Download Processing succeeded: {0}, {1}'.format
-                         (self.resource_name, path))
-            else:
-                self.log('Failed Download Processing failed: {0}, {1}: {2}'.format
-                         (self.resource_name, path, process_fail_message), logger.WARNING)
+        if self.result:
+            self.log('Failed Download Processing succeeded: {0}, {1}'.format
+                     (self.resource_name, path))
+        else:
+            self.log('Failed Download Processing failed: {0}, {1}: {2}'.format
+                     (self.resource_name, path, process_fail_message), logger.WARNING)
 
     @staticmethod
     def subtitles_enabled(*args):
