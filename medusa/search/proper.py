@@ -19,7 +19,7 @@ from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import AuthException, ex
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from medusa.search.core import filter_results, pick_result, snatch_episode
+from medusa.search.core import filter_results, pick_result, snatch_result
 from medusa.show.history import History
 
 from six import itervalues, text_type
@@ -378,7 +378,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             else:
                 # snatch it
-                snatch_episode(candidate)
+                snatch_result(candidate)
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):

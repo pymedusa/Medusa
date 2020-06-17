@@ -16,7 +16,7 @@ from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, MANUAL_SE
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
-    snatch_episode,
+    snatch_result,
 )
 
 
@@ -456,7 +456,7 @@ class SnatchQueueItem(generic_queue.QueueItem):
                             'search_type': result.search_type
                         }
                     )
-                self.success = snatch_episode(result)
+                self.success = snatch_result(result)
             else:
                 log.info('Unable to snatch release: {name}',
                          {'name': result.name})

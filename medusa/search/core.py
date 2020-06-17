@@ -100,7 +100,7 @@ def _download_result(result):
     return new_result
 
 
-def snatch_episode(result):
+def snatch_result(result):
     """
     Snatch a result that has been found.
 
