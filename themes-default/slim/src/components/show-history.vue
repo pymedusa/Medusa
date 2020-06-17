@@ -30,9 +30,10 @@
                             <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                         </span>
 
-                        <span v-else-if="props.column.label === 'Provider'" class="align-center">
-                            <img style="margin-right: 5px;" :src="`images/providers/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
-                            {{props.row.provider.name}}
+                        <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
+
+                            <img v-if="props.row.statusName !== 'Downloaded'" style="margin-right: 5px;" :src="`images/providers/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
+                            {{props.row.statusName === 'Downloaded' ? (props.row.releaseGroup !== -1 ? props.row.releaseGroup : '') : props.row.provider.name}}
                         </span>
 
                         <span v-else>
@@ -92,7 +93,7 @@ export default {
                 field: 'quality',
                 type: 'number'
             }, {
-                label: 'Provider',
+                label: 'Provider/Group',
                 field: 'provider.id'
             }, {
                 label: 'Release',
