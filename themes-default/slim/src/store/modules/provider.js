@@ -89,7 +89,7 @@ const actions = {
      * @param {String} The provider id.
      * @returns {void}.
      */
-    async getProviderCacheResults(context, { showSlug, season, episode }) {
+    getProviderCacheResults(context, { showSlug, season, episode }) {
         const { commit, state } = context;
         const limit = 1000;
         const params = { limit, showslug: showSlug, season };
@@ -97,14 +97,10 @@ const actions = {
             params.episode = episode;
         }
 
-        let page = 0;
-        let lastPage = false;
-        let response = null;
-
-        for (const provider in state.providers) {
-            if (!state.providers[provider].config.enabled) {
-                continue;
-            }
+        const getProviderResults = async provider => {
+            let response = null;
+            let page = 0;
+            let lastPage = false;
 
             // Empty the providers cache
             commit(SET_PROVIDER_CACHE, { providerId: provider, cache: [] });
@@ -118,16 +114,26 @@ const actions = {
                 page += 1;
 
                 params.page = page;
-                response = await api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
-                return new Promise(resolve => {
+                try {
+                    response = await api.get(`/providers/${providerId}/results`, { params });
                     commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
 
                     if (response.data.length < limit) {
                         lastPage = true;
                     }
-                    resolve();
-                });
+                } catch (error) {
+                    console.debug(String(error));
+                    lastPage = true;
+                }
             }
+        };
+
+        for (const provider in state.providers) {
+            if (!state.providers[provider].config.enabled) {
+                continue;
+            }
+
+            getProviderResults(provider);
         }
     },
     /**

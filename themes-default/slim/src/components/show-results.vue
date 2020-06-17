@@ -160,13 +160,14 @@ export default {
             loadingMessage: ''
         };
     },
-    mounted() {
-        const { getProviders, getProviderResults } = this;
-        getProviders()
-            .then(() => {
-                // We need to get the providers, before we know which providers to query.
-                getProviderResults();
-            });
+    async mounted() {
+        const { combinedResults, forceSearch, getProviders, getProviderCacheResults, show, season, episode } = this;
+        await getProviders();
+        await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
+        // TODO: put a modal in between
+        if (combinedResults.length === 0) {
+            forceSearch();
+        }
     },
     computed: {
         ...mapState({
