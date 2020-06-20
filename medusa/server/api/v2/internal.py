@@ -120,22 +120,6 @@ class InternalHandler(BaseRequestHandler):
                 # Check if the folder is already in the library
                 cur_dir['alreadyAdded'] = next((True for path in dir_results if path == cur_path), False)
 
-                if not cur_dir['alreadyAdded']:
-                    # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-                    # is reset. This will prevent errors, when using multiple indexers and caching.
-                    for cur_provider in itervalues(app.metadata_provider_dict):
-                        (series_id, series_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
-                        if all((series_id, series_name, indexer)):
-                            cur_dir['metadata'] = {
-                                'seriesId': try_int(series_id),
-                                'seriesName': series_name,
-                                'indexer': try_int(indexer)
-                            }
-                            break
-
-                    series_identifier = SeriesIdentifier(indexer, series_id)
-                    cur_dir['alreadyAdded'] = bool(Series.find_by_identifier(series_identifier))
-
                 dir_list.append(cur_dir)
 
         return self._ok(data=dir_list)
