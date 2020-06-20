@@ -12,15 +12,17 @@
                     </h1>
                 </div>
 
-                <div v-if="type === 'snatch-selection'" id="show-specials-and-seasons" class="pull-right">
+                <!-- Episode specific information for snatch-selection -->
+                <div v-if="type === 'snatch-selection'" id="show-specials-and-seasons" class="pull-right episode-info">
                     <span class="h2footer display-specials">
-                        Manual search for:<br>
-                        <app-link
-                            :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`"
-                            class="snatchTitle"
-                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        Manual search for: Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                    </span>
+                    <span>
+                        {{episodeTitle}}
                     </span>
                 </div>
+
+                <!-- Display Specials on/off and season jump -->
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
                         Display Specials: <a @click.prevent="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
@@ -441,6 +443,7 @@ export default {
         }),
         ...mapGetters({
             show: 'getCurrentShow',
+            getEpisode: 'getEpisode',
             getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
@@ -532,6 +535,19 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
+        },
+        episodeTitle() {
+            const { getEpisode, show, season, episode } = this;
+            if (!(show.id.slug && season && episode)) {
+                return '';
+            }
+
+            const curEpisode = getEpisode({ showSlug: show.id.slug, season, episode });
+            if (curEpisode) {
+                return curEpisode.title;
+            }
+
+            return '';
         }
     },
     mounted() {
@@ -646,8 +662,18 @@ export default {
     width: 15px;
 }
 
+#showtitle {
+    float: none;
+}
+
 #show-specials-and-seasons {
-    margin-bottom: 15px;
+    bottom: 5px;
+    right: 15px;
+    position: absolute;
+}
+
+.episode-info span {
+    display: block;
 }
 
 span.required {
@@ -704,12 +730,6 @@ span.ignored {
     .display-seasons {
         top: -60px;
     }
-
-    #show-specials-and-seasons {
-        bottom: 5px;
-        right: 15px;
-        position: absolute;
-    }
 }
 
 @media (max-width: 767px) {
@@ -730,6 +750,15 @@ span.ignored {
         display: block;
         padding-top: 5px;
         width: 100%;
+    }
+
+    #showtitle {
+        margin-bottom: 40px;
+    }
+
+    #show-specials-and-seasons {
+        bottom: -40px;
+        left: 15px;
     }
 }
 
