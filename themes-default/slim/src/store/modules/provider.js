@@ -35,6 +35,14 @@ const mutations = {
      */
     [ADD_SEARCH_RESULTS](state, searchResults) {
         for (const searchResult of searchResults) {
+            if (!state.providers[searchResult.provider.id]) {
+                state.providers[searchResult.provider.id] = {
+                    name: '',
+                    config: {},
+                    cache: []
+                };
+            }
+
             const { cache } = state.providers[searchResult.provider.id];
 
             // Check if we don't allready have this result in our store.

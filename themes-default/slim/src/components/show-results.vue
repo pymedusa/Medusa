@@ -33,6 +33,14 @@
                             <quality-pill v-if="props.row.quality !== 0" :quality="props.row.quality" />
                         </span>
 
+                        <span v-else-if="props.column.label === 'Seeds'" class="align-center">
+                            {{props.row.seeders !== -1 ? props.row.seeders : '-'}}
+                        </span>
+
+                        <span v-else-if="props.column.label === 'Peers'" class="align-center">
+                            {{props.row.leechers !== -1 ? props.row.leechers : '-'}}
+                        </span>
+
                         <span v-else-if="props.column.label === 'Added'" class="align-center">
                             {{props.row.dateAdded ? fuzzyParseDateTime(props.row.dateAdded) : ''}}
                         </span>

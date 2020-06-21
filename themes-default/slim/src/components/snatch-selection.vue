@@ -321,6 +321,11 @@ span.global-undesired {
 .snatch-selection-template >>> .failed {
     background-color: rgb(255, 153, 153);
 }
+
+.snatch-selection-template >>> .subtitled {
+    background-color: rgb(190, 222, 237);
+}
+
 show-history {
     margin-bottom: 10px;
 }

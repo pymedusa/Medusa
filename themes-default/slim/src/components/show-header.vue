@@ -17,7 +17,7 @@
                     <span class="h2footer display-specials">
                         Manual search for: Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
                     </span>
-                    <span>
+                    <span v-if="episodeTitle">
                         {{episodeTitle}}
                     </span>
                 </div>

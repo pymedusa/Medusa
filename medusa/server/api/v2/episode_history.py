@@ -94,6 +94,10 @@ class EpisodeHistoryHandler(BaseRequestHandler):
 
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']
+                    provider.update({
+                        'id': item['provider'],
+                        'name': item['provider']
+                    })
 
                 if item['action'] == SUBTITLED:
                     subtitle_language = item['resource']

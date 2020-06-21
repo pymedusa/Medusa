@@ -32,7 +32,7 @@
 
                         <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
                             <img v-if="props.row.statusName !== 'Downloaded'" style="margin-right: 5px;" :src="`images/providers/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
-                            {{props.row.statusName === 'Downloaded' ? (props.row.releaseGroup !== -1 ? props.row.releaseGroup : '') : props.row.provider.name}}
+                            {{['Downloaded', 'Subtitled'].includes(props.row.statusName) ? (props.row.releaseGroup !== -1 ? props.row.releaseGroup : '') : props.row.provider.name}}
                         </span>
 
                         <span v-else>
@@ -50,7 +50,6 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize, episodeToSlug } from '../utils/core';
 import QualityPill from './helpers/quality-pill.vue';
-
 
 export default {
     name: 'show-history',
