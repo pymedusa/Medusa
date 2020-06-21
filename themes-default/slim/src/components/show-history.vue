@@ -31,8 +31,13 @@
                         </span>
 
                         <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
-                            <img v-if="props.row.statusName !== 'Downloaded'" style="margin-right: 5px;" :src="`images/providers/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
-                            {{['Downloaded', 'Subtitled'].includes(props.row.statusName) ? (props.row.releaseGroup !== -1 ? props.row.releaseGroup : '') : props.row.provider.name}}
+                            <img v-if="props.row.statusName !== 'Downloaded'" style="margin-right: 5px;" :src="`images/${props.row.statusName === 'Snatched' ? 'providers' : 'subtitles'}/${props.row.provider.id}.png`" :alt="props.row.provider.name" width="16" height="16">
+                            <span v-if="props.row.statusName === 'Downloaded'">
+                                {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
+                            </span>
+                            <span v-else>
+                                {{props.row.provider.name}}
+                            </span>
                         </span>
 
                         <span v-else>
