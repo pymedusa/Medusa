@@ -114,6 +114,7 @@ export default {
             columns: [{
                 label: 'Release',
                 field: 'release',
+                tdClass: 'release',
                 hidden: getCookie('Release')
             },
             {
@@ -207,7 +208,9 @@ export default {
             history: state => state.history.episodeHistory
         }),
         ...mapGetters({
-            fuzzyParseDateTime: 'fuzzyParseDateTime'
+            fuzzyParseDateTime: 'fuzzyParseDateTime',
+            effectiveIgnored: 'effectiveIgnored',
+            effectiveRequired: 'effectiveRequired'
         }),
         combinedResults() {
             const { episode, episodeHistory, providers, season, show } = this;
@@ -302,7 +305,34 @@ export default {
                 });
         },
         rowStyleClassFn(row) {
-            return row.status || 'skipped';
+            const { effectiveIgnored, effectiveRequired, config, show } = this;
+            const classes = [row.status || 'skipped'];
+
+            const getReleaseNameClasses = name => {
+                const classes = [];
+
+                if (effectiveIgnored(show).map(word => {
+                    return name.toLowerCase().includes(word.toLowerCase());
+                }).filter(x => x === true).length > 0) {
+                    classes.push('global-ignored');
+                }
+
+                if (effectiveRequired(show).map(word => {
+                    return name.toLowerCase().includes(word.toLowerCase());
+                }).filter(x => x === true).length > 0) {
+                    classes.push('global-required');
+                }
+
+                if (config.search.filters.undesired.map(word => {
+                    return name.toLowerCase().includes(word.toLowerCase());
+                }).filter(x => x === true).length > 0) {
+                    classes.push('global-undesired');
+                }
+
+                return classes;
+            };
+
+            return [...classes, ...getReleaseNameClasses(row.release)].join(' ');
         },
         async snatchResult(evt, result) {
             const { layout } = this;

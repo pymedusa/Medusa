@@ -129,28 +129,6 @@ export default {
 </script>
 
 <style scoped>
-span.global-ignored {
-    color: red;
-}
-
-span.show-ignored {
-    color: red;
-    font-style: italic;
-}
-
-span.global-required {
-    color: green;
-}
-
-span.show-required {
-    color: green;
-    font-style: italic;
-}
-
-span.global-undesired {
-    color: orange;
-}
-
 /** Use this as table styling for all table layouts */
 .snatch-selection-template >>> .vgt-table {
     width: 100%;
@@ -324,6 +302,28 @@ span.global-undesired {
 
 .snatch-selection-template >>> .subtitled {
     background-color: rgb(190, 222, 237);
+}
+
+.snatch-selection-template >>> .global-ignored td.release span {
+    color: red;
+}
+
+.snatch-selection-template >>> .show-ignored td.release span {
+    color: red;
+    font-style: italic;
+}
+
+.snatch-selection-template >>> .global-required td.release span {
+    color: green;
+}
+
+.snatch-selection-template >>> .show-required td.release span {
+    color: green;
+    font-style: italic;
+}
+
+.snatch-selection-template >>> .global-undesired td.release span {
+    color: orange;
 }
 
 show-history {
