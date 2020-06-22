@@ -160,8 +160,8 @@ const actions = {
     /**
      * Get provider cache results for enabled providers.
      *
-     * @param {*} context The store context.
-     * @param {String} The provider id.
+     * @param {*} {commit} Destructured commit object.
+     * @param {Object} searchResult - Search result.
      * @returns {void}.
      */
     addManualSearchResult({ commit }, searchResult) {
