@@ -1,7 +1,7 @@
 <template>
     <div class="show-results-wrapper">
         <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
-            <div class="col-md-12 top-15 horizontal-scroll">
+            <div class="col-md-12 top-15">
                 <div class="button-row">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Refresh Results" @click="getProviderResults">
                     <input class="btn-medusa manualSearchButton top-5 bottom-5" type="button"  value="Force Search" @click="forceSearch">
@@ -20,6 +20,9 @@
                                 :sort-options="{
                                     enabled: true,
                                     initialSortBy: { field: 'pubdate', type: 'desc' }
+                                }"
+                                :column-filter-options="{
+                                    enabled: true
                                 }"
                                 :row-style-class="rowStyleClassFn"
                                 styleClass="vgt-table condensed"
@@ -72,6 +75,7 @@
 import { apiRoute } from '../api';
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
+import { manageCookieMixin } from '../mixins/manage-cookie';
 import { StateSwitch } from './helpers';
 import QualityPill from './helpers/quality-pill.vue';
 import { episodeToSlug, humanFileSize } from '../utils/core';
@@ -83,6 +87,9 @@ export default {
         StateSwitch,
         QualityPill
     },
+    mixins: [
+        manageCookieMixin('showResults')
+    ],
     props: {
         show: {
             type: Object,
@@ -102,38 +109,47 @@ export default {
         }
     },
     data() {
+        const { getCookie } = this;
         return {
             columns: [{
                 label: 'Release',
-                field: 'release'
+                field: 'release',
+                hidden: getCookie('Release')
             },
             {
                 label: 'Group',
-                field: 'releaseGroup'
+                field: 'releaseGroup',
+                hidden: getCookie('Group')
             },
             {
                 label: 'Provider',
-                field: 'provider.name'
+                field: 'provider.name',
+                hidden: getCookie('Provider')
             },
             {
                 label: 'Quality',
-                field: 'quality'
+                field: 'quality',
+                type: 'number',
+                hidden: getCookie('Quality')
             },
             {
                 label: 'Seeds',
                 field: 'seeders',
-                type: 'number'
+                type: 'number',
+                hidden: getCookie('Seeds')
             },
             {
                 label: 'Peers',
                 field: 'leechers',
-                type: 'number'
+                type: 'number',
+                hidden: getCookie('Peers')
             },
             {
                 label: 'Size',
                 field: 'size',
                 formatFn: humanFileSize,
-                type: 'number'
+                type: 'number',
+                hidden: getCookie('Size')
             },
             {
                 label: 'Added',
@@ -141,7 +157,8 @@ export default {
                 type: 'date',
                 sortable: true,
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss', //e.g. 07-09-2017 19:16:25
-                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss'
+                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss',
+                hidden: getCookie('Added')
             },
             {
                 label: 'Published',
@@ -149,7 +166,8 @@ export default {
                 type: 'date',
                 sortable: true,
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ssXXX',
-                dateOutputFormat: 'yyyy-MM-dd HH:mm:ss'
+                dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
+                hidden: getCookie('Published')
             },
             {
                 label: 'Updated',
@@ -157,7 +175,8 @@ export default {
                 type: 'date',
                 sortable: true,
                 dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss',
-                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss'
+                dateOutputFormat: 'yyyy/MM/dd HH:mm:ss',
+                hidden: getCookie('Updated')
             },
             {
                 label: 'Snatch',

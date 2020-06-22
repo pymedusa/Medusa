@@ -1,7 +1,7 @@
 <template>
-    <div class="show-history-wrapper">
+    <div class="show-history-wrapper" :class="{'component-margin': !hideHistory}">
         <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
-            <div class="col-md-12 top-15 horizontal-scroll">
+            <div class="col-md-12 top-15">
                 <div class="button-row">
                     <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" @click="hideHistory = !hideHistory">
                         {{hideHistory ? 'Show History' : 'Hide History'}}
@@ -16,6 +16,9 @@
                                 :sort-options="{
                                     enabled: true,
                                     initialSortBy: { field: 'actionDate', type: 'desc' }
+                                }"
+                                :column-filter-options="{
+                                    enabled: true
                                 }"
                                 styleClass="vgt-table condensed"
                                 :row-style-class="rowStyleClassFn"
@@ -54,6 +57,7 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize, episodeToSlug } from '../utils/core';
+import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
 
 export default {
@@ -62,6 +66,9 @@ export default {
         VueGoodTable,
         QualityPill
     },
+    mixins: [
+        manageCookieMixin('showHistory')
+    ],
     props: {
         show: {
             type: Object,
@@ -81,31 +88,38 @@ export default {
         }
     },
     data() {
+        const { getCookie } = this;
         return {
             columns: [{
                 label: 'Date',
                 field: 'actionDate',
                 dateInputFormat: 'yyyyMMddHHmmss', //e.g. 07-09-2017 19:16:25
                 dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
-                type: 'date'
+                type: 'date',
+                hidden: getCookie('Date')
             }, {
                 label: 'Status',
-                field: 'statusName'
+                field: 'statusName',
+                hidden: getCookie('Status')
             }, {
                 label: 'Quality',
                 field: 'quality',
-                type: 'number'
+                type: 'number',
+                hidden: getCookie('Quality')
             }, {
                 label: 'Provider/Group',
-                field: 'provider.id'
+                field: 'provider.id',
+                hidden: getCookie('Provider/Group')
             }, {
                 label: 'Release',
-                field: 'resource'
+                field: 'resource',
+                hidden: getCookie('Release')
             }, {
                 label: 'Size',
                 field: 'size',
                 formatFn: humanFileSize,
-                type: 'number'
+                type: 'number',
+                hidden: getCookie('Size')
             }],
             loading: false,
             loadingMessage: '',
@@ -179,6 +193,11 @@ export default {
 };
 </script>
 <style scoped>
+/* Make some room for the Select columns ul / dropdown. */
+.component-margin {
+    margin-bottom: 50px;
+}
+
 .show-history-wrapper >>> table.subtitle-table tr {
     background-color: rgb(190, 222, 237);
 }
