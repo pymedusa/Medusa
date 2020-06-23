@@ -266,10 +266,7 @@ class DelugeRPC(object):
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_magnet(torrent, options)
-            if not torrent_id:
-                torrent_id = self._check_torrent(info_hash)
         except Exception:
-            raise
             return False
         else:
             return torrent_id
@@ -294,8 +291,6 @@ class DelugeRPC(object):
         try:
             self.connect()
             torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options)
-            if not torrent_id:
-                torrent_id = self._check_torrent(info_hash)
         except Exception:
             return False
         else:
@@ -414,28 +409,19 @@ class DelugeRPC(object):
         """Disconnect RPC client."""
         self.client.disconnect()
 
-    def _check_torrent(self, info_hash):
-        torrent_id = self.client.core.get_torrent_status(info_hash, {})
-        if torrent_id.get('hash'):
-            log.debug('DelugeD: Torrent already exists in Deluge')
-            return info_hash
-        return False
-
-    def get_all_torrents(self):
-        """Get all torrents in client.
-
-        :return:
-        :rtype: bool
-        """
+    def get_torrent_status(self, info_hash):
+        """Get torrent status."""
         try:
             self.connect()
-            torrents_data = self.client.core.get_torrents_status({}, ('name', 'hash', 'progress', 'state',
-                                                                      'ratio', 'stop_ratio', 'is_seed', 'is_finished',
-                                                                      'paused', 'files'))
+            log.info('Checking DelugeD torrent {hash} status.', {'hash': info_hash})
+            torrent_data = self.client.core.get_torrent_status(
+                info_hash, ('name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
+                            'is_seed', 'is_finished', 'paused', 'files'))
         except Exception:
-            return False
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            return
         else:
-            return torrents_data
+            return torrent_data
         finally:
             if self.client:
                 self.disconnect()
