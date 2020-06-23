@@ -7,7 +7,7 @@
                      ref="show-header"
                      :show-id="id"
                      :show-indexer="indexer"
-                     :manual-search-type="'episode'"
+                     :manual-search-type="manualSearchType"
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
@@ -20,7 +20,6 @@
 
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { AppLink } from './helpers';
 import ShowHeader from './show-header.vue';
 import ShowHistory from './show-history.vue';
 import ShowResults from './show-results.vue';
@@ -71,7 +70,13 @@ export default {
             return Number(this.$route.query.season);
         },
         episode() {
+            if (this.$route.query.manual_search_type === 'season') {
+                return;
+            }
             return Number(this.$route.query.episode);
+        },
+        manualSearchType() {
+            return this.$route.query.manual_search_type;
         }
     },
     methods: {

@@ -178,10 +178,14 @@ export const waitFor = /* istanbul ignore next */ async (check, poll = 100, time
 
 /**
  * Transform a season and episode number to an episode slug.
+ * If the episode number is not provided, return a season slug.
  * @param {number} season - Season number.
  * @param {number} episode - Episode number.
- * @returns {string} Episode slug.
+ * @returns {string} Episode or Season slug.
  */
 export const episodeToSlug = (season, episode) => {
-    return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
+    if (episode) {
+        return `s${season.toString().padStart(2, '0')}e${episode.toString().padStart(2, '0')}`;
+    }
+    return `s${season.toString().padStart(2, '0')}`;
 };

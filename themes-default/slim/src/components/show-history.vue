@@ -115,6 +115,14 @@ export default {
                 field: 'resource',
                 hidden: getCookie('Release')
             }, {
+                label: 'Season',
+                field: 'season',
+                hidden: getCookie('Season')
+            }, {
+                label: 'Episode',
+                field: 'episode',
+                hidden: getCookie('Episode')
+            }, {
                 label: 'Size',
                 field: 'size',
                 formatFn: humanFileSize,
@@ -147,7 +155,8 @@ export default {
     methods: {
         humanFileSize,
         ...mapActions({
-            getShowEpisodeHistory: 'getShowEpisodeHistory'
+            getShowEpisodeHistory: 'getShowEpisodeHistory',
+            getShowHistory: 'getHistory'
         }),
         close() {
             this.$emit('close');
@@ -157,10 +166,14 @@ export default {
             this.$el.remove();
         },
         getHistory() {
-            const { getShowEpisodeHistory, show, episode, season, updateHistory } = this;
+            const { getShowHistory, getShowEpisodeHistory, show, episode, season, updateHistory } = this;
             if (show.id.slug) {
-                // Use apiv2 to get latest episode history
-                getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
+                if (episode) {
+                    // Use apiv2 to get latest episode history
+                    getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
+                } else {
+                    getShowHistory(show.id.slug);
+                }
             }
 
             // Update the local history array with store data.
@@ -168,11 +181,16 @@ export default {
         },
         updateHistory() {
             const { getEpisodeHistory, getSeasonHistory, show, episode, season, searchType } = this;
+            if (!show.id.slug) {
+                return;
+            }
+
             if (searchType === 'episode') {
                 this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
             }
 
-            this.history = getSeasonHistory({ showSlug: show.id.slug });
+            // As this is not an episode search, we're returning all results for the specific season.
+            this.history = getSeasonHistory({ showSlug: show.id.slug, season });
         },
         rowStyleClassFn(row) {
             return row.statusName.toLowerCase() || 'skipped';

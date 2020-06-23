@@ -212,7 +212,7 @@ class SearchResult(object):
             'release': self.name,
             'season': self.actual_season,
             'episodes': self.actual_episodes,
-            'seasonPack': self.actual_season == -1,
+            'seasonPack': len(self.actual_episodes) == 0,
             'indexer': self.series.indexer,
             'seriesId': self.series.series_id,
             'showSlug': self.series.identifier.slug,

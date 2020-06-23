@@ -31,8 +31,8 @@ class HistoryHandler(BaseRequestHandler):
         """
         sql_base = """
             SELECT rowid, date, action, quality,
-                   provider, version, proper_tags, manually_searched,
-                   resource, size, indexer_id, showid, season, episode
+                   provider, version, resource, size, proper_tags,
+                   indexer_id, showid, season, episode, manually_searched, info_hash
             FROM history
         """
         params = []

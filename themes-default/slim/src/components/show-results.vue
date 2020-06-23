@@ -228,10 +228,16 @@ export default {
             for (const provider of Object.values(providers).filter(provider => provider.config.enabled)) {
                 if (provider.cache && provider.cache.length > 0) {
                     results = [...results, ...provider.cache.filter(
-                        searchResult =>
-                            searchResult.showSlug === show.id.slug &&
-                            searchResult.season === season &&
-                            searchResult.episodes.includes(episode)
+                        searchResult => {
+                            if (episode) {
+                                return searchResult.showSlug === show.id.slug &&
+                                       searchResult.season === season &&
+                                       searchResult.episodes.includes(episode);
+                            }
+                            return searchResult.showSlug === show.id.slug &&
+                                   searchResult.season === season &&
+                                   searchResult.seasonPack;
+                        }
                     ).map(result => {
                         return { ...result, status: getLastHistoryStatus(result) };
                     })];
@@ -240,7 +246,7 @@ export default {
             return results;
         },
         /**
-         * Helper to get the current episode slug.
+         * Helper to get the current episode or season slug.
          * @returns {string} episode slug.
          */
         episodeSlug() {
@@ -278,21 +284,14 @@ export default {
             getProviderCacheResults({ showSlug: show.id.slug, season, episode });
         },
         forceSearch() {
-            // Start a new manual search
-            const { episode, season, search } = this;
-            search([episodeToSlug(season, episode)]);
-        },
-        search(episodes) {
-            const { episode, season, show } = this;
+            const { episode, episodeSlug, season, show } = this;
             let data = {};
 
-            if (episodes) {
-                data = {
-                    showSlug: show.id.slug,
-                    episodes,
-                    options: {}
-                };
-            }
+            data = {
+                showSlug: show.id.slug,
+                options: {},
+                [episode ? 'episodes' : 'season']: [episodeSlug]
+            };
 
             this.loading = true;
             this.loadingMessage = 'Queue search...';
@@ -381,7 +380,7 @@ export default {
 
                 const [lastSnatch] = snatchedForThisEpisode.slice(-1);
                 if (lastSnatch && lastSnatch.success === true) {
-                    const { getProviderCacheResults, getShowEpisodeHistory, show, season, episode } = this;
+                    const { getProviderCacheResults, getShowEpisodeHistory, show, season, episode, episodeSlug } = this;
                     // // Change the row indication into snatched.
                     // for (const row in this.$refs['vgt-show-results'].$refs) {
                     //     if (!row.includes('row')) {
@@ -396,7 +395,7 @@ export default {
                     // }
 
                     // Something changed, let's get a new batch of provider results.
-                    await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
+                    await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug });
                     await getProviderCacheResults({ showSlug: show.id.slug, season, episode });
                 }
             },
