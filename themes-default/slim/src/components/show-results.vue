@@ -217,7 +217,8 @@ export default {
             let results = [];
 
             const getLastHistoryStatus = result => {
-                for (const historyRow of episodeHistory.sort(item => item.actionDate).reverse()) {
+                const sortedHistory = episodeHistory.sort(item => item.actionDate).reverse();
+                for (const historyRow of sortedHistory) {
                     if (historyRow.resource === result.release && historyRow.size === result.size) {
                         return historyRow.statusName.toLocaleLowerCase();
                     }

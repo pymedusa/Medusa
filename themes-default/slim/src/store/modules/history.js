@@ -21,8 +21,13 @@ const mutations = {
             if (!Object.keys(state.episodeHistory).includes(showSlug)) {
                 Vue.set(state.episodeHistory, showSlug, {});
             }
+
             const episodeSlug = episodeToSlug(row.season, row.episode);
-            Vue.set(state.episodeHistory[showSlug], episodeSlug, row);
+            if (!state.episodeHistory[showSlug][episodeSlug]) {
+                state.episodeHistory[showSlug][episodeSlug] = [];
+            }
+
+            state.episodeHistory[showSlug][episodeSlug].push(row);
         }
     },
     [ADD_SHOW_EPISODE_HISTORY](state, { showSlug, episodeSlug, history }) {
@@ -66,7 +71,7 @@ const getters = {
             return [];
         }
 
-        return Object.values(state.episodeHistory[showSlug]).filter(row => row.season === season) || [];
+        return Object.values(state.episodeHistory[showSlug]).flat().filter(row => row.season === season) || [];
     }
 };
 

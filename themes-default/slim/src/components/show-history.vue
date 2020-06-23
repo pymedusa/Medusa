@@ -81,54 +81,59 @@ export default {
         episode: {
             type: Number,
             required: false
-        },
-        searchType: {
-            type: String,
-            default: 'episode'
         }
     },
     data() {
         const { getCookie } = this;
+        const columns = [{
+            label: 'Date',
+            field: 'actionDate',
+            dateInputFormat: 'yyyyMMddHHmmss', //e.g. 07-09-2017 19:16:25
+            dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
+            type: 'date',
+            hidden: getCookie('Date')
+        }, {
+            label: 'Status',
+            field: 'statusName',
+            hidden: getCookie('Status')
+        }, {
+            label: 'Quality',
+            field: 'quality',
+            type: 'number',
+            hidden: getCookie('Quality')
+        }, {
+            label: 'Provider/Group',
+            field: 'provider.id',
+            hidden: getCookie('Provider/Group')
+        }, {
+            label: 'Release',
+            field: 'resource',
+            hidden: getCookie('Release')
+        }, {
+            label: 'Season',
+            field: 'season',
+            type: 'number',
+            hidden: getCookie('Season')
+        }, {
+            label: 'Episode',
+            field: 'episode',
+            type: 'number',
+            hidden: getCookie('Episode')
+        }, {
+            label: 'Size',
+            field: 'size',
+            formatFn: humanFileSize,
+            type: 'number',
+            hidden: getCookie('Size')
+        }];
+
+        if (this.episode) {
+            columns.find(column => column.label === 'Season').hidden = true;
+            columns.find(column => column.label === 'Episode').hidden = true;
+        }
+
         return {
-            columns: [{
-                label: 'Date',
-                field: 'actionDate',
-                dateInputFormat: 'yyyyMMddHHmmss', //e.g. 07-09-2017 19:16:25
-                dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
-                type: 'date',
-                hidden: getCookie('Date')
-            }, {
-                label: 'Status',
-                field: 'statusName',
-                hidden: getCookie('Status')
-            }, {
-                label: 'Quality',
-                field: 'quality',
-                type: 'number',
-                hidden: getCookie('Quality')
-            }, {
-                label: 'Provider/Group',
-                field: 'provider.id',
-                hidden: getCookie('Provider/Group')
-            }, {
-                label: 'Release',
-                field: 'resource',
-                hidden: getCookie('Release')
-            }, {
-                label: 'Season',
-                field: 'season',
-                hidden: getCookie('Season')
-            }, {
-                label: 'Episode',
-                field: 'episode',
-                hidden: getCookie('Episode')
-            }, {
-                label: 'Size',
-                field: 'size',
-                formatFn: humanFileSize,
-                type: 'number',
-                hidden: getCookie('Size')
-            }],
+            columns,
             loading: false,
             loadingMessage: '',
             history: [],
@@ -180,17 +185,17 @@ export default {
             updateHistory();
         },
         updateHistory() {
-            const { getEpisodeHistory, getSeasonHistory, show, episode, season, searchType } = this;
+            const { getEpisodeHistory, getSeasonHistory, show, episode, season } = this;
             if (!show.id.slug) {
                 return;
             }
 
-            if (searchType === 'episode') {
+            if (episode) {
                 this.history = getEpisodeHistory({ showSlug: show.id.slug, episodeSlug: episodeToSlug(season, episode) });
+            } else {
+                // As this is not an episode search, we're returning all results for the specific season.
+                this.history = getSeasonHistory({ showSlug: show.id.slug, season });
             }
-
-            // As this is not an episode search, we're returning all results for the specific season.
-            this.history = getSeasonHistory({ showSlug: show.id.slug, season });
         },
         rowStyleClassFn(row) {
             return row.statusName.toLowerCase() || 'skipped';
