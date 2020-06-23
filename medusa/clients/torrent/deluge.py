@@ -450,34 +450,26 @@ class DelugeAPI(GenericClient):
 
         return True
 
-    def remove_ratio_reached(self):
-        """Remove all Medusa torrents that ratio was reached.
-
-        It loops in all hashes returned from client and check if it is in the snatch history
-        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
-        If is a RARed torrent then we don't have a media file so we check if that hash is from an
-        episode that has a `Downloaded` status
-        """
+    def get_torrent_status(self, info_hash):
+        """Get torrent status."""
         post_data = json.dumps({
-            'method': 'core.get_torrents_status',
+            'method': 'core.get_torrent_status',
             'params': [
-                {},
+                info_hash,
                 ['name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
                  'is_seed', 'is_finished', 'paused', 'files'],
             ],
             'id': 72,
         })
 
-        log.info('Checking Deluge torrent status.')
+        log.info('Checking Deluge torrent {hash} status.', {'hash': info_hash})
         if self._request(method='post', data=post_data):
             if self.response.json()['error']:
-                log.warning('Error while fetching torrents status')
+                log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
                 return
             else:
                 torrent_data = self.response.json()['result']
-                info_hash_to_remove = read_torrent_status(torrent_data)
-                for info_hash in info_hash_to_remove:
-                    self.remove_torrent(info_hash)
+                return torrent_data
 
 
 api = DelugeAPI
