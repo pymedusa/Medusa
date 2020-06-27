@@ -117,18 +117,31 @@ const actions = {
         }
 
         let lastPage = false;
-        let response = null;
         while (!lastPage) {
+            let response = null;
             state.page += 1;
             params.page = state.page;
-            response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
-            if (showSlug) {
-                commit(ADD_SHOW_HISTORY, { showSlug, history: response.data });
-            } else {
-                commit(ADD_HISTORY, response.data);
+
+            try {
+                response = await api.get(url, { params }); // eslint-disable-line no-await-in-loop
+            } catch (error) {
+                if (error.response && error.response.status === 404) {
+                    console.debug(`No history available${showSlug ? ' for show ' + showSlug : ''}`);
+                }
+                lastPage = true;
             }
 
-            if (response.data.length < limit) {
+            if (response) {
+                if (showSlug) {
+                    commit(ADD_SHOW_HISTORY, { showSlug, history: response.data });
+                } else {
+                    commit(ADD_HISTORY, response.data);
+                }
+
+                if (response.data.length < limit) {
+                    lastPage = true;
+                }
+            } else {
                 lastPage = true;
             }
         }

@@ -186,7 +186,7 @@
                                     % if cur_action.action == SUBTITLED:
                                         <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${os.path.basename(cur_action.resource)}"/>
                                         <span style="vertical-align:middle;"> / </span>
-                                        <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
+                                        <img width="16" height="11" src="images/subtitles/flags/${cur_action.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';" style="vertical-align: middle !important;">
                                         &nbsp;
                                     % endif
                                 % endfor

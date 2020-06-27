@@ -106,7 +106,6 @@ const actions = {
         }
 
         const getProviderResults = async provider => {
-            let response = null;
             let page = 0;
             let lastPage = false;
             const results = [];
@@ -120,20 +119,29 @@ const actions = {
             lastPage = false;
 
             while (!lastPage) {
+                let response = null;
                 page += 1;
 
                 params.page = page;
+
                 try {
                     response = await api.get(`/providers/${providerId}/results`, { params });
+                } catch (error) {
+                    if (error.response && error.response.status === 404) {
+                        console.debug(`No results available for provider ${provider}`);
+                    }
 
+                    lastPage = true;
+                }
+
+                if (response) {
                     commit(ADD_PROVIDER_CACHE, { providerId, cache: response.data });
                     results.push(...response.data);
 
                     if (response.data.length < limit) {
                         lastPage = true;
                     }
-                } catch (error) {
-                    console.debug(String(error));
+                } else {
                     lastPage = true;
                 }
             }
