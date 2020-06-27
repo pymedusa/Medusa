@@ -82,7 +82,7 @@ class ProvidersHandler(BaseRequestHandler):
                     'seeders': item['seeders'],
                     'size': item['size'],
                     'leechers': item['leechers'],
-                    'pubdate': parser.parse(item['pubdate']) if item['pubdate'] else None,
+                    'pubdate': parser.parse(item['pubdate']).replace(microsecond=0) if item['pubdate'] else None,
                     'provider': {
                         'id': provider.get_id(),
                         'name': provider.name,
