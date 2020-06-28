@@ -19,13 +19,14 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: { field: 'pubdate', type: 'desc' }
+                                    initialSortBy: getSortBy()
                                 }"
                                 :column-filter-options="{
                                     enabled: true
                                 }"
                                 :row-style-class="rowStyleClassFn"
                                 styleClass="vgt-table condensed"
+                                @on-sort-change="saveSorting"
                 >
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
