@@ -235,5 +235,19 @@ class QBittorrentAPI(GenericClient):
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
+    def get_torrent_status(self, info_hash):
+        """Get torrent status."""
+        if self.api >= (2, 0, 0):
+            self.url = urljoin(self.host, 'api/v2/torrents/properties')
+            data = {
+                'hash': info_hash.lower(),
+            }
+        else:
+            self.url = urljoin(self.host, '/query/propertiesGeneral/{hash}',
+                               {'hash': info_hash.lower()})
+            data = None
+
+        return self._request(method='get', data=data, cookies=self.session.cookies)
+
 
 api = QBittorrentAPI

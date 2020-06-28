@@ -198,6 +198,10 @@ class DelugeRPC(object):
         self.client = DelugeRPCClient(self.host, self.port, self.username, self.password, decode_utf8=True)
         self.client.connect()
 
+    def disconnect(self):
+        """Disconnect RPC client."""
+        self.client.disconnect()
+
     def test(self):
         """Test connection.
 
@@ -404,10 +408,6 @@ class DelugeRPC(object):
         finally:
             if self.client:
                 self.disconnect()
-
-    def disconnect(self):
-        """Disconnect RPC client."""
-        self.client.disconnect()
 
     def get_torrent_status(self, info_hash):
         """Get torrent status."""
