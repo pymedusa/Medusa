@@ -38,6 +38,7 @@
                             <img v-if="['Snatched', 'Failed', 'Downloaded'].includes(props.row.statusName)" style="margin-right: 5px;"
                                  :src="`images/providers/${props.row.provider.id}.png`"
                                  :alt="props.row.provider.name" width="16" height="16"
+                                 onError="this.onerror=null;this.src='images/providers/missing.png';"
                             >
 
                             <!-- Different path for subtitle providers -->

@@ -30,7 +30,7 @@
                 >
                     <template slot="table-row" slot-scope="props">
                         <span v-if="props.column.label === 'Provider'" class="align-center">
-                            <img :src="`images/providers/${props.row.provider.imageName}`" :alt="props.row.provider.name" width="16">
+                            <img :src="`images/providers/${props.row.provider.imageName}`" :alt="props.row.provider.name" width="16" onError="this.onerror=null;this.src='images/providers/missing.png';">
                         </span>
 
                         <span v-else-if="props.column.label === 'Quality'" class="align-center">
