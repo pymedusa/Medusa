@@ -243,11 +243,11 @@ class QBittorrentAPI(GenericClient):
                 'hash': info_hash.lower(),
             }
         else:
-            self.url = urljoin(self.host, '/query/propertiesGeneral/{hash}',
-                               {'hash': info_hash.lower()})
+            self.url = urljoin(self.host, '/query/propertiesGeneral/{hash}'.format(
+                               hash=info_hash.lower()))
             data = None
 
-        return self._request(method='get', data=data, cookies=self.session.cookies)
+        return self._request(method='post', data=data, cookies=self.session.cookies)
 
 
 api = QBittorrentAPI
