@@ -210,6 +210,7 @@ class DelugeRPC(object):
         """
         try:
             self.connect()
+            self.get_torrent_status('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         except Exception:
             return False
         else:
@@ -409,7 +410,7 @@ class DelugeRPC(object):
             if self.client:
                 self.disconnect()
 
-    def get_torrent_status(self, info_hash):
+    def _torrent_properties(self, info_hash):
         """Get torrent status."""
         try:
             self.connect()

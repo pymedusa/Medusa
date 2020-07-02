@@ -41,6 +41,12 @@ class QBittorrentAPI(GenericClient):
 
         self.api = None
 
+    def torrent_completed(self, info_hash):
+        properties = self._torrent_properties(info_hash)
+        if properties['completion_date'] == -1:
+            return False
+        return True
+
     def _get_auth(self):
         """Authenticate with the client using the most recent API version available for use."""
         try:
@@ -77,6 +83,7 @@ class QBittorrentAPI(GenericClient):
             except Exception:
                 self.api = (1, 0, 0)
 
+        self.get_torrent_status('2fa71a2dbb7d53a39373a8c4e2c9d89aaa7a6db1')
         return auth
 
     def _get_auth_v2(self):
@@ -235,7 +242,7 @@ class QBittorrentAPI(GenericClient):
 
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
-    def get_torrent_status(self, info_hash):
+    def _torrent_properties(self, info_hash):
         """Get torrent status."""
         if self.api >= (2, 0, 0):
             self.url = urljoin(self.host, 'api/v2/torrents/properties')
@@ -247,7 +254,12 @@ class QBittorrentAPI(GenericClient):
                                hash=info_hash.lower()))
             data = None
 
-        return self._request(method='post', data=data, cookies=self.session.cookies)
+        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        if not self._request(method='post', data=data, cookies=self.session.cookies):
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            return
+
+        return self.response.json()
 
 
 api = QBittorrentAPI

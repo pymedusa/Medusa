@@ -111,6 +111,7 @@ setup(
         'pytest-flake8>=1.0.4',
         'pytest-tornado5>=2.0.0',
         'PyYAML>=5.1',
+        'requests-mock>=1.8.0',
         'vcrpy<4.0.0 ; python_version < "3.5"',
         'vcrpy>=4.0.0 ; python_version >= "3.5"',
         'mock<=3.0.5 ; python_version <= "3.5"',

@@ -419,7 +419,7 @@ export default {
                     deluged: {
                         title: 'Deluge (via Daemon)',
                         shortTitle: 'Deluge',
-                        description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://127.0.0.1:58846)',
+                        description: 'IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)',
                         pathOption: true,
                         removeFromClientOption: true,
                         labelOption: true,

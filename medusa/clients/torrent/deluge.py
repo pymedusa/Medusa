@@ -212,6 +212,7 @@ class DelugeAPI(GenericClient):
                           {'name': self.name})
                 return None
 
+        self.get_torrent_status('e4d44da9e71a8f4411bc3fd82aad7689cfa0f07f')
         return self.auth
 
     def _add_torrent_uri(self, result):
@@ -450,7 +451,7 @@ class DelugeAPI(GenericClient):
 
         return True
 
-    def get_torrent_status(self, info_hash):
+    def _torrent_properties(self, info_hash):
         """Get torrent status."""
         post_data = json.dumps({
             'method': 'core.get_torrent_status',
@@ -462,14 +463,12 @@ class DelugeAPI(GenericClient):
             'id': 72,
         })
 
-        log.info('Checking Deluge torrent {hash} status.', {'hash': info_hash})
-        if self._request(method='post', data=post_data):
-            if self.response.json()['error']:
-                log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
-                return
-            else:
-                torrent_data = self.response.json()['result']
-                return torrent_data
+        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+        if not self._request(method='post', data=post_data) or self.response.json()['error']:
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            return
+
+        return self.response.json()['result']
 
 
 api = DelugeAPI
