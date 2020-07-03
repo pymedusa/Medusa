@@ -60,6 +60,8 @@ class TransmissionAPI(GenericClient):
 
         post_data = json.dumps({
             'method': 'session-get',
+            'user': self.username,
+            'password': self.password
         })
 
         try:
@@ -85,7 +87,7 @@ class TransmissionAPI(GenericClient):
         })
 
         self._request(method='post', data=post_data)
-
+        self._torrent_properties('b2710a116396a88eca5444887fd5568eecb889ce')
         return self.auth
 
     def _add_torrent_uri(self, result):
@@ -249,145 +251,29 @@ class TransmissionAPI(GenericClient):
 
         return self.check_response()
 
-    def remove_ratio_reached(self):
-        """Remove all Medusa torrents that ratio was reached.
-
-        It loops in all hashes returned from client and check if it is in the snatch history
-        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
-        If is a RARed torrent then we don't have a media file so we check if that hash is from an
-        episode that has a `Downloaded` status
-
-        0 = Torrent is stopped
-        1 = Queued to check files
-        2 = Checking files
-        3 = Queued to download
-        4 = Downloading
-        5 = Queued to seed
-        6 = Seeding
-
-        isFinished = whether seeding finished (based on seed ratio)
-        IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
-        """
-        log.info('Checking Transmission torrent status.')
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
 
         return_params = {
+            'ids': info_hash,
             'fields': ['name', 'hashString', 'percentDone', 'status',
                        'isStalled', 'errorString', 'seedRatioLimit',
-                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files', 'activityDate']
+                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'activityDate']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
 
-        if not self._request(method='post', data=post_data):
-            log.warning('Error while fetching torrents status')
+        if not self._request(method='post', data=post_data) or not self.check_response():
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return
 
-        try:
-            returned_data = json.loads(self.response.text)
-        except ValueError:
-            log.warning('Unexpected data received from Transmission: {resp}',
-                        {'resp': self.response.content})
+        torrent = self.response.json()['arguments']['torrents']
+        if not torrent:
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
             return
 
-        if not returned_data['result'] == 'success':
-            log.debug('Nothing in queue or error')
-            return
-
-        found_torrents = False
-        for torrent in returned_data['arguments']['torrents']:
-
-            # Check if that hash was sent by Medusa
-            if not is_info_hash_in_history(str(torrent['hashString'])):
-                continue
-            found_torrents = True
-
-            to_remove = False
-            for i in torrent['files']:
-                # Need to check only the media file or the .rar file to avoid checking all .r0* files in history
-                if not (is_media_file(i['name']) or get_extension(i['name']) == 'rar'):
-                    continue
-                # Check if media was processed
-                # OR check hash in case of RARed torrents
-                if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
-                    to_remove = True
-
-            # Don't need to check status if we are not going to remove it.
-            if not to_remove:
-                log.info('Torrent not yet post-processed. Skipping: {torrent}',
-                         {'torrent': torrent['name']})
-                continue
-
-            status = 'busy'
-            error_string = torrent.get('errorString')
-            if torrent.get('isStalled') and not torrent['percentDone'] == 1:
-                status = 'stalled'
-            elif error_string and 'unregistered torrent' in error_string.lower():
-                status = 'unregistered'
-            elif torrent['status'] == 0:
-                status = 'stopped'
-                if torrent['percentDone'] == 1:
-                    # Check if torrent is stopped because of idle timeout
-                    seed_timed_out = False
-                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0:
-                        last_activity_date = datetime.fromtimestamp(torrent['activityDate'])
-                        seed_timed_out = (datetime.now() - timedelta(
-                            minutes=torrent['seedIdleLimit'])) > last_activity_date
-
-                    if torrent.get('isFinished') or seed_timed_out:
-                        status = 'completed'
-            elif torrent['status'] == 6:
-                status = 'seeding'
-
-            if status == 'completed':
-                log.info(
-                    'Torrent completed and reached minimum'
-                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
-                    ' seed idle limit: [{seed_limit} min].'
-                    ' Removing it: [{name}]',
-                    ratio=torrent['uploadRatio'],
-                    ratio_limit=torrent['seedRatioLimit'],
-                    seed_limit=torrent['seedIdleLimit'],
-                    name=torrent['name']
-                )
-                self.remove_torrent(torrent['hashString'])
-            elif status == 'stalled':
-                log.warning('Torrent is stalled. Check it: [{name}]',
-                            name=torrent['name'])
-            elif status == 'unregistered':
-                log.warning('Torrent was unregistered from tracker.'
-                            ' Check it: [{name}]', name=torrent['name'])
-            elif status == 'seeding':
-                if float(torrent['uploadRatio']) < float(torrent['seedRatioLimit']):
-                    log.info(
-                        'Torrent did not reach minimum'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['uploadRatio'],
-                        ratio_limit=torrent['seedRatioLimit'],
-                        name=torrent['name']
-                    )
-                else:
-                    log.info(
-                        'Torrent completed and reached minimum ratio but it'
-                        ' was force started again. Current'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['uploadRatio'],
-                        ratio_limit=torrent['seedRatioLimit'],
-                        name=torrent['name']
-                    )
-            elif status in ('stopped', 'busy'):
-                log.info('Torrent is {status}. Keeping it: [{name}]',
-                         status=status, name=torrent['name'])
-            else:
-                log.warning(
-                    'Torrent has an unmapped status. Keeping it: [{name}].'
-                    ' Report torrent info: {info}',
-                    name=torrent['name'],
-                    info=torrent
-                )
-        if not found_torrents:
-            log.info('No torrents found that were snatched by Medusa')
+        return torrent[0]
 
 
 api = TransmissionAPI

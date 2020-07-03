@@ -452,7 +452,7 @@ class DelugeAPI(GenericClient):
         return True
 
     def _torrent_properties(self, info_hash):
-        """Get torrent status."""
+        """Get torrent properties."""
         post_data = json.dumps({
             'method': 'core.get_torrent_status',
             'params': [

@@ -411,7 +411,7 @@ class DelugeRPC(object):
                 self.disconnect()
 
     def _torrent_properties(self, info_hash):
-        """Get torrent status."""
+        """Get torrent properties."""
         try:
             self.connect()
             log.info('Checking DelugeD torrent {hash} status.', {'hash': info_hash})

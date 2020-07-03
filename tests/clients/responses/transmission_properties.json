@@ -1,0 +1,20 @@
+{
+   "arguments":{
+      "torrents":[
+         {
+            "activityDate":1593787965,
+            "errorString":"",
+            "hashString":"b2710a116396a88eca5444887fd5568eecb899ce",
+            "isFinished":false,
+            "isStalled":false,
+            "name":"The.Sitters.2020.S01.720p.NF.WEBRip.DDP5.1.x264-SKGTV",
+            "percentDone":0.0261,
+            "seedIdleLimit":30,
+            "seedRatioLimit":2,
+            "status":0,
+            "uploadRatio":0.0149
+         }
+      ]
+   },
+   "result":"success"
+}
