@@ -23,19 +23,32 @@ export const manageCookieMixin = cookiePrefix => {
             saveSorting(evt) {
                 const { setCookie } = this;
                 // Store cookies, for sort field and type (asc/desc)
-                setCookie('sort-field', evt[0].field);
-                setCookie('sort-type', evt[0].type);
+                setCookie('sort-field', evt.map(item => item.field));
+                setCookie('sort-type', evt.map(item => item.type));
             },
             /**
              * Get vue-good-table sort field and sort order.
              * @returns {Object} - Object with the field and type properties.
              */
-            getSortBy() {
+            getSortBy(defaultField = 'title', defaultType = 'asc') {
                 const { getCookie } = this;
                 // Try to get cookies, for sort field and type (asc/desc)
                 const sortField = getCookie('sort-field');
                 const sortType = getCookie('sort-type');
-                return ({ field: sortField || 'title', type: sortType || 'asc' });
+                const sort = [];
+
+                if (Array.isArray(sortField) && sortField.length === 2) {
+                    sortField.forEach((_, index) => {
+                        sort.push({ field: sortField[index] || defaultField, type: sortType[index] ||defaultType });
+                    });
+                    return sort;
+                }
+
+                if (sortField === null || sortType === null) {
+                    return ({ field: defaultField, type: defaultType });
+                }
+
+                return ({ field: sortField[0] || defaultField, type: sortType[0] || defaultType });
             }
         },
         created() {

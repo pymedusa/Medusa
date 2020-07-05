@@ -19,7 +19,7 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: getSortBy()
+                                    initialSortBy: getSortBy('quality', 'desc')
                                 }"
                                 :column-filter-options="{
                                     enabled: true
