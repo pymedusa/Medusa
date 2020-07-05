@@ -35,21 +35,26 @@
 
                         <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
                             <!-- These should get a provider icon -->
-                            <img v-if="['Snatched', 'Failed', 'Downloaded'].includes(props.row.statusName)" style="margin-right: 5px;"
-                                 :src="`images/providers/${props.row.provider.id}.png`"
-                                 :alt="props.row.provider.name" width="16" height="16"
-                                 onError="this.onerror=null;this.src='images/providers/missing.png';"
-                            >
+                            <template v-if="['Snatched', 'Failed', 'Downloaded'].includes(props.row.statusName)">
+                                <img  class="addQTip" style="margin-right: 5px;"
+                                      :src="`images/providers/${props.row.provider.id}.png`"
+                                      :alt="props.row.provider.name" width="16" height="16"
+                                      :title="props.row.provider.name"
+                                      onError="this.onerror=null;this.src='images/providers/missing.png';"
+                                >
+
+                                <span v-if="props.row.statusName === 'Downloaded'">
+                                    {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
+                                </span>
+                            </template>
 
                             <!-- Different path for subtitle providers -->
-                            <img v-if="props.row.statusName === 'Subtitled'" style="margin-right: 5px;"
+                            <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
                                  :src="`images/subtitles/${props.row.provider.id}.png`"
                                  :alt="props.row.provider.name" width="16" height="16"
+                                 :title="props.row.provider.name"
                             >
 
-                            <span v-if="props.row.statusName === 'Downloaded'">
-                                {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
-                            </span>
                             <span v-else>
                                 {{props.row.provider.name}}
                             </span>
@@ -76,6 +81,7 @@ import { VueGoodTable } from 'vue-good-table';
 import { humanFileSize, episodeToSlug } from '../utils/core';
 import { manageCookieMixin } from '../mixins/manage-cookie';
 import QualityPill from './helpers/quality-pill.vue';
+import { addQTip } from '../utils/jquery';
 
 export default {
     name: 'show-history',
@@ -160,6 +166,7 @@ export default {
     mounted() {
         const { getHistory } = this;
         getHistory();
+        addQTip();
     },
     computed: {
         ...mapState({
