@@ -204,6 +204,7 @@ export default {
         ...mapState({
             config: state => state.config.general,
             layout: state => state.config.layout,
+            search: state => state.config.search,
             providers: state => state.provider.providers,
             queueitems: state => state.search.queueitems,
             history: state => state.history.episodeHistory
@@ -306,7 +307,7 @@ export default {
                 });
         },
         rowStyleClassFn(row) {
-            const { effectiveIgnored, effectiveRequired, config, show } = this;
+            const { effectiveIgnored, effectiveRequired, search, show } = this;
             const classes = [row.status || 'skipped'];
 
             const getReleaseNameClasses = name => {
@@ -324,7 +325,7 @@ export default {
                     classes.push('global-required');
                 }
 
-                if (config.search.filters.undesired.map(word => {
+                if (search.filters.undesired.map(word => {
                     return name.toLowerCase().includes(word.toLowerCase());
                 }).filter(x => x === true).length > 0) {
                     classes.push('global-undesired');
