@@ -225,7 +225,7 @@ class SearchResult(object):
             'seeders': self.seeders,
             'size': self.size,
             'leechers': self.leechers,
-            'pubdate': self.pubdate.isoformat() if self.pubdate else None,
+            'pubdate': self.pubdate.replace(microsecond=0).isoformat() if self.pubdate else None,
             'provider': {
                 'id': self.provider.get_id(),
                 'name': self.provider.name,
