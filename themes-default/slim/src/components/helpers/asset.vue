@@ -2,7 +2,7 @@
     <div v-if="!lazy">
         <img v-if="!link" v-bind="{ src, class: cls, class: newCls }" @error="error = true">
         <app-link v-else :href="href">
-            <img v-bind="{ src, class: newCls }" @error="setError">
+            <img v-bind="{ src, class: newCls }" @error="error = true">
         </app-link>
     </div>
     <div v-else>

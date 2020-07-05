@@ -58,6 +58,7 @@ import { mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
 import Isotope from 'vueisotope';
+import imagesLoaded from 'vue-images-loaded';
 
 export default {
     name: 'poster',

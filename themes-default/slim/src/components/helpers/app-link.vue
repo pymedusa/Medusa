@@ -75,7 +75,7 @@ export default {
             return this.computedHref.startsWith('#');
         },
         anonymisedHref() {
-            const { anonRedirect } = this.config;
+            const { anonRedirect } = this.config.general;
             const href = this.computedHref;
             if (!href) {
                 return;

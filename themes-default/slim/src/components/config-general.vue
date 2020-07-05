@@ -599,7 +599,8 @@ export default {
                 return indexerDefault || 0;
             },
             set(indexer) {
-                this.config.indexerDefault = indexer;
+                // TODO: commit instead
+                this.config.general.indexerDefault = indexer;
             }
         },
         indexerListOptions() {
