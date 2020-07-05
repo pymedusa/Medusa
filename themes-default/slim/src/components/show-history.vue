@@ -2,7 +2,7 @@
     <div class="show-history-wrapper" :class="{'component-margin': !hideHistory}">
         <div class="row" :class="{ fanartBackground: layout.fanartBackground }">
             <div class="col-md-12 top-15">
-                <div class="button-row">
+                <div v-show="history.length > 0" class="button-row">
                     <button id="showhistory" type="button" class="btn-medusa top-5 bottom-5 pull-right" @click="hideHistory = !hideHistory">
                         {{hideHistory ? 'Show History' : 'Hide History'}}
                     </button>

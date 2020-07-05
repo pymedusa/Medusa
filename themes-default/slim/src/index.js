@@ -38,6 +38,7 @@ if (window) {
     window.MEDUSA = {
         common: {},
         config: {
+            general: {},
             layout: {}
         },
         home: {},
@@ -80,8 +81,8 @@ if (!pathname.includes('/login') && !pathname.includes('/apibuilder')) {
         const { main, layout } = event.detail;
 
         const themeSpinner = layout.themeName === 'dark' ? '-dark' : '';
-        MEDUSA.config = {
-            ...MEDUSA.config,
+        MEDUSA.config.general = {
+            ...MEDUSA.config.general,
             ...main,
             layout,
             themeSpinner,
