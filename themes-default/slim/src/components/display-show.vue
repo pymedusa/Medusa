@@ -527,7 +527,7 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            config: state => state.config,
+            config: state => state.config.general,
             configLoaded: state => state.config.layout.fanartBackground !== null,
             layout: state => state.config.layout,
             stateSearch: state => state.config.search

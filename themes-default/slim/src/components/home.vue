@@ -65,7 +65,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { ShowList } from './show-list';
-import LazyLoad from 'vanilla-lazyload';
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js';
 import Draggable from 'vuedraggable';
 import Backstretch from './backstretch.vue';
@@ -92,7 +91,8 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
+            indexers: state => state.config.indexers,
             // Renamed because of the computed property 'layout'.
             stateLayout: state => state.config.layout,
             stats: state => state.stats
@@ -113,13 +113,14 @@ export default {
         },
         filterByName: {
             get() {
-                const { stateLayout } = this;
-                const { showFilterByName } = stateLayout;
+                const { local } = this.stateLayout;
+                const { showFilterByName } = local;
+
                 return showFilterByName;
             },
             set(value) {
-                const { setShowFilterByName } = this;
-                setShowFilterByName({ filter: value });
+                const { setLayoutLocal } = this;
+                setLayoutLocal({ key: 'showFilterByName', value });
             }
         },
         showList: {
@@ -134,10 +135,10 @@ export default {
             }
         },
         showLists() {
-            const { config, filterByName, stateLayout, showsWithStats } = this;
+            const { config, filterByName, indexers, stateLayout, showsWithStats } = this;
             const { rootDirs } = config;
             const { animeSplitHome, selectedRootIndex, show } = stateLayout;
-            if (!config.indexers.indexers) {
+            if (!indexers.indexers) {
                 return;
             }
 
@@ -159,13 +160,6 @@ export default {
 
             return ([{ listTitle: 'Series', shows }]);
         },
-        imgLazyLoad() {
-            console.log('imgLazyLoad object constructud!');
-            return new LazyLoad({
-                // Example of options object -> see options section
-                threshold: 500
-            });
-        },
         selectedRootIndexOptions() {
             const { config } = this;
             const { rootDirs } = config;
@@ -176,10 +170,9 @@ export default {
         ...mapActions({
             setLayout: 'setLayout',
             setConfig: 'setConfig',
-            setShowFilterByName: 'setShowFilterByName',
             setShowListOrder: 'setShowListOrder',
             setStoreLayout: 'setStoreLayout',
-            setCurrentTab: 'setCurrentTab',
+            setLayoutLocal: 'setLayoutLocal',
             getShows: 'getShows',
             getStats: 'getStats'
         }),
@@ -201,8 +194,8 @@ export default {
             setStoreLayout({ key: 'selectedRootIndex', value });
         },
         updateTabContent(tabIndex, newTab) {
-            const { setCurrentTab } = this;
-            setCurrentTab(newTab.title);
+            const { setLayoutLocal } = this;
+            setLayoutLocal({ key: 'currentShowTab', value: newTab.title });
         }
     },
     mounted() {

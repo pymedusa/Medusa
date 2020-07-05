@@ -72,7 +72,7 @@ export const showlistTableMixin = {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             indexerConfig: state => state.config.indexers.indexers,
             stateLayout: state => state.config.layout
         }),

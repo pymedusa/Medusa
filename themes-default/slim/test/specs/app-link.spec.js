@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
 import configModule from '../../src/store/modules/config';
-import indexersModule from '../../src/store/modules/indexers';
+import indexersModule from '../../src/store/modules/config/indexers';
 import fixtures from '../__fixtures__/app-link';
 
 describe('AppLink.test.js', () => {
@@ -37,9 +37,7 @@ describe('AppLink.test.js', () => {
             },
             computed: {
                 config() {
-                    return Object.assign(state.config, {
-                        anonRedirect: ''
-                    });
+                    return { ...state.config.general, ...{ anonRedirect: '' } };
                 }
             }
         });
@@ -60,10 +58,7 @@ describe('AppLink.test.js', () => {
             },
             computed: {
                 config() {
-                    return Object.assign(state.config, {
-                        anonRedirect: 'https://anon-redirect.tld/?url='
-                    });
-                }
+                    return {...state.config.general, ...{ anonRedirect: 'https://anon-redirect.tld/?url=' } };
             }
         });
 

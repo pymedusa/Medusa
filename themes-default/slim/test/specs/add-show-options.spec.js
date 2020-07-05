@@ -2,7 +2,7 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AddShowOptions } from '../../src/components';
-import constsModule from '../../src/store/modules/consts';
+import constsModule from '../../src/store/modules/config/consts';
 import fixtures from '../__fixtures__/common';
 
 describe('AddShowOptions.test.js', () => {

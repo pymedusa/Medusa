@@ -243,9 +243,9 @@ export default {
     },
     computed: {
         ...mapState({
-            defaultConfig: state => state.config.showDefaults,
-            namingForceFolders: state => state.config.namingForceFolders,
-            subtitlesEnabled: state => state.config.subtitles.enabled,
+            defaultConfig: state => state.config.general.showDefaults,
+            namingForceFolders: state => state.config.general.namingForceFolders,
+            subtitlesEnabled: state => state.config.general.subtitles.enabled,
             episodeStatuses: state => state.config.consts.statuses
         }),
         ...mapGetters([

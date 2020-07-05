@@ -955,7 +955,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             indexers: state => state.config.indexers,
             notifiers: state => state.config.notifiers
         }),

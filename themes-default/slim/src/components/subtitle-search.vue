@@ -13,7 +13,7 @@
                 </div>
             </div>
 
-            <div v-if="subtitles.length > 0" class="subtitle-results">
+            <div v-if="!displayQuestion && searchType == 'manual'" class="subtitle-results">
                 <span class="release-name">
                     {{releaseName}}
                 </span>
@@ -129,6 +129,7 @@ export default {
             }],
             subtitles: [],
             displayQuestion: false,
+            searchType: null,
             loading: false,
             loadingMessage: ''
         };
@@ -168,6 +169,7 @@ export default {
             'getShowEpisodeHistory'
         ]),
         autoSearch() {
+            this.searchType = 'auto';
             const { lang, subtitleParams } = this;
             const params = subtitleParams;
 
@@ -201,6 +203,7 @@ export default {
                 });
         },
         manualSearch() {
+            this.searchType = 'manual';
             const { episode, getShowEpisodeHistory, show, subtitleParams } = this;
 
             this.displayQuestion = false;

@@ -28,7 +28,7 @@
                 <span v-else-if="props.column.label == 'Show'" class="tvShow">
                     <div class="imgsmallposter small">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" :title="props.row.title">
-                            <asset default="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false" />
+                            <asset default-src="images/poster.png" :show-slug="props.row.id.slug" type="posterThumb" cls="small" :alt="props.row.title" :title="props.row.title" :link="false" />
                         </app-link>
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`" style="vertical-align: middle;">{{ props.row.title }}</app-link>
                     </div>
@@ -37,7 +37,7 @@
                 <span v-else-if="props.column.label == 'Network'" class="align-center">
                     <template v-if="props.row.network">
                         <span :title="props.row.network" class="hidden-print">
-                            <asset default="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network" />
+                            <asset default-src="images/network/nonetwork.png" :show-slug="props.row.indexer + props.row.id[props.row.indexer]" type="network" cls="show-network-image" :link="false" width="54" height="27" :alt="props.row.network" :title="props.row.network" />
                         </span>
                         <span class="visible-print-inline">{{ props.row.network }}</span>
                     </template>

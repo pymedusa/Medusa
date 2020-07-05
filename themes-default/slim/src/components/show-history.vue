@@ -105,7 +105,7 @@ export default {
         const columns = [{
             label: 'Date',
             field: 'actionDate',
-            dateInputFormat: 'yyyyMMddHHmmss', //e.g. 07-09-2017 19:16:25
+            dateInputFormat: 'yyyyMMddHHmmss', // E.g. 07-09-2017 19:16:25
             dateOutputFormat: 'yyyy-MM-dd HH:mm:ss',
             type: 'date',
             hidden: getCookie('Date')
@@ -163,7 +163,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             layout: state => state.config.layout,
             showHistory: state => state.history.showHistory,
             episodeHistory: state => state.history.episodeHistory

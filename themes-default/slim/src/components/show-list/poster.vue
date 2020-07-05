@@ -9,7 +9,7 @@
                         </div>
                         <div class="poster-overlay">
                             <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
-                                <asset default="images/poster.png" :show-slug="show.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false" />
+                                <asset default-src="images/poster.png" :show-slug="show.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                                         </td>
                                         <td class="show-table">
                                             <span v-if="show.network" :title="show.network">
-                                                <asset default="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
+                                                <asset default-src="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
                                             <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>
@@ -54,12 +54,10 @@
     </div>
 </template>
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import pretty from 'pretty-bytes';
 import { AppLink, Asset, ProgressBar, QualityPill } from '../helpers';
 import Isotope from 'vueisotope';
-import LazyLoad from 'vanilla-lazyload';
-import imagesLoaded from 'vue-images-loaded';
 
 export default {
     name: 'poster',
@@ -119,8 +117,7 @@ export default {
                         return Math.round(row.stats.episodes.downloaded / row.stats.episodes.total * 100);
                     },
                     indexer: row => {
-                        const { config } = this;
-                        const { indexers } = config;
+                        const { indexers } = this;
                         return indexers.indexers[row.indexer].id;
                     }
                 },
@@ -138,13 +135,14 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             stateLayout: state => state.config.layout,
+            indexers: state => state.config.indexers,
             // Need to map these computed, as we need them in the $watch.
             posterSortBy: state => state.config.layout.posterSortby,
             posterSortDir: state => state.config.layout.posterSortdir,
-            posterSize: state => state.config.layout.posterSize,
-            currentShowTab: state => state.config.layout.currentShowTab
+            posterSize: state => state.config.layout.local.posterSize,
+            currentShowTab: state => state.config.layout.local.currentShowTab
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -171,13 +169,9 @@ export default {
         }
     },
     methods: {
-        ...mapActions({
-            setPosterSize: 'setPosterSize'
-        }),
         prettyBytes: bytes => pretty(bytes),
         showIndexerUrl(show) {
-            const { config } = this;
-            const { indexers } = config;
+            const { indexers } = this;
             if (!show.indexer) {
                 return;
             }
@@ -228,7 +222,8 @@ export default {
                 posterSortDir
             } = this;
             this.isotopeLoaded = true;
-            imgLazyLoad.update();
+            // this.$lazyImages.loadImage();
+            // imgLazyLoad.update();
             calculateSize();
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
@@ -248,9 +243,9 @@ export default {
         }
     },
     mounted() {
-        this.imgLazyLoad = new LazyLoad({
-            threshold: 500
-        });
+        // this.imgLazyLoad = new LazyLoad({
+        //     threshold: 500
+        // });
     },
     watch: {
         posterSortBy(key) {
@@ -383,6 +378,6 @@ export default {
 
 .overlay-container {
     display: flex;
-    align-items: center;
+    align-items: baseline;
 }
 </style>

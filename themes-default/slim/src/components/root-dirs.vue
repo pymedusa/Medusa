@@ -40,7 +40,7 @@ export default {
     },
     computed: {
         ...mapState({
-            rawRootDirs: state => state.config.rootDirs
+            rawRootDirs: state => state.config.general.rootDirs
         }),
         paths() {
             return this.rootDirs.map(rd => rd.path);

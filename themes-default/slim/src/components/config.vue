@@ -55,7 +55,7 @@ export default {
         AppLink
     },
     computed: mapState({
-        config: state => state.config,
+        config: state => state.config.general,
         system: state => state.config.system
     })
 };

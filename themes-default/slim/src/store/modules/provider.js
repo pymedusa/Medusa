@@ -125,7 +125,7 @@ const actions = {
                 params.page = page;
 
                 try {
-                    response = await api.get(`/providers/${providerId}/results`, { params });
+                    response = await api.get(`/providers/${providerId}/results`, { params }); // eslint-disable-line no-await-in-loop
                 } catch (error) {
                     if (error.response && error.response.status === 404) {
                         console.debug(`No results available for provider ${provider}`);
@@ -159,7 +159,7 @@ const actions = {
             }
 
             result.providersSearched += 1;
-            const providerResults = await getProviderResults(provider);
+            const providerResults = await getProviderResults(provider); // eslint-disable-line no-await-in-loop
             result.totalSearchResults.push(...providerResults);
         }
 

@@ -11,7 +11,7 @@
                      @update-overview-status="filterByOverviewStatus = $event"
         />
 
-        <show-history v-show="show && season" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
+        <show-history class="show-history" v-show="show && season" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
 
         <show-results v-show="show && season" class="table-layout" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
 
@@ -49,7 +49,7 @@ export default {
     computed: {
         ...mapState({
             shows: state => state.shows.shows,
-            config: state => state.config,
+            config: state => state.config.general,
             search: state => state.config.search,
             history: state => state.history
         }),
@@ -331,7 +331,7 @@ export default {
     color: orange;
 }
 
-show-history {
+.show-history {
     margin-bottom: 10px;
 }
 </style>

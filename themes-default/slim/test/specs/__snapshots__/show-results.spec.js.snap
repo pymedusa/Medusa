@@ -1,0 +1,781 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ShowResults.test.js renders show-results component with results 1`] = `
+<div
+  class="show-results-wrapper"
+>
+  <div
+    class="row fanartBackground"
+  >
+    <div
+      class="col-md-12 top-15"
+    >
+      <div
+        class="button-row"
+      >
+        <input
+          class="btn-medusa manualSearchButton top-5 bottom-5"
+          type="button"
+          value="Refresh Results"
+        />
+         
+        <input
+          class="btn-medusa manualSearchButton top-5 bottom-5"
+          type="button"
+          value="Force Search"
+        />
+         
+        <!---->
+      </div>
+       
+      <div
+        class="vgt-wrap "
+      >
+        <!---->
+         
+        <div
+          class="vgt-inner-wrap"
+        >
+          <!---->
+           
+          <div
+            class="vgt-global-search vgt-clearfix"
+          >
+            <div
+              class="vgt-global-search__input vgt-pull-left"
+            >
+              <!---->
+               
+              <!---->
+            </div>
+             
+            <div
+              class="vgt-global-search__actions vgt-pull-right"
+            >
+              <div
+                class="vgt-dropdown vgt-clearfix"
+              >
+                <div
+                  class="button-group pull-right"
+                >
+                  <button
+                    class="btn btn-default btn-sm dropdown-toggle"
+                    type="button"
+                  >
+                    <span
+                      aria-hidden="false"
+                      class="fa fa-cog"
+                    >
+                      Select Columns
+                    </span>
+                     
+                    <span
+                      class="caret"
+                    />
+                  </button>
+                   
+                  <ul
+                    class="vgt-dropdown-menu"
+                    style="display: none;"
+                  >
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Release
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Group
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Provider
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Quality
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Seeds
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Peers
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Size
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Added
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Published
+          
+                      </span>
+                    </li>
+                    <li>
+                      <span
+                        class="small"
+                        tabindex="-1"
+                      >
+                        <input
+                          type="checkbox"
+                        />
+                        
+              Updated
+          
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+           
+          <!---->
+           
+          <div
+            class="vgt-fixed-header"
+          >
+            <!---->
+          </div>
+           
+          <div
+            class="vgt-responsive"
+            style="overflow: scroll-y; max-height: auto;"
+          >
+            <table
+              class="vgt-table condensed "
+            >
+              <thead
+                data-v-eb5a915e=""
+              >
+                <tr
+                  data-v-eb5a915e=""
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Release
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Group
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Provider
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Quality
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Seeds
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Peers
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Size
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Added
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Published
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-right-align sortable"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Updated
+                    </span>
+                  </th>
+                  <th
+                    class="vgt-left-align"
+                    data-v-eb5a915e=""
+                    style="min-width: auto; max-width: auto; width: auto;"
+                  >
+                    <span
+                      data-v-eb5a915e=""
+                    >
+                      Snatch
+                    </span>
+                  </th>
+                </tr>
+                 
+                <!---->
+              </thead>
+               
+              <tbody>
+                <!---->
+                 
+                <tr
+                  class=" skipped"
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align release"
+                  >
+                    <span>
+                      
+                        Black.Mirror.S04E06.Black.Museum.REPACK.1080p.NF.WEB-DL.DD5.1.H.264-QO.Q
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        QO.Q
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <img
+                        alt="BinSearch"
+                        onerror="this.onerror=null;this.src='images/providers/missing.png';"
+                        src="images/providers/binsearch.png"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <span
+                        class="quality fullhdwebdl"
+                      >
+                        1080p WEB-DL
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        0.00 B
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Thursday, 01/04/18 16:43:21
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        alt="snatch"
+                        data-identifier="Black.Mirror.S04E06.Black.Museum.REPACK.1080p.NF.WEB-DL.DD5.1.H.264-QO.Q_-1"
+                        height="16"
+                        src="images/download.png"
+                        title="Download selected episode"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=" skipped"
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align release"
+                  >
+                    <span>
+                      
+                        black.mirror.s04e06.720p.webrip.x264-strife
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        strife
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <img
+                        alt="BinSearch"
+                        onerror="this.onerror=null;this.src='images/providers/missing.png';"
+                        src="images/providers/binsearch.png"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <span
+                        class="quality hdwebdl"
+                      >
+                        720p WEB-DL
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        1.49 GB
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Saturday, 12/30/17 16:43:21
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        alt="snatch"
+                        data-identifier="black.mirror.s04e06.720p.webrip.x264-strife_1492501135"
+                        height="16"
+                        src="images/download.png"
+                        title="Download selected episode"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                </tr>
+                <tr
+                  class=" skipped"
+                >
+                  <!---->
+                   
+                  <!---->
+                   
+                  <td
+                    class="vgt-left-align release"
+                  >
+                    <span>
+                      
+                        Black.Mirror.-.S04E06.-.Black.Museum.-.Deutsch.by.Mittendrinn
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      
+                        
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <img
+                        alt="BinSearch"
+                        onerror="this.onerror=null;this.src='images/providers/missing.png';"
+                        src="images/providers/binsearch.png"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      <span
+                        class="quality unknown"
+                      >
+                        Unknown
+                      </span>
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        -
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span>
+                      
+                        966.52 MB
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Saturday, 12/30/17 16:43:21
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-right-align"
+                  >
+                    <span
+                      class="align-center"
+                    >
+                      
+                        Monday, 06/29/20 16:43:22
+                    
+                    </span>
+                  </td>
+                  <td
+                    class="vgt-left-align"
+                  >
+                    <span>
+                      <img
+                        alt="snatch"
+                        data-identifier="Black.Mirror.-.S04E06.-.Black.Museum.-.Deutsch.by.Mittendrinn_966524928"
+                        height="16"
+                        src="images/download.png"
+                        title="Download selected episode"
+                        width="16"
+                      />
+                    </span>
+                  </td>
+                </tr>
+                 
+                <!---->
+                 
+              </tbody>
+               
+              <!---->
+            </table>
+          </div>
+           
+          <!---->
+           
+          <!---->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

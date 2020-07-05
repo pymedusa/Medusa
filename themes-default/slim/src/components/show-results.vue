@@ -158,7 +158,7 @@ export default {
                 field: 'dateAdded',
                 type: 'date',
                 sortable: true,
-                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss', //e.g. 07-09-2017 19:16:25
+                dateInputFormat: 'yyyy-MM-dd\'T\'HH:mm:ss', // E.g. 07-09-2017 19:16:25
                 dateOutputFormat: 'yyyy/MM/dd HH:mm:ss',
                 hidden: getCookie('Added')
             },
@@ -202,7 +202,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             layout: state => state.config.layout,
             providers: state => state.provider.providers,
             queueitems: state => state.search.queueitems,
@@ -383,18 +383,6 @@ export default {
                 const [lastSnatch] = snatchedForThisEpisode.slice(-1);
                 if (lastSnatch && lastSnatch.success === true) {
                     const { getProviderCacheResults, getShowEpisodeHistory, show, season, episode, episodeSlug } = this;
-                    // // Change the row indication into snatched.
-                    // for (const row in this.$refs['vgt-show-results'].$refs) {
-                    //     if (!row.includes('row')) {
-                    //         continue;
-                    //     }
-                    //     const rowRef = this.$refs['vgt-show-results'].$refs[row];
-                    //     const snatchButton = rowRef[0].lastChild;
-                    //     const identifier = snatchButton.firstChild.firstChild.getAttribute('data-identifier');
-                    //     if (lastSnatch.searchResult.identifier === identifier) {
-                    //         rowRef[0].setAttribute('class', 'snatched');
-                    //     }
-                    // }
 
                     // Something changed, let's get a new batch of provider results.
                     await getShowEpisodeHistory({ showSlug: show.id.slug, episodeSlug });

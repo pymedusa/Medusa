@@ -46,8 +46,8 @@ const app = new Vue({
                 if (isDevelopment) {
                     console.log('App Loaded!');
                 }
-                // Legacy - send config.main to jQuery (received by index.js)
-                const event = new CustomEvent('medusa-config-loaded', { detail: { main: config.main, layout: config.layout } });
+                // Legacy - send config.general to jQuery (received by index.js)
+                const event = new CustomEvent('medusa-config-loaded', { detail: { main: config.general, layout: config.layout } });
                 window.dispatchEvent(event);
             }).catch(error => {
                 console.debug(error);

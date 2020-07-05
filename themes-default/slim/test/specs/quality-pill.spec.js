@@ -3,7 +3,7 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
 import { QualityPill } from '../../src/components';
-import constsModule from '../../src/store/modules/consts';
+import constsModule from '../../src/store/modules/config/consts';
 import { generatePropTest } from '../helpers/generators';
 import fixtures from '../__fixtures__/common';
 

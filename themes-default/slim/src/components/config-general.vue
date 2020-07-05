@@ -582,7 +582,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             configLoaded: state => state.config.consts.statuses.length > 0,
             layout: state => state.config.layout,
             statuses: state => state.config.consts.statuses,
@@ -768,13 +768,14 @@ export default {
                 themeName,
                 ...filteredConfig } = config;
 
+            const { local, ...filteredLayout } = layout;
+
             const configMain = {
                 section: 'main',
-                config: Object.assign(
-                    {},
-                    filteredConfig,
-                    { layout },
-                    { logs: {
+                config: {
+                    ...filteredConfig,
+                    ...{ layout: filteredLayout },
+                    ...{ logs: {
                         debug: config.logs.debug,
                         dbDebug: config.logs.dbDebug,
                         actualLogDir: config.logs.actualLogDir,
@@ -783,7 +784,7 @@ export default {
                         subliminalLog: config.logs.subliminalLog,
                         privacyLevel: config.logs.privacyLevel
                     } }
-                )
+                }
             };
 
             try {

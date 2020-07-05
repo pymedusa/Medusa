@@ -4,8 +4,8 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import tk from 'timekeeper';
 
 import { AppFooter } from '../../src/components';
-import constsModule from '../../src/store/modules/consts';
-import systemModule from '../../src/store/modules/system';
+import constsModule from '../../src/store/modules/config/consts';
+import systemModule from '../../src/store/modules/config/system';
 import fixtures from '../__fixtures__/common';
 
 describe('AppFooter', () => {

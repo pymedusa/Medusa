@@ -146,7 +146,7 @@ export default {
         ...mapState({
             qualityValues: state => state.config.consts.qualities.values,
             qualityPresets: state => state.config.consts.qualities.presets,
-            defaultQuality: state => state.config.showDefaults.quality
+            defaultQuality: state => state.config.general.showDefaults.quality
         }),
         ...mapGetters([
             'getQualityPreset',

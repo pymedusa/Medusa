@@ -502,7 +502,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             metadata: state => state.config.metadata,
             postprocessing: state => state.config.postprocessing,
             system: state => state.config.system

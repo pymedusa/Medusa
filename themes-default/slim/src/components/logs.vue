@@ -142,7 +142,7 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
+            config: state => state.config.general,
             layout: state => state.config.layout
         }),
         rawViewLink() {
