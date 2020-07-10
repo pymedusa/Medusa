@@ -379,20 +379,20 @@
                             <div class="col-xs-12 col-md-10">
                                 <fieldset class="component-group-list">
 
-                                    <config-toggle-slider v-model="config.logs.debug" label="Enable debug" id="debug">
+                                    <config-toggle-slider v-model="config.general.logs.debug" label="Enable debug" id="debug">
                                         <p>Enable debug logs</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-if="config.developer" v-model="config.logs.dbDebug" label="Enable DB debug" id="dbdebug">
+                                    <config-toggle-slider v-if="config.developer" v-model="config.general.logs.dbDebug" label="Enable DB debug" id="dbdebug">
                                         <p>Enable DB debug logs</p>
                                     </config-toggle-slider>
 
-                                    <config-toggle-slider v-model="config.logs.subliminalLog" label="Subliminal logs" id="subliminal_log">
+                                    <config-toggle-slider v-model="config.general.logs.subliminalLog" label="Subliminal logs" id="subliminal_log">
                                         <p>enable logs from subliminal library (subtitles)</p>
                                     </config-toggle-slider>
 
                                     <config-template label-for="privacy_level" label="Privacy">
-                                        <select id="privacy_level" name="privacy_level" v-model="config.logs.privacyLevel" class="form-control input-sm">
+                                        <select id="privacy_level" name="privacy_level" v-model="config.general.logs.privacyLevel" class="form-control input-sm">
                                             <option :value="option.value" v-for="option in privacyLevelOptions" :key="option.value">{{ option.text }}</option>
                                         </select>
                                         <span>
@@ -777,13 +777,13 @@ export default {
                     ...filteredConfig,
                     ...{ layout: filteredLayout },
                     ...{ logs: {
-                        debug: config.logs.debug,
-                        dbDebug: config.logs.dbDebug,
-                        actualLogDir: config.logs.actualLogDir,
-                        nr: config.logs.nr,
-                        size: config.logs.size,
-                        subliminalLog: config.logs.subliminalLog,
-                        privacyLevel: config.logs.privacyLevel
+                        debug: config.general.logs.debug,
+                        dbDebug: config.general.logs.dbDebug,
+                        actualLogDir: config.general.logs.actualLogDir,
+                        nr: config.general.logs.nr,
+                        size: config.general.logs.size,
+                        subliminalLog: config.general.logs.subliminalLog,
+                        privacyLevel: config.general.logs.privacyLevel
                     } }
                 }
             };

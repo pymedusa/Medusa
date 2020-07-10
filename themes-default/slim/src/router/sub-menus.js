@@ -16,7 +16,7 @@ export const errorlogsSubMenu = vm => {
     const { $route, $store } = vm;
     const level = $route.params.level || $route.query.level;
     const { config } = $store.state;
-    const { loggingLevels, numErrors, numWarnings } = config.logs;
+    const { loggingLevels, numErrors, numWarnings } = config.general.logs;
     if (Object.keys(loggingLevels).length === 0) {
         return [];
     }
