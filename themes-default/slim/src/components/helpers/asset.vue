@@ -1,11 +1,11 @@
 <template>
-    <div v-if="!lazy">
+    <div v-if="!lazy" style="display: inherit">
         <img v-if="!link" v-bind="{ src, class: cls, class: newCls }" @error="error = true">
         <app-link v-else :href="href">
             <img v-bind="{ src, class: newCls }" @error="error = true">
         </app-link>
     </div>
-    <div v-else>
+    <div v-else style="display: inherit">
         <lazy-image v-if="!link" :src="src" :img-class="newCls" :placeholder="defaultSrc" />
         <app-link v-else :href="href">
             <lazy-image :src="src" :img-class="newCls" :placeholder="defaultSrc" />
@@ -15,7 +15,6 @@
 <script>
 import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
-// import { LazyImage } from 'vue-lazy-images/lazy-image.js';
 
 export default {
     name: 'asset',
@@ -92,4 +91,5 @@ export default {
 .width-50 {
     width: 50px;
 }
+
 </style>

@@ -27,9 +27,9 @@
 
                 <span v-else-if="props.column.label == 'Show'" class="tvShow">
                     <span style="display: none;">{{ props.row.title }}</span>
-                    <div class="imgbanner banner">
+                    <div class="imgbanner">
                         <app-link :href="`home/displayShow?indexername=${props.row.indexer}&seriesid=${props.row.id[props.row.indexer]}`">
-                            <asset default-src="images/banner.png" :show-slug="props.row.id.slug" type="banner" class="banner" :alt="props.row.title" :title="props.row.title" />
+                            <asset default-src="images/banner.png" :show-slug="props.row.id.slug" type="banner" cls="banner" :alt="props.row.title" :title="props.row.title" />
                         </app-link>
                     </div>
                 </span>
@@ -126,4 +126,5 @@ export default {
 </script>
 
 <style>
+
 </style>
