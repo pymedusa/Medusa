@@ -2,8 +2,7 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { AppLink } from '../../src/components';
-import configModule from '../../src/store/modules/config';
-import indexersModule from '../../src/store/modules/config/indexers';
+import indexers from '../../src/store/modules/config/indexers';
 import fixtures from '../__fixtures__/app-link';
 
 describe('AppLink.test.js', () => {
@@ -19,11 +18,15 @@ describe('AppLink.test.js', () => {
         const { state } = fixtures;
         store = new Store({
             modules: {
-                config: configModule,
-                indexers: indexersModule
+                indexers: {
+                    getters: indexers.getters,
+                    state: state.config.indexers
+                },
+                config: {
+                    state: state.config
+                }
             }
         });
-        store.replaceState(state);
         routerBase = '/'; // This might be '/webroot'
     });
 
@@ -36,7 +39,7 @@ describe('AppLink.test.js', () => {
                 href: 'https://google.com'
             },
             computed: {
-                config() {
+                general() {
                     return { ...state.config.general, ...{ anonRedirect: '' } };
                 }
             }
@@ -49,7 +52,6 @@ describe('AppLink.test.js', () => {
     });
 
     it('renders anonymised external link', () => {
-        const { state } = fixtures;
         const wrapper = mount(AppLink, {
             localVue,
             store,
@@ -57,8 +59,8 @@ describe('AppLink.test.js', () => {
                 href: 'https://google.com'
             },
             computed: {
-                config() {
-                    return { ...state.config.general, ...{ anonRedirect: 'https://anon-redirect.tld/?url=' } };
+                general() {
+                    return { anonRedirect: 'https://anon-redirect.tld/?url=' };
                 }
             }
         });

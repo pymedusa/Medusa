@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import vueCookies from 'vue-cookies';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowResults } from '../../src/components';
-import configModule from '../../src/store/modules//config';
+import general from '../../src/store/modules/config/general';
 import historyModule from '../../src/store/modules/history';
 import providerModule from '../../src/store/modules/provider';
 import show from '../__fixtures__/show-detailed';
@@ -41,12 +41,23 @@ describe('ShowResults.test.js', () => {
 
         store = new Store({
             modules: {
-                config: configModule,
-                history: historyModule,
-                provider: providerModule
+                general: {
+                    getters: general.getters,
+                    state: state.config.general
+                },
+                history: {
+                    getters: historyModule.getters,
+                    state: state.history
+                },
+                provider: {
+                    getters: providerModule.getters,
+                    state: state.provider
+                },
+                config: {
+                    state: state.config
+                }
             }
         });
-        store.replaceState(state);
     });
 
     it('renders show-results component with results', async () => {

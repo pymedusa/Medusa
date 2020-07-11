@@ -22,9 +22,9 @@ describe('AppFooter', () => {
             modules: {
                 consts: constsModule,
                 system: systemModule
-            }
+            },
+            state
         });
-        store.replaceState(state);
     });
 
     it('renders', () => {

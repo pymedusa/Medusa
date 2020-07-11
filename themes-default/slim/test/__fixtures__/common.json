@@ -1,206 +1,202 @@
 {
     "state": {
-        "auth": {
-            "isAuthenticated": true,
-            "user": {
-                "username": "admin"
-            }
-        },
-        "general": {
-            "themeName": "light",
-            "anonRedirect": "http://dereferer.org/?",
-            "dateStyle": "%x",
-            "rootDirs": [
-                "1",
-                "E:\\TV",
-                "W:\\TV"
-            ],
-            "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
-            "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
-            "sourceUrl": "https://github.com/pymedusa/Medusa",
-            "downloadUrl": "",
-            "subtitlesMulti": true,
-            "namingForceFolders": false,
-            "subtitles": {
-                "enabled": true
-            },
-            "recentShows": [
-                {
-                    "showId": 253463,
-                    "indexerName": "tvdb",
-                    "name": "Black Mirror"
+        "config": {
+            "general": {
+                "themeName": "light",
+                "anonRedirect": "http://dereferer.org/?",
+                "dateStyle": "%x",
+                "rootDirs": [
+                    "1",
+                    "E:\\TV",
+                    "W:\\TV"
+                ],
+                "wikiUrl": "https://github.com/pymedusa/Medusa/wiki",
+                "donationsUrl": "https://github.com/pymedusa/Medusa/wiki/Donations",
+                "sourceUrl": "https://github.com/pymedusa/Medusa",
+                "downloadUrl": "",
+                "subtitlesMulti": true,
+                "namingForceFolders": false,
+                "subtitles": {
+                    "enabled": true
                 },
-                {
-                    "showId": 80379,
-                    "indexerName": "tvdb",
-                    "name": "The Big Bang Theory"
+                "recentShows": [
+                    {
+                        "showId": 253463,
+                        "indexerName": "tvdb",
+                        "name": "Black Mirror"
+                    },
+                    {
+                        "showId": 80379,
+                        "indexerName": "tvdb",
+                        "name": "The Big Bang Theory"
+                    }
+                ],
+                "randomShowSlug": "tvdb294002",
+                "showDefaults": {
+                    "status": 5,
+                    "statusAfter": 3,
+                    "quality": 328,
+                    "subtitles": false,
+                    "seasonFolders": false,
+                    "anime": false,
+                    "scene": false
+                },
+                "logs": {
+                    "debug": true,
+                    "dbDebug": false,
+                    "loggingLevels": {
+                        "error": 40,
+                        "warning": 30,
+                        "info": 20,
+                        "debug": 10,
+                        "db": 5
+                    },
+                    "numErrors": 0,
+                    "numWarnings": 0,
+                    "actualLogDir": "Logs",
+                    "nr": 5,
+                    "size": 11,
+                    "subliminalLog": false,
+                    "privacyLevel": "normal"
+                },
+                "selectedRootIndex": -1,
+                "launchBrowser": true,
+                "defaultPage": "home",
+                "trashRemoveShow": false,
+                "trashRotateLogs": false,
+                "indexerDefaultLanguage": "en",
+                "showUpdateHour": 2,
+                "indexerTimeout": 20,
+                "indexerDefault": 0,
+                "plexFallBack": {
+                    "enable": true,
+                    "notifications": true,
+                    "timeout": 3
+                },
+                "versionNotify": true,
+                "autoUpdate": false,
+                "updateFrequency": 1,
+                "notifyOnUpdate": true,
+                "availableThemes": [
+                    {
+                        "name": "dark",
+                        "version": "0.1.0",
+                        "author": "p0psicles"
+                    },
+                    {
+                        "name": "light",
+                        "version": "0.1.0",
+                        "author": "p0psicles"
+                    }
+                ],
+                "timePresets": [
+                    "%I:%M:%S %p",
+                    "%H:%M:%S"
+                ],
+                "datePresets": [
+                    "%Y-%m-%d",
+                    "%a, %Y-%m-%d",
+                    "%A, %Y-%m-%d",
+                    "%y-%m-%d",
+                    "%a, %y-%m-%d",
+                    "%A, %y-%m-%d",
+                    "%m/%d/%Y",
+                    "%a, %m/%d/%Y",
+                    "%A, %m/%d/%Y",
+                    "%m/%d/%y",
+                    "%a, %m/%d/%y",
+                    "%A, %m/%d/%y",
+                    "%m-%d-%Y",
+                    "%a, %m-%d-%Y",
+                    "%A, %m-%d-%Y",
+                    "%m-%d-%y",
+                    "%a, %m-%d-%y",
+                    "%A, %m-%d-%y",
+                    "%m.%d.%Y",
+                    "%a, %m.%d.%Y",
+                    "%A, %m.%d.%Y",
+                    "%m.%d.%y",
+                    "%a, %m.%d.%y",
+                    "%A, %m.%d.%y",
+                    "%d-%m-%Y",
+                    "%a, %d-%m-%Y",
+                    "%A, %d-%m-%Y",
+                    "%d-%m-%y",
+                    "%a, %d-%m-%y",
+                    "%A, %d-%m-%y",
+                    "%d/%m/%Y",
+                    "%a, %d/%m/%Y",
+                    "%A, %d/%m/%Y",
+                    "%d/%m/%y",
+                    "%a, %d/%m/%y",
+                    "%A, %d/%m/%y",
+                    "%d.%m.%Y",
+                    "%a, %d.%m.%Y",
+                    "%A, %d.%m.%Y",
+                    "%d.%m.%y",
+                    "%a, %d.%m.%y",
+                    "%A, %d.%m.%y",
+                    "%d. %b %Y",
+                    "%a, %d. %b %Y",
+                    "%A, %d. %b %Y",
+                    "%d. %b %y",
+                    "%a, %d. %b %y",
+                    "%A, %d. %b %y",
+                    "%d. %B %Y",
+                    "%a, %d. %B %Y",
+                    "%A, %d. %B %Y",
+                    "%d. %B %y",
+                    "%a, %d. %B %y",
+                    "%A, %d. %B %y",
+                    "%b %d, %Y",
+                    "%a, %b %d, %Y",
+                    "%A, %b %d, %Y",
+                    "%B %d, %Y",
+                    "%a, %B %d, %Y",
+                    "%A, %B %d, %Y"
+                ],
+                "timezoneDisplay": true,
+                "webInterface": {
+                    "apiKey": "34b11fbcc280af25381a32ac773a291e",
+                    "log": false,
+                    "username": "User",
+                    "password": "",
+                    "port": 8081,
+                    "notifyOnLogin": false,
+                    "ipv6": true,
+                    "httpsEnable": false,
+                    "httpsCert": "server.crt",
+                    "httpsKey": "server.key",
+                    "handleReverseProxy": false
+                },
+                "cpuPreset": "NORMAL",
+                "sslVerify": true,
+                "sslCaBundle": "",
+                "noRestart": false,
+                "encryptionVersion": false,
+                "calendarUnprotected": false,
+                "calendarIcons": false,
+                "proxySetting": "",
+                "proxyIndexers": false,
+                "skipRemovedFiles": false,
+                "epDefaultDeletedStatus": 6,
+                "developer": true,
+                "git": {
+                    "username": "",
+                    "password": "",
+                    "token": "",
+                    "authType": 0,
+                    "remote": "origin",
+                    "path": "",
+                    "org": "pymedusa",
+                    "reset": true,
+                    "resetBranches": [],
+                    "url": "https://github.com/pymedusa/medusa.github.io"
+                },
+                "backlogOverview": {
+                    "status": "all",
+                    "period": "all"
                 }
-            ],
-            "randomShowSlug": "tvdb294002",
-            "showDefaults": {
-                "status": 5,
-                "statusAfter": 3,
-                "quality": 328,
-                "subtitles": false,
-                "seasonFolders": false,
-                "anime": false,
-                "scene": false
-            },
-            "logs": {
-                "debug": true,
-                "dbDebug": false,
-                "loggingLevels": {
-                    "error": 40,
-                    "warning": 30,
-                    "info": 20,
-                    "debug": 10,
-                    "db": 5
-                },
-                "numErrors": 0,
-                "numWarnings": 0,
-                "actualLogDir": "Logs",
-                "nr": 5,
-                "size": 11,
-                "subliminalLog": false,
-                "privacyLevel": "normal"
-            },
-            "selectedRootIndex": -1,
-            "launchBrowser": true,
-            "defaultPage": "home",
-            "trashRemoveShow": false,
-            "trashRotateLogs": false,
-            "indexerDefaultLanguage": "en",
-            "showUpdateHour": 2,
-            "indexerTimeout": 20,
-            "indexerDefault": 0,
-            "plexFallBack": {
-                "enable": true,
-                "notifications": true,
-                "timeout": 3
-            },
-            "versionNotify": true,
-            "autoUpdate": false,
-            "updateFrequency": 1,
-            "notifyOnUpdate": true,
-            "availableThemes": [
-                {
-                    "name": "dark",
-                    "version": "0.1.0",
-                    "author": "p0psicles"
-                },
-                {
-                    "name": "light",
-                    "version": "0.1.0",
-                    "author": "p0psicles"
-                }
-            ],
-            "timePresets": [
-                "%I:%M:%S %p",
-                "%H:%M:%S"
-            ],
-            "datePresets": [
-                "%Y-%m-%d",
-                "%a, %Y-%m-%d",
-                "%A, %Y-%m-%d",
-                "%y-%m-%d",
-                "%a, %y-%m-%d",
-                "%A, %y-%m-%d",
-                "%m/%d/%Y",
-                "%a, %m/%d/%Y",
-                "%A, %m/%d/%Y",
-                "%m/%d/%y",
-                "%a, %m/%d/%y",
-                "%A, %m/%d/%y",
-                "%m-%d-%Y",
-                "%a, %m-%d-%Y",
-                "%A, %m-%d-%Y",
-                "%m-%d-%y",
-                "%a, %m-%d-%y",
-                "%A, %m-%d-%y",
-                "%m.%d.%Y",
-                "%a, %m.%d.%Y",
-                "%A, %m.%d.%Y",
-                "%m.%d.%y",
-                "%a, %m.%d.%y",
-                "%A, %m.%d.%y",
-                "%d-%m-%Y",
-                "%a, %d-%m-%Y",
-                "%A, %d-%m-%Y",
-                "%d-%m-%y",
-                "%a, %d-%m-%y",
-                "%A, %d-%m-%y",
-                "%d/%m/%Y",
-                "%a, %d/%m/%Y",
-                "%A, %d/%m/%Y",
-                "%d/%m/%y",
-                "%a, %d/%m/%y",
-                "%A, %d/%m/%y",
-                "%d.%m.%Y",
-                "%a, %d.%m.%Y",
-                "%A, %d.%m.%Y",
-                "%d.%m.%y",
-                "%a, %d.%m.%y",
-                "%A, %d.%m.%y",
-                "%d. %b %Y",
-                "%a, %d. %b %Y",
-                "%A, %d. %b %Y",
-                "%d. %b %y",
-                "%a, %d. %b %y",
-                "%A, %d. %b %y",
-                "%d. %B %Y",
-                "%a, %d. %B %Y",
-                "%A, %d. %B %Y",
-                "%d. %B %y",
-                "%a, %d. %B %y",
-                "%A, %d. %B %y",
-                "%b %d, %Y",
-                "%a, %b %d, %Y",
-                "%A, %b %d, %Y",
-                "%B %d, %Y",
-                "%a, %B %d, %Y",
-                "%A, %B %d, %Y"
-            ],
-            "timezoneDisplay": true,
-            "webInterface": {
-                "apiKey": "34b11fbcc280af25381a32ac773a291e",
-                "log": false,
-                "username": "User",
-                "password": "",
-                "port": 8081,
-                "notifyOnLogin": false,
-                "ipv6": true,
-                "httpsEnable": false,
-                "httpsCert": "server.crt",
-                "httpsKey": "server.key",
-                "handleReverseProxy": false
-            },
-            "cpuPreset": "NORMAL",
-            "sslVerify": true,
-            "sslCaBundle": "",
-            "noRestart": false,
-            "encryptionVersion": false,
-            "calendarUnprotected": false,
-            "calendarIcons": false,
-            "proxySetting": "",
-            "proxyIndexers": false,
-            "skipRemovedFiles": false,
-            "epDefaultDeletedStatus": 6,
-            "developer": true,
-            "git": {
-                "username": "",
-                "password": "",
-                "token": "",
-                "authType": 0,
-                "remote": "origin",
-                "path": "",
-                "org": "pymedusa",
-                "reset": true,
-                "resetBranches": [],
-                "url": "https://github.com/pymedusa/medusa.github.io"
-            },
-            "backlogOverview": {
-                "status": "all",
-                "period": "all"
             },
             "layout": {
                 "schedule": "banner",
@@ -1346,6 +1342,12 @@
                     ],
                     "ignoreUnknownSubs": false
                 }
+            }
+        },
+        "auth": {
+            "isAuthenticated": true,
+            "user": {
+                "username": "admin"
             }
         },
         "stats": {

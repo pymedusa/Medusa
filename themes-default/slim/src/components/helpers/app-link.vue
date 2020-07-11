@@ -30,7 +30,9 @@ export default {
         }
     },
     computed: {
-        ...mapState(['config']),
+        ...mapState({
+            general: state => state.config.general
+        }),
         ...mapGetters(['indexerIdToName']),
         indexerName() {
             // Returns `undefined` if not found
@@ -75,7 +77,7 @@ export default {
             return this.computedHref.startsWith('#');
         },
         anonymisedHref() {
-            const { anonRedirect } = this.config.general;
+            const { anonRedirect } = this.general;
             const href = this.computedHref;
             if (!href) {
                 return;

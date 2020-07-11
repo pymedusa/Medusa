@@ -2,11 +2,12 @@ import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
 import { createLocalVue, shallowMount, mount } from '@vue/test-utils';
 import { SubtitleSearch } from '../../src/components';
-import historyModule from '../../src/store/modules/history';
+import history from '../../src/store/modules/history';
 import show from '../__fixtures__/show-detailed';
 import { result as subtitleResult } from '../__fixtures__/subtitle-search';
 import episodeHistory from '../__fixtures__/episode-history';
 import episode from '../__fixtures__/show-episode';
+import fixtures from '../fixtures/common';
 
 describe('SubtitleSearch', () => {
     let localVue;
@@ -21,6 +22,9 @@ describe('SubtitleSearch', () => {
                     s04e06: episodeHistory
                 }
             }
+        },
+        config: {
+            general: fixtures.state.config.general
         }
     };
 
@@ -31,7 +35,13 @@ describe('SubtitleSearch', () => {
 
         store = new Store({
             modules: {
-                history: historyModule
+                history: {
+                    getters: history.getters,
+                    state: state.history
+                },
+                config: {
+                    state: state.config
+                }
             }
         });
         store.replaceState(state);
