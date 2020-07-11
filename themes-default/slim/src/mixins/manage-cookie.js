@@ -28,7 +28,9 @@ export const manageCookieMixin = cookiePrefix => {
             },
             /**
              * Get vue-good-table sort field and sort order.
-             * @returns {Object} - Object with the field and type properties.
+             * @param {string} defaultField - default vue good table field to sort by.
+             * @param {string} defaultType - default vue good table sort order (ascending / descending).
+             * @returns {object} - Object with the field and type properties.
              */
             getSortBy(defaultField = 'title', defaultType = 'asc') {
                 const { getCookie } = this;

@@ -8,7 +8,7 @@
                         }"
                         :sort-options="{
                             enabled: true,
-                            initialSortBy: { field: 'title', type: 'asc' }
+                            initialSortBy: getSortBy()
                         }"
                         :column-filter-options="{
                             enabled: true
@@ -103,7 +103,7 @@ export default {
         VueGoodTable
     },
     mixins: [
-        manageCookieMixin('home-hide-field'),
+        manageCookieMixin('home-small-poster'),
         showlistTableMixin
     ],
     props: {

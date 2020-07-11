@@ -39,7 +39,7 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                    initialSortBy: getSortBy('episode', 'desc')
                                 }"
                                 :selectOptions="{
                                     enabled: true,
@@ -182,7 +182,7 @@
                                 }"
                                 :sort-options="{
                                     enabled: true,
-                                    initialSortBy: { field: 'episode', type: 'desc' }
+                                    initialSortBy: getSortBy('episode', 'desc')
                                 }"
                                 :selectOptions="{
                                     enabled: true,
