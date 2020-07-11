@@ -58,7 +58,8 @@ describe('AppLink.test.js', () => {
             },
             computed: {
                 config() {
-                    return {...state.config.general, ...{ anonRedirect: 'https://anon-redirect.tld/?url=' } };
+                    return { ...state.config.general, ...{ anonRedirect: 'https://anon-redirect.tld/?url=' } };
+                }
             }
         });
 

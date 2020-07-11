@@ -6,7 +6,7 @@
                 "username": "admin"
             }
         },
-        "config": {
+        "general": {
             "themeName": "light",
             "anonRedirect": "http://dereferer.org/?",
             "dateStyle": "%x",
