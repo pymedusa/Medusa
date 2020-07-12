@@ -7,7 +7,7 @@ import show from '../__fixtures__/show-detailed';
 import { result as subtitleResult } from '../__fixtures__/subtitle-search';
 import episodeHistory from '../__fixtures__/episode-history';
 import episode from '../__fixtures__/show-episode';
-import fixtures from '../fixtures/common';
+import fixtures from '../__fixtures__/common';
 
 describe('SubtitleSearch', () => {
     let localVue;

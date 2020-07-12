@@ -9,7 +9,7 @@
                         </div>
                         <div class="poster-overlay">
                             <app-link :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`">
-                                <asset default-src="images/poster.png" :show-slug="show.id.slug" :lazy="true" type="posterThumb" cls="show-image" :link="false" />
+                                <asset default-src="images/poster.png" :show-slug="show.id.slug" lazy type="posterThumb" cls="show-image" :link="false" />
                             </app-link>
                         </div>
                     </div>
@@ -36,7 +36,7 @@
                                         </td>
                                         <td class="show-table">
                                             <span v-if="show.network" :title="show.network">
-                                                <asset default-src="images/network/nonetwork.png" :show-slug="show.id.slug" :lazy="false" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
+                                                <asset default-src="images/network/nonetwork.png" :show-slug="show.id.slug" type="network" cls="show-network-image" :link="false" :alt="show.network" :title="show.network" :imgWidth="logoWidth" />
                                             </span>
                                             <span v-else title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network"></span>
                                         </td>

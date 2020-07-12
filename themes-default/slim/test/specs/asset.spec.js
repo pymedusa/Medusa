@@ -17,7 +17,7 @@ describe('Asset.test.js', () => {
             localVue,
             propsData: {
                 type: 'network',
-                default: 'https://default_website.tld/img.png'
+                defaultSrc: 'https://default_website.tld/img.png'
             }
         });
 
@@ -31,7 +31,7 @@ describe('Asset.test.js', () => {
             propsData: {
                 type: 'network',
                 showSlug: 'tvdb1000',
-                default: 'https://default_website.tld/img.png'
+                defaultSrc: 'https://default_website.tld/img.png'
             }
         });
 
@@ -46,7 +46,7 @@ describe('Asset.test.js', () => {
                 type: 'posterThumb',
                 lazy: true,
                 showSlug: 'tvdb1000',
-                default: 'https://default_website.tld/img.png',
+                defaultSrc: 'https://default_website.tld/img.png',
                 cls: 'show-image',
                 link: false
             }

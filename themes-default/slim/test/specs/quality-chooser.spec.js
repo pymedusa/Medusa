@@ -40,7 +40,7 @@ describe('QualityChooser.test.js', () => {
             }
         });
 
-        const isPreset = val => state.consts.qualities.presets.find(({ value }) => value === val) !== undefined;
+        const isPreset = val => state.config.consts.qualities.presets.find(({ value }) => value === val) !== undefined;
 
         expect(wrapper.element).toMatchSnapshot('Base snapshot');
 

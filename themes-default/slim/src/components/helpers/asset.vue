@@ -1,25 +1,27 @@
 <template>
     <div v-if="!lazy" style="display: inherit">
-        <img v-if="!link" v-bind="{ src, class: cls, class: newCls }" @error="error = true">
+        <img v-if="!link" v-bind="{ src, class: cls, class: newCls }">
         <app-link v-else :href="href">
-            <img v-bind="{ src, class: newCls }" @error="error = true">
+            <img v-bind="{ src, class: newCls }">
         </app-link>
     </div>
     <div v-else style="display: inherit">
-        <lazy-image v-if="!link" :src="src" :img-class="newCls" :placeholder="defaultSrc" />
+        <lazy-image v-if="!link" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" />
         <app-link v-else :href="href">
-            <lazy-image :src="src" :img-class="newCls" :placeholder="defaultSrc" />
+            <lazy-image :src="src" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" />
         </app-link>
     </div>
 </template>
 <script>
 import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
+import LazyImage from './lazy-image.vue';
 
 export default {
     name: 'asset',
     components: {
-        AppLink
+        AppLink,
+        LazyImage
     },
     props: {
         showSlug: {
@@ -43,9 +45,7 @@ export default {
         imgWidth: {
             type: Number
         },
-        lazy: {
-            type: Boolean
-        }
+        lazy: Boolean
     },
     data() {
         return {
@@ -54,10 +54,10 @@ export default {
     },
     computed: {
         src() {
-            const { defaultSrc, error, showSlug, type } = this;
+            const { showSlug, type } = this;
 
-            if (error || !showSlug || !type) {
-                return defaultSrc;
+            if (!showSlug || !type) {
+                return;
             }
 
             return `${webRoot}/api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;

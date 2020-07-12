@@ -6,7 +6,6 @@ import Snotify from 'vue-snotify';
 import VueCookies from 'vue-cookies';
 import VModal from 'vue-js-modal';
 import { VTooltip } from 'v-tooltip';
-import VueLazyImage from "vue-lazy-images";
 
 import {
     AddShowOptions,
@@ -114,7 +113,6 @@ export const registerPlugins = () => {
     Vue.use(VueCookies);
     Vue.use(VModal);
     Vue.use(VTooltip);
-    Vue.use(VueLazyImage);
 
     // Set default cookie expire time
     Vue.$cookies.config('10y');

@@ -18,16 +18,10 @@ describe('AppHeader.test.js', () => {
     });
 
     it('renders', () => {
-        const { state } = fixtures;
         const wrapper = shallowMount(AppHeader, {
             localVue,
             store,
             computed: {
-                config() {
-                    return {
-                        ...state.config
-                    };
-                },
                 topMenu() {
                     return 'home';
                 }
