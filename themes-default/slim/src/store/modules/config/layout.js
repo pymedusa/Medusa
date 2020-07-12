@@ -95,12 +95,12 @@ const getters = {
 const actions = {
     setLayout(context, { page, layout }) {
         const { commit } = context;
-        return api.patch('config/main', { layout: { [page]: layout } })
-            .then(() => {
-                return commit(ADD_CONFIG, {
-                    section: 'layout', config: { [page]: layout }
-                });
-            });
+        // Don't wait for the api, just commit to store.
+        commit(ADD_CONFIG, {
+            section: 'layout', config: { [page]: layout }
+        });
+
+        return api.patch('config/main', { layout: { [page]: layout } });
     },
     setTheme(context, { themeName }) {
         const { commit } = context;
