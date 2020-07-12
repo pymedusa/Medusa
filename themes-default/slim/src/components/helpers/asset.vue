@@ -1,14 +1,14 @@
 <template>
     <div v-if="!lazy" style="display: inherit">
-        <img v-if="!link" v-bind="{ src, class: cls, class: newCls }">
+        <img v-if="!link" v-bind="{ src, class: cls, class: newCls }" @error="error = true">
         <app-link v-else :href="href">
-            <img v-bind="{ src, class: newCls }">
+            <img v-bind="{ src, class: newCls }" @error="error = true">
         </app-link>
     </div>
     <div v-else style="display: inherit">
-        <lazy-image v-if="!link" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" />
+        <lazy-image v-if="!link" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" :data-background-image="defaultSrc" />
         <app-link v-else :href="href">
-            <lazy-image :src="src" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" />
+            <lazy-image :src="src" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" :data-background-image="defaultSrc"  />
         </app-link>
     </div>
 </template>
@@ -16,6 +16,7 @@
 import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
 import LazyImage from './lazy-image.vue';
+
 
 export default {
     name: 'asset',
@@ -54,10 +55,10 @@ export default {
     },
     computed: {
         src() {
-            const { showSlug, type } = this;
+            const { defaultSrc, error, showSlug, type } = this;
 
-            if (!showSlug || !type) {
-                return;
+            if (error || !showSlug || !type) {
+                return defaultSrc;
             }
 
             return `${webRoot}/api/v2/series/${showSlug}/asset/${type}?api_key=${apiKey}`;
