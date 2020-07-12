@@ -79,7 +79,7 @@
                                 <time datetime="${isoDate}" class="date">${airDate}</time>
                             </td>
                             <td class="tvShow triggerhighlight"><app-link indexer-id="${hItem.indexer_id}" href="home/displayShow?indexername=indexer-to-name&seriesid=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${"""<quality-pill :quality="0" :override="{ class: 'quality proper', text: 'Proper' }"></quality-pill>""" if hItem.proper_tags else ''} </app-link></td>
-                            <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if hItem.action == SUBTITLED else ''}>
+                            <td align="center" ${'class="triggerhighlight subtitles_column"' if hItem.action == SUBTITLED else 'triggerhighlight'}>
                             % if hItem.action == SUBTITLED:
                                 <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                             % endif
