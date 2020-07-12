@@ -24,9 +24,10 @@ exports[`Asset.test.js renders image with API v2 path for network with lazy load
 <div
   style="display: inherit;"
 >
-  <lazy-image
-    img-class="show-image"
-    placeholder="https://default_website.tld/img.png"
+  <img
+    class="app-image show-image loaded"
+    data-loaded="true"
+    data-src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
     src="/api/v2/series/tvdb1000/asset/posterThumb?api_key=1234567890ABCDEF1234567890ABCDEF"
   />
 </div>

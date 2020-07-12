@@ -6,9 +6,9 @@
         </app-link>
     </div>
     <div v-else style="display: inherit">
-        <lazy-image v-if="!link" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" :data-background-image="defaultSrc" />
+        <lazy-image v-if="!link" :lazy-src="src" :lazy-cls="newCls" :lazy-default-src="defaultSrc" />
         <app-link v-else :href="href">
-            <lazy-image :src="src" :data-src="src" :lazy-default-cls="newCls" :lazy-default-src="defaultSrc" :data-background-image="defaultSrc"  />
+            <lazy-image :lazy-src="src" :lazy-cls="newCls" :lazy-default-src="defaultSrc" />
         </app-link>
     </div>
 </template>
@@ -16,7 +16,6 @@
 import { webRoot, apiKey } from '../../api';
 import AppLink from './app-link.vue';
 import LazyImage from './lazy-image.vue';
-
 
 export default {
     name: 'asset',

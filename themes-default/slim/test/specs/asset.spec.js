@@ -22,7 +22,7 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.attributes().src).toEqual('https://default_website.tld/img.png');
+        expect(wrapper.find('img').attributes().src).toEqual('https://default_website.tld/img.png');
     });
 
     it('renders image with API v2 path for network', () => {
@@ -36,7 +36,7 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.attributes().src).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/network?api_key='));
+        expect(wrapper.find('img').attributes().src).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/network?api_key='));
     });
 
     it('renders image with API v2 path for network with lazy loading', () => {
@@ -53,6 +53,7 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.attributes().src).toEqual(expect.stringContaining('https://default_website.tld/img.png'));
+        expect(wrapper.find('img').attributes().datasrc).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/posterThumb?api_key='));
+        expect(wrapper.find('img').attributes()['data-loaded']).toEqual(expect.stringContaining('true'));
     });
 });

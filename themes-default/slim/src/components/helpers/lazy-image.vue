@@ -1,6 +1,6 @@
 <template>
-    <img v-bind="{ dataSrc, dataSrcset: lazySrcset, style }"
-         :src="lazyDefaultSrc"
+    <img v-bind="{ dataSrcset: lazySrcset, style }"
+         :data-src="lazySrc"
          :class="lazyCls"
          class="app-image"
          @error="error = true"
@@ -13,10 +13,6 @@ import lozad from 'lozad';
 export default {
     name: 'lazy-image',
     props: {
-        backgroundColor: {
-            type: String,
-            default: '#efefef'
-        },
         height: {
             type: Number,
             default: null
@@ -59,12 +55,7 @@ export default {
             return (this.height / this.width) * 100;
         },
         style() {
-            // The background color is used as a
-            // placeholder while loading the image.
-            // You can use the dominant color of the
-            // image to improve perceived performance.
-            // See: https://manu.ninja/dominant-colors-for-lazy-loading-images/
-            const style = { backgroundColor: this.backgroundColor };
+            const style = {};
 
             if (this.width) {
                 style.width = `${this.width}px`;
@@ -85,14 +76,6 @@ export default {
             }
 
             return style;
-        },
-        dataSrc() {
-            const { error, lazyDefaultSrc, lazySrc } = this;
-            if (lazyDefaultSrc) {
-                return error ? lazyDefaultSrc : lazySrc;
-            }
-
-            return lazySrc;
         }
     },
     mounted() {
