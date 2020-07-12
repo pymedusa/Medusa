@@ -53,7 +53,7 @@ describe('Asset.test.js', () => {
         });
 
         expect(wrapper.element).toMatchSnapshot();
-        expect(wrapper.find('img').attributes().datasrc).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/posterThumb?api_key='));
+        expect(wrapper.find('img').attributes()['data-src']).toEqual(expect.stringContaining('/api/v2/series/tvdb1000/asset/posterThumb?api_key='));
         expect(wrapper.find('img').attributes()['data-loaded']).toEqual(expect.stringContaining('true'));
     });
 });

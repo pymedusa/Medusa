@@ -1,7 +1,8 @@
 <template>
-    <img v-bind="{ dataSrcset: lazySrcset, style }"
-         :data-src="lazySrc"
+    <img :data-src="lazySrc"
+         :data-srcset="lazySrcset"
          :class="lazyCls"
+         :style="style"
          class="app-image"
          @error="error = true"
     >
