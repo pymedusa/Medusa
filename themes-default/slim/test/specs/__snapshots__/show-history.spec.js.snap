@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ShowResults.test.js renders show-results component with results 1`] = `
+exports[`ShowHistory.test.js renders show-history component 1`] = `
 <div
-  class="show-results-wrapper"
+  class="show-history-wrapper"
 >
   <div
     class="row fanartBackground"
@@ -12,34 +12,32 @@ exports[`ShowResults.test.js renders show-results component with results 1`] = `
     >
       <div
         class="button-row"
+        style="display: none;"
       >
-        <input
-          class="btn-medusa manualSearchButton top-5 bottom-5"
+        <button
+          class="btn-medusa top-5 bottom-5 pull-right"
+          id="showhistory"
           type="button"
-          value="Refresh Results"
-        />
-         
-        <input
-          class="btn-medusa manualSearchButton top-5 bottom-5"
-          type="button"
-          value="Force Search"
-        />
-         
-        <!---->
+        >
+          
+                    Show History
+                
+        </button>
       </div>
        
       <vue-good-table-stub
         columnfilteroptions="[object Object]"
-        columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+        columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
         groupoptions="[object Object]"
         mode="local"
         paginationoptions="[object Object]"
         responsive="true"
-        rows="[object Object],[object Object],[object Object]"
+        rows=""
         rowstyleclass="function () { [native code] }"
         searchoptions="[object Object]"
         selectoptions="[object Object]"
         sortoptions="[object Object]"
+        style="display: none;"
         styleclass="vgt-table condensed"
         theme=""
       />
