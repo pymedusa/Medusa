@@ -35,18 +35,19 @@
 
                         <span v-else-if="props.column.label === 'Provider/Group'" class="align-center">
                             <!-- These should get a provider icon -->
-                            <template v-if="['Snatched', 'Failed', 'Downloaded'].includes(props.row.statusName)">
+                            <template v-if="['Snatched', 'Failed'].includes(props.row.statusName)">
                                 <img  class="addQTip" style="margin-right: 5px;"
                                       :src="`images/providers/${props.row.provider.id}.png`"
                                       :alt="props.row.provider.name" width="16" height="16"
                                       :title="props.row.provider.name"
                                       onError="this.onerror=null;this.src='images/providers/missing.png';"
                                 >
-
-                                <span v-if="props.row.statusName === 'Downloaded'">
-                                    {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
-                                </span>
                             </template>
+
+                            <!-- Downloaded history items do not get a provider stored -->
+                            <span v-if="props.row.statusName === 'Downloaded'">
+                                {{props.row.releaseGroup !== -1 ? props.row.releaseGroup : ''}}
+                            </span>
 
                             <!-- Different path for subtitle providers -->
                             <img v-else-if="props.row.statusName === 'Subtitled'" class="addQTip" style="margin-right: 5px;"
