@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ShowResults.test.js renders show-results component with results 1`] = `
+exports[`ShowResults.test.js renders show-results component 1`] = `
 <div
   class="show-results-wrapper"
 >

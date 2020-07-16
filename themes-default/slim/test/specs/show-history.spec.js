@@ -1,5 +1,6 @@
 import Vuex, { Store } from 'vuex';
 import VueRouter from 'vue-router';
+import vueCookies from 'vue-cookies';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { ShowHistory } from '../../src/components';
 import historyModule from '../../src/store/modules/history';
@@ -29,6 +30,7 @@ describe('ShowHistory.test.js', () => {
         localVue = createLocalVue();
         localVue.use(Vuex);
         localVue.use(VueRouter);
+        localVue.use(vueCookies);
 
         store = new Store({
             modules: {
@@ -37,7 +39,11 @@ describe('ShowHistory.test.js', () => {
                 },
                 history: {
                     getters: historyModule.getters,
-                    state: state.history
+                    state: state.history,
+                    actions: {
+                        getShowEpisodeHistory: jest.fn(),
+                        getShowHistory: jest.fn()
+                    }
                 },
                 config: {
                     state: state.config
