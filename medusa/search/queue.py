@@ -643,7 +643,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.started = True
 
         # Push an update to any open Web UIs through the WebSocket
-        msg = ws.Message('QueueItemUpdate', self.to_json).push()
+        ws.Message('QueueItemUpdate', self.to_json).push()
 
         try:
             for ep_obj in self.segment:

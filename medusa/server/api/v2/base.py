@@ -18,7 +18,7 @@ from babelfish.language import Language
 
 import jwt
 
-from medusa import app, db
+from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
 from six import PY2, ensure_text, iteritems, string_types, text_type, viewitems
