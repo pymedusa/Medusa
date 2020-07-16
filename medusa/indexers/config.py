@@ -146,6 +146,7 @@ def create_config_json(indexer):
 
 
 def get_indexer_config():
+    """Create a per indexer and main indexer config, used by the apiv2."""
     indexers = {
         indexerConfig[indexer]['identifier']: create_config_json(indexerConfig[indexer]) for indexer in indexerConfig
     }

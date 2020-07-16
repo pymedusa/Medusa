@@ -6,8 +6,9 @@ import logging
 from os.path import basename
 
 from medusa import db
-from medusa.common import statusStrings
+from medusa.common import DOWNLOADED, FAILED, SNATCHED, SUBTITLED, statusStrings
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.generic_provider import GenericProvider
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.history import HistoryHandler
 from medusa.tv.episode import Episode, EpisodeNumber
@@ -61,7 +62,7 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         sql_base = """
             SELECT rowid, date, action, quality,
                    provider, version, resource, size, proper_tags,
-                   indexer_id, showid, season, episode, manually_searched
+                   indexer_id, showid, season, episode, manually_searched, info_hash
             FROM history
             WHERE showid = ? AND indexer_id = ? AND season = ? AND episode = ?
         """
@@ -74,22 +75,53 @@ class EpisodeHistoryHandler(BaseRequestHandler):
         def data_generator():
             """Read history data and normalize key/value pairs."""
             for item in results:
-                d = {}
-                d['id'] = item['rowid']
-                d['series'] = SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug
-                d['status'] = item['action']
-                d['actionDate'] = item['date']
+                provider = {}
+                release_group = None
+                release_name = None
+                file_name = None
+                subtitle_language = None
 
-                d['resource'] = basename(item['resource'])
-                d['size'] = item['size']
-                d['properTags'] = item['proper_tags']
-                d['statusName'] = statusStrings.get(item['action'])
-                d['season'] = item['season']
-                d['episode'] = item['episode']
-                d['manuallySearched'] = bool(item['manually_searched'])
-                d['provider'] = item['provider']
+                if item['action'] in (SNATCHED, FAILED):
+                    provider.update({
+                        'id': GenericProvider.make_id(item['provider']),
+                        'name': item['provider']
+                    })
+                    release_name = item['resource']
 
-                yield d
+                if item['action'] == DOWNLOADED:
+                    release_group = item['provider']
+                    file_name = item['resource']
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
+                    provider.update({
+                        'id': item['provider'],
+                        'name': item['provider']
+                    })
+
+                if item['action'] == SUBTITLED:
+                    subtitle_language = item['resource']
+
+                yield {
+                    'id': item['rowid'],
+                    'series': SeriesIdentifier.from_id(item['indexer_id'], item['showid']).slug,
+                    'status': item['action'],
+                    'statusName': statusStrings.get(item['action']),
+                    'actionDate': item['date'],
+                    'quality': item['quality'],
+                    'resource': basename(item['resource']),
+                    'size': item['size'],
+                    'properTags': item['proper_tags'],
+                    'season': item['season'],
+                    'episode': item['episode'],
+                    'manuallySearched': bool(item['manually_searched']),
+                    'infoHash': item['info_hash'],
+                    'provider': provider,
+                    'release_name': release_name,
+                    'releaseGroup': release_group,
+                    'fileName': file_name,
+                    'subtitleLanguage': subtitle_language
+                }
 
         if not results:
             return self._not_found('History data not found for show {show} and episode {episode}'.format(

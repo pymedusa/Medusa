@@ -106,7 +106,7 @@ export default {
     },
     computed: {
         ...mapState({
-            stateLayout: state => state.layout,
+            stateLayout: state => state.config.layout,
             showsLoading: state => state.shows.loading
         }),
         mappedLayout() {

@@ -268,9 +268,10 @@ export default {
     },
     computed: {
         ...mapState({
-            indexers: state => state.indexers,
-            layout: state => state.layout,
-            episodeStatuses: state => state.consts.statuses
+            indexers: state => state.config.indexers,
+            layout: state => state.config.layout,
+            episodeStatuses: state => state.config.consts.statuses,
+            search: state => state.config.search
         }),
         ...mapGetters({
             show: 'getCurrentShow',
@@ -307,10 +308,12 @@ export default {
             return this.saving === false ? 'Save Changes' : 'Saving...';
         },
         globalIgnored() {
-            return this.$store.state.search.filters.ignored.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.ignored.map(x => x.toLowerCase());
         },
         globalRequired() {
-            return this.$store.state.search.filters.required.map(x => x.toLowerCase());
+            const { search } = this;
+            return search.filters.required.map(x => x.toLowerCase());
         },
         effectiveIgnored() {
             const { globalIgnored } = this;

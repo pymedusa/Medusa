@@ -72,9 +72,9 @@ export const showlistTableMixin = {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
-            indexerConfig: state => state.indexers.indexers,
-            stateLayout: state => state.layout
+            config: state => state.config.general,
+            indexerConfig: state => state.config.indexers.indexers,
+            stateLayout: state => state.config.layout
         }),
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
@@ -158,19 +158,6 @@ export const showlistTableMixin = {
         maxNextAirDate() {
             const { shows } = this;
             return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
-        },
-        saveSorting(evt) {
-            const { setCookie } = this;
-            // Store cookies, for sort field and type (asc/desc)
-            setCookie('sort-field', evt[0].field);
-            setCookie('sort-type', evt[0].type);
-        },
-        getSortBy() {
-            const { getCookie } = this;
-            // Try to get cookies, for sort field and type (asc/desc)
-            const sortField = getCookie('sort-field');
-            const sortType = getCookie('sort-type');
-            return ({ field: sortField || 'title', type: sortType || 'asc' });
         }
     }
 };

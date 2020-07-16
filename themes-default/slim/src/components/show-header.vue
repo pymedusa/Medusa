@@ -12,15 +12,17 @@
                     </h1>
                 </div>
 
-                <div v-if="type === 'snatch-selection'" id="show-specials-and-seasons" class="pull-right">
+                <!-- Episode specific information for snatch-selection -->
+                <div v-if="type === 'snatch-selection'" id="show-specials-and-seasons" class="pull-right episode-info">
                     <span class="h2footer display-specials">
-                        Manual search for:<br>
-                        <app-link
-                            :href="`home/displayShow?indexername=${show.indexer}&seriesid=${show.id[show.indexer]}`"
-                            class="snatchTitle"
-                        >{{ show.title }}</app-link> / Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                        Manual search for: Season {{ season }}<template v-if="episode !== undefined && manualSearchType !== 'season'"> Episode {{ episode }}</template>
+                    </span>
+                    <span v-if="manualSearchType !== 'season' && episodeTitle">
+                        {{episodeTitle}}
                     </span>
                 </div>
+
+                <!-- Display Specials on/off and season jump -->
                 <div v-if="type !== 'snatch-selection' && seasons.length >= 1" id="show-specials-and-seasons" class="pull-right">
                     <span class="h2footer display-specials" v-if="seasons.includes(0)">
                         Display Specials: <a @click.prevent="toggleSpecials()" class="inner" style="cursor: pointer;">{{ displaySpecials ? 'Hide' : 'Show' }}</a>
@@ -61,7 +63,7 @@
                     <div class="show-poster-container">
                         <div class="row">
                             <div class="image-flex-container col-md-12">
-                                <asset default="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
+                                <asset default-src="images/poster.png" :show-slug="show.id.slug" type="posterThumb" cls="show-image shadow" :link="true" />
                             </div>
                         </div>
                     </div>
@@ -71,7 +73,7 @@
                     <div class="show-info-container">
                         <div class="row">
                             <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                                <asset default="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
+                                <asset default-src="images/banner.png" :show-slug="show.id.slug" type="banner" cls="show-banner pull-right shadow" :link="true" />
                             </div>
                             <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                                 <span
@@ -428,18 +430,20 @@ export default {
     },
     computed: {
         ...mapState({
-            config: state => state.config,
-            layout: state => state.layout,
+            config: state => state.config.general,
+            layout: state => state.config.layout,
             shows: state => state.shows.shows,
-            indexerConfig: state => state.indexers.indexers,
-            displaySpecials: state => state.layout.show.specials,
-            qualities: state => state.consts.qualities.values,
-            statuses: state => state.consts.statuses,
-            search: state => state.search,
-            configLoaded: state => state.layout.fanartBackground !== null
+            indexers: state => state.config.indexers,
+            indexerConfig: state => state.config.indexers.indexers,
+            displaySpecials: state => state.config.layout.show.specials,
+            qualities: state => state.config.consts.qualities.values,
+            statuses: state => state.config.consts.statuses,
+            search: state => state.config.search,
+            configLoaded: state => state.config.layout.fanartBackground !== null
         }),
         ...mapGetters({
             show: 'getCurrentShow',
+            getEpisode: 'getEpisode',
             getOverviewStatus: 'getOverviewStatus',
             getQualityPreset: 'getQualityPreset',
             getStatus: 'getStatus'
@@ -531,6 +535,19 @@ export default {
             const { show } = this;
             // Only return an array with seasons (integers)
             return show.seasonCount.map(season => season.season);
+        },
+        episodeTitle() {
+            const { getEpisode, show, season, episode } = this;
+            if (!(show.id.slug && season && episode)) {
+                return '';
+            }
+
+            const curEpisode = getEpisode({ showSlug: show.id.slug, season, episode });
+            if (curEpisode) {
+                return curEpisode.title;
+            }
+
+            return '';
         }
     },
     mounted() {
@@ -645,8 +662,18 @@ export default {
     width: 15px;
 }
 
+#showtitle {
+    float: none;
+}
+
 #show-specials-and-seasons {
-    margin-bottom: 15px;
+    bottom: 5px;
+    right: 15px;
+    position: absolute;
+}
+
+.episode-info span {
+    display: block;
 }
 
 span.required {
@@ -703,12 +730,6 @@ span.ignored {
     .display-seasons {
         top: -60px;
     }
-
-    #show-specials-and-seasons {
-        bottom: 5px;
-        right: 15px;
-        position: absolute;
-    }
 }
 
 @media (max-width: 767px) {
@@ -729,6 +750,15 @@ span.ignored {
         display: block;
         padding-top: 5px;
         width: 100%;
+    }
+
+    #showtitle {
+        margin-bottom: 40px;
+    }
+
+    #show-specials-and-seasons {
+        bottom: -40px;
+        left: 15px;
     }
 }
 

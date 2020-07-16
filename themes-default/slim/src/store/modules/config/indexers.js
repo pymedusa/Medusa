@@ -1,4 +1,4 @@
-import { ADD_CONFIG } from '../mutation-types';
+import { ADD_CONFIG } from '../../mutation-types';
 
 const state = {
     main: {

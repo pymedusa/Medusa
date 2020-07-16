@@ -54,7 +54,10 @@ export default {
     components: {
         AppLink
     },
-    computed: mapState(['config', 'system'])
+    computed: mapState({
+        config: state => state.config.general,
+        system: state => state.config.system
+    })
 };
 </script>
 <style scoped>

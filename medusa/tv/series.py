@@ -2156,7 +2156,6 @@ class Series(TV):
             data['config']['release']['whitelist'] = bw_list.whitelist
 
         # Make sure these are at least defined
-        data['xemNumbering'] = []
         data['sceneAbsoluteNumbering'] = []
         data['xemAbsoluteNumbering'] = []
         data['sceneNumbering'] = []
