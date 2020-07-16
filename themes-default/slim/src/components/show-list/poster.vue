@@ -218,13 +218,11 @@ export default {
         },
         updateLayout() {
             const {
-                calculateSize, imgLazyLoad,
+                calculateSize,
                 listTitle, posterSortBy,
                 posterSortDir
             } = this;
             this.isotopeLoaded = true;
-            // this.$lazyImages.loadImage();
-            // imgLazyLoad.update();
             calculateSize();
             // Render layout (for sizing)
             this.$refs[`isotope-${listTitle}`].layout();
@@ -242,11 +240,6 @@ export default {
             }
             return show.status;
         }
-    },
-    mounted() {
-        // this.imgLazyLoad = new LazyLoad({
-        //     threshold: 500
-        // });
     },
     watch: {
         posterSortBy(key) {

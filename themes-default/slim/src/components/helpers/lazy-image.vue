@@ -126,14 +126,14 @@ export default {
 
 <style scoped>
 .app-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  vertical-align: middle;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    vertical-align: middle;
 }
 
 img:not([src]) {
-  visibility: hidden;
+    visibility: hidden;
 }
 </style>

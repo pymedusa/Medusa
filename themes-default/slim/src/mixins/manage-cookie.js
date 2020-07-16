@@ -41,7 +41,7 @@ export const manageCookieMixin = cookiePrefix => {
 
                 if (Array.isArray(sortField) && sortField.length === 2) {
                     sortField.forEach((_, index) => {
-                        sort.push({ field: sortField[index] || defaultField, type: sortType[index] ||defaultType });
+                        sort.push({ field: sortField[index] || defaultField, type: sortType[index] || defaultType });
                     });
                     return sort;
                 }
