@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import json
 import os
 import time
-from datetime import date, datetime
+from datetime import date
 from textwrap import dedent
 
 from medusa import (
@@ -39,11 +39,7 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
-from medusa.failed_history import prepare_failed_name
-from medusa.helper.common import (
-    enabled_providers,
-    pretty_file_size,
-)
+from medusa.helper.common import enabled_providers
 from medusa.helper.exceptions import (
     AnidbAdbaConnectionException,
     CantRefreshShowException,
@@ -53,9 +49,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.anidb import get_release_groups_for_anime
 from medusa.indexers.api import indexerApi
-from medusa.indexers.utils import indexer_id_to_name, indexer_name_to_id
-from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import sbdatetime
+from medusa.indexers.utils import indexer_name_to_id
 from medusa.scene_exceptions import (
     get_all_scene_exceptions,
     get_scene_exceptions,
@@ -73,7 +67,6 @@ from medusa.search.manual import (
     SEARCH_STATUS_QUEUED,
     SEARCH_STATUS_SEARCHING,
     collect_episodes_from_search_thread,
-    get_provider_cache_results,
     update_finished_search_queue_item,
 )
 from medusa.search.queue import (
@@ -85,7 +78,6 @@ from medusa.server.web.core import (
     PageTemplate,
     WebRoot,
 )
-from medusa.show.history import History
 from medusa.show.show import Show
 from medusa.system.restart import Restart
 from medusa.system.shutdown import Shutdown

@@ -2,12 +2,13 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
 import logging
 import threading
 from builtins import object
+from datetime import datetime
 from functools import cmp_to_key
 from uuid import uuid4
+
 
 log = logging.getLogger()
 

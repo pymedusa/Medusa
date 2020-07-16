@@ -32,9 +32,7 @@ from medusa.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import SearchType
 
-
 from six import itervalues
-from time import time
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -244,7 +242,7 @@ class SearchResult(object):
             log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
 
             # Push an update to any open Web UIs through the WebSocket
-            msg = ws.Message('addManualSearchResult', self.to_json()).push()
+            ws.Message('addManualSearchResult', self.to_json()).push()
 
             return cache.add_cache_entry(self, parsed_result=self.parsed_result)
 

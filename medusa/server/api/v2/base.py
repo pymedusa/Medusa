@@ -413,29 +413,6 @@ class BaseRequestHandler(RequestHandler):
 
         return self._ok(data=results, headers=headers)
 
-    def paginate_query(self, query, identifier, where=None, params=None):
-        """Paginate query."""
-        arg_page = self._get_page()
-        arg_limit = self._get_limit()
-
-        headers = {
-            'X-Pagination-Page': arg_page,
-            'X-Pagination-Limit': arg_limit
-        }
-
-        query += ' WHERE {identifier} > ?'.format(identifier=identifier)
-        base_params = []
-        params.append(arg_page - 1 * arg_limit or 1)
-
-        if where and params:
-            query += ' AND ' + ' AND '.join([item + ' = ? ' for item in where])
-            base_params += params
-
-        query += ' LIMIT {limit}'.format(limit=arg_limit)
-
-        main_db_con = db.DBConnection()
-        return main_db_con.select(query, params)
-
     @classmethod
     def _parse(cls, value, function=int):
         """Parse value using the specified function.

@@ -2,15 +2,16 @@
 """Request handler for series and episodes."""
 from __future__ import unicode_literals
 
-from datetime import datetime
-from dateutil import parser
 import logging
+from datetime import datetime
 
+from dateutil import parser
+
+from medusa import providers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
 )
-from medusa import providers
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -30,14 +31,14 @@ class ProvidersHandler(BaseRequestHandler):
     allowed_methods = ('GET', 'POST', 'PATCH', 'DELETE', )
 
     def get(self, identifier, path_param=None):
-        """Query provider information.
+        """
+        Query provider information.
 
         Return a list of provider id's.
 
         :param identifier: provider id. E.g.: myawesomeprovider
         :param path_param:
         """
-
         show_slug = self._parse(self.get_argument('showslug', default=None), str)
         season = self._parse(self.get_argument('season', default=None), str)
         episode = self._parse(self.get_argument('episode', default=None), str)
