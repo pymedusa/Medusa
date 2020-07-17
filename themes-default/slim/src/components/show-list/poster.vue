@@ -1,8 +1,8 @@
 <template>
     <div name="poster-container-row" class="row">
         <div name="poster-container-col" class="col-md-12">
-            <isotope :ref="`isotope-${listTitle}`" :list="sortedShows" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
-                <div v-for="show in sortedShows" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
+            <isotope :ref="`isotope-${listTitle}`" :list="showsReady" :id="`isotope-container-${listTitle}`" :item-selector="'show-container'" :options="option" v-images-loaded:on.always="updateLayout">
+                <div v-for="show in showsReady" :key="show.id.slug" :id="show.id.slug" :style="showContainerStyle" :data-name="show.title" :data-date="show.airDate" :data-network="show.network" :data-indexer="show.indexer">
                     <div class="overlay-container">
                         <div class="background-image">
                             <img src="images/poster-back-dark.png">
@@ -96,7 +96,16 @@ export default {
             option: {
                 getSortData: {
                     id: row => row.id.slug,
-                    name: 'title',
+                    name: row => {
+                        const { stateLayout } = this;
+                        const { sortArticle } = stateLayout;
+
+                        if (!sortArticle) {
+                            return row.title;
+                        }
+
+                        return row.title.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
+                    },
                     date: row => {
                         const { maxNextAirDate } = this;
                         if (row.nextAirDate && Date.parse(row.nextAirDate) > Date.now()) {
@@ -148,7 +157,7 @@ export default {
         ...mapGetters({
             fuzzyParseDateTime: 'fuzzyParseDateTime'
         }),
-        sortedShows() {
+        showsReady() {
             const { shows, maxNextAirDate } = this;
             if (shows.length === 0 || !maxNextAirDate) {
                 return [];
