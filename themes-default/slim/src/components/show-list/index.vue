@@ -33,7 +33,7 @@
 
         </div>
 
-        <!-- Whe're still loading -->
+        <!-- We're still loading -->
         <div v-if="!this.showsLoading.finished && shows.length === 0">
             <state-switch state="loading" :theme="stateLayout.themeName" />
             <span>Loading</span>
