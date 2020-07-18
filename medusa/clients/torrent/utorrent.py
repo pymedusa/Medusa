@@ -60,6 +60,7 @@ class UTorrentAPI(GenericClient):
         """
         super(UTorrentAPI, self).__init__('uTorrent', host, username, password)
         self.url = urljoin(self.host, 'gui/')
+        self._torrentc = None
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
         if cookies:
@@ -83,6 +84,7 @@ class UTorrentAPI(GenericClient):
 
         if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
+            self._torrent_properties('04C3D85BAA9459D5A1B8440C12A1342CD2FF9C45')
             return self.auth
 
         return None
@@ -206,6 +208,23 @@ class UTorrentAPI(GenericClient):
             'action': 'removedatatorrent',
             'hash': info_hash,
         })
+
+    def _torrent_properties(self, info_hash):
+        """Get torrent properties."""
+        log.info('Checking {client} torrent {hash} status.', {'client': self.name, 'hash': info_hash})
+
+        params = {
+            'list': 1,
+            'torrentc': self._torrentc,
+        }
+
+        if not self._request(params=params):
+            log.warning('Error while fetching torrent {hash} status.', {'hash': info_hash})
+            return
+
+        torrent = self.response.json()
+        self._torrentc = torrent['torrentc']
+        return torrent
 
 
 api = UTorrentAPI
