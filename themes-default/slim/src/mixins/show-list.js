@@ -30,6 +30,7 @@ export const showlistTableMixin = {
             }, {
                 label: 'Show',
                 field: 'title',
+                sortFn: this.sortTitle,
                 hidden: getCookie('Show')
             }, {
                 label: 'Network',
@@ -158,6 +159,20 @@ export const showlistTableMixin = {
         maxNextAirDate() {
             const { shows } = this;
             return Math.max(...shows.filter(show => show.nextAirDate).map(show => Date.parse(show.nextAirDate)));
+        },
+        sortTitle(x, y) {
+            const { stateLayout } = this;
+            const { sortArticle } = stateLayout;
+
+            let titleX = x;
+            let titleY = y;
+
+            if (sortArticle) {
+                titleX = titleX.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
+                titleY = titleY.replace(/^((?:a(?!\s+to)n?)|the)\s/i, '').toLowerCase();
+            }
+
+            return (titleX < titleY ? -1 : (titleX > titleY ? 1 : 0));
         }
     }
 };
