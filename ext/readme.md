@@ -8,7 +8,7 @@ ext | `babelfish` | [f403000](https://github.com/Diaoul/babelfish/tree/f403000dd
 **ext2** | `backports.functools_lru_cache` | [1.6.1](https://pypi.org/project/backports.functools_lru_cache/1.6.1/) | `soupsieve` | File: `backports/functools_lru_cache.py`
 **ext2** | `backports_abc` | [0.5](https://pypi.org/project/backports_abc/0.5/) | `tornado` | File: `backports_abc.py`
 **ext2 ext3** | `beautifulsoup4` | [4.9.1](https://pypi.org/project/beautifulsoup4/4.9.1/) | **`medusa`**, `subliminal` | Module: `bs4`
-ext | `bencode.py` | [3.0.1](https://pypi.org/project/bencode.py/3.0.1/) | **`medusa`** | Module: `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
+ext | `bencode.py` | [4.0.0](https://pypi.org/project/bencode.py/4.0.0/) | **`medusa`** | Modules: `bencodepy`, `bencode`<br>Monkey-patched, see `medusa/init/__init__.py`
 ext | `boto` | [2.48.0](https://pypi.org/project/boto/2.48.0/) | `imdbpie` | Module: `boto`
 ext | `CacheControl` | [0.12.6](https://pypi.org/project/CacheControl/0.12.6/) | **`medusa`** | Module: `cachecontrol`
 ext | `certifi` | [2020.4.5.2](https://pypi.org/project/certifi/2020.4.5.2/) | **`medusa`**, `requests`, `traktor` | Module: `certifi`
