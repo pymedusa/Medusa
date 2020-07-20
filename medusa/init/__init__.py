@@ -163,6 +163,7 @@ def _monkey_patch_bdecode():
     This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
     """
     import bencodepy
+    from bencodepy.compat import to_binary
 
     class BencodeDecoder(bencodepy.BencodeDecoder):
         def decode(self, value, allow_extra_data=False):
@@ -176,7 +177,7 @@ def _monkey_patch_bdecode():
             :rtype: object
             """
             try:
-                value = bencodepy.to_binary(value)
+                value = to_binary(value)
                 data, length = self.decode_func[value[0:1]](value, 0)
             except (IndexError, KeyError, TypeError, ValueError):
                 raise bencodepy.BencodeDecodeError('not a valid bencoded string')
