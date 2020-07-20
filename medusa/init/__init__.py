@@ -162,21 +162,46 @@ def _monkey_patch_bdecode():
 
     This allows us to not raise an exception if bencoded data contains extra data after valid prefix.
     """
-    import bencode
+    import bencodepy
 
-    def _patched_bdecode(value, allow_extra_data=False):
-        try:
-            value = bencode.to_binary(value)
-            data, length = bencode.decode_func[value[0:1]](value, 0)
-        except (IndexError, KeyError, TypeError, ValueError):
-            raise bencode.BencodeDecodeError('not a valid bencoded string')
+    class BencodeDecoder(bencodepy.BencodeDecoder):
+        def decode(self, value, allow_extra_data=False):
+            """
+            Decode bencode formatted byte string ``value``.
 
-        if length != len(value) and not allow_extra_data:
-            raise bencode.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+            :param value: Bencode formatted string
+            :type value: bytes
 
-        return data
+            :return: Decoded value
+            :rtype: object
+            """
+            try:
+                value = bencodepy.to_binary(value)
+                data, length = self.decode_func[value[0:1]](value, 0)
+            except (IndexError, KeyError, TypeError, ValueError):
+                raise bencodepy.BencodeDecodeError('not a valid bencoded string')
 
-    bencode.bdecode = _patched_bdecode
+            if length != len(value) and not allow_extra_data:
+                raise bencodepy.BencodeDecodeError('invalid bencoded value (data after valid prefix)')
+
+            return data
+
+    bencodepy.BencodeDecoder = BencodeDecoder
+
+    class Bencode(bencodepy.Bencode):
+        def decode(self, value, allow_extra_data=False):
+            """
+            Decode bencode formatted byte string ``value``.
+
+            :param value: Bencode formatted string
+            :type value: bytes
+
+            :return: Decoded value
+            :rtype: object
+            """
+            return self.decoder.decode(value, allow_extra_data=allow_extra_data)
+
+    bencodepy.Bencode = Bencode
 
 
 def _configure_guessit():
