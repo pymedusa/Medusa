@@ -27,7 +27,7 @@ ext | `dogpile.cache` | [0.9.2](https://pypi.org/project/dogpile.cache/0.9.2/) |
 ext | `enzyme` | pymedusa/[665cf69](https://github.com/pymedusa/enzyme/tree/665cf6948aab1c249dcc99bd9624a81d17b3302a) | `knowit`, `subliminal` | Module: `enzyme`
 ext | `feedparser` | [2b11c80](https://github.com/kurtmckee/feedparser/tree/2b11c8028321ed43cbaf313f83b0c94820143d66) | **`medusa`** | Module: `feedparser`<br>Requires `sgmllib3k` on Python 3
 **ext2** | `funcsigs` | [1.0.2](https://pypi.org/project/funcsigs/1.0.2/) | `Pint` | Module: `funcsigs`
-**ext2** | `future` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`** | <details><summary>Modules:</summary> `future`, `_dummy_thread`, `_markupbase`, `_thread`, `builtins`, `copyreg`, `html`, `http`, `libfuturize`, `libpasteurize`, `past`, `queue`, `reprlib`, `socketserver`, `tkinter`, `winreg`, `xmlrpc` </details>
+**ext2** | `future` | [0.17.1](https://pypi.org/project/future/0.17.1/) | **`medusa`** | Modules: `future`, `_dummy_thread`, `_markupbase`, `_thread`, `builtins`, `copyreg`, `html`, `http`, `libfuturize`, `libpasteurize`, `past`, `queue`, `reprlib`, `socketserver`, `tkinter`, `winreg`, `xmlrpc`
 **ext2** | `futures` | [3.2.0](https://pypi.org/project/futures/3.2.0/) | **`medusa`**, `subliminal`, `tornado` | Module: `concurrent/futures`
 ext | `gntp` | [1.0.3](https://pypi.org/project/gntp/1.0.3/) | **`medusa`** | Module: `gntp`
 ext | `guessit` | [3.1.1](https://pypi.org/project/guessit/3.1.1/) | **`medusa`**, `subliminal` | Module: `guessit`
